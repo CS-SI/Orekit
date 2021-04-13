@@ -290,9 +290,9 @@ public enum AttitudeType {
             data[0] = angles[0];
             data[1] = angles[1];
             data[2] = angles[2];
-            data[3] = rotationRate.getX();
-            data[4] = rotationRate.getY();
-            data[5] = rotationRate.getZ();
+            data[3] = Vector3D.dotProduct(rotationRate, eulerRotSequence.getA1());
+            data[4] = Vector3D.dotProduct(rotationRate, eulerRotSequence.getA2());
+            data[5] = Vector3D.dotProduct(rotationRate, eulerRotSequence.getA3());
 
             // Convert units and format
             return EULER_ANGLE_RATE.formatData(data);
@@ -315,7 +315,9 @@ public enum AttitudeType {
                                                    components[1],
                                                    components[2]);
             final Vector3D rotationRate = EULER_ANGLE_RATE.orekitRate(isSpacecraftBodyRate,
-                                                                      new Vector3D(components[3], components[4], components[5]),
+                                                                      new Vector3D(components[3], eulerRotSequence.getA1(),
+                                                                                   components[4], eulerRotSequence.getA2(),
+                                                                                   components[5], eulerRotSequence.getA3()),
                                                                       rotation);
             // Return
             final TimeStampedAngularCoordinates ac =
