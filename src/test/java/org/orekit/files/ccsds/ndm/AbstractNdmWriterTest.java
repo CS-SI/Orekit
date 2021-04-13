@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.hipparchus.complex.Quaternion;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
@@ -58,10 +60,13 @@ import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.units.Unit;
 
 public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<?, ?>, F extends NdmFile<H, S>> {
+
+    private static final int ULPS = 3;
 
     @Before
     public void setUp() {
@@ -146,7 +151,8 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
                    original instanceof Maneuver            ||
                    original instanceof Observation         ||
                    original instanceof SpacecraftBodyFrame ||
-                   original instanceof PVCoordinates) {
+                   original instanceof PVCoordinates       ||
+                   original instanceof AngularCoordinates) {
             checkContainer(original, rebuilt);
             return true;
         } else if (original instanceof FrameFacade) {
@@ -179,29 +185,30 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
         } else if (original instanceof RealMatrix) {
             checkRealMatrix((RealMatrix) original, (RealMatrix) rebuilt);
             return true;
+        } else if (original instanceof Rotation) {
+            checkRotation((Rotation) original, (Rotation) rebuilt);
+            return true;
         } else {
             return false;
         }
-        
+
     }
 
     private void checkContainer(final Object original, final Object rebuilt) {
         Assert.assertEquals(original.getClass(), rebuilt.getClass());
         final Class<?> cls = original.getClass();
         Stream.of(cls.getMethods()).
-        filter(m -> m.getName().startsWith("get")        &&
-                    !m.getName().equals("getClass")      &&
-                    !m.getName().equals("getPropagator") &&
+        filter(m -> m.getName().startsWith("get")          &&
+                    !m.getName().equals("getClass")        &&
+                    !m.getName().equals("getPropagator")   &&
+                    !m.getName().equals("getLaunchYear")   &&
+                    !m.getName().equals("getLaunchNumber") &&
+                    !m.getName().equals("getLaunchPiece")  &&
                     m.getParameterCount() == 0).
         forEach(getter -> {
             try {
-                if (!recurseCheck(getter.invoke(original), getter.invoke(rebuilt))) {
-                    Assert.fail(cls.getName() + "." + getter.getName() + "(): " +
-                                " original → " + getter.invoke(original) +
-                                ", rebuilt → "  + getter.invoke(rebuilt));
-                }
+                Assert.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)));
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                e.printStackTrace();
                 Assert.fail(e.getLocalizedMessage());
             }
         });
@@ -301,16 +308,17 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
     }
 
     private void checkVector3D(final Vector3D original, final Vector3D rebuilt) {
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getX(), rebuilt.getX(), 1));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getY(), rebuilt.getY(), 1));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getZ(), rebuilt.getZ(), 1));
+        double eps = ULPS * FastMath.ulp(original.getNorm());
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getX(), rebuilt.getX(), eps));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getY(), rebuilt.getY(), eps));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getZ(), rebuilt.getZ(), eps));
     }
 
     private void checkQuaternion(final Quaternion original, final Quaternion rebuilt) {
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ0(), rebuilt.getQ0(), 1));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ1(), rebuilt.getQ1(), 1));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ2(), rebuilt.getQ2(), 1));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ3(), rebuilt.getQ3(), 1));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ0(), rebuilt.getQ0(), ULPS));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ1(), rebuilt.getQ1(), ULPS));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ2(), rebuilt.getQ2(), ULPS));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ3(), rebuilt.getQ3(), ULPS));
     }
 
     private void checkRealMatrix(final RealMatrix original, final RealMatrix rebuilt) {
@@ -318,13 +326,17 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
         Assert.assertEquals(original.getColumnDimension(), rebuilt.getColumnDimension());
         for (int i = 0; i < original.getRowDimension(); ++i) {
             for (int j = 0; j < original.getColumnDimension(); ++j) {
-                Assert.assertTrue(Precision.equalsIncludingNaN(original.getEntry(i, j), rebuilt.getEntry(i, j), 1));
+                Assert.assertTrue(Precision.equalsIncludingNaN(original.getEntry(i, j), rebuilt.getEntry(i, j), ULPS));
             }
         }
     }
 
+    private void checkRotation(final Rotation original, final Rotation rebuilt) {
+        Assert.assertEquals(0.0, Rotation.distance(original, rebuilt), 1.0e-12);
+    }
+
     private void checkDouble(final Double original, final Double rebuilt) {
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.doubleValue(), rebuilt.doubleValue(), 1));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.doubleValue(), rebuilt.doubleValue(), ULPS));
     }
 
 }

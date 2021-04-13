@@ -83,7 +83,7 @@ public abstract class AbstractGenerator implements Generator {
      * @param unit entry unit
      * @return true if units must be written
      */
-    protected boolean writeUnits(final Unit unit) {
+    public boolean writeUnits(final Unit unit) {
         return writeUnits &&
                unit != null &&
                !unit.getName().equals(Unit.NONE.getName()) &&
@@ -237,11 +237,9 @@ public abstract class AbstractGenerator implements Generator {
 
     }
 
-    /** Convert a SI unit name to a CCSDS name.
-     * @param siName si unit name
-     * @return CCSDS name for the unit
-     */
-    protected String siToCcsdsName(final String siName) {
+    /** {@inheritDoc} */
+    @Override
+    public String siToCcsdsName(final String siName) {
 
         if (!siToCcsds.containsKey(siName)) {
 
