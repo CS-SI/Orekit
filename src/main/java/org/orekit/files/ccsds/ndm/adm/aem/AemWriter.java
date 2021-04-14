@@ -358,7 +358,8 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
             generator.writeEntry(AemMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, null, false);
         }
 
-        if (attitudeType == AttitudeType.EULER_ANGLE ||
+        if (attitudeType == AttitudeType.QUATERNION_RATE ||
+            attitudeType == AttitudeType.EULER_ANGLE ||
             attitudeType == AttitudeType.EULER_ANGLE_RATE) {
             if (metadata.getEulerRotSeq() == null) {
                 // the keyword *will* be missing because we cannot set it
@@ -434,7 +435,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                     writeQuaternionDerivative(xmlGenerator, metadata.isFirst(), attitude.getDate(), data);
                     break;
                 case QUATERNION_RATE :
-                    writeQuaternionRate(xmlGenerator, metadata.isFirst(), attitude.getDate(), data);
+                    writeQuaternionRate(xmlGenerator, metadata.isFirst(), metadata.getEulerRotSeq(), attitude.getDate(), data);
                     break;
                 case EULER_ANGLE :
                     writeEulerAngle(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
@@ -539,11 +540,13 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
     /** Write a quaternion/rate entry in XML.
      * @param xmlGenerator generator to use for producing output
      * @param first flag for scalar component to appear first
+     * @param order Euler rotation order
      * @param epoch of the entry
      * @param data entry data
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeQuaternionRate(final XmlGenerator xmlGenerator, final boolean first, final AbsoluteDate epoch, final String[] data)
+    void writeQuaternionRate(final XmlGenerator xmlGenerator, final boolean first, final RotationOrder order,
+                             final AbsoluteDate epoch, final String[] data)
         throws IOException {
 
         // wrapping element
@@ -567,11 +570,10 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
         xmlGenerator.exitSection();
 
         // derivative part
-        final String seq = "XYZ";
         xmlGenerator.enterSection(AttitudeEntryKey.rotationRates.name());
-        writeEulerRate(xmlGenerator, 0, seq, data[i++]);
-        writeEulerRate(xmlGenerator, 1, seq, data[i++]);
-        writeEulerRate(xmlGenerator, 2, seq, data[i++]);
+        writeEulerRate(xmlGenerator, 0, order.name(), data[i++]);
+        writeEulerRate(xmlGenerator, 1, order.name(), data[i++]);
+        writeEulerRate(xmlGenerator, 2, order.name(), data[i++]);
         xmlGenerator.exitSection();
 
         xmlGenerator.exitSection();

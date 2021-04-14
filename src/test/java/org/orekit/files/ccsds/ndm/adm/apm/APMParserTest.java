@@ -417,6 +417,11 @@ public class APMParserTest {
         Assert.assertEquals(0.07543, segment.getData().getQuaternionBlock().getQuaternionDot().getQ2(), QUATERNION_PRECISION);
         Assert.assertEquals(0.00949, segment.getData().getQuaternionBlock().getQuaternionDot().getQ3(), QUATERNION_PRECISION);
 
+        Attitude attitude = file.getAttitude(null, null);
+        Assert.assertEquals(segment.getData().getQuaternionBlock().getEpoch(),
+                            attitude.getDate());
+        Assert.assertEquals(8.63363e-2, attitude.getSpin().getNorm(), 1.0e-7);
+
     }
 
     @Test
@@ -483,6 +488,83 @@ public class APMParserTest {
         Assert.assertEquals(0.02156, FastMath.toDegrees(segment.getData().getEulerBlock().getRotationRates()[0]), ANGLE_PRECISION);
         Assert.assertEquals(0.1045,  FastMath.toDegrees(segment.getData().getEulerBlock().getRotationRates()[1]), ANGLE_PRECISION);
         Assert.assertEquals(0.03214, FastMath.toDegrees(segment.getData().getEulerBlock().getRotationRates()[2]), ANGLE_PRECISION);
+
+        Attitude attitude = file.getAttitude(null, null);
+        Assert.assertEquals(segment.getData().getQuaternionBlock().getEpoch(),
+                            attitude.getDate());
+        Assert.assertEquals(1.9449e-3, attitude.getSpin().getNorm(), 1.0e-7);
+
+    }
+
+    @Test
+    public void testParseAPM6() {
+
+        // File
+        final String ex = "/ccsds/adm/apm/APMExample6.txt";
+
+        // Initialize the parser
+        final ApmParser parser = new ParserBuilder().buildApmParser();
+
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+
+        // Generated APM file
+        final ApmFile file = parser.parseMessage(source);
+
+        // Verify general data
+        Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
+        Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
+
+        // Check Header Block
+        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assert.assertEquals(new AbsoluteDate(2004, 2, 14, 19, 23, 57,
+                                             TimeScalesFactory.getUTC()),
+                            file.getHeader().getCreationDate());
+        Assert.assertEquals("GSFC", file.getHeader().getOriginator());
+
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+
+        // Check Metadata Block
+        Assert.assertEquals("TRMM",       segment.getMetadata().getObjectName());
+        Assert.assertEquals("1997-009A",  segment.getMetadata().getObjectID());
+        Assert.assertEquals(1997,         segment.getMetadata().getLaunchYear());
+        Assert.assertEquals(9,            segment.getMetadata().getLaunchNumber());
+        Assert.assertEquals("A",          segment.getMetadata().getLaunchPiece());
+        Assert.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
+        Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
+        Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
+        Assert.assertEquals("UTC",        segment.getMetadata().getTimeSystem().name());
+
+        // Check data block
+        Assert.assertFalse(segment.getData().hasManeuvers());
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
+                            segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(CelestialBodyFrame.ITRF1997, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
+        Assert.assertTrue(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
+        Assert.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, 15.1172,
+                                             TimeScalesFactory.getUTC()),
+                            segment.getData().getQuaternionBlock().getEpoch());
+        Assert.assertEquals(0.47832, segment.getData().getQuaternionBlock().getQuaternion().getQ0(), QUATERNION_PRECISION);
+        Assert.assertEquals(0.03123, segment.getData().getQuaternionBlock().getQuaternion().getQ1(), QUATERNION_PRECISION);
+        Assert.assertEquals(0.78543, segment.getData().getQuaternionBlock().getQuaternion().getQ2(), QUATERNION_PRECISION);
+        Assert.assertEquals(0.39158, segment.getData().getQuaternionBlock().getQuaternion().getQ3(), QUATERNION_PRECISION);
+        Assert.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ0()));
+        Assert.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
+        Assert.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ2()));
+        Assert.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ3()));
+
+        Assert.assertEquals(RotationOrder.ZXY, segment.getData().getEulerBlock().getEulerRotSeq());
+        Assert.assertEquals(0.02156, FastMath.toDegrees(segment.getData().getEulerBlock().getRotationAngles()[0]), ANGLE_PRECISION);
+        Assert.assertEquals(0.1045,  FastMath.toDegrees(segment.getData().getEulerBlock().getRotationAngles()[1]), ANGLE_PRECISION);
+        Assert.assertEquals(0.03214, FastMath.toDegrees(segment.getData().getEulerBlock().getRotationAngles()[2]), ANGLE_PRECISION);
+        Assert.assertTrue(Double.isNaN(segment.getData().getEulerBlock().getRotationRates()[0]));
+        Assert.assertTrue(Double.isNaN(segment.getData().getEulerBlock().getRotationRates()[1]));
+        Assert.assertTrue(Double.isNaN(segment.getData().getEulerBlock().getRotationRates()[2]));
+
+        Attitude attitude = file.getAttitude(null, null);
+        Assert.assertEquals(segment.getData().getQuaternionBlock().getEpoch(),
+                            attitude.getDate());
+        Assert.assertEquals(0.0, attitude.getSpin().getNorm(), 1.0e-15);
 
     }
 
