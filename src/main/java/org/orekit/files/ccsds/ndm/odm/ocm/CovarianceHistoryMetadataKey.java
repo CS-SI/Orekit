@@ -34,22 +34,22 @@ public enum CovarianceHistoryMetadataKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Covariance identification number. */
-    COV_ID((token, context, container) -> token.processAsUppercaseString(container::setCovID)),
+    COV_ID((token, context, container) -> token.processAsNormalizedString(container::setCovID)),
 
     /** Identification number of previous covariance. */
-    COV_PREV_ID((token, context, container) -> token.processAsUppercaseString(container::setCovPrevID)),
+    COV_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setCovPrevID)),
 
     /** Identification number of next covariance. */
-    COV_NEXT_ID((token, context, container) -> token.processAsUppercaseString(container::setCovNextID)),
+    COV_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setCovNextID)),
 
     /** Basis of this covariance time history data. */
-    COV_BASIS((token, context, container) -> token.processAsUppercaseString(container::setCovBasis)),
+    COV_BASIS((token, context, container) -> token.processAsNormalizedString(container::setCovBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this covariance is based.*/
-    COV_BASIS_ID((token, context, container) -> token.processAsUppercaseString(container::setCovBasisID)),
+    COV_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setCovBasisID)),
 
     /** Reference frame of the covariance. */
-    COV_REF_FRAME((token, context, container) -> token.processAsFrame(container::setCovReferenceFrame, context, true, false, false)),
+    COV_REF_FRAME((token, context, container) -> token.processAsFrame(container::setCovReferenceFrame, context, true, true, false)),
 
     /** Epoch of the {@link #COV_REF_FRAME covariance reference frame}. */
     COV_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setCovFrameEpoch, context)),

@@ -70,7 +70,7 @@ class KvnLexicalAnalyzer implements LexicalAnalyzer {
     private static final String UNITS_FRACTIONS    = "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞";
 
     /** Symbols allowed in units specifications. */
-    private static final String UNITS_SYMBOLS      = "%°◦′'″\\\"";
+    private static final String UNITS_SYMBOLS      = "%°◦′'″\\\"#";
 
     /** Parentheses allowed in units specifications. */
     private static final String UNITS_PARENTHESES  = "()";

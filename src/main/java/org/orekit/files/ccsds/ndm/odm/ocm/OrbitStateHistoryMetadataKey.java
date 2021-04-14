@@ -34,19 +34,19 @@ public enum OrbitStateHistoryMetadataKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Orbit identification number. */
-    ORB_ID((token, context, container) -> token.processAsUppercaseString(container::setOrbID)),
+    ORB_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbID)),
 
     /** Identification number of previous orbit. */
-    ORB_PREV_ID((token, context, container) -> token.processAsUppercaseString(container::setOrbPrevID)),
+    ORB_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbPrevID)),
 
     /** Identification number of next orbit. */
-    ORB_NEXT_ID((token, context, container) -> token.processAsUppercaseString(container::setOrbNextID)),
+    ORB_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbNextID)),
 
     /** Basis of this orbit state time history data. */
-    ORB_BASIS((token, context, container) -> token.processAsUppercaseString(container::setOrbBasis)),
+    ORB_BASIS((token, context, container) -> token.processAsNormalizedString(container::setOrbBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this orbit is based.*/
-    ORB_BASIS_ID((token, context, container) -> token.processAsUppercaseString(container::setOrbBasisID)),
+    ORB_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbBasisID)),
 
     /** Interpolation method to be used. */
     INTERPOLATION((token, context, container) -> token.processAsEnum(InterpolationMethod.class, container::setInterpolationMethod)),

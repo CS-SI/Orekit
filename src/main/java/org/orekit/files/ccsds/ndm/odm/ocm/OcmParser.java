@@ -418,6 +418,10 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
             userDefinedBlock = null;
         }
+        if (perturbationsBlock != null) {
+            // this may be Double.NaN, but it will be handled correctly
+            setMuParsed(perturbationsBlock.getGm());
+        }
         final OcmData data = new OcmData(orbitBlocks, physicBlock, covarianceBlocks,
                                          maneuverBlocks, perturbationsBlock,
                                          orbitDeterminationBlock, userDefinedBlock);

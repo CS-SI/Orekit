@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,15 +35,19 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.CenterName;
+import org.orekit.files.ccsds.definitions.DutyCycleType;
 import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.OdMethodType;
 import org.orekit.files.ccsds.definitions.OnOff;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
+import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.time.AbsoluteDate;
@@ -317,6 +323,9 @@ public class OcmParserTest {
         Assert.assertEquals(   -2884.52, states.get(3).getElements()[4], 1.0e-15);
         Assert.assertEquals(     885.35, states.get(3).getElements()[5], 1.0e-15);
 
+        Assert.assertEquals(1, file.getSatellites().size());
+        Assert.assertEquals("UNKNOWN", file.getSatellites().entrySet().iterator().next().getKey());
+
     }
 
     @Test
@@ -432,6 +441,9 @@ public class OcmParserTest {
         Assert.assertEquals(1, user.getParameters().size());
         Assert.assertEquals("MAXWELL RAFERTY", user.getParameters().get("CONSOLE_POC"));
 
+        Assert.assertEquals(1, file.getSatellites().size());
+        Assert.assertEquals("OSPREY 5", file.getSatellites().entrySet().iterator().next().getKey());
+
     }
 
     @Test
@@ -482,7 +494,8 @@ public class OcmParserTest {
         Assert.assertEquals("OCM 201113719185", file.getHeader().getMessageId());
 
         // Check metadata
-        Assert.assertEquals("OSPREY 5",                            file.getMetadata().getObjectName());
+        Assert.assertNull(file.getMetadata().getObjectName());
+        Assert.assertNull(file.getMetadata().getObjectDesignator());
         Assert.assertEquals("1998-999A",                           file.getMetadata().getInternationalDesignator());
         Assert.assertEquals("R. Rabbit",                           file.getMetadata().getOriginatorPOC());
         Assert.assertEquals("Flight Dynamics Mission Design Lead", file.getMetadata().getOriginatorPosition());
@@ -572,6 +585,8 @@ public class OcmParserTest {
         Assert.assertEquals(1, user.getParameters().size());
         Assert.assertEquals("WGS-84", user.getParameters().get("EARTH_MODEL"));
 
+        Assert.assertEquals(1, file.getSatellites().size());
+        Assert.assertEquals("1998-999A", file.getSatellites().entrySet().iterator().next().getKey());
     }
 
     @Test
@@ -665,10 +680,10 @@ public class OcmParserTest {
         Assert.assertEquals(1, phys.getComments().size());
         Assert.assertEquals("S/C Physical Characteristics:", phys.getComments().get(0));
         Assert.assertEquals(10.0,    phys.getDragConstantArea(),         1.0e-10);
-        Assert.assertEquals(2.3,     phys.getNominalDragCoefficient(),   1.0e-10);
+        Assert.assertEquals(2.3,     phys.getDragCoefficient(),   1.0e-10);
         Assert.assertEquals(100.0,   phys.getWetMass(),                  1.0e-10);
         Assert.assertEquals(4.0,     phys.getSrpConstantArea(),          1.0e-10);
-        Assert.assertEquals(1.3,     phys.getNominalSrpCoefficient(),    1.0e-10);
+        Assert.assertEquals(1.3,     phys.getSrpCoefficient(),    1.0e-10);
 
         // check no covariance
         Assert.assertNull(file.getData().getCovarianceBlocks());
@@ -799,7 +814,7 @@ public class OcmParserTest {
         final String   name  = "/ccsds/odm/ocm/OCMExample4.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final OcmFile file = new ParserBuilder().
-                             withMu(Constants.EIGEN5C_EARTH_MU).
+                             withMu(Constants.IERS2003_EARTH_MU).
                              buildOcmParser().
                              parseMessage(source);
 
@@ -818,7 +833,7 @@ public class OcmParserTest {
         Assert.assertEquals(1,                                     file.getMetadata().getComments().size());
         Assert.assertEquals("Metadata comment",                    file.getMetadata().getComments().get(0));
         Assert.assertEquals("FOUO",                                file.getMetadata().getClassification());
-        Assert.assertEquals("UNKNOWN",                             file.getMetadata().getObjectName());
+        Assert.assertEquals("POLYSAT",                             file.getMetadata().getObjectName());
         Assert.assertEquals(3,                                     file.getMetadata().getAlternateNames().size());
         Assert.assertEquals("ALTERNATE",                           file.getMetadata().getAlternateNames().get(0));
         Assert.assertEquals("OTHER",                               file.getMetadata().getAlternateNames().get(1));
@@ -856,8 +871,8 @@ public class OcmParserTest {
         Assert.assertEquals("OD",                                  file.getMetadata().getOcmDataElements().get(5));
         Assert.assertEquals("USER",                                file.getMetadata().getOcmDataElements().get(6));
         Assert.assertEquals("UTC",                                 file.getMetadata().getTimeSystem().name());
-        Assert.assertEquals(new AbsoluteDate(2019, 7, 23,  0, 0, 0.0, TimeScalesFactory.getUTC()),
-                            file.getMetadata().getEpochT0());
+        final AbsoluteDate epoch = file.getMetadata().getEpochT0();
+        Assert.assertEquals(new AbsoluteDate(2019, 7, 23,  0, 0, 0.0, TimeScalesFactory.getUTC()), epoch);
         Assert.assertEquals(28800.0, file.getMetadata().getSclkOffsetAtEpoch(), 1.0e-10);
         Assert.assertEquals(2.5,                                   file.getMetadata().getSclkSecPerSISec(), 1.0e-15);
         Assert.assertEquals(new AbsoluteDate(2019, 7, 23,  9, 29, 31.576, TimeScalesFactory.getUTC()),
@@ -875,15 +890,416 @@ public class OcmParserTest {
         Assert.assertEquals("LAGRANGE ORDER 5",                    file.getMetadata().getInterpMethodEOP());
         Assert.assertEquals("JPL DE 430",                          file.getMetadata().getCelestialSource());
 
-        // TODO test orbit data
+        // check orbit data
+        Assert.assertEquals(2, file.getData().getOrbitBlocks().size());
+        OrbitStateHistory osh0 = file.getData().getOrbitBlocks().get(0);
+        Assert.assertEquals("this is number 1 ORB comment", osh0.getMetadata().getComments().get(0));
+        Assert.assertEquals("orbit 1",       osh0.getMetadata().getOrbID());
+        Assert.assertEquals("orbit 0",       osh0.getMetadata().getOrbPrevID());
+        Assert.assertEquals("orbit 2",       osh0.getMetadata().getOrbNextID());
+        Assert.assertEquals("DETERMINED OD", osh0.getMetadata().getOrbBasis());
+        Assert.assertEquals("OD 17",         osh0.getMetadata().getOrbBasisID());
+        Assert.assertEquals(InterpolationMethod.HERMITE, osh0.getMetadata().getInterpolationMethod());
+        Assert.assertEquals(3, osh0.getMetadata().getInterpolationDegree());
+        Assert.assertEquals("ECKSTEIN HECHLER", osh0.getMetadata().getOrbAveraging());
+        Assert.assertEquals(CenterName.EARTH.name(), osh0.getMetadata().getCenter().getName());
+        Assert.assertEquals(CelestialBodyFrame.TOD, osh0.getMetadata().getOrbReferenceFrame().asCelestialBodyFrame());
+        Assert.assertEquals(    0.0,   osh0.getMetadata().getOrbFrameEpoch().durationFrom(epoch),    1.0e-12);
+        Assert.assertEquals(34200.0,   osh0.getMetadata().getUseableStartTime().durationFrom(epoch), 1.0e-12);
+        Assert.assertEquals(35999.999, osh0.getMetadata().getUseableStopTime().durationFrom(epoch),  1.0e-12);
+        Assert.assertEquals(ElementsType.CARTPVA, osh0.getMetadata().getOrbType());
+        Assert.assertEquals(9, osh0.getMetadata().getOrbUnits().size());
+        Assert.assertEquals(Unit.KILOMETRE,  osh0.getMetadata().getOrbUnits().get(0));
+        Assert.assertEquals(Unit.KILOMETRE,  osh0.getMetadata().getOrbUnits().get(1));
+        Assert.assertEquals(Unit.KILOMETRE,  osh0.getMetadata().getOrbUnits().get(2));
+        Assert.assertEquals(Units.KM_PER_S,  osh0.getMetadata().getOrbUnits().get(3));
+        Assert.assertEquals(Units.KM_PER_S,  osh0.getMetadata().getOrbUnits().get(4));
+        Assert.assertEquals(Units.KM_PER_S,  osh0.getMetadata().getOrbUnits().get(5));
+        Assert.assertEquals(Units.KM_PER_S2, osh0.getMetadata().getOrbUnits().get(6));
+        Assert.assertEquals(Units.KM_PER_S2, osh0.getMetadata().getOrbUnits().get(7));
+        Assert.assertEquals(Units.KM_PER_S2, osh0.getMetadata().getOrbUnits().get(8));
+        Assert.assertEquals(3, osh0.getCoordinates().size());
+        Assert.assertEquals(   0.0, osh0.getCoordinates().get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals( 1.0e6, osh0.getCoordinates().get(0).getPosition().getX(), 1.0e-10);
+        Assert.assertEquals( 300.0, osh0.getCoordinates().get(1).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals( 3.0e3, osh0.getCoordinates().get(1).getVelocity().getY(), 1.0e-10);
+        Assert.assertEquals( 600.0, osh0.getCoordinates().get(2).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(  -6.0, osh0.getCoordinates().get(2).getAcceleration().getZ(), 1.0e-10);
+        OrbitStateHistory osh1 = file.getData().getOrbitBlocks().get(1);
+        Assert.assertEquals("this is number 2 ORB comment", osh1.getMetadata().getComments().get(0));
+        Assert.assertEquals("orbit 2",    osh1.getMetadata().getOrbID());
+        Assert.assertEquals("orbit 1",    osh1.getMetadata().getOrbPrevID());
+        Assert.assertEquals("orbit 3",    osh1.getMetadata().getOrbNextID());
+        Assert.assertEquals("PREDICTED",  osh1.getMetadata().getOrbBasis());
+        Assert.assertEquals("SIMULATION", osh1.getMetadata().getOrbBasisID());
+        Assert.assertEquals(3, osh1.getCoordinates().size());
+        Assert.assertEquals(1800.0, osh1.getCoordinates().get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(2100.0, osh1.getCoordinates().get(1).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(2400.0, osh1.getCoordinates().get(2).getDate().durationFrom(epoch), 1.0e-10);
 
-        // TODO test physical data
+        // check physical data
+        PhysicalProperties phys = file.getData().getPhysicBlock();
+        Assert.assertEquals("this is PHYS comment", phys.getComments().get(0));
+        Assert.assertEquals("AIRBUS",   phys.getManufacturer());
+        Assert.assertEquals("EUROSTAR", phys.getBusModel());
+        Assert.assertEquals(3,          phys.getDockedWith().size());
+        Assert.assertEquals("A1",       phys.getDockedWith().get(0));
+        Assert.assertEquals("A2",       phys.getDockedWith().get(1));
+        Assert.assertEquals("A3",       phys.getDockedWith().get(2));
+        Assert.assertEquals(5.0,        phys.getDragConstantArea(),               1.0e-10);
+        Assert.assertEquals(2.1,        phys.getDragCoefficient(),                1.0e-10);
+        Assert.assertEquals(0.1,        phys.getDragUncertainty(),                1.0e-10);
+        Assert.assertEquals(700.0,      phys.getInitialWetMass(),                 1.0e-10);
+        Assert.assertEquals(600.0,      phys.getWetMass(),                        1.0e-10);
+        Assert.assertEquals(500.0,      phys.getDryMass(),                        1.0e-10);
+        Assert.assertEquals(OrbitRelativeFrame.RSW_ROTATING, phys.getOebParentFrame().asOrbitRelativeFrame());
+        Assert.assertEquals(32400.0,    phys.getOebParentFrameEpoch().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(0.64,       phys.getOebQ().getQ1(),                   1.0e-10);
+        Assert.assertEquals(0.48,       phys.getOebQ().getQ2(),                   1.0e-10);
+        Assert.assertEquals(0.48,       phys.getOebQ().getQ3(),                   1.0e-10);
+        Assert.assertEquals(0.36,       phys.getOebQ().getQ0(),                   1.0e-10);
+        Assert.assertEquals(3.0,        phys.getOebMax(),                         1.0e-10);
+        Assert.assertEquals(2.0,        phys.getOebIntermediate(),                1.0e-10);
+        Assert.assertEquals(1.0,        phys.getOebMin(),                         1.0e-10);
+        Assert.assertEquals(2.2,        phys.getOebAreaAlongMax(),                1.0e-10);
+        Assert.assertEquals(3.2,        phys.getOebAreaAlongIntermediate(),       1.0e-10);
+        Assert.assertEquals(6.2,        phys.getOebAreaAlongMin(),                1.0e-10);
+        Assert.assertEquals(4.3,        phys.getMinAreaForCollisionProbability(), 1.0e-10);
+        Assert.assertEquals(6.3,        phys.getMaxAreaForCollisionProbability(), 1.0e-10);
+        Assert.assertEquals(5.3,        phys.getTypAreaForCollisionProbability(), 1.0e-10);
+        Assert.assertEquals(2.4,        phys.getRcs(),                            1.0e-10);
+        Assert.assertEquals(1.4,        phys.getMinRcs(),                         1.0e-10);
+        Assert.assertEquals(3.4,        phys.getMaxRcs(),                         1.0e-10);
+        Assert.assertEquals(3.5,        phys.getSrpConstantArea(),                1.0e-10);
+        Assert.assertEquals(1.7,        phys.getSrpCoefficient(),                 1.0e-10);
+        Assert.assertEquals(0.2,        phys.getSrpUncertainty(),                 1.0e-10);
+        Assert.assertEquals(15.0,       phys.getVmAbsolute(),                     1.0e-10);
+        Assert.assertEquals(19.0,       phys.getVmApparentMin(),                  1.0e-10);
+        Assert.assertEquals(15.4,       phys.getVmApparent(),                     1.0e-10);
+        Assert.assertEquals(14.0,       phys.getVmApparentMax(),                  1.0e-10);
+        Assert.assertEquals(0.7,        phys.getReflectivity(),                   1.0e-10);
+        Assert.assertEquals("THREE AXIS",      phys.getAttitudeControlMode());
+        Assert.assertEquals("REACTION WHEELS", phys.getAttitudeActuatorType());
+        Assert.assertEquals(0.3, FastMath.toDegrees(phys.getAttitudeKnowledgeAccuracy()), 1.0e-10);
+        Assert.assertEquals(2.0, FastMath.toDegrees(phys.getAttitudeControlAccuracy()),   1.0e-10);
+        Assert.assertEquals(2.3, FastMath.toDegrees(phys.getAttitudePointingAccuracy()),  1.0e-10);
+        Assert.assertEquals(20.0,       phys.getManeuversPerYear(),             1.0e-10);
+        Assert.assertEquals(6.8,        phys.getMaxThrust(),                    1.0e-10);
+        Assert.assertEquals(1900.0,     phys.getBolDv(),                        1.0e-10);
+        Assert.assertEquals(200.0,      phys.getRemainingDv(),                  1.0e-10);
+        Assert.assertEquals(1000.0,     phys.getInertiaMatrix().getEntry(0, 0), 1.0e-10);
+        Assert.assertEquals( 800.0,     phys.getInertiaMatrix().getEntry(1, 1), 1.0e-10);
+        Assert.assertEquals( 400.0,     phys.getInertiaMatrix().getEntry(2, 2), 1.0e-10);
+        Assert.assertEquals(  20.0,     phys.getInertiaMatrix().getEntry(0, 1), 1.0e-10);
+        Assert.assertEquals(  20.0,     phys.getInertiaMatrix().getEntry(1, 0), 1.0e-10);
+        Assert.assertEquals(  40.0,     phys.getInertiaMatrix().getEntry(0, 2), 1.0e-10);
+        Assert.assertEquals(  40.0,     phys.getInertiaMatrix().getEntry(2, 0), 1.0e-10);
+        Assert.assertEquals(  60.0,     phys.getInertiaMatrix().getEntry(1, 2), 1.0e-10);
+        Assert.assertEquals(  60.0,     phys.getInertiaMatrix().getEntry(2, 1), 1.0e-10);
 
-        // TODO test perturbation data
+        // check covariance data
+        Assert.assertEquals(2, file.getData().getCovarianceBlocks().size());
+        CovarianceHistory ch0 = file.getData().getCovarianceBlocks().get(0);
+        Assert.assertEquals("this is number 1 COV comment", ch0.getMetadata().getComments().get(0));
+        Assert.assertEquals("covariance 1", ch0.getMetadata().getCovID());
+        Assert.assertEquals("covariance 0", ch0.getMetadata().getCovPrevID());
+        Assert.assertEquals("covariance 2", ch0.getMetadata().getCovNextID());
+        Assert.assertEquals("EMPIRICAL",    ch0.getMetadata().getCovBasis());
+        Assert.assertEquals("basis 1",      ch0.getMetadata().getCovBasisID());
+        Assert.assertEquals(OrbitRelativeFrame.TNW_INERTIAL, ch0.getMetadata().getCovReferenceFrame().asOrbitRelativeFrame());
+        Assert.assertEquals(33000.0,        ch0.getMetadata().getCovFrameEpoch().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(0.5,            ch0.getMetadata().getCovScaleMin(),   1.0e-10);
+        Assert.assertEquals(5.0,            ch0.getMetadata().getCovScaleMax(),   1.0e-10);
+        Assert.assertEquals(0.25,           ch0.getMetadata().getCovConfidence(), 1.0e-10);
+        Assert.assertEquals(ElementsType.CARTPV, ch0.getMetadata().getCovType());
+        Assert.assertEquals(6, ch0.getMetadata().getCovUnits().size());
+        Assert.assertEquals(Unit.KILOMETRE,  ch0.getMetadata().getCovUnits().get(0));
+        Assert.assertEquals(Unit.KILOMETRE,  ch0.getMetadata().getCovUnits().get(1));
+        Assert.assertEquals(Unit.KILOMETRE,  ch0.getMetadata().getCovUnits().get(2));
+        Assert.assertEquals(Units.KM_PER_S,  ch0.getMetadata().getCovUnits().get(3));
+        Assert.assertEquals(Units.KM_PER_S,  ch0.getMetadata().getCovUnits().get(4));
+        Assert.assertEquals(Units.KM_PER_S,  ch0.getMetadata().getCovUnits().get(5));
+        Assert.assertEquals(3, ch0.getCovariances().size());
+        Assert.assertEquals(   0.0,  ch0.getCovariances().get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(1.1e6,   ch0.getCovariances().get(0).getMatrix().getEntry(0, 0),    1.0e-10);
+        Assert.assertEquals( 300.0,  ch0.getCovariances().get(1).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(13.2e6,  ch0.getCovariances().get(1).getMatrix().getEntry(2, 1),    1.0e-10);
+        Assert.assertEquals( 600.0,  ch0.getCovariances().get(2).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(26.5e6,  ch0.getCovariances().get(2).getMatrix().getEntry(4, 5),   1.0e-10);
+        CovarianceHistory ch1 = file.getData().getCovarianceBlocks().get(1);
+        Assert.assertEquals("this is number 2 COV comment", ch1.getMetadata().getComments().get(0));
+        Assert.assertEquals("covariance 2", ch1.getMetadata().getCovID());
+        Assert.assertEquals("covariance 1", ch1.getMetadata().getCovPrevID());
+        Assert.assertEquals("covariance 3", ch1.getMetadata().getCovNextID());
+        Assert.assertEquals("SIMULATED",    ch1.getMetadata().getCovBasis());
+        Assert.assertEquals("basis 2",      ch1.getMetadata().getCovBasisID());
+        Assert.assertEquals(3, ch1.getCovariances().size());
+        Assert.assertEquals(1800.0,   ch1.getCovariances().get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(2100.0,   ch1.getCovariances().get(1).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(2400.0,   ch1.getCovariances().get(2).getDate().durationFrom(epoch), 1.0e-10);
 
-        // test user data
+        // check maneuver data
+        Assert.assertEquals(3, file.getData().getManeuverBlocks().size());
+        ManeuverHistory m0 = file.getData().getManeuverBlocks().get(0);
+        Assert.assertEquals("this is number 1 MAN comment",  m0.getMetadata().getComments().get(0));
+        Assert.assertEquals("maneuver 1",                    m0.getMetadata().getManID());
+        Assert.assertEquals("maneuver 0",                    m0.getMetadata().getManPrevID());
+        Assert.assertEquals("maneuver 2",                    m0.getMetadata().getManNextID());
+        Assert.assertEquals(ManBasis.DETERMINED_TLM,         m0.getMetadata().getManBasis());
+        Assert.assertEquals("TLM 203",                       m0.getMetadata().getManBasisID());
+        Assert.assertEquals("THR 02",                        m0.getMetadata().getManDeviceID());
+        Assert.assertEquals(-100.0,                          m0.getMetadata().getManPrevEpoch().durationFrom(epoch), 1.0-10);
+        Assert.assertEquals(+100.0,                          m0.getMetadata().getManNextEpoch().durationFrom(epoch), 1.0-10);
+        Assert.assertEquals("ORBIT",                         m0.getMetadata().getManPurpose().get(0));
+        Assert.assertEquals("OD 5",                          m0.getMetadata().getManPredSource());
+        Assert.assertEquals(OrbitRelativeFrame.TNW_INERTIAL, m0.getMetadata().getManReferenceFrame().asOrbitRelativeFrame());
+        Assert.assertEquals(2.3,                             m0.getMetadata().getManFrameEpoch().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals("MOON",                          m0.getMetadata().getGravitationalAssist().getName());
+        Assert.assertEquals(DutyCycleType.TIME,              m0.getMetadata().getDcType());
+        Assert.assertEquals(2.0,                             m0.getMetadata().getDcWindowOpen().durationFrom(epoch),  1.0e-10);
+        Assert.assertEquals(100.0,                           m0.getMetadata().getDcWindowClose().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals( 5,                              m0.getMetadata().getDcMinCycles());
+        Assert.assertEquals(30,                              m0.getMetadata().getDcMaxCycles());
+        Assert.assertEquals( 5.0,                            m0.getMetadata().getDcExecStart().durationFrom(epoch),   1.0e-10);
+        Assert.assertEquals(95.0,                            m0.getMetadata().getDcExecStop().durationFrom(epoch),    1.0e-10);
+        Assert.assertEquals(8000.0,                          m0.getMetadata().getDcRefTime().durationFrom(epoch),     1.0e-10);
+        Assert.assertEquals( 10.0,                           m0.getMetadata().getDcTimePulseDuration(),               1.0e-10);
+        Assert.assertEquals(200.0,                           m0.getMetadata().getDcTimePulsePeriod(),                 1.0e-10);
+        Assert.assertEquals(20,                              m0.getMetadata().getManComposition().size());
+        Assert.assertEquals(ManeuverFieldType.TIME_ABSOLUTE, m0.getMetadata().getManComposition().get( 0));
+        Assert.assertEquals(ManeuverFieldType.TIME_RELATIVE, m0.getMetadata().getManComposition().get( 1));
+        Assert.assertEquals(ManeuverFieldType.MAN_DURA,      m0.getMetadata().getManComposition().get( 2));
+        Assert.assertEquals(ManeuverFieldType.DELTA_MASS,    m0.getMetadata().getManComposition().get( 3));
+        Assert.assertEquals(ManeuverFieldType.ACC_X,         m0.getMetadata().getManComposition().get( 4));
+        Assert.assertEquals(ManeuverFieldType.ACC_Y,         m0.getMetadata().getManComposition().get( 5));
+        Assert.assertEquals(ManeuverFieldType.ACC_Z,         m0.getMetadata().getManComposition().get( 6));
+        Assert.assertEquals(ManeuverFieldType.ACC_INTERP,    m0.getMetadata().getManComposition().get( 7));
+        Assert.assertEquals(ManeuverFieldType.ACC_SIGMA,     m0.getMetadata().getManComposition().get( 8));
+        Assert.assertEquals(ManeuverFieldType.DV_X,          m0.getMetadata().getManComposition().get( 9));
+        Assert.assertEquals(ManeuverFieldType.DV_Y,          m0.getMetadata().getManComposition().get(10));
+        Assert.assertEquals(ManeuverFieldType.DV_Z,          m0.getMetadata().getManComposition().get(11));
+        Assert.assertEquals(ManeuverFieldType.DV_SIGMA,      m0.getMetadata().getManComposition().get(12));
+        Assert.assertEquals(ManeuverFieldType.THR_X,         m0.getMetadata().getManComposition().get(13));
+        Assert.assertEquals(ManeuverFieldType.THR_Y,         m0.getMetadata().getManComposition().get(14));
+        Assert.assertEquals(ManeuverFieldType.THR_Z,         m0.getMetadata().getManComposition().get(15));
+        Assert.assertEquals(ManeuverFieldType.THR_EFFIC,     m0.getMetadata().getManComposition().get(16));
+        Assert.assertEquals(ManeuverFieldType.THR_INTERP,    m0.getMetadata().getManComposition().get(17));
+        Assert.assertEquals(ManeuverFieldType.THR_ISP,       m0.getMetadata().getManComposition().get(18));
+        Assert.assertEquals(ManeuverFieldType.THR_SIGMA,     m0.getMetadata().getManComposition().get(19));
+        Assert.assertEquals(m0.getMetadata().getManComposition().size() - 2, m0.getMetadata().getManUnits().size());
+        for (int i = 0; i < m0.getMetadata().getManUnits().size(); ++i) {
+            ManeuverFieldType type = m0.getMetadata().getManComposition().get(i + 2);
+            Unit              unit = m0.getMetadata().getManUnits().get(i);
+            Assert.assertEquals(type.getUnit(), unit);
+        }
+        Assert.assertEquals(2, m0.getManeuvers().size());
+        Assert.assertEquals(   0.0,   m0.getManeuvers().get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals( 200.0,   m0.getManeuvers().get(0).getDuration(),                 1.0e-10);
+        Assert.assertEquals(OnOff.ON, m0.getManeuvers().get(0).getAccelerationInterpolation());
+        Assert.assertEquals( 600.0,   m0.getManeuvers().get(1).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(  -5.0,   m0.getManeuvers().get(1).getDeltaMass(),                1.0e-10);
+
+        ManeuverHistory m1 = file.getData().getManeuverBlocks().get(1);
+        Assert.assertEquals("this is number 2 MAN comment",  m1.getMetadata().getComments().get(0));
+        Assert.assertEquals("maneuver 2",                    m1.getMetadata().getManID());
+        Assert.assertEquals("maneuver 1",                    m1.getMetadata().getManPrevID());
+        Assert.assertEquals("maneuver 3",                    m1.getMetadata().getManNextID());
+        Assert.assertEquals(ManBasis.PLANNED,                m1.getMetadata().getManBasis());
+        Assert.assertEquals("analysis 17",                   m1.getMetadata().getManBasisID());
+        Assert.assertEquals("THR 07",                        m1.getMetadata().getManDeviceID());
+        Assert.assertEquals( 200.0,                          m1.getMetadata().getManPrevEpoch().durationFrom(epoch), 1.0-10);
+        Assert.assertEquals( 300.0,                          m1.getMetadata().getManNextEpoch().durationFrom(epoch), 1.0-10);
+        Assert.assertEquals("PERIOD",                        m1.getMetadata().getManPurpose().get(0));
+        Assert.assertEquals("OD 5",                          m1.getMetadata().getManPredSource());
+        Assert.assertEquals(OrbitRelativeFrame.TNW_INERTIAL, m1.getMetadata().getManReferenceFrame().asOrbitRelativeFrame());
+        Assert.assertEquals(2.3,                             m1.getMetadata().getManFrameEpoch().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals("EARTH",                         m1.getMetadata().getGravitationalAssist().getName());
+        Assert.assertEquals(DutyCycleType.TIME_AND_ANGLE,    m1.getMetadata().getDcType());
+        Assert.assertEquals(1002.0,                          m1.getMetadata().getDcWindowOpen().durationFrom(epoch),  1.0e-10);
+        Assert.assertEquals(1100.0,                          m1.getMetadata().getDcWindowClose().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(14,                              m1.getMetadata().getDcMinCycles());
+        Assert.assertEquals(60,                              m1.getMetadata().getDcMaxCycles());
+        Assert.assertEquals(1005.0,                          m1.getMetadata().getDcExecStart().durationFrom(epoch),   1.0e-10);
+        Assert.assertEquals(1095.0,                          m1.getMetadata().getDcExecStop().durationFrom(epoch),    1.0e-10);
+        Assert.assertEquals(12000.0,                         m1.getMetadata().getDcRefTime().durationFrom(epoch),     1.0e-10);
+        Assert.assertEquals( 20.0,                           m1.getMetadata().getDcTimePulseDuration(),               1.0e-10);
+        Assert.assertEquals(400.0,                           m1.getMetadata().getDcTimePulsePeriod(),                 1.0e-10);
+        Assert.assertEquals(19,                              m1.getMetadata().getManComposition().size());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(m1.getMetadata().getDcRefDir(),
+                                              Vector3D.PLUS_I),
+                            1.0e-10);
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SENSOR, m1.getMetadata().getDcBodyFrame().getBaseEquipment());
+        Assert.assertEquals("3",                             m1.getMetadata().getDcBodyFrame().getLabel());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(m1.getMetadata().getDcBodyTrigger(),
+                                              new Vector3D(0.707, 0.0, 0.707)),
+                            1.0e-10);
+        Assert.assertEquals(25.0, FastMath.toDegrees(m1.getMetadata().getDcPhaseStartAngle()), 1.0e-10);
+        Assert.assertEquals(35.0, FastMath.toDegrees(m1.getMetadata().getDcPhaseStopAngle()),  1.0e-10);
+        Assert.assertEquals(19,                              m1.getMetadata().getManComposition().size());
+        Assert.assertEquals(ManeuverFieldType.TIME_RELATIVE, m1.getMetadata().getManComposition().get( 0));
+        Assert.assertEquals(ManeuverFieldType.MAN_DURA,      m1.getMetadata().getManComposition().get( 1));
+        Assert.assertEquals(ManeuverFieldType.DELTA_MASS,    m1.getMetadata().getManComposition().get( 2));
+        Assert.assertEquals(ManeuverFieldType.ACC_X,         m1.getMetadata().getManComposition().get( 3));
+        Assert.assertEquals(ManeuverFieldType.ACC_Y,         m1.getMetadata().getManComposition().get( 4));
+        Assert.assertEquals(ManeuverFieldType.ACC_Z,         m1.getMetadata().getManComposition().get( 5));
+        Assert.assertEquals(ManeuverFieldType.ACC_INTERP,    m1.getMetadata().getManComposition().get( 6));
+        Assert.assertEquals(ManeuverFieldType.ACC_SIGMA,     m1.getMetadata().getManComposition().get( 7));
+        Assert.assertEquals(ManeuverFieldType.DV_X,          m1.getMetadata().getManComposition().get( 8));
+        Assert.assertEquals(ManeuverFieldType.DV_Y,          m1.getMetadata().getManComposition().get( 9));
+        Assert.assertEquals(ManeuverFieldType.DV_Z,          m1.getMetadata().getManComposition().get(10));
+        Assert.assertEquals(ManeuverFieldType.DV_SIGMA,      m1.getMetadata().getManComposition().get(11));
+        Assert.assertEquals(ManeuverFieldType.THR_X,         m1.getMetadata().getManComposition().get(12));
+        Assert.assertEquals(ManeuverFieldType.THR_Y,         m1.getMetadata().getManComposition().get(13));
+        Assert.assertEquals(ManeuverFieldType.THR_Z,         m1.getMetadata().getManComposition().get(14));
+        Assert.assertEquals(ManeuverFieldType.THR_EFFIC,     m1.getMetadata().getManComposition().get(15));
+        Assert.assertEquals(ManeuverFieldType.THR_INTERP,    m1.getMetadata().getManComposition().get(16));
+        Assert.assertEquals(ManeuverFieldType.THR_ISP,       m1.getMetadata().getManComposition().get(17));
+        Assert.assertEquals(ManeuverFieldType.THR_SIGMA,     m1.getMetadata().getManComposition().get(18));
+        Assert.assertEquals(m1.getMetadata().getManComposition().size() - 1, m1.getMetadata().getManUnits().size());
+        for (int i = 0; i < m1.getMetadata().getManUnits().size(); ++i) {
+            ManeuverFieldType type = m1.getMetadata().getManComposition().get(i + 1);
+            Unit              unit = m1.getMetadata().getManUnits().get(i);
+            Assert.assertEquals(type.getUnit(), unit);
+        }
+        Assert.assertEquals(2, m1.getManeuvers().size());
+        Assert.assertEquals(1000.0,    m1.getManeuvers().get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(0.02,      m1.getManeuvers().get(0).getThrustSigma(),              1.0e-10);
+        Assert.assertEquals(OnOff.OFF, m1.getManeuvers().get(0).getAccelerationInterpolation());
+        Assert.assertEquals(1600.0,    m1.getManeuvers().get(1).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals( 25.0,     m1.getManeuvers().get(1).getDv().getX(),                1.0e-10);
+
+
+        ManeuverHistory m2 = file.getData().getManeuverBlocks().get(2);
+        Assert.assertEquals("this is number 3 MAN comment",    m2.getMetadata().getComments().get(0));
+        Assert.assertEquals("maneuver 3",                      m2.getMetadata().getManID());
+        Assert.assertEquals("DEPLOYMENT",                      m2.getMetadata().getManDeviceID());
+        Assert.assertEquals(9 ,                                m2.getMetadata().getManComposition().size());
+        Assert.assertEquals(ManeuverFieldType.TIME_ABSOLUTE,   m2.getMetadata().getManComposition().get( 0));
+        Assert.assertEquals(ManeuverFieldType.DEPLOY_ID,       m2.getMetadata().getManComposition().get( 1));
+        Assert.assertEquals(ManeuverFieldType.DEPLOY_DV_X,     m2.getMetadata().getManComposition().get( 2));
+        Assert.assertEquals(ManeuverFieldType.DEPLOY_DV_Y,     m2.getMetadata().getManComposition().get( 3));
+        Assert.assertEquals(ManeuverFieldType.DEPLOY_DV_Z,     m2.getMetadata().getManComposition().get( 4));
+        Assert.assertEquals(ManeuverFieldType.DEPLOY_MASS,     m2.getMetadata().getManComposition().get( 5));
+        Assert.assertEquals(ManeuverFieldType.DEPLOY_DV_SIGMA, m2.getMetadata().getManComposition().get( 6));
+        Assert.assertEquals(ManeuverFieldType.DEPLOY_DV_RATIO, m2.getMetadata().getManComposition().get( 7));
+        Assert.assertEquals(ManeuverFieldType.DEPLOY_DV_CDA,   m2.getMetadata().getManComposition().get( 8));
+        Assert.assertEquals(m2.getMetadata().getManComposition().size() - 1, m2.getMetadata().getManUnits().size());
+        for (int i = 0; i < m2.getMetadata().getManUnits().size(); ++i) {
+            ManeuverFieldType type = m2.getMetadata().getManComposition().get(i + 1);
+            Unit              unit = m2.getMetadata().getManUnits().get(i);
+            Assert.assertEquals(type.getUnit(), unit);
+        }
+        Assert.assertEquals(8, m2.getManeuvers().size());
+        Assert.assertEquals(35100.0,   m2.getManeuvers().get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals("BEE_1",   m2.getManeuvers().get(0).getDeployId());
+        Assert.assertEquals(35160.0,   m2.getManeuvers().get(1).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(    0.3,   m2.getManeuvers().get(1).getDeployDv().getY(),          1.0e-10);
+
+        // check perturbation data
+        final Perturbations pert = file.getData().getPerturbationsBlock();
+        Assert.assertEquals("this is PERT comment",         pert.getComments().get(0));
+        Assert.assertEquals("NRLMSIS00",                    pert.getAtmosphericModel());
+        Assert.assertEquals("TEG-4",                        pert.getGravityModel());
+        Assert.assertEquals(36,                             pert.getGravityDegree());
+        Assert.assertEquals(12,                             pert.getGravityOrder());
+        Assert.assertEquals(6378137.0,                      pert.getEquatorialRadius(), 1.0e-9);
+        Assert.assertEquals(3.986004415e14,                 pert.getGm(),               1.0);
+        Assert.assertEquals("MOON",                         pert.getNBodyPerturbations().get(0).getName());
+        Assert.assertEquals("SUN",                          pert.getNBodyPerturbations().get(1).getName());
+        Assert.assertEquals(4.17807421629e-3,               FastMath.toDegrees(pert.getCentralBodyRotation()), 1.0e-12);
+        Assert.assertEquals(0.00335281066475,               pert.getOblateFlattening(), 1.0e-12);
+        Assert.assertEquals("SEMI-DIURNAL",                 pert.getOceanTidesModel());
+        Assert.assertEquals("DIURNAL",                      pert.getSolidTidesModel());
+        Assert.assertEquals("IERS2010",                     pert.getReductionTheory());
+        Assert.assertEquals("KNOCKE",                       pert.getAlbedoModel());
+        Assert.assertEquals(100,                            pert.getAlbedoGridSize());
+        Assert.assertEquals(ShadowModel.DUAL_CONE,          pert.getShadowModel());
+        Assert.assertEquals("EARTH",                        pert.getShadowBodies().get(0).getName());
+        Assert.assertEquals("MOON",                         pert.getShadowBodies().get(1).getName());
+        Assert.assertEquals("BOX WING",                     pert.getSrpModel());
+        Assert.assertEquals("CELESTRAK",                    pert.getSpaceWeatherSource());
+        Assert.assertEquals(0.0, pert.getSpaceWeatherEpoch().durationFrom(new AbsoluteDate(2019, 7, 22, TimeScalesFactory.getUTC())), 1.0e-10);
+        Assert.assertEquals("LAGRANGE ORDER 5",             pert.getInterpMethodSW());
+        Assert.assertEquals(3.2e-9,                         pert.getFixedGeomagneticKp(),  1.0e-20);
+        Assert.assertEquals(2.1e-9,                         pert.getFixedGeomagneticAp(),  1.0e-20);
+        Assert.assertEquals(-20.0e-9,                       pert.getFixedGeomagneticDst(), 1.0e-20);
+        Assert.assertEquals(1.20e-20,                       pert.getFixedF10P7(),          1.0e-30);
+        Assert.assertEquals(1.32e-20,                       pert.getFixedF10P7Mean(),      1.0e-30);
+        Assert.assertEquals(1.30e-20,                       pert.getFixedM10P7(),          1.0e-30);
+        Assert.assertEquals(1.42e-20,                       pert.getFixedM10P7Mean(),      1.0e-30);
+        Assert.assertEquals(1.40e-20,                       pert.getFixedS10P7(),          1.0e-30);
+        Assert.assertEquals(1.52e-20,                       pert.getFixedS10P7Mean(),      1.0e-30);
+        Assert.assertEquals(1.50e-20,                       pert.getFixedY10P7(),          1.0e-30);
+        Assert.assertEquals(1.62e-20,                       pert.getFixedY10P7Mean(),      1.0e-30);
+
+        // check orbit determination data
+        OrbitDetermination od = file.getData().getOrbitDeterminationBlock();
+        Assert.assertEquals("this is OD comment", od.getComments().get(0));
+        Assert.assertEquals("OD 24",              od.getId());
+        Assert.assertEquals("OD 23",              od.getPrevId());
+        Assert.assertEquals("BWLS",               od.getMethod().getName());
+        Assert.assertEquals(OdMethodType.BWLS,    od.getMethod().getType());
+        Assert.assertEquals("OREKIT",             od.getMethod().getTool());
+        Assert.assertEquals(0.0,
+                            od.getEpoch().durationFrom(new AbsoluteDate(2019, 7, 22, 17, 32, 27.0,
+                                                                        TimeScalesFactory.getUTC())),
+                            1.0e-10);
+        Assert.assertEquals(302400.0,             od.getTimeSinceFirstObservation(), 1.0e-10);
+        Assert.assertEquals(103680.0,             od.getTimeSinceLastObservation(),  1.0e-10);
+        Assert.assertEquals(449280.0,             od.getRecommendedOdSpan(),         1.0e-10);
+        Assert.assertEquals(198720.0,             od.getActualOdSpan(),              1.0e-10);
+        Assert.assertEquals(100,                  od.getObsAvailable());
+        Assert.assertEquals( 90,                  od.getObsUsed());
+        Assert.assertEquals( 33,                  od.getTracksAvailable());
+        Assert.assertEquals( 30,                  od.getTracksUsed());
+        Assert.assertEquals(86400.0,              od.getMaximumObsGap(),             1.0e-10);
+        Assert.assertEquals(58.73,                od.getEpochEigenMaj(),             1.0e-10);
+        Assert.assertEquals(35.7,                 od.getEpochEigenMed(),             1.0e-10);
+        Assert.assertEquals(21.5,                 od.getEpochEigenMin(),             1.0e-10);
+        Assert.assertEquals(32.5,                 od.getMaxPredictedEigenMaj(),      1.0e-10);
+        Assert.assertEquals(22.0,                 od.getMinPredictedEigenMin(),      1.0e-10);
+        Assert.assertEquals(0.953,                od.getConfidence(),                1.0e-10);
+        Assert.assertEquals(0.857,                od.getGdop(),                      1.0e-10);
+        Assert.assertEquals(6,                    od.getSolveN());
+        Assert.assertEquals("POS[3]",             od.getSolveStates().get(0));
+        Assert.assertEquals("VEL[3]",             od.getSolveStates().get(1));
+        Assert.assertEquals(2,                    od.getConsiderN());
+        Assert.assertEquals("DRAG",               od.getConsiderParameters().get(0));
+        Assert.assertEquals("SRP",                od.getConsiderParameters().get(1));
+        Assert.assertEquals(3,                    od.getSensorsN());
+        Assert.assertEquals("EGLIN",              od.getSensors().get(0));
+        Assert.assertEquals("FYLINGDALES",        od.getSensors().get(1));
+        Assert.assertEquals("PLAGNOLE",           od.getSensors().get(2));
+        Assert.assertEquals(1.3,                  od.getWeightedRms(), 1.0e-10);
+        Assert.assertEquals("RANGE",              od.getDataTypes().get(0));
+        Assert.assertEquals("DOPPLER",            od.getDataTypes().get(1));
+        Assert.assertEquals("AZEL",               od.getDataTypes().get(2));
+
+        // check user data
         Assert.assertEquals(1, file.getData().getUserDefinedBlock().getParameters().size());
         Assert.assertEquals("OREKIT", file.getData().getUserDefinedBlock().getParameters().get("LIBRARY"));
+
+        Assert.assertEquals(1, file.getSatellites().size());
+        OcmSatelliteEphemeris ephemeris = file.getSatellites().get("POLYSAT");
+        Assert.assertEquals("POLYSAT", ephemeris.getId());
+        Assert.assertEquals(3.986004415e14, ephemeris.getMu(), 1e5);
+        Assert.assertEquals(3.0e5, Constants.IERS2003_EARTH_MU - ephemeris.getMu(), 1e0);
+        Assert.assertEquals(2, ephemeris.getSegments().size());
+        List<TimeStampedPVCoordinates> h0 = ephemeris.getSegments().get(0).getCoordinates();
+        Assert.assertEquals(3, h0.size());
+        Assert.assertEquals(   0.0, h0.get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals( 300.0, h0.get(1).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals( 600.0, h0.get(2).getDate().durationFrom(epoch), 1.0e-10);
+        List<TimeStampedPVCoordinates> h1 = ephemeris.getSegments().get(1).getCoordinates();
+        Assert.assertEquals(3, h1.size());
+        Assert.assertEquals(1800.0, h1.get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(2100.0, h1.get(1).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(2400.0, h1.get(2).getDate().durationFrom(epoch), 1.0e-10);
+
+        Assert.assertEquals(   0.0, ephemeris.getStart().durationFrom(epoch), 10e-10);
+        Assert.assertEquals(2400.0, ephemeris.getStop().durationFrom(epoch), 10e-10);
 
     }
 
