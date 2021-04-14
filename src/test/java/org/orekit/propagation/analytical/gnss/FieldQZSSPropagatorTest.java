@@ -157,23 +157,34 @@ public class FieldQZSSPropagatorTest {
 
 		Assert.assertEquals(0.0, errorP, 3.8e-9);
 		Assert.assertEquals(0.0, errorV, 8.4e-8);
-		Assert.assertEquals(0.0, errorA, 2.1e-8);
+		Assert.assertEquals(0.0, errorA, 2.21e-8);
 	}
 
 	public <T extends RealFieldElement<T>> void doTestPosition(Field<T> field) {
 		final T zero = field.getZero();
 		// Initial QZSS orbital elements (Ref: IGS)
-		final FieldQZSSOrbitalElements<T> qoe = new FieldQZSSEphemeris<>(195, 21, zero.add(226800.0),
-				zero.add(6493.226968765259), zero.add(0.07426900835707784), zero.add(4.796628370253418E-10),
-				zero.add(0.7116940567084221), zero.add(4.835915721014987E-10), zero.add(0.6210371871830609),
-				zero.add(-8.38963517626603E-10), zero.add(-1.5781555771543598), zero.add(1.077008903618136),
-				zero.add(-8.8568776845932E-6), zero.add(1.794286072254181E-5), zero.add(-344.03125),
-				zero.add(-305.6875), zero.add(1.2032687664031982E-6), zero.add(-2.6728957891464233E-6));
+		final FieldQZSSOrbitalElements<T> qoe = new FieldQZSSEphemeris<>(
+				195, 
+				21, 
+				zero.add(226800.0),
+				zero.add(6493.226968765259), 
+				zero.add(0.07426900835707784), 
+				zero.add(4.796628370253418E-10),
+				zero.add(0.7116940567084221), 
+				zero.add(4.835915721014987E-10), 
+				zero.add(0.6210371871830609),
+				zero.add(-8.38963517626603E-10), 
+				zero.add(-1.5781555771543598), 
+				zero.add(1.077008903618136),
+				zero.add(-8.8568776845932E-6), 
+				zero.add(1.794286072254181E-5), 
+				zero.add(-344.03125),
+				zero.add(-305.6875), 
+				zero.add(1.2032687664031982E-6), 
+				zero.add(-2.6728957891464233E-6));
 		// Date of the QZSS orbital elements
 		final FieldAbsoluteDate<T> target = qoe.getDate();
-		// Builds the QZSSPropagator from the almanac
-		FieldQZSSAlmanac<T> almanac = new FieldQZSSAlmanac<T>(field, FieldQZSSPropagatorTest.almanac);
-		final FieldQZSSPropagator<T> propagator = new FieldQZSSPropagator<>(field, almanac);
+		final FieldQZSSPropagator<T> propagator = new FieldQZSSPropagator<>(field, qoe);
 		// Compute the PV coordinates at the date of the QZSS orbital elements
 		final FieldPVCoordinates<T> pv = propagator.getPVCoordinates(target,
 				FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -267,14 +278,14 @@ public class FieldQZSSPropagatorTest {
 		}
 
 		@Override
+		public T getE() {
+			return ecc;
+		}
+		
+		@Override
 		public T getMeanMotion() {
 			final T absA = FastMath.abs(sma);
 			return FastMath.sqrt(absA.getField().getZero().add(QZSS_MU).divide(absA)).divide(absA).add(deltaN);
-		}
-
-		@Override
-		public T getE() {
-			return ecc;
 		}
 
 		@Override

@@ -286,7 +286,7 @@ public class FieldSmallManeuverAnalyticalModel<T extends RealFieldElement<T>>
 		if (dt.getReal() < 0) {
 			// the maneuver has not occurred yet, Jacobian is null
 			for (int i = 0; i < 6; ++i) {
-				Arrays.fill(jacobian[i], 0, 4, 0.0);
+				Arrays.fill(jacobian[i], 0, 4, dt.getField().getZero());
 			}
 			return;
 		}

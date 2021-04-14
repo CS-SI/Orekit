@@ -26,7 +26,7 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
- * This class holds a QZSS almanac as read from YUMA files.
+ * This class holds a Field QZSS almanac as read from YUMA files.
  *
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
@@ -155,7 +155,9 @@ public class FieldQZSSAlmanac<T extends RealFieldElement<T>> implements FieldQZS
 	}
 
 	/**
-	 * Constructor
+	 * Constructor.
+	 * 
+	 * This constructor converts a QZSSAlmanac into a FieldQZSSAlmanac
 	 * 
 	 * @param field
 	 * @param almanac
@@ -270,74 +272,64 @@ public class FieldQZSSAlmanac<T extends RealFieldElement<T>> implements FieldQZS
 
 	@Override
 	public T getIDot() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
 
 	@Override
 	public T getCuc() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
 
 	@Override
 	public T getCus() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
 
 	@Override
 	public T getCrc() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
 
 	@Override
 	public T getCrs() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
 
 	@Override
 	public T getCic() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
 
 	@Override
 	public T getCis() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
 
 	@Override
 	public T getAf2() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
 
 	@Override
 	public T getToc() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
 
 	@Override
 	public int getIODC() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public int getIODE() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public T getTGD() {
-		// TODO Auto-generated method stub
-		return null;
+		return zero;
 	}
+
+	
 
 }

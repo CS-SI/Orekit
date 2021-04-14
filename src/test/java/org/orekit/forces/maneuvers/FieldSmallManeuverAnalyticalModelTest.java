@@ -193,8 +193,8 @@ public class FieldSmallManeuverAnalyticalModelTest {
 		Frame eme2000 = FramesFactory.getEME2000();
 		final T zero = field.getZero();
 		final T one = field.getOne();
-		FieldOrbit<T> leo = new FieldCircularOrbit<>(zero.add(7200000.0), zero.add(-1.0e-5), zero.add(2.0e-4),
-				zero.add(FastMath.toRadians(98.0)), zero.add(FastMath.toRadians(123.456)), zero.add(0.0),
+		FieldOrbit<T> leo = new FieldCircularOrbit<>(zero.add(7200000.0), zero.add(-1.0e-2), zero.add(2.0e-3),
+				zero.add(FastMath.toRadians(98.0)), zero.add(FastMath.toRadians(123.456)), zero.add(0.3),
 				PositionAngle.MEAN, FramesFactory.getEME2000(),
 				new FieldAbsoluteDate<>(field, new AbsoluteDate(new DateComponents(2004, 01, 01),
 						new TimeComponents(23, 30, 00.000), TimeScalesFactory.getUTC())),
@@ -215,9 +215,8 @@ public class FieldSmallManeuverAnalyticalModelTest {
 						eme2000, dV0, isp);
 				Assert.assertEquals(t0, model.getDate());
 
-				FieldVector3D<T>[] velDirs;// = new FieldVector3D<T>[]; { Vector3D.PLUS_I, Vector3D.PLUS_J,
-											// Vector3D.PLUS_K, Vector3D.ZERO };
-				velDirs = (FieldVector3D<T>[]) Array.newInstance(FieldVector3D.class, 4);
+				@SuppressWarnings("unchecked")
+				FieldVector3D<T>[] velDirs = (FieldVector3D<T>[]) Array.newInstance(FieldVector3D.class, 4);
 				velDirs[0] = FieldVector3D.getPlusI(field);
 				velDirs[1] = FieldVector3D.getPlusJ(field);
 				velDirs[2] = FieldVector3D.getPlusK(field);
@@ -232,8 +231,8 @@ public class FieldSmallManeuverAnalyticalModelTest {
 				FieldAbsoluteDate<T> t1 = t0.shiftedBy(20.0);
 				for (int i = 0; i < 4; ++i) {
 
-					FieldSmallManeuverAnalyticalModel<T>[] models;
-					models = (FieldSmallManeuverAnalyticalModel<T>[]) Array
+					@SuppressWarnings("unchecked")
+					FieldSmallManeuverAnalyticalModel<T>[] models = (FieldSmallManeuverAnalyticalModel<T>[]) Array
 							.newInstance(FieldSmallManeuverAnalyticalModel.class, 8);
 					models[0] = new FieldSmallManeuverAnalyticalModel<T>(field,
 							withoutManeuver.propagate(t0.shiftedBy(zero.add(-4).multiply(h).multiply(timeDirs[i]))),
@@ -286,7 +285,7 @@ public class FieldSmallManeuverAnalyticalModelTest {
 					for (int j = 0; j < orbitGradient.length; ++j) {
 						//System.out.println(orbitGradient[j].getReal() + "\t" + jacobian[j][i].getReal() + "\t" + FastMath.abs(orbitGradient[j]).multiply(1.6e-4).getReal());
 						Assert.assertEquals(orbitGradient[j].getReal(), jacobian[j][i].getReal(),
-								FastMath.abs(orbitGradient[j]).multiply(1.6e-4).getReal());
+								FastMath.abs(orbitGradient[j]).multiply(1.7e-4).getReal());
 					}
 
 				}

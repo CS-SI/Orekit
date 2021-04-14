@@ -26,9 +26,20 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
+/** Field Analytical model for J2 effect.
+ * <p>
+ * This class computes the differential effect of J2 due to an initial orbit
+ * offset. A typical case is when an inclination maneuver changes an orbit
+ * inclination at time t₀. As ascending node drift rate depends on
+ * inclination, the change induces a time-dependent change in ascending node
+ * for later dates.
+ * </p>
+ * @see org.orekit.forces.maneuvers.FieldSmallManeuverAnalyticalModel
+ * @author Luc Maisonobe
+ * @author Nicolas Fialton (field translation)
+ */
 public class FieldJ2DifferentialEffect<T extends RealFieldElement<T>>
 		implements FieldAdapterPropagator.FieldDifferentialEffect<T> {
 	/** Reference date. */
@@ -51,6 +62,7 @@ public class FieldJ2DifferentialEffect<T extends RealFieldElement<T>>
 	 * {@code false}.
 	 * </p>
 	 * 
+	 * @param field
 	 * @param original     original state at reference date
 	 * @param directEffect direct effect changing the orbit
 	 * @param applyBefore  if true, effect is applied both before and after
@@ -73,6 +85,7 @@ public class FieldJ2DifferentialEffect<T extends RealFieldElement<T>>
 	 * {@code false}.
 	 * </p>
 	 * 
+	 * @param field
 	 * @param orbit0       original orbit at reference date
 	 * @param orbit1       shifted orbit at reference date
 	 * @param applyBefore  if true, effect is applied both before and after
@@ -94,6 +107,7 @@ public class FieldJ2DifferentialEffect<T extends RealFieldElement<T>>
 	 * {@code false}.
 	 * </p>
 	 * 
+	 * @param field
 	 * @param original        original state at reference date
 	 * @param directEffect    direct effect changing the orbit
 	 * @param applyBefore     if true, effect is applied both before and after
@@ -120,6 +134,7 @@ public class FieldJ2DifferentialEffect<T extends RealFieldElement<T>>
 	 * {@code false}.
 	 * </p>
 	 * 
+	 * @param field
 	 * @param orbit0          original orbit at reference date
 	 * @param orbit1          shifted orbit at reference date
 	 * @param applyBefore     if true, effect is applied both before and after
@@ -175,7 +190,7 @@ public class FieldJ2DifferentialEffect<T extends RealFieldElement<T>>
 	 * 
 	 * @param orbit1 original orbit at t₁, without maneuver
 	 * @return orbit at t₁, taking the maneuver into account if t₁ &gt; t₀
-	 * @see #apply(SpacecraftState)
+	 * @see #apply(FieldSpacecraftState)
 	 */
 	public FieldOrbit<T> apply(final FieldOrbit<T> orbit1) {
 
@@ -201,7 +216,7 @@ public class FieldJ2DifferentialEffect<T extends RealFieldElement<T>>
 	}
 
 	/**
-	 * Compute the differential effect of J2 on an orbit.
+	 * Compute the differential effect of J2 on an Field orbit.
 	 * 
 	 * @param orbit1 original orbit at t₁, without differential J2
 	 * @return orbit at t₁, always taking the effect into account

@@ -19,7 +19,6 @@ package org.orekit.propagation.analytical.gnss;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
-import org.orekit.gnss.IRNSSAlmanac;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
@@ -113,6 +112,8 @@ public class FieldIRNSSAlmanac<T extends RealFieldElement<T>> implements FieldIR
 
 	/**
 	 * Constructor
+	 * 
+	 * This constructor converts an IRNSSOrbitalElements (almanac) into a FieldIRNSSAlmanac
 	 * 
 	 * @param field
 	 * @param almanac

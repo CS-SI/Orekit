@@ -16,16 +16,18 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.gnss.BeidouAlmanac;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
- * Class for BeiDou almanac.
+ * Class for Field BeiDou almanac.
  *
  * @see "BeiDou Navigation Satellite System, Signal In Space, Interface Control
  *      Document, Version 2.1, Table 5-12"
@@ -36,6 +38,7 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class FieldBeidouAlmanac<T extends RealFieldElement<T>> implements FieldBeidouOrbitalElements<T> {
 
+	private final T zero;
 	/** PRN number. */
 	private final int prn;
 
@@ -139,6 +142,7 @@ public class FieldBeidouAlmanac<T extends RealFieldElement<T>> implements FieldB
 	public FieldBeidouAlmanac(final int prn, final int week, final T toa, final T sqa, final T ecc, final T inc0,
 			final T dinc, final T om0, final T dom, final T aop, final T anom, final T af0, final T af1,
 			final int health, final FieldAbsoluteDate<T> date) {
+		this.zero = toa.getField().getZero();
 		this.prn = prn;
 		this.week = week;
 		this.toa = toa;
@@ -153,6 +157,32 @@ public class FieldBeidouAlmanac<T extends RealFieldElement<T>> implements FieldB
 		this.af1 = af1;
 		this.health = health;
 		this.date = date;
+	}
+	
+	/**
+	 * Constructor
+	 * 
+	 * This constructor converts a BeidouAlmanac into a FieldBeidouAlmanac
+	 * 
+	 * @param field
+	 * @param almanac a BeidouAlmanac
+	 */
+	public FieldBeidouAlmanac(Field<T> field, BeidouAlmanac almanac) {
+		this.zero = field.getZero();
+		this.prn = almanac.getPRN();
+		this.week = almanac.getWeek();
+		this.toa = zero.add(almanac.getTime());
+		this.sma = zero.add(almanac.getSma());
+		this.ecc = zero.add(almanac.getE());
+		this.inc = zero.add(almanac.getI0());
+		this.om0 = zero.add(almanac.getOmega0());
+		this.dom = zero.add(almanac.getOmegaDot());
+		this.aop = zero.add(almanac.getPa());
+		this.anom = zero.add(almanac.getM0());
+		this.af0 = zero.add(almanac.getAf0());
+		this.af1 = zero.add(almanac.getAf1());
+		this.health = almanac.getHealth();
+		this.date = new FieldAbsoluteDate<>(field, almanac.getDate());
 	}
 
 	@Override

@@ -17,7 +17,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
@@ -36,15 +35,13 @@ public class FieldSBASPropagatorTest {
 
 	/** SBAS orbital elements. */
 	private SBASNavigationData soe;
-	private Frames frames;
-
 	@Before
 	public <T extends RealFieldElement<T>> void setUp() {
 		// Reference data are taken from IGS file brdm0370.17p
 		soe = new SBASNavigationData(127, 1935, 1.23303e+05, 2.406022248000e+07, -2.712500000000e-01,
 				3.250000000000e-04, 3.460922568000e+07, 3.063125000000e-00, -1.500000000000e-04, 1.964040000000e+04,
 				1.012000000000e-00, -1.250000000000e-04);
-		frames = DataContext.getDefault().getFrames();
+		DataContext.getDefault().getFrames();
 	}
 
 	@BeforeClass
@@ -54,12 +51,12 @@ public class FieldSBASPropagatorTest {
 
 	@Test
 	public void testPropagationAtReferenceTime() {
-		doTestPropagation(Decimal64Field.getInstance());
+		doTestPropagationAtReferenceTime(Decimal64Field.getInstance());
 	}
 
 	@Test
 	public void testPropagation() {
-		doTestPropagationAtReferenceTime(Decimal64Field.getInstance());
+		doTestPropagation(Decimal64Field.getInstance());
 	}
 
 	@Test
@@ -143,8 +140,8 @@ public class FieldSBASPropagatorTest {
 		final FieldPVCoordinates<T> pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
 		// Checks
-		Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()).getReal(), 7.7e-9);
-		Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()).getReal(), 3.8e-12);
+		Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()).getReal(), 1.5e-7);
+		Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()).getReal(), 4.5e-10);
 	}
 
 	public <T extends RealFieldElement<T>> void doTestDerivativesConsistency(Field<T> field) {
@@ -177,9 +174,9 @@ public class FieldSBASPropagatorTest {
 			errorA = FastMath.max(errorA,
 					FieldVector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()).getReal());
 		}
-		Assert.assertEquals(0.0, errorP, 1.5e-11);
-		Assert.assertEquals(0.0, errorV, 6.7e-8);
-		Assert.assertEquals(0.0, errorA, 1.8e-8);
+		Assert.assertEquals(0.0, errorP, 7.5E-9);
+		Assert.assertEquals(0.0, errorV, 6.8e-8);
+		Assert.assertEquals(0.0, errorA, 1.85e-8);
 
 	}
 
@@ -356,6 +353,7 @@ public class FieldSBASPropagatorTest {
 		 * @param zDot
 		 * @param zDotDot
 		 */
+		@SuppressWarnings("unused")
 		public FieldSBASNavigationData(final int prn, final int week, final T time, final T x, final T xDot,
 				final T xDotDot, final T y, final T yDot, final T yDotDot, final T z, final T zDot, final T zDotDot) {
 			this.prn = prn;

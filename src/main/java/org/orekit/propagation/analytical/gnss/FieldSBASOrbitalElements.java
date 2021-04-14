@@ -3,7 +3,7 @@ package org.orekit.propagation.analytical.gnss;
 import org.hipparchus.RealFieldElement;
 import org.orekit.time.FieldTimeStamped;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link SBASPropagator}.
+/** This interface provides the minimal set of Field orbital elements needed by the {@link FieldSBASPropagator}.
 *
 * @author Bryan Cazabonne
 * @author Nicolas Fialton (field translation)

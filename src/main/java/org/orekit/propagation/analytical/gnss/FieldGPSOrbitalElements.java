@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.RealFieldElement;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link GPSPropagator}.
+/** This interface provides the minimal set of Field orbital elements needed by the {@link FieldGPSPropagator}.
 *
 * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>
 * @author Pascal Parraud

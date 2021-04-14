@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.orekit.annotation.DefaultDataContext;
@@ -25,10 +28,11 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.propagation.Propagator;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
 
 /**
- * This class aims at propagating a Galileo orbit from
- * {@link GalileoOrbitalElements}.
+ * This class aims at propagating a Field Galileo orbit from
+ * {@link FieldGalileoOrbitalElements}.
  *
  * @see <a href=
  *      "https://www.gsc-europa.eu/system/files/galileo_documents/Galileo-OS-SIS-ICD.pdf">Galileo
@@ -54,8 +58,37 @@ public class FieldGalileoPropagator<T extends RealFieldElement<T>> extends Field
 	/**
 	 * Default constructor
 	 * 
+	 * <p>
+	 * The Field Galileo orbital elements is the only requested parameter to build a
+	 * FieldGalileoPropagator.
+	 * </p>
+	 * <p>
+	 * The attitude provider is set by default to the
+	 * {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+	 * default data context.<br>
+	 * The mass is set by default to the
+	 * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+	 * The ECI frame is set by default to the
+	 * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default
+	 * data context.<br>
+	 * The ECEF frame is set by default to the
+	 * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+	 * CIO/2010-based ITRF simple EOP} in the default data context.
+	 * </p>
+	 *
+	 * <p>
+	 * This constructor uses the {@link DataContext#getDefault() default data
+	 * context}. Another data context can be set using
+	 * {@code FieldGalileoPropagator(final Field<T> field, final FieldGalileoOrbitalElements<T> galileoOrbit,
+			final Frames frames)}
+	 * </p>
+	 * 
 	 * @param field
-	 * @param galileoOrbit
+	 * @param galileoOrbit the Field Galileo orbital elements to be used by the Field Galileo propagator.
+	 * @see #attitudeProvider(AttitudeProvider provider)
+	 * @see #mass(double mass)
+	 * @see #eci(Frame inertial)
+	 * @see #ecef(Frame bodyFixed)
 	 */
 	@DefaultDataContext
 	public FieldGalileoPropagator(final Field<T> field, final FieldGalileoOrbitalElements<T> galileoOrbit) {
@@ -65,9 +98,37 @@ public class FieldGalileoPropagator<T extends RealFieldElement<T>> extends Field
 	/**
 	 * Constructor
 	 * 
+	 * <p>
+	 * The Field Galileo orbital elements is the only requested parameter to build a
+	 * FieldGalileoPropagator.
+	 * </p>
+	 * <p>
+	 * The attitude provider is set by default to the
+	 * {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+	 * default data context.<br>
+	 * The mass is set by default to the
+	 * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+	 * The ECI frame is set by default to the
+	 * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default
+	 * data context.<br>
+	 * The ECEF frame is set by default to the
+	 * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+	 * CIO/2010-based ITRF simple EOP} in the default data context.
+	 * </p>
+	 * 
+	 * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+         * Another data context can be set using
+         * {@code FieldGalileoPropagator(final Field<T> field, final FieldGalileoOrbitalElements<T> galileoOrbit,
+			final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef)}</p>
+	 * 
 	 * @param field
-	 * @param galileoOrbit
-	 * @param frames
+	 * @param galileoOrbit the Field Galileo orbital elements to be used by the
+	 *                     Field Galileo propagator.
+	 * @param frames       to use building the propagator.
+	 * @see #attitudeProvider(AttitudeProvider provider)
+	 * @see #mass(double mass)
+	 * @see #eci(Frame inertial)
+	 * @see #ecef(Frame bodyFixed)
 	 */
 	public FieldGalileoPropagator(final Field<T> field, final FieldGalileoOrbitalElements<T> galileoOrbit,
 			final Frames frames) {
@@ -77,6 +138,25 @@ public class FieldGalileoPropagator<T extends RealFieldElement<T>> extends Field
 
 	/**
 	 * Constructor
+	 * 
+	 * 
+	 * <p>
+	 * The Field Galileo orbital elements is the only requested parameter to build a
+	 * FieldGalileoPropagator.
+	 * </p>
+	 * <p>
+	 * The attitude provider is set by default to the
+	 * {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+	 * default data context.<br>
+	 * The mass is set by default to the
+	 * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+	 * The ECI frame is set by default to the
+	 * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default
+	 * data context.<br>
+	 * The ECEF frame is set by default to the
+	 * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+	 * CIO/2010-based ITRF simple EOP} in the default data context.
+	 * </p>
 	 * 
 	 * @param field
 	 * @param galileoOrbit
@@ -89,17 +169,26 @@ public class FieldGalileoPropagator<T extends RealFieldElement<T>> extends Field
 			final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef) {
 		super(field, galileoOrbit, attitudeProvider, eci, ecef, mass, GALILEO_AV, GALILEO_CYCLE_DURATION,
 				FieldGalileoOrbitalElements.GALILEO_MU);
-		// Stores the Beidou orbital elements
+		// Stores the Galileo orbital elements
 		this.galileoOrbit = galileoOrbit;
 	}
 
 	/**
-	 * Get the underlying Beidou orbital elements.
+	 * Get the underlying Field Galileo orbital elements.
 	 *
-	 * @return the underlying Beidou orbital elements
+	 * @return the underlying Field Galileo orbital elements
 	 */
 	public FieldGalileoOrbitalElements<T> getFieldGalileoOrbitalElements() {
 		return galileoOrbit;
+	}
+
+	/** Get the parameters driver for the Field Galileo propagation model.
+     * @return an empty list.
+     */
+	@Override
+	protected List<ParameterDriver> getParametersDrivers() {
+		// Field Galileo propagation model does not have parameter drivers.
+		return Collections.emptyList();
 	}
 
 }

@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.orekit.annotation.DefaultDataContext;
@@ -25,9 +28,10 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.propagation.Propagator;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
 
 /**
- * This class aims at propagating a GPS orbit from {@link GPSOrbitalElements}.
+ * This class aims at propagating a GPS orbit from {@link FieldGPSOrbitalElements}.
  *
  * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS
  *      Interface Specification</a>
@@ -50,8 +54,30 @@ public class FieldGPSPropagator<T extends RealFieldElement<T>> extends FieldAbst
 	/**
 	 * Default constructor.
 	 * 
+	 * <p>The Field GPS orbital elements is the only requested parameter to build a FieldGPSPropagator.</p>
+	 * <p>The attitude provider is set by default to the
+	 *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+	 *  default data context.<br>
+	 * The mass is set by default to the
+	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+	 * The ECI frame is set by default to the
+	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
+	 *  context.<br>
+	 * The ECEF frame is set by default to the
+	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+	 *  CIO/2010-based ITRF simple EOP} in the default data context.
+	 * </p>
+	 * 
+	 * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+	 * Another data context can be set using
+	 * {@code FieldGPSPropagator(final Field<T> field, final FieldGPSOrbitalElements<T> gpsOrbit, final Frames frames)}</p>
+	 * 
 	 * @param field
-	 * @param gpsOrbit
+	 * @param gpsOrbit the Field GPS orbital elements to be used by the GPSpropagator.
+	 * @see #attitudeProvider(AttitudeProvider provider)
+	 * @see #mass(double mass)
+	 * @see #eci(Frame inertial)
+	 * @see #ecef(Frame bodyFixed)
 	 */
 	@DefaultDataContext
 	public FieldGPSPropagator(final Field<T> field, final FieldGPSOrbitalElements<T> gpsOrbit) {
@@ -61,9 +87,32 @@ public class FieldGPSPropagator<T extends RealFieldElement<T>> extends FieldAbst
 	/**
 	 * Constructor.
 	 * 
+	 * <p>The Field GPS orbital elements is the only requested parameter to build a FieldGPSPropagator.</p>
+	 * <p>The attitude provider is set by default to the
+	 *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+	 *  default data context.<br>
+	 * The mass is set by default to the
+	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+	 * The ECI frame is set by default to the
+	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
+	 *  context.<br>
+	 * The ECEF frame is set by default to the
+	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+	 *  CIO/2010-based ITRF simple EOP} in the default data context.
+	 * </p>
+	 * 
+	 * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+	 * Another data context can be set using
+	 * {@code FieldGPSPropagator(final Field<T> field, final FieldGPSOrbitalElements<T> gpsOrbit,
+			final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef)}</p>
+	 * 
 	 * @param field
-	 * @param gpsOrbit
-	 * @param frames
+	 * @param gpsOrbit the Field GPS orbital elements to be used by the GPSpropagator.
+	 * @param frames set of frames to use.
+	 * @see #attitudeProvider(AttitudeProvider provider)
+	 * @see #mass(double mass)
+	 * @see #eci(Frame inertial)
+	 * @see #ecef(Frame bodyFixed)
 	 */
 	public FieldGPSPropagator(final Field<T> field, final FieldGPSOrbitalElements<T> gpsOrbit, final Frames frames) {
 		this(field, gpsOrbit, Propagator.getDefaultLaw(frames), DEFAULT_MASS, frames.getEME2000(),
@@ -73,8 +122,22 @@ public class FieldGPSPropagator<T extends RealFieldElement<T>> extends FieldAbst
 	/**
 	 * Constructor.
 	 * 
+	 * <p>The Field GPS orbital elements is the only requested parameter to build a FieldGPSPropagator.</p>
+	 * <p>The attitude provider is set by default to the
+	 *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+	 *  default data context.<br>
+	 * The mass is set by default to the
+	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+	 * The ECI frame is set by default to the
+	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
+	 *  context.<br>
+	 * The ECEF frame is set by default to the
+	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+	 *  CIO/2010-based ITRF simple EOP} in the default data context.
+	 * </p>
+	 * 
 	 * @param field
-	 * @param gpsOrbit
+	 * @param gpsOrbit the Field GPS orbital elements to be used by the GPSpropagator.
 	 * @param attitudeProvider
 	 * @param mass
 	 * @param eci
@@ -89,11 +152,20 @@ public class FieldGPSPropagator<T extends RealFieldElement<T>> extends FieldAbst
 	}
 
 	/**
-	 * Get the underlying GPS orbital elements.
+	 * Get the underlying Field GPS orbital elements.
 	 *
-	 * @return the underlying GPS orbital elements
+	 * @return the underlying Field GPS orbital elements
 	 */
 	public FieldGPSOrbitalElements<T> getFieldGPSOrbitalElements() {
 		return gpsOrbit;
+	}
+
+	/** Get the parameters driver for the Field GPS propagation model.
+     * @return an empty list.
+     */
+	@Override
+	protected List<ParameterDriver> getParametersDrivers() {
+		// The Field GPS propagation model does not have parameter drivers.
+		return Collections.emptyList();
 	}
 }

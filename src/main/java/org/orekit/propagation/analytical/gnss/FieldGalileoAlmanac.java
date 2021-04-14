@@ -16,10 +16,12 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.gnss.GalileoAlmanac;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -185,6 +187,35 @@ public class FieldGalileoAlmanac<T extends RealFieldElement<T>> implements Field
         final T sqa = dsqa.add(FastMath.sqrt(A0));
         this.sma = sqa.multiply(sqa);
     }
+    
+    /**
+	 * Constructor
+	 * 
+	 * This constructor converts a GalileoAlmanac into a FieldGalileoAlmanac
+	 * 
+	 * @param field
+	 * @param almanac a GalileoAlmanac
+	 */
+	public FieldGalileoAlmanac(Field<T> field, GalileoAlmanac almanac) {
+		this.zero = field.getZero();
+		this.prn = almanac.getPRN();
+		this.week = almanac.getWeek();
+		this.toa = zero.add(almanac.getTime());
+		this.ecc = zero.add(almanac.getE());
+		this.inc = zero.add(almanac.getI0());
+		this.iod = almanac.getIOD();
+		this.om0 = zero.add(almanac.getOmega0());
+		this.dom = zero.add(almanac.getOmegaDot());
+		this.aop = zero.add(almanac.getPa());
+		this.anom = zero.add(almanac.getM0());
+		this.af0 = zero.add(almanac.getAf0());
+		this.af1 = zero.add(almanac.getAf1());
+		this.healthE1 = almanac.getHealthE1();
+		this.healthE5a = almanac.getHealthE5a();
+        this.healthE5b = almanac.getHealthE5b();
+		this.date = new FieldAbsoluteDate<>(field, almanac.getDate());
+		this.sma = zero.add(almanac.getSma());
+	}
 
 	@Override
 	public FieldAbsoluteDate<T> getDate() {

@@ -169,8 +169,6 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
                 final FieldSpacecraftState<T> current = updateAdditionalStates(basicPropagate(t));
                 final FieldBasicStepInterpolator interpolator = new FieldBasicStepInterpolator(dt.getReal() >= 0, previous, current);
 
-
-
                 // accept the step, trigger events and step handlers
                 state = acceptStep(interpolator, target, epsilon);
             } while (!isLastStep);

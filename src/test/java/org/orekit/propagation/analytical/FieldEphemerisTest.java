@@ -1,3 +1,19 @@
+/* Copyright 2002-2021 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.analytical;
 
 import java.lang.reflect.InvocationTargetException;
@@ -49,10 +65,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
-import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class FieldEphemerisTest {
@@ -282,8 +296,6 @@ public class FieldEphemerisTest {
 			// Conversion from double to Field
 			FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field,
 					new AbsoluteDate(new DateComponents(2004, 01, 01), TimeComponents.H00, TimeScalesFactory.getUTC()));
-			FieldAbsoluteDate<T> finalDate = new FieldAbsoluteDate<>(field,
-					new AbsoluteDate(new DateComponents(2004, 01, 02), TimeComponents.H00, TimeScalesFactory.getUTC()));
 			T a = zero.add(7187990.1979844316);
 			T e = zero.add(0.5e-4);
 			T i = zero.add(1.7105407051081795);
@@ -379,8 +391,6 @@ public class FieldEphemerisTest {
 		// Conversion from double to Field
 		FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field,
 				new AbsoluteDate(new DateComponents(2004, 01, 01), TimeComponents.H00, TimeScalesFactory.getUTC()));
-		FieldAbsoluteDate<T> finalDate = new FieldAbsoluteDate<>(field,
-				new AbsoluteDate(new DateComponents(2004, 01, 02), TimeComponents.H00, TimeScalesFactory.getUTC()));
 		T a = zero.add(7187990.1979844316);
 		T e = zero.add(0.5e-4);
 		T i = zero.add(1.7105407051081795);
@@ -406,15 +416,17 @@ public class FieldEphemerisTest {
 		}
 
 		final FieldPropagator<T> ephem = new FieldEphemeris<>(field, states, 2);
-		Method propagateOrbit = FieldEphemeris.class.getDeclaredMethod("propagateOrbit", FieldAbsoluteDate.class);
+		Method propagateOrbit = FieldEphemeris.class.getDeclaredMethod("propagateOrbit", FieldAbsoluteDate.class, RealFieldElement[].class);
 		propagateOrbit.setAccessible(true);
 		Method getMass = FieldEphemeris.class.getDeclaredMethod("getMass", FieldAbsoluteDate.class);
 		getMass.setAccessible(true);
 
 		FieldSpacecraftState<T> s = ephem.propagate(initDate.shiftedBy(-270.0));
-		FieldOrbit<T> o = (FieldOrbit<T>) propagateOrbit.invoke(ephem, s.getDate());
+		@SuppressWarnings("unchecked")
+		FieldOrbit<T> o = (FieldOrbit<T>) propagateOrbit.invoke(ephem, s.getDate(), MathArrays.buildArray(field, 0));
 		//double m = ((Double) getMass.invoke(ephem, s.getDate())).doubleValue();
-		 T m = ((T) getMass.invoke(ephem, s.getDate()));
+		 @SuppressWarnings("unchecked")
+		T m = ((T) getMass.invoke(ephem, s.getDate()));
 		Assert.assertEquals(0.0, FieldVector3D
 				.distance(s.getPVCoordinates().getPosition(), o.getPVCoordinates().getPosition()).getReal(), 1.0e-15);
 		Assert.assertEquals(s.getMass().getReal(), m.getReal(), 1.0e-15);

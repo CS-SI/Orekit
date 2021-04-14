@@ -24,10 +24,9 @@ import org.orekit.data.DataContext;
 import org.orekit.gnss.GPSAlmanac;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.GNSSDate;
 
 /**
- * This class holds a GPS almanac as read from SEM or YUMA files.
+ * This class holds a Field GPS almanac as read from SEM or YUMA files.
  *
  * <p>
  * Depending on the source (SEM or YUMA), some fields may be filled in or not.
@@ -169,8 +168,10 @@ public class FieldGPSAlmanac<T extends RealFieldElement<T>> implements FieldGPSO
 	/**
 	 * Constructor
 	 * 
+	 * This constructor converts a GPSAlmanac into a FieldGPSAlmanac
+	 * 
 	 * @param field
-	 * @param almanac
+	 * @param almanac a GPSAlmanac
 	 */
 	public FieldGPSAlmanac(Field<T> field, GPSAlmanac almanac) {
 		this.zero = field.getZero();

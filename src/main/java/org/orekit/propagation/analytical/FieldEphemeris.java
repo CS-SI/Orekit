@@ -100,13 +100,14 @@ public class FieldEphemeris<T extends RealFieldElement<T>> extends FieldAbstract
 	 * This constructor uses the {@link DataContext#getDefault() default data
 	 * context}.
 	 *
+	 * @param field
 	 * @param states              tabulates states
 	 * @param interpolationPoints number of points to use in interpolation
 	 * @exception MathIllegalArgumentException if the number of states is smaller
 	 *                                         than the number of points to use in
 	 *                                         interpolation
-	 * @see #Ephemeris(List, int, double)
-	 * @see #Ephemeris(List, int, double, AttitudeProvider)
+	 * @see #Ephemeris(List, int, T)
+	 * @see #Ephemeris(List, int, T, AttitudeProvider)
 	 */
 	@DefaultDataContext
 	public FieldEphemeris(Field<T> field, final List<SpacecraftState> states, final int interpolationPoints)
@@ -121,6 +122,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>> extends FieldAbstract
 	 * This constructor uses the {@link DataContext#getDefault() default data
 	 * context}.
 	 *
+	 * @param field
 	 * @param states                 tabulates states
 	 * @param interpolationPoints    number of points to use in interpolation
 	 * @param extrapolationThreshold the largest time difference in seconds between
@@ -129,8 +131,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>> extends FieldAbstract
 	 * @exception MathIllegalArgumentException if the number of states is smaller
 	 *                                         than the number of points to use in
 	 *                                         interpolation
-	 * @since 9.0
-	 * @see #Ephemeris(List, int, double, AttitudeProvider)
+	 * @see #FieldEphemeris(field, List, int, T, AttitudeProvider)
 	 */
 	@DefaultDataContext
 	public FieldEphemeris(Field<T> field, final List<SpacecraftState> states, final int interpolationPoints,
@@ -142,6 +143,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>> extends FieldAbstract
 	/**
 	 * Constructor with tabulated states.
 	 * 
+	 * @param field
 	 * @param states                 tabulates states
 	 * @param interpolationPoints    number of points to use in interpolation
 	 * @param extrapolationThreshold the largest time difference in seconds between
@@ -151,7 +153,6 @@ public class FieldEphemeris<T extends RealFieldElement<T>> extends FieldAbstract
 	 * @exception MathIllegalArgumentException if the number of states is smaller
 	 *                                         than the number of points to use in
 	 *                                         interpolation
-	 * @since 10.1
 	 */
 	public FieldEphemeris(Field<T> field, final List<SpacecraftState> states, final int interpolationPoints,
 			final T extrapolationThreshold, final AttitudeProvider attitudeProvider)
