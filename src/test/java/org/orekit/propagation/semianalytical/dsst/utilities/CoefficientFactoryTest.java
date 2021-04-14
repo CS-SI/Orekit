@@ -104,6 +104,19 @@ public class CoefficientFactoryTest {
         CoefficientsFactory.getVmns(3, 2, 1);
     }
 
+    @Test
+    public void testKey() {
+        // test cases mostly written to improve coverage and make SonarQube happy...
+        NSKey key21 = new NSKey(2, 1);
+        Assert.assertEquals(key21, key21);
+        Assert.assertEquals(key21, new NSKey(2, 1));
+        Assert.assertNotEquals(key21, null);
+        Assert.assertNotEquals(key21, new NSKey(2, 0));
+        Assert.assertNotEquals(key21, new NSKey(3, 1));
+        Assert.assertEquals(-1719365209, key21.hashCode());
+        Assert.assertEquals(-1719365465, new NSKey(3, 1).hashCode());
+    }
+
     /**
      * Qns test based on two computation method. As methods are independent, if they give the same
      * results, we assume them to be consistent.
@@ -293,7 +306,7 @@ public class CoefficientFactoryTest {
         final Complex asbs = as.multiply(bs);
         return new double[] {asbs.getReal(), asbs.getImaginary()};
     }
-    
+
     /** Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4).
      * @param k x-component of the eccentricity vector
      * @param h y-component of the eccentricity vector
@@ -315,7 +328,7 @@ public class CoefficientFactoryTest {
         values[1] = asbs.getImaginary();
         return values;
     }
-    
+
     private static class FieldComplex <T extends RealFieldElement<T>> {
 
         /** The imaginary part. */
@@ -323,7 +336,7 @@ public class CoefficientFactoryTest {
 
         /** The real part. */
         private final T real;
-       
+
         /**
          * Create a complex number given the real and imaginary parts.
          *
@@ -385,7 +398,7 @@ public class CoefficientFactoryTest {
             return createComplex(real.multiply(factor.real).subtract(imaginary.multiply(factor.imaginary)),
                                  real.multiply(factor.imaginary).add(imaginary.multiply(factor.real)));
         }
-        
+
         /**
          * Returns a {@code Complex} whose value is {@code this * factor}, with {@code factor}
          * interpreted as a integer number.
@@ -408,7 +421,7 @@ public class CoefficientFactoryTest {
          public FieldComplex<T> pow(int x) {
             return this.log().multiply(x).exp();
         }
-         
+
          /**
           * Compute the
           * <a href="http://mathworld.wolfram.com/NaturalLogarithm.html" TARGET="_top">
