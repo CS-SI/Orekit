@@ -204,8 +204,12 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
     public double getDeltaTDot() {
         return deltaTDot;
     }
+    
+    public TimeScale getGlonass() {
+		return glonass;
+	}
 
-    /**
+	/**
      * Get the Health status.
      *
      * @return the Health status
@@ -250,7 +254,19 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
         return tGlo;
     }
 
-    @Override
+    public int getDay() {
+		return day;
+	}
+
+	public int getMonth() {
+		return month;
+	}
+
+	public int getYear() {
+		return year;
+	}
+
+	@Override
     public int getNa() {
         final GLONASSDate gloDate = new GLONASSDate(getDate(), glonass);
         return gloDate.getDayNumber();
