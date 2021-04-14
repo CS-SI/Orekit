@@ -62,9 +62,10 @@ public class CommonMetadata extends OdmMetadata {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(objectID,       CommonMetadataKey.OBJECT_ID);
-        checkNotNull(center,         CommonMetadataKey.CENTER_NAME);
-        checkNotNull(referenceFrame, CommonMetadataKey.REF_FRAME);
+        checkNotNull(getObjectName(), OdmMetadataKey.OBJECT_NAME);
+        checkNotNull(objectID,        CommonMetadataKey.OBJECT_ID);
+        checkNotNull(center,          CommonMetadataKey.CENTER_NAME);
+        checkNotNull(referenceFrame,  CommonMetadataKey.REF_FRAME);
     }
 
     /** Finalize the metadata.
