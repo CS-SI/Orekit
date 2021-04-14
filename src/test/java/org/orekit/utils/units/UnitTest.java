@@ -182,7 +182,7 @@ public class UnitTest {
 
     @Test
     public void testNumber() {
-        checkReference("#/y",
+        checkReference("#/yr",
                        1.0 / Constants.JULIAN_YEAR,
                        Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
     }

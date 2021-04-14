@@ -42,7 +42,7 @@ class PrefixedUnit extends Unit {
                                               Unit.HOUR,
                                               Unit.DAY,
                                               Unit.YEAR,
-                                              Unit.YEAR.alias("y"),
+                                              Unit.YEAR.alias("yr"),
                                               Unit.HERTZ,
                                               Unit.METRE,
                                               Unit.GRAM, // only case were we must use a derived unit
@@ -69,6 +69,7 @@ class PrefixedUnit extends Unit {
                                               Unit.TESLA,
                                               Unit.SOLAR_FLUX_UNIT,
                                               Unit.SOLAR_FLUX_UNIT.alias("SFU"),
+                                              Unit.SOLAR_FLUX_UNIT.alias("sfu"),
                                               Unit.TOTAL_ELECTRON_CONTENT_UNIT,
                                               Unit.TOTAL_ELECTRON_CONTENT_UNIT.alias("tecu"));
         ALLOWED = new HashMap<>(base.size() * Prefix.values().length);

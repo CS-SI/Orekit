@@ -409,7 +409,7 @@ public class Unit implements Serializable {
      * </p>
      * <dl>
      *   <dt>year</dt>
-     *   <dd>the accepted non-SI unit for Julian year is "a" but we also accept "y"</dd>
+     *   <dd>the accepted non-SI unit for Julian year is "a" but we also accept "yr"</dd>
      *   <dt>dimensionless</dt>
      *   <dd>both "1" and "#" (U+0023, NUMBER SIGN) are accepted</dd>
      *   <dt>mass</dt>
