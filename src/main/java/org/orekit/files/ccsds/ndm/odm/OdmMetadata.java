@@ -40,7 +40,6 @@ public class OdmMetadata extends Metadata {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(objectName, OdmMetadataKey.OBJECT_NAME);
     }
 
     /** Get the spacecraft name for which the orbit state is provided.
