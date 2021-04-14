@@ -10,7 +10,7 @@ MESSAGE_ID                = ABC-12_34
 META_START
 COMMENT Metadata comment
 CLASSIFICATION            = FOUO
-OBJECT_NAME               = UNKNOWN
+OBJECT_NAME               = POLYSAT
 INTERNATIONAL_DESIGNATOR  = 2000-053A
 CATALOG_NAME              = COMSPOC
 OBJECT_DESIGNATOR         = 18SPCS 18571
@@ -119,21 +119,21 @@ OEB_QC                    = 0.36
 OEB_MAX                   = 3.0          [m]
 OEB_INT                   = 2.0          [m]
 OEB_MIN                   = 1.0          [m]
-AREA_ALONG_OEB_MAX        = 2.0          [m**2]
-AREA_ALONG_OEB_INT        = 3.0          [m**2]
-AREA_ALONG_OEB_MIN        = 6.0          [m**2]
-AREA_MIN_FOR_PC           = 4.0          [m**2]
-AREA_MAX_FOR_PC           = 6.0          [m**2]
-AREA_TYP_FOR_PC           = 5.0          [m**2]
-RCS                       = 2.0          [m**2]
-RCS_MIN                   = 1.0          [m**2]
-RCS_MAX                   = 3.0          [m**2]
-SRP_CONST_AREA            = 3.0          [m**2]
+AREA_ALONG_OEB_MAX        = 2.2          [m**2]
+AREA_ALONG_OEB_INT        = 3.2          [m**2]
+AREA_ALONG_OEB_MIN        = 6.2          [m**2]
+AREA_MIN_FOR_PC           = 4.3          [m**2]
+AREA_MAX_FOR_PC           = 6.3          [m**2]
+AREA_TYP_FOR_PC           = 5.3          [m**2]
+RCS                       = 2.4          [m**2]
+RCS_MIN                   = 1.4          [m**2]
+RCS_MAX                   = 3.4          [m**2]
+SRP_CONST_AREA            = 3.5          [m**2]
 SOLAR_RAD_COEFF           = 1.7
 SOLAR_RAD_UNCERTAINTY     = 20.0         [%]
 VM_ABSOLUTE               = 15.0
 VM_APPARENT_MIN           = 19.0
-VM_APPARENT               = 15.0
+VM_APPARENT               = 15.4
 VM_APPARENT_MAX           = 14.0
 REFLECTIVITY              = 0.7
 ATT_CONTROL_MODE          = THREE_AXIS
@@ -141,9 +141,16 @@ ATT_ACTUATOR_TYPE         = REACTION_WHEELS
 ATT_KNOWLEDGE             = 0.3          [deg]
 ATT_CONTROL               = 2.0          [deg]
 ATT_POINTING              = 2.3          [deg]
-SRP_CONST_AREA            = 3.0          [m**2]
-SRP_CONST_AREA            = 3.0          [m**2]
-SRP_CONST_AREA            = 3.0          [m**2]
+AVG_MANEUVER_FREQ         = 20.0         [#/yr]
+MAX_THRUST                = 6.8          [N]
+DV_BOL                    = 1.9          [km/s]
+DV_REMAINING              = 0.2          [km/s]
+IXX                       = 1000.0       [kg*m**2]
+IYY                       =  800.0       [kg*m**2]
+IZZ                       =  400.0       [kg*m**2]
+IXY                       =  20.0        [kg*m**2]
+IXZ                       =  40.0        [kg*m**2]
+IYZ                       =  60.0        [kg*m**2]
 PHYS_STOP
 
 COV_START
@@ -157,7 +164,7 @@ COV_REF_FRAME             = TNW_INERTIAL
 COV_FRAME_EPOCH           = 2019-204T09:10:00.000Z
 COV_SCALE_MIN             = 0.5
 COV_SCALE_MAX             = 5.0
-COV_CONFIDENCE            = 50           [%]
+COV_CONFIDENCE            = 25           [%]
 COV_TYPE                  = CARTPV
 COV_UNITS                 = [km,km,km,km/s,km/s,km/s]
   0.0  1.1    2.1  2.2    3.1  3.2  3.3    4.1  4.2  4.3  4.4    5.1  5.2  5.3  5.4  5.5   6.1  6.2  6.3  6.4  6.5  6.6
@@ -211,8 +218,8 @@ DC_TIME_PULSE_DURATION    = 10.0          [s]
 DC_TIME_PULSE_PERIOD      = 200.0         [s]
 MAN_COMPOSITION           = TIME_ABSOLUTE,TIME_RELATIVE,MAN_DURA,DELTA_MASS,ACC_X,ACC_Y,ACC_Z,ACC_INTERP,ACC_SIGMA,DV_X,DV_Y,DV_Z,DV_SIGMA,THR_X,THR_Y,THR_Z,THR_EFFIC,THR_INTERP,THR_ISP,THR_SIGMA
 MAN_UNITS                 = [s,kg,km/s**2,km/s**2,km/s**2,n/a,%,km/s,km/s,km/s,%,N,N,N,n/a,n/a,s,%]
-2019-07-23T00:00:00   0.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 OFF 1.0 0.025 0.0015 0.00029 2.0 1.0 2.0 3.0 0.95 ON 330.0 2.0
-2019-07-23T00:10:00 600.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 OFF 1.0 0.025 0.0015 0.00029 2.0 1.0 2.0 3.0 0.95 ON 330.0 2.0
+2019-07-23T00:00:00   0.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 ON 1.0 0.025 0.0015 0.00029 2.0 1.0 2.0 3.0 0.95 ON 330.0 2.0
+2019-07-23T00:10:00 600.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 ON 1.0 0.025 0.0015 0.00029 2.0 1.0 2.0 3.0 0.95 ON 330.0 2.0
 MAN_STOP
 
 MAN_START
@@ -247,8 +254,8 @@ DC_PA_START_ANGLE         = 25.0             [deg]
 DC_PA_STOP_ANGLE          = 35.0             [deg]
 MAN_COMPOSITION           = TIME_RELATIVE,MAN_DURA,DELTA_MASS,ACC_X,ACC_Y,ACC_Z,ACC_INTERP,ACC_SIGMA,DV_X,DV_Y,DV_Z,DV_SIGMA,THR_X,THR_Y,THR_Z,THR_EFFIC,THR_INTERP,THR_ISP,THR_SIGMA
 MAN_UNITS                 = [s,kg,km/s**2,km/s**2,km/s**2,n/a,%,km/s,km/s,km/s,%,N,N,N,n/a,n/a,s,%]
-  0.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 OFF 1.0 0.025 0.0015 0.00029 2.0 1.0 2.0 3.0 0.95 ON 330.0 2.0
-600.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 OFF 1.0 0.025 0.0015 0.00029 2.0 1.0 2.0 3.0 0.95 ON 330.0 2.0
+1000.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 OFF 1.0 0.025 0.0015 0.00029 2.0 1.0 2.0 3.0 0.95 ON 330.0 2.0
+1600.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 OFF 1.0 0.025 0.0015 0.00029 2.0 1.0 2.0 3.0 0.95 ON 330.0 2.0
 MAN_STOP
 
 MAN_START
@@ -270,7 +277,7 @@ MAN_STOP
 PERT_START
 COMMENT                   this is PERT comment
 ATMOSPHERIC_MODEL         = NRLMSIS00
-GRAVITY_MODEL             = TEG-4: 36D 36O
+GRAVITY_MODEL             = TEG-4: 36D 12O
 EQUATORIAL_RADIUS         = 6378.137           [km]
 GM                        = 398600.4415        [km**3/s**2]
 N_BODY_PERTURBATIONS      = MOON,SUN
@@ -324,7 +331,7 @@ OD_CONFIDENCE             = 95.3                [%]
 GDOP                      = .857
 SOLVE_N                   = 6
 SOLVE_STATES              = POS[3], VEL[3]
-CONSIDER_N                = 3
+CONSIDER_N                = 2
 CONSIDER_PARAMS           = DRAG, SRP
 SENSORS_N                 = 3
 SENSORS                   = EGLIN,FYLINGDALES,PLAGNOLE

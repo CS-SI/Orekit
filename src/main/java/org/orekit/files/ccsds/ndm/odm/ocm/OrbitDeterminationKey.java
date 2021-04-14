@@ -98,9 +98,9 @@ public enum OrbitDeterminationKey {
     OD_MAX_PRED_EIGMAJ((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
                                                                             container::setMaxPredictedEigenMaj)),
 
-    /** Minimum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
+    /** Minimum predicted minor eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
     OD_MIN_PRED_EIGMIN((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
-                                                                            container::setMinPredictedEigenMaj)),
+                                                                            container::setMinPredictedEigenMin)),
 
     /** Confidence metric. */
     OD_CONFIDENCE((token, context, container) -> token.processAsDouble(Unit.PERCENT, context.getParsedUnitsBehavior(),

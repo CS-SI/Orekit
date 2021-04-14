@@ -38,7 +38,7 @@ public class Units {
     public static final Unit M2 = Unit.parse("m²");
 
     /** #/year unit. */
-    public static final Unit NB_PER_Y = Unit.parse("#/y");
+    public static final Unit NB_PER_Y = Unit.parse("#/yr");
 
     /** Square kilometers units. */
     public static final Unit KM2 = Unit.parse("km²");

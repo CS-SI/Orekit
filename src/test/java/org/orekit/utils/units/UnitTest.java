@@ -56,6 +56,19 @@ public class UnitTest {
     }
 
     @Test
+    public void testEquals() {
+        final Unit u1 = Unit.parse("kg/m³");
+        final Unit u2 = Unit.parse("kg/m^3");
+        Assert.assertNotSame(u1, u2);
+        Assert.assertEquals(u1, u2);
+        Assert.assertNotEquals(u1.getName(), u2.getName());
+        Assert.assertNotEquals(u1, Unit.parse("A").alias(u1.getName()));
+        Assert.assertNotEquals(u1, null);
+        Assert.assertNotEquals(u1, u1.getName());
+        Assert.assertEquals(19160943, u1.hashCode());
+    }
+
+    @Test
     public void testReference() {                                
         checkReference(Unit.NONE,                        "n/a",                     1.0,  0,  0,  0,  0, 0);
         checkReference(Unit.ONE,                           "1",                     1.0,  0,  0,  0,  0, 0);
@@ -182,7 +195,7 @@ public class UnitTest {
 
     @Test
     public void testNumber() {
-        checkReference("#/y",
+        checkReference("#/yr",
                        1.0 / Constants.JULIAN_YEAR,
                        Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
     }

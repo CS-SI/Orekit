@@ -48,7 +48,7 @@ public enum PhysicalPropertiesKey {
 
     /** Nominal drag coefficient. */
     DRAG_COEFF_NOM((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                        container::setNominalDragCoefficient)),
+                                                                        container::setDragCoefficient)),
 
     /** Drag coefficient 1σ uncertainty. */
     DRAG_UNCERTAINTY((token, context, container) -> token.processAsDouble(Unit.PERCENT, context.getParsedUnitsBehavior(),
@@ -142,7 +142,7 @@ public enum PhysicalPropertiesKey {
 
     /** Nominal SRP coefficient. */
     SOLAR_RAD_COEFF((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                         container::setNominalSrpCoefficient)),
+                                                                         container::setSrpCoefficient)),
 
     /** SRP coefficient 1σ uncertainty. */
     SOLAR_RAD_UNCERTAINTY((token, context, container) -> token.processAsDouble(Unit.PERCENT, context.getParsedUnitsBehavior(),
@@ -185,7 +185,7 @@ public enum PhysicalPropertiesKey {
 
     /** Average number of orbit or attitude maneuvers per year. */
     AVG_MANEUVER_FREQ((token, context, container) -> token.processAsDouble(Units.NB_PER_Y, context.getParsedUnitsBehavior(),
-                                                                           container::setManeuversPerYear)),
+                                                                           container::setManeuversFrequency)),
 
     /** Maximum composite thrust the spacecraft can accomplish. */
     MAX_THRUST((token, context, container) -> token.processAsDouble(Unit.NEWTON, context.getParsedUnitsBehavior(),

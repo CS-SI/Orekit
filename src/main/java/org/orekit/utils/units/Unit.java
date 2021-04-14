@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -409,7 +410,7 @@ public class Unit implements Serializable {
      * </p>
      * <dl>
      *   <dt>year</dt>
-     *   <dd>the accepted non-SI unit for Julian year is "a" but we also accept "y"</dd>
+     *   <dd>the accepted non-SI unit for Julian year is "a" but we also accept "yr"</dd>
      *   <dt>dimensionless</dt>
      *   <dd>both "1" and "#" (U+0023, NUMBER SIGN) are accepted</dd>
      *   <dt>mass</dt>
@@ -502,6 +503,44 @@ public class Unit implements Serializable {
         // give final name to unit
         return unit.alias(unitSpecification);
 
+    }
+
+    /** Check if the instance represents the same unit as another instance.
+     * <p>
+     * The name is not considered so aliases are considered equal.
+     * </p>
+     * @param unit other unit
+     * @return true if the instance and the other unit refer to the same unit
+     */
+    public boolean equals(final Object unit) {
+
+        if (unit == this) {
+            // first fast check
+            return true;
+        }
+
+        if (unit instanceof Unit) {
+            final Unit u = (Unit) unit;
+            return Precision.equals(scale, u.scale, 1) &&
+                   mass.equals(u.mass) && length.equals(u.length) && time.equals(u.time) &&
+                   current.equals(u.current) && angle.equals(u.angle);
+        }
+
+        return false;
+
+    }
+
+    /** Get a hashcode for this unit.
+     * @return hashcode
+     */
+    public int hashCode() {
+        return 0x67e7 ^
+               (Double.hashCode(scale) << 12) ^
+               (mass.hashCode()        << 10) ^
+               (length.hashCode()      <<  8) ^
+               (time.hashCode()        <<  6) ^
+               (current.hashCode()     <<  4) ^
+               (angle.hashCode()       <<  2);
     }
 
     /** {@inheritDoc} */
