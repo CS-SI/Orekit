@@ -50,6 +50,8 @@ import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.files.ccsds.utils.lexical.KvnLexicalAnalyzer;
+import org.orekit.files.ccsds.utils.lexical.XmlLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -66,15 +68,26 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testNonExistentFile() throws URISyntaxException {
+    public void testNonExistentKvnFile() throws URISyntaxException {
         final String realName = "/ccsds/odm/ocm/OCMExample1.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
-            new ParserBuilder().
-            withMu(Constants.EIGEN5C_EARTH_MU).
-            buildOcmParser().
-            parseMessage(source);
+            new KvnLexicalAnalyzer(source).accept(new ParserBuilder().buildOcmParser());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assert.assertEquals(wrongName, oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testNonExistentXmlFile() throws URISyntaxException {
+        final String realName = "/ccsds/odm/ocm/OCMExample1.txt";
+        final String wrongName = realName + "xxxxx";
+        final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
+        try {
+            new XmlLexicalAnalyzer(source).accept(new ParserBuilder().buildOcmParser());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());

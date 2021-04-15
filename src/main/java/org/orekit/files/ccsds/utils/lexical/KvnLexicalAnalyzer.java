@@ -37,7 +37,7 @@ import org.orekit.utils.units.UnitsCache;
  * @author Luc Maisonobe
  * @since 11.0
  */
-class KvnLexicalAnalyzer implements LexicalAnalyzer {
+public class KvnLexicalAnalyzer implements LexicalAnalyzer {
 
     /** Regular expression matching blanks at start of line. */
     private static final String LINE_START         = "^\\p{Blank}*";
@@ -105,7 +105,7 @@ class KvnLexicalAnalyzer implements LexicalAnalyzer {
     /** Simple constructor.
      * @param source source providing the data to parse
      */
-    KvnLexicalAnalyzer(final DataSource source) {
+    public KvnLexicalAnalyzer(final DataSource source) {
         this.source = source;
         this.cache  = new UnitsCache();
     }
