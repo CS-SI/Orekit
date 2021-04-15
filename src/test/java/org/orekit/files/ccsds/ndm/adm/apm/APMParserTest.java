@@ -51,6 +51,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class APMParserTest {
@@ -759,11 +760,11 @@ public class APMParserTest {
         Assert.assertEquals(new AbsoluteDate(2021, 1, 1, 0, 0, 0.0, TimeScalesFactory.getTDB()),
                             segment.getData().getQuaternionBlock().getEpoch());
 
+        final PVCoordinatesProvider prov = (date, frame) -> new TimeStampedPVCoordinates(date,
+                                                                                         new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
+                                                                                                           new Vector3D(-0.772e4,  5.002e4, 4.892e2)));
         try {
-            file.getAttitude(FramesFactory.getEME2000(),
-                             (date, frame) -> new TimeStampedPVCoordinates(date,
-                                                                           new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
-                                                                                             new Vector3D(-0.772e4,  5.002e4, 4.892e2))));
+            file.getAttitude(FramesFactory.getEME2000(), prov);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_LOCAL_ORBITAL_FRAME, oe.getSpecifier());
@@ -906,6 +907,54 @@ public class APMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
             Assert.assertEquals(wrongName, oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testMissingTwoSpacecraftFrames() throws URISyntaxException {
+        final String name = "/ccsds/adm/apm/APM-two-spacecraft-frames.txt";
+        try {
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildApmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            Assert.assertEquals("INSTRUMENT_2", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testNoSpacecraftFrames() throws URISyntaxException {
+        final String name = "/ccsds/adm/apm/APM-no-spacecraft-frames.txt";
+        try {
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildApmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            Assert.assertEquals("EME2000", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testMissingFrame() throws URISyntaxException {
+        final String name = "/ccsds/adm/apm/APM-missing-frame.txt";
+        try {
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildApmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assert.assertEquals("Q_FRAME_A", oe.getParts()[0]);
         }
     }
 

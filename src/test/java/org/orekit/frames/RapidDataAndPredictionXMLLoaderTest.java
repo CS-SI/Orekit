@@ -28,10 +28,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
+import org.xml.sax.SAXException;
 
 
 public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest {
@@ -63,6 +65,34 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
 
         // problem if any EOP data is loaded
         Assert.assertEquals(0, history.size());
+    }
+
+    @Test
+    public void testInconsistentDate() {
+        setRoot("rapid-data-xml");
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        try {
+            new RapidDataAndPredictionXMLLoader("^inconsistent-date\\.xml$", manager, () -> utc).fillHistory(converter, history);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testMalformedXml() {
+        setRoot("rapid-data-xml");
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        try {
+            new RapidDataAndPredictionXMLLoader("^malformed\\.xml$", manager, () -> utc).fillHistory(converter, history);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertTrue(oe.getCause() instanceof SAXException);
+        }
     }
 
     @Test

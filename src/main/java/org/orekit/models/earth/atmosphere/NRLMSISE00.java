@@ -1153,8 +1153,7 @@ public class NRLMSISE00 implements Atmosphere {
                              final Frame frame) {
 
         // check if data are available :
-        if (date.compareTo(inputParams.getMaxDate()) > 0 ||
-            date.compareTo(inputParams.getMinDate()) < 0) {
+        if (!date.isBetweenOrEqualTo(inputParams.getMinDate(), inputParams.getMaxDate())) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       date, inputParams.getMinDate(), inputParams.getMaxDate());
         }

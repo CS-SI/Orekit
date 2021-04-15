@@ -42,6 +42,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -216,6 +217,13 @@ public class NRLMSISE00Test {
         final Vector3D pos = earth.transform(point);
 
         // Run
+        try {
+            atm.getDensity(date.shiftedBy(2 * Constants.JULIAN_YEAR), pos, itrf);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE, oe.getSpecifier());
+        }
+
         final double rho = atm.getDensity(date, pos, itrf);
         final double lst = 29000. / 3600. - 70. / 15.;
         final double[] ap  = {4., 100., 100., 100., 100., 100., 100.};
@@ -269,6 +277,13 @@ public class NRLMSISE00Test {
         Field<Decimal64> field = Decimal64Field.getInstance();
 
         // Run
+        try {
+            atm.getDensity(date.shiftedBy(2 * Constants.JULIAN_YEAR), pos, itrf);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE, oe.getSpecifier());
+        }
+
         final double    rho = atm.getDensity(date, pos, itrf);
         final Decimal64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
                                                new FieldVector3D<>(field.getOne(), pos),
