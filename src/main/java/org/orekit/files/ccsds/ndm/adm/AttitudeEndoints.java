@@ -108,11 +108,11 @@ public class AttitudeEndoints implements AttitudeBuilder {
 
         if (frameA == null) {
             if (frameB == null || frameB.asSpacecraftBodyFrame() == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, aKey);
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, aKey.name());
             }
         } else if (frameA.asSpacecraftBodyFrame() == null) {
             if (frameB == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, bKey);
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, bKey.name());
             } else if (frameB.asSpacecraftBodyFrame() == null) {
                 // at least one of the frame must be a spacecraft body frame
                 throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, frameB.getName());

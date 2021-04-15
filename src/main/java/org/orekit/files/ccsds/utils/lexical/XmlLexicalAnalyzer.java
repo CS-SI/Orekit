@@ -79,7 +79,7 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
         } catch (SAXException se) {
             final OrekitException oe;
-            if (se.getException() != null && se.getException() instanceof OrekitException) {
+            if (se.getException() instanceof OrekitException) {
                 oe = (OrekitException) se.getException();
             } else {
                 oe = new OrekitException(se, new DummyLocalizable(se.getMessage()));

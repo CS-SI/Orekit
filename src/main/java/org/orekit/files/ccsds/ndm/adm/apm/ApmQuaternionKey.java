@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -43,17 +41,7 @@ public enum ApmQuaternionKey {
     Q_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
 
     /** Second reference frame entry. */
-    Q_FRAME_B((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            if (container.getEndpoints().getFrameA() == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, Q_FRAME_A.name());
-            }
-            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
-            return token.processAsFrame(container.getEndpoints()::setFrameB, context,
-                                        aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
-        }
-        return true;
-    }),
+    Q_FRAME_B((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameB, context, true, true, true)),
 
     /** Rotation direction entry. */
     Q_DIR((token, context, container) -> {

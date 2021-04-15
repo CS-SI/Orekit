@@ -130,13 +130,8 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
 
                 return history;
 
-            } catch (SAXException se) {
-                if (se.getCause() != null && se.getCause() instanceof OrekitException) {
-                    throw (OrekitException) se.getCause();
-                }
-                throw new OrekitException(se, LocalizedCoreFormats.SIMPLE_MESSAGE, se.getMessage());
-            } catch (ParserConfigurationException pce) {
-                throw new OrekitException(pce, LocalizedCoreFormats.SIMPLE_MESSAGE, pce.getMessage());
+            } catch (SAXException | ParserConfigurationException e) {
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getMessage());
             }
         }
 
@@ -301,16 +296,11 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
 
             /** {@inheritDoc} */
             @Override
-            public void endElement(final String uri, final String localName, final String qName)
-                throws SAXException {
-                try {
-                    if (content == DataFileContent.DAILY) {
-                        endDailyElement(qName);
-                    } else if (content == DataFileContent.FINAL) {
-                        endFinalElement(qName);
-                    }
-                } catch (OrekitException oe) {
-                    throw new SAXException(oe);
+            public void endElement(final String uri, final String localName, final String qName) {
+                if (content == DataFileContent.DAILY) {
+                    endDailyElement(qName);
+                } else if (content == DataFileContent.FINAL) {
+                    endFinalElement(qName);
                 }
             }
 

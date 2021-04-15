@@ -138,36 +138,6 @@ public class OemMetadata extends CommonMetadata {
         this.useableStopTime = useableStopTime;
     }
 
-    /**
-     * Get the start date of this ephemeris segment.
-     *
-     * @return ephemeris segment start date.
-     */
-    public AbsoluteDate getStart() {
-        // useable start time overrides start time if it is set
-        final AbsoluteDate start = this.getUseableStartTime();
-        if (start != null) {
-            return start;
-        } else {
-            return this.getStartTime();
-        }
-    }
-
-    /**
-     * Get the stop date of this ephemeris segment.
-     *
-     * @return ephemeris segment stop date.
-     */
-    public AbsoluteDate getStop() {
-        // useable stop time overrides stop time if it is set
-        final AbsoluteDate stop = this.getUseableStopTime();
-        if (stop != null) {
-            return stop;
-        } else {
-            return this.getStopTime();
-        }
-    }
-
     /** Get the interpolation method to be used.
      * @return the interpolation method
      */
@@ -216,9 +186,7 @@ public class OemMetadata extends CommonMetadata {
         // copy object
         copy.setObjectName(getObjectName());
         copy.setObjectID(getObjectID());
-        if (getCenter().getName() != null) {
-            copy.setCenter(getCenter());
-        }
+        copy.setCenter(getCenter());
 
         // copy frames
         copy.setFrameEpoch(getFrameEpoch());
