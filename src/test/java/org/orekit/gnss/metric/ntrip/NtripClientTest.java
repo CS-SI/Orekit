@@ -17,29 +17,16 @@
 package org.orekit.gnss.metric.ntrip;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
 public class NtripClientTest {
-
-    private String     proxyHost;
-    private int        proxyPort;
-    private String     proxyUser;
-    private char[]     proxyPassword;
-    private String     bkgUser;
-    private char[]     bkgPassword;
 
     @Test
     public void testUnknownProxy() {
@@ -69,7 +56,7 @@ public class NtripClientTest {
     }
 
     @Test
-    public void testWrongContentType() {
+    public void testWrongContentType1() {
         try {
             DummyServer server = prepareServer("/gnss/ntrip/wrong-content-type.txt");
             server.run();
@@ -80,6 +67,53 @@ public class NtripClientTest {
         } catch (OrekitException me) {
             Assert.assertEquals(OrekitMessages.UNEXPECTED_CONTENT_TYPE, me.getSpecifier());
             Assert.assertEquals("text/html", me.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testWrongContentType2() {
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
+                                           "/gnss/ntrip/wrong-content-type.txt");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(500);
+        client.setReconnectParameters(0.001, 2.0, 2);
+        try {
+            client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException ie) {
+                // ignored
+            }
+            client.stopStreaming(100);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException me) {
+            Assert.assertEquals(OrekitMessages.UNEXPECTED_CONTENT_TYPE, me.getSpecifier());
+            Assert.assertEquals("text/html", me.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testOtherResponseCode() {
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
+                                           "/gnss/ntrip/gone.txt");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(500);
+        client.setReconnectParameters(0.001, 2.0, 2);
+        try {
+            client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException ie) {
+                // ignored
+            }
+            client.stopStreaming(100);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException me) {
+            Assert.assertEquals(OrekitMessages.CONNECTION_ERROR, me.getSpecifier());
+            Assert.assertEquals("localhost", me.getParts()[0]);
+            Assert.assertEquals("Gone", me.getParts()[1]);
         }
     }
 
@@ -135,7 +169,8 @@ public class NtripClientTest {
             client.stopStreaming(100);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            // ignored
+            Assert.assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, oe.getSpecifier());
+            Assert.assertEquals("1046", oe.getParts()[0]);
         }
     }
 
@@ -215,42 +250,25 @@ public class NtripClientTest {
         }
     }
 
-    @Before
-    public void setUp() {
+    @Test
+    public void testAuthentication() {
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
+                                           "/gnss/ntrip/requires-basic-authentication.txt");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(100);
         try {
-                // loading properties
-                final Properties properties = new Properties();
-                try (InputStream is = this.getClass().getResourceAsStream("/gnss/ntrip/orekit-test-auth.properties")) {
-                    properties.load(is);
-                }
-
-                // determine proxy type
-                final String proxyTypeName = properties.getProperty("orekit.test.proxy.type");
-                if (proxyTypeName != null) {
-                    proxyHost     = properties.getProperty("orekit.test.proxy.host");
-                    proxyPort     = Integer.parseInt(properties.getProperty("orekit.test.proxy.port"));
-                    proxyUser     = properties.getProperty("orekit.test.proxy.user");
-                    proxyPassword = properties.getProperty("orekit.test.proxy.password").toCharArray();
-                    bkgUser       = properties.getProperty("orekit.test.bkg.user");
-                    bkgPassword   = properties.getProperty("orekit.test.bkg.password").toCharArray();
-                }
-
-                // configure authenticator
-                Authenticator.setDefault(new Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        if (getRequestingHost().equalsIgnoreCase(proxyHost) &&
-                            getRequestingPort() == proxyPort) {
-                            // authenticate to proxy
-                            return new PasswordAuthentication(proxyUser, proxyPassword);
-                        } else {
-                            // authenticate to bkg
-                            return new PasswordAuthentication(bkgUser, bkgPassword);
-                        }
-                    }
-                });
-
-        } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
+            client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException ie) {
+                // ignored
+            }
+            client.stopStreaming(100);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.FAILED_AUTHENTICATION, oe.getSpecifier());
+            Assert.assertEquals("RTCM3EPH01", oe.getParts()[0]);
         }
     }
 
@@ -266,17 +284,6 @@ public class NtripClientTest {
             Assert.fail(e.getLocalizedMessage());
         }
         return server;
-    }
-
-
-    @After
-    public void tearDown() {
-        proxyHost     = null;
-        proxyPort     = -1;
-        proxyUser     = null;
-        proxyPassword = null;
-        bkgUser       = null;
-        bkgPassword   = null;
     }
 
 }

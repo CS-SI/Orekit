@@ -103,7 +103,8 @@ public class AemMetadata extends AdmMetadata {
             attitudeType == AttitudeType.QUATERNION_DERIVATIVE) {
             checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE);
         }
-        if (attitudeType == AttitudeType.EULER_ANGLE ||
+        if (attitudeType == AttitudeType.QUATERNION_RATE ||
+            attitudeType == AttitudeType.EULER_ANGLE ||
             attitudeType == AttitudeType.EULER_ANGLE_RATE) {
             checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ);
         }

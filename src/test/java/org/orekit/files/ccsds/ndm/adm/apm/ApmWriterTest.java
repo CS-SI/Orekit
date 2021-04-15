@@ -67,4 +67,9 @@ public class ApmWriterTest extends AbstractNdmWriterTest<Header, Segment<AdmMeta
         doTest("/ccsds/adm/apm/APMExample5.txt");
     }
 
+    @Test
+    public void testWriteExample6() {
+        doTest("/ccsds/adm/apm/APMExample6.txt");
+    }
+
 }

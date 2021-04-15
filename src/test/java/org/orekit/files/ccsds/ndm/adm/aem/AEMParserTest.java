@@ -475,9 +475,9 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM12() throws URISyntaxException {
+    public void testParseAEM13() throws URISyntaxException {
         final TimeScale tai = TimeScalesFactory.getTAI();
-        final String ex = "/ccsds/adm/aem/AEMExample12.xml";
+        final String ex = "/ccsds/adm/aem/AEMExample13.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final AemFile file = parser.parseMessage(source);

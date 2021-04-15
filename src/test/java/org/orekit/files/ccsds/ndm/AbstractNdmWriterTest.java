@@ -207,6 +207,9 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
                     m.getParameterCount() == 0).
         forEach(getter -> {
             try {
+                if (!recurseCheck(getter.invoke(original), getter.invoke(rebuilt))) {
+                    System.out.println("eeee");
+                }
                 Assert.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)));
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                 Assert.fail(e.getLocalizedMessage());
