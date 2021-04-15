@@ -122,6 +122,10 @@ public class APMParserTest {
         Assert.assertEquals(0.40949, segment.getData().getQuaternionBlock().getQuaternion().getQ3(),    QUATERNION_PRECISION);
         Assert.assertFalse(segment.getData().getQuaternionBlock().hasRates());
         Assert.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
+        Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
+                                             TimeScalesFactory.getUTC()),
+                            segment.getData().getQuaternionBlock().getAttitude(null, null).getDate());
+        Assert.assertEquals(0.0, segment.getData().getQuaternionBlock().getAttitude(null, null).getSpin().getNorm(), 1.0e-15);
 
         Attitude attitude = file.getAttitude(null, null);
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
@@ -416,6 +420,12 @@ public class APMParserTest {
         Assert.assertEquals(0.00001, segment.getData().getQuaternionBlock().getQuaternionDot().getQ1(), QUATERNION_PRECISION);
         Assert.assertEquals(0.07543, segment.getData().getQuaternionBlock().getQuaternionDot().getQ2(), QUATERNION_PRECISION);
         Assert.assertEquals(0.00949, segment.getData().getQuaternionBlock().getQuaternionDot().getQ3(), QUATERNION_PRECISION);
+        Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
+                                             TimeScalesFactory.getUTC()),
+                            segment.getData().getQuaternionBlock().getAttitude(null, null).getDate());
+        Assert.assertEquals(8.63363e-2,
+                            segment.getData().getQuaternionBlock().getAttitude(null, null).getSpin().getNorm(),
+                            1.0e-7);
 
     }
 
@@ -814,6 +824,22 @@ public class APMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
             Assert.assertEquals(wrongName, oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testMissingQuaternionComponent() throws URISyntaxException {
+        final String name = "/ccsds/adm/apm/APM-missing-quaternion-component.txt";
+        try {
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildApmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assert.assertEquals("Q{C|1|2|3}", oe.getParts()[0]);
         }
     }
 
