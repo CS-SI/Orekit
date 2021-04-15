@@ -131,7 +131,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                 return history;
 
             } catch (SAXException se) {
-                if (se.getCause() != null && se.getCause() instanceof OrekitException) {
+                if (se.getCause() instanceof OrekitException) {
                     throw (OrekitException) se.getCause();
                 }
                 throw new OrekitException(se, LocalizedCoreFormats.SIMPLE_MESSAGE, se.getMessage());

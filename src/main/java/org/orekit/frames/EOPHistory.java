@@ -168,7 +168,7 @@ public class EOPHistory implements Serializable {
      * @return true if the instance uses interpolation on tidal corrections
      */
     public boolean usesInterpolation() {
-        return tidalCorrection != null && tidalCorrection instanceof CachedCorrection;
+        return tidalCorrection instanceof CachedCorrection;
     }
 
     /** Get the IERS conventions to which these EOP apply.
