@@ -117,6 +117,7 @@ public class XmlGenerator extends AbstractGenerator {
      * @param value element value
      * @param attributeName attribute name
      * @param attributeValue attribute value
+     * @throws IOException if an I/O error occurs.
      */
     public void writeOneAttributeElement(final String name, final String value,
                                          final String attributeName, final String attributeValue)
@@ -133,6 +134,7 @@ public class XmlGenerator extends AbstractGenerator {
      * @param attribute1Value attribute 1 value
      * @param attribute2Name attribute 2 name
      * @param attribute2Value attribute 2 value
+     * @throws IOException if an I/O error occurs.
      */
     public void writeTwoAttributesElement(final String name, final String value,
                                           final String attribute1Name, final String attribute1Value,

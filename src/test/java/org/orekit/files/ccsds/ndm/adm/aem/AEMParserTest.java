@@ -25,6 +25,8 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,12 +34,14 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.BoundedAttitudeProvider;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -45,10 +49,15 @@ import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.FieldCircularOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -462,6 +471,72 @@ public class AEMParserTest {
                                                            FastMath.toRadians(1.5)),
                                               ac1.getRotation()),
                             1.0e-10);
+
+    }
+
+    @Test
+    public void testParseAEM13() throws URISyntaxException {
+        final TimeScale tai = TimeScalesFactory.getTAI();
+        final String ex = "/ccsds/adm/aem/AEMExample13.xml";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final AemParser parser  = new ParserBuilder().buildAemParser();
+        final AemFile file = parser.parseMessage(source);
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
+        Assert.assertEquals(TimeSystem.TAI,          segment0.getMetadata().getTimeSystem());
+        Assert.assertEquals("OREKIT SAT",            segment0.getMetadata().getObjectName());
+        Assert.assertEquals("2020-012A",             segment0.getMetadata().getObjectID());
+        Assert.assertEquals(OrbitRelativeFrame.LVLH, segment0.getMetadata().getEndpoints().getFrameA().asOrbitRelativeFrame());
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.IMU_FRAME, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assert.assertFalse(segment0.getMetadata().getEndpoints().isA2b());
+        Assert.assertEquals(new AbsoluteDate("2021-04-15T13:31:20.000", tai), segment0.getMetadata().getStartTime());
+        Assert.assertEquals(new AbsoluteDate("2021-04-15T13:31:23.000", tai), segment0.getMetadata().getStopTime());
+        Assert.assertEquals(AttitudeType.QUATERNION_DERIVATIVE, segment0.getMetadata().getAttitudeType());
+        Assert.assertTrue(segment0.getMetadata().isFirst());
+
+        final AbsoluteDate refDate = new AbsoluteDate("2021-04-15T13:31:20.000", tai);
+
+        Assert.assertEquals(7, segment0.getData().getAngularCoordinates().size());
+        final TimeStampedAngularCoordinates ac0 = segment0.getData().getAngularCoordinates().get(0);
+        Assert.assertEquals(0.0, ac0.getDate().durationFrom(refDate), 1.0e-5);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(new Rotation(-0.488615, -0.402157,  0.581628,  0.511111, true),
+                                              ac0.getRotation()),
+                            1.0e-10);
+        final TimeStampedAngularCoordinates ac1 = segment0.getData().getAngularCoordinates().get(1);
+        Assert.assertEquals(0.5, ac1.getDate().durationFrom(refDate), 1.0e-5);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(new Rotation(-0.488765, -0.402027,  0.581486,  0.511231, true),
+                                              ac1.getRotation()),
+                            1.0e-10);
+        final TimeStampedAngularCoordinates ac2 = segment0.getData().getAngularCoordinates().get(2);
+        Assert.assertEquals(1.0, ac2.getDate().durationFrom(refDate), 1.0e-5);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(new Rotation(-0.488916, -0.401898,  0.581344,  0.511350, true),
+                                              ac2.getRotation()),
+                            1.0e-10);
+
+        final CircularOrbit o = new CircularOrbit(6992992, -5e-04, 1.2e-03,
+                                                  FastMath.toRadians(97.83), FastMath.toRadians(80.95),
+                                                  FastMath.toRadians(179.86), PositionAngle.MEAN,
+                                                  FramesFactory.getEME2000(),
+                                                  new AbsoluteDate("2021-04-15T13:31:22.000", tai),
+                                                  Constants.EIGEN5C_EARTH_MU);
+        final FieldCircularOrbit<Decimal64> fo =
+                        new FieldCircularOrbit<>(new Decimal64(o.getA()),
+                                                 new Decimal64(o.getCircularEx()), new Decimal64(o.getCircularEy()),
+                                                 new Decimal64(o.getI()), new Decimal64(o.getRightAscensionOfAscendingNode()),
+                                                 new Decimal64(o.getAlphaM()), PositionAngle.MEAN,
+                                                 o.getFrame(), new FieldAbsoluteDate<>(Decimal64Field.getInstance(), o.getDate()),
+                                                 new Decimal64(o.getMu()));
+        final AemSatelliteEphemeris ephemeris = file.getSatellites().get("2020-012A");
+        final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
+        Attitude                  a = provider.getAttitude(o, o.getDate(), o.getFrame());
+        FieldAttitude<Decimal64> fa = provider.getAttitude(fo, fo.getDate(), fo.getFrame());
+        Assert.assertEquals(a.getRotation().getQ0(), fa.getRotation().getQ0().getReal(), 0.00001);
+        Assert.assertEquals(a.getRotation().getQ1(), fa.getRotation().getQ1().getReal(), 0.00001);
+        Assert.assertEquals(a.getRotation().getQ2(), fa.getRotation().getQ2().getReal(), 0.00001);
+        Assert.assertEquals(a.getRotation().getQ3(), fa.getRotation().getQ3().getReal(), 0.00001);
 
     }
 
