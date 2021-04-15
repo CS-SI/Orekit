@@ -249,7 +249,7 @@ public class EphemerisWriterTest {
                 ++count;
             }
         }
-        assertEquals(79, count);
+        assertEquals(80, count);
 
     }
 
@@ -353,6 +353,7 @@ public class EphemerisWriterTest {
 
     private OemMetadata dummyMetadata() {
         OemMetadata metadata = new OemMetadata(4);
+        metadata.addComment("dummy comment");
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");

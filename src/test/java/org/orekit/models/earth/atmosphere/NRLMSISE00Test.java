@@ -278,7 +278,9 @@ public class NRLMSISE00Test {
 
         // Run
         try {
-            atm.getDensity(date.shiftedBy(2 * Constants.JULIAN_YEAR), pos, itrf);
+            atm.getDensity(new FieldAbsoluteDate<>(field, date).shiftedBy(2 * Constants.JULIAN_YEAR),
+                           new FieldVector3D<>(field.getOne(), pos),
+                           itrf);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE, oe.getSpecifier());

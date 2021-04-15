@@ -183,14 +183,6 @@ public class CommonMetadata extends OdmMetadata {
         this.referenceFrame = referenceFrame;
     }
 
-    /** Get epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame.
-     * @return epoch of reference frame
-     */
-    String getFrameEpochString() {
-        return frameEpochString;
-    }
-
     /** Set epoch of reference frame, if not intrinsic to the definition of the
      * reference frame.
      * @param frameEpochString the epoch of reference frame to be set

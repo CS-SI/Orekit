@@ -590,6 +590,24 @@ public class OpmParserTest {
     }
 
     @Test
+    public void testParseOPM7() {
+        final String ex = "/ccsds/odm/opm/OPMExample7.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final OpmFile file = new ParserBuilder().buildOpmParser().parseMessage(source);
+        Frame frame = file.getMetadata().getFrame();
+        Assert.assertSame(CelestialBodyFactory.getMars().getInertiallyOrientedFrame(), frame);
+    }
+
+    @Test
+    public void testParseOPM8() {
+        final String ex = "/ccsds/odm/opm/OPMExample8.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final OpmFile file = new ParserBuilder().buildOpmParser().parseMessage(source);
+        Frame frame = file.getMetadata().getFrame();
+        Assert.assertSame(CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(), frame);
+    }
+
+    @Test
     public void testParseNonStandardUnits() throws URISyntaxException {
         // this file is similar to OPMExample6.txt but uses non-standard units
         // it is therefore NOT a regular CCSDS OPM, but is correctly parsed by Orekit

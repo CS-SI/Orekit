@@ -426,11 +426,11 @@ public class AbsoluteDate
         final SumAndResidual sumAndResidual = MathUtils.twoSum(since.offset, elapsedDuration);
         if (Double.isInfinite(sumAndResidual.getSum())) {
             offset = sumAndResidual.getSum();
-            epoch = (sumAndResidual.getSum() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+            epoch  = (sumAndResidual.getSum() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
             final long dl = (long) FastMath.floor(sumAndResidual.getSum());
             offset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
-            epoch = since.epoch + dl;
+            epoch  = since.epoch + dl;
         }
     }
 
