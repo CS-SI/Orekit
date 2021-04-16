@@ -41,7 +41,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Luc Maisonobe
  * @since 11.0
  */
-class XmlLexicalAnalyzer implements LexicalAnalyzer {
+public class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
     /** Source providing the data to analyze. */
     private final DataSource source;
@@ -49,7 +49,7 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
     /** Simple constructor.
      * @param source source providing the data to parse
      */
-    XmlLexicalAnalyzer(final DataSource source) {
+    public XmlLexicalAnalyzer(final DataSource source) {
         this.source = source;
     }
 
@@ -77,15 +77,7 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
             // Get the content of the file
             return messageParser.build();
 
-        } catch (SAXException se) {
-            final OrekitException oe;
-            if (se.getException() instanceof OrekitException) {
-                oe = (OrekitException) se.getException();
-            } else {
-                oe = new OrekitException(se, new DummyLocalizable(se.getMessage()));
-            }
-            throw oe;
-        } catch (ParserConfigurationException | IOException e) {
+        } catch (SAXException | ParserConfigurationException | IOException e) {
             // throw caught exception as an OrekitException
             throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
         }

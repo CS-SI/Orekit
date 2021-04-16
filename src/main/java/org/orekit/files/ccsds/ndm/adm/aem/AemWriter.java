@@ -443,12 +443,12 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                 case EULER_ANGLE_RATE :
                     writeEulerAngleRate(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
                     break;
-                case SPIN :
-                    writeSpin(xmlGenerator, attitude.getDate(), data);
-                    break;
-                case SPIN_NUTATION :
-                    writeSpinNutation(xmlGenerator, attitude.getDate(), data);
-                    break;
+//                case SPIN :
+//                    writeSpin(xmlGenerator, attitude.getDate(), data);
+//                    break;
+//                case SPIN_NUTATION :
+//                    writeSpinNutation(xmlGenerator, attitude.getDate(), data);
+//                    break;
                 default :
                     // this should never happen
                     throw new OrekitInternalError(null);
@@ -645,56 +645,56 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
 
     }
 
-    /** Write a spin entry in XML.
-     * @param xmlGenerator generator to use for producing output
-     * @param epoch of the entry
-     * @param data entry data
-     * @throws IOException if the output stream throws one while writing.
-     */
-    void writeSpin(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
-        throws IOException {
+//    /** Write a spin entry in XML.
+//     * @param xmlGenerator generator to use for producing output
+//     * @param epoch of the entry
+//     * @param data entry data
+//     * @throws IOException if the output stream throws one while writing.
+//     */
+//    void writeSpin(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
+//        throws IOException {
+//
+//        // wrapping element
+//        xmlGenerator.enterSection(AttitudeEntryKey.spin.name());
+//
+//        // data part
+//        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
+//        int i = 0;
+//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
+//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);
+//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE.name(),     data[i++], Unit.DEGREE,     true);
+//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE_VEL.name(), data[i++], Units.DEG_PER_S, true);
+//
+//        xmlGenerator.exitSection();
+//
+//    }
 
-        // wrapping element
-        xmlGenerator.enterSection(AttitudeEntryKey.spin.name());
-
-        // data part
-        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
-        int i = 0;
-        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
-        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);
-        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE.name(),     data[i++], Unit.DEGREE,     true);
-        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE_VEL.name(), data[i++], Units.DEG_PER_S, true);
-
-        xmlGenerator.exitSection();
-
-    }
-
-    /** Write a spin/nutation entry in XML.
-     * @param xmlGenerator generator to use for producing output
-     * @param epoch of the entry
-     * @param data entry data
-     * @throws IOException if the output stream throws one while writing.
-     */
-    void writeSpinNutation(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
-        throws IOException {
-
-        // wrapping element
-        xmlGenerator.enterSection(AttitudeEntryKey.spin.name());
-
-        // data part
-        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
-        int i = 0;
-        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
-        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);
-        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE.name(),     data[i++], Unit.DEGREE,     true);
-        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE_VEL.name(), data[i++], Units.DEG_PER_S, true);
-        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION.name(),       data[i++], Unit.DEGREE,     true);
-        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION_PER.name(),   data[i++], Unit.SECOND,     true);
-        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION_PHASE.name(), data[i++], Unit.DEGREE,     true);
-
-        xmlGenerator.exitSection();
-
-    }
+//    /** Write a spin/nutation entry in XML.
+//     * @param xmlGenerator generator to use for producing output
+//     * @param epoch of the entry
+//     * @param data entry data
+//     * @throws IOException if the output stream throws one while writing.
+//     */
+//    void writeSpinNutation(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
+//        throws IOException {
+//
+//        // wrapping element
+//        xmlGenerator.enterSection(AttitudeEntryKey.spin.name());
+//
+//        // data part
+//        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
+//        int i = 0;
+//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
+//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);
+//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE.name(),     data[i++], Unit.DEGREE,     true);
+//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE_VEL.name(), data[i++], Units.DEG_PER_S, true);
+//        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION.name(),       data[i++], Unit.DEGREE,     true);
+//        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION_PER.name(),   data[i++], Unit.SECOND,     true);
+//        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION_PHASE.name(), data[i++], Unit.DEGREE,     true);
+//
+//        xmlGenerator.exitSection();
+//
+//    }
 
     /** Write an angle from an Euler sequence.
      * @param xmlGenerator generator to use
