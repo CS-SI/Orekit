@@ -36,6 +36,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
@@ -207,11 +209,15 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
                     m.getParameterCount() == 0).
         forEach(getter -> {
             try {
-                if (!recurseCheck(getter.invoke(original), getter.invoke(rebuilt))) {
-                    System.out.println("eeee");
-                }
                 Assert.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)));
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            } catch (InvocationTargetException e) {
+                if (!(getter.getName().equals("getFrame") &&
+                      e.getCause() instanceof OrekitException &&
+                      ((OrekitException) e.getCause()).getSpecifier() ==
+                         OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY)) {
+                    Assert.fail(e.getCause().getLocalizedMessage());
+                }
+            } catch (IllegalAccessException | IllegalArgumentException e) {
                 Assert.fail(e.getLocalizedMessage());
             }
         });

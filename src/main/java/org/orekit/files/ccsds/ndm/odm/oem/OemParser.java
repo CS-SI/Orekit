@@ -24,6 +24,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
@@ -364,13 +365,13 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
                 stateVectorBlock.setP(0, Unit.KILOMETRE.toSI(Double.parseDouble(fields[1])));
                 stateVectorBlock.setP(1, Unit.KILOMETRE.toSI(Double.parseDouble(fields[2])));
                 stateVectorBlock.setP(2, Unit.KILOMETRE.toSI(Double.parseDouble(fields[3])));
-                stateVectorBlock.setV(0, Unit.KILOMETRE.toSI(Double.parseDouble(fields[4])));
-                stateVectorBlock.setV(1, Unit.KILOMETRE.toSI(Double.parseDouble(fields[5])));
-                stateVectorBlock.setV(2, Unit.KILOMETRE.toSI(Double.parseDouble(fields[6])));
+                stateVectorBlock.setV(0, Units.KM_PER_S.toSI(Double.parseDouble(fields[4])));
+                stateVectorBlock.setV(1, Units.KM_PER_S.toSI(Double.parseDouble(fields[5])));
+                stateVectorBlock.setV(2, Units.KM_PER_S.toSI(Double.parseDouble(fields[6])));
                 if (fields.length == 10) {
-                    stateVectorBlock.setA(0, Unit.KILOMETRE.toSI(Double.parseDouble(fields[7])));
-                    stateVectorBlock.setA(1, Unit.KILOMETRE.toSI(Double.parseDouble(fields[8])));
-                    stateVectorBlock.setA(2, Unit.KILOMETRE.toSI(Double.parseDouble(fields[9])));
+                    stateVectorBlock.setA(0, Units.KM_PER_S2.toSI(Double.parseDouble(fields[7])));
+                    stateVectorBlock.setA(1, Units.KM_PER_S2.toSI(Double.parseDouble(fields[8])));
+                    stateVectorBlock.setA(2, Units.KM_PER_S2.toSI(Double.parseDouble(fields[9])));
                 }
                 return currentBlock.addData(stateVectorBlock.toTimeStampedPVCoordinates(),
                                             stateVectorBlock.hasAcceleration());
