@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="afossa" type="fix" issue="781">
+        Fixed parsing in buildLine2() method of FieldTLE.
+      </action>
       <action dev="luc" type="fix" issue="776">
         Fixed associativity in units parsing.
       </action>
