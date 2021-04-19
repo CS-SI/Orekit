@@ -31,321 +31,331 @@ import org.orekit.time.TimeScale;
  *
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
- *
  */
-public class FieldGLONASSAlmanac<T extends RealFieldElement<T>> implements FieldGLONASSOrbitalElements<T> {
-	private final T zero;
-	/** Frequency channel (-7...6). */
-	private final int channel;
+public class FieldGLONASSAlmanac<T extends RealFieldElement<T>>
+    implements
+    FieldGLONASSOrbitalElements<T> {
 
-	/** Health status. */
-	private final int health;
+    /** Field Zero. */
+    private final T zero;
 
-	/** Day of Almanac. */
-	private final int day;
+    /** Frequency channel (-7...6). */
+    private final int channel;
 
-	/** Month of Almanac. */
-	private final int month;
+    /** Health status. */
+    private final int health;
 
-	/** Year of Almanac. */
-	private final int year;
+    /** Day of Almanac. */
+    private final int day;
 
-	/** Reference time of the almanac. */
-	private final T ta;
+    /** Month of Almanac. */
+    private final int month;
 
-	/** Greenwich longitude of ascending node of orbit. */
-	private final T lambda;
+    /** Year of Almanac. */
+    private final int year;
 
-	/** Correction to the mean value of inclination. */
-	private final T deltaI;
+    /** Reference time of the almanac. */
+    private final T ta;
 
-	/** Argument of perigee. */
-	private final T pa;
+    /** Greenwich longitude of ascending node of orbit. */
+    private final T lambda;
 
-	/** Eccentricity. */
-	private final T ecc;
+    /** Correction to the mean value of inclination. */
+    private final T deltaI;
 
-	/** Correction to the mean value of Draconian period. */
-	private final T deltaT;
+    /** Argument of perigee. */
+    private final T pa;
 
-	/** Rate of change of orbital period. */
-	private final T deltaTDot;
+    /** Eccentricity. */
+    private final T ecc;
 
-	/** Correction from GLONASS to UTC. */
-	private final T tGlo2UTC;
+    /** Correction to the mean value of Draconian period. */
+    private final T deltaT;
 
-	/** Correction to GPS time relative GLONASS. */
-	private final T tGPS2Glo;
+    /** Rate of change of orbital period. */
+    private final T deltaTDot;
 
-	/** Correction of time relative to GLONASS system time. */
-	private final T tGlo;
+    /** Correction from GLONASS to UTC. */
+    private final T tGlo2UTC;
 
-	/** GLONASS time scale. */
-	private final TimeScale glonass;
-	
+    /** Correction to GPS time relative GLONASS. */
+    private final T tGPS2Glo;
 
-	/**
-	 * Constructor.
-	 *
-	 * <p>
-	 * This method uses the {@link DataContext#getDefault() default data context}.
-	 *
-	 * @param channel   the frequency channel from -7 to 6)
-	 * @param health    the Health status
-	 * @param day       the day of Almanac
-	 * @param month     the month of Almanac
-	 * @param year      the year of Almanac
-	 * @param ta        the reference time of the almanac (s)
-	 * @param lambda    the Greenwich longitude of ascending node of orbit (rad)
-	 * @param deltaI    the correction to the mean value of inclination (rad)
-	 * @param pa        the argument of perigee (rad)
-	 * @param ecc       the eccentricity
-	 * @param deltaT    the correction to the mean value of Draconian period (s)
-	 * @param deltaTDot the rate of change of orbital period
-	 * @param tGlo2UTC  the correction from GLONASS to UTC (s)
-	 * @param tGPS2Glo  the correction to GPS time relative GLONASS (s)
-	 * @param tGlo      the correction of time relative to GLONASS system time (s)
-	 * @see #GLONASSAlmanac(int, int, int, int, int, T, T, T, T, T, T, T, T, T, T,
-	 *      TimeScale)
-	 */
-	@DefaultDataContext
-	public FieldGLONASSAlmanac(final int channel, final int health, final int day, final int month, final int year,
-			final T ta, final T lambda, final T deltaI, final T pa, final T ecc, final T deltaT, final T deltaTDot,
-			final T tGlo2UTC, final T tGPS2Glo, final T tGlo) {
-		this(channel, health, day, month, year, ta, lambda, deltaI, pa, ecc, deltaT, deltaTDot, tGlo2UTC, tGPS2Glo,
-				tGlo, DataContext.getDefault().getTimeScales().getGLONASS());
-	}
+    /** Correction of time relative to GLONASS system time. */
+    private final T tGlo;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param channel   the frequency channel from -7 to 6)
-	 * @param health    the Health status
-	 * @param day       the day of Almanac
-	 * @param month     the month of Almanac
-	 * @param year      the year of Almanac
-	 * @param ta        the reference time of the almanac (s)
-	 * @param lambda    the Greenwich longitude of ascending node of orbit (rad)
-	 * @param deltaI    the correction to the mean value of inclination (rad)
-	 * @param pa        the argument of perigee (rad)
-	 * @param ecc       the eccentricity
-	 * @param deltaT    the correction to the mean value of Draconian period (s)
-	 * @param deltaTDot the rate of change of orbital period
-	 * @param tGlo2UTC  the correction from GLONASS to UTC (s)
-	 * @param tGPS2Glo  the correction to GPS time relative GLONASS (s)
-	 * @param tGlo      the correction of time relative to GLONASS system time (s)
-	 * @param glonass   GLONASS time scale.
-	 * @since 10.1
-	 */
-	public FieldGLONASSAlmanac(final int channel, final int health, final int day, final int month, final int year,
-			final T ta, final T lambda, final T deltaI, final T pa, final T ecc, final T deltaT, final T deltaTDot,
-			final T tGlo2UTC, final T tGPS2Glo, final T tGlo, final TimeScale glonass) {
-		this.zero = ta.getField().getZero();
-		this.channel = channel;
-		this.health = health;
-		this.day = day;
-		this.month = month;
-		this.year = year;
-		this.ta = ta;
-		this.lambda = lambda;
-		this.deltaI = deltaI;
-		this.pa = pa;
-		this.ecc = ecc;
-		this.deltaT = deltaT;
-		this.deltaTDot = deltaTDot;
-		this.tGlo2UTC = tGlo2UTC;
-		this.tGPS2Glo = tGPS2Glo;
-		this.tGlo = tGlo;
-		this.glonass = glonass;
-	}
-	
-	/**
-	 * Constructor
-	 * 
-	 * This constructor converts a GLONASSAlmanac into a FieldGLONASSAlmanac
-	 * 
-	 * @param field
-	 * @param almanac
-	 */
-	public FieldGLONASSAlmanac(Field<T> field, GLONASSAlmanac almanac) {
-		this.zero = field.getZero();
-		this.channel = almanac.getFrequencyChannel();
-		this.health = almanac.getHealth();
-		this.day = almanac.getDay();
-		this.month = almanac.getMonth();
-		this.year = almanac.getYear();
-		this.ta = zero.add(almanac.getTime());
-		this.lambda = zero.add(almanac.getLambda());
-		this.deltaI = zero.add(almanac.getDeltaI());
-		this.pa = zero.add(almanac.getPa());
-		this.ecc = zero.add(almanac.getE());
-		this.deltaT = zero.add(almanac.getDeltaT());
-		this.deltaTDot = zero.add(almanac.getDeltaTDot());
-		this.tGlo2UTC = zero.add(almanac.getGlo2UTC());
-		this.tGPS2Glo = zero.add(almanac.getGPS2Glo());
-		this.tGlo = zero.add(almanac.getGloOffset());
-		this.glonass = almanac.getGlonass();
-	}
-	
+    /** GLONASS time scale. */
+    private final TimeScale glonass;
 
-	@Override
-	public FieldAbsoluteDate<T> getDate() {
-		final DateComponents date = new DateComponents(year, month, day);
-		final TimeComponents time = new TimeComponents(ta.getReal());
-		return new FieldAbsoluteDate<>(ta.getField(), date, time, glonass);
-	}
+    /**
+     * Constructor.
+     * <p>
+     * This method uses the {@link DataContext#getDefault() default data
+     * context}.
+     *
+     * @param channel the frequency channel from -7 to 6)
+     * @param health the Health status
+     * @param day the day of Almanac
+     * @param month the month of Almanac
+     * @param year the year of Almanac
+     * @param ta the reference time of the almanac (s)
+     * @param lambda the Greenwich longitude of ascending node of orbit (rad)
+     * @param deltaI the correction to the mean value of inclination (rad)
+     * @param pa the argument of perigee (rad)
+     * @param ecc the eccentricity
+     * @param deltaT the correction to the mean value of Draconian period (s)
+     * @param deltaTDot the rate of change of orbital period
+     * @param tGlo2UTC the correction from GLONASS to UTC (s)
+     * @param tGPS2Glo the correction to GPS time relative GLONASS (s)
+     * @param tGlo the correction of time relative to GLONASS system time (s)
+     * @see #GLONASSAlmanac(int, int, int, int, int, T, T, T, T, T, T, T, T, T,
+     *      T, TimeScale)
+     */
+    @DefaultDataContext
+    public FieldGLONASSAlmanac(final int channel, final int health,
+                               final int day, final int month, final int year,
+                               final T ta, final T lambda, final T deltaI,
+                               final T pa, final T ecc, final T deltaT,
+                               final T deltaTDot, final T tGlo2UTC,
+                               final T tGPS2Glo, final T tGlo) {
+        this(channel, health, day, month, year, ta, lambda, deltaI, pa, ecc,
+             deltaT, deltaTDot, tGlo2UTC, tGPS2Glo, tGlo,
+             DataContext.getDefault().getTimeScales().getGLONASS());
+    }
 
-	@Override
-	public T getTime() {
-		return ta;
-	}
+    /**
+     * Constructor.
+     *
+     * @param channel the frequency channel from -7 to 6)
+     * @param health the Health status
+     * @param day the day of Almanac
+     * @param month the month of Almanac
+     * @param year the year of Almanac
+     * @param ta the reference time of the almanac (s)
+     * @param lambda the Greenwich longitude of ascending node of orbit (rad)
+     * @param deltaI the correction to the mean value of inclination (rad)
+     * @param pa the argument of perigee (rad)
+     * @param ecc the eccentricity
+     * @param deltaT the correction to the mean value of Draconian period (s)
+     * @param deltaTDot the rate of change of orbital period
+     * @param tGlo2UTC the correction from GLONASS to UTC (s)
+     * @param tGPS2Glo the correction to GPS time relative GLONASS (s)
+     * @param tGlo the correction of time relative to GLONASS system time (s)
+     * @param glonass GLONASS time scale.
+     * @since 10.1
+     */
+    public FieldGLONASSAlmanac(final int channel, final int health,
+                               final int day, final int month, final int year,
+                               final T ta, final T lambda, final T deltaI,
+                               final T pa, final T ecc, final T deltaT,
+                               final T deltaTDot, final T tGlo2UTC,
+                               final T tGPS2Glo, final T tGlo,
+                               final TimeScale glonass) {
+        this.zero = ta.getField().getZero();
+        this.channel = channel;
+        this.health = health;
+        this.day = day;
+        this.month = month;
+        this.year = year;
+        this.ta = ta;
+        this.lambda = lambda;
+        this.deltaI = deltaI;
+        this.pa = pa;
+        this.ecc = ecc;
+        this.deltaT = deltaT;
+        this.deltaTDot = deltaTDot;
+        this.tGlo2UTC = tGlo2UTC;
+        this.tGPS2Glo = tGPS2Glo;
+        this.tGlo = tGlo;
+        this.glonass = glonass;
+    }
 
-	@Override
-	public T getLambda() {
-		return lambda;
-	}
+    /**
+     * Constructor This constructor converts a GLONASSAlmanac into a
+     * FieldGLONASSAlmanac.
+     *
+     * @param field
+     * @param almanac
+     */
+    public FieldGLONASSAlmanac(final Field<T> field, final GLONASSAlmanac almanac) {
+        this.zero = field.getZero();
+        this.channel = almanac.getFrequencyChannel();
+        this.health = almanac.getHealth();
+        this.day = almanac.getDay();
+        this.month = almanac.getMonth();
+        this.year = almanac.getYear();
+        this.ta = zero.add(almanac.getTime());
+        this.lambda = zero.add(almanac.getLambda());
+        this.deltaI = zero.add(almanac.getDeltaI());
+        this.pa = zero.add(almanac.getPa());
+        this.ecc = zero.add(almanac.getE());
+        this.deltaT = zero.add(almanac.getDeltaT());
+        this.deltaTDot = zero.add(almanac.getDeltaTDot());
+        this.tGlo2UTC = zero.add(almanac.getGlo2UTC());
+        this.tGPS2Glo = zero.add(almanac.getGPS2Glo());
+        this.tGlo = zero.add(almanac.getGloOffset());
+        this.glonass = almanac.getGlonass();
+    }
 
-	@Override
-	public T getE() {
-		return ecc;
-	}
+    @Override
+    public FieldAbsoluteDate<T> getDate() {
+        final DateComponents date = new DateComponents(year, month, day);
+        final TimeComponents time = new TimeComponents(ta.getReal());
+        return new FieldAbsoluteDate<>(ta.getField(), date, time, glonass);
+    }
 
-	@Override
-	public T getPa() {
-		return pa;
-	}
+    @Override
+    public T getTime() {
+        return ta;
+    }
 
-	@Override
-	public T getDeltaI() {
-		return deltaI;
-	}
+    @Override
+    public T getLambda() {
+        return lambda;
+    }
 
-	@Override
-	public T getDeltaT() {
-		return deltaT;
-	}
+    @Override
+    public T getE() {
+        return ecc;
+    }
 
-	@Override
-	public T getDeltaTDot() {
-		return deltaTDot;
-	}
+    @Override
+    public T getPa() {
+        return pa;
+    }
 
-	/**
-	 * Get the Health status.
-	 *
-	 * @return the Health status
-	 */
-	public int getHealth() {
-		return health;
-	}
+    @Override
+    public T getDeltaI() {
+        return deltaI;
+    }
 
-	/**
-	 * Get the frequency channel.
-	 *
-	 * @return the frequency channel
-	 */
-	public int getFrequencyChannel() {
-		return channel;
-	}
+    @Override
+    public T getDeltaT() {
+        return deltaT;
+    }
 
-	/**
-	 * Get the correction from GLONASS to UTC.
-	 *
-	 * @return the correction from GLONASS to UTC (s)
-	 */
-	public T getGlo2UTC() {
-		return tGlo2UTC;
-	}
+    @Override
+    public T getDeltaTDot() {
+        return deltaTDot;
+    }
 
-	/**
-	 * Get the correction to GPS time relative GLONASS.
-	 *
-	 * @return the to GPS time relative GLONASS (s)
-	 */
-	public T getGPS2Glo() {
-		return tGPS2Glo;
-	}
+    /**
+     * Get the Health status.
+     *
+     * @return the Health status
+     */
+    public int getHealth() {
+        return health;
+    }
 
-	/**
-	 * Get the correction of time relative to GLONASS system time.
-	 *
-	 * @return the correction of time relative to GLONASS system time (s)
-	 */
-	public T getGloOffset() {
-		return tGlo;
-	}
+    /**
+     * Get the frequency channel.
+     *
+     * @return the frequency channel
+     */
+    public int getFrequencyChannel() {
+        return channel;
+    }
 
-	@Override
-	public int getNa() {
-		final FieldGLONASSDate<T> gloDate = new FieldGLONASSDate<>(zero.getField(), getDate(), glonass);
-		return gloDate.getDayNumber();
-	}
+    /**
+     * Get the correction from GLONASS to UTC.
+     *
+     * @return the correction from GLONASS to UTC (s)
+     */
+    public T getGlo2UTC() {
+        return tGlo2UTC;
+    }
 
-	@Override
-	public int getN4() {
-		final FieldGLONASSDate<T> gloDate = new FieldGLONASSDate<>(zero.getField(), getDate(), glonass);
-		return gloDate.getIntervalNumber();
-	}
+    /**
+     * Get the correction to GPS time relative GLONASS.
+     *
+     * @return the to GPS time relative GLONASS (s)
+     */
+    public T getGPS2Glo() {
+        return tGPS2Glo;
+    }
 
+    /**
+     * Get the correction of time relative to GLONASS system time.
+     *
+     * @return the correction of time relative to GLONASS system time (s)
+     */
+    public T getGloOffset() {
+        return tGlo;
+    }
 
-	@Override
-	public T getGammaN() {
-		return zero;
-	}
+    @Override
+    public int getNa() {
+        final FieldGLONASSDate<T> gloDate =
+            new FieldGLONASSDate<>(zero.getField(), getDate(), glonass);
+        return gloDate.getDayNumber();
+    }
 
-	@Override
-	public T getTN() {
-		return zero;
-	}
+    @Override
+    public int getN4() {
+        final FieldGLONASSDate<T> gloDate =
+            new FieldGLONASSDate<>(zero.getField(), getDate(), glonass);
+        return gloDate.getIntervalNumber();
+    }
 
-	@Override
-	public T getXDot() {
-		return zero;
-	}
+    @Override
+    public T getGammaN() {
+        return zero;
+    }
 
-	@Override
-	public T getX() {
-		return zero;
-	}
+    @Override
+    public T getTN() {
+        return zero;
+    }
 
-	@Override
-	public T getXDotDot() {
-		return zero;
-	}
+    @Override
+    public T getXDot() {
+        return zero;
+    }
 
-	@Override
-	public T getYDot() {
-		return zero;
-	}
+    @Override
+    public T getX() {
+        return zero;
+    }
 
-	@Override
-	public T getY() {
-		return zero;
-	}
+    @Override
+    public T getXDotDot() {
+        return zero;
+    }
 
-	@Override
-	public T getYDotDot() {
-		return zero;
-	}
+    @Override
+    public T getYDot() {
+        return zero;
+    }
 
-	@Override
-	public T getZDot() {
-		return zero;
-	}
+    @Override
+    public T getY() {
+        return zero;
+    }
 
-	@Override
-	public T getZ() {
-		return zero;
-	}
+    @Override
+    public T getYDotDot() {
+        return zero;
+    }
 
-	@Override
-	public T getZDotDot() {
-		return zero;
-	}
+    @Override
+    public T getZDot() {
+        return zero;
+    }
 
-	@Override
-	public int getIOD() {
-		return 0;
-	}	
+    @Override
+    public T getZ() {
+        return zero;
+    }
+
+    @Override
+    public T getZDotDot() {
+        return zero;
+    }
+
+    @Override
+    public int getIOD() {
+        return 0;
+    }
 
 }

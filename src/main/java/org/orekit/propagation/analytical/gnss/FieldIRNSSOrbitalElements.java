@@ -18,18 +18,24 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.RealFieldElement;
 
-/** This interface provides the minimal set of Field orbital elements needed by the {@link FieldIRNSSPropagator}.
-*
-* @see "Indian Regiona Navigation Satellite System, Signal In Space ICD
-*       for standard positioning service, version 1.1"
-*
-* @author Bryan Cazabonne
-* @author Nicolas Fialton (field translation)
-*/
+/**
+ * This interface provides the minimal set of Field orbital elements needed by
+ * the {@link FieldIRNSSPropagator}.
+ *
+ * @see "Indian Regiona Navigation Satellite System, Signal In Space ICD for
+ *      standard positioning service, version 1.1"
+ * @author Bryan Cazabonne
+ * @author Nicolas Fialton (field translation)
+ */
 
-public interface FieldIRNSSOrbitalElements<T extends RealFieldElement<T>> extends FieldGNSSOrbitalElements<T> {
-	
-	/** WGS 84 value of the Earth's universal gravitational parameter for IRNSS user in m³/s². */
+public interface FieldIRNSSOrbitalElements<T extends RealFieldElement<T>>
+    extends
+    FieldGNSSOrbitalElements<T> {
+
+    /**
+     * WGS 84 value of the Earth's universal gravitational parameter for IRNSS
+     * user in m³/s².
+     */
     double IRNSS_MU = 3.986005e+14;
 
     /** Value of Pi for conversion from semicircles to radian. */
@@ -51,7 +57,8 @@ public interface FieldIRNSSOrbitalElements<T extends RealFieldElement<T>> extend
     /**
      * Gets the estimated group delay differential TGD for L5-S correction.
      *
-     * @return the estimated group delay differential TGD for L5-S correction (s)
+     * @return the estimated group delay differential TGD for L5-S correction
+     *         (s)
      */
     T getTGD();
 }

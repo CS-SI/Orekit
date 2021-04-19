@@ -33,167 +33,164 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldGLONASSAnalyticalPropagatorTest {
 
-	private static GLONASSAlmanac almanac;
+    private static GLONASSAlmanac almanac;
 
-	@BeforeClass
-	public static void setUpBeforeClass() {
-		Utils.setDataRoot("gnss");
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        Utils.setDataRoot("gnss");
 
-		// Reference values for validation are given into Glonass Interface Control
-		// Document v1.0 2016
-		final double pi = GLONASSOrbitalElements.GLONASS_PI;
-		almanac = new GLONASSAlmanac(0, 1, 22, 12, 2007, 33571.625, -0.293967247009277 * pi, -0.00012947082519531 * pi,
-				0.57867431640625 * pi, 0.000432968139648438, 0.01953124999975, 6.103515625e-5, 0.0, 0.0, 0.0);
-	}
+        // Reference values for validation are given into Glonass Interface Control
+        // Document v1.0 2016
+        final double pi = GLONASSOrbitalElements.GLONASS_PI;
+        almanac = new GLONASSAlmanac(0, 1, 22, 12, 2007, 33571.625, -0.293967247009277 * pi, -0.00012947082519531 * pi,
+                                     0.57867431640625 * pi, 0.000432968139648438, 0.01953124999975, 6.103515625e-5, 0.0, 0.0, 0.0);
+    }
 
-	@Test
-	public void testPerfectValues() {
-		doTestPerfectValues(Decimal64Field.getInstance());
-	}
+    @Test
+    public void testPerfectValues() {
+        doTestPerfectValues(Decimal64Field.getInstance());
+    }
 
-	@Test
-	public void testFrames() {
-		doTestFrames(Decimal64Field.getInstance());
-	}
+    @Test
+    public void testFrames() {
+        doTestFrames(Decimal64Field.getInstance());
+    }
 
-	@Test
-	public void testDerivativesConsistency() {
-		doTestDerivativesConsistency(Decimal64Field.getInstance());
-	}
+    @Test
+    public void testDerivativesConsistency() {
+        doTestDerivativesConsistency(Decimal64Field.getInstance());
+    }
 
-	@Test
-	public void testNoReset() {
-		doTestNoReset(Decimal64Field.getInstance());
-	}
+    @Test
+    public void testNoReset() {
+        doTestNoReset(Decimal64Field.getInstance());
+    }
 
-	@Test
-	public void testIssue544() {
-		doTestIssue544(Decimal64Field.getInstance());
-	}
+    @Test
+    public void testIssue544() {
+        doTestIssue544(Decimal64Field.getInstance());
+    }
 
-	public <T extends RealFieldElement<T>> void doTestPerfectValues(Field<T> field) {
-		// Builds the FieldGLONASSAnalyticalPropagator from the almanac
-		FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field,
-				FieldGLONASSAnalyticalPropagatorTest.almanac);
-		final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
+    public <T extends RealFieldElement<T>> void doTestPerfectValues(Field<T> field) {
+        // Builds the FieldGLONASSAnalyticalPropagator from the almanac
+        FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field,
+                        FieldGLONASSAnalyticalPropagatorTest.almanac);
+        final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
 
-		// Target
-		final FieldAbsoluteDate<T> target = new FieldAbsoluteDate<>(field, new DateComponents(2007, 12, 23),
-				new TimeComponents(51300), TimeScalesFactory.getGLONASS());
+        // Target
+        final FieldAbsoluteDate<T> target = new FieldAbsoluteDate<>(field, new DateComponents(2007, 12, 23),
+                        new TimeComponents(51300), TimeScalesFactory.getGLONASS());
 
-		Assert.assertEquals(0.0, almanac.getGlo2UTC().getReal(), Precision.SAFE_MIN);
-		Assert.assertEquals(0.0, almanac.getGloOffset().getReal(), Precision.SAFE_MIN);
-		Assert.assertEquals(0.0, almanac.getGPS2Glo().getReal(), Precision.SAFE_MIN);
-		Assert.assertEquals(1, almanac.getHealth());
-		Assert.assertEquals(0, almanac.getFrequencyChannel());
+        Assert.assertEquals(0.0, almanac.getGlo2UTC().getReal(), Precision.SAFE_MIN);
+        Assert.assertEquals(0.0, almanac.getGloOffset().getReal(), Precision.SAFE_MIN);
+        Assert.assertEquals(0.0, almanac.getGPS2Glo().getReal(), Precision.SAFE_MIN);
+        Assert.assertEquals(1, almanac.getHealth());
+        Assert.assertEquals(0, almanac.getFrequencyChannel());
 
-		// Compute PVCoordinates at the date in the ECEF
-		final FieldPVCoordinates<T> pvFinal = propagator.propagateInEcef(target);
+        // Compute PVCoordinates at the date in the ECEF
+        final FieldPVCoordinates<T> pvFinal = propagator.propagateInEcef(target);
 
-		// Reference values (see GLONASS ICD)
-		final FieldPVCoordinates<T> pvExpected = new FieldPVCoordinates<>(field,
-				new PVCoordinates(new Vector3D(10697116.4874360654, 21058292.4241863210, -9635679.33963303405),
-						new Vector3D(-0686.100809921691084, -1136.54864124521881, -3249.98587740305799)));
+        // Reference values (see GLONASS ICD)
+        final FieldPVCoordinates<T> pvExpected = new FieldPVCoordinates<>(field,
+                        new PVCoordinates(new Vector3D(10697116.4874360654, 21058292.4241863210, -9635679.33963303405),
+                                          new Vector3D(-0686.100809921691084, -1136.54864124521881, -3249.98587740305799)));
 
-		// Check
-		Assert.assertEquals(Propagator.DEFAULT_MASS, propagator.getMass(target).getReal(), 0.1);
-		Assert.assertEquals(0.0, pvFinal.getPosition().distance(pvExpected.getPosition()).getReal(), 1.1e-7);
-		Assert.assertEquals(0.0, pvFinal.getVelocity().distance(pvExpected.getVelocity()).getReal(), 1.1e-5);
+        // Check
+        Assert.assertEquals(Propagator.DEFAULT_MASS, propagator.getMass(target).getReal(), 0.1);
+        Assert.assertEquals(0.0, pvFinal.getPosition().distance(pvExpected.getPosition()).getReal(), 1.1e-7);
+        Assert.assertEquals(0.0, pvFinal.getVelocity().distance(pvExpected.getVelocity()).getReal(), 1.1e-5);
 
-		// Get PVCoordinates at the date in the ECEF
-		final FieldPVCoordinates<T> pvFinal2 = propagator.getPVCoordinates(target, propagator.getECEF());
-		Assert.assertEquals(0., pvFinal.getPosition().distance(pvFinal2.getPosition()).getReal(), 2.4e-8);
-	}
+        // Get PVCoordinates at the date in the ECEF
+        final FieldPVCoordinates<T> pvFinal2 = propagator.getPVCoordinates(target, propagator.getECEF());
+        Assert.assertEquals(0., pvFinal.getPosition().distance(pvFinal2.getPosition()).getReal(), 2.4e-8);
+    }
 
-	public <T extends RealFieldElement<T>> void doTestFrames(Field<T> field) {
-		// Builds the FieldGLONASSAnalyticalPropagator from the almanac
-		FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field,
-				FieldGLONASSAnalyticalPropagatorTest.almanac);
-		final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
+    public <T extends RealFieldElement<T>> void doTestFrames(Field<T> field) {
+        // Builds the FieldGLONASSAnalyticalPropagator from the almanac
+        FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field,
+                        FieldGLONASSAnalyticalPropagatorTest.almanac);
+        final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
 
-		Assert.assertEquals("EME2000", propagator.getFrame().getName());
-		Assert.assertEquals("EME2000", propagator.getECI().getName());
-		Assert.assertEquals(3.986004418e+14, GLONASSOrbitalElements.GLONASS_MU, 1.0e6);
-		// Defines some date
-		final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
-				new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC()));
-		// Get PVCoordinates at the date in the ECEF
-		final FieldPVCoordinates<T> pv0 = propagator.propagateInEcef(date);
-		// Get PVCoordinates at the date in the ECEF
-		final FieldPVCoordinates<T> pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
+        Assert.assertEquals("EME2000", propagator.getFrame().getName());
+        Assert.assertEquals("EME2000", propagator.getECI().getName());
+        Assert.assertEquals(3.986004418e+14, GLONASSOrbitalElements.GLONASS_MU, 1.0e6);
+        // Defines some date
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
+                        new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC()));
+        // Get PVCoordinates at the date in the ECEF
+        final FieldPVCoordinates<T> pv0 = propagator.propagateInEcef(date);
+        // Get PVCoordinates at the date in the ECEF
+        final FieldPVCoordinates<T> pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
-		// Checks
-		Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()).getReal(), 2.6e-8);
-		Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()).getReal(), 2.8e-12);
-	}
+        // Checks
+        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()).getReal(), 2.6e-8);
+        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()).getReal(), 2.8e-12);
+    }
 
-	public <T extends RealFieldElement<T>> void doTestDerivativesConsistency(Field<T> field) {
-		final Frame eme2000 = FramesFactory.getEME2000();
-		double errorP = 0;
-		double errorV = 0;
-		double errorA = 0;
-		// Builds the FieldGLONASSAnalyticalPropagator from the almanac
-		FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field, FieldGLONASSAnalyticalPropagatorTest.almanac);
-		final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
-		FieldGLONASSOrbitalElements<T> elements = propagator.getGLONASSOrbitalElements();
-		FieldAbsoluteDate<T> t0 = new FieldGLONASSDate<T>(field, elements.getNa(), elements.getN4(), elements.getTime()).getDate();
-		for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
-			final FieldAbsoluteDate<T> central = t0.shiftedBy(dt);
-			final FieldPVCoordinates<T> pv = propagator.getPVCoordinates(central, eme2000);
-			final double h = 10.0;
-			List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<TimeStampedFieldPVCoordinates<T>>();
-			for (int i = -3; i <= 3; ++i) {
-				sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
-			}
-			final FieldPVCoordinates<T> interpolated = TimeStampedFieldPVCoordinates.interpolate(central,
-					CartesianDerivativesFilter.USE_P, sample);
-			//System.out.println(pv.getPosition() + " and " + interpolated.getPosition());
-			//System.out.println(pv.getVelocity() + " and " + interpolated.getVelocity());
-			System.out.println(interpolated.getAcceleration().getZ());// + "\t" + interpolated.getAcceleration());
-			errorP = FastMath.max(errorP, FieldVector3D.distance(pv.getPosition(), interpolated.getPosition()).getReal());
-			errorV = FastMath.max(errorV, FieldVector3D.distance(pv.getVelocity(), interpolated.getVelocity()).getReal());
-			errorA = FastMath.max(errorA, FieldVector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()).getReal());
-		}
-		System.out.println(errorP);
+    public <T extends RealFieldElement<T>> void doTestDerivativesConsistency(Field<T> field) {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        double errorP = 0;
+        double errorV = 0;
+        double errorA = 0;
+        // Builds the FieldGLONASSAnalyticalPropagator from the almanac
+        FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field, FieldGLONASSAnalyticalPropagatorTest.almanac);
+        final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
+        FieldGLONASSOrbitalElements<T> elements = propagator.getGLONASSOrbitalElements();
+        FieldAbsoluteDate<T> t0 = new FieldGLONASSDate<T>(field, elements.getNa(), elements.getN4(), elements.getTime()).getDate();
+        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
+            final FieldAbsoluteDate<T> central = t0.shiftedBy(dt);
+            final FieldPVCoordinates<T> pv = propagator.getPVCoordinates(central, eme2000);
+            final double h = 10.0;
+            List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<TimeStampedFieldPVCoordinates<T>>();
+            for (int i = -3; i <= 3; ++i) {
+                sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
+            }
+            final FieldPVCoordinates<T> interpolated = TimeStampedFieldPVCoordinates.interpolate(central,
+                                                                                                 CartesianDerivativesFilter.USE_P, sample);
+            errorP = FastMath.max(errorP, FieldVector3D.distance(pv.getPosition(), interpolated.getPosition()).getReal());
+            errorV = FastMath.max(errorV, FieldVector3D.distance(pv.getVelocity(), interpolated.getVelocity()).getReal());
+            errorA = FastMath.max(errorA, FieldVector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()).getReal());
+        }
+        System.out.println(errorP);
         System.out.println(errorV);
         System.out.println(errorA);
-		Assert.assertEquals(0.0, errorP, 1.9e-9);
-		Assert.assertEquals(0.0, errorV, 3.2e-3);
-		Assert.assertEquals(0.0, errorA, 7.0e-4);
-	}
-	
-	public <T extends RealFieldElement<T>> void doTestNoReset(Field<T> field) {
-		try {
-			// Builds the FieldGLONASSAnalyticalPropagator from the almanac
-			FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field, FieldGLONASSAnalyticalPropagatorTest.almanac);
-			final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
+        Assert.assertEquals(0.0, errorP, 1.9e-9);
+        Assert.assertEquals(0.0, errorV, 3.2e-3);
+        Assert.assertEquals(0.0, errorA, 7.0e-4);
+    }
+
+    public <T extends RealFieldElement<T>> void doTestNoReset(Field<T> field) {
+        try {
+            // Builds the FieldGLONASSAnalyticalPropagator from the almanac
+            FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field, FieldGLONASSAnalyticalPropagatorTest.almanac);
+            final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
             propagator.resetInitialState(propagator.getInitialState());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
-        	// Builds the FieldGLONASSAnalyticalPropagator from the almanac
-        	FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field, FieldGLONASSAnalyticalPropagatorTest.almanac);
-        	final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
+            // Builds the FieldGLONASSAnalyticalPropagator from the almanac
+            FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field, FieldGLONASSAnalyticalPropagatorTest.almanac);
+            final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
             propagator.resetIntermediateState(propagator.getInitialState(), true);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
-	}
-	
-	public <T extends RealFieldElement<T>> void doTestIssue544(Field<T> field) {
-		// Builds the FieldGLONASSAnalyticalPropagator from the almanac
-		FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field, FieldGLONASSAnalyticalPropagatorTest.almanac);
-		final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
+    }
+
+    public <T extends RealFieldElement<T>> void doTestIssue544(Field<T> field) {
+        // Builds the FieldGLONASSAnalyticalPropagator from the almanac
+        FieldGLONASSAlmanac<T> almanac = new FieldGLONASSAlmanac<T>(field, FieldGLONASSAnalyticalPropagatorTest.almanac);
+        final FieldGLONASSAnalyticalPropagator<T> propagator = new FieldGLONASSAnalyticalPropagator<>(field, almanac);
         // In order to test the issue, we volontary set a Double.NaN value in the date.
         final FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC()));
         final FieldPVCoordinates<T> pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
         Assert.assertEquals(FieldVector3D.getNaN(field), pv0.getPosition());
         Assert.assertEquals(FieldVector3D.getNaN(field), pv0.getVelocity());
-	}
-	
+    }
+
 
 }

@@ -49,25 +49,28 @@ import org.orekit.utils.ParameterDriver;
  * approach. From a computer science point of view, this is a use of the
  * decorator design pattern.
  * </p>
- * 
+ *
  * @see FieldPropagator
  * @see org.orekit.forces.maneuvers.FieldSmallManeuverAnalyticalModel
  * @author Luc Maisonobe
  * @author Nicolas Fialton (field translation)
  */
 public class FieldAdapterPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
-	/** Interface for orbit differential effects. */
-    public interface FieldDifferentialEffect<T extends RealFieldElement<T>>  {
 
-        /** Apply the effect to a {@link FieldSpacecraftState spacecraft state}.
+    /** Interface for orbit differential effects. */
+    public interface FieldDifferentialEffect<T extends RealFieldElement<T>> {
+
+        /**
+         * Apply the effect to a {@link FieldSpacecraftState spacecraft state}.
          * <p>
          * Applying the effect may be a no-op in some cases. A typical example
-         * is maneuvers, for which the state is changed only for time <em>after</em>
-         * the maneuver occurrence.
+         * is maneuvers, for which the state is changed only for time
+         * <em>after</em> the maneuver occurrence.
          * </p>
+         *
          * @param original original state <em>without</em> the effect
-         * @return updated state at the same date, taking the effect
-         * into account if meaningful
+         * @return updated state at the same date, taking the effect into
+         *         account if meaningful
          */
         FieldSpacecraftState<T> apply(FieldSpacecraftState<T> original);
 
@@ -79,34 +82,44 @@ public class FieldAdapterPropagator<T extends RealFieldElement<T>> extends Field
     /** Effects to add. */
     private List<FieldDifferentialEffect<T>> effects;
 
-    /** Build a propagator from an underlying reference propagator.
-     * <p>The reference propagator can be almost anything, numerical,
-     * analytical, and even an ephemeris. It may already take some maneuvers
-     * into account.</p>
+    /**
+     * Build a propagator from an underlying reference propagator.
+     * <p>
+     * The reference propagator can be almost anything, numerical, analytical,
+     * and even an ephemeris. It may already take some maneuvers into account.
+     * </p>
+     *
      * @param field
      * @param reference reference propagator
      */
-    public FieldAdapterPropagator(Field<T> field, final FieldPropagator<T> reference) {
+    public FieldAdapterPropagator(final Field<T> field,
+                                  final FieldPropagator<T> reference) {
         super(field, reference.getAttitudeProvider());
         this.reference = reference;
         this.effects = new ArrayList<FieldDifferentialEffect<T>>();
     }
 
-    /** Add a differential effect.
+    /**
+     * Add a differential effect.
+     *
      * @param effect differential effect
      */
     public void addEffect(final FieldDifferentialEffect<T> effect) {
         effects.add(effect);
     }
 
-    /** Get the reference propagator.
+    /**
+     * Get the reference propagator.
+     *
      * @return reference propagator
      */
     public FieldPropagator<T> getPropagator() {
         return reference;
     }
 
-    /** Get the differential effects.
+    /**
+     * Get the differential effects.
+     *
      * @return differential effects models, as an unmodifiable list
      */
     public List<FieldDifferentialEffect<T>> getEffects() {
@@ -125,9 +138,11 @@ public class FieldAdapterPropagator<T extends RealFieldElement<T>> extends Field
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state,
+                                          final boolean forward) {
         if (reference instanceof FieldAbstractAnalyticalPropagator<?>) {
-            ((FieldAbstractAnalyticalPropagator<T>) reference).resetIntermediateState(state, forward);
+            ((FieldAbstractAnalyticalPropagator<T>) reference)
+                .resetIntermediateState(state, forward);
         } else {
             throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
         }
@@ -135,7 +150,8 @@ public class FieldAdapterPropagator<T extends RealFieldElement<T>> extends Field
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
+    protected FieldSpacecraftState<T>
+        basicPropagate(final FieldAbsoluteDate<T> date) {
 
         // compute reference state
         FieldSpacecraftState<T> state = reference.propagate(date);
@@ -149,7 +165,8 @@ public class FieldAdapterPropagator<T extends RealFieldElement<T>> extends Field
         // forward additional states from the reference propagator
         for (final Map.Entry<String, T[]> entry : before.entrySet()) {
             if (!state.hasAdditionalState(entry.getKey())) {
-                state = state.addAdditionalState(entry.getKey(), entry.getValue());
+                state =
+                    state.addAdditionalState(entry.getKey(), entry.getValue());
             }
         }
 
@@ -162,24 +179,26 @@ public class FieldAdapterPropagator<T extends RealFieldElement<T>> extends Field
         return basicPropagate(date).getOrbit();
     }
 
-    /** {@inheritDoc}*/
+    /** {@inheritDoc} */
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return basicPropagate(date).getMass();
     }
 
-	@Override
-	protected FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date, T[] parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                           final T[] parameters) {
+        return basicPropagate(date).getOrbit();
+    }
 
-	/** Get the parameters driver for the Field SBAS propagation model.
+    /**
+     * Get the parameters driver for the Field SBAS propagation model.
+     *
      * @return an empty list.
      */
-	@Override
-	protected List<ParameterDriver> getParametersDrivers() {
-		// The Field Adapter propagation model does not have parameter drivers.
+    @Override
+    protected List<ParameterDriver> getParametersDrivers() {
+        // The Field Adapter propagation model does not have parameter drivers.
         return Collections.emptyList();
-	}
+    }
 
 }

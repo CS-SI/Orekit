@@ -30,306 +30,316 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
- *
  */
-public class FieldQZSSAlmanac<T extends RealFieldElement<T>> implements FieldQZSSOrbitalElements<T> {
-	private final T zero;
-	// Fields
-	/** Source of the almanac. */
-	private final String src;
+public class FieldQZSSAlmanac<T extends RealFieldElement<T>>
+    implements
+    FieldQZSSOrbitalElements<T> {
 
-	/** PRN number. */
-	private final int prn;
+    /** Field Zero. */
+    private final T zero;
 
-	/** Health status. */
-	private final int health;
+    // Fields
+    /** Source of the almanac. */
+    private final String src;
 
-	/** QZSS week. */
-	private final int week;
+    /** PRN number. */
+    private final int prn;
 
-	/** Time of applicability. */
-	private final T toa;
+    /** Health status. */
+    private final int health;
 
-	/** Semi-major axis. */
-	private final T sma;
+    /** QZSS week. */
+    private final int week;
 
-	/** Eccentricity. */
-	private final T ecc;
+    /** Time of applicability. */
+    private final T toa;
 
-	/** Inclination. */
-	private final T inc;
+    /** Semi-major axis. */
+    private final T sma;
 
-	/** Longitude of Orbital Plane. */
-	private final T om0;
+    /** Eccentricity. */
+    private final T ecc;
 
-	/** Rate of Right Ascension. */
-	private final T dom;
+    /** Inclination. */
+    private final T inc;
 
-	/** Argument of perigee. */
-	private final T aop;
+    /** Longitude of Orbital Plane. */
+    private final T om0;
 
-	/** Mean anomaly. */
-	private final T anom;
+    /** Rate of Right Ascension. */
+    private final T dom;
 
-	/** Zeroth order clock correction. */
-	private final T af0;
+    /** Argument of perigee. */
+    private final T aop;
 
-	/** First order clock correction. */
-	private final T af1;
+    /** Mean anomaly. */
+    private final T anom;
 
-	/** Date of validity. */
-	private final FieldAbsoluteDate<T> date;
+    /** Zeroth order clock correction. */
+    private final T af0;
 
-	/**
-	 * Constructor.
-	 *
-	 * <p>
-	 * This method uses the {@link DataContext#getDefault() default data context}.
-	 *
-	 * @param source the source of the almanac (SEM, YUMA, user defined)
-	 * @param prn    the PRN number
-	 * @param week   the QZSS week
-	 * @param toa    the Time of Applicability
-	 * @param sqa    the Square Root of Semi-Major Axis (m^1/2)
-	 * @param ecc    the eccentricity
-	 * @param inc    the inclination (rad)
-	 * @param om0    the geographic longitude of the orbital plane at the weekly
-	 *               epoch (rad)
-	 * @param dom    the Rate of Right Ascension (rad/s)
-	 * @param aop    the Argument of Perigee (rad)
-	 * @param anom   the Mean Anomaly (rad)
-	 * @param af0    the Zeroth Order Clock Correction (s)
-	 * @param af1    the First Order Clock Correction (s/s)
-	 * @param health the Health status
-	 * @see #FieldQZSSAlmanac(String, int, int, T, T, T, T, T, T, T, T, T, T, int,
-	 *      FieldAbsoluteDate)
-	 */
-	@DefaultDataContext
-	public FieldQZSSAlmanac(final String source, final int prn, final int week, final T toa, final T sqa, final T ecc,
-			final T inc, final T om0, final T dom, final T aop, final T anom, final T af0, final T af1,
-			final int health) {
-		this(source, prn, week, toa, sqa, ecc, inc, om0, dom, aop, anom, af0, af1, health, new FieldGNSSDate<>(week,
-				toa.multiply(1000), SatelliteSystem.QZSS, DataContext.getDefault().getTimeScales()).getDate());
-	}
+    /** First order clock correction. */
+    private final T af1;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param source the source of the almanac (SEM, YUMA, user defined)
-	 * @param prn    the PRN number
-	 * @param week   the QZSS week
-	 * @param toa    the Time of Applicability
-	 * @param sqa    the Square Root of Semi-Major Axis (m^1/2)
-	 * @param ecc    the eccentricity
-	 * @param inc    the inclination (rad)
-	 * @param om0    the geographic longitude of the orbital plane at the weekly
-	 *               epoch (rad)
-	 * @param dom    the Rate of Right Ascension (rad/s)
-	 * @param aop    the Argument of Perigee (rad)
-	 * @param anom   the Mean Anomaly (rad)
-	 * @param af0    the Zeroth Order Clock Correction (s)
-	 * @param af1    the First Order Clock Correction (s/s)
-	 * @param health the Health status
-	 * @param date   of applicability corresponding to {@code week} and {@code toa}.
-	 * @since 10.1
-	 */
-	public FieldQZSSAlmanac(final String source, final int prn, final int week, final T toa, final T sqa, final T ecc,
-			final T inc, final T om0, final T dom, final T aop, final T anom, final T af0, final T af1,
-			final int health, final FieldAbsoluteDate<T> date) {
-		this.zero = toa.getField().getZero();
-		this.src = source;
-		this.prn = prn;
-		this.week = week;
-		this.toa = toa;
-		this.sma = sqa.multiply(sqa);
-		this.ecc = ecc;
-		this.inc = inc;
-		this.om0 = om0;
-		this.dom = dom;
-		this.aop = aop;
-		this.anom = anom;
-		this.af0 = af0;
-		this.af1 = af1;
-		this.health = health;
-		this.date = date;
-	}
+    /** Date of validity. */
+    private final FieldAbsoluteDate<T> date;
 
-	/**
-	 * Constructor.
-	 * 
-	 * This constructor converts a QZSSAlmanac into a FieldQZSSAlmanac
-	 * 
-	 * @param field
-	 * @param almanac
-	 */
-	public FieldQZSSAlmanac(Field<T> field, QZSSAlmanac almanac) {
-		this.zero = field.getZero();
-		this.src = almanac.getSource();
-		this.prn = almanac.getPRN();
-		this.week = almanac.getWeek();
-		this.toa = zero.add(almanac.getTime());
-		this.sma = zero.add(almanac.getSma());
-		this.ecc = zero.add(almanac.getE());
-		this.inc = zero.add(almanac.getI0());
-		this.om0 = zero.add(almanac.getOmega0());
-		this.dom = zero.add(almanac.getOmegaDot());
-		this.aop = zero.add(almanac.getPa());
-		this.anom = zero.add(almanac.getM0());
-		this.af0 = zero.add(almanac.getAf0());
-		this.af1 = zero.add(almanac.getAf1());
-		this.health = almanac.getHealth();
-		this.date = new FieldAbsoluteDate<>(field, almanac.getDate());
-	}
+    /**
+     * Constructor.
+     * <p>
+     * This method uses the {@link DataContext#getDefault() default data
+     * context}.
+     *
+     * @param source the source of the almanac (SEM, YUMA, user defined)
+     * @param prn the PRN number
+     * @param week the QZSS week
+     * @param toa the Time of Applicability
+     * @param sqa the Square Root of Semi-Major Axis (m^1/2)
+     * @param ecc the eccentricity
+     * @param inc the inclination (rad)
+     * @param om0 the geographic longitude of the orbital plane at the weekly
+     *        epoch (rad)
+     * @param dom the Rate of Right Ascension (rad/s)
+     * @param aop the Argument of Perigee (rad)
+     * @param anom the Mean Anomaly (rad)
+     * @param af0 the Zeroth Order Clock Correction (s)
+     * @param af1 the First Order Clock Correction (s/s)
+     * @param health the Health status
+     * @see #FieldQZSSAlmanac(String, int, int, T, T, T, T, T, T, T, T, T, T,
+     *      int, FieldAbsoluteDate)
+     */
+    @DefaultDataContext
+    public FieldQZSSAlmanac(final String source, final int prn, final int week,
+                            final T toa, final T sqa, final T ecc, final T inc,
+                            final T om0, final T dom, final T aop, final T anom,
+                            final T af0, final T af1, final int health) {
+        this(source, prn, week, toa, sqa, ecc, inc, om0, dom, aop, anom, af0,
+             af1, health,
+             new FieldGNSSDate<>(week, toa.multiply(1000), SatelliteSystem.QZSS,
+                                 DataContext.getDefault().getTimeScales())
+                                     .getDate());
+    }
 
-	/**
-	 * Gets the source of this QZSS almanac.
-	 *
-	 * @return the source of this QZSS almanac
-	 */
-	public String getSource() {
-		return src;
-	}
+    /**
+     * Constructor.
+     *
+     * @param source the source of the almanac (SEM, YUMA, user defined)
+     * @param prn the PRN number
+     * @param week the QZSS week
+     * @param toa the Time of Applicability
+     * @param sqa the Square Root of Semi-Major Axis (m^1/2)
+     * @param ecc the eccentricity
+     * @param inc the inclination (rad)
+     * @param om0 the geographic longitude of the orbital plane at the weekly
+     *        epoch (rad)
+     * @param dom the Rate of Right Ascension (rad/s)
+     * @param aop the Argument of Perigee (rad)
+     * @param anom the Mean Anomaly (rad)
+     * @param af0 the Zeroth Order Clock Correction (s)
+     * @param af1 the First Order Clock Correction (s/s)
+     * @param health the Health status
+     * @param date of applicability corresponding to {@code week} and
+     *        {@code toa}.
+     * @since 10.1
+     */
+    public FieldQZSSAlmanac(final String source, final int prn, final int week,
+                            final T toa, final T sqa, final T ecc, final T inc,
+                            final T om0, final T dom, final T aop, final T anom,
+                            final T af0, final T af1, final int health,
+                            final FieldAbsoluteDate<T> date) {
+        this.zero = toa.getField().getZero();
+        this.src = source;
+        this.prn = prn;
+        this.week = week;
+        this.toa = toa;
+        this.sma = sqa.multiply(sqa);
+        this.ecc = ecc;
+        this.inc = inc;
+        this.om0 = om0;
+        this.dom = dom;
+        this.aop = aop;
+        this.anom = anom;
+        this.af0 = af0;
+        this.af1 = af1;
+        this.health = health;
+        this.date = date;
+    }
 
-	@Override
-	public int getPRN() {
-		return prn;
-	}
+    /**
+     * Constructor. This constructor converts a QZSSAlmanac into a
+     * FieldQZSSAlmanac
+     *
+     * @param field
+     * @param almanac
+     */
+    public FieldQZSSAlmanac(final Field<T> field, final QZSSAlmanac almanac) {
+        this.zero = field.getZero();
+        this.src = almanac.getSource();
+        this.prn = almanac.getPRN();
+        this.week = almanac.getWeek();
+        this.toa = zero.add(almanac.getTime());
+        this.sma = zero.add(almanac.getSma());
+        this.ecc = zero.add(almanac.getE());
+        this.inc = zero.add(almanac.getI0());
+        this.om0 = zero.add(almanac.getOmega0());
+        this.dom = zero.add(almanac.getOmegaDot());
+        this.aop = zero.add(almanac.getPa());
+        this.anom = zero.add(almanac.getM0());
+        this.af0 = zero.add(almanac.getAf0());
+        this.af1 = zero.add(almanac.getAf1());
+        this.health = almanac.getHealth();
+        this.date = new FieldAbsoluteDate<>(field, almanac.getDate());
+    }
 
-	@Override
-	public int getWeek() {
-		return week;
-	}
+    /**
+     * Gets the source of this QZSS almanac.
+     *
+     * @return the source of this QZSS almanac
+     */
+    public String getSource() {
+        return src;
+    }
 
-	@Override
-	public T getTime() {
-		return toa;
-	}
+    @Override
+    public int getPRN() {
+        return prn;
+    }
 
-	@Override
-	public T getSma() {
-		return sma;
-	}
+    @Override
+    public int getWeek() {
+        return week;
+    }
 
-	@Override
-	public T getMeanMotion() {
-		final T absA = FastMath.abs(sma);
-		return FastMath.sqrt(absA.getField().getZero().add(QZSS_MU).divide(absA)).divide(absA);
-	}
+    @Override
+    public T getTime() {
+        return toa;
+    }
 
-	@Override
-	public T getE() {
-		return ecc;
-	}
+    @Override
+    public T getSma() {
+        return sma;
+    }
 
-	@Override
-	public T getI0() {
-		return inc;
-	}
+    @Override
+    public T getMeanMotion() {
+        final T absA = FastMath.abs(sma);
+        return FastMath
+            .sqrt(absA.getField().getZero().add(QZSS_MU).divide(absA))
+            .divide(absA);
+    }
 
-	@Override
-	public T getOmega0() {
-		return om0;
-	}
+    @Override
+    public T getE() {
+        return ecc;
+    }
 
-	@Override
-	public T getOmegaDot() {
-		return dom;
-	}
+    @Override
+    public T getI0() {
+        return inc;
+    }
 
-	@Override
-	public T getPa() {
-		return aop;
-	}
+    @Override
+    public T getOmega0() {
+        return om0;
+    }
 
-	@Override
-	public T getM0() {
-		return anom;
-	}
+    @Override
+    public T getOmegaDot() {
+        return dom;
+    }
 
-	@Override
-	public T getAf0() {
-		return af0;
-	}
+    @Override
+    public T getPa() {
+        return aop;
+    }
 
-	@Override
-	public T getAf1() {
-		return af1;
-	}
+    @Override
+    public T getM0() {
+        return anom;
+    }
 
-	@Override
-	public FieldAbsoluteDate<T> getDate() {
-		return date;
-	}
+    @Override
+    public T getAf0() {
+        return af0;
+    }
 
-	/**
-	 * Gets the Health status.
-	 *
-	 * @return the Health status
-	 */
-	public int getHealth() {
-		return health;
-	}
+    @Override
+    public T getAf1() {
+        return af1;
+    }
 
-	@Override
-	public T getIDot() {
-		return zero;
-	}
+    @Override
+    public FieldAbsoluteDate<T> getDate() {
+        return date;
+    }
 
-	@Override
-	public T getCuc() {
-		return zero;
-	}
+    /**
+     * Gets the Health status.
+     *
+     * @return the Health status
+     */
+    public int getHealth() {
+        return health;
+    }
 
-	@Override
-	public T getCus() {
-		return zero;
-	}
+    @Override
+    public T getIDot() {
+        return zero;
+    }
 
-	@Override
-	public T getCrc() {
-		return zero;
-	}
+    @Override
+    public T getCuc() {
+        return zero;
+    }
 
-	@Override
-	public T getCrs() {
-		return zero;
-	}
+    @Override
+    public T getCus() {
+        return zero;
+    }
 
-	@Override
-	public T getCic() {
-		return zero;
-	}
+    @Override
+    public T getCrc() {
+        return zero;
+    }
 
-	@Override
-	public T getCis() {
-		return zero;
-	}
+    @Override
+    public T getCrs() {
+        return zero;
+    }
 
-	@Override
-	public T getAf2() {
-		return zero;
-	}
+    @Override
+    public T getCic() {
+        return zero;
+    }
 
-	@Override
-	public T getToc() {
-		return zero;
-	}
+    @Override
+    public T getCis() {
+        return zero;
+    }
 
-	@Override
-	public int getIODC() {
-		return 0;
-	}
+    @Override
+    public T getAf2() {
+        return zero;
+    }
 
-	@Override
-	public int getIODE() {
-		return 0;
-	}
+    @Override
+    public T getToc() {
+        return zero;
+    }
 
-	@Override
-	public T getTGD() {
-		return zero;
-	}
+    @Override
+    public int getIODC() {
+        return 0;
+    }
 
-	
+    @Override
+    public int getIODE() {
+        return 0;
+    }
+
+    @Override
+    public T getTGD() {
+        return zero;
+    }
 
 }

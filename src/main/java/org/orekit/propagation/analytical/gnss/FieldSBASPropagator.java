@@ -41,262 +41,310 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
 /**
- * 
- * This class aims at propagating a Field SBAS orbit from {@link FieldSBASOrbitalElements}.
+ * This class aims at propagating a Field SBAS orbit from
+ * {@link FieldSBASOrbitalElements}.
  *
  * @see "Tyler Reid, Todd Walker, Per Enge, L1/L5 SBAS MOPS Ephemeris Message to
  *      Support Multiple Orbit Classes, ION ITM, 2013"
- *
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
  */
-public class FieldSBASPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
-	/** The SBAS orbital elements used. */
-	private final FieldSBASOrbitalElements<T> sbasOrbit;
+public class FieldSBASPropagator<T extends RealFieldElement<T>>
+    extends
+    FieldAbstractAnalyticalPropagator<T> {
 
-	/** The spacecraft mass (kg). */
-	private final T mass;
+    /** The SBAS orbital elements used. */
+    private final FieldSBASOrbitalElements<T> sbasOrbit;
 
-	/** The Earth gravity coefficient used for SBAS propagation. */
-	private final T mu;
+    /** The spacecraft mass (kg). */
+    private final T mass;
 
-	/** The ECI frame used for SBAS propagation. */
-	private final Frame eci;
+    /** The Earth gravity coefficient used for SBAS propagation. */
+    private final T mu;
 
-	/** The ECEF frame used for SBAS propagation. */
-	private final Frame ecef;
+    /** The ECI frame used for SBAS propagation. */
+    private final Frame eci;
 
+    /** The ECEF frame used for SBAS propagation. */
+    private final Frame ecef;
 
-	/**
-	 * Default constructor.
-	 * 
-	 * <p>The Field SBAS orbital elements is the only requested parameter to build a FieldSBASPropagator.</p>
-	 * <p>The attitude provider is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
-	 * The Earth gravity coefficient is set by default to the
-	 *  {@link org.orekit.propagation.analytical.gnss.SBASOrbitalElements#SBAS_MU SBAS_MU}.<br>
-	 * The mass is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-	 * The ECI frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
-	 * The ECEF frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
-	 *  
-	 * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-	 * Another data context can be set using
-	 * {@code FieldSBASPropagator(final Field<T> field, final FieldSBASOrbitalElements<T> sbasOrbit, final Frames frames)}</p>
-	 * </p>
-	 * 
-	 * @param field
-	 * @param sbasOrbit the SBAS orbital elements to be used by the SBAS propagator.
-	 */
-	@DefaultDataContext
-	public FieldSBASPropagator(final Field<T> field, final FieldSBASOrbitalElements<T> sbasOrbit) {
-		this(field, sbasOrbit, DataContext.getDefault().getFrames());
-	}
+    /**
+     * Default constructor.
+     * <p>
+     * The Field SBAS orbital elements is the only requested parameter to build
+     * a FieldSBASPropagator.
+     * </p>
+     * <p>
+     * The attitude provider is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+     * The Earth gravity coefficient is set by default to the
+     * {@link org.orekit.propagation.analytical.gnss.SBASOrbitalElements#SBAS_MU
+     * SBAS_MU}.<br>
+     * The mass is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     * CIO/2010-based ITRF simple EOP}.
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data
+     * context}. Another data context can be set using
+     * {@code FieldSBASPropagator(final Field<T> field, final FieldSBASOrbitalElements<T> sbasOrbit, final Frames frames)}
+     * </p>
+     * </p>
+     *
+     * @param field
+     * @param sbasOrbit the SBAS orbital elements to be used by the SBAS
+     *        propagator.
+     */
+    @DefaultDataContext
+    public FieldSBASPropagator(final Field<T> field,
+                               final FieldSBASOrbitalElements<T> sbasOrbit) {
+        this(field, sbasOrbit, DataContext.getDefault().getFrames());
+    }
 
-	/**
-	 * Constructor.
-	 * 
-	 *  * <p>The Field SBAS orbital elements is the only requested parameter to build a FieldSBASPropagator.</p>
-	 * <p>The attitude provider is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
-	 * The Earth gravity coefficient is set by default to the
-	 *  {@link org.orekit.propagation.analytical.gnss.SBASOrbitalElements#SBAS_MU SBAS_MU}.<br>
-	 * The mass is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-	 * The ECI frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
-	 * The ECEF frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
-	 * </p>
-	 * 
-	 * @param field
-	 * @param sbasOrbit the SBAS orbital elements to be used by the SBAS propagator.
-	 * @param frames set of reference frames to use to initialize {@link
-	 *                    #ecef(Frame)}, {@link #eci(Frame)}, and {@link
-	 *                    #attitudeProvider(AttitudeProvider)}.
-	 */
-	public FieldSBASPropagator(final Field<T> field, final FieldSBASOrbitalElements<T> sbasOrbit, final Frames frames) {
-		this(field, sbasOrbit, Propagator.getDefaultLaw(frames), DEFAULT_MASS, frames.getEME2000(),
-				frames.getITRF(IERSConventions.IERS_2010, true));
-	}
+    /**
+     * Constructor. *
+     * <p>
+     * The Field SBAS orbital elements is the only requested parameter to build
+     * a FieldSBASPropagator.
+     * </p>
+     * <p>
+     * The attitude provider is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+     * The Earth gravity coefficient is set by default to the
+     * {@link org.orekit.propagation.analytical.gnss.SBASOrbitalElements#SBAS_MU
+     * SBAS_MU}.<br>
+     * The mass is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     * CIO/2010-based ITRF simple EOP}.
+     * </p>
+     *
+     * @param field
+     * @param sbasOrbit the SBAS orbital elements to be used by the SBAS
+     *        propagator.
+     * @param frames set of reference frames to use to initialize
+     *        {@link #ecef(Frame)}, {@link #eci(Frame)}, and
+     *        {@link #attitudeProvider(AttitudeProvider)}.
+     */
+    public FieldSBASPropagator(final Field<T> field,
+                               final FieldSBASOrbitalElements<T> sbasOrbit,
+                               final Frames frames) {
+        this(field, sbasOrbit, Propagator.getDefaultLaw(frames), DEFAULT_MASS,
+             frames.getEME2000(),
+             frames.getITRF(IERSConventions.IERS_2010, true));
+    }
 
-	/**
-	 * Constructor.
-	 * 
-	 *  * <p>The Field SBAS orbital elements is the only requested parameter to build a FieldSBASPropagator.</p>
-	 * <p>The attitude provider is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
-	 * The Earth gravity coefficient is set by default to the
-	 *  {@link org.orekit.propagation.analytical.gnss.SBASOrbitalElements#SBAS_MU SBAS_MU}.<br>
-	 * The mass is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-	 * The ECI frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
-	 * The ECEF frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
-	 * </p>
-	 * 
-	 * @param field
-	 * @param sbasOrbit
-	 * @param attitudeProvider
-	 * @param mass
-	 * @param eci
-	 * @param ecef
-	 */
-	public FieldSBASPropagator(final Field<T> field, final FieldSBASOrbitalElements<T> sbasOrbit,
-			final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef) {
-		super(field, attitudeProvider);
-		// Stores the SBAS orbital elements
-		this.sbasOrbit = sbasOrbit;
-		// Sets the start date as the date of the orbital elements
-		setStartDate(sbasOrbit.getDate());
-		// Sets the mu
-		final T zero = field.getZero();
-		this.mu = zero.add(FieldSBASOrbitalElements.SBAS_MU);
-		// Sets the mass
-		this.mass = zero.add(mass);
-		// Sets the Earth Centered Inertial frame
-		this.eci = eci;
-		// Sets the Earth Centered Earth Fixed frame
-		this.ecef = ecef;
-	}
+    /**
+     * Constructor. *
+     * <p>
+     * The Field SBAS orbital elements is the only requested parameter to build
+     * a FieldSBASPropagator.
+     * </p>
+     * <p>
+     * The attitude provider is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+     * The Earth gravity coefficient is set by default to the
+     * {@link org.orekit.propagation.analytical.gnss.SBASOrbitalElements#SBAS_MU
+     * SBAS_MU}.<br>
+     * The mass is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     * CIO/2010-based ITRF simple EOP}.
+     * </p>
+     *
+     * @param field
+     * @param sbasOrbit
+     * @param attitudeProvider
+     * @param mass
+     * @param eci
+     * @param ecef
+     */
+    public FieldSBASPropagator(final Field<T> field,
+                               final FieldSBASOrbitalElements<T> sbasOrbit,
+                               final AttitudeProvider attitudeProvider,
+                               final double mass, final Frame eci,
+                               final Frame ecef) {
+        super(field, attitudeProvider);
+        // Stores the SBAS orbital elements
+        this.sbasOrbit = sbasOrbit;
+        // Sets the start date as the date of the orbital elements
+        setStartDate(sbasOrbit.getDate());
+        // Sets the mu
+        final T zero = field.getZero();
+        this.mu = zero.add(FieldSBASOrbitalElements.SBAS_MU);
+        // Sets the mass
+        this.mass = zero.add(mass);
+        // Sets the Earth Centered Inertial frame
+        this.eci = eci;
+        // Sets the Earth Centered Earth Fixed frame
+        this.ecef = ecef;
+    }
 
-	/**
-	 * Gets the FieldPVCoordinates of the GNSS SV in {@link #getECEF() ECEF frame}.
-	 *
-	 * <p>
-	 * The algorithm uses automatic differentiation to compute velocity and
-	 * acceleration.
-	 * </p>
-	 *
-	 * @param date the computation date
-	 * @return the GNSS SV FieldPVCoordinates in {@link #getECEF() ECEF frame}
-	 */
-	public FieldPVCoordinates<T> propagateInEcef(final FieldAbsoluteDate<T> date) {
-		// Duration from SBAS ephemeris Reference date
-		final T zero = date.getField().getZero();
-		final FieldUnivariateDerivative2<T> dt = new FieldUnivariateDerivative2<T>(zero.add(getDT(date)), zero.add(1.0), zero);
-		// Satellite coordinates
-		final FieldUnivariateDerivative2<T> x = dt
-				.multiply(dt.multiply(sbasOrbit.getXDotDot().multiply(0.5)).add(sbasOrbit.getXDot()))
-				.add(sbasOrbit.getX());
-		final FieldUnivariateDerivative2<T> y = dt
-				.multiply(dt.multiply(sbasOrbit.getYDotDot().multiply(0.5)).add(sbasOrbit.getYDot()))
-				.add(sbasOrbit.getY());
-		final FieldUnivariateDerivative2<T> z = dt
-				.multiply(dt.multiply(sbasOrbit.getZDotDot().multiply(0.5)).add(sbasOrbit.getZDot()))
-				.add(sbasOrbit.getZ());
-		// Returns the Earth-fixed coordinates
-		final FieldVector3D<FieldUnivariateDerivative2<T>> positionwithDerivatives = new FieldVector3D<>(x, y, z);
-		return new FieldPVCoordinates<T>(
-				new FieldVector3D<T>(positionwithDerivatives.getX().getValue(),
-						positionwithDerivatives.getY().getValue(), positionwithDerivatives.getZ().getValue()),
-				new FieldVector3D<T>(positionwithDerivatives.getX().getFirstDerivative(),
-						positionwithDerivatives.getY().getFirstDerivative(),
-						positionwithDerivatives.getZ().getFirstDerivative()),
-				new FieldVector3D<T>(positionwithDerivatives.getX().getSecondDerivative(),
-						positionwithDerivatives.getY().getSecondDerivative(),
-						positionwithDerivatives.getZ().getSecondDerivative()));
-	}
+    /**
+     * Gets the FieldPVCoordinates of the GNSS SV in {@link #getECEF() ECEF
+     * frame}.
+     * <p>
+     * The algorithm uses automatic differentiation to compute velocity and
+     * acceleration.
+     * </p>
+     *
+     * @param date the computation date
+     * @return the GNSS SV FieldPVCoordinates in {@link #getECEF() ECEF frame}
+     */
+    public FieldPVCoordinates<T>
+        propagateInEcef(final FieldAbsoluteDate<T> date) {
+        // Duration from SBAS ephemeris Reference date
+        final T zero = date.getField().getZero();
+        final FieldUnivariateDerivative2<T> dt =
+            new FieldUnivariateDerivative2<T>(zero.add(getDT(date)),
+                                              zero.add(1.0), zero);
+        // Satellite coordinates
+        final FieldUnivariateDerivative2<T> x =
+            dt.multiply(dt.multiply(sbasOrbit.getXDotDot().multiply(0.5))
+                .add(sbasOrbit.getXDot())).add(sbasOrbit.getX());
+        final FieldUnivariateDerivative2<T> y =
+            dt.multiply(dt.multiply(sbasOrbit.getYDotDot().multiply(0.5))
+                .add(sbasOrbit.getYDot())).add(sbasOrbit.getY());
+        final FieldUnivariateDerivative2<T> z =
+            dt.multiply(dt.multiply(sbasOrbit.getZDotDot().multiply(0.5))
+                .add(sbasOrbit.getZDot())).add(sbasOrbit.getZ());
+        // Returns the Earth-fixed coordinates
+        final FieldVector3D<FieldUnivariateDerivative2<T>> positionwithDerivatives =
+            new FieldVector3D<>(x, y, z);
+        return new FieldPVCoordinates<T>(new FieldVector3D<T>(positionwithDerivatives
+            .getX().getValue(), positionwithDerivatives.getY().getValue(),
+                                                              positionwithDerivatives
+                                                                  .getZ()
+                                                                  .getValue()),
+                                         new FieldVector3D<T>(positionwithDerivatives
+                                             .getX().getFirstDerivative(),
+                                                              positionwithDerivatives
+                                                                  .getY()
+                                                                  .getFirstDerivative(),
+                                                              positionwithDerivatives
+                                                                  .getZ()
+                                                                  .getFirstDerivative()),
+                                         new FieldVector3D<T>(positionwithDerivatives
+                                             .getX().getSecondDerivative(),
+                                                              positionwithDerivatives
+                                                                  .getY()
+                                                                  .getSecondDerivative(),
+                                                              positionwithDerivatives
+                                                                  .getZ()
+                                                                  .getSecondDerivative()));
+    }
 
-	/** {@inheritDoc} */
-	protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
-		// Gets the PVCoordinates in ECEF frame
-		final FieldPVCoordinates<T> pvaInECEF = propagateInEcef(date);
-		// Transforms the PVCoordinates to ECI frame
-		final FieldPVCoordinates<T> pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
-		// Returns the Cartesian orbit
-		final T zero = date.getField().getZero();
-		return new FieldCartesianOrbit<T>(pvaInECI, eci, date, zero.add(mu));
-	}
+    /** {@inheritDoc} */
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+        // Gets the PVCoordinates in ECEF frame
+        final FieldPVCoordinates<T> pvaInECEF = propagateInEcef(date);
+        // Transforms the PVCoordinates to ECI frame
+        final FieldPVCoordinates<T> pvaInECI =
+            ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
+        // Returns the Cartesian orbit
+        final T zero = date.getField().getZero();
+        return new FieldCartesianOrbit<T>(pvaInECI, eci, date, zero.add(mu));
+    }
 
-	/**
-	 * Get the Earth gravity coefficient used for Field SBAS propagation.
-	 * 
-	 * @return the Earth gravity coefficient.
-	 */
-	public T getMU() {
-		return mu;
-	}
+    /**
+     * Get the Earth gravity coefficient used for Field SBAS propagation.
+     *
+     * @return the Earth gravity coefficient.
+     */
+    public T getMU() {
+        return mu;
+    }
 
-	/**
-	 * Gets the Earth Centered Inertial frame used to propagate the orbit.
-	 *
-	 * @return the ECI frame
-	 */
-	public Frame getECI() {
-		return eci;
-	}
+    /**
+     * Gets the Earth Centered Inertial frame used to propagate the orbit.
+     *
+     * @return the ECI frame
+     */
+    public Frame getECI() {
+        return eci;
+    }
 
-	/**
-	 * Gets the Earth Centered Earth Fixed frame used to propagate GNSS orbits.
-	 *
-	 * @return the ECEF frame
-	 */
-	public Frame getECEF() {
-		return ecef;
-	}
+    /**
+     * Gets the Earth Centered Earth Fixed frame used to propagate GNSS orbits.
+     *
+     * @return the ECEF frame
+     */
+    public Frame getECEF() {
+        return ecef;
+    }
 
-	/**
-	 * Get the underlying Field SBAS orbital elements.
-	 *
-	 * @return the underlying Field SBAS orbital elements
-	 */
-	public FieldSBASOrbitalElements<T> getSBASOrbitalElements() {
-		return sbasOrbit;
-	}
+    /**
+     * Get the underlying Field SBAS orbital elements.
+     *
+     * @return the underlying Field SBAS orbital elements
+     */
+    public FieldSBASOrbitalElements<T> getSBASOrbitalElements() {
+        return sbasOrbit;
+    }
 
-	/** {@inheritDoc} */
-	public Frame getFrame() {
-		return eci;
-	}
+    /** {@inheritDoc} */
+    public Frame getFrame() {
+        return eci;
+    }
 
-	/** {@inheritDoc} */
-	public void resetInitialState(final FieldSpacecraftState<T> state) {
-		throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
-	}
+    /** {@inheritDoc} */
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+    }
 
-	/** {@inheritDoc} */
-	protected T getMass(final FieldAbsoluteDate<T> date) {
-		return mass;
-	}
+    /** {@inheritDoc} */
+    protected T getMass(final FieldAbsoluteDate<T> date) {
+        return mass;
+    }
 
-	/** {@inheritDoc} */
-	protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
-		throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
-	}
+    /** {@inheritDoc} */
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state,
+                                          final boolean forward) {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+    }
 
-	/**
-	 * Get the duration from SBAS Reference epoch.
-	 * 
-	 * @param date the considered date
-	 * @return the duration from SBAS orbit Reference epoch (s)
-	 */
-	private T getDT(final FieldAbsoluteDate<T> date) {
-		// Time from ephemeris reference epoch
-		return date.durationFrom(sbasOrbit.getDate());
-	}
+    /**
+     * Get the duration from SBAS Reference epoch.
+     *
+     * @param date the considered date
+     * @return the duration from SBAS orbit Reference epoch (s)
+     */
+    private T getDT(final FieldAbsoluteDate<T> date) {
+        // Time from ephemeris reference epoch
+        return date.durationFrom(sbasOrbit.getDate());
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	protected FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date, T[] parameters) {
-		// Gets the PVCoordinates in ECEF frame
-		final FieldPVCoordinates<T> pvaInECEF = propagateInEcef(date);
-		// Transforms the PVCoordinates to ECI frame
-		final FieldPVCoordinates<T> pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
-		// Returns the Cartesian orbit
-		return new FieldCartesianOrbit<T>(pvaInECI, eci, date, mu);
-	}
+    /** {@inheritDoc} */
+    @Override
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                           final T[] parameters) {
+        // Gets the PVCoordinates in ECEF frame
+        final FieldPVCoordinates<T> pvaInECEF = propagateInEcef(date);
+        // Transforms the PVCoordinates to ECI frame
+        final FieldPVCoordinates<T> pvaInECI =
+            ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
+        // Returns the Cartesian orbit
+        return new FieldCartesianOrbit<T>(pvaInECI, eci, date, mu);
+    }
 
-	/** Get the parameters driver for the Field SBAS propagation model.
+    /**
+     * Get the parameters driver for the Field SBAS propagation model.
+     *
      * @return an empty list.
      */
-	@Override
-	protected List<ParameterDriver> getParametersDrivers() {
-		// Field SBAS propagation model does not have parameter drivers.
-		return Collections.emptyList();
-	}
+    @Override
+    protected List<ParameterDriver> getParametersDrivers() {
+        // Field SBAS propagation model does not have parameter drivers.
+        return Collections.emptyList();
+    }
 
 }

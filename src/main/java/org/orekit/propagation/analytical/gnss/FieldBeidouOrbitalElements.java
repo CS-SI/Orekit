@@ -18,15 +18,21 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.RealFieldElement;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link BeidouPropagator}.
-*
-* @see <a href="http://www2.unb.ca/gge/Resources/beidou_icd_english_ver2.0.pdf">Beidou Interface Control Document</a>
-* @author Bryan Cazabonne
-* @author Nicolas Fialton (field translation)
-*/
-public interface FieldBeidouOrbitalElements<T extends RealFieldElement<T>> extends FieldGNSSOrbitalElements<T> {
+/**
+ * This interface provides the minimal set of orbital elements needed by the
+ * {@link BeidouPropagator}.
+ *
+ * @see <a href=
+ *      "http://www2.unb.ca/gge/Resources/beidou_icd_english_ver2.0.pdf">Beidou
+ *      Interface Control Document</a>
+ * @author Bryan Cazabonne
+ * @author Nicolas Fialton (field translation)
+ */
+public interface FieldBeidouOrbitalElements<T extends RealFieldElement<T>>
+    extends
+    FieldGNSSOrbitalElements<T> {
 
-	// Constants
+    // Constants
     /** Earth's universal gravitational parameter for Beidou user in m³/s². */
     double BEIDOU_MU = 3.986004418e+14;
 

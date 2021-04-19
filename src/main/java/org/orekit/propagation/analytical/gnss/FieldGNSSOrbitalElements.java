@@ -19,16 +19,18 @@ package org.orekit.propagation.analytical.gnss;
 import org.hipparchus.RealFieldElement;
 import org.orekit.time.FieldTimeStamped;
 
-/** This interface provides the minimal set of Field orbital elements needed by the {@link FieldAbstractGNSSPropagator}.
-*
-* @author Pascal Parraud
-* @author Nicolas Fialton (field translation)
-*
-*/
-public interface FieldGNSSOrbitalElements<T extends RealFieldElement<T>> extends FieldTimeStamped<T> {
-	
-	
-	/**
+/**
+ * This interface provides the minimal set of Field orbital elements needed by
+ * the {@link FieldAbstractGNSSPropagator}.
+ *
+ * @author Pascal Parraud
+ * @author Nicolas Fialton (field translation)
+ */
+public interface FieldGNSSOrbitalElements<T extends RealFieldElement<T>>
+    extends
+    FieldTimeStamped<T> {
+
+    /**
      * Gets the PRN number of the GNSS satellite.
      *
      * @return the PRN number of the GNSS satellite
@@ -87,7 +89,8 @@ public interface FieldGNSSOrbitalElements<T extends RealFieldElement<T>> extends
     /**
      * Gets the Longitude of Ascending Node of Orbit Plane at Weekly Epoch.
      *
-     * @return the Longitude of Ascending Node of Orbit Plane at Weekly Epoch (rad)
+     * @return the Longitude of Ascending Node of Orbit Plane at Weekly Epoch
+     *         (rad)
      */
     T getOmega0();
 
@@ -113,44 +116,56 @@ public interface FieldGNSSOrbitalElements<T extends RealFieldElement<T>> extends
     T getM0();
 
     /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude.
+     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Argument
+     * of Latitude.
      *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude (rad)
+     * @return the Amplitude of the Cosine Harmonic Correction Term to the
+     *         Argument of Latitude (rad)
      */
     T getCuc();
 
     /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude.
+     * Gets the Amplitude of the Sine Harmonic Correction Term to the Argument
+     * of Latitude.
      *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude (rad)
+     * @return the Amplitude of the Sine Harmonic Correction Term to the
+     *         Argument of Latitude (rad)
      */
     T getCus();
 
     /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius.
+     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Orbit
+     * Radius.
      *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius (m)
+     * @return the Amplitude of the Cosine Harmonic Correction Term to the Orbit
+     *         Radius (m)
      */
     T getCrc();
 
     /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Orbit Radius.
+     * Gets the Amplitude of the Sine Harmonic Correction Term to the Orbit
+     * Radius.
      *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Orbit Radius (m)
+     * @return the Amplitude of the Sine Harmonic Correction Term to the Orbit
+     *         Radius (m)
      */
     T getCrs();
 
     /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination.
+     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Angle of
+     * Inclination.
      *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination (rad)
+     * @return the Amplitude of the Cosine Harmonic Correction Term to the Angle
+     *         of Inclination (rad)
      */
     T getCic();
 
     /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination.
+     * Gets the Amplitude of the Sine Harmonic Correction Term to the Angle of
+     * Inclination.
      *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination (rad)
+     * @return the Amplitude of the Sine Harmonic Correction Term to the Angle
+     *         of Inclination (rad)
      */
     T getCis();
 
@@ -174,6 +189,7 @@ public interface FieldGNSSOrbitalElements<T extends RealFieldElement<T>> extends
      * @since 9.3
      */
     T getAf1();
+
     /**
      * Gets the Second Order Clock Correction.
      *

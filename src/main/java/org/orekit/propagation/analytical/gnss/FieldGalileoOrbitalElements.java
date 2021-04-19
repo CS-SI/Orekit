@@ -18,19 +18,22 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.RealFieldElement;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link GalileoPropagator}.
-*
-* @see <a href="https://www.gsc-europa.eu/system/files/galileo_documents/Galileo-OS-SIS-ICD.pdf">
-*         Galileo Interface Control Document</a>
-*
-* @author Bryan Cazabonne
-* @author Nicolas Fialton (field translation)
-*
-*/
+/**
+ * This interface provides the minimal set of orbital elements needed by the
+ * {@link GalileoPropagator}.
+ *
+ * @see <a href=
+ *      "https://www.gsc-europa.eu/system/files/galileo_documents/Galileo-OS-SIS-ICD.pdf">
+ *      Galileo Interface Control Document</a>
+ * @author Bryan Cazabonne
+ * @author Nicolas Fialton (field translation)
+ */
 
-public interface FieldGalileoOrbitalElements<T extends RealFieldElement<T>> extends FieldGNSSOrbitalElements<T> {
-	
-	// Constants
+public interface FieldGalileoOrbitalElements<T extends RealFieldElement<T>>
+    extends
+    FieldGNSSOrbitalElements<T> {
+
+    // Constants
     /** Earth's universal gravitational parameter for Galileo user in m³/s². */
     double GALILEO_MU = 3.986004418e+14;
 

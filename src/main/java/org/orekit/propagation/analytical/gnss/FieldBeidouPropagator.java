@@ -37,142 +37,163 @@ import org.orekit.utils.ParameterDriver;
  * @see <a href=
  *      "http://www2.unb.ca/gge/Resources/beidou_icd_english_ver2.0.pdf">Beidou
  *      Interface Control Document</a>
- *
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
  */
-public class FieldBeidouPropagator<T extends RealFieldElement<T>> extends FieldAbstractGNSSPropagator<T> {
+public class FieldBeidouPropagator<T extends RealFieldElement<T>>
+    extends
+    FieldAbstractGNSSPropagator<T> {
 
-	// Constants
-	/** Value of the earth's rotation rate in rad/s. */
-	private static final double BEIDOU_AV = 7.2921150e-5;
+    // Constants
+    /** Value of the earth's rotation rate in rad/s. */
+    private static final double BEIDOU_AV = 7.2921150e-5;
 
-	/** Duration of the Beidou cycle in seconds. */
-	private static final double BEIDOU_CYCLE_DURATION = FieldBeidouOrbitalElements.BEIDOU_WEEK_IN_SECONDS
-			* FieldBeidouOrbitalElements.BEIDOU_WEEK_NB;
+    /** Duration of the Beidou cycle in seconds. */
+    private static final double BEIDOU_CYCLE_DURATION =
+        FieldBeidouOrbitalElements.BEIDOU_WEEK_IN_SECONDS *
+                                                        FieldBeidouOrbitalElements.BEIDOU_WEEK_NB;
 
-	// Fields
-	/** The Beidou orbital elements used. */
-	private final FieldBeidouOrbitalElements<T> bdsOrbit;
+    // Fields
+    /** The Beidou orbital elements used. */
+    private final FieldBeidouOrbitalElements<T> bdsOrbit;
 
-	/**
-	 * Default constructor.
-	 * 
-	 * <p>The Field Beidou orbital elements is the only requested parameter to build a FieldBeidouPropagator.</p>
-	 * <p>The attitude provider is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
-	 *  default data context.<br>
-	 * The mass is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-	 * The ECI frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-	 *  context.<br>
-	 * The ECEF frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-	 *  CIO/2010-based ITRF simple EOP} in the default data context.
-	 * </p>
-	 *
-	 * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-	 * Another data context can be set using
-	 * {@code FieldBeidouPropagator(final Field<T> field, final FieldBeidouOrbitalElements<T> bdsOrbit,
-			final Frames frames)}</p>
-	 * 
-	 * @param field
-	 * @param bdsOrbit the Field Beidou orbital elements to be used by the Field Beidou propagator.
-	 * @see #attitudeProvider(AttitudeProvider provider)
-	 * @see #mass(double mass)
-	 * @see #eci(Frame inertial)
-	 * @see #ecef(Frame bodyFixed)
-	 */
-	@DefaultDataContext
-	public FieldBeidouPropagator(final Field<T> field, final FieldBeidouOrbitalElements<T> bdsOrbit) {
-		this(field, bdsOrbit, DataContext.getDefault().getFrames());
-	}
+    /**
+     * Default constructor.
+     * <p>
+     * The Field Beidou orbital elements is the only requested parameter to
+     * build a FieldBeidouPropagator.
+     * </p>
+     * <p>
+     * The attitude provider is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+     * default data context.<br>
+     * The mass is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default
+     * data context.<br>
+     * The ECEF frame is set by default to the
+     * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     * CIO/2010-based ITRF simple EOP} in the default data context.
+     * </p>
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data
+     * context}. Another data context can be set using
+     * {@code FieldBeidouPropagator(final Field<T> field, final FieldBeidouOrbitalElements<T> bdsOrbit, final Frames frames)}
+     * </p>
+     *
+     * @param field
+     * @param bdsOrbit the Field Beidou orbital elements to be used by the Field Beidou propagator.
+     * @see #attitudeProvider(AttitudeProvider provider)
+     * @see #mass(double mass)
+     * @see #eci(Frame inertial)
+     * @see #ecef(Frame bodyFixed)
+     */
+    @DefaultDataContext
+    public FieldBeidouPropagator(final Field<T> field,
+                                 final FieldBeidouOrbitalElements<T> bdsOrbit) {
+        this(field, bdsOrbit, DataContext.getDefault().getFrames());
+    }
 
-	/**
-	 * Constructor.
-	 * 
-	 * <p>The Field Beidou orbital elements is the only requested parameter to build a FieldBeidouPropagator.</p>
-	 * <p>The attitude provider is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
-	 *  default data context.<br>
-	 * The mass is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-	 * The ECI frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-	 *  context.<br>
-	 * The ECEF frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-	 *  CIO/2010-based ITRF simple EOP} in the default data context.
-	 * </p>
-	 * 
-	 * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-	 * Another data context can be set using
-	 * {@code FieldBeidouPropagator(final Field<T> field, final FieldBeidouOrbitalElements<T> bdsOrbit,
-			final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef)}</p>
-	 * 
-	 * @param field
-	 * @param bdsOrbit the Field Beidou orbital elements to be used by the Field Beidou propagator.
-	 * @param frames set of frames to use building the propagator.
-	 * @see #attitudeProvider(AttitudeProvider provider)
-	 * @see #mass(double mass)
-	 * @see #eci(Frame inertial)
-	 * @see #ecef(Frame bodyFixed)
-	 */
-	public FieldBeidouPropagator(final Field<T> field, final FieldBeidouOrbitalElements<T> bdsOrbit,
-			final Frames frames) {
-		this(field, bdsOrbit, Propagator.getDefaultLaw(frames), DEFAULT_MASS, frames.getEME2000(),
-				frames.getITRF(IERSConventions.IERS_2010, true));
-	}
+    /**
+     * Constructor.
+     * <p>
+     * The Field Beidou orbital elements is the only requested parameter to
+     * build a FieldBeidouPropagator.
+     * </p>
+     * <p>
+     * The attitude provider is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+     * default data context.<br>
+     * The mass is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default
+     * data context.<br>
+     * The ECEF frame is set by default to the
+     * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     * CIO/2010-based ITRF simple EOP} in the default data context.
+     * </p>
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data
+     * context}. Another data context can be set using
+     * {@code FieldBeidouPropagator(final Field<T> field, final FieldBeidouOrbitalElements<T> bdsOrbit, final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef)}
+     * </p>
+     *
+     * @param field
+     * @param bdsOrbit the Field Beidou orbital elements to be used by the Field
+     *        Beidou propagator.
+     * @param frames set of frames to use building the propagator.
+     * @see #attitudeProvider(AttitudeProvider provider)
+     * @see #mass(double mass)
+     * @see #eci(Frame inertial)
+     * @see #ecef(Frame bodyFixed)
+     */
+    public FieldBeidouPropagator(final Field<T> field,
+                                 final FieldBeidouOrbitalElements<T> bdsOrbit,
+                                 final Frames frames) {
+        this(field, bdsOrbit, Propagator.getDefaultLaw(frames), DEFAULT_MASS,
+             frames.getEME2000(),
+             frames.getITRF(IERSConventions.IERS_2010, true));
+    }
 
-	/**
-	 * Constructor.
-	 * 
-	 * <p>The Field Beidou orbital elements is the only requested parameter to build a FieldBeidouPropagator.</p>
-	 * <p>The attitude provider is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
-	 *  default data context.<br>
-	 * The mass is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-	 * The ECI frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-	 *  context.<br>
-	 * The ECEF frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-	 *  CIO/2010-based ITRF simple EOP} in the default data context.
-	 * </p>
-	 * 
-	 * @param field
-	 * @param bdsOrbit the Field Beidou orbital elements to be used by the Field Beidou propagator.
-	 * @param attitudeProvider
-	 * @param mass
-	 * @param eci
-	 * @param ecef
-	 */
-	public FieldBeidouPropagator(final Field<T> field, final FieldBeidouOrbitalElements<T> bdsOrbit,
-			final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef) {
-		super(field, bdsOrbit, attitudeProvider, eci, ecef, mass, BEIDOU_AV, BEIDOU_CYCLE_DURATION,
-				FieldBeidouOrbitalElements.BEIDOU_MU);
-		// Stores the Beidou orbital elements
-		this.bdsOrbit = bdsOrbit;
-	}
+    /**
+     * Constructor.
+     * <p>
+     * The Field Beidou orbital elements is the only requested parameter to
+     * build a FieldBeidouPropagator.
+     * </p>
+     * <p>
+     * The attitude provider is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+     * default data context.<br>
+     * The mass is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default
+     * data context.<br>
+     * The ECEF frame is set by default to the
+     * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     * CIO/2010-based ITRF simple EOP} in the default data context.
+     * </p>
+     *
+     * @param field
+     * @param bdsOrbit the Field Beidou orbital elements to be used by the Field
+     *        Beidou propagator.
+     * @param attitudeProvider
+     * @param mass
+     * @param eci
+     * @param ecef
+     */
+    public FieldBeidouPropagator(final Field<T> field,
+                                 final FieldBeidouOrbitalElements<T> bdsOrbit,
+                                 final AttitudeProvider attitudeProvider,
+                                 final double mass, final Frame eci,
+                                 final Frame ecef) {
+        super(field, bdsOrbit, attitudeProvider, eci, ecef, mass, BEIDOU_AV,
+              BEIDOU_CYCLE_DURATION, FieldBeidouOrbitalElements.BEIDOU_MU);
+        // Stores the Beidou orbital elements
+        this.bdsOrbit = bdsOrbit;
+    }
 
-	/**
-	 * Get the underlying Field Beidou orbital elements.
-	 *
-	 * @return the underlying Field Beidou orbital elements
-	 */
-	public FieldBeidouOrbitalElements<T> getFieldBeidouOrbitalElements() {
-		return bdsOrbit;
-	}
+    /**
+     * Get the underlying Field Beidou orbital elements.
+     *
+     * @return the underlying Field Beidou orbital elements
+     */
+    public FieldBeidouOrbitalElements<T> getFieldBeidouOrbitalElements() {
+        return bdsOrbit;
+    }
 
-	/** Get the parameters driver for the Field Beidou propagation model.
+    /**
+     * Get the parameters driver for the Field Beidou propagation model.
+     *
      * @return an empty list.
      */
-	@Override
-	protected List<ParameterDriver> getParametersDrivers() {
-		// Field Beidou propagation model does not have parameter drivers.
-		return Collections.emptyList();
-	}
+    @Override
+    protected List<ParameterDriver> getParametersDrivers() {
+        // Field Beidou propagation model does not have parameter drivers.
+        return Collections.emptyList();
+    }
 
 }

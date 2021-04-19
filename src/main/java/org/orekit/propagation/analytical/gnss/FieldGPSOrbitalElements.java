@@ -18,17 +18,23 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.RealFieldElement;
 
-/** This interface provides the minimal set of Field orbital elements needed by the {@link FieldGPSPropagator}.
-*
-* @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>
-* @author Pascal Parraud
-* @author Nicolas Fialton (field translation)
-*/
+/**
+ * This interface provides the minimal set of Field orbital elements needed by
+ * the {@link FieldGPSPropagator}.
+ *
+ * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS
+ *      Interface Specification</a>
+ * @author Pascal Parraud
+ * @author Nicolas Fialton (field translation)
+ */
 
 public interface FieldGPSOrbitalElements<T extends RealFieldElement<T>> extends FieldGNSSOrbitalElements<T> {
-	
-	// Constants
-    /** WGS 84 value of the Earth's universal gravitational parameter for GPS user in m³/s². */
+
+    // Constants
+    /**
+     * WGS 84 value of the Earth's universal gravitational parameter for GPS
+     * user in m³/s².
+     */
     double GPS_MU = 3.986005e+14;
 
     /** Value of Pi for conversion from semicircles to radian. */
@@ -59,9 +65,10 @@ public interface FieldGPSOrbitalElements<T extends RealFieldElement<T>> extends 
     /**
      * Gets the estimated group delay differential TGD for L1-L2 correction.
      *
-     * @return the estimated group delay differential TGD for L1-L2 correction (s)
+     * @return the estimated group delay differential TGD for L1-L2 correction
+     *         (s)
      * @since 9.3
      */
     T getTGD();
-	
+
 }

@@ -36,123 +36,151 @@ import org.orekit.utils.ParameterDriver;
  *
  * @see "Indian Regional Navigation Satellite System, Signal In Space ICD for
  *      standard positioning service, version 1.1"
- *
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
  */
-public class FieldIRNSSPropagator<T extends RealFieldElement<T>> extends FieldAbstractGNSSPropagator<T> {
-	// Constants
-	/** WGS 84 value of the earth's rotation rate in rad/s. */
-	private static final double IRNSS_AV = 7.2921151467e-5;
+public class FieldIRNSSPropagator<T extends RealFieldElement<T>>
+    extends
+    FieldAbstractGNSSPropagator<T> {
 
-	/** Duration of the IRNSS cycle in seconds. */
-	private static final double IRNSS_CYCLE_DURATION = FieldIRNSSOrbitalElements.IRNSS_WEEK_IN_SECONDS
-			* FieldIRNSSOrbitalElements.IRNSS_WEEK_NB;
+    // Constants
+    /** WGS 84 value of the earth's rotation rate in rad/s. */
+    private static final double IRNSS_AV = 7.2921151467e-5;
 
-	// Fields
-	/** The IRNSS orbital elements used. */
-	private final FieldIRNSSOrbitalElements<T> irnssOrbit;
+    /** Duration of the IRNSS cycle in seconds. */
+    private static final double IRNSS_CYCLE_DURATION =
+        FieldIRNSSOrbitalElements.IRNSS_WEEK_IN_SECONDS *
+                                                       FieldIRNSSOrbitalElements.IRNSS_WEEK_NB;
 
-	/**
-	 * Default constructor.
-	 * 
-	 * <p>The Field IRNSS orbital elements is the only requested parameter to build a FieldIRNSSPropagator.</p>
-	 * <p>The attitude provider is set by default to be aligned with the J2000 frame.<br>
-	 * The mass is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-	 * The ECI frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
-	 * The ECEF frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
-	 * </p>
-	 * 
-	 * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-	 * Another data context can be set using
-	 * {@code FieldIRNSSPropagator(final Field<T> field, final FieldIRNSSOrbitalElements<T> irnssOrbit,
-			final Frames frames)}</p>
-	 * 
-	 * @param field
-	 * @param irnssOrbit the Field IRNSS orbital elements to be used by the IRNSSpropagator.
-	 */
-	@DefaultDataContext
-	public FieldIRNSSPropagator(final Field<T> field, final FieldIRNSSOrbitalElements<T> irnssOrbit) {
-		this(field, irnssOrbit, DataContext.getDefault().getFrames());
-	}
+    // Fields
+    /** The IRNSS orbital elements used. */
+    private final FieldIRNSSOrbitalElements<T> irnssOrbit;
 
-	/**
-	 * Constructor.
-	 * 
-	 * <p>The Field IRNSS orbital elements is the only requested parameter to build a FieldIRNSSPropagator.</p>
-	 * <p>The attitude provider is set by default to be aligned with the J2000 frame.<br>
-	 * The mass is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-	 * The ECI frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
-	 * The ECEF frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
-	 * </p>
-	 * 
-	 * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-	 * Another data context can be set using
-	 * {@code FieldIRNSSPropagator(final Field<T> field, final FieldIRNSSOrbitalElements<T> irnssOrbit,
-			final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef)}</p>
-	 * 
-	 * @param field
-	 * @param irnssOrbit the Field IRNSS orbital elements to be used by the IRNSSpropagator.
-	 * @param frames set of reference frames to use to initialize {@link
-	 *                    #ecef(Frame)}, {@link #eci(Frame)}, and {@link
-	 *                    #attitudeProvider(AttitudeProvider)}.
-	 * @see #attitudeProvider(AttitudeProvider provider)
-	 * @see #mass(double mass)
-	 * @see #eci(Frame inertial)
-	 * @see #ecef(Frame bodyFixed)
-	 */
-	public FieldIRNSSPropagator(final Field<T> field, final FieldIRNSSOrbitalElements<T> irnssOrbit,
-			final Frames frames) {
-		this(field, irnssOrbit, Propagator.getDefaultLaw(frames), DEFAULT_MASS, frames.getEME2000(),
-				frames.getITRF(IERSConventions.IERS_2010, true));
-	}
+    /**
+     * Default constructor.
+     * <p>
+     * The Field IRNSS orbital elements is the only requested parameter to build
+     * a FieldIRNSSPropagator.
+     * </p>
+     * <p>
+     * The attitude provider is set by default to be aligned with the J2000
+     * frame.<br>
+     * The mass is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     * CIO/2010-based ITRF simple EOP}.
+     * </p>
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data
+     * context}. Another data context can be set using
+     * {@code FieldIRNSSPropagator(final Field<T> field, final FieldIRNSSOrbitalElements<T> irnssOrbit, final Frames frames)}
+     * </p>
+     *
+     * @param field
+     * @param irnssOrbit the Field IRNSS orbital elements to be used by the
+     *        IRNSSpropagator.
+     */
+    @DefaultDataContext
+    public FieldIRNSSPropagator(final Field<T> field,
+                                final FieldIRNSSOrbitalElements<T> irnssOrbit) {
+        this(field, irnssOrbit, DataContext.getDefault().getFrames());
+    }
 
-	/**
-	 * Constructor.
-	 * 
-	 * <p>The Field IRNSS orbital elements is the only requested parameter to build a FieldIRNSSPropagator.</p>
-	 * <p>The attitude provider is set by default to be aligned with the J2000 frame.<br>
-	 * The mass is set by default to the
-	 *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-	 * The ECI frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
-	 * The ECEF frame is set by default to the
-	 *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
-	 * </p>
-	 * 
-	 * @param field
-	 * @param irnssOrbit the Field IRNSS orbital elements to be used by the IRNSSpropagator.
-	 * @param attitudeProvider
-	 * @param mass
-	 * @param eci
-	 * @param ecef
-	 */
-	public FieldIRNSSPropagator(final Field<T> field, final FieldIRNSSOrbitalElements<T> irnssOrbit,
-			final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef) {
-		super(field, irnssOrbit, attitudeProvider, eci, ecef, mass, IRNSS_AV, IRNSS_CYCLE_DURATION,
-				FieldIRNSSOrbitalElements.IRNSS_MU);
-		// Stores the IRNSS orbital elements
-		this.irnssOrbit = irnssOrbit;
-	}
+    /**
+     * Constructor.
+     * <p>
+     * The Field IRNSS orbital elements is the only requested parameter to build
+     * a FieldIRNSSPropagator.
+     * </p>
+     * <p>
+     * The attitude provider is set by default to be aligned with the J2000
+     * frame.<br>
+     * The mass is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     * CIO/2010-based ITRF simple EOP}.
+     * </p>
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data
+     * context}. Another data context can be set using
+     * {@code FieldIRNSSPropagator(final Field<T> field, final FieldIRNSSOrbitalElements<T> irnssOrbit, final AttitudeProvider attitudeProvider, final double mass, final Frame eci, final Frame ecef)}
+     * </p>
+     *
+     * @param field
+     * @param irnssOrbit the Field IRNSS orbital elements to be used by the
+     *        IRNSSpropagator.
+     * @param frames set of reference frames to use to initialize
+     *        {@link #ecef(Frame)}, {@link #eci(Frame)}, and
+     *        {@link #attitudeProvider(AttitudeProvider)}.
+     * @see #attitudeProvider(AttitudeProvider provider)
+     * @see #mass(double mass)
+     * @see #eci(Frame inertial)
+     * @see #ecef(Frame bodyFixed)
+     */
+    public FieldIRNSSPropagator(final Field<T> field,
+                                final FieldIRNSSOrbitalElements<T> irnssOrbit,
+                                final Frames frames) {
+        this(field, irnssOrbit, Propagator.getDefaultLaw(frames), DEFAULT_MASS,
+             frames.getEME2000(),
+             frames.getITRF(IERSConventions.IERS_2010, true));
+    }
 
-	public FieldIRNSSOrbitalElements<T> getFieldIRNSSOrbitalElements() {
-		return irnssOrbit;
-	}
-	
+    /**
+     * Constructor.
+     * <p>
+     * The Field IRNSS orbital elements is the only requested parameter to build
+     * a FieldIRNSSPropagator.
+     * </p>
+     * <p>
+     * The attitude provider is set by default to be aligned with the J2000
+     * frame.<br>
+     * The mass is set by default to the
+     * {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     * {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     * {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     * CIO/2010-based ITRF simple EOP}.
+     * </p>
+     *
+     * @param field
+     * @param irnssOrbit the Field IRNSS orbital elements to be used by the
+     *        IRNSSpropagator.
+     * @param attitudeProvider
+     * @param mass
+     * @param eci
+     * @param ecef
+     */
+    public FieldIRNSSPropagator(final Field<T> field,
+                                final FieldIRNSSOrbitalElements<T> irnssOrbit,
+                                final AttitudeProvider attitudeProvider,
+                                final double mass, final Frame eci,
+                                final Frame ecef) {
+        super(field, irnssOrbit, attitudeProvider, eci, ecef, mass, IRNSS_AV,
+              IRNSS_CYCLE_DURATION, FieldIRNSSOrbitalElements.IRNSS_MU);
+        // Stores the IRNSS orbital elements
+        this.irnssOrbit = irnssOrbit;
+    }
 
-	/** Get the parameters driver for the Field IRNSS propagation model.
+    public FieldIRNSSOrbitalElements<T> getFieldIRNSSOrbitalElements() {
+        return irnssOrbit;
+    }
+
+    /**
+     * Get the parameters driver for the Field IRNSS propagation model.
+     *
      * @return an empty list.
      */
-	@Override
-	protected List<ParameterDriver> getParametersDrivers() {
-		// Field IRNSS propagation model does not have parameter drivers.
-		return Collections.emptyList();
-	}
+    @Override
+    protected List<ParameterDriver> getParametersDrivers() {
+        // Field IRNSS propagation model does not have parameter drivers.
+        return Collections.emptyList();
+    }
 
 }

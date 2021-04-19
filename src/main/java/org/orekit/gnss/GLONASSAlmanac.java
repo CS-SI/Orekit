@@ -30,9 +30,10 @@ import org.orekit.time.TimeScale;
  *
  * @author Bryan Cazabonne
  * @since 10.0
- *
  */
-public class GLONASSAlmanac implements GLONASSOrbitalElements {
+public class GLONASSAlmanac
+    implements
+    GLONASSOrbitalElements {
 
     /** Frequency channel (-7...6). */
     private final int channel;
@@ -76,7 +77,7 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
     /** Correction to GPS time relative GLONASS. */
     private final double tGPS2Glo;
 
-    /**  Correction of time relative to GLONASS system time. */
+    /** Correction of time relative to GLONASS system time. */
     private final double tGlo;
 
     /** GLONASS time scale. */
@@ -84,8 +85,9 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
 
     /**
      * Constructor.
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>
+     * This method uses the {@link DataContext#getDefault() default data
+     * context}.
      *
      * @param channel the frequency channel from -7 to 6)
      * @param health the Health status
@@ -102,19 +104,20 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
      * @param tGlo2UTC the correction from GLONASS to UTC (s)
      * @param tGPS2Glo the correction to GPS time relative GLONASS (s)
      * @param tGlo the correction of time relative to GLONASS system time (s)
-     * @see #GLONASSAlmanac(int, int, int, int, int, double, double, double, double,
-     * double, double, double, double, double, double, TimeScale)
+     * @see #GLONASSAlmanac(int, int, int, int, int, double, double, double,
+     *      double, double, double, double, double, double, double, TimeScale)
      */
     @DefaultDataContext
-    public GLONASSAlmanac(final int channel, final int health,
-                          final int day, final int month, final int year,
-                          final double ta, final double lambda,
-                          final double deltaI, final double pa,
-                          final double ecc, final double deltaT, final double deltaTDot,
-                          final double tGlo2UTC, final double tGPS2Glo, final double tGlo) {
-        this(channel, health, day, month, year, ta, lambda, deltaI, pa, ecc, deltaT,
-                deltaTDot, tGlo2UTC, tGPS2Glo, tGlo,
-                DataContext.getDefault().getTimeScales().getGLONASS());
+    public GLONASSAlmanac(final int channel, final int health, final int day,
+                          final int month, final int year, final double ta,
+                          final double lambda, final double deltaI,
+                          final double pa, final double ecc,
+                          final double deltaT, final double deltaTDot,
+                          final double tGlo2UTC, final double tGPS2Glo,
+                          final double tGlo) {
+        this(channel, health, day, month, year, ta, lambda, deltaI, pa, ecc,
+             deltaT, deltaTDot, tGlo2UTC, tGPS2Glo, tGlo,
+             DataContext.getDefault().getTimeScales().getGLONASS());
     }
 
     /**
@@ -138,13 +141,13 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
      * @param glonass GLONASS time scale.
      * @since 10.1
      */
-    public GLONASSAlmanac(final int channel, final int health,
-                          final int day, final int month, final int year,
-                          final double ta, final double lambda,
-                          final double deltaI, final double pa,
-                          final double ecc, final double deltaT, final double deltaTDot,
-                          final double tGlo2UTC, final double tGPS2Glo, final double tGlo,
-                          final TimeScale glonass) {
+    public GLONASSAlmanac(final int channel, final int health, final int day,
+                          final int month, final int year, final double ta,
+                          final double lambda, final double deltaI,
+                          final double pa, final double ecc,
+                          final double deltaT, final double deltaTDot,
+                          final double tGlo2UTC, final double tGPS2Glo,
+                          final double tGlo, final TimeScale glonass) {
         this.channel = channel;
         this.health = health;
         this.day = day;
@@ -204,12 +207,12 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
     public double getDeltaTDot() {
         return deltaTDot;
     }
-    
-    public TimeScale getGlonass() {
-		return glonass;
-	}
 
-	/**
+    public TimeScale getGlonass() {
+        return glonass;
+    }
+
+    /**
      * Get the Health status.
      *
      * @return the Health status
@@ -255,18 +258,18 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
     }
 
     public int getDay() {
-		return day;
-	}
+        return day;
+    }
 
-	public int getMonth() {
-		return month;
-	}
+    public int getMonth() {
+        return month;
+    }
 
-	public int getYear() {
-		return year;
-	}
+    public int getYear() {
+        return year;
+    }
 
-	@Override
+    @Override
     public int getNa() {
         final GLONASSDate gloDate = new GLONASSDate(getDate(), glonass);
         return gloDate.getDayNumber();

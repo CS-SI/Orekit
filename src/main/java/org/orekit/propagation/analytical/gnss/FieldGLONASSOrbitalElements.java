@@ -22,30 +22,38 @@ import org.orekit.gnss.GLONASSEphemeris;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.FieldTimeStamped;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link GLONASSAnalyticalPropagator} and
- * the {@link GLONASSNumericalPropagator}.
+/**
+ * This interface provides the minimal set of orbital elements needed by the
+ * {@link GLONASSAnalyticalPropagator} and the
+ * {@link GLONASSNumericalPropagator}.
  * <p>
- * Because input data are different between numerical and analytical GLONASS propagators the
- * methods present in this interface are implemented by default.
- * Depending if the user wants to use a {@link GLONASSNumericalPropagator} or a {@link GLONASSAnalyticalPropagator}
- * he can create an instance of a {@link GLONASSEphemeris} or {@link GLONASSAlmanac}.
+ * Because input data are different between numerical and analytical GLONASS
+ * propagators the methods present in this interface are implemented by default.
+ * Depending if the user wants to use a {@link GLONASSNumericalPropagator} or a
+ * {@link GLONASSAnalyticalPropagator} he can create an instance of a
+ * {@link GLONASSEphemeris} or {@link GLONASSAlmanac}.
  * </p>
  *
- * @see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD-GLONASS-CDMA-General.-Edition-1.0-2016.pdf">
- *       GLONASS Interface Control Document</a>
- *
+ * @see <a href=
+ *      "http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD-GLONASS-CDMA-General.-Edition-1.0-2016.pdf">
+ *      GLONASS Interface Control Document</a>
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
- *
  */
-public interface FieldGLONASSOrbitalElements<T extends RealFieldElement<T>> extends FieldTimeStamped<T> {
-	// Constants
-    /** Value of the Earth's universal gravitational parameter for GLONASS user in m³/s². */
+public interface FieldGLONASSOrbitalElements<T extends RealFieldElement<T>>
+    extends
+    FieldTimeStamped<T> {
+
+    // Constants
+    /**
+     * Value of the Earth's universal gravitational parameter for GLONASS user
+     * in m³/s².
+     */
     double GLONASS_MU = 3.986004418e+14;
 
     /** Value of Pi for conversion from semicircles to radian. */
     double GLONASS_PI = 3.14159265358979;
-    
+
     /**
      * Get the number of the current day in a four year interval.
      *
@@ -110,24 +118,27 @@ public interface FieldGLONASSOrbitalElements<T extends RealFieldElement<T>> exte
     T getDeltaTDot();
 
     /**
-     * Get the relative deviation of predicted satellite carrier frequency from nominal value.
+     * Get the relative deviation of predicted satellite carrier frequency from
+     * nominal value.
      *
-     * @return the relative deviation of predicted satellite carrier frequency from nominal value
+     * @return the relative deviation of predicted satellite carrier frequency
+     *         from nominal value
      */
-    T getGammaN() ;
+    T getGammaN();
 
     /**
      * Get the correction to the satellite time relative to GLONASS system time.
      *
-     * @return the correction to the satellite time relative to GLONASS system time (s)
-     *
+     * @return the correction to the satellite time relative to GLONASS system
+     *         time (s)
      */
     T getTN();
 
     /**
      * Get the ECEF-X component of satellite velocity vector in PZ-90 datum.
      *
-     * @return the the ECEF-X component of satellite velocity vector in PZ-90 datum (m/s)
+     * @return the the ECEF-X component of satellite velocity vector in PZ-90
+     *         datum (m/s)
      */
     T getXDot();
 
@@ -137,17 +148,21 @@ public interface FieldGLONASSOrbitalElements<T extends RealFieldElement<T>> exte
      * @return the ECEF-X component of satellite coordinates in PZ-90 datum (m)
      */
     T getX();
+
     /**
-     * Get the GLONASS ECEF-X component of satellite acceleration vector in PZ-90 datum.
+     * Get the GLONASS ECEF-X component of satellite acceleration vector in
+     * PZ-90 datum.
      *
-     * @return the GLONASS ECEF-X component of satellite acceleration vector in PZ-90 datum (m/s²)
+     * @return the GLONASS ECEF-X component of satellite acceleration vector in
+     *         PZ-90 datum (m/s²)
      */
     T getXDotDot();
 
     /**
      * Get the ECEF-Y component of satellite velocity vector in PZ-90 datum.
      *
-     * @return the ECEF-Y component of satellite velocity vector in PZ-90 datum (m/s)
+     * @return the ECEF-Y component of satellite velocity vector in PZ-90 datum
+     *         (m/s)
      */
     T getYDot();
 
@@ -159,16 +174,19 @@ public interface FieldGLONASSOrbitalElements<T extends RealFieldElement<T>> exte
     T getY();
 
     /**
-     * Get the GLONASS ECEF-Y component of satellite acceleration vector in PZ-90 datum.
+     * Get the GLONASS ECEF-Y component of satellite acceleration vector in
+     * PZ-90 datum.
      *
-     * @return the GLONASS ECEF-Y component of satellite acceleration vector in PZ-90 datum (m/s²)
+     * @return the GLONASS ECEF-Y component of satellite acceleration vector in
+     *         PZ-90 datum (m/s²)
      */
     T getYDotDot();
 
     /**
      * Get the ECEF-Z component of satellite velocity vector in PZ-90 datum.
      *
-     * @return the the ECEF-Z component of satellite velocity vector in PZ-90 datum (m/s)
+     * @return the the ECEF-Z component of satellite velocity vector in PZ-90
+     *         datum (m/s)
      */
     T getZDot();
 
@@ -180,9 +198,11 @@ public interface FieldGLONASSOrbitalElements<T extends RealFieldElement<T>> exte
     T getZ();
 
     /**
-     * Get the GLONASS ECEF-Z component of satellite acceleration vector in PZ-90 datum.
+     * Get the GLONASS ECEF-Z component of satellite acceleration vector in
+     * PZ-90 datum.
      *
-     * @return the GLONASS ECEF-Z component of satellite acceleration vector in PZ-90 datum (m/s²)
+     * @return the GLONASS ECEF-Z component of satellite acceleration vector in
+     *         PZ-90 datum (m/s²)
      */
     T getZDotDot();
 
