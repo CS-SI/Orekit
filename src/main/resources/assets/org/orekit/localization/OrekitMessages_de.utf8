@@ -328,6 +328,9 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = keine Satellitenmasse definiert in dieser ODM Da
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = es wurden keine IERS Richtlinien eingestellt vor dem Parsen
 
+# no spin axis direction has been set before parsing
+CCSDS_UNKNOWN_SPIN_AXIS = <MISSING TRANSLATION>
+
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = Koordinatennetz {0} ist nicht gültig im Kontext dieser CCSDS Datei
 

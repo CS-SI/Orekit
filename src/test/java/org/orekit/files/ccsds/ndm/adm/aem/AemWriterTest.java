@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.files.ccsds.ndm.AbstractNdmWriterTest;
@@ -29,11 +30,14 @@ public class AemWriterTest extends AbstractNdmWriterTest<Header, AemSegment, Aem
     protected AemParser getParser() {
         return new ParserBuilder().
                withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+               withSpinAxis(Vector3D.PLUS_I).
                buildAemParser();
     }
 
     protected AemWriter getWriter() {
-        return new WriterBuilder().buildAemWriter();
+        return new WriterBuilder().
+               withSpinAxis(Vector3D.PLUS_I).
+               buildAemWriter();
     }
 
     @Test
@@ -46,11 +50,14 @@ public class AemWriterTest extends AbstractNdmWriterTest<Header, AemSegment, Aem
         doTest("/ccsds/adm/aem/AEMExample02.txt");
     }
 
-    // temporarily ignored as Orekit does not yet support SPIN attitude type
-    @Ignore
     @Test
-    public void testWriteExample03() {
+    public void testWriteKvnExample03() {
         doTest("/ccsds/adm/aem/AEMExample03.txt");
+    }
+
+    @Test
+    public void testWriteXmlExample03() {
+        doTest("/ccsds/adm/aem/AEMExample03.xml");
     }
 
     @Test
@@ -66,15 +73,8 @@ public class AemWriterTest extends AbstractNdmWriterTest<Header, AemSegment, Aem
     // temporarily ignored as Orekit does not yet support SPIN_NUTATION attitude type
     @Ignore
     @Test
-    public void testWriteKvnExample06() {
+    public void testWriteExample06() {
         doTest("/ccsds/adm/aem/AEMExample06.txt");
-    }
-
-    // temporarily ignored as Orekit does not yet support SPIN_NUTATION attitude type
-    @Ignore
-    @Test
-    public void testWriteXmlExample06() {
-        doTest("/ccsds/adm/aem/AEMExample06.xml");
     }
 
     @Test

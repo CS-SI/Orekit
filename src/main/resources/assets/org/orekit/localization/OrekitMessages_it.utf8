@@ -328,6 +328,9 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = nessuna massa associata al veicolo spaziale nel 
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = le convenzioni IERS non sono state inizializzate prima della lettura
 
+# no spin axis direction has been set before parsing
+CCSDS_UNKNOWN_SPIN_AXIS = <MISSING TRANSLATION>
+
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = il sistema di riferimento {0} non è valido in questo contesto del file CCSDS
 

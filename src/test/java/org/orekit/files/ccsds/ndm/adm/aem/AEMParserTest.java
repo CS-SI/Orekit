@@ -216,17 +216,72 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM03() throws URISyntaxException {
+    public void testParseKvnAEM03() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample03.txt";
-        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemParser parser  = new ParserBuilder().buildAemParser();
 
+        // first try without specifying spin axis
         try {
-            parser.parseMessage(source);
+            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+            new ParserBuilder().buildAemParser().parseMessage(source);
         }  catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AttitudeType.SPIN.name(), oe.getParts()[0]);
+            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SPIN_AXIS, oe.getSpecifier());
         }
+
+        // then try with properly configured parser
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        validateAEM03(new ParserBuilder().withSpinAxis(Vector3D.PLUS_K).buildAemParser().parseMessage(source));
+    }
+
+    @Test
+    public void testParseXmlAEM03() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample03.xml";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final AemParser parser  = new ParserBuilder().withSpinAxis(Vector3D.PLUS_K).buildAemParser();
+        validateAEM03(parser.parse(source));
+    }
+
+    private void validateAEM03(final AemFile file) {
+
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-15);
+        Assert.assertEquals(0,
+                            file.getHeader().getCreationDate().durationFrom(new AbsoluteDate("2008-071T17:09:49", utc)),
+                            1.0e-12);
+        Assert.assertEquals("GSFC FDF", file.getHeader().getOriginator());
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
+        Assert.assertEquals("ST5-224", segment0.getMetadata().getObjectName());
+        Assert.assertEquals("2006224", segment0.getMetadata().getObjectID());
+        Assert.assertEquals("J2000",   segment0.getMetadata().getEndpoints().getFrameA().getName());
+        Assert.assertEquals("SC_BODY_1", segment0.getMetadata().getEndpoints().getFrameB().getName());
+        Assert.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
+        Assert.assertEquals(TimeSystem.UTC, segment0.getMetadata().getTimeSystem());
+        Assert.assertEquals(0,
+                            segment0.getMetadata().getStartTime().durationFrom(new AbsoluteDate("2006-090T05:00:00.071", utc)),
+                            1.0e-12);
+        Assert.assertEquals(0,
+                            segment0.getMetadata().getUseableStartTime().durationFrom(new AbsoluteDate("2006-090T05:00:00.071", utc)),
+                            1.0e-12);
+        Assert.assertEquals(0,
+                            segment0.getMetadata().getUseableStopTime().durationFrom(new AbsoluteDate("2006-090T05:00:00.946", utc)),
+                            1.0e-12);
+        Assert.assertEquals(0,
+                            segment0.getMetadata().getStopTime().durationFrom(new AbsoluteDate("2006-090T05:00:00.946", utc)),
+                            1.0e-12);
+        Assert.assertEquals(AttitudeType.SPIN, segment0.getMetadata().getAttitudeType());
+        Assert.assertEquals(1, segment0.getData().getComments().size());
+        Assert.assertEquals("Spin KF ground solution, SPINKF rates", segment0.getData().getComments().get(0));
+        Assert.assertEquals(8, segment0.getData().getAngularCoordinates().size());
+        TimeStampedAngularCoordinates prev = null;
+        for (TimeStampedAngularCoordinates tac : segment0.getData().getAngularCoordinates()) {
+            if (prev != null) {
+                double dt = tac.getDate().durationFrom(prev.getDate());
+                double dR = Rotation.distance(tac.getRotation(), prev.getRotation());
+                double meanRate = 0.5 * (prev.getRotationRate().getNorm() + tac.getRotationRate().getNorm());
+                Assert.assertEquals(dR, dt * meanRate, 1.3e-3);
+            }
+            prev = tac;
+        }
+
     }
 
     @Test
@@ -339,21 +394,6 @@ public class AEMParserTest {
         }  catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
-        }
-    }
-
-    @Test
-    public void testParseAEM06Xml() throws URISyntaxException {
-        final String ex = "/ccsds/adm/aem/AEMExample06.xml";
-        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemParser parser  = new ParserBuilder().buildAemParser();
-
-        try {
-            parser.parseMessage(source);
-            Assert.fail("an exception should have been thrown");
-        }  catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AttitudeType.SPIN.name(), oe.getParts()[0]);
         }
     }
 

@@ -328,6 +328,9 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = no hay masa de satélite asociada a este fichero
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = no se ha inicializado ninguna convención IERS antes de la lectura
 
+# no spin axis direction has been set before parsing
+CCSDS_UNKNOWN_SPIN_AXIS = <MISSING TRANSLATION>
+
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = el sistema de referencia {0} no es válido en este contexto de fichero CCSDS
 

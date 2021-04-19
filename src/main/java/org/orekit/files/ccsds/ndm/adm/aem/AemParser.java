@@ -231,7 +231,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
      */
     boolean manageXmlAttitudeStateSection(final boolean starting) {
         if (starting) {
-            currentEntry = new AttitudeEntry(metadata);
+            currentEntry = new AttitudeEntry(metadata, getSpinAxis());
             setFallback(this::processXmlDataToken);
         } else {
             currentBlock.addData(currentEntry.getCoordinates());
@@ -305,7 +305,6 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
                                                                              metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                              metadata.getEulerRotSeq(),
                                                                              metadata.isSpacecraftBodyRate(),
-                                                                             null,
                                                                              context, SPLIT_AT_BLANKS.split(token.getRawContent().trim())));
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,

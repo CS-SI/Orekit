@@ -48,8 +48,8 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final Vector3D spinAxis, final TimeStampedAngularCoordinates coordinates) {
             // Initialize the array of attitude data
             final double[] data = new double[4];
 
@@ -102,8 +102,8 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final Vector3D spinAxis, final TimeStampedAngularCoordinates coordinates) {
             // Initialize the array of attitude data
             final double[] data = new double[8];
 
@@ -170,8 +170,8 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final Vector3D spinAxis, final TimeStampedAngularCoordinates coordinates) {
             // Initialize the array of attitude data
             final double[] data = new double[7];
 
@@ -230,8 +230,8 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final Vector3D spinAxis, final TimeStampedAngularCoordinates coordinates) {
 
             // Attitude
             Rotation rotation = coordinates.getRotation();
@@ -276,8 +276,8 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final Vector3D spinAxis, final TimeStampedAngularCoordinates coordinates) {
             // Initialize the array of attitude data
             final double[] data = new double[6];
 
@@ -328,19 +328,63 @@ public enum AttitudeType {
 
     },
 
-    /** Spin. */
+    /** Spin.
+     * <p>
+     * CCSDS ADM standard is ambiguous about spin phase angle definition: it does not states what
+     * are the start and end points of this phase, it only specifies the phase angle is counted
+     * about the spin axis. This implementation arbitrarily assumes the following:
+     * </p>
+     * <ul>
+     *   <li>the spin axis is known in spacecraft body frame, and given in an ICD, so it is
+     *   registered in {@link org.orekit.files.ccsds.ndm.ParserBuilder#withSpinAxis(Vector3D)
+     *   ParserBuilder.withSpinAxis(Vector3D)}</li>
+     *   <li>the ADM file defines the spin axis in external frame</li>
+     *   <li>{@code SPIN_DIR} is therefore ignored</li>
+     *   <li>the attitude is the composition of two rotations:
+     *     <ol>
+     *       <li>the rotation with smallest angle that maps spin axis in external frame
+     *       with angular coordinates {@code (SPIN_ALPHA, SPIN_DELTA)} to the spin
+     *       axis in spacecraft frame</li>
+     *       <li>a rotation about spin axis with angle {@code SPIN_ANGLE} and rate
+     *       {@code SPIN_ANGLE_VEL}</li>
+     *     </ol>
+     *   </li>
+     * </ul>
+     */
     SPIN("SPIN", AngularDerivativesFilter.USE_RR,
          Unit.DEGREE, Unit.DEGREE, Unit.DEGREE, Units.DEG_PER_S) {
 
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
-            // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
-            // are optional in CCSDS AEM format. Support for this attitude type is not implemented
-            // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final Vector3D spinAxis, final TimeStampedAngularCoordinates coordinates) {
+
+            // Initialize the array of attitude data
+            final double[] data = new double[4];
+
+            // compute spin as separate direction and rate
+            // the fixed spinAxis is used only to get the correct sign, the
+            // pointing direction will really be extracted from the coordinates
+            final Rotation rotation = coordinates.getRotation();
+            final Vector3D rate     = coordinates.getRotationRate();
+            final boolean  reverse  = Vector3D.dotProduct(spinAxis, rate) < 0;
+
+            // Attitude
+            final Vector3D spinSpacecraft = reverse ? rate.negate() : rate;
+            final Vector3D spinExt        = rotation.applyInverseTo(spinSpacecraft);
+            final Rotation phase          = rotation.applyTo(new Rotation(spinSpacecraft, spinExt));
+
+            // Fill the array
+            data[0] = spinExt.getAlpha();
+            data[1] = spinExt.getDelta();
+            data[2] = Vector3D.dotProduct(spinSpacecraft, phase.getAxis(RotationConvention.FRAME_TRANSFORM)) < 0 ?
+                      -phase.getAngle() : phase.getAngle();
+            data[3] = reverse ? -rate.getNorm() : rate.getNorm();
+
+            // Convert units and format
+            return EULER_ANGLE_RATE.formatData(data);
+
         }
 
         /** {@inheritDoc} */
@@ -351,10 +395,19 @@ public enum AttitudeType {
                                                    final boolean isSpacecraftBodyRate,
                                                    final Vector3D spinAxis,
                                                    final AbsoluteDate date, final double...components) {
-            // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
-            // are optional in CCSDS AEM format. Support for this attitude type is not implemented
-            // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
+
+            // Build the needed objects
+            if (spinAxis == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_SPIN_AXIS);
+            }
+            final Rotation rotation = new Rotation(spinAxis, components[2], RotationConvention.FRAME_TRANSFORM).
+                                      compose(new Rotation(new Vector3D(components[0], components[1]), spinAxis),
+                                              RotationConvention.VECTOR_OPERATOR);
+            final Vector3D rotationRate = new Vector3D(components[3] / spinAxis.getNorm(), spinAxis);
+
+            // Return
+            return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
+
         }
 
     },
@@ -367,8 +420,8 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final Vector3D spinAxis, final TimeStampedAngularCoordinates coordinates) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -437,13 +490,14 @@ public enum AttitudeType {
      * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
      * @param eulerRotSequence sequance of Euler angles
      * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
+     * @param spinAxis spin axis in spacecraft body frame
      * @param attitude angular coordinates, using {@link Attitude Attitude} convention
      * (i.e. from inertial frame to spacecraft frame)
      * @return the attitude data in CCSDS units
      */
     public abstract String[] createDataFields(boolean isFirst, boolean isExternal2SpacecraftBody,
                                               RotationOrder eulerRotSequence, boolean isSpacecraftBodyRate,
-                                              TimeStampedAngularCoordinates attitude);
+                                              Vector3D spinAxis, TimeStampedAngularCoordinates attitude);
 
     /**
      * Get the angular coordinates corresponding to the attitude data.
@@ -454,7 +508,6 @@ public enum AttitudeType {
      * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
      * @param eulerRotSequence sequance of Euler angles
      * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
-     * @param spinAxis spin axis in spacecraft body frame
      * @param context context binding
      * @param fields raw data fields
      * @return the angular coordinates, using {@link Attitude Attitude} convention
@@ -462,8 +515,7 @@ public enum AttitudeType {
      */
     public TimeStampedAngularCoordinates parse(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                                final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                               final Vector3D spinAxis, final ContextBinding context,
-                                               final String[] fields) {
+                                               final ContextBinding context, final String[] fields) {
 
         // parse the text fields
         final AbsoluteDate date = context.getTimeSystem().getConverter(context).parse(fields[0]);
@@ -474,7 +526,7 @@ public enum AttitudeType {
 
         // build the coordinates
         return build(isFirst, isExternal2SpacecraftBody, eulerRotSequence, isSpacecraftBodyRate,
-                     spinAxis, date, components);
+                     context.getSpinAxis(), date, components);
 
     }
 
