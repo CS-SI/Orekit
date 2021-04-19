@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.io.IOException;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
@@ -57,15 +58,16 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param spinAxis spin axis in spacecraft body frame
      */
     public ApmWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate) {
+                     final AbsoluteDate missionReferenceDate, final Vector3D spinAxis) {
         super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, CCSDS_APM_VERS,
               new ContextBinding(
                   () -> conventions,
                   () -> false, () -> dataContext, () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0));
+                  () -> 0.0, () -> 1.0, () -> spinAxis));
     }
 
     /** {@inheritDoc} */
@@ -83,7 +85,8 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
-                                      oldContext::getClockRate));
+                                      oldContext::getClockRate,
+                                      oldContext::getSpinAxis));
         new AdmMetadataWriter(metadata).write(generator);
 
         // start data block

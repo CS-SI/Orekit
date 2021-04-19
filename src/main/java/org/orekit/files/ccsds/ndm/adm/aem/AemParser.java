@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -95,14 +96,17 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
+     * @param spinAxis spin axis in spacecraft body frame
+     * (may be null if attitude type is neither spin nor spin/nutation)
      * @param defaultInterpolationDegree default interpolation degree
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public AemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
-                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final int defaultInterpolationDegree, final Vector3D spinAxis,
+                     final ParsedUnitsBehavior parsedUnitsBehavior) {
         super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, parsedUnitsBehavior);
+              missionReferenceDate, spinAxis, parsedUnitsBehavior);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -165,7 +169,8 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
-                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0,
+                                       this::getSpinAxis);
         setFallback(this::processMetadataToken);
         return true;
     }
@@ -300,8 +305,8 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
                                                                              metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                              metadata.getEulerRotSeq(),
                                                                              metadata.isSpacecraftBodyRate(),
-                                                                             context,
-                                                                             SPLIT_AT_BLANKS.split(token.getRawContent().trim())));
+                                                                             null,
+                                                                             context, SPLIT_AT_BLANKS.split(token.getRawContent().trim())));
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           token.getLineNumber(), token.getFileName(), token.getRawContent());

@@ -234,7 +234,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
-                  () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0));
+                  () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0, () -> null));
     }
 
     /** {@inheritDoc} */

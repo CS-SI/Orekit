@@ -111,8 +111,8 @@ class AttitudeEntry {
                                                 metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                 metadata.getEulerRotSeq(),
                                                 metadata.isSpacecraftBodyRate(),
-                                                epoch,
-                                                components);
+                                                null,
+                                                epoch, components);
     }
 
 }

@@ -61,7 +61,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
                   () -> conventions, () -> false, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> null, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0));
+                  () -> 0.0, () -> 1.0, () -> null));
     }
 
     /** Write one segment.
@@ -82,7 +82,8 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
                                       metadata::getEpochT0,
                                       metadata::getTimeSystem,
                                       metadata::getSclkOffsetAtEpoch,
-                                      metadata::getSclkSecPerSISec));
+                                      metadata::getSclkSecPerSISec,
+                                      oldContext::getSpinAxis));
         new OcmMetadataWriter(metadata, getTimeConverter()).write(generator);
 
         // start data block

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -273,16 +274,17 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param spinAxis spin axis in spacecraft body frame
      * @since 11.0
      */
     public AemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate) {
+                     final AbsoluteDate missionReferenceDate, final Vector3D spinAxis) {
         super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, CCSDS_AEM_VERS,
               new ContextBinding(
                   () -> conventions,
                   () -> true, () -> dataContext, () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0));
+                  () -> 0.0, () -> 1.0, () -> spinAxis));
     }
 
     /** {@inheritDoc} */
@@ -317,7 +319,8 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
-                                      oldContext::getClockRate));
+                                      oldContext::getClockRate,
+                                      oldContext::getSpinAxis));
 
         // Start metadata
         generator.enterSection(generator.getFormat() == FileFormat.KVN ?

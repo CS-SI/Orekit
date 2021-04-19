@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmParser;
@@ -41,34 +42,40 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
 
+    /** Spin axis in spacecraft body frame. */
+    private final Vector3D spinAxis;
+
     /**
      * Complete constructor.
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param spinAxis spin axis in spacecraft body frame
      */
     protected AbstractBuilder(final IERSConventions conventions, final DataContext dataContext,
-                              final AbsoluteDate missionReferenceDate) {
+                              final AbsoluteDate missionReferenceDate, final Vector3D spinAxis) {
         this.conventions          = conventions;
         this.dataContext          = dataContext;
         this.missionReferenceDate = missionReferenceDate;
+        this.spinAxis             = spinAxis;
     }
 
     /** Build an instance.
      * @param newConventions IERS Conventions
      * @param newDataContext used to retrieve frames, time scales, etc.
      * @param newMissionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param newSpinAxis spin axis in spacecraft body frame
      * @return new instance
      */
     protected abstract T create(IERSConventions newConventions, DataContext newDataContext,
-                                AbsoluteDate newMissionReferenceDate);
+                                AbsoluteDate newMissionReferenceDate, Vector3D newSpinAxis);
 
     /** Set up IERS conventions.
      * @param newConventions IERS Conventions
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withConventions(final IERSConventions newConventions) {
-        return create(newConventions, getDataContext(), getMissionReferenceDate());
+        return create(newConventions, getDataContext(), getMissionReferenceDate(), getSpinAxis());
     }
 
     /** Get the IERS conventions.
@@ -83,7 +90,7 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withDataContext(final DataContext newDataContext) {
-        return create(getConventions(), newDataContext, getMissionReferenceDate());
+        return create(getConventions(), newDataContext, getMissionReferenceDate(), getSpinAxis());
     }
 
     /** Get the data context.
@@ -104,7 +111,7 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), getDataContext(), newMissionReferenceDate);
+        return create(getConventions(), getDataContext(), newMissionReferenceDate, getSpinAxis());
     }
 
     /** Get the mission reference date or Mission Elapsed Time or Mission Relative Time time systems.
@@ -112,6 +119,25 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      */
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
+    }
+
+    /** Set up spin axis direction.
+     * <p>
+     * The spin axis is used only by {@link AemParser} and {@link ApmParser}.
+     * </p>
+     * @param newSpinAxis spin axis in spacecraft body frame
+     * @return a new builder with updated configuration (the instance is not changed)
+     */
+    public T withSpinAxis(final Vector3D newSpinAxis) {
+        return create(getConventions(), getDataContext(), getMissionReferenceDate(), newSpinAxis);
+    }
+
+    /**
+     * Get spin axis in spacecraft body frame.
+     * @return spin axis
+     */
+    public Vector3D getSpinAxis() {
+        return spinAxis;
     }
 
 }

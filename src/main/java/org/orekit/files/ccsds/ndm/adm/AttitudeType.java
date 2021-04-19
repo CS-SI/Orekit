@@ -77,8 +77,8 @@ public enum AttitudeType {
                                                    final boolean isExternal2SpacecraftBody,
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
-                                                   final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final Vector3D spinAxis,
+                                                   final AbsoluteDate date, final double...components) {
 
             Rotation rotation = isFirst ?
                                 new Rotation(components[0], components[1], components[2], components[3], true) :
@@ -138,8 +138,8 @@ public enum AttitudeType {
                                                    final boolean isExternal2SpacecraftBody,
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
-                                                   final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final Vector3D spinAxis,
+                                                   final AbsoluteDate date, final double...components) {
             FieldRotation<UnivariateDerivative1> rotation =
                             isFirst ?
                             new FieldRotation<>(new UnivariateDerivative1(components[0], components[4]),
@@ -202,8 +202,8 @@ public enum AttitudeType {
                                                    final boolean isExternal2SpacecraftBody,
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
-                                                   final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final Vector3D spinAxis,
+                                                   final AbsoluteDate date, final double...components) {
             // Build the needed objects
             final Rotation rotation = isFirst ?
                                       new Rotation(components[0], components[1], components[2], components[3], true) :
@@ -252,8 +252,8 @@ public enum AttitudeType {
                                                    final boolean isExternal2SpacecraftBody,
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
-                                                   final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final Vector3D spinAxis,
+                                                   final AbsoluteDate date, final double...components) {
 
             // Build the needed objects
             Rotation rotation = new Rotation(eulerRotSequence, RotationConvention.FRAME_TRANSFORM,
@@ -305,8 +305,8 @@ public enum AttitudeType {
                                                    final boolean isExternal2SpacecraftBody,
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
-                                                   final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final Vector3D spinAxis,
+                                                   final AbsoluteDate date, final double...components) {
 
             // Build the needed objects
             final Rotation rotation = new Rotation(eulerRotSequence,
@@ -349,8 +349,8 @@ public enum AttitudeType {
                                                    final boolean isExternal2SpacecraftBody,
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
-                                                   final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final Vector3D spinAxis,
+                                                   final AbsoluteDate date, final double...components) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -381,8 +381,8 @@ public enum AttitudeType {
                                                    final boolean isExternal2SpacecraftBody,
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
-                                                   final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final Vector3D spinAxis,
+                                                   final AbsoluteDate date, final double...components) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -454,6 +454,7 @@ public enum AttitudeType {
      * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
      * @param eulerRotSequence sequance of Euler angles
      * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
+     * @param spinAxis spin axis in spacecraft body frame
      * @param context context binding
      * @param fields raw data fields
      * @return the angular coordinates, using {@link Attitude Attitude} convention
@@ -461,7 +462,7 @@ public enum AttitudeType {
      */
     public TimeStampedAngularCoordinates parse(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                                final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                               final ContextBinding context,
+                                               final Vector3D spinAxis, final ContextBinding context,
                                                final String[] fields) {
 
         // parse the text fields
@@ -473,7 +474,7 @@ public enum AttitudeType {
 
         // build the coordinates
         return build(isFirst, isExternal2SpacecraftBody, eulerRotSequence, isSpacecraftBodyRate,
-                     date, components);
+                     spinAxis, date, components);
 
     }
 
@@ -482,6 +483,7 @@ public enum AttitudeType {
      * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
      * @param eulerRotSequence sequance of Euler angles
      * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
+     * @param spinAxis spin axis in spacecraft body frame
      * @param date entry date
      * @param components entry components with CCSDS units (i.e. angles
      * <em>must</em> still be in degrees here), semantic depends on attitude type
@@ -490,7 +492,7 @@ public enum AttitudeType {
      */
     public abstract TimeStampedAngularCoordinates build(boolean isFirst, boolean isExternal2SpacecraftBody,
                                                         RotationOrder eulerRotSequence, boolean isSpacecraftBodyRate,
-                                                        AbsoluteDate date, double...components);
+                                                        Vector3D spinAxis, AbsoluteDate date, double...components);
 
     /**
      * Get the angular derivative filter corresponding to the attitude data.

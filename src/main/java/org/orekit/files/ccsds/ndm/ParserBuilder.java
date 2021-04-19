@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
@@ -95,7 +96,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @param dataContext data context used to retrieve frames, time scales, etc.
      */
     public ParserBuilder(final DataContext dataContext) {
-        this(IERSConventions.IERS_2010, dataContext, null, true, Double.NaN,
+        this(IERSConventions.IERS_2010, dataContext, null, null, true, Double.NaN,
              Double.NaN, 1, ParsedUnitsBehavior.CONVERT_COMPATIBLE);
     }
 
@@ -103,6 +104,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param spinAxis spin axis in spacecraft body frame
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param mu gravitational coefficient
      * @param defaultMass default mass
@@ -110,11 +112,11 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     private ParserBuilder(final IERSConventions conventions, final DataContext dataContext,
-                          final AbsoluteDate missionReferenceDate, final boolean simpleEOP,
-                          final double mu, final double defaultMass,
+                          final AbsoluteDate missionReferenceDate, final Vector3D spinAxis,
+                          final boolean simpleEOP, final double mu, final double defaultMass,
                           final int defaultInterpolationDegree,
                           final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(conventions, dataContext, missionReferenceDate);
+        super(conventions, dataContext, missionReferenceDate, spinAxis);
         this.simpleEOP                  = simpleEOP;
         this.mu                         = mu;
         this.defaultMass                = defaultMass;
@@ -125,8 +127,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     /** {@inheritDoc} */
     @Override
     protected ParserBuilder create(final IERSConventions newConventions, final DataContext newDataContext,
-                                   final AbsoluteDate newMissionReferenceDate) {
-        return new ParserBuilder(newConventions, newDataContext, newMissionReferenceDate,
+                                   final AbsoluteDate newMissionReferenceDate, final Vector3D spinAxis) {
+        return new ParserBuilder(newConventions, newDataContext, newMissionReferenceDate, spinAxis,
                                  simpleEOP, mu, defaultMass, defaultInterpolationDegree,
                                  parsedUnitsBehavior);
     }
@@ -136,7 +138,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withSimpleEOP(final boolean newSimpleEOP) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+        return new ParserBuilder(getConventions(), getDataContext(),
+                                 getMissionReferenceDate(), getSpinAxis(),
                                  newSimpleEOP, getMu(), getDefaultMass(),
                                  getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
@@ -153,7 +156,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withMu(final double newMu) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+        return new ParserBuilder(getConventions(), getDataContext(),
+                                 getMissionReferenceDate(), getSpinAxis(),
                                  isSimpleEOP(), newMu, getDefaultMass(),
                                  getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
@@ -173,7 +177,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withDefaultMass(final double newDefaultMass) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+        return new ParserBuilder(getConventions(), getDataContext(),
+                                 getMissionReferenceDate(), getSpinAxis(),
                                  isSimpleEOP(), getMu(), newDefaultMass,
                                  getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
@@ -194,7 +199,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withDefaultInterpolationDegree(final int newDefaultInterpolationDegree) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+        return new ParserBuilder(getConventions(), getDataContext(),
+                                 getMissionReferenceDate(), getSpinAxis(),
                                  isSimpleEOP(), getMu(), getDefaultMass(),
                                  newDefaultInterpolationDegree, getParsedUnitsBehavior());
     }
@@ -211,7 +217,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withParsedUnitsBehavior(final ParsedUnitsBehavior newParsedUnitsBehavior) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+        return new ParserBuilder(getConventions(), getDataContext(),
+                                 getMissionReferenceDate(), getSpinAxis(),
                                  isSimpleEOP(), getMu(), getDefaultMass(),
                                  getDefaultInterpolationDegree(), newParsedUnitsBehavior);
     }
@@ -259,7 +266,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public ApmParser buildApmParser() {
         return new ApmParser(getConventions(), isSimpleEOP(), getDataContext(),
-                             getMissionReferenceDate(), getParsedUnitsBehavior());
+                             getMissionReferenceDate(), getSpinAxis(), getParsedUnitsBehavior());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.aem.AemFile Attitude Ephemeris Messages}.
@@ -267,7 +274,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public AemParser buildAemParser() {
         return new AemParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getDefaultInterpolationDegree(), getParsedUnitsBehavior());
+                             getDefaultInterpolationDegree(), getSpinAxis(), getParsedUnitsBehavior());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.
