@@ -212,8 +212,8 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         }
         metadata  = new OcmMetadata(getDataContext());
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP, this::getDataContext,
-                                       this::getParsedUnitsBehavior, metadata::getEpochT0,
-                                       metadata::getTimeSystem, metadata::getSclkOffsetAtEpoch, metadata::getSclkSecPerSISec);
+                                       this::getParsedUnitsBehavior, metadata::getEpochT0, metadata::getTimeSystem,
+                                       metadata::getSclkOffsetAtEpoch, metadata::getSclkSecPerSISec, () -> null);
         setFallback(this::processMetadataToken);
         return true;
     }

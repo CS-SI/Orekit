@@ -63,7 +63,7 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
                   () -> conventions, () -> false, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> null, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0));
+                  () -> 0.0, () -> 1.0, () -> null));
         this.converter = converter;
     }
 
@@ -85,7 +85,8 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
-                                      oldContext::getClockRate));
+                                      oldContext::getClockRate,
+                                      oldContext::getSpinAxis));
         new TdmMetadataWriter(metadata, getTimeConverter()).
         write(generator);
 

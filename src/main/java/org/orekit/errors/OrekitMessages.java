@@ -169,6 +169,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_UNKNOWN_GM("the central body gravitational coefficient cannot be retrieved from the ODM"),
     CCSDS_UNKNOWN_SPACECRAFT_MASS("there is no spacecraft mass associated with this ODM file"),
     CCSDS_UNKNOWN_CONVENTIONS("no IERS conventions have been set before parsing"),
+    CCSDS_UNKNOWN_SPIN_AXIS("no spin axis direction has been set before parsing"),
     CCSDS_INVALID_FRAME("frame {0} is not valid in this CCSDS file context"),
     CCSDS_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems: {0} ≠ {1}"),
     CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED(

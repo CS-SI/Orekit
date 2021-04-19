@@ -328,6 +328,9 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = ingen rumfartøjsmasse er associeret med denne O
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = ingen IERS-konventioner er angivet før indlæsningen
 
+# no spin axis direction has been set before parsing
+CCSDS_UNKNOWN_SPIN_AXIS = <MISSING TRANSLATION>
+
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne CCSDS fils kontekst
 

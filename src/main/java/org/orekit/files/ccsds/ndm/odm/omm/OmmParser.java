@@ -193,7 +193,7 @@ public class OmmParser extends OdmParser<OmmFile, OmmParser> {
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
-                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0, () -> null);
         setFallback(this::processMetadataToken);
         return true;
     }

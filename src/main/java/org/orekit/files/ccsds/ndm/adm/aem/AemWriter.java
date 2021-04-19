@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -273,16 +274,17 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param spinAxis spin axis in spacecraft body frame
      * @since 11.0
      */
     public AemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate) {
+                     final AbsoluteDate missionReferenceDate, final Vector3D spinAxis) {
         super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, CCSDS_AEM_VERS,
               new ContextBinding(
                   () -> conventions,
                   () -> true, () -> dataContext, () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0));
+                  () -> 0.0, () -> 1.0, () -> spinAxis));
     }
 
     /** {@inheritDoc} */
@@ -317,7 +319,8 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
-                                      oldContext::getClockRate));
+                                      oldContext::getClockRate,
+                                      oldContext::getSpinAxis));
 
         // Start metadata
         generator.enterSection(generator.getFormat() == FileFormat.KVN ?
@@ -407,6 +410,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                                                                           metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                           metadata.getEulerRotSeq(),
                                                                           metadata.isSpacecraftBodyRate(),
+                                                                          getContext().getSpinAxis(),
                                                                           attitude);
 
         if (generator.getFormat() == FileFormat.KVN) {
@@ -443,9 +447,9 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                 case EULER_ANGLE_RATE :
                     writeEulerAngleRate(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
                     break;
-//                case SPIN :
-//                    writeSpin(xmlGenerator, attitude.getDate(), data);
-//                    break;
+                case SPIN :
+                    writeSpin(xmlGenerator, attitude.getDate(), data);
+                    break;
 //                case SPIN_NUTATION :
 //                    writeSpinNutation(xmlGenerator, attitude.getDate(), data);
 //                    break;
@@ -645,29 +649,29 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
 
     }
 
-//    /** Write a spin entry in XML.
-//     * @param xmlGenerator generator to use for producing output
-//     * @param epoch of the entry
-//     * @param data entry data
-//     * @throws IOException if the output stream throws one while writing.
-//     */
-//    void writeSpin(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
-//        throws IOException {
-//
-//        // wrapping element
-//        xmlGenerator.enterSection(AttitudeEntryKey.spin.name());
-//
-//        // data part
-//        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
-//        int i = 0;
-//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
-//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);
-//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE.name(),     data[i++], Unit.DEGREE,     true);
-//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE_VEL.name(), data[i++], Units.DEG_PER_S, true);
-//
-//        xmlGenerator.exitSection();
-//
-//    }
+    /** Write a spin entry in XML.
+     * @param xmlGenerator generator to use for producing output
+     * @param epoch of the entry
+     * @param data entry data
+     * @throws IOException if the output stream throws one while writing.
+     */
+    void writeSpin(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
+        throws IOException {
+
+        // wrapping element
+        xmlGenerator.enterSection(AttitudeEntryKey.spin.name());
+
+        // data part
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
+        int i = 0;
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE.name(),     data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE_VEL.name(), data[i++], Units.DEG_PER_S, true);
+
+        xmlGenerator.exitSection();
+
+    }
 
 //    /** Write a spin/nutation entry in XML.
 //     * @param xmlGenerator generator to use for producing output

@@ -26,7 +26,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.L2Frame;
-import org.orekit.frames.TopocentricFrame;
 
 
 public class CenterNameTest {
