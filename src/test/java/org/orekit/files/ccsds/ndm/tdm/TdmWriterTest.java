@@ -29,7 +29,7 @@ public class TdmWriterTest extends AbstractNdmWriterTest<Header, Segment<TdmMeta
     protected TdmParser getParser() {
         return new ParserBuilder().
                withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
-               buildTdmParser(new IdentityConverter());
+               buildTdmParser();
     }
 
     protected TdmWriter getWriter() {
