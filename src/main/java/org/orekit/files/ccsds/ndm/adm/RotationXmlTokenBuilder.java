@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
@@ -52,9 +55,9 @@ public class RotationXmlTokenBuilder implements XmlTokenBuilder {
 
     /** {@inheritDoc} */
     @Override
-    public ParseToken buildToken(final boolean startTag, final String qName,
-                                 final String content, final Attributes attributes,
-                                 final int lineNumber, final String fileName) {
+    public List<ParseToken> buildTokens(final boolean startTag, final String qName,
+                                        final String content, final Attributes attributes,
+                                        final int lineNumber, final String fileName) {
 
         // get the token name from the first attribute found
         String name = attributes.getValue(ANGLE);
@@ -69,7 +72,9 @@ public class RotationXmlTokenBuilder implements XmlTokenBuilder {
         final Unit units = cache.getUnits(attributes.getValue(UNITS));
 
         // final build
-        return new ParseToken(type, name, content, units, lineNumber, fileName);
+        final ParseToken token = new ParseToken(type, name, content, units, lineNumber, fileName);
+
+        return Collections.singletonList(token);
 
     }
 

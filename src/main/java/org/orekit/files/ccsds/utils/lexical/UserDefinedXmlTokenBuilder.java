@@ -16,13 +16,25 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.utils.units.Unit;
 import org.xml.sax.Attributes;
 
 /** Builder for user-defined parameters.
  * <p>
- * Instances of this class are immutable.
+ * User-defined elements are of the form:
+ * </p>
+ * <pre>
+ *   &lt;USER_DEFINED parameter="SOME_PARAMETER_NAME"&gt;value&lt;/USER_DEFINED&gt;
+ * </pre>
+ * <p>
+ * This {@link XmlTokenBuilder token builder} will generate a single
+ * {@link ParseToken parse token} from this root element with name set to
+ * "SOME_PARAMETER_NAME", type set to {@link TokenType#ENTRY} and content
+ * set to {@code value}.
  * </p>
  * @author Luc Maisonobe
  * @since 11.0
@@ -31,9 +43,9 @@ public class UserDefinedXmlTokenBuilder implements XmlTokenBuilder {
 
     /** {@inheritDoc} */
     @Override
-    public ParseToken buildToken(final boolean startTag, final String qName,
-                                 final String content, final Attributes attributes,
-                                 final int lineNumber, final String fileName) {
+    public List<ParseToken> buildTokens(final boolean startTag, final String qName,
+                                        final String content, final Attributes attributes,
+                                        final int lineNumber, final String fileName) {
 
         // elaborate the token type
         final TokenType tokenType = (content == null) ?
@@ -42,10 +54,12 @@ public class UserDefinedXmlTokenBuilder implements XmlTokenBuilder {
 
         // final build
         final String name = attributes.getValue(UserDefined.USER_DEFINED_XML_ATTRIBUTE);
-        return new ParseToken(tokenType,
-                              UserDefined.USER_DEFINED_PREFIX + name,
-                              content, Unit.NONE,
-                              lineNumber, fileName);
+        final ParseToken token = new ParseToken(tokenType,
+                                                UserDefined.USER_DEFINED_PREFIX + name,
+                                                content, Unit.NONE,
+                                                lineNumber, fileName);
+
+        return Collections.singletonList(token);
 
     }
 

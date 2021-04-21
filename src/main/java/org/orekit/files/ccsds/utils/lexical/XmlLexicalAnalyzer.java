@@ -165,9 +165,11 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
             currentLineNumber  = locator.getLineNumber();
             currentContent     = null;
 
-            messageParser.process(getBuilder(qName).
-                                  buildToken(true, qName, currentContent, currentAttributes,
-                                             currentLineNumber, source.getName()));
+            for (final ParseToken token : getBuilder(qName).
+                                          buildTokens(true, qName, currentContent, currentAttributes,
+                                          currentLineNumber, source.getName())) {
+                messageParser.process(token);
+            }
 
         }
 
@@ -179,9 +181,12 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
                 // for an end tag without content, we keep the line number of the end tag itself
                 currentLineNumber = locator.getLineNumber();
             }
-            messageParser.process(getBuilder(qName).
-                                  buildToken(false, qName, currentContent, currentAttributes,
-                                             currentLineNumber, source.getName()));
+
+            for (final ParseToken token : getBuilder(qName).
+                                          buildTokens(false, qName, currentContent, currentAttributes,
+                                                      currentLineNumber, source.getName())) {
+                messageParser.process(token);
+            }
 
             currentElementName = null;
             currentLineNumber  = -1;
