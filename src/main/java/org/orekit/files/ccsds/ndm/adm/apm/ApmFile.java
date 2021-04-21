@@ -58,6 +58,20 @@ public class ApmFile extends NdmConstituent<Header, Segment<AdmMetadata, ApmData
         super(header, segments, conventions, dataContext);
     }
 
+    /** Get the file metadata.
+     * @return file metadata
+     */
+    public AdmMetadata getMetadata() {
+        return getSegments().get(0).getMetadata();
+    }
+
+    /** Get the file data.
+     * @return file data
+     */
+    public ApmData getData() {
+        return getSegments().get(0).getData();
+    }
+
     /** Get the attitude.
      * <p>
      * The orientation part of the attitude is always extracted from the file mandatory

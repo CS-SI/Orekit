@@ -94,39 +94,37 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assert.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
-
         // Check Metadata Block
-        Assert.assertEquals("TRMM",       segment.getMetadata().getObjectName());
-        Assert.assertEquals("1997-009A",  segment.getMetadata().getObjectID());
-        Assert.assertEquals(1997,         segment.getMetadata().getLaunchYear());
-        Assert.assertEquals(9,            segment.getMetadata().getLaunchNumber());
-        Assert.assertEquals("A",          segment.getMetadata().getLaunchPiece());
-        Assert.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
-        Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
-        Assert.assertEquals("UTC",        segment.getMetadata().getTimeSystem().name());
+        Assert.assertEquals("TRMM",       file.getMetadata().getObjectName());
+        Assert.assertEquals("1997-009A",  file.getMetadata().getObjectID());
+        Assert.assertEquals(1997,         file.getMetadata().getLaunchYear());
+        Assert.assertEquals(9,            file.getMetadata().getLaunchNumber());
+        Assert.assertEquals("A",          file.getMetadata().getLaunchPiece());
+        Assert.assertEquals("EARTH",      file.getMetadata().getCenter().getName());
+        Assert.assertTrue(file.getMetadata().getHasCreatableBody());
+        Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
+        Assert.assertEquals("UTC",        file.getMetadata().getTimeSystem().name());
 
         // Check data block
-        Assert.assertFalse(segment.getData().hasManeuvers());
+        Assert.assertFalse(file.getData().hasManeuvers());
         Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
-                            segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
-        Assert.assertEquals(CelestialBodyFrame.ITRF1997, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
-        Assert.assertTrue(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
+                            file.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", file.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(CelestialBodyFrame.ITRF1997, file.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
+        Assert.assertTrue(file.getData().getQuaternionBlock().getEndpoints().isA2b());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
-                            segment.getData().getQuaternionBlock().getEpoch());
-        Assert.assertEquals(0.25678, segment.getData().getQuaternionBlock().getQuaternion().getQ0(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.00005, segment.getData().getQuaternionBlock().getQuaternion().getQ1(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.87543, segment.getData().getQuaternionBlock().getQuaternion().getQ2(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.40949, segment.getData().getQuaternionBlock().getQuaternion().getQ3(),    QUATERNION_PRECISION);
-        Assert.assertFalse(segment.getData().getQuaternionBlock().hasRates());
-        Assert.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
+                            file.getData().getQuaternionBlock().getEpoch());
+        Assert.assertEquals(0.25678, file.getData().getQuaternionBlock().getQuaternion().getQ0(),    QUATERNION_PRECISION);
+        Assert.assertEquals(0.00005, file.getData().getQuaternionBlock().getQuaternion().getQ1(),    QUATERNION_PRECISION);
+        Assert.assertEquals(0.87543, file.getData().getQuaternionBlock().getQuaternion().getQ2(),    QUATERNION_PRECISION);
+        Assert.assertEquals(0.40949, file.getData().getQuaternionBlock().getQuaternion().getQ3(),    QUATERNION_PRECISION);
+        Assert.assertFalse(file.getData().getQuaternionBlock().hasRates());
+        Assert.assertTrue(Double.isNaN(file.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
-                            segment.getData().getQuaternionBlock().getAttitude(null, null).getDate());
-        Assert.assertEquals(0.0, segment.getData().getQuaternionBlock().getAttitude(null, null).getSpin().getNorm(), 1.0e-15);
+                            file.getData().getQuaternionBlock().getAttitude(null, null).getDate());
+        Assert.assertEquals(0.0, file.getData().getQuaternionBlock().getAttitude(null, null).getSpin().getNorm(), 1.0e-15);
 
         Attitude attitude = file.getAttitude(null, null);
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
