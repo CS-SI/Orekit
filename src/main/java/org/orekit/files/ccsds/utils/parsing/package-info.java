@@ -19,7 +19,7 @@
  * This package contains classes related to the processing
  * of parse tokens using the state design pattern.
  * <p>
- * The base abstract class {@link org.orekit.files.ccsds.utils.parsing.AbstractMessageParser
+ * The base abstract class {@link org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser
  * AbstractMessageParser} implements the {@link
  * org.orekit.files.ccsds.utils.lexical.MessageParser MessageParser} interface using
  * the state design pattern, where each {@link

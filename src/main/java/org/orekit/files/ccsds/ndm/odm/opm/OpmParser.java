@@ -175,14 +175,14 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
         return true;
     }
 
@@ -204,14 +204,14 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0, () -> null);
-        setFallback(this::processMetadataToken);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processStateVectorToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processStateVectorToken);
         return true;
     }
 
@@ -229,7 +229,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean prepareData() {
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processStateVectorToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processStateVectorToken);
         return true;
     }
 
@@ -290,7 +290,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageStateVectorSection(final boolean starting) {
-        setFallback(starting ? this::processStateVectorToken : structureProcessor);
+        anticipateNext(starting ? this::processStateVectorToken : structureProcessor);
         return true;
     }
 
@@ -300,7 +300,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageKeplerianElementsSection(final boolean starting) {
-        setFallback(starting ? this::processKeplerianElementsToken : structureProcessor);
+        anticipateNext(starting ? this::processKeplerianElementsToken : structureProcessor);
         return true;
     }
 
@@ -310,7 +310,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageSpacecraftParametersSection(final boolean starting) {
-        setFallback(starting ? this::processSpacecraftParametersToken : structureProcessor);
+        anticipateNext(starting ? this::processSpacecraftParametersToken : structureProcessor);
         return true;
     }
 
@@ -320,7 +320,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageCovarianceSection(final boolean starting) {
-        setFallback(starting ? this::processCovarianceToken : structureProcessor);
+        anticipateNext(starting ? this::processCovarianceToken : structureProcessor);
         return true;
     }
 
@@ -330,7 +330,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageManeuversSection(final boolean starting) {
-        setFallback(starting ? this::processManeuverToken : structureProcessor);
+        anticipateNext(starting ? this::processManeuverToken : structureProcessor);
         return true;
     }
 
@@ -340,7 +340,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageUserDefinedParametersSection(final boolean starting) {
-        setFallback(starting ? this::processUserDefinedToken : structureProcessor);
+        anticipateNext(starting ? this::processUserDefinedToken : structureProcessor);
         return true;
     }
 
@@ -400,7 +400,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
             prepareData();
             stateVectorBlock = new StateVector();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processKeplerianElementsToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processKeplerianElementsToken);
         try {
             return token.getName() != null &&
                    StateVectorKey.valueOf(token.getName()).process(token, context, stateVectorBlock);
@@ -418,7 +418,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
         if (keplerianElementsBlock == null) {
             keplerianElementsBlock = new KeplerianElements();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
         try {
             return token.getName() != null &&
                    KeplerianElementsKey.valueOf(token.getName()).process(token, context, keplerianElementsBlock);
@@ -440,7 +440,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
                 keplerianElementsBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processCovarianceToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processCovarianceToken);
         try {
             return token.getName() != null &&
                    SpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
@@ -464,7 +464,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
                 spacecraftParametersBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processManeuverToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processManeuverToken);
         try {
             return token.getName() != null &&
                    CartesianCovarianceKey.valueOf(token.getName()).process(token, context, covarianceBlock);
@@ -486,7 +486,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
                 covarianceBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
         try {
             if (token.getName() != null &&
                 ManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {
@@ -517,7 +517,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
                 currentManeuver = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
         if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             if (token.getType() == TokenType.ENTRY) {
                 userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),

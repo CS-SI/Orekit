@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.utils.generation;
 
 import java.io.IOException;
 
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 
@@ -29,7 +29,7 @@ import org.orekit.files.ccsds.section.Segment;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public interface MessageWriter<H extends Header, S extends Segment<?, ?>, F extends NdmFile<H, S>> {
+public interface MessageWriter<H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>> {
 
     /** Write one complete message.
      * @param generator generator to use for producing output

@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.List;
 
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.IERSConventions;
@@ -36,7 +36,7 @@ import org.orekit.utils.IERSConventions;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TdmFile extends NdmFile<Header, Segment<TdmMetadata, ObservationsBlock>> {
+public class TdmFile extends NdmConstituent<Header, Segment<TdmMetadata, ObservationsBlock>> {
 
     /** Root element for XML files. */
     public static final String ROOT = "tdm";

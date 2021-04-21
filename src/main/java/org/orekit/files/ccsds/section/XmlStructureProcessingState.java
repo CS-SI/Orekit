@@ -21,7 +21,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 
 /** {@link ProcessingState} for structure of {@link FileFormat#XML} CCSDS Messages.
@@ -34,13 +34,13 @@ public class XmlStructureProcessingState implements ProcessingState {
     private final String root;
 
     /** Parser for the complete message. */
-    private final AbstractMessageParser<?, ?> parser;
+    private final AbstractConstituentParser<?, ?> parser;
 
     /** Simple constructor.
      * @param root name of the root element
      * @param parser parser for the complete message
      */
-    public XmlStructureProcessingState(final String root, final AbstractMessageParser<?, ?> parser) {
+    public XmlStructureProcessingState(final String root, final AbstractConstituentParser<?, ?> parser) {
         this.root   = root;
         this.parser = parser;
     }
@@ -56,7 +56,8 @@ public class XmlStructureProcessingState implements ProcessingState {
 
         if (Double.isNaN(parser.getHeader().getFormatVersion())) {
             // the first thing we expect (after the ignored start tag for root element) is the format version
-            if (parser.getFormatVersionKey().equals(token.getName()) && token.getType() == TokenType.ENTRY) {
+            if (parser.getFormatVersionKey() != null &&
+                parser.getFormatVersionKey().equals(token.getName()) && token.getType() == TokenType.ENTRY) {
                 parser.getHeader().setFormatVersion(token.getContentAsDouble());
                 return true;
             } else {

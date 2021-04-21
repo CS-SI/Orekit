@@ -66,7 +66,7 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.units.Unit;
 
-public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<?, ?>, F extends NdmFile<H, S>> {
+public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>> {
 
     private static final int ULPS = 3;
 

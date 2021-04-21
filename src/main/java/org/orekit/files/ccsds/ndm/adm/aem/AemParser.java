@@ -141,14 +141,14 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -171,14 +171,14 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
                                        this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0,
                                        this::getSpinAxis);
-        setFallback(this::processMetadataToken);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;
     }
 
@@ -193,14 +193,14 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     @Override
     public boolean prepareData() {
         currentBlock = new AemData();
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inData() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -232,11 +232,11 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     boolean manageXmlAttitudeStateSection(final boolean starting) {
         if (starting) {
             currentEntry = new AttitudeEntry(metadata, getSpinAxis());
-            setFallback(this::processXmlDataToken);
+            anticipateNext(this::processXmlDataToken);
         } else {
             currentBlock.addData(currentEntry.getCoordinates());
             currentEntry = null;
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -321,7 +321,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
      * @return true if token was processed, false otherwise
      */
     private boolean processXmlDataToken(final ParseToken token) {
-        setFallback(this::processXmlSubStructureToken);
+        anticipateNext(this::processXmlSubStructureToken);
         try {
             return token.getName() != null &&
                    AttitudeEntryKey.valueOf(token.getName()).process(token, context, currentEntry);

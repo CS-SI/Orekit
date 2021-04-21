@@ -31,7 +31,7 @@ import org.orekit.files.ccsds.ndm.tdm.TdmWriter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Builder for all {@link NdmFile CCSDS Message} files writers.
+/** Builder for all {@link NdmConstituent CCSDS Message} files writers.
  * <p>
  * This builder can be used for building all CCSDS Messages writers types.
  * It is particularly useful in multi-threaded context as writers cannot

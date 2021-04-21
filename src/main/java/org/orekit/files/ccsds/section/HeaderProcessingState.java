@@ -22,7 +22,7 @@ import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 
 /** {@link ProcessingState} for {@link Header NDM header}.
@@ -35,12 +35,12 @@ public class HeaderProcessingState implements ProcessingState {
     private final ContextBinding context;
 
     /** Parser for the complete message. */
-    private final AbstractMessageParser<?, ?> parser;
+    private final AbstractConstituentParser<?, ?> parser;
 
     /** Simple constructor.
      * @param parser parser for the complete message
      */
-    public HeaderProcessingState(final AbstractMessageParser<?, ?> parser) {
+    public HeaderProcessingState(final AbstractConstituentParser<?, ?> parser) {
         this.context = new ContextBinding(
             parser::getConventions, parser::isSimpleEOP,
             parser::getDataContext, parser::getParsedUnitsBehavior, () -> null,
@@ -57,7 +57,9 @@ public class HeaderProcessingState implements ProcessingState {
         if (Double.isNaN(parser.getHeader().getFormatVersion())) {
             // the first thing we expect is the format version
             // (however, in XML files it was already set before entering header)
-            if (parser.getFormatVersionKey().equals(token.getName()) && token.getType() == TokenType.ENTRY) {
+            if (parser.getFormatVersionKey() != null &&
+                parser.getFormatVersionKey().equals(token.getName()) &&
+                token.getType() == TokenType.ENTRY) {
                 parser.getHeader().setFormatVersion(token.getContentAsDouble());
                 return true;
             } else {

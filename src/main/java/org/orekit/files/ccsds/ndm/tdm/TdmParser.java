@@ -30,7 +30,7 @@ import org.orekit.files.ccsds.section.XmlStructureProcessingState;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.utils.IERSConventions;
 
@@ -54,7 +54,7 @@ import org.orekit.utils.IERSConventions;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
+public class TdmParser extends AbstractConstituentParser<TdmFile, TdmParser> {
 
     /** Converter for {@link RangeUnits#RU Range Units} (may be null). */
     private final RangeUnitsConverter converter;
@@ -80,8 +80,8 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildTdmParser(RangeUnitsConverter)
-     * parserBuilder.buildTdmParser(converter)}.
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildTdmParser()
+     * parserBuilder.buildTdmParser()}.
      * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
@@ -128,14 +128,14 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -157,14 +157,14 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
             this::getConventions, this::isSimpleEOP,
             this::getDataContext, this::getParsedUnitsBehavior,
             () -> null, metadata::getTimeSystem, () -> 0.0, () -> 1.0, () -> null);
-        setFallback(this::processMetadataToken);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -179,14 +179,14 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     @Override
     public boolean prepareData() {
         observationsBlock = new ObservationsBlock();
-        setFallback(this::processDataToken);
+        anticipateNext(this::processDataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inData() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 

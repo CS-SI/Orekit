@@ -164,14 +164,14 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -194,14 +194,14 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
                                       this::getDataContext, this::getParsedUnitsBehavior,
                                       this::getMissionReferenceDate,
                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0, () -> null);
-        setFallback(this::processMetadataToken);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -210,7 +210,7 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.checkMandatoryEntries();
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;
     }
 
@@ -218,14 +218,14 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
     @Override
     public boolean prepareData() {
         currentBlock = new OemData();
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inData() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnCovarianceToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnCovarianceToken);
         return true;
     }
 
@@ -264,12 +264,12 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
     boolean manageXmlStateVectorSection(final boolean starting) {
         if (starting) {
             stateVectorBlock = new StateVector();
-            setFallback(this::processXmlStateVectorToken);
+            anticipateNext(this::processXmlStateVectorToken);
         } else {
             currentBlock.addData(stateVectorBlock.toTimeStampedPVCoordinates(),
                                  stateVectorBlock.hasAcceleration());
             stateVectorBlock = null;
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -284,13 +284,13 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
             // save the current metadata for later retrieval of reference frame
             final CommonMetadata savedMetadata = metadata;
             currentCovariance = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
-            setFallback(getFileFormat() == FileFormat.XML ?
+            anticipateNext(getFileFormat() == FileFormat.XML ?
                         this::processXmlCovarianceToken :
                         this::processKvnCovarianceToken);
         } else {
             currentBlock.addCovarianceMatrix(currentCovariance);
             currentCovariance = null;
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -390,7 +390,7 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
      * @return true if token was processed, false otherwise
      */
     private boolean processXmlStateVectorToken(final ParseToken token) {
-        setFallback(this::processXmlSubStructureToken);
+        anticipateNext(this::processXmlSubStructureToken);
         try {
             return token.getName() != null &&
                    StateVectorKey.valueOf(token.getName()).process(token, context, stateVectorBlock);
@@ -405,7 +405,7 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
      * @return true if token was processed, false otherwise
      */
     private boolean processKvnCovarianceToken(final ParseToken token) {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
         if (token.getName() != null) {
             if (OemDataSubStructureKey.COVARIANCE.name().equals(token.getName()) ||
                 OemDataSubStructureKey.covarianceMatrix.name().equals(token.getName())) {
@@ -470,7 +470,7 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
      * @return true if token was processed, false otherwise
      */
     private boolean processXmlCovarianceToken(final ParseToken token) {
-        setFallback(this::processXmlSubStructureToken);
+        anticipateNext(this::processXmlSubStructureToken);
         try {
             return token.getName() != null &&
                    CartesianCovarianceKey.valueOf(token.getName()).process(token, context, currentCovariance);

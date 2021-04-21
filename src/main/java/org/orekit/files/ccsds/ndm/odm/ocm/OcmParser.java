@@ -186,14 +186,14 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -214,14 +214,14 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP, this::getDataContext,
                                        this::getParsedUnitsBehavior, metadata::getEpochT0, metadata::getTimeSystem,
                                        metadata::getSclkOffsetAtEpoch, metadata::getSclkSecPerSISec, () -> null);
-        setFallback(this::processMetadataToken);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -229,14 +229,14 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
     @Override
     public boolean finalizeMetadata() {
         metadata.checkMandatoryEntries();
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareData() {
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         return true;
     }
 
@@ -274,9 +274,9 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             currentOrbitStateHistoryMetadata = new OrbitStateHistoryMetadata(metadata.getEpochT0(),
                                                                              getDataContext());
             currentOrbitStateHistory         = new ArrayList<>();
-            setFallback(this::processOrbitStateToken);
+            anticipateNext(this::processOrbitStateToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
             if (currentOrbitStateHistoryMetadata.getCenter().getBody() != null) {
                 setMuCreated(currentOrbitStateHistoryMetadata.getCenter().getBody().getGM());
             }
@@ -300,9 +300,9 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
                 // this is the first (and unique) physical properties block, we need to allocate the container
                 physicBlock = new PhysicalProperties(metadata.getEpochT0());
             }
-            setFallback(this::processPhysicalPropertyToken);
+            anticipateNext(this::processPhysicalPropertyToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -320,9 +320,9 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             }
             currentCovarianceHistoryMetadata = new CovarianceHistoryMetadata(metadata.getEpochT0());
             currentCovarianceHistory         = new ArrayList<>();
-            setFallback(this::processCovarianceToken);
+            anticipateNext(this::processCovarianceToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
             covarianceBlocks.add(new CovarianceHistory(currentCovarianceHistoryMetadata,
                                                        currentCovarianceHistory));
             currentCovarianceHistoryMetadata = null;
@@ -344,9 +344,9 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             }
             currentManeuverHistoryMetadata = new ManeuverHistoryMetadata(metadata.getEpochT0());
             currentManeuverHistory         = new ArrayList<>();
-            setFallback(this::processManeuverToken);
+            anticipateNext(this::processManeuverToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
             maneuverBlocks.add(new ManeuverHistory(currentManeuverHistoryMetadata,
                                                    currentManeuverHistory));
             currentManeuverHistoryMetadata = null;
@@ -366,9 +366,9 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
                 // this is the first (and unique) perturbations parameters block, we need to allocate the container
                 perturbationsBlock = new Perturbations(context.getDataContext().getCelestialBodies());
             }
-            setFallback(this::processPerturbationToken);
+            anticipateNext(this::processPerturbationToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -384,9 +384,9 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
                 // this is the first (and unique) orbit determination block, we need to allocate the container
                 orbitDeterminationBlock = new OrbitDetermination();
             }
-            setFallback(this::processOrbitDeterminationToken);
+            anticipateNext(this::processOrbitDeterminationToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -402,9 +402,9 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
                 // this is the first (and unique) user-defined parameters block, we need to allocate the container
                 userDefinedBlock = new UserDefined();
             }
-            setFallback(this::processUserDefinedToken);
+            anticipateNext(this::processUserDefinedToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -486,7 +486,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             if (currentOrbitStateHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
                 currentOrbitStateHistoryMetadata.checkMandatoryEntries();
-                setFallback(this::processDataSubStructureToken);
+                anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
                 return true;
@@ -517,7 +517,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         if (physicBlock == null) {
             physicBlock = new PhysicalProperties(metadata.getEpochT0());
         }
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
                    PhysicalPropertiesKey.valueOf(token.getName()).process(token, context, physicBlock);
@@ -546,7 +546,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             if (currentCovarianceHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
                 currentCovarianceHistoryMetadata.checkMandatoryEntries();
-                setFallback(this::processDataSubStructureToken);
+                anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
                 return true;
@@ -588,7 +588,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             if (currentManeuverHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
                 currentManeuverHistoryMetadata.checkMandatoryEntries();
-                setFallback(this::processDataSubStructureToken);
+                anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
                 return true;
@@ -618,7 +618,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
      * @return true if token was processed, false otherwise
      */
     private boolean processPerturbationToken(final ParseToken token) {
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
                    PerturbationsKey.valueOf(token.getName()).process(token, context, perturbationsBlock);
@@ -636,7 +636,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         if (orbitDeterminationBlock == null) {
             orbitDeterminationBlock = new OrbitDetermination();
         }
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
                    OrbitDeterminationKey.valueOf(token.getName()).process(token, context, orbitDeterminationBlock);
@@ -654,7 +654,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         if (userDefinedBlock == null) {
             userDefinedBlock = new UserDefined();
         }
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         if ("COMMENT".equals(token.getName())) {
             return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
         } else if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {

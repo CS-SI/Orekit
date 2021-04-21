@@ -28,7 +28,6 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -55,7 +54,7 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends NdmFile<?, ?>> T accept(final MessageParser<T> messageParser) {
+    public <T> T accept(final MessageParser<T> messageParser) {
         try {
             // Create the handler
             final DefaultHandler handler = new XMLHandler(messageParser);

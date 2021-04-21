@@ -26,7 +26,7 @@ import org.orekit.files.ccsds.ndm.odm.opm.OpmParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Abstract builder for all {@link NdmFile CCSDS Message} files parsers/writers.
+/** Abstract builder for all {@link NdmConstituent CCSDS Message} files parsers/writers.
  * @param <T> type of the builder
  * @author Luc Maisonobe
  * @since 11.0

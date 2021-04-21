@@ -263,6 +263,13 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
         return rangeUnitsConverter;
     }
 
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.NdmFile Navigation Data Messages}.
+     * @return a new parser
+     */
+    public NdmParser buildNdmParser() {
+        return new NdmParser(this);
+    }
+
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.OpmFile Orbit Parameters Messages}.
      * @return a new parser
      */
