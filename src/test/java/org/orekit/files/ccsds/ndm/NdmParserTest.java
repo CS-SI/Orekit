@@ -23,6 +23,8 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.adm.apm.ApmFile;
+import org.orekit.files.ccsds.ndm.odm.ocm.OcmFile;
 import org.orekit.files.ccsds.ndm.odm.opm.OpmFile;
 
 /**
@@ -68,9 +70,27 @@ public class NdmParserTest {
         final DataSource source = new DataSource(name, () -> NdmParserTest.class.getResourceAsStream(name));
         final NdmFile ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         Assert.assertEquals(1, ndm.getComments().size());
-        Assert.assertEquals("NDM with only one constituent: an OPM", ndm.getComments().size());
+        Assert.assertEquals("NDM with only one constituent: an OPM", ndm.getComments().get(0));
         Assert.assertEquals(1, ndm.getConstituents().size());
         OpmFile opm = (OpmFile) ndm.getConstituents().get(0);
+        Assert.assertEquals("OSPREY 5", opm.getMetadata().getObjectName());
+        Assert.assertEquals(3000.0, opm.getData().getSpacecraftParametersBlock().getMass(), 1.0e-10);
+    }
+
+    @Test
+    public void testOpmApm() {
+        final String name = "/ccsds/ndm/NDM-ocm-apm.xml";
+        final DataSource source = new DataSource(name, () -> NdmParserTest.class.getResourceAsStream(name));
+        final NdmFile ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
+        Assert.assertEquals(1, ndm.getComments().size());
+        Assert.assertEquals("NDM with two constituents: an OCM and an APM", ndm.getComments().get(0));
+        Assert.assertEquals(2, ndm.getConstituents().size());
+        OcmFile ocm = (OcmFile) ndm.getConstituents().get(0);
+        Assert.assertEquals("1998-999A", ocm.getMetadata().getInternationalDesignator());
+        Assert.assertEquals("WGS-84", ocm.getData().getUserDefinedBlock().getParameters().get("EARTH_MODEL"));
+        ApmFile apm = (ApmFile) ndm.getConstituents().get(1);
+        Assert.assertEquals("MARS SPIRIT", apm.getMetadata().getObjectName());
+        Assert.assertEquals("INSTRUMENT_A", apm.getData().getQuaternionBlock().getEndpoints().getFrameA().getName());
     }
 
 }

@@ -33,25 +33,25 @@ enum NdmStructureKey {
     ndm((token, parser) -> true),
 
     /** TDM constituent. */
-    CCSDS_TDM_VERSION((token, parser) -> parser.manageConstituent(builder -> builder.buildTdmParser())),
+    tdm((token, parser) -> parser.manageTdmConstituent()),
 
     /** OPM constituent. */
-    CCSDS_OPM_VERSION((token, parser) -> parser.manageConstituent(builder -> builder.buildOpmParser())),
+    opm((token, parser) -> parser.manageOpmConstituent()),
 
     /** OMM constituent. */
-    CCSDS_OMM_VERSION((token, parser) -> parser.manageConstituent(builder -> builder.buildOmmParser())),
+    omm((token, parser) -> parser.manageOmmConstituent()),
 
     /** OEM constituent. */
-    CCSDS_OEM_VERSION((token, parser) -> parser.manageConstituent(builder -> builder.buildOemParser())),
+    oem((token, parser) -> parser.manageOemConstituent()),
 
     /** OCM constituent. */
-    CCSDS_OCM_VERSION((token, parser) -> parser.manageConstituent(builder -> builder.buildOcmParser())),
+    ocm((token, parser) -> parser.manageOcmConstituent()),
 
     /** APM constituent. */
-    CCSDS_APM_VERSION((token, parser) -> parser.manageConstituent(builder -> builder.buildApmParser())),
+    apm((token, parser) -> parser.manageApmConstituent()),
 
     /** AEM constituent. */
-    CCSDS_AEM_VERSION((token, parser) -> parser.manageConstituent(builder -> builder.buildAemParser()));
+    aem((token, parser) -> parser.manageAemConstituent());
 
     /** Processing method. */
     private final TokenProcessor processor;

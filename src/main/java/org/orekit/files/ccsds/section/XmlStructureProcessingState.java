@@ -50,7 +50,7 @@ public class XmlStructureProcessingState implements ProcessingState {
     public boolean processToken(final ParseToken token) {
 
         if (root.equals(token.getName())) {
-            // ignored
+            parser.setEndTagSeen(token.getType() == TokenType.STOP);
             return true;
         }
 

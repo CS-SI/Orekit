@@ -68,6 +68,9 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
     /** Format of the file ready to be parsed. */
     private FileFormat format;
 
+    /** Flag for XML end tag. */
+    private boolean endTagSeen;
+
     /** Simple constructor.
      * @param root root element for XML files
      * @param formatVersionKey key for format version
@@ -95,9 +98,24 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
      * @param initialState initial processing state
      */
     protected void reset(final FileFormat fileFormat, final ProcessingState initialState) {
-        format  = fileFormat;
-        current = initialState;
+        format     = fileFormat;
+        current    = initialState;
+        endTagSeen = false;
         anticipateNext(fallback);
+    }
+
+    /** Set the flag for XML end tag.
+     * @param endTagSeen if true, the XML end tag has been seen
+     */
+    public void setEndTagSeen(final boolean endTagSeen) {
+        this.endTagSeen = endTagSeen;
+    }
+
+    /** Check if XML end tag has been seen.
+     * @return true if XML end tag has been seen
+     */
+    public boolean wasEndTagSeen() {
+        return endTagSeen;
     }
 
     /** Get the current processing state.

@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -28,7 +28,6 @@ import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
-import org.orekit.files.ccsds.utils.parsing.ErrorState;
 
 /** A parser for the CCSDS NDM (Navigation Data Message).
  * @author Luc Maisonobe
@@ -82,8 +81,7 @@ public class NdmParser extends AbstractMessageParser<NdmFile> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        reset(fileFormat, this::processStructureToken);
-        setFallback(new ErrorState());
+        reset(fileFormat, this::processToken);
         constituentParser = null;
         comments          = new CommentsContainer();
         constituents      = new ArrayList<>();
@@ -92,13 +90,8 @@ public class NdmParser extends AbstractMessageParser<NdmFile> {
     /** {@inheritDoc} */
     @Override
     public NdmFile build() {
-
-        // store the previous constituent if any
-        storeLastConstituent();
-
         // build the file from parsed comments and constituents
         return new NdmFile(comments.getComments(), constituents);
-
     }
 
     /**
@@ -114,61 +107,100 @@ public class NdmParser extends AbstractMessageParser<NdmFile> {
         return comments.addComment(comment);
     }
 
-    /** Store last parsed constituent.
+    /** Prepare parsing of a TDM constituent.
+     * @return always return true
      */
-    private void storeLastConstituent() {
-        if (constituentParser != null) {
-            constituents.add(constituentParser.build());
-        }
-        constituentParser = null;
+    boolean manageTdmConstituent() {
+        return manageConstituent(builder::buildTdmParser);
+    }
+
+    /** Prepare parsing of an OPM constituent.
+     * @return always return true
+     */
+    boolean manageOpmConstituent() {
+        return manageConstituent(builder::buildOpmParser);
+    }
+
+    /** Prepare parsing of an OMM constituent.
+     * @return always return true
+     */
+    boolean manageOmmConstituent() {
+        return manageConstituent(builder::buildOmmParser);
+    }
+
+    /** Prepare parsing of an OEM constituent.
+     * @return always return true
+     */
+    boolean manageOemConstituent() {
+        return manageConstituent(builder::buildOemParser);
+    }
+
+    /** Prepare parsing of an OCM constituent.
+     * @return always return true
+     */
+    boolean manageOcmConstituent() {
+        return manageConstituent(builder::buildOcmParser);
+    }
+
+    /** Prepare parsing of an APM constituent.
+     * @return always return true
+     */
+    boolean manageApmConstituent() {
+        return manageConstituent(builder::buildApmParser);
+    }
+
+    /** Prepare parsing of a AEM constituent.
+     * @return always return true
+     */
+    boolean manageAemConstituent() {
+        return manageConstituent(builder::buildAemParser);
     }
 
     /** Prepare parsing of a constituent.
-     * <p>
-     * Returning false allows the root element of the constituent to be handled by the dedicated parser
-     * </p>
-     * otherwise it is leaving the section
-     * @param build builder for constituent parser
-     * @return always return false!
+     * @param parserSupplier supplier for constituent parser
+     * @return always return true
      */
-    boolean manageConstituent(final Function<ParserBuilder, AbstractMessageParser<? extends NdmConstituent<?, ?>>> build) {
+    boolean manageConstituent(final Supplier<AbstractMessageParser<? extends NdmConstituent<?, ?>>> parserSupplier) {
 
         // as we have started parsing constituents, we cannot accept any further comments
         comments.refuseFurtherComments();
 
-        // store the previous constituent if any
-        storeLastConstituent();
-
         // create a parser for the constituent
-        constituentParser = build.apply(builder);
+        constituentParser = parserSupplier.get();
         constituentParser.reset(getFileFormat());
 
-        // delegate to the constituent parser the parsing of upcoming tokens
-        // (including the current one that will be rejected below)
-        anticipateNext(constituentParser.getCurrent());
-        setFallback(this::processStructureToken);
-
-        // reject current token, so it will be parsed by the constituent just built
-        return false;
+        return true;
 
     }
 
-    /** Process one structure token.
+    /** Process one token.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processStructureToken(final ParseToken token) {
+    private boolean processToken(final ParseToken token) {
 
         if (getFileFormat() == FileFormat.KVN) {
             // NDM combined instantiation can only be formatted as XML messages
             throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, token.getFileName());
         }
 
-        try {
-            return NdmStructureKey.valueOf(token.getName()).process(token, this);
-        } catch (IllegalArgumentException iae) {
-            // token has not been recognized
-            return false;
+        if (constituentParser == null) {
+            // we are in the global NDM structure
+            try {
+                return NdmStructureKey.valueOf(token.getName()).process(token, this);
+            } catch (IllegalArgumentException iae) {
+                // token has not been recognized
+                return false;
+            }
+        } else {
+            // we are inside one constituent
+            constituentParser.process(token);
+            if (constituentParser.wasEndTagSeen()) {
+                // we have seen the end tag, we must go back global structure parsing
+                constituents.add(constituentParser.build());
+                constituentParser = null;
+            }
+            return true;
         }
 
     }
