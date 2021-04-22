@@ -1041,7 +1041,7 @@ public class OcmParserTest {
         Assert.assertEquals( 300.0,  ch0.getCovariances().get(1).getDate().durationFrom(epoch), 1.0e-10);
         Assert.assertEquals(13.2e6,  ch0.getCovariances().get(1).getMatrix().getEntry(2, 1),    1.0e-10);
         Assert.assertEquals( 600.0,  ch0.getCovariances().get(2).getDate().durationFrom(epoch), 1.0e-10);
-        Assert.assertEquals(26.5e6,  ch0.getCovariances().get(2).getMatrix().getEntry(4, 5),   1.0e-10);
+        Assert.assertEquals(26.5e6,  ch0.getCovariances().get(2).getMatrix().getEntry(4, 5),    1.0e-10);
         CovarianceHistory ch1 = file.getData().getCovarianceBlocks().get(1);
         Assert.assertEquals("this is number 2 COV comment", ch1.getMetadata().getComments().get(0));
         Assert.assertEquals("covariance 2", ch1.getMetadata().getCovID());
@@ -1049,10 +1049,12 @@ public class OcmParserTest {
         Assert.assertEquals("covariance 3", ch1.getMetadata().getCovNextID());
         Assert.assertEquals("SIMULATED",    ch1.getMetadata().getCovBasis());
         Assert.assertEquals("basis 2",      ch1.getMetadata().getCovBasisID());
-        Assert.assertEquals(3, ch1.getCovariances().size());
-        Assert.assertEquals(1800.0,   ch1.getCovariances().get(0).getDate().durationFrom(epoch), 1.0e-10);
-        Assert.assertEquals(2100.0,   ch1.getCovariances().get(1).getDate().durationFrom(epoch), 1.0e-10);
-        Assert.assertEquals(2400.0,   ch1.getCovariances().get(2).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(1, ch1.getCovariances().size());
+        Assert.assertEquals(1800.0, ch1.getCovariances().get(0).getDate().durationFrom(epoch), 1.0e-10);
+        Assert.assertEquals(43.0e6,   ch1.getCovariances().get(0).getMatrix().getEntry(0, 0),    1.0e-10);
+        Assert.assertEquals(20.0e6,   ch1.getCovariances().get(0).getMatrix().getEntry(0, 1),    1.0e-10);
+        Assert.assertEquals( 6.0e6,   ch1.getCovariances().get(0).getMatrix().getEntry(0, 5),    1.0e-10);
+        Assert.assertEquals( 2.0e6,   ch1.getCovariances().get(0).getMatrix().getEntry(4, 3),    1.0e-10);
 
         // check maneuver data
         Assert.assertEquals(3, file.getData().getManeuverBlocks().size());

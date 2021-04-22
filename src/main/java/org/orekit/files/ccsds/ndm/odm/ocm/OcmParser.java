@@ -554,11 +554,12 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
                 final int n = currentCovarianceHistoryMetadata.getCovUnits().size();
-                if (fields.length != 1 + (n * (n + 1) / 2)) {
+                if (fields.length - 1 != currentCovarianceHistoryMetadata.getCovOrdering().nbElements(n)) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 currentCovarianceHistory.add(new Covariance(currentCovarianceHistoryMetadata.getCovType(),
+                                                            currentCovarianceHistoryMetadata.getCovOrdering(),
                                                             context.getTimeSystem().getConverter(context).parse(fields[0]),
                                                             fields, 1));
                 return true;

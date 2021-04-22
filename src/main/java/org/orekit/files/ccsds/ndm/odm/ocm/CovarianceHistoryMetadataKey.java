@@ -71,6 +71,9 @@ public enum CovarianceHistoryMetadataKey {
      */
     COV_TYPE((token, context, container) -> token.processAsEnum(ElementsType.class, container::setCovType)),
 
+    /** Covariance ordering. */
+    COV_ORDERING((token, context, container) -> token.processAsEnum(Ordering.class, container::setCovOrdering)),
+
     /** SI units for each elements of the covariance. */
     COV_UNITS((token, context, container) -> token.processAsUnitList(container::setCovUnits));
 
