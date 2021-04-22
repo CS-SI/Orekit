@@ -29,6 +29,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
@@ -36,15 +37,20 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
 import org.orekit.files.ccsds.ndm.odm.ocm.Covariance;
 import org.orekit.files.ccsds.ndm.odm.ocm.CovarianceHistory;
 import org.orekit.files.ccsds.ndm.odm.ocm.Maneuver;
 import org.orekit.files.ccsds.ndm.odm.ocm.ManeuverHistory;
+import org.orekit.files.ccsds.ndm.odm.ocm.OcmSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.odm.ocm.OrbitState;
 import org.orekit.files.ccsds.ndm.odm.ocm.OrbitStateHistory;
+import org.orekit.files.ccsds.ndm.odm.oem.OemSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.tdm.Observation;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.files.ccsds.section.Section;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
@@ -89,17 +95,23 @@ public class NdmTestUtils {
         } else if (original instanceof Map) {
             checkMap((Map<?, ?>) original, (Map<?, ?>) rebuilt);
             return true;
-        } else if (original instanceof CommentsContainer   ||
-                   original instanceof ApmQuaternion       ||
-                   original instanceof AttitudeEndoints    ||
-                   original instanceof CovarianceHistory   ||
-                   original instanceof ManeuverHistory     ||
-                   original instanceof OrbitState          ||
-                   original instanceof Covariance          ||
-                   original instanceof Maneuver            ||
-                   original instanceof Observation         ||
-                   original instanceof SpacecraftBodyFrame ||
-                   original instanceof PVCoordinates       ||
+        } else if (original instanceof NdmConstituent        ||
+                   original instanceof Segment               ||
+                   original instanceof Section               ||
+                   original instanceof CommentsContainer     ||
+                   original instanceof ApmQuaternion         ||
+                   original instanceof AttitudeEndoints      ||
+                   original instanceof OcmSatelliteEphemeris ||
+                   original instanceof OemSatelliteEphemeris ||
+                   original instanceof AemSatelliteEphemeris ||
+                   original instanceof CovarianceHistory     ||
+                   original instanceof ManeuverHistory       ||
+                   original instanceof OrbitState            ||
+                   original instanceof Covariance            ||
+                   original instanceof Maneuver              ||
+                   original instanceof Observation           ||
+                   original instanceof SpacecraftBodyFrame   ||
+                   original instanceof PVCoordinates         ||
                    original instanceof AngularCoordinates) {
             checkContainer(original, rebuilt);
             return true;
@@ -114,6 +126,8 @@ public class NdmTestUtils {
             return true;
         } else if (original instanceof OrbitStateHistory) {
             checkOrbitStateHistory((OrbitStateHistory) original, (OrbitStateHistory) rebuilt);
+            return true;
+        } else if (original instanceof DataContext) {
             return true;
         } else if (original instanceof Frame) {
             checkFrame((Frame) original, (Frame) rebuilt);
@@ -146,21 +160,24 @@ public class NdmTestUtils {
         Assert.assertEquals(original.getClass(), rebuilt.getClass());
         final Class<?> cls = original.getClass();
         Stream.of(cls.getMethods()).
-        filter(m -> m.getName().startsWith("get")          &&
-                    !m.getName().equals("getClass")        &&
-                    !m.getName().equals("getPropagator")   &&
-                    !m.getName().equals("getLaunchYear")   &&
-                    !m.getName().equals("getLaunchNumber") &&
-                    !m.getName().equals("getLaunchPiece")  &&
+        filter(m -> m.getName().startsWith("get")              &&
+                    !m.getName().equals("getClass")            &&
+                    !m.getName().equals("getPropagator")       &&
+                    !m.getName().equals("getLaunchYear")       &&
+                    !m.getName().equals("getLaunchNumber")     &&
+                    !m.getName().equals("getLaunchPiece")      &&
+                    !m.getName().equals("getAttitudeProvider") &&
                     m.getParameterCount() == 0).
         forEach(getter -> {
             try {
                 Assert.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)));
             } catch (InvocationTargetException e) {
-                if (!(getter.getName().equals("getFrame") &&
+                if (!((getter.getName().equals("getFrame") ||
+                       getter.getName().equals("getReferenceFrame") ||
+                       getter.getName().equals("getInertialFrame")) &&
                       e.getCause() instanceof OrekitException &&
-                      ((OrekitException) e.getCause()).getSpecifier() ==
-                         OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY)) {
+                      (((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY ||
+                       ((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.CCSDS_INVALID_FRAME))) {
                     Assert.fail(e.getCause().getLocalizedMessage());
                 }
             } catch (IllegalAccessException | IllegalArgumentException e) {

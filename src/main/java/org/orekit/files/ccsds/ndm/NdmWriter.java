@@ -79,24 +79,7 @@ public class NdmWriter {
 
         // write the constituents
         for (final NdmConstituent<?, ?> constituent : message.getConstituents()) {
-            if (constituent instanceof TdmFile) {
-                writeTdmConstituent(generator, (TdmFile) constituent);
-            } else if (constituent instanceof OpmFile) {
-                writeOpmConstituent(generator, (OpmFile) constituent);
-            } else if (constituent instanceof OmmFile) {
-                writeOmmConstituent(generator, (OmmFile) constituent);
-            } else if (constituent instanceof OemFile) {
-                writeOemConstituent(generator, (OemFile) constituent);
-            } else if (constituent instanceof OcmFile) {
-                writeOcmConstituent(generator, (OcmFile) constituent);
-            } else if (constituent instanceof ApmFile) {
-                writeApmConstituent(generator, (ApmFile) constituent);
-            } else if (constituent instanceof AemFile) {
-                writeAemConstituent(generator, (AemFile) constituent);
-            } else {
-                // this should never happen
-                throw new OrekitInternalError(null);
-            }
+            writeConstituent(generator, constituent);
         }
 
     }
@@ -135,75 +118,56 @@ public class NdmWriter {
 
     }
 
-    /** Write a TDM constituent.
-     * @param generator generator to use for producing output
-     * @param tdmConstituent TDM constituent
-     */
-    public void writeTdmConstituent(final Generator generator, final TdmFile tdmConstituent) throws IOException {
-        writeConstituent(generator, builder.buildTdmWriter(), tdmConstituent);
-    }
-
-    /** Write an OPM constituent.
-     * @param generator generator to use for producing output
-     * @param opmConstituent OPM constituent
-     */
-    public void writeOpmConstituent(final Generator generator, final OpmFile opmConstituent) throws IOException {
-        writeConstituent(generator, builder.buildOpmWriter(), opmConstituent);
-    }
-
-    /** Write an OMM constituent.
-     * @param generator generator to use for producing output
-     * @param ommConstituent OMM constituent
-     */
-    public void writeOmmConstituent(final Generator generator, final OmmFile ommConstituent) throws IOException {
-        writeConstituent(generator, builder.buildOmmWriter(), ommConstituent);
-    }
-
-    /** Write an OEM constituent.
-     * @param generator generator to use for producing output
-     * @param oemConstituent TDM constituent
-     */
-    public void writeOemConstituent(final Generator generator, final OemFile oemConstituent) throws IOException {
-        writeConstituent(generator, builder.buildOemWriter(), oemConstituent);
-    }
-
-    /** Write an OCM constituent.
-     * @param generator generator to use for producing output
-     * @param ocmConstituent OCM constituent
-     */
-    public void writeOcmConstituent(final Generator generator, final OcmFile ocmConstituent) throws IOException {
-        writeConstituent(generator, builder.buildOcmWriter(), ocmConstituent);
-    }
-
-    /** Write an APM constituent.
-     * @param generator generator to use for producing output
-     * @param apmConstituent APM constituent
-     */
-    public void writeApmConstituent(final Generator generator, final ApmFile apmConstituent) throws IOException {
-        writeConstituent(generator, builder.buildApmWriter(), apmConstituent);
-    }
-
-    /** Write an AEM constituent.
-     * @param generator generator to use for producing output
-     * @param aemConstituent AEM constituent
-     */
-    public void writeAemConstituent(final Generator generator, final AemFile aemConstituent) throws IOException {
-        writeConstituent(generator, builder.buildAemWriter(), aemConstituent);
-    }
-
     /** Write a constituent.
      * @param generator generator to use for producing output
-     * @param writer writer for the constituent
      * @param constituent constituent
      * @param <H> type of the header
      * @param <S> type of the segments
      * @param <F> type of the file
      */
-    private <H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>>
-        void writeConstituent(final Generator generator, final MessageWriter<H, S, F> writer,
-                                  final F constituent) throws IOException {
+    public <H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>>
+        void writeConstituent(final Generator generator, final F constituent) throws IOException {
+
+        // write the root element if needed
         startMessageIfNeeded(generator);
+
+        // write the constituent
+        final MessageWriter<H, S, F> writer = buildWriter(constituent);
         writer.writeMessage(generator, constituent);
+
+        // update count
+        ++count;
+
+    }
+
+    /** Build writer for a constituent.
+     * @param constituent constituent
+     * @param <H> type of the header
+     * @param <S> type of the segments
+     * @param <F> type of the file
+     * @return writer suited for the constituent
+     */
+    @SuppressWarnings("unchecked")
+    private <H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>>
+        MessageWriter<H, S, F> buildWriter(final F constituent) throws IOException {
+        if (constituent instanceof TdmFile) {
+            return (MessageWriter<H, S, F>) builder.buildTdmWriter();
+        } else if (constituent instanceof OpmFile) {
+            return (MessageWriter<H, S, F>) builder.buildOpmWriter();
+        } else if (constituent instanceof OmmFile) {
+            return (MessageWriter<H, S, F>) builder.buildOmmWriter();
+        } else if (constituent instanceof OemFile) {
+            return (MessageWriter<H, S, F>) builder.buildOemWriter();
+        } else if (constituent instanceof OcmFile) {
+            return (MessageWriter<H, S, F>) builder.buildOcmWriter();
+        } else if (constituent instanceof ApmFile) {
+            return (MessageWriter<H, S, F>) builder.buildApmWriter();
+        } else if (constituent instanceof AemFile) {
+            return (MessageWriter<H, S, F>) builder.buildAemWriter();
+        } else {
+            // this should never happen
+            throw new OrekitInternalError(null);
+        }
     }
 
 }

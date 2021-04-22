@@ -57,11 +57,12 @@ public abstract class AbstractWriterTest<H extends Header, S extends Segment<?, 
             final F          original = getParser().parseMessage(source1);
 
             // write the parsed file back to a characters array
-            final CharArrayWriter caw       = new CharArrayWriter();
-            final Generator       generator = format == FileFormat.KVN ?
-                                              new KvnGenerator(caw, 25, "dummy.kvn", unitsColumn) :
-                                              new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", unitsColumn > 0);
-            getWriter().writeMessage(generator, original);
+            final CharArrayWriter caw = new CharArrayWriter();
+            try (Generator generator = format == FileFormat.KVN ?
+                                       new KvnGenerator(caw, 25, "dummy.kvn", unitsColumn) :
+                                       new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", unitsColumn > 0)) {
+                getWriter().writeMessage(generator, original);
+            }
 
             // reparse the written file
             final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
