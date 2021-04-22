@@ -33,7 +33,7 @@ public class TdmWriterTest extends AbstractNdmWriterTest<Header, Segment<TdmMeta
     }
 
     protected TdmWriter getWriter() {
-        return new WriterBuilder().buildTdmWriter(new IdentityConverter());
+        return new WriterBuilder().buildTdmWriter();
     }
 
     @Test

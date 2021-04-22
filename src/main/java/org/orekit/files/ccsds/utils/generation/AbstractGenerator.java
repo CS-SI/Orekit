@@ -93,7 +93,12 @@ public abstract class AbstractGenerator implements Generator {
     /** {@inheritDoc} */
     @Override
     public void close() throws IOException {
-        // nothing to do
+
+        // get out from all sections properly
+        while (!sections.isEmpty()) {
+            exitSection();
+        }
+
     }
 
     /** {@inheritDoc} */

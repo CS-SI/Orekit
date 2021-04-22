@@ -184,7 +184,7 @@ public class TdmParserTest {
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
         final Generator generator = new KvnGenerator(caw, TdmWriter.KVN_PADDING_WIDTH, "dummy", 60);
-        new WriterBuilder().buildTdmWriter(null).writeMessage(generator, original);
+        new WriterBuilder().withRangeUnitsConverter(null).buildTdmWriter().writeMessage(generator, original);
 
         // reparse the written file
         final byte[]     bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);

@@ -728,3 +728,6 @@ INCOMPATIBLE_UNITS = les unités {0} et {1} sont incompatibles
 
 # missing velocity data
 MISSING_VELOCITY = données de vitesse manquantes
+
+# attempt to generate file {0} with a formatting error
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentative de génération du fichier {0} avec une erreur de format

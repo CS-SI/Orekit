@@ -89,7 +89,7 @@ public class KvnGenerator extends AbstractGenerator {
 
     /** {@inheritDoc} */
     @Override
-    public void endMessage(final String root) throws IOException {
+    public void endMessage(final String root) {
         // nothing to do
     }
 

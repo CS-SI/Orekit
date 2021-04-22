@@ -25,6 +25,7 @@ import org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter;
 import org.orekit.files.ccsds.ndm.odm.oem.OemWriter;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmWriter;
 import org.orekit.files.ccsds.ndm.odm.opm.OpmWriter;
+import org.orekit.files.ccsds.ndm.tdm.IdentityConverter;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnits;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnitsConverter;
 import org.orekit.files.ccsds.ndm.tdm.TdmWriter;
@@ -51,6 +52,7 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      *   <li>{@link #getConventions() IERS conventions} set to {@link IERSConventions#IERS_2010}</li>
      *   <li>{@link #getDataContext() data context} set to {@link DataContext#getDefault() default context}</li>
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
+     *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
      * </ul>
      * </p>
      */
@@ -66,12 +68,13 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      * <ul>
      *   <li>{@link #getConventions() IERS conventions} set to {@link IERSConventions#IERS_2010}</li>
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
+     *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
      * </ul>
      * </p>
      * @param dataContext data context used to retrieve frames, time scales, etc.
      */
     public WriterBuilder(final DataContext dataContext) {
-        this(IERSConventions.IERS_2010, dataContext, null, null);
+        this(IERSConventions.IERS_2010, dataContext, null, null, new IdentityConverter());
     }
 
     /** Complete constructor.
@@ -79,17 +82,28 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param spinAxis spin axis in spacecraft body frame
+     * @param rangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      */
     private WriterBuilder(final IERSConventions conventions, final DataContext dataContext,
-                          final AbsoluteDate missionReferenceDate, final Vector3D spinAxis) {
-        super(conventions, dataContext, missionReferenceDate, spinAxis);
+                          final AbsoluteDate missionReferenceDate, final Vector3D spinAxis,
+                          final RangeUnitsConverter rangeUnitsConverter) {
+        super(conventions, dataContext, missionReferenceDate, spinAxis, rangeUnitsConverter);
     }
 
     /** {@inheritDoc} */
     @Override
     protected WriterBuilder create(final IERSConventions newConventions, final DataContext newDataContext,
-                                   final AbsoluteDate newMissionReferenceDate, final Vector3D newSpinAxis) {
-        return new WriterBuilder(newConventions, newDataContext, newMissionReferenceDate, newSpinAxis);
+                                   final AbsoluteDate newMissionReferenceDate,
+                                   final Vector3D newSpinAxis, final RangeUnitsConverter newRangeUnitsConverter) {
+        return new WriterBuilder(newConventions, newDataContext, newMissionReferenceDate,
+                                 newSpinAxis, newRangeUnitsConverter);
+    }
+
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.NdmFile Navigation Data Messages}.
+     * @return a new writer
+     */
+    public NdmWriter buildNdmWriter() {
+        return new NdmWriter(this);
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.OpmFile Orbit Parameters Messages}.
@@ -135,12 +149,10 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.
-     * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
-     * are no range observations in {@link RangeUnits#RU Range Units})
      * @return a new writer
      */
-    public TdmWriter buildTdmWriter(final RangeUnitsConverter converter) {
-        return new TdmWriter(getConventions(), getDataContext(), converter);
+    public TdmWriter buildTdmWriter() {
+        return new TdmWriter(getConventions(), getDataContext(), getRangeUnitsConverter());
     }
 
 }

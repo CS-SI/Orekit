@@ -71,12 +71,14 @@ public class XmlGenerator extends AbstractGenerator {
      * @param outputName output name for error messages
      * @param writeUnits if true, units must be written
      * @see #DEFAULT_INDENT
+     * @throws IOException if an I/O error occurs.
      */
     public XmlGenerator(final Appendable output, final int indentation,
-                        final String outputName, final boolean writeUnits) {
+                        final String outputName, final boolean writeUnits) throws IOException {
         super(output, outputName, writeUnits);
         this.indentation = indentation;
         this.level       = 0;
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, PROLOG));
     }
 
     /** {@inheritDoc} */
@@ -88,7 +90,6 @@ public class XmlGenerator extends AbstractGenerator {
     /** {@inheritDoc} */
     @Override
     public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
-        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, PROLOG));
         indent();
         writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, ROOT_START,
                                    root, messageTypeKey, version));

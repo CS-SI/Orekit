@@ -322,7 +322,8 @@ public enum OrekitMessages implements Localizable {
     UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized"),
     UNKNOWN_UNIT("unknown unit {0}"),
     INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
-    MISSING_VELOCITY("missing velocity data");
+    MISSING_VELOCITY("missing velocity data"),
+    ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error");
 
     // CHECKSTYLE: resume JavadocVariable check
 
