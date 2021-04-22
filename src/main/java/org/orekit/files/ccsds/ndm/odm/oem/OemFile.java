@@ -26,7 +26,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.utils.IERSConventions;
@@ -42,7 +42,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Evan Ward
  * @since 6.1
  */
-public class OemFile extends NdmFile<Header, OemSegment>
+public class OemFile extends NdmConstituent<Header, OemSegment>
     implements EphemerisFile<TimeStampedPVCoordinates, OemSegment> {
 
     /** Root element for XML files. */

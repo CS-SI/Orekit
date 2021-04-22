@@ -17,7 +17,7 @@
 package org.orekit.files.ccsds.ndm.odm.oem;
 
 import org.junit.Test;
-import org.orekit.files.ccsds.ndm.AbstractNdmWriterTest;
+import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
@@ -26,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-public class OemWriterTest extends AbstractNdmWriterTest<Header, OemSegment, OemFile> {
+public class OemWriterTest extends AbstractWriterTest<Header, OemSegment, OemFile> {
 
     protected OemParser getParser() {
         return new ParserBuilder().

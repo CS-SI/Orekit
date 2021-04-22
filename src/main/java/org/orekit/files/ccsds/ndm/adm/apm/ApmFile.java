@@ -23,7 +23,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
@@ -39,7 +39,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
+public class ApmFile extends NdmConstituent<Header, Segment<AdmMetadata, ApmData>> {
 
     /** Root element for XML files. */
     public static final String ROOT = "apm";
@@ -56,6 +56,20 @@ public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
     public ApmFile(final Header header, final List<Segment<AdmMetadata, ApmData>> segments,
                    final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
+    }
+
+    /** Get the file metadata.
+     * @return file metadata
+     */
+    public AdmMetadata getMetadata() {
+        return getSegments().get(0).getMetadata();
+    }
+
+    /** Get the file data.
+     * @return file data
+     */
+    public ApmData getData() {
+        return getSegments().get(0).getData();
     }
 
     /** Get the attitude.

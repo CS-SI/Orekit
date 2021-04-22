@@ -86,9 +86,14 @@ public enum ManeuverFieldType {
         (u, converter, maneuver) -> maneuver.getAccelerationInterpolation().name()),
 
     /** One σ percent error on acceleration magnitude. */
-    ACC_SIGMA("%",
-        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setAccelerationSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getAccelerationSigma()))),
+    ACC_MAG_SIGMA("%",
+        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setAccelerationMagnitudeSigma(toSI(field, u)),
+        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getAccelerationMagnitudeSigma()))),
+
+    /** One σ off-nominal acceleration direction. */
+    ACC_DIR_SIGMA("°",
+        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setAccelerationDirectionSigma(toSI(field, u)),
+        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getAccelerationDirectionSigma()))),
 
     /** Velocity increment along X axis. */
     DV_X("km/s",
@@ -105,10 +110,15 @@ public enum ManeuverFieldType {
         (field, u, context, maneuver, lineNumber, fileName) ->  maneuver.setDv(2, toSI(field, u)),
         (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDv().getZ()))),
 
-    /** One σ percent error on velocity magnitude. */
-    DV_SIGMA("%",
-        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDvSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDvSigma()))),
+    /** One σ percent error on ΔV magnitude. */
+    DV_MAG_SIGMA("%",
+        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDvMagSigma(toSI(field, u)),
+        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDvMagSigma()))),
+
+    /** One σ angular off-nominal ΔV direction. */
+    DV_DIR_SIGMA("°",
+        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDvDirSigma(toSI(field, u)),
+        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDvDirSigma()))),
 
     /** Thrust component along X axis. */
     THR_X("N",
@@ -148,9 +158,14 @@ public enum ManeuverFieldType {
         (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrustIsp()))),
 
     /** One σ percent error on thrust magnitude. */
-    THR_SIGMA("%",
-        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrustSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrustSigma()))),
+    THR_MAG_SIGMA("%",
+        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrustMagnitudeSigma(toSI(field, u)),
+        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrustMagnitudeSigma()))),
+
+    /** One σ angular off-nominal thrust direction. */
+    THR_DIR_SIGMA("°",
+        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrustDirectionSigma(toSI(field, u)),
+        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrustDirectionSigma()))),
 
     /** Identifier of resulting "child" object deployed from this host. */
     DEPLOY_ID("n/a",
@@ -177,10 +192,15 @@ public enum ManeuverFieldType {
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployMass(toSI(field, u)),
         (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployMass()))),
 
-    /** One σ percent error on deployment velocity magnitude. */
+    /** One σ percent error on deployment ΔV magnitude. */
     DEPLOY_DV_SIGMA("%",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployDvSigma(toSI(field, u)),
         (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployDvSigma()))),
+
+    /** One σ angular off-nominal deployment vector direction. */
+    DEPLOY_DIR_SIGMA("°",
+        (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployDirSigma(toSI(field, u)),
+        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployDirSigma()))),
 
     /** Ratio of child-to-host ΔV vectors. */
     DEPLOY_DV_RATIO("n/a",

@@ -28,7 +28,6 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -55,7 +54,7 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends NdmFile<?, ?>> T accept(final MessageParser<T> messageParser) {
+    public <T> T accept(final MessageParser<T> messageParser) {
         try {
             // Create the handler
             final DefaultHandler handler = new XMLHandler(messageParser);
@@ -68,11 +67,12 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
             // Read the xml file
             messageParser.reset(FileFormat.XML);
-            final InputStream is = source.getStreamOpener().openOnce();
-            if (is == null) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+            try (InputStream is = source.getStreamOpener().openOnce()) {
+                if (is == null) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+                }
+                saxParser.parse(is, handler);
             }
-            saxParser.parse(is, handler);
 
             // Get the content of the file
             return messageParser.build();
@@ -166,9 +166,11 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
             currentLineNumber  = locator.getLineNumber();
             currentContent     = null;
 
-            messageParser.process(getBuilder(qName).
-                                  buildToken(true, qName, currentContent, currentAttributes,
-                                             currentLineNumber, source.getName()));
+            for (final ParseToken token : getBuilder(qName).
+                                          buildTokens(true, qName, currentContent, currentAttributes,
+                                          currentLineNumber, source.getName())) {
+                messageParser.process(token);
+            }
 
         }
 
@@ -180,9 +182,12 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
                 // for an end tag without content, we keep the line number of the end tag itself
                 currentLineNumber = locator.getLineNumber();
             }
-            messageParser.process(getBuilder(qName).
-                                  buildToken(false, qName, currentContent, currentAttributes,
-                                             currentLineNumber, source.getName()));
+
+            for (final ParseToken token : getBuilder(qName).
+                                          buildTokens(false, qName, currentContent, currentAttributes,
+                                                      currentLineNumber, source.getName())) {
+                messageParser.process(token);
+            }
 
             currentElementName = null;
             currentLineNumber  = -1;

@@ -34,7 +34,7 @@ import org.orekit.errors.OrekitMessages;
  */
 public class CommentsContainer implements Section {
 
-    /** Metadata comments. The list contains a string for each line of comment. */
+    /** Comments, as one line per string. */
     private final List<String> comments;
 
     /** Indicator for accepting comments. */

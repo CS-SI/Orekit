@@ -728,3 +728,6 @@ INCOMPATIBLE_UNITS = <MISSING TRANSLATION>
 
 # missing velocity data
 MISSING_VELOCITY = <MISSING TRANSLATION>
+
+# attempt to generate file {0} with a formatting error
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>

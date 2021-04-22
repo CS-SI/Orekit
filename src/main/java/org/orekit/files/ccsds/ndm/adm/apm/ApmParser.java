@@ -145,14 +145,14 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
         return true;
     }
 
@@ -175,14 +175,14 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
                                        this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0,
                                        this::getSpinAxis);
-        setFallback(this::processMetadataToken);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processGeneralCommentToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processGeneralCommentToken);
         return true;
     }
 
@@ -197,7 +197,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     @Override
     public boolean prepareData() {
         commentsBlock = new CommentsContainer();
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processGeneralCommentToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processGeneralCommentToken);
         return true;
     }
 
@@ -253,7 +253,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @return always return true
      */
     boolean manageQuaternionSection(final boolean starting) {
-        setFallback(starting ? this::processQuaternionToken : structureProcessor);
+        anticipateNext(starting ? this::processQuaternionToken : structureProcessor);
         return true;
     }
 
@@ -263,7 +263,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @return always return true
      */
     boolean manageEulerElementsThreeSection(final boolean starting) {
-        setFallback(starting ? this::processEulerToken : structureProcessor);
+        anticipateNext(starting ? this::processEulerToken : structureProcessor);
         return true;
     }
 
@@ -273,7 +273,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @return always return true
      */
     boolean manageEulerElementsSpinSection(final boolean starting) {
-        setFallback(starting ? this::processSpinStabilizedToken : structureProcessor);
+        anticipateNext(starting ? this::processSpinStabilizedToken : structureProcessor);
         return true;
     }
 
@@ -283,7 +283,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @return always return true
      */
     boolean manageSpacecraftParametersSection(final boolean starting) {
-        setFallback(starting ? this::processSpacecraftParametersToken : structureProcessor);
+        anticipateNext(starting ? this::processSpacecraftParametersToken : structureProcessor);
         return true;
     }
 
@@ -293,7 +293,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @return always return true
      */
     boolean manageManeuverParametersSection(final boolean starting) {
-        setFallback(starting ? this::processManeuverToken : structureProcessor);
+        anticipateNext(starting ? this::processManeuverToken : structureProcessor);
         return true;
     }
 
@@ -348,7 +348,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
             // automatically before the first data token arrives
             prepareData();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processQuaternionToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processQuaternionToken);
         if ("COMMENT".equals(token.getName())) {
             if (token.getType() == TokenType.ENTRY) {
                 commentsBlock.addComment(token.getContentAsNormalizedString());
@@ -368,7 +368,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         if (quaternionBlock == null) {
             quaternionBlock = new ApmQuaternion();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processEulerToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processEulerToken);
         try {
             return token.getName() != null &&
                    ApmQuaternionKey.valueOf(token.getName()).process(token, context, quaternionBlock);
@@ -386,7 +386,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         if (eulerBlock == null) {
             eulerBlock = new Euler();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpinStabilizedToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpinStabilizedToken);
         try {
             return token.getName() != null &&
                    EulerKey.valueOf(token.getName()).process(token, context, eulerBlock);
@@ -408,7 +408,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
                 eulerBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
         try {
             return token.getName() != null &&
                    SpinStabilizedKey.valueOf(token.getName()).process(token, context, spinStabilizedBlock);
@@ -430,7 +430,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
                 spinStabilizedBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processManeuverToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processManeuverToken);
         try {
             return token.getName() != null &&
                    SpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
@@ -452,7 +452,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
                 spacecraftParametersBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
         try {
             if (token.getName() != null &&
                 ManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {

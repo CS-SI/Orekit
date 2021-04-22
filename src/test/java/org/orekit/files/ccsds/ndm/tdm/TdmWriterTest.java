@@ -17,23 +17,23 @@
 package org.orekit.files.ccsds.ndm.tdm;
 
 import org.junit.Test;
-import org.orekit.files.ccsds.ndm.AbstractNdmWriterTest;
+import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 
-public class TdmWriterTest extends AbstractNdmWriterTest<Header, Segment<TdmMetadata, ObservationsBlock>, TdmFile> {
+public class TdmWriterTest extends AbstractWriterTest<Header, Segment<TdmMetadata, ObservationsBlock>, TdmFile> {
 
     protected TdmParser getParser() {
         return new ParserBuilder().
                withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
-               buildTdmParser(new IdentityConverter());
+               buildTdmParser();
     }
 
     protected TdmWriter getWriter() {
-        return new WriterBuilder().buildTdmWriter(new IdentityConverter());
+        return new WriterBuilder().buildTdmWriter();
     }
 
     @Test

@@ -23,12 +23,12 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -48,8 +48,8 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AdmParser<T extends NdmFile<?, ?>, P extends AbstractMessageParser<T, ?>>
-    extends AbstractMessageParser<T, P> {
+public abstract class AdmParser<T extends NdmConstituent<?, ?>, P extends AbstractConstituentParser<T, ?>>
+    extends AbstractConstituentParser<T, P> {
 
     /** Index rotation element name. */
     private static final String ROTATION_1 = "rotation1";

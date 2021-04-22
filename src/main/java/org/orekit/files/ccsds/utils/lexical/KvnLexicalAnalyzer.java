@@ -28,7 +28,6 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.units.Unit;
 import org.orekit.utils.units.UnitsCache;
@@ -112,7 +111,7 @@ public class KvnLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends NdmFile<?, ?>> T accept(final MessageParser<T> messageParser) {
+    public <T> T accept(final MessageParser<T> messageParser) {
 
         messageParser.reset(FileFormat.KVN);
 

@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.section;
 
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 
 /** {@link ProcessingState} for structure of {@link FileFormat#KVN} CCSDS Messages.
@@ -28,12 +28,12 @@ import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 public class KvnStructureProcessingState implements ProcessingState {
 
     /** Parser for the complete message. */
-    private final AbstractMessageParser<?, ?> parser;
+    private final AbstractConstituentParser<?, ?> parser;
 
     /** Simple constructor.
      * @param parser parser for the complete message
      */
-    public KvnStructureProcessingState(final AbstractMessageParser<?, ?> parser) {
+    public KvnStructureProcessingState(final AbstractConstituentParser<?, ?> parser) {
         this.parser = parser;
     }
 

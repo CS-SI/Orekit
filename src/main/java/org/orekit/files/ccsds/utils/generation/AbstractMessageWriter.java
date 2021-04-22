@@ -21,7 +21,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.Segment;
@@ -39,7 +39,7 @@ import org.orekit.time.TimeComponents;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AbstractMessageWriter<H extends Header, S extends Segment<?, ?>, F extends NdmFile<H, S>>
+public abstract class AbstractMessageWriter<H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>>
     implements MessageWriter<H, S, F> {
 
     /** Default value for {@link HeaderKey#ORIGINATOR}. */

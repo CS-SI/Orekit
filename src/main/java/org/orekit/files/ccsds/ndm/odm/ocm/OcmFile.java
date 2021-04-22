@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.EphemerisFile;
@@ -33,7 +33,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmFile extends NdmFile<Header, Segment<OcmMetadata, OcmData>>
+public class OcmFile extends NdmConstituent<Header, Segment<OcmMetadata, OcmData>>
     implements EphemerisFile<TimeStampedPVCoordinates, OrbitStateHistory> {
 
     /** Root element for XML messages. */
