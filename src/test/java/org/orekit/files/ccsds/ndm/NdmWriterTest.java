@@ -122,7 +122,7 @@ public class NdmWriterTest {
         List<NdmConstituent<?, ?>> pool = buildPool(pb);
 
         RandomGenerator random = new Well19937a(0x4a21ffc6d5b7dbe6l);
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < 100; ++i) {
 
             final String[] comments = new String[random.nextInt(3)];
             for (int k = 0; k < comments.length; ++k) {
