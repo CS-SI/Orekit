@@ -17,7 +17,7 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import org.junit.Test;
-import org.orekit.files.ccsds.ndm.AbstractNdmWriterTest;
+import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.Constants;
 
-public class OcmWriterTest extends AbstractNdmWriterTest<Header, Segment<OcmMetadata, OcmData>, OcmFile> {
+public class OcmWriterTest extends AbstractWriterTest<Header, Segment<OcmMetadata, OcmData>, OcmFile> {
 
     protected OcmParser getParser() {
         return new ParserBuilder().

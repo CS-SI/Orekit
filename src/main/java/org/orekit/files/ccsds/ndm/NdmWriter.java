@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm;
 import java.io.IOException;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.aem.AemFile;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmFile;
@@ -27,7 +28,10 @@ import org.orekit.files.ccsds.ndm.odm.oem.OemFile;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmFile;
 import org.orekit.files.ccsds.ndm.odm.opm.OpmFile;
 import org.orekit.files.ccsds.ndm.tdm.TdmFile;
+import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.MessageWriter;
 
 /**
  * Writer for CCSDS Navigation Data Message.
@@ -39,6 +43,9 @@ public class NdmWriter {
 
     /** Builder for the constituents writers. */
     private final WriterBuilder builder;
+
+    /** Indicator for started message. */
+    private boolean started;
 
     /** Number of constituents written. */
     private int count;
@@ -53,7 +60,56 @@ public class NdmWriter {
      */
     public NdmWriter(final WriterBuilder builder) {
         this.builder = builder;
+        this.started = false;
         this.count   = 0;
+    }
+
+    /** Write one complete message.
+     * @param generator generator to use for producing output
+     * @param message message to write
+     * @throws IOException if the stream cannot write to stream
+     */
+    public void writeMessage(final Generator generator, final NdmFile message)
+        throws IOException {
+
+        // write the global comments
+        for (final String comment : message.getComments()) {
+            writeComment(generator, comment);
+        }
+
+        // write the constituents
+        for (final NdmConstituent<?, ?> constituent : message.getConstituents()) {
+            if (constituent instanceof TdmFile) {
+                writeTdmConstituent(generator, (TdmFile) constituent);
+            } else if (constituent instanceof OpmFile) {
+                writeOpmConstituent(generator, (OpmFile) constituent);
+            } else if (constituent instanceof OmmFile) {
+                writeOmmConstituent(generator, (OmmFile) constituent);
+            } else if (constituent instanceof OemFile) {
+                writeOemConstituent(generator, (OemFile) constituent);
+            } else if (constituent instanceof OcmFile) {
+                writeOcmConstituent(generator, (OcmFile) constituent);
+            } else if (constituent instanceof ApmFile) {
+                writeApmConstituent(generator, (ApmFile) constituent);
+            } else if (constituent instanceof AemFile) {
+                writeAemConstituent(generator, (AemFile) constituent);
+            } else {
+                // this should never happen
+                throw new OrekitInternalError(null);
+            }
+        }
+
+    }
+
+    /** Start the composite message if needed.
+     * @param generator generator to use for producing output
+     * @throws IOException if the stream cannot write to stream
+     */
+    private void startMessageIfNeeded(final Generator generator) throws IOException {
+        if (!started) {
+            generator.enterSection(NdmStructureKey.tdm.name());
+            started = true;
+        }
     }
 
     /** Write a comment line.
@@ -67,6 +123,8 @@ public class NdmWriter {
      * @throws IOException if the stream cannot write to stream
      */
     public void writeComment(final Generator generator, final String comment) throws IOException {
+
+        startMessageIfNeeded(generator);
 
         // check we can still write comments
         if (count > 0) {
@@ -82,7 +140,7 @@ public class NdmWriter {
      * @param tdmConstituent TDM constituent
      */
     public void writeTdmConstituent(final Generator generator, final TdmFile tdmConstituent) throws IOException {
-        builder.buildTdmWriter().writeMessage(generator, tdmConstituent);
+        writeConstituent(generator, builder.buildTdmWriter(), tdmConstituent);
     }
 
     /** Write an OPM constituent.
@@ -90,7 +148,7 @@ public class NdmWriter {
      * @param opmConstituent OPM constituent
      */
     public void writeOpmConstituent(final Generator generator, final OpmFile opmConstituent) throws IOException {
-        builder.buildOpmWriter().writeMessage(generator, opmConstituent);
+        writeConstituent(generator, builder.buildOpmWriter(), opmConstituent);
     }
 
     /** Write an OMM constituent.
@@ -98,7 +156,7 @@ public class NdmWriter {
      * @param ommConstituent OMM constituent
      */
     public void writeOmmConstituent(final Generator generator, final OmmFile ommConstituent) throws IOException {
-        builder.buildOmmWriter().writeMessage(generator, ommConstituent);
+        writeConstituent(generator, builder.buildOmmWriter(), ommConstituent);
     }
 
     /** Write an OEM constituent.
@@ -106,7 +164,7 @@ public class NdmWriter {
      * @param oemConstituent TDM constituent
      */
     public void writeOemConstituent(final Generator generator, final OemFile oemConstituent) throws IOException {
-        builder.buildOemWriter().writeMessage(generator, oemConstituent);
+        writeConstituent(generator, builder.buildOemWriter(), oemConstituent);
     }
 
     /** Write an OCM constituent.
@@ -114,7 +172,7 @@ public class NdmWriter {
      * @param ocmConstituent OCM constituent
      */
     public void writeOcmConstituent(final Generator generator, final OcmFile ocmConstituent) throws IOException {
-        builder.buildOcmWriter().writeMessage(generator, ocmConstituent);
+        writeConstituent(generator, builder.buildOcmWriter(), ocmConstituent);
     }
 
     /** Write an APM constituent.
@@ -122,7 +180,7 @@ public class NdmWriter {
      * @param apmConstituent APM constituent
      */
     public void writeApmConstituent(final Generator generator, final ApmFile apmConstituent) throws IOException {
-        builder.buildApmWriter().writeMessage(generator, apmConstituent);
+        writeConstituent(generator, builder.buildApmWriter(), apmConstituent);
     }
 
     /** Write an AEM constituent.
@@ -130,7 +188,22 @@ public class NdmWriter {
      * @param aemConstituent AEM constituent
      */
     public void writeAemConstituent(final Generator generator, final AemFile aemConstituent) throws IOException {
-        builder.buildAemWriter().writeMessage(generator, aemConstituent);
+        writeConstituent(generator, builder.buildAemWriter(), aemConstituent);
+    }
+
+    /** Write a constituent.
+     * @param generator generator to use for producing output
+     * @param writer writer for the constituent
+     * @param constituent constituent
+     * @param <H> type of the header
+     * @param <S> type of the segments
+     * @param <F> type of the file
+     */
+    private <H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>>
+        void writeConstituent(final Generator generator, final MessageWriter<H, S, F> writer,
+                                  final F constituent) throws IOException {
+        startMessageIfNeeded(generator);
+        writer.writeMessage(generator, constituent);
     }
 
 }

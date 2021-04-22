@@ -19,13 +19,13 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.orekit.files.ccsds.ndm.AbstractNdmWriterTest;
+import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Header;
 
-public class AemWriterTest extends AbstractNdmWriterTest<Header, AemSegment, AemFile> {
+public class AemWriterTest extends AbstractWriterTest<Header, AemSegment, AemFile> {
 
     protected AemParser getParser() {
         return new ParserBuilder().

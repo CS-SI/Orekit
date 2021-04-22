@@ -67,11 +67,12 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
             // Read the xml file
             messageParser.reset(FileFormat.XML);
-            final InputStream is = source.getStreamOpener().openOnce();
-            if (is == null) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+            try (InputStream is = source.getStreamOpener().openOnce()) {
+                if (is == null) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+                }
+                saxParser.parse(is, handler);
             }
-            saxParser.parse(is, handler);
 
             // Get the content of the file
             return messageParser.build();

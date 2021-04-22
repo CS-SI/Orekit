@@ -26,6 +26,7 @@ import org.orekit.files.ccsds.section.Segment;
  * Interface for writing Navigation Data Message (NDM) files.
  * @param <H> type of the header
  * @param <S> type of the segments
+ * @param <F> type of the file
  * @author Luc Maisonobe
  * @since 11.0
  */
