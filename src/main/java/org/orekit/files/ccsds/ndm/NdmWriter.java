@@ -107,7 +107,7 @@ public class NdmWriter {
      */
     private void startMessageIfNeeded(final Generator generator) throws IOException {
         if (!started) {
-            generator.enterSection(NdmStructureKey.tdm.name());
+            generator.enterSection(NdmStructureKey.ndm.name());
             started = true;
         }
     }
