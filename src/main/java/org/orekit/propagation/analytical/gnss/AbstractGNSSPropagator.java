@@ -345,4 +345,31 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
         return ecef;
     }
 
+    /**
+     * Gets the GNSSOrbitalElements.
+     *
+     * @return gnssOrbit
+     */
+    public GNSSOrbitalElements getGnssOrbit() {
+        return gnssOrbit;
+    }
+
+    /**
+     * Gets the Mean angular velocity of the Earth.
+     *
+     * @return av
+     */
+    public double getAv() {
+        return av;
+    }
+
+    /**
+     * Gets the Duration of the GNSS cycle in seconds.
+     *
+     * @return cycleDuration
+     */
+    public double getCycleDuration() {
+        return cycleDuration;
+    }
+
 }
