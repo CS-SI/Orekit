@@ -96,6 +96,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     /** Un-normalized zonal coefficients. */
     private double[] ck0;
 
+    /** Initial prapagation type. */
+    private PropagationType initialType;
+
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
@@ -444,6 +447,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         this.ck0 = new double[] {
             0.0, 0.0, c20, c30, c40, c50, c60
         };
+        this.initialType = initialType;
 
         // compute mean parameters if needed
         // transform into circular adapted parameters used by the Eckstein-Hechler model
@@ -473,6 +477,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     public void resetInitialState(final SpacecraftState state, final PropagationType stateType) {
         super.resetInitialState(state);
         final CircularOrbit circular = (CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit());
+        this.initialType = stateType;
         this.initialModel = (stateType == PropagationType.MEAN) ?
                              new EHModel(circular, state.getMass(), referenceRadius, mu, ck0) :
                              computeMeanParameters(circular, state.getMass());
@@ -985,9 +990,34 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
     }
 
+
+    public EHModel getInitialModel() {
+        return initialModel;
+    }
+
+    public TimeSpanMap<EHModel> getModels() {
+        return models;
+    }
+
+    public double getReferenceRadius() {
+        return referenceRadius;
+    }
+
+    public double getMu() {
+        return mu;
+    }
+
+    public double[] getCk0() {
+        return ck0;
+    }
+
     /** {@inheritDoc} */
     protected double getMass(final AbsoluteDate date) {
         return models.get(date).mass;
+    }
+
+    public PropagationType getInitialType() {
+        return initialType;
     }
 
 }
