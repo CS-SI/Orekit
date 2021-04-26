@@ -73,6 +73,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     /** Un-normalized zonal coefficients. */
     private double[] ck0;
 
+    /** Initial prapagation type. */
+    private PropagationType initialType;
+
     /** Build a propagator from FieldOrbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
@@ -226,6 +229,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, attitudeProv, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
+
 
     /** Build a propagator from FieldOrbit, attitude provider and potential.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
@@ -422,6 +426,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             this.ck0 = new double[] {
                 0.0, 0.0, c20, c30, c40, c50, c60
             };
+            this.initialType = initialType;
 
             // compute mean parameters if needed
             // transform into circular adapted parameters used by the Eckstein-Hechler model
@@ -430,7 +435,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                                                                   initialOrbit.getDate(),
                                                                                   initialOrbit.getFrame()),
                                                          mass),
-                              initialType);
+                                                         initialType);
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
@@ -455,6 +460,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType) {
         super.resetInitialState(state);
         final FieldCircularOrbit<T> circular = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit());
+        this.initialType = stateType;
         this.initialModel = (stateType == PropagationType.MEAN) ?
                              new FieldEHModel<>(circular, state.getMass(), referenceRadius, mu, ck0) :
                              computeMeanParameters(circular, state.getMass());
@@ -1003,6 +1009,30 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     protected List<ParameterDriver> getParametersDrivers() {
         // Eckstein Hechler propagation model does not have parameter drivers.
         return Collections.emptyList();
+    }
+
+    public FieldEHModel<T> getInitialModel() {
+        return initialModel;
+    }
+
+    public FieldTimeSpanMap<FieldEHModel<T>, T> getModels() {
+        return models;
+    }
+
+    public double getReferenceRadius() {
+        return referenceRadius;
+    }
+
+    public T getMu() {
+        return mu;
+    }
+
+    public double[] getCk0() {
+        return ck0;
+    }
+
+    public PropagationType getInitialType() {
+        return initialType;
     }
 
 }
