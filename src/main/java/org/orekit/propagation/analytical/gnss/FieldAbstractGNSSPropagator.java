@@ -69,10 +69,10 @@ public abstract class FieldAbstractGNSSPropagator<T extends RealFieldElement<T>>
     private final FieldGNSSOrbitalElements<T> gnssOrbit;
 
     /** Mean angular velocity of the Earth. */
-    private final double av;
+    private final T av;
 
     /** Duration of the GNSS cycle in seconds. */
-    private final double cycleDuration;
+    private final T cycleDuration;
 
     /** The spacecraft mass (kg). */
     private final T mass;
@@ -105,15 +105,15 @@ public abstract class FieldAbstractGNSSPropagator<T extends RealFieldElement<T>>
                                           final FieldGNSSOrbitalElements<T> gnssOrbit,
                                           final AttitudeProvider attitudeProvider,
                                           final Frame eci, final Frame ecef,
-                                          final double mass, final double av,
-                                          final double cycleDuration,
-                                          final double mu) {
+                                          final T mass, final T av,
+                                          final T cycleDuration,
+                                          final T mu) {
         super(field, attitudeProvider);
         this.gnssOrbit = gnssOrbit;
         this.av = av;
         this.cycleDuration = cycleDuration;
-        this.mass = field.getZero().add(mass);
-        this.mu = field.getZero().add(mu);
+        this.mass = mass;
+        this.mu = mu;
         // Sets the Earth Centered Inertial frame
         this.eci = eci;
         // Sets the Earth Centered Earth Fixed frame
@@ -135,10 +135,10 @@ public abstract class FieldAbstractGNSSPropagator<T extends RealFieldElement<T>>
         // Time from ephemeris reference epoch
         T tk = date.durationFrom(gnssOrbit.getDate());
         // Adjusts the time to take roll over week into account
-        while (tk.getReal() > 0.5 * cycleDuration) {
+        while (tk.getReal() > 0.5 * cycleDuration.getReal()) {
             tk = tk.subtract(cycleDuration);
         }
-        while (tk.getReal() < -0.5 * cycleDuration) {
+        while (tk.getReal() < -0.5 * cycleDuration.getReal()) {
             tk = tk.add(cycleDuration);
         }
         // Returns the time from ephemeris reference epoch
