@@ -51,7 +51,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
     /** State dimension, fixed to 6.
      * @since 9.0
      */
-    public static final int STATE_DIMENSION = 6;
+    public static final int STATE_DIMENSION = DSSTGradientConverter.FREE_STATE_PARAMETERS;
 
     /** Retrograde factor I.
      *  <p>
@@ -188,7 +188,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
             case OSCULATING :
                 // initialize Jacobians to zero
                 final int paramDim = parameters.getNbParams();
-                final int dim = 6;
+                final int dim = STATE_DIMENSION;
                 final double[][] dShortPerioddState = new double[dim][dim];
                 final double[][] dShortPerioddParam = new double[dim][paramDim];
                 final DSSTGradientConverter converter = new DSSTGradientConverter(s, propagator.getAttitudeProvider());
@@ -204,7 +204,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                     final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
                     shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(auxiliaryElements, propagationType, dsParameters));
                     forceModel.updateShortPeriodTerms(dsParameters, dsState);
-                    final Gradient[] shortPeriod = new Gradient[6];
+                    final Gradient[] shortPeriod = new Gradient[STATE_DIMENSION];
                     Arrays.fill(shortPeriod, zero);
                     for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
                         final Gradient[] spVariation = spt.value(dsState.getOrbit());
@@ -271,7 +271,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
     private void addToRow(final double[] derivatives, final int index,
                           final double[][] dMeanElementRatedElement) {
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < STATE_DIMENSION; i++) {
             dMeanElementRatedElement[index][i] += derivatives[i];
         }
 

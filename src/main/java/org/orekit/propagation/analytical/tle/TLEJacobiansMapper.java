@@ -45,7 +45,7 @@ import org.orekit.utils.ParameterDriversList;
 public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
     /** State dimension, fixed to 6. */
-    public static final int STATE_DIMENSION = 6;
+    public static final int STATE_DIMENSION = TLEGradientConverter.FREE_STATE_PARAMETERS;
 
     /** Name. */
     private String name;
@@ -144,7 +144,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         }
 
         // initialize Jacobians to zero
-        final int dim = 6;
+        final int dim = STATE_DIMENSION;
         final int paramDim = parameters.getNbParams();
         final double[][] stateGrad = new double[dim][dim];
         final double[][] paramGrad = new double[dim][paramDim];

@@ -167,7 +167,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
-        final int stateDimension = 6;
+        final int stateDimension = DSSTGradientConverter.FREE_STATE_PARAMETERS;
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
         final double[][] dYdP  = new double[stateDimension][selected.getNbParams()];
         for (int i = 0; i < stateDimension; ++i) {
@@ -201,7 +201,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
 
         // Check dimensions
         final int stateDim = dY1dY0.length;
-        if (stateDim != 6 || stateDim != dY1dY0[0].length) {
+        if (stateDim != DSSTGradientConverter.FREE_STATE_PARAMETERS || stateDim != dY1dY0[0].length) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_6X6,
                                       stateDim, dY1dY0[0].length);
         }
@@ -244,7 +244,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
 
         // initialize Jacobians to zero
         final int paramDim = selected.getNbParams();
-        final int dim = 6;
+        final int dim = DSSTGradientConverter.FREE_STATE_PARAMETERS;
         final double[][] dMeanElementRatedParam   = new double[dim][paramDim];
         final double[][] dMeanElementRatedElement = new double[dim][dim];
         final DSSTGradientConverter converter = new DSSTGradientConverter(s, propagator.getAttitudeProvider());

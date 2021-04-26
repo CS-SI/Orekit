@@ -39,7 +39,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 class TLEGradientConverter extends AbstractGradientConverter {
 
     /** Fixed dimension of the state. */
-    private static final int FREE_STATE_PARAMETERS = 6;
+    public static final int FREE_STATE_PARAMETERS = 6;
 
     /** Initial TLE. */
     private final TLE tle;

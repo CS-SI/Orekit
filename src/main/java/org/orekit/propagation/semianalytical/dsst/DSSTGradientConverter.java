@@ -44,7 +44,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 class DSSTGradientConverter extends AbstractGradientConverter {
 
     /** Fixed dimension of the state. */
-    private static final int FREE_STATE_PARAMETERS = 6;
+    public static final int FREE_STATE_PARAMETERS = 6;
 
     /** States with various number of additional parameters for force models. */
     private final List<FieldSpacecraftState<Gradient>> gStates;
