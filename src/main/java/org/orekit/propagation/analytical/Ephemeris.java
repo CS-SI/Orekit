@@ -360,4 +360,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     }
 
+    public ImmutableTimeStampedCache<SpacecraftState> getCache() {
+        return cache;
+    }
+
+
 }
