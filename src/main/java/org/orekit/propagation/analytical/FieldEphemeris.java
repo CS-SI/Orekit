@@ -77,7 +77,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>>
     private final FieldAbsoluteDate<T> maxDate;
 
     /** The extrapolation threshold beyond which the propagation will fail. **/
-    private final T extrapolationThreshold;
+    private final double extrapolationThreshold;
 
     /** Reference frame. */
     private final Frame frame;
@@ -114,8 +114,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>>
     public FieldEphemeris(final Field<T> field, final List<SpacecraftState> states,
                           final int interpolationPoints)
         throws MathIllegalArgumentException {
-        this(field, states, interpolationPoints,
-             field.getZero().add(DEFAULT_EXTRAPOLATION_THRESHOLD_SEC));
+        this(field, states, interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
     }
 
     /**
@@ -137,7 +136,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>>
     @DefaultDataContext
     public FieldEphemeris(final Field<T> field, final List<SpacecraftState> states,
                           final int interpolationPoints,
-                          final T extrapolationThreshold)
+                          final double extrapolationThreshold)
         throws MathIllegalArgumentException {
         this(field, states, interpolationPoints, extrapolationThreshold,
              Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
@@ -158,7 +157,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>>
      */
     public FieldEphemeris(final Field<T> field, final List<SpacecraftState> states,
                           final int interpolationPoints,
-                          final T extrapolationThreshold,
+                          final double extrapolationThreshold,
                           final AttitudeProvider attitudeProvider)
         throws MathIllegalArgumentException {
 
@@ -225,7 +224,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>>
      *
      * @return the extrapolation threshold in seconds
      */
-    public T getExtrapolationThreshold() {
+    public double getExtrapolationThreshold() {
         return extrapolationThreshold;
     }
 
@@ -244,14 +243,14 @@ public class FieldEphemeris<T extends RealFieldElement<T>>
         final FieldAbsoluteDate<T> central;
         if (date.compareTo(minDate) < 0 &&
             FastMath.abs(date.durationFrom(minDate))
-                .getReal() <= extrapolationThreshold.getReal()) {
+                .getReal() <= extrapolationThreshold) {
             // avoid TimeStampedCacheException as we are still within the
             // tolerance before
             // minDate
             central = minDate;
         } else if (date.compareTo(maxDate) > 0 &&
                    FastMath.abs(date.durationFrom(maxDate))
-                       .getReal() <= extrapolationThreshold.getReal()) {
+                       .getReal() <= extrapolationThreshold) {
             // avoid TimeStampedCacheException as we are still within the
             // tolerance after
             // maxDate
@@ -395,7 +394,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>>
         private int interpolationPoints;
 
         /** Extrapolation threshold. */
-        private T extrapolationThreshold;
+        private double extrapolationThreshold;
 
         /**
          * Constructor.
@@ -406,7 +405,7 @@ public class FieldEphemeris<T extends RealFieldElement<T>>
          */
         LocalPVProvider(final List<SpacecraftState> states,
                         final int interpolationPoints,
-                        final T extrapolationThreshold) {
+                        final double extrapolationThreshold) {
 
             this.states = states;
             this.interpolationPoints = interpolationPoints;
@@ -453,6 +452,10 @@ public class FieldEphemeris<T extends RealFieldElement<T>>
 
         }
 
+    }
+
+    public ImmutableTimeStampedCache<SpacecraftState> getCache() {
+        return cache;
     }
 
 }

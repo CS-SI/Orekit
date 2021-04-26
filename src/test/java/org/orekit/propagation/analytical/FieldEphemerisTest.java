@@ -465,22 +465,22 @@ public class FieldEphemerisTest {
 		FieldEphemeris<T> ephemeris = new FieldEphemeris<>(field, states, interpolationPoints);
 		Assert.assertEquals(finalDate, ephemeris.getMaxDate());
 
-		T tolerance = ephemeris.getExtrapolationThreshold();
+		double tolerance = ephemeris.getExtrapolationThreshold();
 
 		ephemeris.propagate(ephemeris.getMinDate());
 		ephemeris.propagate(ephemeris.getMaxDate());
 		ephemeris.propagate(ephemeris.getMinDate().shiftedBy(zero.subtract(tolerance).divide(2.0)));
-		ephemeris.propagate(ephemeris.getMaxDate().shiftedBy(tolerance.divide(2.0)));
+		ephemeris.propagate(ephemeris.getMaxDate().shiftedBy(tolerance/2.0));
 
 		try {
-			ephemeris.propagate(ephemeris.getMinDate().shiftedBy(tolerance.multiply(-2.0)));
+			ephemeris.propagate(ephemeris.getMinDate().shiftedBy(-2 * tolerance));
 			Assert.fail("an exception should have been thrown");
 		} catch (TimeStampedCacheException ex) {
 			// supposed to fail since out of bounds
 		}
 
 		try {
-			ephemeris.propagate(ephemeris.getMaxDate().shiftedBy(tolerance.multiply(+2.0)));
+			ephemeris.propagate(ephemeris.getMaxDate().shiftedBy(+2 * tolerance));
 			Assert.fail("an exception should have been thrown");
 		} catch (TimeStampedCacheException ex) {
 			// supposed to fail since out of bounds
