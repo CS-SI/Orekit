@@ -40,9 +40,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
  */
-public class FieldGalileoPropagator<T extends RealFieldElement<T>>
-    extends
-    FieldAbstractGNSSPropagator<T> {
+public class FieldGalileoPropagator<T extends RealFieldElement<T>> extends FieldAbstractGNSSPropagator<T> {
 
     // Constants
     /** Value of the earth's rotation rate in rad/s. */
@@ -50,8 +48,8 @@ public class FieldGalileoPropagator<T extends RealFieldElement<T>>
 
     /** Duration of the Galileo cycle in seconds. */
     private static final double GALILEO_CYCLE_DURATION =
-        GalileoOrbitalElements.GALILEO_WEEK_IN_SECONDS *
-                                                         GalileoOrbitalElements.GALILEO_WEEK_NB;
+                    GalileoOrbitalElements.GALILEO_WEEK_IN_SECONDS *
+                    GalileoOrbitalElements.GALILEO_WEEK_NB;
 
     // Fields
     /** The Galileo orbital elements used. */
@@ -170,9 +168,9 @@ public class FieldGalileoPropagator<T extends RealFieldElement<T>>
                                   final AttitudeProvider attitudeProvider,
                                   final double mass, final Frame eci,
                                   final Frame ecef) {
-        super(field, galileoOrbit, attitudeProvider, eci, ecef, mass,
-              GALILEO_AV, GALILEO_CYCLE_DURATION,
-              FieldGalileoOrbitalElements.GALILEO_MU);
+        super(field, galileoOrbit, attitudeProvider, eci, ecef, field.getZero().add(mass),
+              field.getZero().add(GALILEO_AV), field.getZero().add(GALILEO_CYCLE_DURATION),
+              field.getZero().add(FieldGalileoOrbitalElements.GALILEO_MU));
         // Stores the Galileo orbital elements
         this.galileoOrbit = galileoOrbit;
     }

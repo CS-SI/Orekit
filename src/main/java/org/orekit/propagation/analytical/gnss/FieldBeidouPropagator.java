@@ -40,9 +40,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
  */
-public class FieldBeidouPropagator<T extends RealFieldElement<T>>
-    extends
-    FieldAbstractGNSSPropagator<T> {
+public class FieldBeidouPropagator<T extends RealFieldElement<T>> extends FieldAbstractGNSSPropagator<T> {
 
     // Constants
     /** Value of the earth's rotation rate in rad/s. */
@@ -50,8 +48,8 @@ public class FieldBeidouPropagator<T extends RealFieldElement<T>>
 
     /** Duration of the Beidou cycle in seconds. */
     private static final double BEIDOU_CYCLE_DURATION =
-        FieldBeidouOrbitalElements.BEIDOU_WEEK_IN_SECONDS *
-                                                        FieldBeidouOrbitalElements.BEIDOU_WEEK_NB;
+                    FieldBeidouOrbitalElements.BEIDOU_WEEK_IN_SECONDS *
+                    FieldBeidouOrbitalElements.BEIDOU_WEEK_NB;
 
     // Fields
     /** The Beidou orbital elements used. */
@@ -170,8 +168,8 @@ public class FieldBeidouPropagator<T extends RealFieldElement<T>>
                                  final AttitudeProvider attitudeProvider,
                                  final double mass, final Frame eci,
                                  final Frame ecef) {
-        super(field, bdsOrbit, attitudeProvider, eci, ecef, mass, BEIDOU_AV,
-              BEIDOU_CYCLE_DURATION, FieldBeidouOrbitalElements.BEIDOU_MU);
+        super(field, bdsOrbit, attitudeProvider, eci, ecef, field.getZero().add(mass), field.getZero().add(BEIDOU_AV),
+              field.getZero().add( BEIDOU_CYCLE_DURATION), field.getZero().add(FieldBeidouOrbitalElements.BEIDOU_MU));
         // Stores the Beidou orbital elements
         this.bdsOrbit = bdsOrbit;
     }

@@ -167,8 +167,8 @@ public class FieldQZSSPropagator<T extends RealFieldElement<T>> extends FieldAbs
                                final AttitudeProvider attitudeProvider,
                                final double mass, final Frame eci,
                                final Frame ecef) {
-        super(field, qzssOrbit, attitudeProvider, eci, ecef, mass, QZSS_AV,
-              QZSS_CYCLE_DURATION, FieldQZSSOrbitalElements.QZSS_MU);
+        super(field, qzssOrbit, attitudeProvider, eci, ecef, field.getZero().add(mass), field.getZero().add(QZSS_AV),
+              field.getZero().add(QZSS_CYCLE_DURATION), field.getZero().add(FieldQZSSOrbitalElements.QZSS_MU));
         // Stores the QZSS orbital elements
         this.qzssOrbit = qzssOrbit;
     }

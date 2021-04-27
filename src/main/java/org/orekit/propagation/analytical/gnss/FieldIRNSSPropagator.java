@@ -39,9 +39,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @author Nicolas Fialton (field translation)
  */
-public class FieldIRNSSPropagator<T extends RealFieldElement<T>>
-    extends
-    FieldAbstractGNSSPropagator<T> {
+public class FieldIRNSSPropagator<T extends RealFieldElement<T>> extends FieldAbstractGNSSPropagator<T> {
 
     // Constants
     /** WGS 84 value of the earth's rotation rate in rad/s. */
@@ -162,8 +160,8 @@ public class FieldIRNSSPropagator<T extends RealFieldElement<T>>
                                 final AttitudeProvider attitudeProvider,
                                 final double mass, final Frame eci,
                                 final Frame ecef) {
-        super(field, irnssOrbit, attitudeProvider, eci, ecef, mass, IRNSS_AV,
-              IRNSS_CYCLE_DURATION, FieldIRNSSOrbitalElements.IRNSS_MU);
+        super(field, irnssOrbit, attitudeProvider, eci, ecef, field.getZero().add(mass), field.getZero().add(IRNSS_AV),
+              field.getZero().add(IRNSS_CYCLE_DURATION), field.getZero().add(FieldIRNSSOrbitalElements.IRNSS_MU));
         // Stores the IRNSS orbital elements
         this.irnssOrbit = irnssOrbit;
     }

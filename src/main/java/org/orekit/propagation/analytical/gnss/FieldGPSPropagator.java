@@ -34,7 +34,8 @@ import org.orekit.utils.ParameterDriver;
  * This class aims at propagating a GPS orbit from
  * {@link FieldGPSOrbitalElements}.
  *
- * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS
+ * @see <a href=
+ *      "http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS
  *      Interface Specification</a>
  * @author Pascal Parraud
  * @author Nicolas Fialton (field translation)
@@ -167,8 +168,8 @@ public class FieldGPSPropagator<T extends RealFieldElement<T>> extends FieldAbst
                               final AttitudeProvider attitudeProvider,
                               final double mass, final Frame eci,
                               final Frame ecef) {
-        super(field, gpsOrbit, attitudeProvider, eci, ecef, mass, GPS_AV,
-              GPS_CYCLE_DURATION, FieldGPSOrbitalElements.GPS_MU);
+        super(field, gpsOrbit, attitudeProvider, eci, ecef, field.getZero().add(mass), field.getZero().add(GPS_AV),
+              field.getZero().add(GPS_CYCLE_DURATION), field.getZero().add(FieldGPSOrbitalElements.GPS_MU));
         // Stores the GPS orbital elements
         this.gpsOrbit = gpsOrbit;
     }
