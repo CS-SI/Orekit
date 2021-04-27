@@ -22,7 +22,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
+import org.orekit.propagation.analytical.AbstractAnalyticalJacobiansMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -42,10 +42,7 @@ import org.orekit.utils.ParameterDriversList;
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
  */
-public class TLEJacobiansMapper extends AbstractJacobiansMapper {
-
-    /** State dimension, fixed to 6. */
-    public static final int STATE_DIMENSION = TLEGradientConverter.FREE_STATE_PARAMETERS;
+public class TLEJacobiansMapper extends AbstractAnalyticalJacobiansMapper {
 
     /** Name. */
     private String name;
@@ -56,9 +53,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     /** Propagator computing state evolution. */
     private final TLEPropagator propagator;
 
-    /** Placeholder for the derivatives of state. */
-    private double[] stateTransition;
-
     /** Simple constructor.
      * @param name name of the Jacobians
      * @param parameters selected parameters for Jacobian computation
@@ -68,68 +62,11 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
                               final ParameterDriversList parameters,
                               final TLEPropagator propagator) {
 
-        super(name, parameters);
+        super(name, parameters, TLEGradientConverter.FREE_STATE_PARAMETERS, null);
 
         this.parameters      = parameters;
         this.name            = name;
         this.propagator      = propagator;
-
-        stateTransition = null;
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
-                                    final double[][] dY1dP, final double[] p) {
-
-        // map the converted state Jacobian to one-dimensional array
-        int index = 0;
-        for (int i = 0; i < STATE_DIMENSION; ++i) {
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                p[index++] = (i == j) ? 1.0 : 0.0;
-            }
-        }
-
-        if (parameters.getNbParams() != 0) {
-
-            // map the converted parameters Jacobian to one-dimensional array
-            for (int i = 0; i < STATE_DIMENSION; ++i) {
-                for (int j = 0; j < parameters.getNbParams(); ++j) {
-                    p[index++] = dY1dP[i][j];
-                }
-            }
-        }
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
-
-        for (int i = 0; i < STATE_DIMENSION; i++) {
-            final double[] row = dYdY0[i];
-            for (int j = 0; j < STATE_DIMENSION; j++) {
-                row[j] = stateTransition[i * STATE_DIMENSION + j];
-            }
-        }
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
-
-        if (parameters.getNbParams() != 0) {
-
-            for (int i = 0; i < STATE_DIMENSION; i++) {
-                final double[] row = dYdP[i];
-                for (int j = 0; j < parameters.getNbParams(); j++) {
-                    row[j] = stateTransition[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbParams() * i)];
-                }
-            }
-
-        }
 
     }
 
@@ -139,12 +76,12 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     public void analyticalDerivatives(final SpacecraftState s) {
 
         final double[] p = s.getAdditionalState(name);
-        if (stateTransition == null) {
-            stateTransition = new double[p.length];
+        if (getStateTransition() == null) {
+            setStateTransition(new double[p.length]);
         }
 
         // initialize Jacobians to zero
-        final int dim = STATE_DIMENSION;
+        final int dim = getSTATE_DIMENSION();
         final int paramDim = parameters.getNbParams();
         final double[][] stateGrad = new double[dim][dim];
         final double[][] paramGrad = new double[dim][paramDim];
@@ -196,39 +133,28 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         // the previous derivatives correspond to state transition matrix with mean motion as 1rst element instead of semi major axis
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
-                stateTransition[j + dim * i] = stateGrad[i][j];
+                getStateTransition()[j + dim * i] = stateGrad[i][j];
 
                 // retrieving dElement/dA from dElement/dMeanMotion
                 if (j == 0) {
-                    stateTransition[j + dim * i] /= dAdMeanMotion;
+                    getStateTransition()[j + dim * i] /= dAdMeanMotion;
                 }
             }
         }
         final int columnTop = dim * dim;
         for (int k = 0; k < paramDim; k++) {
             for (int i = 0; i < dim; ++i) {
-                stateTransition[columnTop + (i + dim * k)] = paramGrad[i][k];
+                getStateTransition()[columnTop + (i + dim * k)] = paramGrad[i][k];
             }
         }
     }
 
-    /** Fill Jacobians rows.
-     * @param derivatives derivatives of a component
-     * @param index component index (0 for a, 1 for e, 2 for i, 3 for RAAN, 4 for PA, 5 for M)
-     * @param grad Jacobian of mean elements rate with respect to mean elements
+    /** Getter for initial propagator state.
+     * @return the propagator initial state
      */
-    private void addToRow(final double[] derivatives, final int index,
-                          final double[][] grad) {
-
-        for (int i = 0; i < 6; i++) {
-            grad[index][i] += derivatives[i];
-        }
-    }
-
-   /** Getter for initial propagator state.
-    * @return the propagator initial state
-    */
     public SpacecraftState getInitialState() {
         return propagator.getInitialState();
     }
+
+
 }

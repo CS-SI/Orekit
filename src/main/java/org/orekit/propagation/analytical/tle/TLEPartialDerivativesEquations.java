@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical.tle;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.AbstractAnalyticalPartialDerivativesEquations;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.utils.ParameterDriver;
@@ -38,19 +39,13 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 11.0
  */
-public class TLEPartialDerivativesEquations {
+public class TLEPartialDerivativesEquations extends AbstractAnalyticalPartialDerivativesEquations {
 
     /** Propagator computing state evolution. */
     private final TLEPropagator propagator;
 
     /** Selected parameters for Jacobian computation. */
     private ParameterDriversList selected;
-
-    /** Name. */
-    private final String name;
-
-    /** Flag for Jacobian matrices initialization. */
-    private boolean initialized;
 
     /** Simple constructor.
      * <p>
@@ -61,17 +56,10 @@ public class TLEPartialDerivativesEquations {
      */
     public TLEPartialDerivativesEquations(final String name,
                                           final TLEPropagator propagator) {
-        this.name        = name;
+
+        super(name, false);
         this.selected    = null;
         this.propagator  = propagator;
-        this.initialized = false;
-    }
-
-    /** Get the name of the additional state.
-     * @return name of the additional state
-     */
-    public String getName() {
-        return name;
     }
 
     /** Freeze the selected parameters from the force models.
@@ -86,20 +74,7 @@ public class TLEPartialDerivativesEquations {
         }
     }
 
-    /** Set the initial value of the Jacobian with respect to state and parameter.
-     * <p>
-     * This method is equivalent to call {@link #setInitialJacobians(SpacecraftState,
-     * double[][], double[][])} with dYdY0 set to the identity matrix and dYdP set
-     * to a zero matrix.
-     * </p>
-     * <p>
-     * The force models parameters for which partial derivatives are desired,
-     * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
-     * before this method is called, so proper matrices dimensions are used.
-     * </p>
-     * @param s0 initial state
-     * @return state with initial Jacobians added
-     */
+    /** {@inheritDoc}. */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
         final int stateDimension = 6;
@@ -145,13 +120,13 @@ public class TLEPartialDerivativesEquations {
         }
 
         // store the matrices as a single dimension array
-        initialized = true;
+        setInitialized(true);
         final TLEJacobiansMapper mapper = getMapper();
         final double[] p = new double[mapper.getAdditionalStateDimension()];
         mapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
 
         // set value in propagator
-        return s1.addAdditionalState(name, p);
+        return s1.addAdditionalState(getName(), p);
 
     }
 
@@ -162,10 +137,17 @@ public class TLEPartialDerivativesEquations {
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
     public TLEJacobiansMapper getMapper() {
-        if (!initialized) {
+        if (!getInitialized()) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new TLEJacobiansMapper(name, selected, propagator);
+        return new TLEJacobiansMapper(getName(), selected, propagator);
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    protected SpacecraftState setInitialJacobians(final SpacecraftState s1,
+                                                  final double[][] dY1dY0) {
+        return this.setInitialJacobians(s1, dY1dY0, new double[0][0]);
     }
 
 }

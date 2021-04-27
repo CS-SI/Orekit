@@ -111,7 +111,7 @@ public class EcksteinHechlerPartialDerivativesTest {
                     final double[] stateVector = new double[6];
                     OrbitType.CARTESIAN.mapOrbitToArray(initState.getOrbit(), PositionAngle.TRUE, stateVector, null);
                     final EcksteinHechlerJacobiansMapper mapper = partials.getMapper();
-                    double[][] dYdY0 =  new double[EcksteinHechlerJacobiansMapper.STATE_DIMENSION][EcksteinHechlerJacobiansMapper.STATE_DIMENSION];
+                    double[][] dYdY0 =  new double[EcksteinHechlerGradientConverter.FREE_STATE_PARAMETERS][EcksteinHechlerGradientConverter.FREE_STATE_PARAMETERS];
                     propagator.resetInitialState(initState);
                     mapper.analyticalDerivatives(propagator.propagate(target));
                     mapper.getStateJacobian(initState, dYdY0);

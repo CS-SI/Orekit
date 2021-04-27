@@ -22,7 +22,6 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
 
@@ -35,19 +34,13 @@ import org.orekit.utils.ParameterDriversList;
  * @author Nicolas Fialton
  */
 
-public class EcksteinHechlerJacobiansMapper extends AbstractJacobiansMapper {
-
-    /** State dimension, fixed to 6. */
-    public static final int STATE_DIMENSION = EcksteinHechlerGradientConverter.FREE_STATE_PARAMETERS;
+public class EcksteinHechlerJacobiansMapper extends AbstractAnalyticalJacobiansMapper {
 
     /** Name. */
     private String name;
 
     /** Propagator computing state evolution. */
     private final EcksteinHechlerPropagator propagator;
-
-    /** Placeholder for the derivatives of state. */
-    private double[] stateTransition;
 
     /** Simple constructor.
      * @param name name of the Jacobians
@@ -56,53 +49,9 @@ public class EcksteinHechlerJacobiansMapper extends AbstractJacobiansMapper {
     public EcksteinHechlerJacobiansMapper(final String name,
                                           final EcksteinHechlerPropagator propagator) {
 
-        super(name, new ParameterDriversList());
-
-        this.name            = name;
-        this.propagator      = propagator;
-
-        stateTransition = null;
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setInitialJacobians(final SpacecraftState state,
-                                    final double[][] dY1dY0,
-                                    final double[][] dY1dP,
-                                    final double[] p) {
-
-        // map the converted state Jacobian to one-dimensional array
-        int index = 0;
-        for (int i = 0; i < STATE_DIMENSION; ++i) {
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                p[index++] = (i == j) ? 1.0 : 0.0;
-            }
-        }
-
-        // No propagator parameters therefore there is no dY1dP
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
-
-        for (int i = 0; i < STATE_DIMENSION; i++) {
-            final double[] row = dYdY0[i];
-            for (int j = 0; j < STATE_DIMENSION; j++) {
-                row[j] = stateTransition[i * STATE_DIMENSION + j];
-            }
-        }
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
-
-     // No propagator parameters therefore there is no dY1dP
-
+        super(name, new ParameterDriversList(), EcksteinHechlerGradientConverter.FREE_STATE_PARAMETERS, null);
+        this.name       = name;
+        this.propagator = propagator;
     }
 
     /** {@inheritDoc} */
@@ -111,12 +60,12 @@ public class EcksteinHechlerJacobiansMapper extends AbstractJacobiansMapper {
     public void analyticalDerivatives(final SpacecraftState s) {
 
         final double[] p = s.getAdditionalState(name);
-        if (stateTransition == null) {
-            stateTransition = new double[p.length];
+        if (getStateTransition() == null) {
+            setStateTransition(new double[p.length]);
         }
 
         // initialize Jacobians to zero
-        final int dim = STATE_DIMENSION;
+        final int dim = getSTATE_DIMENSION();
         final double[][] stateGrad = new double[dim][dim];
         final EcksteinHechlerGradientConverter converter = new EcksteinHechlerGradientConverter(s, propagator);
         final FieldEcksteinHechlerPropagator<Gradient> gPropagator = converter.getPropagator();
@@ -147,24 +96,10 @@ public class EcksteinHechlerJacobiansMapper extends AbstractJacobiansMapper {
      // the previous derivatives correspond to the state transition matrix
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
-                stateTransition[j + dim * i] = stateGrad[i][j];
+                getStateTransition()[j + dim * i] = stateGrad[i][j];
             }
         }
 
-    }
-
-    /** Fill Jacobians rows.
-     * @param derivatives derivatives of a component
-     * @param index component index (0 for a, 1 for e, 2 for i, 3 for RAAN, 4 for PA, 5 for TrueAnomaly)
-     * @param grad Jacobian of mean elements rate with respect to mean elements
-     */
-    private void addToRow(final double[] derivatives,
-                          final int index,
-                          final double[][] grad) {
-
-        for (int i = 0; i < STATE_DIMENSION; i++) {
-            grad[index][i] += derivatives[i];
-        }
     }
 
    /** Getter for initial propagator state.

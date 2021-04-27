@@ -26,7 +26,6 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /**
@@ -34,7 +33,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *
  * @author Nicolas Fialton
  */
-public class EcksteinHechlerGradientConverter extends AbstractGradientConverter {
+public class EcksteinHechlerGradientConverter extends AbstractAnalyticalGradientConverter {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;
@@ -87,27 +86,12 @@ public class EcksteinHechlerGradientConverter extends AbstractGradientConverter 
         gPropagator = new FieldEcksteinHechlerPropagator<>(gOrbit, propagator.getAttitudeProvider(), gM, propagator.getReferenceRadius(), gMu, ck0[2], ck0[3], ck0[4], ck0[5], ck0[6], propagator.getInitialType());
     }
 
-    /**
-     * Get the gradient propagator.
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data
-     * context}.
-     *
-     * @return gradient propagator
-     */
+    /** {@inheritDoc} */
     @DefaultDataContext
     public FieldEcksteinHechlerPropagator<Gradient> getPropagator() {
 
         return gPropagator;
 
-    }
-
-    /** Get the force model parameters.
-     * @return no parameters
-     */
-    public Gradient[] getParameters() {
-    // no parameters
-        return new Gradient[0];
     }
 
 }

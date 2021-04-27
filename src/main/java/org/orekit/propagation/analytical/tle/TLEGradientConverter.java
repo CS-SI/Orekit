@@ -24,7 +24,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.integration.AbstractGradientConverter;
+import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -36,7 +36,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @author Thomas Paulet
  * @since 11.0
  */
-class TLEGradientConverter extends AbstractGradientConverter {
+class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;

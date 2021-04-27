@@ -115,7 +115,7 @@ public class KeplerianPartialDerivativesTest {
                     final double[] stateVector = new double[6];
                     OrbitType.KEPLERIAN.mapOrbitToArray(initState.getOrbit(), PositionAngle.TRUE, stateVector, null);
                     final KeplerianJacobiansMapper mapper = partials.getMapper();
-                    double[][] dYdY0 =  new double[KeplerianJacobiansMapper.STATE_DIMENSION][KeplerianJacobiansMapper.STATE_DIMENSION];
+                    double[][] dYdY0 =  new double[KeplerianGradientConverter.FREE_STATE_PARAMETERS][KeplerianGradientConverter.FREE_STATE_PARAMETERS];
                     propagator.resetInitialState(initState);
                     mapper.analyticalDerivatives(propagator.propagate(target));
                     mapper.getStateJacobian(initState, dYdY0);

@@ -146,7 +146,7 @@ public class TLEPartialDerivativesTest {
         final double[] stateVector = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(initState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
-        double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
+        double[][] dYdY0 =  new double[TLEGradientConverter.FREE_STATE_PARAMETERS][TLEGradientConverter.FREE_STATE_PARAMETERS];
         propagator.setInitialState(initState);
         mapper.analyticalDerivatives(propagator.propagate(target));
         mapper.getStateJacobian(initState, dYdY0);
@@ -209,7 +209,7 @@ public class TLEPartialDerivativesTest {
         final double[] stateVector = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
-        double[][] dYdP =  new double[TLEJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
+        double[][] dYdP =  new double[TLEGradientConverter.FREE_STATE_PARAMETERS][mapper.getParameters()];
         mapper.analyticalDerivatives(endState);
         mapper.getParametersJacobian(initialState, dYdP);
 

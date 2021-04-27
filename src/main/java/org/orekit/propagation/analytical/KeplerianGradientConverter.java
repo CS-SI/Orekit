@@ -25,7 +25,6 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -34,7 +33,7 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Nicolas Fialton
  */
-public class KeplerianGradientConverter extends AbstractGradientConverter {
+public class KeplerianGradientConverter extends AbstractAnalyticalGradientConverter {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;
@@ -87,31 +86,11 @@ public class KeplerianGradientConverter extends AbstractGradientConverter {
         gPropagator = new FieldKeplerianPropagator<>(gOrbit, propagator.getAttitudeProvider(), gMu, gM);
     }
 
-    /**
-     * Get the gradient propagator.
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data
-     * context}.
-     *
-     * @return gradient propagator
-     */
+    /** {@inheritDoc} */
     @DefaultDataContext
     public FieldKeplerianPropagator<Gradient> getPropagator() {
 
         return gPropagator;
-    }
-
-    /**
-     * Get the model parameters.
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data
-     * context}.
-     *
-     * @return no parameters
-     */
-    public Gradient[] getParameters() {
-        // no parameters
-        return new Gradient[0];
     }
 
 }

@@ -33,16 +33,10 @@ import org.orekit.propagation.integration.AdditionalEquations;
  * </p>
  * @author Nicolas Fialton
  */
-public class EcksteinHechlerPartialDerivativesEquations {
+public class EcksteinHechlerPartialDerivativesEquations extends AbstractAnalyticalPartialDerivativesEquations {
 
     /** Propagator computing state evolution. */
     private final EcksteinHechlerPropagator propagator;
-
-    /** Name. */
-    private final String name;
-
-    /** Flag for Jacobian matrices initialization. */
-    private boolean initialized;
 
     /** Simple constructor.
      * <p>
@@ -53,51 +47,13 @@ public class EcksteinHechlerPartialDerivativesEquations {
      */
     public EcksteinHechlerPartialDerivativesEquations(final String name,
                                                       final EcksteinHechlerPropagator propagator) {
-        this.name        = name;
+        super(name, false);
         this.propagator  = propagator;
-        this.initialized = false;
     }
 
-    /** Get the name of the additional state.
-     * @return name of the additional state
-     */
-    public String getName() {
-        return name;
-    }
-
-    /** Set the initial value of the Jacobian with respect to state and parameter.
-     * <p>
-     * This method is equivalent to call {@link #setInitialJacobians(SpacecraftState,
-     * double[][], double[][])} with dYdY0 set to the identity matrix and dYdP set
-     * to a zero matrix.
-     * </p>
-     * @param s0 initial state
-     * @return state with initial Jacobians added
-     */
-    public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
-
-        final int stateDimension = 6;
-        final double[][] dYdY0 = new double[stateDimension][stateDimension];
-        for (int i = 0; i < stateDimension; ++i) {
-            dYdY0[i][i] = 1.0;
-        }
-        return setInitialJacobians(s0, dYdY0);
-    }
-
-    /** Set the initial value of the Jacobian with respect to state.
-     * <p>
-     * The returned state must be added to the propagator (it is not done
-     * automatically, as the user may need to add more states to it).
-     * </p>
-     * @param s1 current state
-     * @param dY1dY0 Jacobian of current state at time t₁ with respect
-     * to state at some previous time t₀ (must be 6x6)
-     * @return state with initial Jacobians added
-     */
+    /** {@inheritDoc}. */
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
                                                final double[][] dY1dY0) {
-
-
 
         // Check dimensions
         final int stateDim = dY1dY0.length;
@@ -107,7 +63,7 @@ public class EcksteinHechlerPartialDerivativesEquations {
         }
 
         // store the matrices as a single dimension array
-        initialized = true;
+        setInitialized(true);
         final EcksteinHechlerJacobiansMapper mapper = getMapper();
         final double[] p = new double[mapper.getAdditionalStateDimension()];
 
@@ -115,21 +71,15 @@ public class EcksteinHechlerPartialDerivativesEquations {
         mapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
 
         // set value in propagator
-        return s1.addAdditionalState(name, p);
-
+        return s1.addAdditionalState(getName(), p);
     }
 
-    /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
-     * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
-     * with the same name as the instance
-     * @see #setInitialJacobians(SpacecraftState)
-     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
-     */
+    /** {@inheritDoc}. */
     public EcksteinHechlerJacobiansMapper getMapper() {
-        if (!initialized) {
+        if (!getInitialized()) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new EcksteinHechlerJacobiansMapper(name, propagator);
+        return new EcksteinHechlerJacobiansMapper(getName(), propagator);
     }
 
 }
