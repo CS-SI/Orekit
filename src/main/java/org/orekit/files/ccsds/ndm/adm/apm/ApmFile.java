@@ -99,9 +99,9 @@ public class ApmFile extends NdmConstituent<Header, Segment<AdmMetadata, ApmData
             final Quaternion q    = qBlock.getQuaternion();
             final Quaternion qDot = qBlock.getQuaternionDot();
             tac = AttitudeType.QUATERNION_DERIVATIVE.build(true, qBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                           null, true, null,
-                                                           qBlock.getEpoch(), q.getQ0(), q.getQ1(), q.getQ2(),
-                                                           q.getQ3(), qDot.getQ0(), qDot.getQ1(), qDot.getQ2(), qDot.getQ3());
+                                                           null, true, qBlock.getEpoch(),
+                                                           q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
+                                                           qDot.getQ0(), qDot.getQ1(), qDot.getQ2(), qDot.getQ3());
         } else if (eBlock != null && eBlock.hasRates()) {
             // we have to rely on the Euler logical block to take rates into account
 
@@ -118,16 +118,16 @@ public class ApmFile extends NdmConstituent<Header, Segment<AdmMetadata, ApmData
             final double[]   rates = eBlock.getRotationRates();
             tac = AttitudeType.QUATERNION_RATE.build(true,
                                                      qBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                     eBlock.getEulerRotSeq(), eBlock.isSpacecraftBodyRate(), null,
-                                                     qBlock.getEpoch(), q.getQ0(), q.getQ1(), q.getQ2(),
-                                                     q.getQ3(), rates[0], rates[1], rates[2]);
+                                                     eBlock.getEulerRotSeq(), eBlock.isSpacecraftBodyRate(), qBlock.getEpoch(),
+                                                     q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
+                                                     rates[0], rates[1], rates[2]);
 
         } else {
             // we rely only on the quaternion logical block, despite it doesn't include rates
             final Quaternion q    = qBlock.getQuaternion();
             tac = AttitudeType.QUATERNION.build(true, qBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                null, true, null,
-                                                qBlock.getEpoch(), q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3());
+                                                null, true, qBlock.getEpoch(),
+                                                q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3());
         }
 
         // build the attitude

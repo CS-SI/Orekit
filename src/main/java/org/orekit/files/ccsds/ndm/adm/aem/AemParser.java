@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -96,17 +95,14 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
-     * @param spinAxis spin axis in spacecraft body frame
-     * (may be null if attitude type is neither spin nor spin/nutation)
      * @param defaultInterpolationDegree default interpolation degree
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public AemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
-                     final int defaultInterpolationDegree, final Vector3D spinAxis,
-                     final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
         super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, spinAxis, parsedUnitsBehavior);
+              missionReferenceDate, parsedUnitsBehavior);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -169,8 +165,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
-                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0,
-                                       this::getSpinAxis);
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         anticipateNext(this::processMetadataToken);
         return true;
     }
@@ -231,7 +226,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
      */
     boolean manageXmlAttitudeStateSection(final boolean starting) {
         if (starting) {
-            currentEntry = new AttitudeEntry(metadata, getSpinAxis());
+            currentEntry = new AttitudeEntry(metadata);
             anticipateNext(this::processXmlDataToken);
         } else {
             currentBlock.addData(currentEntry.getCoordinates());

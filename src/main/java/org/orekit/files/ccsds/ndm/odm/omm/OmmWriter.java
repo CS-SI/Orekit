@@ -66,7 +66,7 @@ public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata
                   () -> conventions, () -> false, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0, () -> null));
+                  () -> 0.0, () -> 1.0));
     }
 
     /** Write one segment.
@@ -87,8 +87,7 @@ public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
-                                      oldContext::getClockRate,
-                                      oldContext::getSpinAxis));
+                                      oldContext::getClockRate));
         new OmmMetadataWriter(metadata, getTimeConverter()).write(generator);
 
         // start data block

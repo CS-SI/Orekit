@@ -328,9 +328,6 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = δεν υπάρχει μάζα διαστημι�
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = δεν υπάρχουν IERs συμβάσεις που έχουν οριστεί πριν από την ανάλυση
 
-# no spin axis direction has been set before parsing
-CCSDS_UNKNOWN_SPIN_AXIS = <MISSING TRANSLATION>
-
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = το πλαίσιο {0} δεν είναι έγκυρο στο πλαίσιο αρχείου CCSDS
 

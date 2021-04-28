@@ -156,7 +156,7 @@ public class TdmParser extends AbstractConstituentParser<TdmFile, TdmParser> {
         context   = new ContextBinding(
             this::getConventions, this::isSimpleEOP,
             this::getDataContext, this::getParsedUnitsBehavior,
-            () -> null, metadata::getTimeSystem, () -> 0.0, () -> 1.0, () -> null);
+            () -> null, metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         anticipateNext(this::processMetadataToken);
         return true;
     }

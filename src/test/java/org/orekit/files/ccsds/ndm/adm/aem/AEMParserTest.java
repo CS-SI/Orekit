@@ -218,25 +218,15 @@ public class AEMParserTest {
     @Test
     public void testParseKvnAEM03() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample03.txt";
-
-        // first try without specifying spin axis
-        try {
-            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            new ParserBuilder().buildAemParser().parseMessage(source);
-        }  catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SPIN_AXIS, oe.getSpecifier());
-        }
-
-        // then try with properly configured parser
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        validateAEM03(new ParserBuilder().withSpinAxis(Vector3D.PLUS_K).buildAemParser().parseMessage(source));
+        validateAEM03(new ParserBuilder().buildAemParser().parseMessage(source));
     }
 
     @Test
     public void testParseXmlAEM03() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample03.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemParser parser  = new ParserBuilder().withSpinAxis(Vector3D.PLUS_K).buildAemParser();
+        final AemParser parser  = new ParserBuilder().buildAemParser();
         validateAEM03(parser.parse(source));
     }
 
