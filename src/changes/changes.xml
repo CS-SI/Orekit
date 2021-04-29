@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="julie" type="add" issue="745">
+        Added sequential batch least squares estimator.
+      </action>
       <action dev="bryan" type="update" issue="773">
         TimeStampedFieldAngularCoordinates now implements FieldTimeStamped.
       </action>

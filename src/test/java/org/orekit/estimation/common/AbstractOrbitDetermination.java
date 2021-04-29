@@ -70,6 +70,7 @@ import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
@@ -318,12 +319,13 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             parser.parseInput(input.getAbsolutePath(), fis);
         }
 
-        final RangeLog     rangeLog     = new RangeLog();
-        final RangeRateLog rangeRateLog = new RangeRateLog();
-        final AzimuthLog   azimuthLog   = new AzimuthLog();
-        final ElevationLog elevationLog = new ElevationLog();
-        final PositionLog  positionLog  = new PositionLog();
-        final VelocityLog  velocityLog  = new VelocityLog();
+        final RangeLog        rangeLog           = new RangeLog();
+        final RangeRateLog    rangeRateLog       = new RangeRateLog();
+        final AzimuthLog      azimuthLog         = new AzimuthLog();
+        final ElevationLog    elevationLog       = new ElevationLog();
+        final PositionOnlyLog positionOnlyLog = new PositionOnlyLog();
+        final PositionLog     positionLog        = new PositionLog();
+        final VelocityLog     velocityLog        = new VelocityLog();
 
         // gravity field
         createGravityField(parser);
@@ -417,7 +419,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 private PVCoordinates previousPV;
                 {
                     previousPV = initialGuess.getPVCoordinates();
-                    final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate  nb Angular     nb PV%n";
+                    final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
                     System.out.format(Locale.US, header);
                 }
 
@@ -431,22 +433,24 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                                 final EstimationsProvider  evaluationsProvider,
                                                 final LeastSquaresProblem.Evaluation lspEvaluation) {
                     final PVCoordinates currentPV = orbits[0].getPVCoordinates();
-                    final String format0 = "    %2d         %2d                                 %16.12f     %s       %s     %s     %s%n";
-                    final String format  = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s%n";
+                    final String format0 = "    %2d         %2d                                 %16.12f     %s       %s     %s     %s     %s%n";
+                    final String format  = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s     %s%n";
                     final EvaluationCounter<Range>       rangeCounter     = new EvaluationCounter<Range>();
                     final EvaluationCounter<RangeRate>   rangeRateCounter = new EvaluationCounter<RangeRate>();
                     final EvaluationCounter<AngularAzEl> angularCounter   = new EvaluationCounter<AngularAzEl>();
+                    final EvaluationCounter<Position>    positionCounter  = new EvaluationCounter<Position>();
                     final EvaluationCounter<PV>          pvCounter        = new EvaluationCounter<PV>();
                     for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
                         logEvaluation(entry.getValue(),
-                                      rangeCounter, rangeRateCounter, angularCounter, null, pvCounter, null);
+                                      rangeCounter, rangeRateCounter, angularCounter, null, positionCounter, pvCounter, null);
                     }
                     if (evaluationsCount == 1) {
                         System.out.format(Locale.US, format0,
                                           iterationsCount, evaluationsCount,
                                           lspEvaluation.getRMS(),
                                           rangeCounter.format(8), rangeRateCounter.format(8),
-                                          angularCounter.format(8), pvCounter.format(8));
+                                          angularCounter.format(8), positionCounter.format(8),
+                                          pvCounter.format(8));
                     } else {
                         System.out.format(Locale.US, format,
                                           iterationsCount, evaluationsCount,
@@ -454,7 +458,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                           Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
                                           lspEvaluation.getRMS(),
                                           rangeCounter.format(8), rangeRateCounter.format(8),
-                                          angularCounter.format(8), pvCounter.format(8));
+                                          angularCounter.format(8), positionCounter.format(8),
+                                          pvCounter.format(8));
                     }
                     previousPV = currentPV;
                 }
@@ -465,7 +470,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         // compute some statistics
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
             logEvaluation(entry.getValue(),
-                          rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
+                          rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
         }
 
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
@@ -502,12 +507,13 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
 
         // Log files
-        final RangeLog     rangeLog     = new RangeLog();
-        final RangeRateLog rangeRateLog = new RangeRateLog();
-        final AzimuthLog   azimuthLog   = new AzimuthLog();
-        final ElevationLog elevationLog = new ElevationLog();
-        final PositionLog  positionLog  = new PositionLog();
-        final VelocityLog  velocityLog  = new VelocityLog();
+        final RangeLog        rangeLog        = new RangeLog();
+        final RangeRateLog    rangeRateLog    = new RangeRateLog();
+        final AzimuthLog      azimuthLog      = new AzimuthLog();
+        final ElevationLog    elevationLog    = new ElevationLog();
+        final PositionOnlyLog positionOnlyLog = new PositionOnlyLog();
+        final PositionLog     positionLog     = new PositionLog();
+        final VelocityLog     velocityLog     = new VelocityLog();
 
         // Gravity field
         createGravityField(parser);
@@ -674,7 +680,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
                 // Register the measurement in the proper measurement logger
                 logEvaluation(estimatedMeasurement,
-                              rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
+                              rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
                 if (observedMeasurement instanceof Range) {
                     measType    = "RANGE";
                     stationName =  ((EstimatedMeasurement<Range>) estimatedMeasurement).getObservedMeasurement().
@@ -689,7 +695,10 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                     getStation().getBaseFrame().getName();
                 } else if (observedMeasurement instanceof PV) {
                     measType    = "PV";
+                } else if (observedMeasurement instanceof Position) {
+                    measType    = "POSITION";
                 }
+                
 
                 // Print data on terminal
                 // ----------------------
@@ -810,6 +819,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             rangeRateLog.displaySummary(System.out);
             azimuthLog.displaySummary(System.out);
             elevationLog.displaySummary(System.out);
+            positionOnlyLog.displaySummary(System.out);
             positionLog.displaySummary(System.out);
             velocityLog.displaySummary(System.out);
             
@@ -2429,6 +2439,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                EvaluationLogger<RangeRate> rangeRateLog,
                                EvaluationLogger<AngularAzEl> azimuthLog,
                                EvaluationLogger<AngularAzEl> elevationLog,
+                               EvaluationLogger<Position> positionOnlyLog,
                                EvaluationLogger<PV> positionLog,
                                EvaluationLogger<PV> velocityLog) {
         if (evaluation.getObservedMeasurement() instanceof Range) {
@@ -2452,6 +2463,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             if (elevationLog != null) {
                 elevationLog.log(ev);
             }
+        }  else if (evaluation.getObservedMeasurement() instanceof Position) {
+            @SuppressWarnings("unchecked")
+            final EstimatedMeasurement<Position> ev = (EstimatedMeasurement<Position>) evaluation;
+            if (positionOnlyLog != null) {
+                positionOnlyLog.log(ev);
+            }
         } else if (evaluation.getObservedMeasurement() instanceof PV) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<PV> ev = (EstimatedMeasurement<PV>) evaluation;
@@ -2463,7 +2480,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             }
         } else if (evaluation.getObservedMeasurement() instanceof MultiplexedMeasurement) {
             for (final EstimatedMeasurement<?> em : ((MultiplexedMeasurement) evaluation.getObservedMeasurement()).getEstimatedMeasurements()) {
-                logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
+                logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
             }
         }
     }
