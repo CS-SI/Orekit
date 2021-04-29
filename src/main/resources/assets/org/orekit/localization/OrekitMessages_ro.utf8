@@ -1,5 +1,5 @@
-# internal error, please notify development team by creating an issue at {0}
-INTERNAL_ERROR = eroare internă, vă rugăm să informați echipa de dezvoltare prin adăugarea unui tichet la {0}
+# internal error, please notify development team by creating a new topic at {0}
+INTERNAL_ERROR = <MISSING TRANSLATION>
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitudinea ({0} m) este sub limita permisă de {1} m 
