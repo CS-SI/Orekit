@@ -62,9 +62,9 @@ public class Euler extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
+    public void validate(final double version) {
 
-        super.checkMandatoryEntries();
+        super.validate(version);
         endpoints.checkMandatoryEntriesExceptExternalFrame(EulerKey.EULER_FRAME_A,
                                                            EulerKey.EULER_FRAME_B,
                                                            EulerKey.EULER_DIR);
@@ -140,7 +140,7 @@ public class Euler extends CommentsContainer {
 
     /** Check if rates are specified in spacecraft body frame.
      * <p>
-     * {@link #checkMandatoryEntries() Mandatory entries} must have been
+     * {@link #validate() Mandatory entries} must have been
      * initialized properly to non-null values before this method is called,
      * otherwise {@code NullPointerException} will be thrown.
      * </p>

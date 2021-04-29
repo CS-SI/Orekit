@@ -79,7 +79,7 @@ public class StreamingAemWriter {
         this.generator          = generator;
         this.writer             = writer;
         this.header             = header;
-        this.metadata           = template.copy();
+        this.metadata           = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
         this.headerWritePending = true;
     }
 

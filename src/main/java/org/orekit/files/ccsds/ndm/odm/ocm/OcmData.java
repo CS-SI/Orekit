@@ -76,33 +76,33 @@ public class OcmData implements Data {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
+    public void validate(final double version) {
         if (orbitBlocks != null) {
             for (final OrbitStateHistory osh : orbitBlocks) {
-                osh.getMetadata().checkMandatoryEntries();
+                osh.getMetadata().validate(version);
             }
         }
         if (physicBlock != null) {
-            physicBlock.checkMandatoryEntries();
+            physicBlock.validate(version);
         }
         if (covarianceBlocks != null) {
             for (final CovarianceHistory ch : covarianceBlocks) {
-                ch.getMetadata().checkMandatoryEntries();
+                ch.getMetadata().validate(version);
             }
         }
         if (maneuverBlocks != null) {
             for (final ManeuverHistory mh : maneuverBlocks) {
-                mh.getMetadata().checkMandatoryEntries();
+                mh.getMetadata().validate(version);
             }
         }
         if (perturbationsBlock != null) {
-            perturbationsBlock.checkMandatoryEntries();
+            perturbationsBlock.validate(version);
         }
         if (orbitDeterminationBlock != null) {
-            orbitDeterminationBlock.checkMandatoryEntries();
+            orbitDeterminationBlock.validate(version);
         }
         if (userDefinedBlock != null) {
-            userDefinedBlock.checkMandatoryEntries();
+            userDefinedBlock.validate(version);
         }
     }
 

@@ -45,8 +45,8 @@ public class Metadata extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(timeSystem, MetadataKey.TIME_SYSTEM);
     }
 

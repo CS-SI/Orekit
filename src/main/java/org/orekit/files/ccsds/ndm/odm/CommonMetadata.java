@@ -60,8 +60,8 @@ public class CommonMetadata extends OdmMetadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(getObjectName(), OdmMetadataKey.OBJECT_NAME);
         checkNotNull(objectID,        CommonMetadataKey.OBJECT_ID);
         checkNotNull(center,          CommonMetadataKey.CENTER_NAME);

@@ -71,9 +71,9 @@ public class AemMetadata extends AdmMetadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
+    public void validate(final double version) {
 
-        checkMandatoryEntriesExceptDatesAndExternalFrame();
+        checkMandatoryEntriesExceptDatesAndExternalFrame(version);
         endpoints.checkExternalFrame(AemMetadataKey.REF_FRAME_A, AemMetadataKey.REF_FRAME_B);
 
         checkNotNull(startTime, AemMetadataKey.START_TIME);
@@ -89,10 +89,11 @@ public class AemMetadata extends AdmMetadata {
      * <p>
      * This method should throw an exception if some mandatory entry is missing
      * </p>
+     * @param version format version
      */
-    void checkMandatoryEntriesExceptDatesAndExternalFrame() {
+    void checkMandatoryEntriesExceptDatesAndExternalFrame(final double version) {
 
-        super.checkMandatoryEntries();
+        super.validate(version);
 
         endpoints.checkMandatoryEntriesExceptExternalFrame(AemMetadataKey.REF_FRAME_A,
                                                            AemMetadataKey.REF_FRAME_B,
@@ -139,7 +140,7 @@ public class AemMetadata extends AdmMetadata {
 
     /** Check if rates are specified in spacecraft body frame.
      * <p>
-     * {@link #checkMandatoryEntries() Mandatory entries} must have been
+     * {@link #validate() Mandatory entries} must have been
      * initialized properly to non-null values before this method is called,
      * otherwise {@code NullPointerException} will be thrown.
      * </p>
@@ -347,11 +348,12 @@ public class AemMetadata extends AdmMetadata {
     }
 
     /** Copy the instance, making sure mandatory fields have been initialized.
+     * @param version format version
      * @return a new copy
      */
-    AemMetadata copy() {
+    AemMetadata copy(final double version) {
 
-        checkMandatoryEntriesExceptDatesAndExternalFrame();
+        checkMandatoryEntriesExceptDatesAndExternalFrame(version);
 
         // allocate new instance
         final AemMetadata copy = new AemMetadata(getInterpolationDegree());

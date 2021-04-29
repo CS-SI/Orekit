@@ -164,7 +164,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                  = new Header();
+        header                  = new Header(3.0);
         metadata                = null;
         context                 = null;
         orbitBlocks             = null;
@@ -200,7 +200,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -228,7 +228,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
     /** {@inheritDoc} */
     @Override
     public boolean finalizeMetadata() {
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         anticipateNext(this::processDataSubStructureToken);
         return true;
     }
@@ -425,7 +425,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         final OcmData data = new OcmData(orbitBlocks, physicBlock, covarianceBlocks,
                                          maneuverBlocks, perturbationsBlock,
                                          orbitDeterminationBlock, userDefinedBlock);
-        data.checkMandatoryEntries();
+        data.validate(header.getFormatVersion());
         return new OcmFile(header, Collections.singletonList(new Segment<>(metadata, data)),
                            getConventions(), getDataContext(), getSelectedMu());
     }
@@ -485,7 +485,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             // we are in the section data part
             if (currentOrbitStateHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
-                currentOrbitStateHistoryMetadata.checkMandatoryEntries();
+                currentOrbitStateHistoryMetadata.validate(header.getFormatVersion());
                 anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
@@ -545,7 +545,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             // we are in the section data part
             if (currentCovarianceHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
-                currentCovarianceHistoryMetadata.checkMandatoryEntries();
+                currentCovarianceHistoryMetadata.validate(header.getFormatVersion());
                 anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
@@ -588,7 +588,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             // we are in the section data part
             if (currentManeuverHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
-                currentManeuverHistoryMetadata.checkMandatoryEntries();
+                currentManeuverHistoryMetadata.validate(header.getFormatVersion());
                 anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {

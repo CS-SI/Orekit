@@ -119,7 +119,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header();
+        header                    = new Header(2.0);
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
@@ -155,7 +155,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -184,7 +184,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean finalizeMetadata() {
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         return true;
     }
 
@@ -211,7 +211,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
             for (final Maneuver maneuver : maneuvers) {
                 data.addManeuver(maneuver);
             }
-            data.checkMandatoryEntries();
+            data.validate(header.getFormatVersion());
             segments.add(new Segment<>(metadata, data));
         }
         metadata                  = null;

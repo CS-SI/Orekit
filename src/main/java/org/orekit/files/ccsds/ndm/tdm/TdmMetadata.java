@@ -182,8 +182,8 @@ public class TdmMetadata extends Metadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         if (participants.isEmpty()) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, TdmMetadataKey.PARTICIPANT_1);
         }

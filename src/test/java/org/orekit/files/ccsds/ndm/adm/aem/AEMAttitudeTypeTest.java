@@ -360,7 +360,7 @@ public class AEMAttitudeTypeTest {
         mdWithoutRateFrame.getEndpoints().setA2b(true);
         mdWithoutRateFrame.setEulerRotSeq(RotationOrder.ZXZ);
         try {
-            mdWithoutRateFrame.checkMandatoryEntriesExceptDatesAndExternalFrame();
+            mdWithoutRateFrame.checkMandatoryEntriesExceptDatesAndExternalFrame(1.0);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());

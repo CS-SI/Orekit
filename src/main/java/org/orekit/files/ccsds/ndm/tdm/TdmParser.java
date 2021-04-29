@@ -105,7 +105,7 @@ public class TdmParser extends AbstractConstituentParser<TdmFile, TdmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header             = new Header();
+        header             = new Header(2.0);
         segments           = new ArrayList<>();
         metadata           = null;
         context            = null;
@@ -142,7 +142,7 @@ public class TdmParser extends AbstractConstituentParser<TdmFile, TdmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -171,7 +171,7 @@ public class TdmParser extends AbstractConstituentParser<TdmFile, TdmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean finalizeMetadata() {
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         return true;
     }
 

@@ -316,6 +316,9 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = epoca di riferimento specifica dell''agenzia m
 # missing mandatory key {0} in CCSDS file {1}
 CCSDS_MISSING_KEYWORD = chiave {0} mancante nel file CCSDS {1}
 
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = parola-chiave inattesa alla linea {0} del file CCSDS {1}:\n{2}
 

@@ -140,7 +140,7 @@ public class StreamingOemWriterTest {
             String objectName = block.getMetadata().getObjectName();
             String objectID = block.getMetadata().getObjectID();
 
-            Header header = new Header();
+            Header header = new Header(3.0);
             header.setOriginator(originator);
             OemMetadata metadata = new OemMetadata(1);
             metadata.setObjectName(objectName);

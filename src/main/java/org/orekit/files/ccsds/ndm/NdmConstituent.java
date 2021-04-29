@@ -103,4 +103,18 @@ public abstract class NdmConstituent<H extends Header, S extends Segment<?, ?>> 
         return dataContext;
     }
 
+    /**
+     * Validate the file message for required and forbidden entries.
+     * <p>
+     * This method throws an exception if file does not meet format requirements.
+     * The requirements may depend on format version, which is found in header.
+     * </p>
+     */
+    public void validate() {
+        header.validate(header.getFormatVersion());
+        for (final S segment : segments) {
+            segment.getMetadata().validate(header.getFormatVersion());
+            segment.getData().validate(header.getFormatVersion());
+        }
+    }
 }

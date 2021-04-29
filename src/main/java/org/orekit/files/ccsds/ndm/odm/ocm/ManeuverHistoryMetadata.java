@@ -149,8 +149,8 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(manID,          ManeuverHistoryMetadataKey.MAN_ID);
         checkNotNull(manDeviceID,    ManeuverHistoryMetadataKey.MAN_DEVICE_ID);
 

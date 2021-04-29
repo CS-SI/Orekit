@@ -144,7 +144,7 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header            = new Header();
+        header            = new Header(3.0);
         segments          = new ArrayList<>();
         metadata          = null;
         context           = null;
@@ -178,7 +178,7 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -209,7 +209,7 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
     @Override
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;
     }
@@ -233,7 +233,7 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
     @Override
     public boolean finalizeData() {
         if (metadata != null) {
-            currentBlock.checkMandatoryEntries();
+            currentBlock.validate(header.getFormatVersion());
             segments.add(new OemSegment(metadata, currentBlock, getSelectedMu()));
         }
         metadata          = null;

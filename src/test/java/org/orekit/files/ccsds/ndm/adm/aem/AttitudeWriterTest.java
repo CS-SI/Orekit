@@ -88,7 +88,7 @@ public class AttitudeWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
-        Header header = new Header();
+        Header header = new Header(2.0);
         header.setFormatVersion(aemFile.getHeader().getFormatVersion());
         header.setCreationDate(aemFile.getHeader().getCreationDate());
         header.setOriginator(aemFile.getHeader().getOriginator());
@@ -163,7 +163,7 @@ public class AttitudeWriterTest {
 
     @Test
     public void testNullEphemeris() throws IOException {
-        Header header = new Header();
+        Header header = new Header(2.0);
         header.setOriginator("NASA/JPL");
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("1996-062A");

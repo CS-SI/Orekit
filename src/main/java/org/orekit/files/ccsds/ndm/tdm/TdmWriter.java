@@ -67,12 +67,10 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
         this.converter = converter;
     }
 
-    /** Write one segment.
-     * @param generator generator to use for producing output
-     * @param segment segment to write
-     * @throws IOException if any buffer writing operations fails
-     */
-    public void writeSegmentContent(final Generator generator, final Segment<TdmMetadata, ObservationsBlock> segment)
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final Segment<TdmMetadata, ObservationsBlock> segment)
         throws IOException {
 
         // write the metadata

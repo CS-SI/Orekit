@@ -144,7 +144,7 @@ public class OmmParser extends OdmParser<OmmFile, OmmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header();
+        header                    = new Header(3.0);
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
@@ -179,7 +179,7 @@ public class OmmParser extends OdmParser<OmmFile, OmmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -209,7 +209,7 @@ public class OmmParser extends OdmParser<OmmFile, OmmParser> {
     @Override
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         if (metadata.getCenter().getBody() != null) {
             setMuCreated(metadata.getCenter().getBody().getGM());
         }
@@ -250,7 +250,7 @@ public class OmmParser extends OdmParser<OmmFile, OmmParser> {
                                  defaultMass : spacecraftParametersBlock.getMass();
             final OmmData data = new OmmData(keplerianElementsBlock, spacecraftParametersBlock,
                                              tleBlock, covarianceBlock, userDefinedBlock, mass);
-            data.checkMandatoryEntries();
+            data.validate(header.getFormatVersion());
             segments.add(new Segment<>(metadata, data));
         }
         metadata                  = null;

@@ -316,6 +316,9 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = époque de référence spécifique agence manq
 # missing mandatory key {0} in CCSDS file {1}
 CCSDS_MISSING_KEYWORD = mot-clef {0} manquant dans le fichier CCDSD {1}
 
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = le mot-clef {0} n''est pas autorisé dans la version {1} du format
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = mot-clef inattendu à la ligne {0} du fichier CCSDS {1} :\n{2}
 

@@ -64,7 +64,7 @@ public class ApmQuaternion implements Section {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
+    public void validate(final double version) {
         endpoints.checkMandatoryEntriesExceptExternalFrame(ApmQuaternionKey.Q_FRAME_A,
                                                            ApmQuaternionKey.Q_FRAME_B,
                                                            ApmQuaternionKey.Q_DIR);

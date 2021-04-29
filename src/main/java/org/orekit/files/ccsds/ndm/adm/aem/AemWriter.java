@@ -287,7 +287,9 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final AemSegment segment) throws IOException {
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final AemSegment segment)
+        throws IOException {
 
         final AemMetadata metadata = segment.getMetadata();
         writeMetadata(generator, metadata);

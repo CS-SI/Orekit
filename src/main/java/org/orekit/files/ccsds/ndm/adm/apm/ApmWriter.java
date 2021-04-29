@@ -70,7 +70,8 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final Segment<AdmMetadata, ApmData> segment)
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final Segment<AdmMetadata, ApmData> segment)
         throws IOException {
 
         // write the metadata

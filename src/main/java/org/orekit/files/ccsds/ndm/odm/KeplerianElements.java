@@ -84,8 +84,8 @@ public class KeplerianElements extends CommentsContainer implements Data {
      * </p>
      */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(epoch,  StateVectorKey.EPOCH);
         checkNotNaN(e,       KeplerianElementsKey.ECCENTRICITY);
         checkNotNaN(i,       KeplerianElementsKey.INCLINATION);

@@ -316,6 +316,9 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = missing agency epoch in CCSDS date
 # missing mandatory key {0} in CCSDS file {1}
 CCSDS_MISSING_KEYWORD = missing mandatory key {0} in CCSDS file {1}
 
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = key {0} is not allowed in format version {1}
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 

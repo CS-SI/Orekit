@@ -67,8 +67,8 @@ public class CartesianCovariance extends CommentsContainer implements Data {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(epoch, CartesianCovarianceKey.EPOCH);
         for (int i = 0; i < covarianceMatrix.getRowDimension(); ++i) {
             for (int j = 0; j <= i; ++j) {

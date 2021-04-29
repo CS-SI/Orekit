@@ -64,12 +64,10 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
                   () -> 0.0, () -> 1.0));
     }
 
-    /** Write one segment.
-     * @param generator generator to use for producing output
-     * @param segment segment to write
-     * @throws IOException if any buffer writing operations fails
-     */
-    public void writeSegmentContent(final Generator generator, final Segment<OcmMetadata, OcmData> segment)
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final Segment<OcmMetadata, OcmData> segment)
         throws IOException {
 
         // write the metadata

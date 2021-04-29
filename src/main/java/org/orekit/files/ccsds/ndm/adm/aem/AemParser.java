@@ -121,7 +121,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header   = new Header();
+        header   = new Header(2.0);
         segments = new ArrayList<>();
         metadata = null;
         context  = null;
@@ -151,7 +151,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -180,7 +180,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     /** {@inheritDoc} */
     @Override
     public boolean finalizeMetadata() {
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         return true;
     }
 
@@ -203,7 +203,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     @Override
     public boolean finalizeData() {
         if (metadata != null) {
-            currentBlock.checkMandatoryEntries();
+            currentBlock.validate(header.getFormatVersion());
             segments.add(new AemSegment(metadata, currentBlock));
         }
         metadata = null;

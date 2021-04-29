@@ -82,26 +82,26 @@ public class OpmData implements Data {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        stateVectorBlock.checkMandatoryEntries();
+    public void validate(final double version) {
+        stateVectorBlock.validate(version);
         if (keplerianElementsBlock != null) {
-            keplerianElementsBlock.checkMandatoryEntries();
+            keplerianElementsBlock.validate(version);
             // in OPM, only semi-major axis is allowed, not mean motion
             keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA(),
                                                KeplerianElementsKey.SEMI_MAJOR_AXIS);
         }
         if (spacecraftParametersBlock != null) {
-            spacecraftParametersBlock.checkMandatoryEntries();
+            spacecraftParametersBlock.validate(version);
         }
         if (covarianceBlock != null) {
             covarianceBlock.setEpoch(stateVectorBlock.getEpoch());
-            covarianceBlock.checkMandatoryEntries();
+            covarianceBlock.validate(version);
         }
         for (final Maneuver maneuver : maneuverBlocks) {
-            maneuver.checkMandatoryEntries();
+            maneuver.validate(version);
         }
         if (userDefinedBlock != null) {
-            userDefinedBlock.checkMandatoryEntries();
+            userDefinedBlock.validate(version);
         }
     }
 
