@@ -24,6 +24,9 @@
       <action dev="luc" type="add">
         Added support for reading and writing CCSDS NDM composite messages.
       </action>
+      <action dev="afossa" type="fix" issue="781">
+        Fixed parsing in buildLine2() method of FieldTLE.
+      </action>
       <action dev="luc" type="fix" issue="776">
         Fixed associativity in units parsing.
       </action>
