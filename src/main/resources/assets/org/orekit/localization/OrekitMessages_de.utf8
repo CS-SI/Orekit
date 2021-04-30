@@ -1,5 +1,5 @@
-# internal error, please notify development team by creating an issue at {0}
-INTERNAL_ERROR = Interner Fehler! Unterstützen Sie uns und erstellen Sie einen Fehlerbericht unter {0}
+# internal error, please notify development team by creating a new topic at {0}
+INTERNAL_ERROR = <MISSING TRANSLATION>
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = Höhe ({0} m) ist niedriger als der erlaubte Grenzwert von {1} m
