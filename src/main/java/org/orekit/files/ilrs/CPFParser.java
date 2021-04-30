@@ -139,6 +139,23 @@ public class CPFParser implements EphemerisFileParser {
         }
     }
 
+    /**
+     * Parse a CPF file from an input stream reader.
+     * <p>
+     * This method will be removed and never merged into Orekit.
+     * It has been created in order to test the
+     * Visualization of the code coverage when a merge request is proposed.
+     * </p>
+     * @param isr input stream reader
+     * @return a parsed CPF file.
+     * @throws IOException if {@code stream} throws one.
+     */
+    public CPFFile parse(final InputStreamReader isr) throws IOException {
+        try (BufferedReader reader = new BufferedReader(isr)) {
+            return parse(reader, isr.toString());
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public CPFFile parse(final String fileName) throws IOException {
