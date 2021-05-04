@@ -65,7 +65,7 @@ public class FieldAdditionalEquationsTest {
         // action
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
                                                                                               tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
                                             addAdditionalState(checker.getName(), field.getZero().add(reference)));

@@ -230,7 +230,7 @@ public class FieldIntegratedEphemerisTest {
         };
         OrbitType type = OrbitType.EQUINOCTIAL;
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 500, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(100));
+        integrator.setInitialStepSize(100);
         FieldNumericalPropagator<T> numericalPropagator = new FieldNumericalPropagator<>(field, integrator);
         numericalPropagator.setOrbitType(type);
         return numericalPropagator;

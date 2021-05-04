@@ -662,7 +662,7 @@ public class FieldDSSTPropagatorTest {
         double[][] tolerance = FieldDSSTPropagator.tolerances(zero.add(1.), orbit);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(period.multiply(10.));
+        integrator.setInitialStepSize(period.multiply(10.).getReal());
         FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.MEAN);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
@@ -713,7 +713,7 @@ public class FieldDSSTPropagatorTest {
         double[][] tolerance = FieldDSSTPropagator.tolerances(zero.add(1.), orbit);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(period.multiply(10.));
+        integrator.setInitialStepSize(period.multiply(10.).getReal());
         FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
@@ -866,7 +866,7 @@ public class FieldDSSTPropagatorTest {
         double[][] tolerance = FieldDSSTPropagator.tolerances(zero.add(1.), orbit);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(period.multiply(10));
+        integrator.setInitialStepSize(period.multiply(10).getReal());
         FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,

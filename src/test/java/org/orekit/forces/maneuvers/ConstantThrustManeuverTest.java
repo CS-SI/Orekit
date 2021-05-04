@@ -362,7 +362,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -424,7 +424,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -485,7 +485,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);

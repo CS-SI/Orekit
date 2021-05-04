@@ -351,7 +351,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -401,7 +401,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -443,7 +443,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -493,7 +493,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -571,7 +571,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -657,7 +657,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -702,7 +702,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -741,7 +741,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -779,7 +779,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -824,7 +824,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -873,7 +873,7 @@ public class FieldNumericalPropagatorTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
@@ -1061,7 +1061,7 @@ public class FieldNumericalPropagatorTest {
 
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, absTolerance, relTolerance);
-        integrator.setInitialStepSize(zero.add(initStep));
+        integrator.setInitialStepSize(initStep);
 
         // Numerical propagator based on the integrator
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
@@ -1850,7 +1850,7 @@ public class FieldNumericalPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
 
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
 
