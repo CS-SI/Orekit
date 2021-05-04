@@ -199,7 +199,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         final double maxstep = 3600.0;
         
         Field<DerivativeStructure> field = fpx.getField();
-        DerivativeStructure zero = field.getZero();
+
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         Frame EME = FramesFactory.getEME2000();
@@ -229,7 +229,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853FieldIntegrator<>(field,minStep, maxstep,
                                         vecAbsoluteTolerances,
                                         vecRelativeTolerances);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(minStep, maxstep,
                                                        vecAbsoluteTolerances,
