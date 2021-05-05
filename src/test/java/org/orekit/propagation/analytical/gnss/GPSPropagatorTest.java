@@ -32,16 +32,17 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.GPSAlmanac;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.navigation.GPSNavigationMessage;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -68,7 +69,7 @@ public class GPSPropagatorTest {
 
     @Test
     public void testClockCorrections() {
-        final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
         propagator.addAdditionalStateProvider(new ClockCorrectionsProvider(almanacs.get(0)));
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
@@ -90,11 +91,11 @@ public class GPSPropagatorTest {
     @Test
     public void testGPSCycle() {
         // Builds the GPSPropagator from the almanac
-        final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
-        final double gpsCycleDuration = GPSOrbitalElements.GPS_WEEK_IN_SECONDS * GPSOrbitalElements.GPS_WEEK_NB;
+        final double gpsCycleDuration = almanacs.get(0).getCycleDuration();
         final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
 
@@ -105,9 +106,9 @@ public class GPSPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the GPSPropagator from the almanac
-        final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
         Assert.assertEquals("EME2000", propagator.getFrame().getName());
-        Assert.assertEquals(3.986005e14, GPSOrbitalElements.GPS_MU, 1.0e6);
+        Assert.assertEquals(3.986005e14, almanacs.get(0).getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -123,14 +124,14 @@ public class GPSPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
             propagator.resetInitialState(propagator.getInitialState());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
-            GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -141,9 +142,9 @@ public class GPSPropagatorTest {
     @Test
     public void testTLE() {
 
-        List<GPSPropagator> gpsPropagators = new ArrayList<GPSPropagator>();
+        List<GNSSPropagator> gpsPropagators = new ArrayList<>();
         for (final GPSAlmanac almanac : almanacs) {
-            gpsPropagators.add(new GPSPropagator.Builder(almanac).build());
+            gpsPropagators.add(new GNSSPropagatorBuilder(almanac).build());
         }
 
         // the following map corresponds to the GPS constellation status in early 2016
@@ -245,8 +246,8 @@ public class GPSPropagatorTest {
                      new TLE("1 41328U 16007A   16059.56873502  .00000049  00000-0  00000+0 0  9991",
                              "2 41328  55.0137 239.0304 0002157 298.9074  61.0768  1.99172830   453"));
 
-        for (final GPSPropagator gpsPropagator : gpsPropagators) {
-            final int prn = gpsPropagator.getGPSOrbitalElements().getPRN();
+        for (final GNSSPropagator gpsPropagator : gpsPropagators) {
+            final int prn = gpsPropagator.getOrbitalElements().getPRN();
             TLE tle = prnToTLE.get(prn);
             TLEPropagator tlePropagator = TLEPropagator.selectExtrapolator(tle);
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -268,8 +269,8 @@ public class GPSPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         for (final GPSAlmanac almanac : almanacs) {
-            GPSPropagator propagator = new GPSPropagator.Builder(almanac).build();
-            GPSOrbitalElements elements = propagator.getGPSOrbitalElements();
+            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+            GNSSOrbitalElements elements = propagator.getOrbitalElements();
             AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.GPS).getDate();
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
                 final AbsoluteDate central = t0.shiftedBy(dt);
@@ -300,7 +301,7 @@ public class GPSPropagatorTest {
         final GPSNavigationMessage goe = new GPSNavigationMessage();
         goe.setPRN(7);
         goe.setWeek(0);
-        goe.setToe(288000);
+        goe.setTime(288000);
         goe.setSqrtA(5153.599830627441);
         goe.setE(0.012442796607501805);
         goe.setDeltaN(4.419469802942352E-9);
@@ -321,7 +322,7 @@ public class GPSPropagatorTest {
         // Date of the GPS orbital elements
         final AbsoluteDate target = goe.getDate();
         // Build the GPS propagator
-        final GPSPropagator propagator = new GPSPropagator.Builder(goe).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
         // Compute the PV coordinates at the date of the GPS orbital elements
         final PVCoordinates pv = propagator.getPVCoordinates(target, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Computed position
@@ -335,7 +336,7 @@ public class GPSPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the GPSPropagator from the almanac
-        final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
         // In order to test the issue, we volontary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
