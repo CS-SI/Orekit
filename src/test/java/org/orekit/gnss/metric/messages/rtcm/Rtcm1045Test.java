@@ -29,8 +29,9 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
-import org.orekit.gnss.navigation.GalileoNavigationMessage;
-import org.orekit.propagation.analytical.gnss.GalileoPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.time.GNSSDate;
 
 public class Rtcm1045Test {
@@ -87,7 +88,7 @@ public class Rtcm1045Test {
         final GalileoNavigationMessage galileoMessage   = ephemerisData.getGalileoNavigationMessage();
 
         // Verify propagator initialization
-        final GalileoPropagator propagator = new GalileoPropagator.Builder(galileoMessage).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(galileoMessage).build();
         Assert.assertNotNull(propagator);
         Assert.assertEquals(0.0, galileoMessage.getDate().
                             durationFrom(new GNSSDate(galileoMessage.getWeek(), 1000.0 * galileoMessage.getTime(), SatelliteSystem.GALILEO).getDate()), eps);

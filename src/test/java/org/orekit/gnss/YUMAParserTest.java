@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.time.GNSSDate;
 
 

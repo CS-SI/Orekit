@@ -29,8 +29,9 @@ import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
-import org.orekit.gnss.navigation.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
+import org.orekit.propagation.numerical.GLONASSNumericalPropagatorBuilder;
 import org.orekit.time.GLONASSDate;
 
 public class Rtcm1020Test {
@@ -94,7 +95,7 @@ public class Rtcm1020Test {
         final GLONASSNavigationMessage glonassMessage = ephemerisData.getGlonassNavigationMessage();
 
         // Verify propagator initialization
-        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagator.Builder(new ClassicalRungeKuttaIntegrator(60.0), glonassMessage, true).build();
+        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(new ClassicalRungeKuttaIntegrator(60.0), glonassMessage, true).build();
         Assert.assertNotNull(propagator);
         Assert.assertEquals(0.0, glonassMessage.getDate().
                             durationFrom(new GLONASSDate(ephemerisData.getNt(), ephemerisData.getN4(), glonassMessage.getTime()).getDate()), eps);
