@@ -16,15 +16,25 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.KeplerianBatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.AbstractKalmanModel;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.KeplerianKalmanModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 public class AbstractPropagatorBuilderTest {
@@ -45,6 +55,24 @@ public class AbstractPropagatorBuilderTest {
                 // Dummy function "buildPropagator", copied from KeplerianPropagatorBuilder
                 setParameters(normalizedParameters);
                 return new KeplerianPropagator(createInitialOrbit());
+            }
+
+            @Override
+            public AbstractBatchLSModel buildLSModel(PropagatorBuilder[] builders,
+                                                     List<ObservedMeasurement<?>> measurements,
+                                                     ParameterDriversList estimatedMeasurementsParameters,
+                                                     ModelObserver observer) {
+                // Dummy function "buildLSModel", copied from KeplerianPropagatorBuilder
+                return new KeplerianBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+            }
+
+            @Override
+            public AbstractKalmanModel buildKalmanModel(List<PropagatorBuilder> propagatorBuilders,
+                                                        List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                                        ParameterDriversList estimatedMeasurementsParameters,
+                                                        CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+                // Dummy function "buildKalmanModel", copied from KeplerianPropagatorBuilder
+                return new KeplerianKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
             }
         };
         

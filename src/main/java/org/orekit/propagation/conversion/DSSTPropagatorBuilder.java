@@ -47,7 +47,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -242,7 +242,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** {@inheritDoc} */
     @Override
-    public DSSTBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
+    public DSSTBatchLSModel buildLSModel(final PropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer) {
@@ -255,7 +255,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** {@inheritDoc} */
     @Override
-    public DSSTKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+    public DSSTKalmanModel buildKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
                                             final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                             final ParameterDriversList estimatedMeasurementsParameters,
                                             final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
