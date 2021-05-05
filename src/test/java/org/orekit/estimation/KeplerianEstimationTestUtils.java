@@ -41,6 +41,8 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.KalmanEstimator;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -49,27 +51,27 @@ import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.tle.TLE;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-/** Utility class for orbit determination tests. */
-public class TLEEstimationTestUtils {
+public class KeplerianEstimationTestUtils {
 
-    public static TLEContext eccentricContext(final String dataRoot) {
+    public static KeplerianContext eccentricContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
-        TLEContext context = new TLEContext();
+        KeplerianContext context = new KeplerianContext();
         context.conventions = IERSConventions.IERS_2010;
         context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                              Constants.WGS84_EARTH_FLATTENING,
@@ -87,17 +89,22 @@ public class TLEEstimationTestUtils {
                                   context.conventions, false)
         };
         
-        String line1 = "1 07276U 74026A   00055.48318287  .00000000  00000-0  22970+3 0  9994";
-        String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
-        TLE tle = new TLE(line1, line2);
-
-        context.initialTLE = tle;
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        context.gravity = GravityFieldFactory.getUnnormalizedProvider(20, 20);
         
+        Orbit orbit = new KeplerianOrbit(15000000.0, 0.125, 1.25,
+                                         0.250, 1.375, 0.0625, PositionAngle.TRUE,
+                                         FramesFactory.getEME2000(),
+                                         new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, context.utc),
+                                         context.gravity.getMu());
+
+        context.initialOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+
         context.stations = Arrays.asList(//context.createStation(-18.59146, -173.98363,   76.0, "Leimatu`a"),
                                          context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
                                          context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
                                          //context.createStation( -4.01583,  103.12833, 3173.0, "Gunung Dempo")
-                        );
+                                         );
 
         // Turn-around range stations
         // Map entry = master station
@@ -114,10 +121,10 @@ public class TLEEstimationTestUtils {
 
     }
 
-    public static TLEContext geoStationnaryContext(final String dataRoot) {
+    public static KeplerianContext geoStationnaryContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
-        TLEContext context = new TLEContext();
+        KeplerianContext context = new KeplerianContext();
         context.conventions = IERSConventions.IERS_2010;
         context.utc = TimeScalesFactory.getUTC();
         context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
@@ -151,19 +158,38 @@ public class TLEEstimationTestUtils {
         context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0.0, FrameTest);
         context.sun   = CelestialBodyFactory.getSun();
         context.moon  = CelestialBodyFactory.getMoon();
+        
+     // semimajor axis for a geostationnary satellite
+        double da = FastMath.cbrt(context.gravity.getMu() / (omega * omega));
 
         //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
         //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
         //                );
         context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
 
-        // TLE of GEOS-10 from near J2000 epoch      
-        String line1 = "1 24786U 97019A   00002.84035656  .00000093  00000-0  00000-0 0  4663";
-        String line2 = "2 24786   0.0023 170.4335 0003424 130.3470 328.3614  1.00279571  9860";
-        final TLE tle = new TLE(line1, line2);
+        // Station position & velocity in EME2000
+        final Vector3D geovelocity = new Vector3D (0., 0., 0.);
+
+        // Compute the frames transformation from station frame to EME2000
+        Transform topoToEME =
+        context.stations.get(0).getBaseFrame().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
+
+        // Station position in EME2000 at reference date
+        Vector3D stationPositionEME = topoToEME.transformPosition(Vector3D.ZERO);
+
+        // Satellite position and velocity in Station Frame
+        final Vector3D sat_pos          = new Vector3D(0., 0., da-stationPositionEME.getNorm());
+        final Vector3D acceleration     = new Vector3D(-context.gravity.getMu(), sat_pos);
+        final PVCoordinates pv_sat_topo = new PVCoordinates(sat_pos, geovelocity, acceleration);
+
+        // satellite position in EME2000
+        final PVCoordinates pv_sat_iner = topoToEME.transformPVCoordinates(pv_sat_topo);
 
         // Geo-stationary Satellite Orbit, tightly above the station (l0-L0)
-        context.initialTLE = tle;
+        context.initialOrbit = new EquinoctialOrbit(pv_sat_iner,
+                                                    FramesFactory.getEME2000(),
+                                                    new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc),
+                                                    context.gravity.getMu());
 
         context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
 
@@ -188,7 +214,7 @@ public class TLEEstimationTestUtils {
         // override orbital parameters
         double[] orbitArray = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(initialOrbit,
-                                              PositionAngle.MEAN,
+                                              PositionAngle.TRUE,
                                               orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
@@ -238,14 +264,14 @@ public class TLEEstimationTestUtils {
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and initial orbit
      * @param velEps Tolerance on expected velocity difference
      */
-    public static void checkFit(final TLEContext context, final BatchLSEstimator estimator,
+    public static void checkFit(final KeplerianContext context, final BatchLSEstimator estimator,
                                 final int iterations, final int evaluations,
                                 final double expectedRMS,      final double rmsEps,
                                 final double expectedMax,      final double maxEps,
                                 final double expectedDeltaPos, final double posEps,
                                 final double expectedDeltaVel, final double velEps) {
 
-        final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
+        final Orbit initialOrbit = context.initialOrbit;
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
@@ -301,7 +327,7 @@ public class TLEEstimationTestUtils {
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbit
      * @param velEps Tolerance on expected velocity difference
      */
-    public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
+    public static void checkKalmanFit(final KeplerianContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
                                       final Orbit refOrbit, final PositionAngle positionAngle,
                                       final double expectedDeltaPos, final double posEps,
@@ -324,7 +350,7 @@ public class TLEEstimationTestUtils {
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbits
      * @param velEps Tolerance on expected velocity difference
      */
-    public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
+    public static void checkKalmanFit(final KeplerianContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
                                       final Orbit[] refOrbit, final PositionAngle[] positionAngle,
                                       final double[] expectedDeltaPos, final double[] posEps,
@@ -350,6 +376,7 @@ public class TLEEstimationTestUtils {
             final double[][] dCdY = new double[6][6];
             estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
+            // Cartesian orbital covariance matrix
             final RealMatrix estimatedCartesianP = 
                             Jacobian.
                             multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
@@ -382,4 +409,5 @@ public class TLEEstimationTestUtils {
 
         }
     }
+    
 }

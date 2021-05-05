@@ -29,37 +29,35 @@ import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.estimation.TLEContext;
-import org.orekit.estimation.TLEEstimationTestUtils;
+import org.orekit.estimation.KeplerianContext;
+import org.orekit.estimation.KeplerianEstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.conversion.TLEPropagatorBuilder;
+import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class TLEBatchLSModelTest {
+
+public class KeplerianBatchLSModelTest {
 
     @Test
     public void testPerfectValue() {
 
-        final TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(0.001);
-        final TLEPropagatorBuilder[] builders = { propagatorBuilder };
+        final KeplerianPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
+        final KeplerianPropagatorBuilder[] builders = { propagatorBuilder };
 
         // create perfect PV measurements
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit(),
-                                                                               propagatorBuilder);
+        final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                                    propagatorBuilder);
 
-        final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new PVMeasurementCreator(),
-                                                               0.0, 1.0, 300.0);
+        final List<ObservedMeasurement<?>> measurements = KeplerianEstimationTestUtils.createMeasurements(propagator,
+                                                                                                          new PVMeasurementCreator(),
+                                                                                                          0.0, 1.0, 300.0);
         final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
         for (ObservedMeasurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
@@ -75,10 +73,10 @@ public class TLEBatchLSModelTest {
             @Override
             public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
-                Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
+                Orbit initialOrbit = context.initialOrbit;
                 Assert.assertEquals(1, newOrbits.length);
                 Assert.assertEquals(0,
-                                    context.initialTLE.getDate().durationFrom(newOrbits[0].getDate()),
+                                    context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
                                     3.0e-8);
                 Assert.assertEquals(0,
                                     Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
@@ -87,8 +85,7 @@ public class TLEBatchLSModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final TLEBatchLSModel model = new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters,
-                                                          modelObserver);
+        final KeplerianBatchLSModel model = new KeplerianBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
         
@@ -118,19 +115,17 @@ public class TLEBatchLSModelTest {
     @Test
     public void testBackwardPropagation() {
 
-        final TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(0.001);
-        final TLEPropagatorBuilder[] builders = { propagatorBuilder };
+        final KeplerianPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
+        final KeplerianPropagatorBuilder[] builders = { propagatorBuilder };
 
         // create perfect PV measurements
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit(),
-                                                                           propagatorBuilder);
-        final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new PVMeasurementCreator(),
-                                                               0.0, -1.0, 300.0);
+        final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                                    propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements = KeplerianEstimationTestUtils.createMeasurements(propagator,
+                                                                                                          new PVMeasurementCreator(),
+                                                                                                          0.0, -1.0, 300.0);
         final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
         for (ObservedMeasurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
@@ -149,8 +144,7 @@ public class TLEBatchLSModelTest {
                 // Do nothing here 
             }
         };
-        final TLEBatchLSModel model = new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters,
-                                                          modelObserver);
+        final KeplerianBatchLSModel model = new KeplerianBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         // Test forward propagation flag to false
         assertEquals(false, model.isForwardPropagation());
     }

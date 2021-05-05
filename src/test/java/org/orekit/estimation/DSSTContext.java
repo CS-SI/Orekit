@@ -40,7 +40,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class DSSTContext {
-
     public IERSConventions                        conventions;
     public OneAxisEllipsoid                       earth;
     public CelestialBody                          sun;

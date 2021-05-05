@@ -16,19 +16,29 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.List;
+
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.KeplerianBatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.AbstractKalmanModel;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.KeplerianKalmanModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.utils.ParameterDriversList;
 
 /** Builder for Keplerian propagator.
  * @author Pascal Parraud
- * @since 6.0
+ * @author Nicolas Fialton (for orbit determination)
  */
-public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
+public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Build a new instance.
      * <p>
@@ -80,9 +90,28 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters) {
+    public KeplerianPropagator buildPropagator(final double[] normalizedParameters) {
+
+        // create the orbit
         setParameters(normalizedParameters);
         return new KeplerianPropagator(createInitialOrbit(), getAttitudeProvider());
+    }
+
+    @Override
+    public AbstractBatchLSModel buildLSModel(final PropagatorBuilder[] builders,
+                                             final List<ObservedMeasurement<?>> measurements,
+                                             final ParameterDriversList estimatedMeasurementsParameters,
+                                             final ModelObserver observer) {
+        return new KeplerianBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+    }
+
+    @Override
+    public AbstractKalmanModel
+        buildKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
+                         final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                         final ParameterDriversList estimatedMeasurementsParameters,
+                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        return new KeplerianKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

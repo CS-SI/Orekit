@@ -57,7 +57,7 @@ public class TLEPartialDerivativesEquations extends AbstractAnalyticalPartialDer
     public TLEPartialDerivativesEquations(final String name,
                                           final TLEPropagator propagator) {
 
-        super(name, false);
+        super(name);
         this.selected    = null;
         this.propagator  = propagator;
     }
@@ -74,7 +74,15 @@ public class TLEPartialDerivativesEquations extends AbstractAnalyticalPartialDer
         }
     }
 
-    /** {@inheritDoc}. */
+    /** Set the initial value of the Jacobian with respect to state.
+     * <p>
+     * This method is equivalent to call {@link #setInitialJacobians(SpacecraftState,
+     * double[][], double[][])} with dYdY0 set to the identity matrix and dYdP set
+     * to a zero matrix.
+     * </p>
+     * @param s0 initial state
+     * @return state with initial Jacobians added
+     */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
         final int stateDimension = 6;
@@ -137,17 +145,9 @@ public class TLEPartialDerivativesEquations extends AbstractAnalyticalPartialDer
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
     public TLEJacobiansMapper getMapper() {
-        if (!getInitialized()) {
+        if (!isInitialized()) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
         return new TLEJacobiansMapper(getName(), selected, propagator);
     }
-
-    /** {@inheritDoc}. */
-    @Override
-    protected SpacecraftState setInitialJacobians(final SpacecraftState s1,
-                                                  final double[][] dY1dY0) {
-        return this.setInitialJacobians(s1, dY1dY0, new double[0][0]);
-    }
-
 }

@@ -42,7 +42,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
@@ -129,17 +129,17 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         return templateTLE;
     }
 
-    /** {@inheritDoc} */
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer) {
+    @Override
+    public AbstractBatchLSModel buildLSModel(final PropagatorBuilder[] builders,
+                                             final List<ObservedMeasurement<?>> measurements,
+                                             final ParameterDriversList estimatedMeasurementsParameters,
+                                             final ModelObserver observer) {
         return new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     @Override
     public AbstractKalmanModel
-        buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+        buildKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
                          final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                          final ParameterDriversList estimatedMeasurementsParameters,
                          final CovarianceMatrixProvider measurementProcessNoiseMatrix) {

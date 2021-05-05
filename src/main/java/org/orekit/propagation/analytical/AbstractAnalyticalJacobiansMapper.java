@@ -30,19 +30,20 @@ import org.orekit.utils.ParameterDriversList;
  */
 public abstract class AbstractAnalyticalJacobiansMapper extends AbstractJacobiansMapper {
 
-    /** State dimension, fixed to 6. */
-    private final int STATE_DIMENSION;
+    /** State dimension. */
+    private final int stateDimension;
 
-    /** Placeholder for the derivatives of state. */
-    private double[] stateTransition;
-
+    /** Simple constructor.
+     *
+     * @param name name of the Jacobians
+     * @param parameters selected parameters for Jacobian computation
+     * @param stateDimension the dimension of the state vector
+     */
     protected AbstractAnalyticalJacobiansMapper(final String name,
-                                        final ParameterDriversList parameters,
-                                        final int STATE_DIMENSION,
-                                        final double[] stateTransition) {
+                                                final ParameterDriversList parameters,
+                                                final int stateDimension) {
         super(name, parameters);
-        this.STATE_DIMENSION = STATE_DIMENSION;
-        this.stateTransition = stateTransition;
+        this.stateDimension = stateDimension;
     }
 
     /** {@inheritDoc} */
@@ -54,34 +55,20 @@ public abstract class AbstractAnalyticalJacobiansMapper extends AbstractJacobian
 
         // map the converted state Jacobian to one-dimensional array
         int index = 0;
-        for (int i = 0; i < getSTATE_DIMENSION(); ++i) {
-            for (int j = 0; j < getSTATE_DIMENSION(); ++j) {
+        for (int i = 0; i < getStateDimension(); ++i) {
+            for (int j = 0; j < getStateDimension(); ++j) {
                 p[index++] = (i == j) ? 1.0 : 0.0;
             }
         }
 
-        // No propagator parameters therefore there is no dY1dP
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
-
-        for (int i = 0; i < getSTATE_DIMENSION(); i++) {
-            final double[] row = dYdY0[i];
-            for (int j = 0; j < getSTATE_DIMENSION(); j++) {
-                row[j] = getStateTransition()[i * getSTATE_DIMENSION() + j];
+        if (getParameters() != 0) {
+            // map the converted parameters Jacobian to one dimensional array
+            for (int i = 0; i < getStateDimension(); i++ ) {
+                for (int j = 0; j < getParameters(); ++j) {
+                    p[index++] = dY1dP[i][j];
+                }
             }
         }
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
-
-     // No propagator parameters therefore there is no dY1dP
 
     }
 
@@ -90,25 +77,16 @@ public abstract class AbstractAnalyticalJacobiansMapper extends AbstractJacobian
      * @param index component index (0 for a, 1 for e, 2 for i, 3 for RAAN, 4 for PA, 5 for TrueAnomaly)
      * @param grad Jacobian of mean elements rate with respect to mean elements
      */
-    public void addToRow(final double[] derivatives,
+    protected void addToRow(final double[] derivatives,
                           final int index,
                           final double[][] grad) {
-
-        for (int i = 0; i < getSTATE_DIMENSION(); i++) {
+        for (int i = 0; i < getStateDimension(); i++) {
             grad[index][i] += derivatives[i];
         }
     }
 
-    public double[] getStateTransition() {
-        return stateTransition;
+    // Get the dimension of the state vector.//
+    public int getStateDimension() {
+        return stateDimension;
     }
-
-    public void setStateTransition(final double[] stateTransition) {
-        this.stateTransition = stateTransition;
-    }
-
-    public int getSTATE_DIMENSION() {
-        return STATE_DIMENSION;
-    }
-
 }

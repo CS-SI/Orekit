@@ -30,7 +30,6 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -43,7 +42,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 /**
  * Implementation of a Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
+ * The filter uses a {@link PropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
  * or {@link DSSTPropagator} .
  * </p>
  * <p>
@@ -75,7 +74,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class KalmanEstimator {
 
     /** Builders for orbit propagators. */
-    private List<OrbitDeterminationPropagatorBuilder> propagatorBuilders;
+    private List<PropagatorBuilder> propagatorBuilders;
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -98,7 +97,7 @@ public class KalmanEstimator {
      * @since 10.3
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+                    final List<PropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters,
                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {

@@ -19,12 +19,9 @@ package org.orekit.propagation.analytical;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
@@ -40,20 +37,17 @@ public class EcksteinHechlerGradientConverter extends AbstractAnalyticalGradient
 
     /** Eckstein Hechler propagator. */
     private final FieldEcksteinHechlerPropagator<Gradient> gPropagator;
+
     /**
      * Simple constructor.
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data
-     * context}.
-     * @param state
-     * @param propagator
+     * @param state the state of the spacecraft
+     * @param propagator the propagator that will handle the orbit propagations
      */
-    @DefaultDataContext
     EcksteinHechlerGradientConverter(final SpacecraftState state, final EcksteinHechlerPropagator propagator) {
         super(FREE_STATE_PARAMETERS);
 
         // Convert to cartesian orbit
-        final CartesianOrbit eck = (CartesianOrbit) OrbitType.CARTESIAN.convertType(state.getOrbit());
+        final Orbit eck = state.getOrbit();
 
         // position always has derivatives
         final Vector3D pos = eck.getPVCoordinates().getPosition();
@@ -86,12 +80,19 @@ public class EcksteinHechlerGradientConverter extends AbstractAnalyticalGradient
         gPropagator = new FieldEcksteinHechlerPropagator<>(gOrbit, propagator.getAttitudeProvider(), gM, propagator.getReferenceRadius(), gMu, ck0[2], ck0[3], ck0[4], ck0[5], ck0[6], propagator.getInitialType());
     }
 
+    /**
+     * Get the model parameters.
+     * @return the array containing the propagation parameters
+     */
+    public Gradient[] getParameters() {
+        // by default no propagation parameters are estimated with analytical propagators
+        return new Gradient[0];
+    }
+
     /** {@inheritDoc} */
-    @DefaultDataContext
+    @Override
     public FieldEcksteinHechlerPropagator<Gradient> getPropagator() {
-
         return gPropagator;
-
     }
 
 }

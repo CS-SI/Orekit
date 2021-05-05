@@ -47,11 +47,39 @@ public class KeplerianPartialDerivativesEquations extends AbstractAnalyticalPart
      */
     public KeplerianPartialDerivativesEquations(final String name,
                                                 final KeplerianPropagator propagator) {
-        super(name, false);
+        super(name);
         this.propagator  = propagator;
     }
 
-    /** {@inheritDoc}. */
+    /** Set the initial value of the Jacobian with respect to state.
+     * <p>
+     * This method is equivalent to call {@link #setInitialJacobians(SpacecraftState,
+     * double[][], double[][])} with dYdY0 set to the identity matrix and dYdP set
+     * to a zero matrix.
+     * </p>
+     * @param s0 initial state
+     * @return state with initial Jacobians added
+     */
+    public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
+
+        final int stateDimension = 6;
+        final double[][] dYdY0 = new double[stateDimension][stateDimension];
+        for (int i = 0; i < stateDimension; ++i) {
+            dYdY0[i][i] = 1.0;
+        }
+        return setInitialJacobians(s0, dYdY0);
+    }
+
+    /** Set the initial value of the Jacobian with respect to state and parameter.
+     * <p>
+     * The returned state must be added to the propagator (it is not done
+     * automatically, as the user may need to add more states to it).
+     * </p>
+     * @param s1 current state
+     * @param dY1dY0 Jacobian of current state at time t₁ with respect
+     * to state at some previous time t₀ (must be 6x6)
+     * @return state with initial Jacobians added
+     */
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
                                                final double[][] dY1dY0) {
 
@@ -76,7 +104,7 @@ public class KeplerianPartialDerivativesEquations extends AbstractAnalyticalPart
 
     /** {@inheritDoc}. */
     public KeplerianJacobiansMapper getMapper() {
-        if (!getInitialized()) {
+        if (!isInitialized()) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
         return new KeplerianJacobiansMapper(getName(), propagator);

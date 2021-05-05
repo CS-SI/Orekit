@@ -16,9 +16,18 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.List;
+
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.EcksteinHechlerBatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.AbstractKalmanModel;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.EcksteinHechlerKalmanModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -27,12 +36,13 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.utils.ParameterDriversList;
 
 /** Builder for Eckstein-Hechler propagator.
  * @author Pascal Parraud
- * @since 6.0
+ * @author Nicolas Fialton (for orbit determination)
  */
-public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder {
+public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Provider for un-normalized coefficients. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -199,10 +209,25 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters) {
+    public EcksteinHechlerPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
-        return new EcksteinHechlerPropagator(createInitialOrbit(), getAttitudeProvider(),
-                provider);
+        return new EcksteinHechlerPropagator(createInitialOrbit(), getAttitudeProvider(), provider);
+    }
+
+    @Override
+    public AbstractBatchLSModel buildLSModel(final PropagatorBuilder[] builders,
+                                             final List<ObservedMeasurement<?>> measurements,
+                                             final ParameterDriversList estimatedMeasurementsParameters,
+                                             final ModelObserver observer) {
+        return new EcksteinHechlerBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+    }
+
+    @Override
+    public AbstractKalmanModel buildKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
+                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                                final ParameterDriversList estimatedMeasurementsParameters,
+                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        return new EcksteinHechlerKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

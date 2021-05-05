@@ -16,7 +16,15 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.List;
+
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.AbstractKalmanModel;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -25,7 +33,7 @@ import org.orekit.utils.ParameterDriversList;
 
 /** This interface is the top-level abstraction to build propagators for conversion.
  * @author Pascal Parraud
- * @since 6.0
+ * @author Nicolas Fialton (methods for orbit determination model builders.)
  */
 public interface PropagatorBuilder {
 
@@ -82,5 +90,34 @@ public interface PropagatorBuilder {
      * @since 8.0
      */
     ParameterDriversList getPropagationParametersDrivers();
+
+    /** Build a new batch least squares model.
+     * @param builders builders to use for propagation
+     * @param measurements measurements
+     * @param estimatedMeasurementsParameters estimated measurements parameters
+     * @param observer observer to be notified at model calls
+     * @return a new model for the Batch Least Squares orbit determination
+     */
+    AbstractBatchLSModel buildLSModel(PropagatorBuilder[] builders,
+                                      List<ObservedMeasurement<?>> measurements,
+                                      ParameterDriversList estimatedMeasurementsParameters,
+                                      ModelObserver observer);
+
+    /** Build a new Kalman model.
+     * @param propagatorBuilders propagators builders used to evaluate the orbits.
+     * @param covarianceMatricesProviders providers for covariance matrices
+     * @param estimatedMeasurementsParameters measurement parameters to estimate
+     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @return a new model for Kalman Filter orbit determination
+     */
+    AbstractKalmanModel buildKalmanModel(List<PropagatorBuilder> propagatorBuilders,
+                                         List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                         ParameterDriversList estimatedMeasurementsParameters,
+                                         CovarianceMatrixProvider measurementProcessNoiseMatrix);
+
+    /** Reset the orbit in the propagator builder.
+     * @param newOrbit New orbit to set in the propagator builder
+     */
+    void resetOrbit(Orbit newOrbit);
 
 }

@@ -53,7 +53,7 @@ public class TLEBatchLSEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 1.0);
+                        context.createBuilder(1.0);
 
         // create perfect PV measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -97,7 +97,7 @@ public class TLEBatchLSEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 1.0);
+                        context.createBuilder(1.0);
 
         // create perfect PV measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -143,7 +143,7 @@ public class TLEBatchLSEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 1.0);
+                        context.createBuilder(1.0);
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -233,7 +233,7 @@ public class TLEBatchLSEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 1.0);
+                        context.createBuilder(1.0);
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -333,7 +333,7 @@ public class TLEBatchLSEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 1.0);
+                        context.createBuilder(1.0);
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();

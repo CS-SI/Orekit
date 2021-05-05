@@ -17,8 +17,6 @@
 package org.orekit.propagation.analytical;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -43,13 +41,9 @@ public class KeplerianGradientConverter extends AbstractAnalyticalGradientConver
 
     /**
      * Simple constructor.
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data
-     * context}.
-     * @param state
-     * @param propagator
+     * @param state the state of the spacecraft
+     * @param propagator the propagator that will handle the orbit propagations
      */
-    @DefaultDataContext
     KeplerianGradientConverter(final SpacecraftState state, final KeplerianPropagator propagator) {
         super(FREE_STATE_PARAMETERS);
 
@@ -86,10 +80,18 @@ public class KeplerianGradientConverter extends AbstractAnalyticalGradientConver
         gPropagator = new FieldKeplerianPropagator<>(gOrbit, propagator.getAttitudeProvider(), gMu, gM);
     }
 
-    /** {@inheritDoc} */
-    @DefaultDataContext
-    public FieldKeplerianPropagator<Gradient> getPropagator() {
+    /**
+     * Get the model parameters.
+     * @return the array containing the propagation parameters
+     */
+    public Gradient[] getParameters() {
+        // by default no propagation parameters are estimated with analytical propagators
+        return new Gradient[0];
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public FieldKeplerianPropagator<Gradient> getPropagator() {
         return gPropagator;
     }
 

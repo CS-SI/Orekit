@@ -23,9 +23,9 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
-import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.KeplerianJacobiansMapper;
+import org.orekit.propagation.analytical.KeplerianPartialDerivativesEquations;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
@@ -35,15 +35,12 @@ import org.orekit.utils.ParameterDriversList;
  * least squares problems}.
  * <p>
  * This class is an adaption of the {@link BatchLSModel} class
- * but for the {@link TLEPropagator TLE propagator}.
+ * but for the {@link KeplerianPropagator kep propagator}.
  * </p>
- * @author Luc Maisonobe
- * @author Bryan Cazabonne
- * @author Thomas Paulet
- * @since 11.0
- *
+ * @author Nicolas Fialton
  */
-public class TLEBatchLSModel extends AbstractBatchLSModel {
+
+public class KeplerianBatchLSModel extends AbstractBatchLSModel {
 
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
@@ -51,23 +48,23 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public TLEBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
-                           final List<ObservedMeasurement<?>> measurements,
-                           final ParameterDriversList estimatedMeasurementsParameters,
-                           final ModelObserver observer) {
+    public KeplerianBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
+                                 final List<ObservedMeasurement<?>> measurements,
+                                 final ParameterDriversList estimatedMeasurementsParameters,
+                                 final ModelObserver observer) {
         // call super constructor
         super(propagatorBuilders, measurements, estimatedMeasurementsParameters,
-              new TLEJacobiansMapper[propagatorBuilders.length], observer);
+              new KeplerianJacobiansMapper[propagatorBuilders.length], observer);
     }
 
     /** {@inheritDoc} */
     @Override
     @DefaultDataContext
-    protected TLEJacobiansMapper configureDerivatives(final Propagator propagator) {
+    protected KeplerianJacobiansMapper configureDerivatives(final Propagator propagator) {
 
-        final String equationName = TLEBatchLSModel.class.getName() + "-derivatives";
+        final String equationName = KeplerianBatchLSModel.class.getName() + "-derivatives";
 
-        final TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations(equationName, (TLEPropagator) propagator);
+        final KeplerianPartialDerivativesEquations partials = new KeplerianPartialDerivativesEquations(equationName, (KeplerianPropagator) propagator);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
@@ -75,7 +72,6 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
         propagator.resetInitialState(stateWithDerivatives);
 
         return partials.getMapper();
-
     }
 
     /** {@inheritDoc} */

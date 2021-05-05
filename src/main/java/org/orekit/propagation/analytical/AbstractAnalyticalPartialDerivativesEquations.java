@@ -39,43 +39,15 @@ public abstract class AbstractAnalyticalPartialDerivativesEquations {
     /** Flag for Jacobian matrices initialization. */
     private boolean initialized;
 
-    protected AbstractAnalyticalPartialDerivativesEquations(final String name,
-                                                            final boolean initialized) {
+    /** Simple constructor.
+     *
+     * @param name name of the partial derivatives equations
+     */
+    protected AbstractAnalyticalPartialDerivativesEquations(final String name) {
         this.name = name;
-        this.setInitialized(initialized);
+        this.initialized = false;
     }
 
-    /** Set the initial value of the Jacobian with respect to state.
-     * <p>
-     * This method is equivalent to call {@link #setInitialJacobians(SpacecraftState,
-     * double[][], double[][])} with dYdY0 set to the identity matrix and dYdP set
-     * to a zero matrix.
-     * </p>
-     * @param s0 initial state
-     * @return state with initial Jacobians added
-     */
-    public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
-
-        final int stateDimension = 6;
-        final double[][] dYdY0 = new double[stateDimension][stateDimension];
-        for (int i = 0; i < stateDimension; ++i) {
-            dYdY0[i][i] = 1.0;
-        }
-        return setInitialJacobians(s0, dYdY0);
-    }
-
-    /** Set the initial value of the Jacobian with respect to state and parameter.
-     * <p>
-     * The returned state must be added to the propagator (it is not done
-     * automatically, as the user may need to add more states to it).
-     * </p>
-     * @param s1 current state
-     * @param dY1dY0 Jacobian of current state at time t₁ with respect
-     * to state at some previous time t₀ (must be 6x6)
-     * @return state with initial Jacobians added
-     */
-    protected abstract SpacecraftState setInitialJacobians(SpacecraftState s1,
-                                                           double[][] dY1dY0);
     /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
      * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
      * with the same name as the instance
@@ -91,13 +63,13 @@ public abstract class AbstractAnalyticalPartialDerivativesEquations {
         return name;
     }
 
-    public boolean getInitialized() {
+    // Getter of the Flag for Jacobian matrices initialization. //
+    public boolean isInitialized() {
         return initialized;
     }
 
+    // Setter of the Flag for Jacobian matrices initialization. //
     protected void setInitialized(final boolean initialized) {
         this.initialized = initialized;
     }
-
-
 }

@@ -19,17 +19,16 @@ package org.orekit.propagation.analytical;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 
 /**
  * Abstract class for analytical propagator GradientConverter.
- *
  * @author Nicolas Fialton
  */
 public abstract class AbstractAnalyticalGradientConverter extends AbstractGradientConverter {
 
-    /** Constructor used to set the freeStateParameters.
+    /**
+     * Constructor used to set the freeStateParameters.
      * @param freeStateParameters
      */
     protected AbstractAnalyticalGradientConverter(final int freeStateParameters) {
@@ -42,22 +41,8 @@ public abstract class AbstractAnalyticalGradientConverter extends AbstractGradie
      * This method uses the {@link DataContext#getDefault() default data
      * context}.
      *
-     * @return a Field Propagator
+     * @return a field representation of the propagator
      */
     @DefaultDataContext
-    public abstract FieldAbstractPropagator<Gradient> getPropagator();
-
-    /**
-     * Get the model parameters.
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data
-     * context}.
-     *
-     * @return no parameters
-     */
-    public Gradient[] getParameters() {
-        // no parameters
-        return new Gradient[0];
-    }
-
+    public abstract FieldAbstractAnalyticalPropagator<Gradient> getPropagator();
 }

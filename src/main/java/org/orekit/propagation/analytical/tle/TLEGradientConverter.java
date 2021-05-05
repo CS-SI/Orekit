@@ -202,8 +202,6 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
 
     /** Get the model parameters.
      *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param gTLE gradient TLE compliant with parameter drivers
      * @return force model parameters
      */

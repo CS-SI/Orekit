@@ -44,6 +44,9 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class TLEJacobiansMapper extends AbstractAnalyticalJacobiansMapper {
 
+    /** Placeholder for the derivatives of state. */
+    private double[] stateTransition;
+
     /** Name. */
     private String name;
 
@@ -62,12 +65,39 @@ public class TLEJacobiansMapper extends AbstractAnalyticalJacobiansMapper {
                               final ParameterDriversList parameters,
                               final TLEPropagator propagator) {
 
-        super(name, parameters, TLEGradientConverter.FREE_STATE_PARAMETERS, null);
-
+        super(name, parameters, TLEGradientConverter.FREE_STATE_PARAMETERS);
         this.parameters      = parameters;
         this.name            = name;
         this.propagator      = propagator;
+        this.stateTransition = null;
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
+
+        for (int i = 0; i < getStateDimension(); i++) {
+            final double[] row = dYdY0[i];
+            for (int j = 0; j < getStateDimension(); j++) {
+                row[j] = stateTransition[i * getStateDimension() + j];
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
+
+        if (parameters.getNbParams() != 0) {
+
+            for (int i = 0; i < getStateDimension(); i++) {
+                final double[] row = dYdP[i];
+                for (int j = 0; j < parameters.getNbParams(); j++) {
+                    row[j] = stateTransition[getStateDimension() * getStateDimension() + (j + parameters.getNbParams() * i)];
+                }
+            }
+
+        }
     }
 
     /** {@inheritDoc} */
@@ -76,12 +106,12 @@ public class TLEJacobiansMapper extends AbstractAnalyticalJacobiansMapper {
     public void analyticalDerivatives(final SpacecraftState s) {
 
         final double[] p = s.getAdditionalState(name);
-        if (getStateTransition() == null) {
-            setStateTransition(new double[p.length]);
+        if (stateTransition == null) {
+            stateTransition = new double[p.length];
         }
 
         // initialize Jacobians to zero
-        final int dim = getSTATE_DIMENSION();
+        final int dim = getStateDimension();
         final int paramDim = parameters.getNbParams();
         final double[][] stateGrad = new double[dim][dim];
         final double[][] paramGrad = new double[dim][paramDim];
@@ -133,18 +163,18 @@ public class TLEJacobiansMapper extends AbstractAnalyticalJacobiansMapper {
         // the previous derivatives correspond to state transition matrix with mean motion as 1rst element instead of semi major axis
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
-                getStateTransition()[j + dim * i] = stateGrad[i][j];
+                stateTransition[j + dim * i] = stateGrad[i][j];
 
                 // retrieving dElement/dA from dElement/dMeanMotion
                 if (j == 0) {
-                    getStateTransition()[j + dim * i] /= dAdMeanMotion;
+                    stateTransition[j + dim * i] /= dAdMeanMotion;
                 }
             }
         }
         final int columnTop = dim * dim;
         for (int k = 0; k < paramDim; k++) {
             for (int i = 0; i < dim; ++i) {
-                getStateTransition()[columnTop + (i + dim * k)] = paramGrad[i][k];
+                stateTransition[columnTop + (i + dim * k)] = paramGrad[i][k];
             }
         }
     }
@@ -155,6 +185,4 @@ public class TLEJacobiansMapper extends AbstractAnalyticalJacobiansMapper {
     public SpacecraftState getInitialState() {
         return propagator.getInitialState();
     }
-
-
 }

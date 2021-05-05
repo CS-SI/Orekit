@@ -1,19 +1,3 @@
-/* Copyright 2002-2021 CS GROUP
- * Licensed to CS GROUP (CS) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.orekit.estimation;
 
 import java.util.Arrays;
@@ -41,14 +25,15 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.KalmanEstimator;
-import org.orekit.frames.EOPHistory;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
-import org.orekit.models.earth.displacement.TidalDisplacement;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -61,63 +46,81 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-/** Utility class for orbit determination tests. */
-public class TLEEstimationTestUtils {
-
-    public static TLEContext eccentricContext(final String dataRoot) {
+public class EcksteinHechlerEstimationTestUtils {
+    
+    public static EcksteinHechlerContext myContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
-        TLEContext context = new TLEContext();
+        EcksteinHechlerContext context = new EcksteinHechlerContext();
         context.conventions = IERSConventions.IERS_2010;
-        context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                             Constants.WGS84_EARTH_FLATTENING,
-                                             FramesFactory.getITRF(context.conventions, true));
-        context.sun  = CelestialBodyFactory.getSun();
-        context.moon = CelestialBodyFactory.getMoon();
-        final EOPHistory eopHistory = FramesFactory.getEOPHistory(context.conventions, true);
         context.utc = TimeScalesFactory.getUTC();
-        context.ut1 = TimeScalesFactory.getUT1(eopHistory);
-        context.displacements = new StationDisplacement[] {
-            new TidalDisplacement(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                  Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
-                                  Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
-                                  context.sun, context.moon,
-                                  context.conventions, false)
+        context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
+        context.displacements = new StationDisplacement[0];
+        String Myframename = "MyEarthFrame";
+        final AbsoluteDate datedef = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc);
+        final double omega = Constants.WGS84_EARTH_ANGULAR_VELOCITY;
+        final Vector3D rotationRate = new Vector3D(0.0, 0.0, omega);
+
+        TransformProvider MyEarthFrame = new TransformProvider() {
+            private static final long serialVersionUID = 1L;
+            public Transform getTransform(final AbsoluteDate date) {
+                final double rotationduration = date.durationFrom(datedef);
+                final Vector3D alpharot = new Vector3D(rotationduration, rotationRate);
+                final Rotation rotation = new Rotation(Vector3D.PLUS_K, -alpharot.getZ(),
+                                                       RotationConvention.VECTOR_OPERATOR);
+                return new Transform(date, rotation, rotationRate);
+            }
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                final T rotationduration = date.durationFrom(datedef);
+                final FieldVector3D<T> alpharot = new FieldVector3D<>(rotationduration, rotationRate);
+                final FieldRotation<T> rotation = new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
+                                                                      alpharot.getZ().negate(),
+                                                                      RotationConvention.VECTOR_OPERATOR);
+                return new FieldTransform<>(date, rotation, new FieldVector3D<>(date.getField(), rotationRate));
+            }
         };
+        Frame FrameTest = new Frame(FramesFactory.getEME2000(), MyEarthFrame, Myframename, true);
+
+        // Earth is spherical, rotating in one sidereal day
+        context.earth   = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0.0, FrameTest);
+        context.sun     = CelestialBodyFactory.getSun();
+        context.moon    = CelestialBodyFactory.getMoon();
+        context.gravity = GravityFieldFactory.getUnnormalizedProvider(6, 0);
+
+        //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
+        //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
+        //                );
+        //context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
         
-        String line1 = "1 07276U 74026A   00055.48318287  .00000000  00000-0  22970+3 0  9994";
-        String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
+        // Stations
+        context.stations = Arrays.asList(context.createStation(51.50, -0.13, 200.0, "London"),
+                                         context.createStation(-17.75, 296.85, 416.0, "Santa Cruz"));
+        
+        // TLE
+        String line1 = "1 24876U 97035A   21123.52874340  .00000013  00000-0  00000-0 0  9997";
+        String line2 = "2 24876  55.4682 171.6637 0047342  54.5360 305.9711  2.00562746174430";
         TLE tle = new TLE(line1, line2);
-
-        context.initialTLE = tle;
         
-        context.stations = Arrays.asList(//context.createStation(-18.59146, -173.98363,   76.0, "Leimatu`a"),
-                                         context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
-                                         context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
-                                         //context.createStation( -4.01583,  103.12833, 3173.0, "Gunung Dempo")
-                        );
-
-        // Turn-around range stations
-        // Map entry = master station
-        // Map value = slave station associated
-        context.TARstations = new HashMap<GroundStation, GroundStation>();
-
-        context.TARstations.put(context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
-                                context.createStation(-54.815833,  -68.317778, 6.0, "Ushuaïa"));
-
-        context.TARstations.put(context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur"),
-                                context.createStation( 61.405833,   -6.705278,  470.0, "Sumba"));
+        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        AbsoluteDate initDate = tle.getDate();
+        
+        // Geo-stationary Satellite Orbit, tightly above the station (l0-L0)
+        context.initialOrbit = new KeplerianOrbit(propagator.getPVCoordinates(initDate, FramesFactory.getEME2000()),
+                                                  FramesFactory.getEME2000(),
+                                                  initDate,
+                                                  context.gravity.getMu());
 
         return context;
 
     }
-
-    public static TLEContext geoStationnaryContext(final String dataRoot) {
+    
+    public static EcksteinHechlerContext geoStationnaryContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
-        TLEContext context = new TLEContext();
+        EcksteinHechlerContext context = new EcksteinHechlerContext();
         context.conventions = IERSConventions.IERS_2010;
         context.utc = TimeScalesFactory.getUTC();
         context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
@@ -151,19 +154,39 @@ public class TLEEstimationTestUtils {
         context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0.0, FrameTest);
         context.sun   = CelestialBodyFactory.getSun();
         context.moon  = CelestialBodyFactory.getMoon();
+        context.gravity = GravityFieldFactory.getUnnormalizedProvider(6, 0);
+        
+        // semimajor axis for a geostationnary satellite
+        double da = FastMath.cbrt(context.gravity.getMu() / (omega * omega));
 
         //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
         //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
         //                );
         context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
 
-        // TLE of GEOS-10 from near J2000 epoch      
-        String line1 = "1 24786U 97019A   00002.84035656  .00000093  00000-0  00000-0 0  4663";
-        String line2 = "2 24786   0.0023 170.4335 0003424 130.3470 328.3614  1.00279571  9860";
-        final TLE tle = new TLE(line1, line2);
+        // Station position & velocity in EME2000
+        final Vector3D geovelocity = new Vector3D (0., 0., 0.);
+
+        // Compute the frames transformation from station frame to EME2000
+        Transform topoToEME =
+        context.stations.get(0).getBaseFrame().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
+
+        // Station position in EME2000 at reference date
+        Vector3D stationPositionEME = topoToEME.transformPosition(Vector3D.ZERO);
+
+        // Satellite position and velocity in Station Frame
+        final Vector3D sat_pos          = new Vector3D(0., 0., da-stationPositionEME.getNorm());
+        final Vector3D acceleration     = new Vector3D(-context.gravity.getMu(), sat_pos);
+        final PVCoordinates pv_sat_topo = new PVCoordinates(sat_pos, geovelocity, acceleration);
+
+        // satellite position in EME2000
+        final PVCoordinates pv_sat_iner = topoToEME.transformPVCoordinates(pv_sat_topo);
 
         // Geo-stationary Satellite Orbit, tightly above the station (l0-L0)
-        context.initialTLE = tle;
+        context.initialOrbit = new EquinoctialOrbit(pv_sat_iner,
+                                                    FramesFactory.getEME2000(),
+                                                    new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc),
+                                                    context.gravity.getMu());
 
         context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
 
@@ -188,8 +211,8 @@ public class TLEEstimationTestUtils {
         // override orbital parameters
         double[] orbitArray = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(initialOrbit,
-                                              PositionAngle.MEAN,
-                                              orbitArray, null);
+                                            PositionAngle.TRUE,
+                                            orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
         }
@@ -225,7 +248,7 @@ public class TLEEstimationTestUtils {
     
     /**
      * Checker for batch LS estimator validation
-     * @param context DSSTContext used for the test
+     * @param context EcksteinHechlerContext used for the test
      * @param estimator Batch LS estimator
      * @param iterations Number of iterations expected
      * @param evaluations Number of evaluations expected
@@ -238,14 +261,14 @@ public class TLEEstimationTestUtils {
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and initial orbit
      * @param velEps Tolerance on expected velocity difference
      */
-    public static void checkFit(final TLEContext context, final BatchLSEstimator estimator,
+    public static void checkFit(final EcksteinHechlerContext context, final BatchLSEstimator estimator,
                                 final int iterations, final int evaluations,
                                 final double expectedRMS,      final double rmsEps,
                                 final double expectedMax,      final double maxEps,
                                 final double expectedDeltaPos, final double posEps,
                                 final double expectedDeltaVel, final double velEps) {
 
-        final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
+        final Orbit initialOrbit = context.initialOrbit;
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
@@ -301,7 +324,7 @@ public class TLEEstimationTestUtils {
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbit
      * @param velEps Tolerance on expected velocity difference
      */
-    public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
+    public static void checkKalmanFit(final EcksteinHechlerContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
                                       final Orbit refOrbit, final PositionAngle positionAngle,
                                       final double expectedDeltaPos, final double posEps,
@@ -324,7 +347,7 @@ public class TLEEstimationTestUtils {
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbits
      * @param velEps Tolerance on expected velocity difference
      */
-    public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
+    public static void checkKalmanFit(final EcksteinHechlerContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
                                       final Orbit[] refOrbit, final PositionAngle[] positionAngle,
                                       final double[] expectedDeltaPos, final double[] posEps,
@@ -350,6 +373,7 @@ public class TLEEstimationTestUtils {
             final double[][] dCdY = new double[6][6];
             estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
+            // Cartesian orbital covariance matrix
             final RealMatrix estimatedCartesianP = 
                             Jacobian.
                             multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
@@ -382,4 +406,5 @@ public class TLEEstimationTestUtils {
 
         }
     }
+    
 }

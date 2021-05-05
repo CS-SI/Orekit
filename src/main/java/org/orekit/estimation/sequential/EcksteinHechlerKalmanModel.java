@@ -18,50 +18,45 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.EcksteinHechlerJacobiansMapper;
+import org.orekit.propagation.analytical.EcksteinHechlerPartialDerivativesEquations;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
-import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
-import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
  * <p>
  * This class is an adaption of the {@link KalmanModel} class
- * but for the {@link DSSTPropagator DSST propagator}.
+ * but for the {@link KeplerianPropagator kep propagator}.
  * </p>
- * @author Romain Gerbaud
- * @author Maxime Journot
- * @author Bryan Cazabonne
- * @since 10.0
+ * @author Nicolas Fialton
  */
-public class DSSTKalmanModel extends AbstractKalmanModel {
+public class EcksteinHechlerKalmanModel extends AbstractKalmanModel {
 
-    /** Kalman process model constructor.
+    /** Kalman process model constructor (package private).
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @param propagationType type of the orbit used for the propagation (mean or osculating)
-     * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
-    public DSSTKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
-                           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                           final ParameterDriversList estimatedMeasurementParameters,
-                           final CovarianceMatrixProvider measurementProcessNoiseMatrix,
-                           final PropagationType propagationType,
-                           final PropagationType stateType) {
+    public EcksteinHechlerKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
+                                      final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                      final ParameterDriversList estimatedMeasurementParameters,
+                                      final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
         // call super constructor
         super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters,
-              measurementProcessNoiseMatrix, new DSSTJacobiansMapper[propagatorBuilders.size()],
-              propagationType, stateType);
+              measurementProcessNoiseMatrix, new EcksteinHechlerJacobiansMapper[propagatorBuilders.size()]);
     }
 
     /** {@inheritDoc} */
     @Override
+    @DefaultDataContext
     protected void updateReferenceTrajectories(final Propagator[] propagators,
                                                final PropagationType pType,
                                                final PropagationType sType) {
@@ -75,12 +70,12 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
             final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
-            final DSSTPartialDerivativesEquations pde = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) getReferenceTrajectories()[k], pType);
+            final EcksteinHechlerPartialDerivativesEquations pde = new EcksteinHechlerPartialDerivativesEquations(equationName, (EcksteinHechlerPropagator) getReferenceTrajectories()[k]);
 
             // Reset the Jacobians
             final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();
             final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-            ((DSSTPropagator) getReferenceTrajectories()[k]).setInitialState(stateWithDerivatives, sType);
+            ((EcksteinHechlerPropagator) getReferenceTrajectories()[k]).resetInitialState(stateWithDerivatives);
             mappers[k] = pde.getMapper();
         }
 
@@ -91,8 +86,9 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
 
     /** {@inheritDoc} */
     @Override
+    @DefaultDataContext
     protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
-        ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(state);
+        ((EcksteinHechlerJacobiansMapper) mapper).analyticalDerivatives(state);
     }
 
 }

@@ -24,25 +24,25 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.analytical.tle.TLE;
-import org.orekit.propagation.conversion.TLEPropagatorBuilder;
+import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 
-public class TLEContext {
+public class KeplerianContext {
     public IERSConventions                      conventions;
     public OneAxisEllipsoid                     earth;
     public CelestialBody                        sun;
     public CelestialBody                        moon;
-    public NormalizedSphericalHarmonicsProvider gravity;
+    public UnnormalizedSphericalHarmonicsProvider gravity;
     public TimeScale                            utc;
     public UT1Scale                             ut1;
-    public TLE                                  initialTLE;
+    public Orbit                                initialOrbit;
     public StationDisplacement[]                displacements;
     public List<GroundStation>                  stations;
     // Stations for turn-around range
@@ -50,10 +50,10 @@ public class TLEContext {
     // Map value = slave station associated
     public Map<GroundStation, GroundStation>     TARstations;
 
-    public TLEPropagatorBuilder createBuilder(final double dP) {
+    public KeplerianPropagatorBuilder createBuilder(final double dP) {
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        new TLEPropagatorBuilder(initialTLE, PositionAngle.MEAN, dP);
+        final KeplerianPropagatorBuilder propagatorBuilder =
+                        new KeplerianPropagatorBuilder(initialOrbit, PositionAngle.TRUE, dP);
 
         return propagatorBuilder;
 
@@ -67,5 +67,4 @@ public class TLEContext {
         return new GroundStation(new TopocentricFrame(earth, gp, name),
                                  ut1.getEOPHistory(), displacements);
     }
-
 }

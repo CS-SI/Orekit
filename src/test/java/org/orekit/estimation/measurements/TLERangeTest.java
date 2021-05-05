@@ -167,8 +167,8 @@ public class TLERangeTest {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
+
 
         // Create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -294,8 +294,7 @@ public class TLERangeTest {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
 
         // Create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -439,8 +438,7 @@ public class TLERangeTest {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {

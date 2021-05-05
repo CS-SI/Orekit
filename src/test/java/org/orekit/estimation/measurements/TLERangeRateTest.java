@@ -46,8 +46,7 @@ public class TLERangeRateTest {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
 
         // create perfect range rate measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -104,8 +103,7 @@ public class TLERangeRateTest {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
 
         // create perfect range rate measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -163,8 +161,8 @@ public class TLERangeRateTest {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
+
 
         // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
@@ -229,8 +227,8 @@ public class TLERangeRateTest {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
+
 
         // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
@@ -295,8 +293,8 @@ public class TLERangeRateTest {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
+
 
         // create perfect range rate measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -353,8 +351,7 @@ public class TLERangeRateTest {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
 
         // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
