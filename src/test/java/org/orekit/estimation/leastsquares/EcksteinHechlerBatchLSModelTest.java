@@ -41,7 +41,7 @@ public class EcksteinHechlerBatchLSModelTest {
 
         final List<ObservedMeasurement<?>> measurements = EcksteinHechlerEstimationTestUtils.createMeasurements(propagator,
                                                                                                                 new PVMeasurementCreator(),
-                                                                                                                0.0, 1.0, 300.0);
+                                                                                                                0.0, 2.0, 300.0);
         final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
         for (ObservedMeasurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
@@ -66,7 +66,6 @@ public class EcksteinHechlerBatchLSModelTest {
                 
                 System.out.println(initialOrbit.getPVCoordinates().getPosition());
                 System.out.println(newOrbits[0].getPVCoordinates().getPosition());
-                
                 
                 
                 Assert.assertEquals(0,
@@ -115,10 +114,10 @@ public class EcksteinHechlerBatchLSModelTest {
 
         // create perfect PV measurements
         final Propagator propagator = EcksteinHechlerEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                    propagatorBuilder);
+                                                                                          propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements = EcksteinHechlerEstimationTestUtils.createMeasurements(propagator,
                                                                                                                 new PVMeasurementCreator(),
-                                                                                                                0.0, -1.0, 300.0);
+                                                                                                                0.0, -2.0, 300.0);
         final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
         for (ObservedMeasurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
