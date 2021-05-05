@@ -165,7 +165,7 @@
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
-    * loading of CCSDS Attitude Data Messages (both AEM, and APM types are supported)
+    * loading and writing of CCSDS Attitude Data Messages (both AEM, and APM types are supported, in both KVN and XML formats, standalone or in combined NDM)
 
   * Orbit determination
   
@@ -203,6 +203,7 @@
         * multiplexed
     * possibility to add custom measurements
     * loading of ILRS CRD laser ranging measurements file
+    * loading and writing of CCSDS Tracking Data Messages (in both KVN and XML formats, standalone or in combined NDM)
     * several predefined modifiers
         * tropospheric effects
         * ionospheric effects
@@ -241,7 +242,7 @@
   * Orbit file handling
   
     * loading of SP3 orbit files (from version a to d)
-    * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
+    * loading and writing of CCSDS Orbit Data Messages (both OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format
     * loading of ILRS CPF orbit files

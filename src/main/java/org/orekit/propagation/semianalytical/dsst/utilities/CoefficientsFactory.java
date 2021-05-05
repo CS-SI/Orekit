@@ -320,7 +320,7 @@ public class CoefficientsFactory {
                 return true;
             }
 
-            if (key != null && key instanceof NSKey) {
+            if (key instanceof NSKey) {
                 return n == ((NSKey) key).n && s == ((NSKey) key).s;
             }
 

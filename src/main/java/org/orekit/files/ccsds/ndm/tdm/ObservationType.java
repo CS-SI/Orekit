@@ -33,7 +33,7 @@ import org.orekit.utils.units.Unit;
  * @author Maxime Journot
  * @since 11.0
  */
-public enum Observationtype {
+public enum ObservationType {
 
     // Signal related keywords.
     /** Data: Carrier power [dBW].<p>
@@ -53,7 +53,7 @@ public enum Observationtype {
     /** Data: Ranging power to noise spectral density ratio (Pr/No) [dBHz]. */
     PR_N0(Unit.ONE),
     /** Data: Range value [km, s or RU].
-     * @see #RANGE_UNITS
+     * @see RangeUnits
      */
     RANGE(Unit.KILOMETRE) {
 
@@ -220,7 +220,7 @@ public enum Observationtype {
     /** Simple constructor.
      * @param unit observation unit
      */
-    Observationtype(final Unit unit) {
+    ObservationType(final Unit unit) {
         this.unit = unit;
     }
 

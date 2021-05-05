@@ -47,7 +47,7 @@ public enum OrekitMessages implements Localizable {
 
     // CHECKSTYLE: stop JavadocVariable check
 
-    INTERNAL_ERROR("internal error, please notify development team by creating an issue at {0}"),
+    INTERNAL_ERROR("internal error, please notify development team by creating a new topic at {0}"),
     ALTITUDE_BELOW_ALLOWED_THRESHOLD("altitude ({0} m) is below the {1} m allowed threshold"),
     POINT_INSIDE_ELLIPSOID("point is inside ellipsoid"),
     TRAJECTORY_INSIDE_BRILLOUIN_SPHERE("trajectory inside the Brillouin sphere (r = {0})"),
@@ -169,6 +169,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_UNKNOWN_GM("the central body gravitational coefficient cannot be retrieved from the ODM"),
     CCSDS_UNKNOWN_SPACECRAFT_MASS("there is no spacecraft mass associated with this ODM file"),
     CCSDS_UNKNOWN_CONVENTIONS("no IERS conventions have been set before parsing"),
+    CCSDS_UNKNOWN_SPIN_AXIS("no spin axis direction has been set before parsing"),
     CCSDS_INVALID_FRAME("frame {0} is not valid in this CCSDS file context"),
     CCSDS_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems: {0} ≠ {1}"),
     CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED(
@@ -180,6 +181,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED("attitude type {0} in CCSDS AEM files is not implemented in Orekit"),
     CCSDS_INVALID_ROTATION_SEQUENCE("invalid rotation sequence {0} at line {1} of file {2}"),
     CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE("element set type {0} ({1}) is not supported yet"),
+    CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL("retrograde factor not supported in element set {0}"),
     CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS("element set type {0} ({1}) expects {2} elements"),
     CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS("wrong number of units for maneuver {0}"),
     CCSDS_MANEUVER_MISSING_TIME("missing time field for maneuver {0}"),
@@ -320,7 +322,8 @@ public enum OrekitMessages implements Localizable {
     UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized"),
     UNKNOWN_UNIT("unknown unit {0}"),
     INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
-    MISSING_VELOCITY("missing velocity data");
+    MISSING_VELOCITY("missing velocity data"),
+    ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error");
 
     // CHECKSTYLE: resume JavadocVariable check
 

@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -60,8 +61,9 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
         super(TdmFile.ROOT, TdmFile.FORMAT_VERSION_KEY, CCSDS_TDM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
+                  () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> null, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0));
+                  () -> 0.0, () -> 1.0, () -> null));
         this.converter = converter;
     }
 
@@ -79,10 +81,12 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
-                                      oldContext::getClockRate));
+                                      oldContext::getClockRate,
+                                      oldContext::getSpinAxis));
         new TdmMetadataWriter(metadata, getTimeConverter()).
         write(generator);
 

@@ -761,6 +761,21 @@ public class FieldTLETest {
         Assert.assertEquals(tle.toString(), rebuilt.toString());
     }
 
+    @Test
+    public void testIssue781() {
+
+        final DSFactory factory = new DSFactory(6, 3);
+        final String line1 = "1 05709U 71116A   21105.62692147  .00000088  00000-0  00000-0 0  9999";
+        final String line2 = "2 05709  10.8207 310.3659 0014139  71.9531 277.0561  0.99618926100056";
+        Assert.assertTrue(TLE.isFormatOK(line1, line2));
+
+        final FieldTLE<DerivativeStructure> fieldTLE = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
+        final FieldTLEPropagator<DerivativeStructure> tlePropagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, fieldTLE.getParameters(factory.getDerivativeField()));
+        final FieldTLE<DerivativeStructure> fieldTLE1 = FieldTLE.stateToTLE(tlePropagator.getInitialState(), fieldTLE);
+        Assert.assertEquals(line2, fieldTLE1.getLine2());
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

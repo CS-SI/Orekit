@@ -23,7 +23,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
@@ -39,7 +39,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
+public class ApmFile extends NdmConstituent<Header, Segment<AdmMetadata, ApmData>> {
 
     /** Root element for XML files. */
     public static final String ROOT = "apm";
@@ -56,6 +56,20 @@ public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
     public ApmFile(final Header header, final List<Segment<AdmMetadata, ApmData>> segments,
                    final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
+    }
+
+    /** Get the file metadata.
+     * @return file metadata
+     */
+    public AdmMetadata getMetadata() {
+        return getSegments().get(0).getMetadata();
+    }
+
+    /** Get the file data.
+     * @return file data
+     */
+    public ApmData getData() {
+        return getSegments().get(0).getData();
     }
 
     /** Get the attitude.
@@ -85,10 +99,9 @@ public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
             final Quaternion q    = qBlock.getQuaternion();
             final Quaternion qDot = qBlock.getQuaternionDot();
             tac = AttitudeType.QUATERNION_DERIVATIVE.build(true, qBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                           null, true,
-                                                           qBlock.getEpoch(),
-                                                           q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
-                                                           qDot.getQ0(), qDot.getQ1(), qDot.getQ2(), qDot.getQ3());
+                                                           null, true, null,
+                                                           qBlock.getEpoch(), q.getQ0(), q.getQ1(), q.getQ2(),
+                                                           q.getQ3(), qDot.getQ0(), qDot.getQ1(), qDot.getQ2(), qDot.getQ3());
         } else if (eBlock != null && eBlock.hasRates()) {
             // we have to rely on the Euler logical block to take rates into account
 
@@ -105,19 +118,16 @@ public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
             final double[]   rates = eBlock.getRotationRates();
             tac = AttitudeType.QUATERNION_RATE.build(true,
                                                      qBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                     eBlock.getEulerRotSeq(),
-                                                     eBlock.isSpacecraftBodyRate(),
-                                                     qBlock.getEpoch(),
-                                                     q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
-                                                     rates[0], rates[1], rates[2]);
+                                                     eBlock.getEulerRotSeq(), eBlock.isSpacecraftBodyRate(), null,
+                                                     qBlock.getEpoch(), q.getQ0(), q.getQ1(), q.getQ2(),
+                                                     q.getQ3(), rates[0], rates[1], rates[2]);
 
         } else {
             // we rely only on the quaternion logical block, despite it doesn't include rates
             final Quaternion q    = qBlock.getQuaternion();
             tac = AttitudeType.QUATERNION.build(true, qBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                null, true,
-                                                qBlock.getEpoch(),
-                                                q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3());
+                                                null, true, null,
+                                                qBlock.getEpoch(), q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3());
         }
 
         // build the attitude

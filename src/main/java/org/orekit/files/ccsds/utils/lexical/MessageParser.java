@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.utils.lexical;
 import java.util.Map;
 
 import org.orekit.data.DataSource;
-import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.utils.FileFormat;
 
 /** Parser for CCSDS messages.
@@ -27,7 +26,7 @@ import org.orekit.files.ccsds.utils.FileFormat;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public interface MessageParser<T extends NdmFile<?, ?>> {
+public interface MessageParser<T> {
 
     /** Parse a data source.
      * @param source data source to parse

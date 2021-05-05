@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.units.Unit;
 
 /** Generator for Key-Value Notation CCSDS messages.
  * @author Luc Maisonobe
@@ -42,6 +42,9 @@ public class KvnGenerator extends AbstractGenerator {
     /** String format used for all key/value pair lines. **/
     private final String kvFormat;
 
+    /** Column number for aligning units. */
+    private final int unitsColumn;
+
     /** String format used for all comment lines. **/
     private final String commentFormat;
 
@@ -49,6 +52,7 @@ public class KvnGenerator extends AbstractGenerator {
      * @param output destination of generated output
      * @param paddingWidth padding width for aligning the '=' sign
      * @param outputName output name for error messages
+     * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
      * @see org.orekit.files.ccsds.ndm.tdm.TdmWriter#KVN_PADDING_WIDTH     TdmWriter.KVN_PADDING_WIDTH
      * @see org.orekit.files.ccsds.ndm.adm.aem.AemWriter#KVN_PADDING_WIDTH AemWriter.KVN_PADDING_WIDTH
      * @see org.orekit.files.ccsds.ndm.adm.apm.ApmWriter#KVN_PADDING_WIDTH ApmWriter.KVN_PADDING_WIDTH
@@ -57,16 +61,18 @@ public class KvnGenerator extends AbstractGenerator {
      * @see org.orekit.files.ccsds.ndm.odm.oem.OemWriter#KVN_PADDING_WIDTH OemWriter.KVN_PADDING_WIDTH
      * @see org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter#KVN_PADDING_WIDTH OcmWriter.KVN_PADDING_WIDTH
      */
-    public KvnGenerator(final Appendable output, final int paddingWidth, final String outputName) {
-        super(output, outputName);
-        kvFormat = "%-" + FastMath.max(1, paddingWidth) + "s = %s%n";
+    public KvnGenerator(final Appendable output, final int paddingWidth,
+                        final String outputName, final int unitsColumn) {
+        super(output, outputName, unitsColumn > 0);
+        kvFormat = "%-" + FastMath.max(1, paddingWidth - 1) + "s = %s";
         final StringBuilder builder = new StringBuilder(COMMENT);
         builder.append(' ');
         while (builder.length() < paddingWidth + 3) {
             builder.append(' ');
         }
         builder.append("%s%n");
-        commentFormat = builder.toString();
+        this.unitsColumn   = unitsColumn;
+        this.commentFormat = builder.toString();
     }
 
     /** {@inheritDoc} */
@@ -78,12 +84,12 @@ public class KvnGenerator extends AbstractGenerator {
     /** {@inheritDoc} */
     @Override
     public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
-        writeEntry(messageTypeKey, String.format(AccurateFormatter.STANDARDIZED_LOCALE, "%.1f", version), true);
+        writeEntry(messageTypeKey, String.format(AccurateFormatter.STANDARDIZED_LOCALE, "%.1f", version), null, true);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void endMessage(final String root) throws IOException {
+    public void endMessage(final String root) {
         // nothing to do
     }
 
@@ -91,30 +97,36 @@ public class KvnGenerator extends AbstractGenerator {
     @Override
     public void writeComments(final List<String> comments) throws IOException {
         for (final String comment : comments) {
-            append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, commentFormat, comment));
+            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, commentFormat, comment));
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeUserDefined(final String parameter, final String value) throws IOException {
-        writeEntry(UserDefined.USER_DEFINED_PREFIX + parameter, value, false);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void writeEntry(final String key, final String value, final boolean mandatory) throws IOException {
+    public void writeEntry(final String key, final String value, final Unit unit, final boolean mandatory) throws IOException {
         if (value == null) {
             complain(key, mandatory);
         } else {
-            append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, kvFormat, key, value));
+            final String s = String.format(AccurateFormatter.STANDARDIZED_LOCALE, kvFormat, key, value);
+            writeRawData(s);
+            if (writeUnits(unit)) {
+                for (int column = s.length(); column < unitsColumn; ++column) {
+                    writeRawData(' ');
+                }
+                writeRawData('[');
+                writeRawData(siToCcsdsName(unit.getName()));
+                writeRawData(']');
+            }
+            newLine();
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public void enterSection(final String name) throws IOException {
-        append(name).append(START).newLine();
+        writeRawData(name);
+        writeRawData(START);
+        newLine();
         super.enterSection(name);
     }
 
@@ -122,7 +134,9 @@ public class KvnGenerator extends AbstractGenerator {
     @Override
     public String exitSection() throws IOException {
         final String name = super.exitSection();
-        append(name).append(STOP).newLine();
+        writeRawData(name);
+        writeRawData(STOP);
+        newLine();
         return name;
     }
 

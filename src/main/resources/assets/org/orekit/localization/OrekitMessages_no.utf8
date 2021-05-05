@@ -1,5 +1,5 @@
-# internal error, please notify development team by creating an issue at {0}
-INTERNAL_ERROR = intern feil, kontakt utviklingerne ved å åpne en problemrapport på {0}
+# internal error, please notify development team by creating a new topic at {0}
+INTERNAL_ERROR = <MISSING TRANSLATION>
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = høyde ({0} m) er under den tillatte terskelen {1} m
@@ -328,6 +328,9 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = ingen romfartøysmasse er assosiert til denne OD
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = ingen IERS-konvensjoner er blitt satt før lesingen
 
+# no spin axis direction has been set before parsing
+CCSDS_UNKNOWN_SPIN_AXIS = <MISSING TRANSLATION>
+
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne CCSDS filens sammenheng
 
@@ -465,6 +468,9 @@ CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
 
 # element set type {0} ({1}) is not supported yet
 CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = <MISSING TRANSLATION>
+
+# retrograde factor not supported in element set {0}
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
 
 # element set type {0} ({1}) expects {2} elements
 CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
@@ -722,3 +728,6 @@ INCOMPATIBLE_UNITS = <MISSING TRANSLATION>
 
 # missing velocity data
 MISSING_VELOCITY = <MISSING TRANSLATION>
+
+# attempt to generate file {0} with a formatting error
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>

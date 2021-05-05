@@ -38,27 +38,31 @@ public enum KeplerianElementsKey {
     EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
 
     /** Orbit semi-major axis. */
-    SEMI_MAJOR_AXIS((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, container::setA)),
+    SEMI_MAJOR_AXIS((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, context.getParsedUnitsBehavior(), container::setA)),
 
     /** Mean motion. */
-    MEAN_MOTION((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY, container::setMeanMotion)),
+    MEAN_MOTION((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY, context.getParsedUnitsBehavior(), container::setMeanMotion)),
 
     /** Orbit eccentricity. */
-    ECCENTRICITY((token, context, container) -> token.processAsDouble(Unit.ONE, container::setE)),
+    ECCENTRICITY((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(), container::setE)),
 
     /** Orbit inclination. */
-    INCLINATION((token, context, container) -> token.processAsAngle(container::setI)),
+    INCLINATION((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(), container::setI)),
 
     /** Orbit right ascension of ascending node. */
-    RA_OF_ASC_NODE((token, context, container) -> token.processAsAngle(container::setRaan)),
+    RA_OF_ASC_NODE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(), container::setRaan)),
 
     /** Orbit argument of pericenter. */
-    ARG_OF_PERICENTER((token, context, container) -> token.processAsAngle(container::setPa)),
+    ARG_OF_PERICENTER((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(), container::setPa)),
 
     /** Orbit true anomaly. */
     TRUE_ANOMALY((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.setAnomaly(token.getContentAsAngle());
+            final double angle = context.
+                                 getParsedUnitsBehavior().
+                                 select(token.getUnits(), Unit.DEGREE).
+                                 toSI(token.getContentAsDouble());
+            container.setAnomaly(angle);
             container.setAnomalyType(PositionAngle.TRUE);
         }
         return true;
@@ -67,14 +71,18 @@ public enum KeplerianElementsKey {
     /** Orbit mean anomaly. */
     MEAN_ANOMALY((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.setAnomaly(token.getContentAsAngle());
+            final double angle = context.
+                                 getParsedUnitsBehavior().
+                                 select(token.getUnits(), Unit.DEGREE).
+                                 toSI(token.getContentAsDouble());
+            container.setAnomaly(angle);
             container.setAnomalyType(PositionAngle.MEAN);
         }
         return true;
     }),
 
     /** Gravitational coefficient. */
-    GM((token, context, container) -> token.processAsDouble(Units.KM3_PER_S2, container::setMu));
+    GM((token, context, container) -> token.processAsDouble(Units.KM3_PER_S2, context.getParsedUnitsBehavior(), container::setMu));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -108,11 +108,11 @@ public class AttitudeEndoints implements AttitudeBuilder {
 
         if (frameA == null) {
             if (frameB == null || frameB.asSpacecraftBodyFrame() == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, aKey);
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, aKey.name());
             }
         } else if (frameA.asSpacecraftBodyFrame() == null) {
             if (frameB == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, bKey);
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, bKey.name());
             } else if (frameB.asSpacecraftBodyFrame() == null) {
                 // at least one of the frame must be a spacecraft body frame
                 throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, frameB.getName());
@@ -182,9 +182,10 @@ public class AttitudeEndoints implements AttitudeBuilder {
 
     /** Check if attitude is from external frame to spacecraft body frame.
      * <p>
-     * {@link #checkMandatoryEntries() Mandatory entries} must have been
-     * initialized properly to non-null values before this method is called,
-     * otherwise {@code NullPointerException} will be thrown.
+     * {@link #checkMandatoryEntriesExceptExternalFrame(Enum, Enum, Enum)
+     * Mandatory entries} must have been initialized properly to non-null
+     * values before this method is called, otherwise {@code NullPointerException}
+     * will be thrown.
      * </p>
      * @return true if attitude is from external frame to spacecraft body frame
      */

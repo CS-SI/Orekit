@@ -24,15 +24,16 @@ import java.util.Map;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.KvnStructureKey;
@@ -44,7 +45,6 @@ import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
@@ -62,11 +62,6 @@ import org.orekit.utils.units.Unit;
  * default exits: {@link OdmMetadataKey#OBJECT_NAME}, and {@link CommonMetadataKey#OBJECT_ID}. The usage
  * column in the table indicates where the metadata item is used, either in the OEM header
  * or in the metadata section at the start of an OEM ephemeris segment.
- *
- * <p> The OEM metadata for the whole OEM file is set in the {@link
- * #StreamingOemWriter(Appendable, TimeScale, Map) constructor}. Any of the metadata may
- * be overridden for a particular segment using the {@code metadata} argument to {@link
- * #newSegment(Frame, Map)}.
  *
  * <table>
  * <caption>OEM metadata</caption>
@@ -238,7 +233,8 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
         super(OemFile.ROOT, OemFile.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
-                  () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0));
+                  () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
+                  () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0, () -> null));
     }
 
     /** {@inheritDoc} */
@@ -247,6 +243,8 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
 
         final OemMetadata metadata = segment.getMetadata();
         writeMetadata(generator, metadata);
+
+        startData(generator);
 
         // write data comments
         generator.writeComments(segment.getData().getComments());
@@ -263,6 +261,8 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
 
         // output covariance data
         writeCovariances(generator, segment.getMetadata(), segment.getData().getCovarianceMatrices());
+
+        endData(generator);
 
     }
 
@@ -285,12 +285,12 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
         generator.writeComments(metadata.getComments());
 
         // objects
-        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),    metadata.getObjectName(), true);
-        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   true);
-        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), false);
+        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),    metadata.getObjectName(),       null, true);
+        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),         null, true);
+        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, false);
 
         // frames
-        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(), metadata.getReferenceFrame().getName(), true);
+        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(), metadata.getReferenceFrame().getName(), null, true);
         if (metadata.getFrameEpoch() != null) {
             generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(),
                                  getTimeConverter(), metadata.getFrameEpoch(),
@@ -312,7 +312,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
         generator.writeEntry(OemMetadataKey.INTERPOLATION.name(), metadata.getInterpolationMethod(), false);
         generator.writeEntry(OemMetadataKey.INTERPOLATION_DEGREE.name(),
                              Integer.toString(metadata.getInterpolationDegree()),
-                             false);
+                             null, false);
 
         // Stop metadata
         generator.exitSection();
@@ -335,38 +335,65 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
                                  final boolean useAcceleration)
         throws IOException {
 
-        // Epoch
-        generator.writeRawData(generator.dateToString(getTimeConverter(), coordinates.getDate()));
+        if (generator.getFormat() == FileFormat.KVN) {
 
-        // Position data in km
-        generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getX()))));
-        generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getY()))));
-        generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getZ()))));
+            // Epoch
+            generator.writeRawData(generator.dateToString(getTimeConverter(), coordinates.getDate()));
 
-        // Velocity data in km/s
-        generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getX()))));
-        generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getY()))));
-        generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getZ()))));
+            // Position data in km
+            generator.writeRawData(' ');
+            generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getX()))));
+            generator.writeRawData(' ');
+            generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getY()))));
+            generator.writeRawData(' ');
+            generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getZ()))));
 
-        // Acceleration data in km/s²
-        if (useAcceleration) {
+            // Velocity data in km/s
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getX()))));
+            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getX()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getY()))));
+            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getY()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getZ()))));
+            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getZ()))));
+
+            // Acceleration data in km/s²
+            if (useAcceleration) {
+                generator.writeRawData(' ');
+                generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getX()))));
+                generator.writeRawData(' ');
+                generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getY()))));
+                generator.writeRawData(' ');
+                generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getZ()))));
+            }
+
+            // end the line
+            generator.newLine();
+        } else {
+            generator.enterSection(OemDataSubStructureKey.stateVector.name());
+
+            // Epoch
+            generator.writeEntry(StateVectorKey.EPOCH.name(), getTimeConverter(), coordinates.getDate(), true);
+
+            // Position data in km
+            generator.writeEntry(StateVectorKey.X.name(), coordinates.getPosition().getX(), Unit.KILOMETRE, true);
+            generator.writeEntry(StateVectorKey.Y.name(), coordinates.getPosition().getY(), Unit.KILOMETRE, true);
+            generator.writeEntry(StateVectorKey.Z.name(), coordinates.getPosition().getZ(), Unit.KILOMETRE, true);
+
+            // Velocity data in km/s
+            generator.writeEntry(StateVectorKey.X_DOT.name(), coordinates.getVelocity().getX(), Units.KM_PER_S, true);
+            generator.writeEntry(StateVectorKey.Y_DOT.name(), coordinates.getVelocity().getY(), Units.KM_PER_S, true);
+            generator.writeEntry(StateVectorKey.Z_DOT.name(), coordinates.getVelocity().getZ(), Units.KM_PER_S, true);
+
+            // Acceleration data in km/s²
+            if (useAcceleration) {
+                generator.writeEntry(StateVectorKey.X_DDOT.name(), coordinates.getAcceleration().getX(), Units.KM_PER_S2, true);
+                generator.writeEntry(StateVectorKey.Y_DDOT.name(), coordinates.getAcceleration().getY(), Units.KM_PER_S2, true);
+                generator.writeEntry(StateVectorKey.Z_DDOT.name(), coordinates.getAcceleration().getZ(), Units.KM_PER_S2, true);
+            }
+
+            generator.exitSection();
+
         }
-
-        // end the line
-        generator.newLine();
-
     }
 
     /**
@@ -381,24 +408,19 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
         throws IOException {
         if (covariances != null && !covariances.isEmpty()) {
 
-            // enter the section
-            if (generator.getFormat() == FileFormat.XML) {
-                generator.enterSection(OemDataSubStructureKey.covarianceMatrix.name());
-            } else {
+            // enter the global covariance section in KVN
+            if (generator.getFormat() == FileFormat.KVN) {
                 generator.enterSection(OemDataSubStructureKey.COVARIANCE.name());
             }
 
-            boolean continuation = false;
             for (final CartesianCovariance covariance : covariances) {
-                if (continuation) {
-                    generator.newLine();
-                }
                 writeCovariance(generator, metadata, covariance);
-                continuation = true;
             }
 
-            // exit the section
-            generator.exitSection();
+            // exit the global covariance section in KVN
+            if (generator.getFormat() == FileFormat.KVN) {
+                generator.exitSection();
+            }
 
         }
     }
@@ -413,16 +435,23 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
     private void writeCovariance(final Generator generator, final OemMetadata metadata,
                                  final CartesianCovariance covariance)
         throws IOException {
+
+        // wrapper for a single matrix in XML
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.enterSection(OemDataSubStructureKey.covarianceMatrix.name());
+        }
+
+        // epoch
+        generator.writeEntry(CartesianCovarianceKey.EPOCH.name(), getTimeConverter(), covariance.getEpoch(), true);
+
+        // reference frame
+        if (covariance.getReferenceFrame() != metadata.getReferenceFrame()) {
+            generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(), covariance.getReferenceFrame().getName(), null, false);
+        }
+
+        // matrix data
+        final RealMatrix m = covariance.getCovarianceMatrix();
         if (generator.getFormat() == FileFormat.KVN) {
-            generator.writeEntry(CartesianCovarianceKey.EPOCH.name(),
-                                 getTimeConverter(), covariance.getEpoch(),
-                                 true);
-            if (covariance.getReferenceFrame() != metadata.getReferenceFrame()) {
-                generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(),
-                                     covariance.getReferenceFrame().getName(),
-                                     false);
-            }
-            final RealMatrix m = covariance.getCovarianceMatrix();
             for (int i = 0; i < m.getRowDimension(); ++i) {
 
                 // write triangular matrix entries
@@ -438,9 +467,34 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
 
             }
         } else {
-            // TODO: write covariance in OEM XML files
-            throw new OrekitInternalError(null);
+            generator.writeEntry(CartesianCovarianceKey.CX_X.name(),         m.getEntry(0, 0), Units.KM2,        true);
+            generator.writeEntry(CartesianCovarianceKey.CY_X.name(),         m.getEntry(1, 0), Units.KM2,        true);
+            generator.writeEntry(CartesianCovarianceKey.CY_Y.name(),         m.getEntry(1, 1), Units.KM2,        true);
+            generator.writeEntry(CartesianCovarianceKey.CZ_X.name(),         m.getEntry(2, 0), Units.KM2,        true);
+            generator.writeEntry(CartesianCovarianceKey.CZ_Y.name(),         m.getEntry(2, 1), Units.KM2,        true);
+            generator.writeEntry(CartesianCovarianceKey.CZ_Z.name(),         m.getEntry(2, 2), Units.KM2,        true);
+            generator.writeEntry(CartesianCovarianceKey.CX_DOT_X.name(),     m.getEntry(3, 0), Units.KM2_PER_S,  true);
+            generator.writeEntry(CartesianCovarianceKey.CX_DOT_Y.name(),     m.getEntry(3, 1), Units.KM2_PER_S,  true);
+            generator.writeEntry(CartesianCovarianceKey.CX_DOT_Z.name(),     m.getEntry(3, 2), Units.KM2_PER_S,  true);
+            generator.writeEntry(CartesianCovarianceKey.CX_DOT_X_DOT.name(), m.getEntry(3, 3), Units.KM2_PER_S2, true);
+            generator.writeEntry(CartesianCovarianceKey.CY_DOT_X.name(),     m.getEntry(4, 0), Units.KM2_PER_S,  true);
+            generator.writeEntry(CartesianCovarianceKey.CY_DOT_Y.name(),     m.getEntry(4, 1), Units.KM2_PER_S,  true);
+            generator.writeEntry(CartesianCovarianceKey.CY_DOT_Z.name(),     m.getEntry(4, 2), Units.KM2_PER_S,  true);
+            generator.writeEntry(CartesianCovarianceKey.CY_DOT_X_DOT.name(), m.getEntry(4, 3), Units.KM2_PER_S2, true);
+            generator.writeEntry(CartesianCovarianceKey.CY_DOT_Y_DOT.name(), m.getEntry(4, 4), Units.KM2_PER_S2, true);
+            generator.writeEntry(CartesianCovarianceKey.CZ_DOT_X.name(),     m.getEntry(5, 0), Units.KM2_PER_S,  true);
+            generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Y.name(),     m.getEntry(5, 1), Units.KM2_PER_S,  true);
+            generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Z.name(),     m.getEntry(5, 2), Units.KM2_PER_S,  true);
+            generator.writeEntry(CartesianCovarianceKey.CZ_DOT_X_DOT.name(), m.getEntry(5, 3), Units.KM2_PER_S2, true);
+            generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Y_DOT.name(), m.getEntry(5, 4), Units.KM2_PER_S2, true);
+            generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Z_DOT.name(), m.getEntry(5, 5), Units.KM2_PER_S2, true);
         }
+
+        // wrapper for a single matrix in XML
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.exitSection();
+        }
+
     }
 
     /** Start of a data block.

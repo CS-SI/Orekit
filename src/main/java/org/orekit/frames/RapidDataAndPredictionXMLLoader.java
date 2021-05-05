@@ -27,6 +27,7 @@ import java.util.SortedSet;
 import java.util.function.Supplier;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -41,7 +42,6 @@ import org.orekit.utils.units.Unit;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /** Loader for IERS rapid data and prediction file in XML format (finals file).
@@ -119,24 +119,17 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
             throws IOException, OrekitException {
             try {
                 this.history = new ArrayList<>();
-                // set up a reader for line-oriented bulletin B files
-                final XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-                reader.setContentHandler(new EOPContentHandler(name));
-                // disable external entities
-                reader.setEntityResolver((publicId, systemId) -> new InputSource());
+                // set up a parser for line-oriented bulletin B files
+                final SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 
                 // read all file, ignoring header
-                reader.parse(new InputSource(new InputStreamReader(input, StandardCharsets.UTF_8)));
+                parser.parse(new InputSource(new InputStreamReader(input, StandardCharsets.UTF_8)),
+                             new EOPContentHandler(name));
 
                 return history;
 
-            } catch (SAXException se) {
-                if (se.getCause() != null && se.getCause() instanceof OrekitException) {
-                    throw (OrekitException) se.getCause();
-                }
-                throw new OrekitException(se, LocalizedCoreFormats.SIMPLE_MESSAGE, se.getMessage());
-            } catch (ParserConfigurationException pce) {
-                throw new OrekitException(pce, LocalizedCoreFormats.SIMPLE_MESSAGE, pce.getMessage());
+            } catch (SAXException | ParserConfigurationException e) {
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getMessage());
             }
         }
 
@@ -301,16 +294,11 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
 
             /** {@inheritDoc} */
             @Override
-            public void endElement(final String uri, final String localName, final String qName)
-                throws SAXException {
-                try {
-                    if (content == DataFileContent.DAILY) {
-                        endDailyElement(qName);
-                    } else if (content == DataFileContent.FINAL) {
-                        endFinalElement(qName);
-                    }
-                } catch (OrekitException oe) {
-                    throw new SAXException(oe);
+            public void endElement(final String uri, final String localName, final String qName) {
+                if (content == DataFileContent.DAILY) {
+                    endDailyElement(qName);
+                } else if (content == DataFileContent.FINAL) {
+                    endFinalElement(qName);
                 }
             }
 
@@ -456,6 +444,13 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                     throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
                                               name, year, month, day, mjd);
                 }
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public InputSource resolveEntity(final String publicId, final String systemId) {
+                // disable external entities
+                return new InputSource();
             }
 
         }

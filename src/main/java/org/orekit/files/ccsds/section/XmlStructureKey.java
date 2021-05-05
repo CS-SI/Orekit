@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.section;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 
 /** Keys for {@link FileFormat#XML} format structure.
  * @author Luc Maisonobe
@@ -78,7 +78,7 @@ public enum XmlStructureKey {
          * @param parser file parser
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final AbstractMessageParser<?, ?> parser) {
+    public boolean process(final ParseToken token, final AbstractConstituentParser<?, ?> parser) {
         return processor.process(token, parser);
     }
 
@@ -89,7 +89,7 @@ public enum XmlStructureKey {
          * @param parser file parser
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, AbstractMessageParser<?, ?> parser);
+        boolean process(ParseToken token, AbstractConstituentParser<?, ?> parser);
     }
 
 }

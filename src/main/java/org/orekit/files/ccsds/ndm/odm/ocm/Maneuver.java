@@ -44,13 +44,19 @@ public class Maneuver implements TimeStamped {
     private OnOff accelerationInterpolation;
 
     /** One σ percent error on acceleration magnitude. */
-    private double accelerationSigma;
+    private double accelerationMagnitudeSigma;
+
+    /** One σ angular off-nominal acceleration direction. */
+    private double accelerationDirectionSigma;
 
     /** Velocity increment. */
     private double[] dV;
 
-    /** One σ percent error on velocity magnitude. */
-    private double dvSigma;
+    /** One σ percent error on ΔV magnitude. */
+    private double dvMagSigma;
+
+    /** One σ angular off-nominal ΔV direction. */
+    private double dvDirSigma;
 
     /** Thrust. */
     private double[] thrust;
@@ -65,7 +71,10 @@ public class Maneuver implements TimeStamped {
     private double thrustIsp;
 
     /** One σ percent error on thrust magnitude. */
-    private double thrustSigma;
+    private double thrustMagnitudeSigma;
+
+    /** One σ angular off-nominal thrust direction. */
+    private double thrustDirectionSigma;
 
     /** Identifier of resulting "child" object deployed from this host. */
     private String deployId;
@@ -76,8 +85,11 @@ public class Maneuver implements TimeStamped {
     /** Decrement in host mass as a result of deployment (shall be ≤ 0). */
     private double deployMass;
 
-    /** One σ percent error on deployment velocity magnitude. */
+    /** One σ percent error on deployment ΔV magnitude. */
     private double deployDvSigma;
+
+    /** One σ angular off-nominal deployment vector direction. */
+    private double deployDirSigma;
 
     /** Ratio of child-to-host ΔV vectors. */
     private double deployDvRatio;
@@ -167,15 +179,29 @@ public class Maneuver implements TimeStamped {
     /** Get one σ percent error on acceleration magnitude.
      * @return one σ percent error on acceleration magnitude
      */
-    public double getAccelerationSigma() {
-        return accelerationSigma;
+    public double getAccelerationMagnitudeSigma() {
+        return accelerationMagnitudeSigma;
     }
 
     /** Set one σ percent error on acceleration magnitude.
-     * @param accelerationSigma one σ percent error on acceleration magnitude
+     * @param accelerationMagnitudeSigma one σ percent error on acceleration magnitude
      */
-    public void setAccelerationSigma(final double accelerationSigma) {
-        this.accelerationSigma = accelerationSigma;
+    public void setAccelerationMagnitudeSigma(final double accelerationMagnitudeSigma) {
+        this.accelerationMagnitudeSigma = accelerationMagnitudeSigma;
+    }
+
+    /** Get one σ angular off-nominal acceleration direction.
+     * @return one σ angular off-nominal acceleration direction
+     */
+    public double getAccelerationDirectionSigma() {
+        return accelerationDirectionSigma;
+    }
+
+    /** Set one σ angular off-nominal acceleration direction.
+     * @param accelerationDirectionSigma one σ angular off-nominal acceleration direction
+     */
+    public void setAccelerationDirectionSigma(final double accelerationDirectionSigma) {
+        this.accelerationDirectionSigma = accelerationDirectionSigma;
     }
 
     /** Get velocity increment.
@@ -193,20 +219,33 @@ public class Maneuver implements TimeStamped {
         dV[i] = dVi;
     }
 
-    /** Get one σ percent error on velocity magnitude.
-     * @return one σ percent error on velocity magnitude
+    /** Get one σ percent error on ΔV  magnitude.
+     * @return one σ percent error on ΔV  magnitude
      */
-    public double getDvSigma() {
-        return dvSigma;
+    public double getDvMagSigma() {
+        return dvMagSigma;
     }
 
-    /** Set one σ percent error on velocity magnitude.
-     * @param dvSigma one σ percent error on velocity magnitude
+    /** Set one σ percent error on ΔV  magnitude.
+     * @param dvMagSigma one σ percent error on ΔV  magnitude
      */
-    public void setDvSigma(final double dvSigma) {
-        this.dvSigma = dvSigma;
+    public void setDvMagSigma(final double dvMagSigma) {
+        this.dvMagSigma = dvMagSigma;
     }
 
+    /** Get one σ angular off-nominal ΔV direction.
+     * @return one σ angular off-nominal ΔV direction
+     */
+    public double getDvDirSigma() {
+        return dvDirSigma;
+    }
+
+    /** Set one σ angular off-nominal ΔV direction.
+     * @param dvDirSigma one σ angular off-nominal ΔV direction
+     */
+    public void setDvDirSigma(final double dvDirSigma) {
+        this.dvDirSigma = dvDirSigma;
+    }
 
     /** Get thrust.
      * @return thrust
@@ -268,15 +307,29 @@ public class Maneuver implements TimeStamped {
     /** Get one σ percent error on thrust magnitude.
      * @return one σ percent error on thrust magnitude
      */
-    public double getThrustSigma() {
-        return thrustSigma;
+    public double getThrustMagnitudeSigma() {
+        return thrustMagnitudeSigma;
     }
 
     /** Set one σ percent error on thrust magnitude.
-     * @param thrustSigma one σ percent error on thrust magnitude
+     * @param thrustMagnitudeSigma one σ percent error on thrust magnitude
      */
-    public void setThrustSigma(final double thrustSigma) {
-        this.thrustSigma = thrustSigma;
+    public void setThrustMagnitudeSigma(final double thrustMagnitudeSigma) {
+        this.thrustMagnitudeSigma = thrustMagnitudeSigma;
+    }
+
+    /** Get one σ angular off-nominal thrust direction.
+     * @return one σ angular off-nominal thrust direction
+     */
+    public double getThrustDirectionSigma() {
+        return thrustDirectionSigma;
+    }
+
+    /** Set one σ angular off-nominal thrust direction.
+     * @param thrustDirectionSigma one σ angular off-nominal thrust direction
+     */
+    public void setThrustDirectionSigma(final double thrustDirectionSigma) {
+        this.thrustDirectionSigma = thrustDirectionSigma;
     }
 
     /** Get identifier of resulting "child" object deployed from this host.
@@ -322,18 +375,32 @@ public class Maneuver implements TimeStamped {
         this.deployMass = deployMass;
     }
 
-    /** Get one σ percent error on deployment velocity magnitude.
-     * @return one σ percent error on deployment velocity magnitude
+    /** Get one σ percent error on deployment ΔV magnitude.
+     * @return one σ percent error on deployment ΔV magnitude
      */
     public double getDeployDvSigma() {
         return deployDvSigma;
     }
 
-    /** Set one σ percent error on deployment velocity magnitude.
-     * @param deployDvSigma one σ percent error on deployment velocity magnitude
+    /** Set one σ percent error on deployment ΔV magnitude.
+     * @param deployDvSigma one σ percent error on deployment ΔV magnitude
      */
     public void setDeployDvSigma(final double deployDvSigma) {
         this.deployDvSigma = deployDvSigma;
+    }
+
+    /** Get one σ angular off-nominal deployment vector direction.
+     * @return one σ angular off-nominal deployment vector direction
+     */
+    public double getDeployDirSigma() {
+        return deployDirSigma;
+    }
+
+    /** Set one σ angular off-nominal deployment vector direction.
+     * @param deployDirSigma one σ angular off-nominal deployment vector direction
+     */
+    public void setDeployDirSigma(final double deployDirSigma) {
+        this.deployDirSigma = deployDirSigma;
     }
 
     /** Get ratio of child-to-host ΔV vectors.

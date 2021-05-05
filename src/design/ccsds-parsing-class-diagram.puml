@@ -109,6 +109,7 @@
         class ParserBuilder {
           +withConventions()
           +withDataContext()
+          +withParsedUnitsBehavior()
           +with...()
           +buildOpmParser()
           +buildOmmParser()
@@ -117,6 +118,12 @@
           +buildApmParser()
           +buildAemParser()
           +buildTdmParser()
+        }
+
+        enum ParsedUnitsBehavior {
+          +IGNORE_PARSED
+          +CONVERT_COMPATIBLE
+          +STRICT_COMPLIANCE
         }
 
       }
@@ -140,5 +147,6 @@
   XmlStructureProcessingState ..|> ProcessingState
   ProcessingState <|.. OpmParser
   ParserBuilder -right-> OpmParser : build
+  ParserBuilder o--> ParsedUnitsBehavior
 
 @enduml

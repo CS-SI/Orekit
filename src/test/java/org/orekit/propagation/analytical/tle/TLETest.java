@@ -470,7 +470,8 @@ public class TLETest {
                            "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         TLE tleB = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                            "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        Assert.assertTrue(tleA.equals(tleB));
+        Assert.assertEquals(tleA, tleB);
+        Assert.assertEquals(tleA, tleA);
     }
 
     @Test
@@ -479,7 +480,8 @@ public class TLETest {
                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         TLE tleB = new TLE("1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
                 "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
-        Assert.assertFalse(tleA.equals(tleB));
+        Assert.assertNotEquals(tleA, tleB);
+        Assert.assertNotEquals(tleA, tleA.getLine1());
     }
 
     @Test

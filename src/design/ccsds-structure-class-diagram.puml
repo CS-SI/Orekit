@@ -37,6 +37,7 @@
        -formatVersion
        -creationDate
        -originator
+       -messageId
       }
       class Metadata {
         -timeSystem
@@ -93,12 +94,14 @@
         OMM, OCM, TDM, APM, and AEM
       end note
 
-      abstract class NdmFile
+      abstract class NdmConstituent
+      class NdmFile
 
-      NdmFile <|-- OemFile
-      NdmFile <|-- OpmFile
-      Header  "1" <--o NdmFile
-      Segment "*" <--o NdmFile
+      NdmConstituent <|-- OemFile
+      NdmConstituent <|-- OpmFile
+      Header  "1" <--o NdmConstituent
+      Segment "*" <--o NdmConstituent
+      NdmConstituent "*" <--o NdmFile
 
     }
   }

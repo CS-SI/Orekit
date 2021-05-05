@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -36,7 +37,9 @@ import java.util.Map;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
@@ -65,6 +68,9 @@ public class AttitudeWriterTest {
     // The default format writes 5O digits after the decimal point hence the quaternion precision
     private static final double QUATERNION_PRECISION = 1e-5;
     private static final double DATE_PRECISION = 1e-3;
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
@@ -106,7 +112,7 @@ public class AttitudeWriterTest {
                            withDataContext(DataContext.getDefault()).
                            buildAemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), aemFile);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final AemFile generatedOemFile = new ParserBuilder().buildAemParser().
@@ -122,7 +128,8 @@ public class AttitudeWriterTest {
 
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("12345");
-        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(), null, metadata, FileFormat.KVN, "");
+        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(), null, metadata,
+                                                   FileFormat.KVN, "", 60);
         try {
             writer.write(new CharArrayWriter(), aemFile);
             fail("an exception should have been thrown");
@@ -144,7 +151,7 @@ public class AttitudeWriterTest {
                                                    aemFile.getHeader(),
                                                    aemFile.getSegments().get(0).getMetadata(),
                                                    FileFormat.KVN,
-                                                   "dummy");
+                                                   "dummy", 0);
         try {
             writer.write((BufferedWriter) null, aemFile);
             fail("an exception should have been thrown");
@@ -162,7 +169,7 @@ public class AttitudeWriterTest {
         metadata.setObjectID("1996-062A");
         metadata.setObjectName("MARS GLOBAL SURVEYOR");
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   header, metadata, FileFormat.KVN, "TestNullEphemeris.aem");
+                                                   header, metadata, FileFormat.KVN, "TestNullEphemeris.aem", 0);
         CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, null);
         assertEquals(0, caw.size());
@@ -174,13 +181,12 @@ public class AttitudeWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
-        AemWriter writer = new WriterBuilder().buildAemWriter();
-        final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
-        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
-
-        final AemFile generatedAemFile = new ParserBuilder().buildAemParser().
-                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
+        final File temp = tempFolder.newFile("writeAEMExample01.xml");
+        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
+                                                   aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata(),
+                                                   FileFormat.XML, temp.getName(), 1);
+        writer.write(temp.getAbsolutePath(), aemFile);
+        final AemFile generatedAemFile = new ParserBuilder().buildAemParser().parseMessage(new DataSource(temp));
         assertEquals(aemFile.getSegments().get(0).getMetadata().getObjectID(),
                      generatedAemFile.getSegments().get(0).getMetadata().getObjectID());
     }
@@ -210,7 +216,7 @@ public class AttitudeWriterTest {
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   null, metadata, FileFormat.KVN, "");
+                                                   null, metadata, FileFormat.KVN, "", 60);
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, file);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
@@ -235,7 +241,7 @@ public class AttitudeWriterTest {
 
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
                                                    aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata(),
-                                                   FileFormat.KVN, "TestAEMIssue723.aem");
+                                                   FileFormat.KVN, "TestAEMIssue723.aem", 0);
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, aemFile);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
@@ -254,7 +260,7 @@ public class AttitudeWriterTest {
 
         AemWriter writer = new WriterBuilder().buildAemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), aemFile);
 
         String[] lines2 = caw.toString().split("\n");
 
@@ -361,7 +367,7 @@ public class AttitudeWriterTest {
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
-                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO_FRAME, "1"),
                                                           "GYRO 1"));
         metadata.getEndpoints().setA2b(true);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));

@@ -40,6 +40,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
@@ -463,7 +464,7 @@ public class OpmParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        final Generator generator = new KvnGenerator(caw, OpmWriter.KVN_PADDING_WIDTH, "dummy");
+        final Generator generator = new KvnGenerator(caw, OpmWriter.KVN_PADDING_WIDTH, "dummy", 60);
         new WriterBuilder().buildOpmWriter().writeMessage(generator, original);
 
         // reparse the written file
@@ -584,8 +585,60 @@ public class OpmParserTest {
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = "/ccsds/odm/opm/OPMExample6.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
-        final OpmFile file = parser.parseMessage(source);
+        OpmParser parser = new ParserBuilder().buildOpmParser();
+        validate6(parser.parseMessage(source));
+    }
+
+    @Test
+    public void testParseOPM7() {
+        final String ex = "/ccsds/odm/opm/OPMExample7.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final OpmFile file = new ParserBuilder().buildOpmParser().parseMessage(source);
+        Frame frame = file.getMetadata().getFrame();
+        Assert.assertSame(CelestialBodyFactory.getMars().getInertiallyOrientedFrame(), frame);
+    }
+
+    @Test
+    public void testParseOPM8() {
+        final String ex = "/ccsds/odm/opm/OPMExample8.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final OpmFile file = new ParserBuilder().buildOpmParser().parseMessage(source);
+        Frame frame = file.getMetadata().getFrame();
+        Assert.assertSame(CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(), frame);
+    }
+
+    @Test
+    public void testParseNonStandardUnits() throws URISyntaxException {
+        // this file is similar to OPMExample6.txt but uses non-standard units
+        // it is therefore NOT a regular CCSDS OPM, but is correctly parsed by Orekit
+        final String name = "/ccsds/odm/opm/OPM-non-standard-units.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        OpmParser parser = new ParserBuilder().
+                           withParsedUnitsBehavior(ParsedUnitsBehavior.CONVERT_COMPATIBLE).
+                           buildOpmParser();
+        validate6(parser.parseMessage(source));
+    }
+
+    @Test
+    public void testRefuseNonStandardUnits() throws URISyntaxException {
+        // this file is similar to OPMExample6.txt but uses non-standard units
+        // it is therefore NOT a regular CCSDS OPM, but is correctly parsed by Orekit
+        final String name = "/ccsds/odm/opm/OPM-non-standard-units.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+            buildOpmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            Assert.assertEquals("m",  oe.getParts()[0]);
+            Assert.assertEquals("km", oe.getParts()[1]);
+        }
+    }
+
+    private void validate6(final OpmFile file) {
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
@@ -743,6 +796,7 @@ public class OpmParserTest {
             withDefaultMass(1000.0).
             buildOpmParser().
             parseMessage(source);
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
             Assert.assertEquals(name, oe.getParts()[0]);
@@ -760,6 +814,7 @@ public class OpmParserTest {
             withDefaultMass(1000.0).
             buildOpmParser().
             parseMessage(source);
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
             Assert.assertEquals("SEMI_MAJOR_AXIS", oe.getParts()[0]);
@@ -824,8 +879,7 @@ public class OpmParserTest {
 
     @Test
     public void testWrongKeyword() throws URISyntaxException {
-        // simple test for OMM file, contains p/v entries and other mandatory
-        // data.
+        // simple test for OMM file, contains p/v entries and other mandatory data.
         final String name = "/ccsds/odm/opm/OPM-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -841,7 +895,52 @@ public class OpmParserTest {
             Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
         }
     }
-    
+
+    @Test
+    public void testIncompatibleUnits1() throws URISyntaxException {
+        final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withParsedUnitsBehavior(ParsedUnitsBehavior.CONVERT_COMPATIBLE).
+            buildOpmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            Assert.assertEquals("s",  oe.getParts()[0]);
+            Assert.assertEquals("m²", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testIncompatibleUnits2() throws URISyntaxException {
+        final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+            buildOpmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            Assert.assertEquals("s",  oe.getParts()[0]);
+            Assert.assertEquals("m²", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testIgnoredIncompatibleUnits() throws URISyntaxException {
+        final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OpmFile file = new ParserBuilder().
+                             withParsedUnitsBehavior(ParsedUnitsBehavior.IGNORE_PARSED).
+                             buildOpmParser().
+                             parseMessage(source);
+        Assert.assertEquals(18.77, file.getData().getSpacecraftParametersBlock().getSolarRadArea(), 1.0e-10);
+    }
+
     @Test
     public void testIssue619() {
         // test for issue 619 - moon centered transformation

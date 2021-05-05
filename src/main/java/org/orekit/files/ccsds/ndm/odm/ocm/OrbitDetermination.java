@@ -81,8 +81,8 @@ public class OrbitDetermination extends CommentsContainer {
     /** Maximum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
     private double maxPredictedEigenMaj;
 
-    /** Minimum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
-    private double minPredictedEigenMaj;
+    /** Minimum predicted minor eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
+    private double minPredictedEigenMin;
 
     /** Confidence metric. */
     private double confidence;
@@ -370,18 +370,18 @@ public class OrbitDetermination extends CommentsContainer {
         this.maxPredictedEigenMaj = maxPredictedEigenMaj;
     }
 
-    /** Get minimum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM.
-     * @return minimum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM
+    /** Get minimum predicted minor eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM.
+     * @return minimum predicted v eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM
      */
-    public double getMinPredictedEigenMaj() {
-        return minPredictedEigenMaj;
+    public double getMinPredictedEigenMin() {
+        return minPredictedEigenMin;
     }
 
-    /** Set minimum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM.
-     * @param minPredictedEigenMaj minimum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM
+    /** Set minimum predicted minor eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM.
+     * @param minPredictedEigenMin minimum predicted minor eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM
      */
-    public void setMinPredictedEigenMaj(final double minPredictedEigenMaj) {
-        this.minPredictedEigenMaj = minPredictedEigenMaj;
+    public void setMinPredictedEigenMin(final double minPredictedEigenMin) {
+        this.minPredictedEigenMin = minPredictedEigenMin;
     }
 
     /** Get confidence metric.

@@ -109,7 +109,6 @@ public class OemParserTest {
                                                    CelestialBodyFactory.getEarth().getGM());
         Assert.assertArrayEquals(orbit.getPVCoordinates().getPosition().toArray(), file.getSegments().get(0).getData().getEphemeridesDataLines().get(0).getPosition().toArray(), 1e-10);
         Assert.assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(), file.getSegments().get(0).getData().getEphemeridesDataLines().get(0).getVelocity().toArray(), 1e-10);
-        Assert.assertArrayEquals((new Vector3D(1, 1, 1)).toArray(), file.getSegments().get(1).getData().getEphemeridesDataLines().get(0).getAcceleration().toArray(), 1e-10);
         Assert.assertEquals(Vector3D.ZERO, file.getSegments().get(1).getData().getEphemeridesDataLines().get(1).getAcceleration());
         final Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         final double[] column1 = {

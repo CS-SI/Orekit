@@ -17,17 +17,20 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.junit.Test;
-import org.orekit.files.ccsds.ndm.AbstractNdmWriterTest;
+import org.orekit.files.ccsds.ndm.AbstractWriterTest;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 
-public class ApmWriterTest extends AbstractNdmWriterTest<Header, Segment<AdmMetadata, ApmData>, ApmFile> {
+public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadata, ApmData>, ApmFile> {
 
     protected ApmParser getParser() {
-        return new ParserBuilder().buildApmParser();
+        return new ParserBuilder().
+               withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+               buildApmParser();
     }
 
     protected ApmWriter getWriter() {
@@ -62,6 +65,11 @@ public class ApmWriterTest extends AbstractNdmWriterTest<Header, Segment<AdmMeta
     @Test
     public void testWriteExample5() {
         doTest("/ccsds/adm/apm/APMExample5.txt");
+    }
+
+    @Test
+    public void testWriteExample6() {
+        doTest("/ccsds/adm/apm/APMExample6.txt");
     }
 
 }

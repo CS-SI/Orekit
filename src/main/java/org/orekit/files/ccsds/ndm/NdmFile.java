@@ -19,89 +19,40 @@ package org.orekit.files.ccsds.ndm;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.section.Segment;
-import org.orekit.utils.IERSConventions;
-
-/**
- * The NDMFile (Navigation Data Message) class represents the navigation
- * messages used by the CCSDS format, (i.e. the Attitude Data Message (ADM),
- * the Orbit Data Message (ODM) and the Tracking Data Message (TDM)).
- * It contains the information of the message's header and configuration data
- * (set in the parser).
- * @param <H> type of the header
- * @param <S> type of the segments
- * @author Bryan Cazabonne
- * @since 10.2
+/** CCSDS Navigation Data Message.
+ * This class is a container for comments and {@link NdmConstituent constituents}.
+ * @author Luc Maisonobe
+ * @since 11.0
  */
-public abstract class NdmFile<H extends Header, S extends Segment<?, ?>> {
+public class NdmFile {
 
-    /** Header. */
-    private final H header;
+    /** File comments. */
+    private final List<String> comments;
 
-    /** segments list. */
-    private final List<S> segments;
+    /** Constituents of the message. */
+    private final List<NdmConstituent<?, ?>> constituents;
 
-    /** IERS conventions used. */
-    private final IERSConventions conventions;
-
-    /** Data context. */
-    private final DataContext dataContext;
-
-    /**
-     * Constructor.
-     * @param header file header
-     * @param segments file segments
-     * @param conventions IERS conventions
-     * @param dataContext used for creating frames, time scales, etc.
+    /** Simple constructor.
+     * @param comments file comments
+     * @param constituents constituents of the message
      */
-    protected NdmFile(final H header, final List<S> segments,
-                      final IERSConventions conventions, final DataContext dataContext) {
-        this.header      = header;
-        this.segments    = segments;
-        this.conventions = conventions;
-        this.dataContext = dataContext;
+    public NdmFile(final List<String> comments, final List<NdmConstituent<?, ?>> constituents) {
+        this.comments     = comments;
+        this.constituents = constituents;
     }
 
-    /**
-     * Get the header.
-     * @return header
-     * @since 11.0
+    /** Get an unmodifiable view of the comments.
+     * @return unmodifiable view of the comment
      */
-    public H getHeader() {
-        return header;
+    public List<String> getComments() {
+        return Collections.unmodifiableList(comments);
     }
 
-    /**
-     * Get the segments.
-     * @return segments
-     * @since 11.0
+    /** Get an unmodifiable view of the constituents.
+     * @return unmodifiable view of the constituents
      */
-    public List<S> getSegments() {
-        return Collections.unmodifiableList(segments);
-    }
-
-    /**
-     * Get IERS conventions.
-     * @return IERS conventions
-     */
-    public IERSConventions getConventions() {
-        if (conventions != null) {
-            return conventions;
-        } else {
-            throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
-        }
-    }
-
-    /**
-     * Get the data context.
-     * @return the data context used for creating frames, time scales, etc.
-     */
-    public DataContext getDataContext() {
-        return dataContext;
+    public List<NdmConstituent<?, ?>> getConstituents() {
+        return Collections.unmodifiableList(constituents);
     }
 
 }

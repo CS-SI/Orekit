@@ -16,51 +16,38 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.util.List;
+
 import org.xml.sax.Attributes;
 
-/** Builder for building {@link ParseToken} fro XML elements.
+/** Builder for building {@link ParseToken} from XML elements.
  * <p>
- * The regular handling of regular XML elements is to used the element name
- * as the token name, the element content as the token content and the
- * "units" attribute for the units. In some cases however the token name
- * should be extracted from attributes, and sometimes even the content. This
- * interface allows to define all these behaviors, by providing special builders
- * to the lexical analyzer when it calls their {@link MessageParser#getSpecialXmlElementsBuilders()
+ * The regular handling of regular XML elements is to used the element
+ * name as the token name, the element content as the token content and
+ * the "units" attribute for the units. In some cases however the token
+ * name should be extracted from attributes, and sometimes even the
+ * content. This interface allows to define all these behaviors, by
+ * providing specialized builders to the lexical analyzer when it calls
+ * their {@link MessageParser#getSpecialXmlElementsBuilders()
  * getSpecialXmlElementsHandlers} method.
  * </p>
- * <p>
- * A typical example, needed for all parsers, is to handle the top level XML
- * element. The {@link org.orekit.files.ccsds.ndm.odm.opm.OpmParser OPM parser}
- * for example would put in this list an {@link XmlTokenBuilder} configured
- * with {@code name = "opm"}, {@code nameAttributes= ["id"]} and
- * {@code contentAttribute="version"}. With this setting, when the
- * lexical analyzer sees the element: {@code <opm id="CCSDS_OPM_VERS" version="3.0">}
- * it generates a {@link ParseToken} with name set to "CCSDS_OPM_VERS"
- * and content set to "3.0".
- * <p>
- * <p>
- * If multiple attributes can be used to get the token name, they are tested
- * in turn and the first match is used. This is useful in ADM files where
- * the XML elements {@code rotation1},  {@code rotation2}, and {@code rotation3},
- * use attribute {@link angle} in rotation angle sub-section but use attribute
- * {@link rate} in rotation rate sub-section.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public interface XmlTokenBuilder {
 
 
-    /** Create a token.
+    /** Create a list of parse tokens.
      * @param startTag if true we are parsing the start tag from an XML element
      * @param qName element qualified name
      * @param content element content
      * @param attributes element attributes
      * @param lineNumber number of the line in the CCSDS data message
      * @param fileName name of the file
-     * @return parse token
+     * @return list of parse tokens
      */
-    ParseToken buildToken(boolean startTag, String qName,
-                          String content, Attributes attributes,
-                          int lineNumber, String fileName);
+    List<ParseToken> buildTokens(boolean startTag, String qName,
+                                 String content, Attributes attributes,
+                                 int lineNumber, String fileName);
 
 }

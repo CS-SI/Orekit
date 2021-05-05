@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import java.util.List;
-
 import org.orekit.utils.units.Unit;
 
 /**
@@ -28,7 +26,7 @@ import org.orekit.utils.units.Unit;
 public class Units {
 
     /** Seconds reciprocal unit. */
-    public static final Unit ONE_PER_S = Unit.parse("s⁻¹");
+    public static final Unit ONE_PER_S = Unit.parse("1/s");
 
     /** kg.m² unit. */
     public static final Unit KG_M2 = Unit.parse("kg.m²");
@@ -40,7 +38,7 @@ public class Units {
     public static final Unit M2 = Unit.parse("m²");
 
     /** #/year unit. */
-    public static final Unit NB_PER_Y = Unit.parse("a⁻¹");
+    public static final Unit NB_PER_Y = Unit.parse("#/yr");
 
     /** Square kilometers units. */
     public static final Unit KM2 = Unit.parse("km²");
@@ -61,10 +59,10 @@ public class Units {
     public static final Unit REV_PER_DAY = Unit.parse("rev/d");
 
     /** Scaled revolutions per square day unit. */
-    public static final Unit REV_PER_DAY2_SCALED = Unit.parse("rev/d²").scale("2rev/d²", 2.0);
+    public static final Unit REV_PER_DAY2_SCALED = Unit.parse("2rev/d²");
 
     /** Scaled revolutions per cubic day divieded by 6 unit. */
-    public static final Unit REV_PER_DAY3_SCALED = Unit.parse("rev/d³").scale("6rev/d³", 6.0);
+    public static final Unit REV_PER_DAY3_SCALED = Unit.parse("6rev/d³");
 
     /** Degree per second unit. */
     public static final Unit DEG_PER_S = Unit.parse("°/s");
@@ -85,32 +83,6 @@ public class Units {
      */
     private Units() {
         // nothing to do
-    }
-
-    /** Convert a list of units to a bracketed string.
-     * @param units lists to output (may be null or empty)
-     * @return bracketed string (null if units list is null or empty)
-     */
-    public static String outputBracketed(final List<Unit> units) {
-
-        if (units == null || units.isEmpty()) {
-            // nothing to output
-            return null;
-        }
-
-        final StringBuilder builder = new StringBuilder();
-        builder.append('[');
-        boolean first = true;
-        for (final Unit unit : units) {
-            if (!first) {
-                builder.append(',');
-            }
-            builder.append(unit.getName());
-            first = false;
-        }
-        builder.append(']');
-        return builder.toString();
-
     }
 
 }

@@ -974,6 +974,18 @@ public class FieldAbsoluteDateTest {
         Assert.assertTrue(Double.isInfinite(FieldAbsoluteDate.getPastInfinity(field).durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal()));
         Assert.assertEquals("5881610-07-11T23:59:59.999",  FieldAbsoluteDate.getFutureInfinity(field).toString());
         Assert.assertEquals("-5877490-03-03T00:00:00.000", FieldAbsoluteDate.getPastInfinity(field).toString());
+
+        final FieldAbsoluteDate<T> j2000     = FieldAbsoluteDate.getJ2000Epoch(field);
+        final FieldAbsoluteDate<T> arbitrary = FieldAbsoluteDate.getArbitraryEpoch(field);
+        Assert.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(Double.NEGATIVE_INFINITY)).getReal()
+                          == Double.POSITIVE_INFINITY);
+        Assert.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(Double.POSITIVE_INFINITY)).getReal()
+                          == Double.NEGATIVE_INFINITY);
+        Assert.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.NEGATIVE_INFINITY))).getReal()
+                          == Double.POSITIVE_INFINITY);
+        Assert.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.POSITIVE_INFINITY))).getReal()
+                          == Double.NEGATIVE_INFINITY);
+
     }
 
     private <T extends RealFieldElement<T>> void doTestAccuracy(final Field<T> field) {

@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.tdm;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.utils.units.Unit;
 
 
@@ -51,17 +50,7 @@ public enum TdmMetadataKey {
     PARTICIPANT_5((token, context, container) -> token.processAsIndexedNormalizedString(5, container::addParticipant)),
 
     /** Mode entry. */
-    MODE((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setMode(TrackingMode.valueOf(token.getContentAsUppercaseString().replace(' ', '_')));
-                return true;
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    MODE((token, context, container) -> token.processAsEnum(TrackingMode.class, container::setMode)),
 
     /** Path entry. */
     PATH((token, context, container) -> token.processAsIntegerArray(container::setPath)),
@@ -85,155 +74,104 @@ public enum TdmMetadataKey {
     TURNAROUND_DENOMINATOR((token, context, container) -> token.processAsInteger(container::setTurnaroundDenominator)),
 
     /** Timetag reference entry. */
-    TIMETAG_REF((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setTimetagRef(TimetagReference.valueOf(token.getContentAsUppercaseString()));
-                return true;
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    TIMETAG_REF((token, context, container) -> token.processAsEnum(TimetagReference.class, container::setTimetagRef)),
 
     /** Integration interval entry. */
-    INTEGRATION_INTERVAL((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setIntegrationInterval)),
+    INTEGRATION_INTERVAL((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                              container::setIntegrationInterval)),
 
     /** Integration reference entry. */
-    INTEGRATION_REF((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setIntegrationRef(IntegrationReference.valueOf(token.getContentAsUppercaseString()));
-                return true;
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    INTEGRATION_REF((token, context, container) -> token.processAsEnum(IntegrationReference.class, container::setIntegrationRef)),
 
     /** Frequency offset entry. */
-    FREQ_OFFSET((token, context, container) -> token.processAsDouble(Unit.HERTZ, container::setFreqOffset)),
+    FREQ_OFFSET((token, context, container) -> token.processAsDouble(Unit.HERTZ, context.getParsedUnitsBehavior(),
+                                                                     container::setFreqOffset)),
 
     /** Range mode entry. */
-    RANGE_MODE((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setRangeMode(RangeMode.valueOf(token.getContentAsUppercaseString()));
-                return true;
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    RANGE_MODE((token, context, container) -> token.processAsEnum(RangeMode.class, container::setRangeMode)),
 
     /** Range modulus entry (beware the unit is Range Units here). */
-    RANGE_MODULUS((token, context, container) -> token.processAsDouble(Unit.ONE, container::setRawRangeModulus)),
+    RANGE_MODULUS((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                       container::setRawRangeModulus)),
 
     /** Range units entry. */
-    RANGE_UNITS((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setRangeUnits(RangeUnits.valueOf(token.getContentAsNormalizedString()));
-                return true;
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    RANGE_UNITS((token, context, container) -> token.processAsEnum(RangeUnits.class, container::setRangeUnits)),
 
     /** Angle type entry. */
-    ANGLE_TYPE((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setAngleType(AngleType.valueOf(token.getContentAsUppercaseString()));
-                return true;
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    ANGLE_TYPE((token, context, container) -> token.processAsEnum(AngleType.class, container::setAngleType)),
 
     /** reference frame entry. */
     REFERENCE_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, false, false)),
 
     /** First transmit delay entry. */
-    TRANSMIT_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, Unit.SECOND, container::addTransmitDelay)),
+    TRANSMIT_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                 container::addTransmitDelay)),
 
     /** Second transmit delay entry. */
-    TRANSMIT_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, Unit.SECOND, container::addTransmitDelay)),
+    TRANSMIT_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                 container::addTransmitDelay)),
 
     /** Third transmit delay entry. */
-    TRANSMIT_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, Unit.SECOND, container::addTransmitDelay)),
+    TRANSMIT_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                 container::addTransmitDelay)),
 
     /** Fourth transmit delay entry. */
-    TRANSMIT_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, Unit.SECOND, container::addTransmitDelay)),
+    TRANSMIT_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                 container::addTransmitDelay)),
 
     /** Fifth transmit delay entry. */
-    TRANSMIT_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, Unit.SECOND, container::addTransmitDelay)),
+    TRANSMIT_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                 container::addTransmitDelay)),
 
     /** First receive delay entry. */
-    RECEIVE_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, Unit.SECOND, container::addReceiveDelay)),
+    RECEIVE_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                container::addReceiveDelay)),
 
     /** Second receive delay entry. */
-    RECEIVE_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, Unit.SECOND, container::addReceiveDelay)),
+    RECEIVE_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                container::addReceiveDelay)),
 
     /** Third receive delay entry. */
-    RECEIVE_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, Unit.SECOND, container::addReceiveDelay)),
+    RECEIVE_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                container::addReceiveDelay)),
 
     /** Fourth receive delay entry. */
-    RECEIVE_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, Unit.SECOND, container::addReceiveDelay)),
+    RECEIVE_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                container::addReceiveDelay)),
 
     /** Fifth receive delay entry. */
-    RECEIVE_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, Unit.SECOND, container::addReceiveDelay)),
+    RECEIVE_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                container::addReceiveDelay)),
 
     /** data quality entry. */
-    DATA_QUALITY((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setDataQuality(DataQuality.valueOf(token.getContentAsUppercaseString()));
-                return true;
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    DATA_QUALITY((token, context, container) -> token.processAsEnum(DataQuality.class, container::setDataQuality)),
 
     /** Angle 1 correction entry. */
-    CORRECTION_ANGLE_1((token, context, container) -> token.processAsAngle(container::setCorrectionAngle1)),
+    CORRECTION_ANGLE_1((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                            container::setCorrectionAngle1)),
 
     /** Angle 2 correction entry. */
-    CORRECTION_ANGLE_2((token, context, container) -> token.processAsAngle(container::setCorrectionAngle2)),
+    CORRECTION_ANGLE_2((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                            container::setCorrectionAngle2)),
 
     /** Doppler correction entry. */
-    CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(Units.KM_PER_S, container::setCorrectionDoppler)),
+    CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(Units.KM_PER_S, context.getParsedUnitsBehavior(),
+                                                                            container::setCorrectionDoppler)),
 
     /** Range correction entry (beware the unit is Range Units here). */
-    CORRECTION_RANGE((token, context, container) -> token.processAsDouble(Unit.ONE, container::setRawCorrectionRange)),
+    CORRECTION_RANGE((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                          container::setRawCorrectionRange)),
 
     /** Receive correction entry. */
-    CORRECTION_RECEIVE((token, context, container) -> token.processAsDouble(Unit.HERTZ, container::setCorrectionReceive)),
+    CORRECTION_RECEIVE((token, context, container) -> token.processAsDouble(Unit.HERTZ, context.getParsedUnitsBehavior(),
+                                                                            container::setCorrectionReceive)),
 
     /** Transmit correction entry. */
-    CORRECTION_TRANSMIT((token, context, container) -> token.processAsDouble(Unit.HERTZ, container::setCorrectionTransmit)),
+    CORRECTION_TRANSMIT((token, context, container) -> token.processAsDouble(Unit.HERTZ, context.getParsedUnitsBehavior(),
+                                                                             container::setCorrectionTransmit)),
 
     /** Applied correction entry. */
-    CORRECTIONS_APPLIED((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setCorrectionsApplied(CorrectionApplied.valueOf(token.getContentAsUppercaseString()));
-                return true;
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    });
+    CORRECTIONS_APPLIED((token, context, container) -> token.processAsEnum(CorrectionApplied.class, container::setCorrectionsApplied));
 
     /** Processing method. */
     private final TokenProcessor processor;

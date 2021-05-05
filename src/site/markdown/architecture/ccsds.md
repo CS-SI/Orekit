@@ -92,6 +92,42 @@ The Orekit-specific data that are mandatory for building some objects but are
 not present in the CCSDS messages are set up when building the `ParserBuilder`.
 This includes for example IERS conventions, data context, and gravitational
 coefficient for ODM files as it is sometimes optional in these messages.
+
+The `ParsedUnitsBehavior` setting in `ParseBuilder` is used to select how
+units found in the messages at parse time should be handled with respect
+to the mandatory units specified in CCSDS standards.
+
+   * `IGNORE_PARSE` means that the units parsed in the message are
+     completely ignored, numerical values are interpreted using the
+     units specified in the standard
+   * `CONVERT_COMPATIBLE` means that units parsed in the message are
+     checked for dimension compatibility with respect to the standard,
+     and accepted if conversion is possible
+   * `STRICT_COMPLIANCE` means that units parsed in the message are
+     checked for dimension compatibility with respect to the standard,
+     and accepted only if they are equals
+
+CCSDS standards are ambiguous with respect to units handling. In several
+places, they state that units are "for information purpose only" or
+even that "listing of units via the [insert keyword here] keyword does
+not override the mandatory units specified in the selected [insert type here]".
+This would mean that `IGNORE_PARSE` should be used for compliance with the
+standard and files specifying wrong units should be accepted silently. Other
+places set that the tables specify "the units to be used" and that "If units
+are displayed, they must exactly match the units  (including lower/upper case)
+as specified in tables". This would mean that `STRICT_COMPLIANCE` should be used
+for compliance with the standard and files specifying wrong units should be
+rejected with an error message. Best practices in general file parsing are
+to be lenient while parsing and strict when writing. As it seems logical to
+consider that when a file explicitly states units, these are the units that
+were really used for producing the file, we consider that `CONVERT_COMPATIBLE` is
+a good trade-off for leniency. The default setting is therefore to set the
+`ParseBuilder` behavior to `CONVERT_COMPATIBLE`, but users can configure
+their builder differently to suit their needs. The units parser used in
+Orekit is also feature-rich and known how to handle units written with
+human-friendly unicode characters, like for example km/s² or √km (whereas
+CCSDS standard would use km/s**2 or km**0.5).
+
 One change introduced in Orekit 11.0 is that the progressive set up of
 parsers using the fluent API (methods `withXxx()`) has been moved to the top-level
 `ParserBuilder` that can build the parsers for all CCSDS messages. Another change
@@ -170,6 +206,13 @@ not be aware of the change and would just continue the same segment. Upon readin
 file produced this way, the reader would not be aware that interpolation should not be
 used around this maneuver as the event would not appear in the file.
 
+In accordance with file handling best practices, when writing CCSDS messages, Orekit
+complies strictly to the units specified in the standard. If the low level generator
+is configured to write units (writing units is optional), then the units will be
+standard ones, and the syntax will be the CCSDS syntax. For better compliance and
+compatibility with other systems, this choice cannot be customized, it is enforced
+by the library.
+
 ## Developers point of view
 
 This section describes the design of the CCSDS framework. It is an implementation
@@ -204,6 +247,7 @@ The following class diagram presents the static structure of lexical analysis:
 ![parsing class diagram](../images/design/ccsds-lexical-class-diagram.png)
 
 The dynamic view of lexical analysis is depicted in the following sequence diagram:
+
 ![general parsing sequence diagram diagram](../images/design/ccsds-lexical-analysis-sequence-diagram.png)
 
 The second level of parsing is message parsing is semantic analysis. Its aim is

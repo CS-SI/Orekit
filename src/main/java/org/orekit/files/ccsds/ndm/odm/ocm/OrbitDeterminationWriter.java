@@ -55,8 +55,8 @@ class OrbitDeterminationWriter extends AbstractWriter {
         generator.writeComments(od.getComments());
 
         // identifiers
-        generator.writeEntry(OrbitDeterminationKey.OD_ID.name(),      od.getId(),               false);
-        generator.writeEntry(OrbitDeterminationKey.OD_PREV_ID.name(), od.getPrevId(),           false);
+        generator.writeEntry(OrbitDeterminationKey.OD_ID.name(),      od.getId(),     null, false);
+        generator.writeEntry(OrbitDeterminationKey.OD_PREV_ID.name(), od.getPrevId(), null, false);
         if (od.getMethod() != null) {
             final StringBuilder builder = new StringBuilder();
             builder.append(od.getMethod().getName());
@@ -64,7 +64,7 @@ class OrbitDeterminationWriter extends AbstractWriter {
                 builder.append(':');
                 builder.append(od.getMethod().getTool());
             }
-            generator.writeEntry(OrbitDeterminationKey.OD_METHOD.name(),  builder.toString(), false);
+            generator.writeEntry(OrbitDeterminationKey.OD_METHOD.name(),  builder.toString(), null, false);
         }
 
         // time
@@ -86,7 +86,7 @@ class OrbitDeterminationWriter extends AbstractWriter {
         generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMED.name(),    od.getEpochEigenMed(), Unit.METRE,        false);
         generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMIN.name(),    od.getEpochEigenMin(), Unit.METRE,        false);
         generator.writeEntry(OrbitDeterminationKey.OD_MAX_PRED_EIGMAJ.name(), od.getMaxPredictedEigenMaj(), Unit.METRE, false);
-        generator.writeEntry(OrbitDeterminationKey.OD_MIN_PRED_EIGMIN.name(), od.getMinPredictedEigenMaj(), Unit.METRE, false);
+        generator.writeEntry(OrbitDeterminationKey.OD_MIN_PRED_EIGMIN.name(), od.getMinPredictedEigenMin(), Unit.METRE, false);
         generator.writeEntry(OrbitDeterminationKey.OD_CONFIDENCE.name(),      od.getConfidence(), Unit.PERCENT,         false);
         generator.writeEntry(OrbitDeterminationKey.GDOP.name(),               od.getGdop(), Unit.ONE,                   false);
 

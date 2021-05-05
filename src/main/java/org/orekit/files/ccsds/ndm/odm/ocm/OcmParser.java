@@ -27,7 +27,8 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.CommonParser;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.Header;
@@ -61,7 +62,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmParser extends CommonParser<OcmFile, OcmParser> implements EphemerisFileParser<OcmFile> {
+public class OcmParser extends OdmParser<OcmFile, OcmParser> implements EphemerisFileParser<OcmFile> {
 
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
@@ -128,10 +129,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param mu gravitational coefficient
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
-    public OcmParser(final IERSConventions conventions, final boolean simpleEOP,
-                     final DataContext dataContext, final double mu) {
-        super(OcmFile.ROOT, OcmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu);
+    public OcmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                     final double mu, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(OcmFile.ROOT, OcmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu, parsedUnitsBehavior);
     }
 
     /** {@inheritDoc} */
@@ -177,21 +179,21 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -209,17 +211,17 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             return false;
         }
         metadata  = new OcmMetadata(getDataContext());
-        context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, metadata::getEpochT0,
-                                       metadata::getTimeSystem, metadata::getSclkOffsetAtEpoch, metadata::getSclkSecPerSISec);
-        setFallback(this::processMetadataToken);
+        context   = new ContextBinding(this::getConventions, this::isSimpleEOP, this::getDataContext,
+                                       this::getParsedUnitsBehavior, metadata::getEpochT0, metadata::getTimeSystem,
+                                       metadata::getSclkOffsetAtEpoch, metadata::getSclkSecPerSISec, () -> null);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -227,14 +229,14 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
     @Override
     public boolean finalizeMetadata() {
         metadata.checkMandatoryEntries();
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareData() {
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         return true;
     }
 
@@ -272,9 +274,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentOrbitStateHistoryMetadata = new OrbitStateHistoryMetadata(metadata.getEpochT0(),
                                                                              getDataContext());
             currentOrbitStateHistory         = new ArrayList<>();
-            setFallback(this::processOrbitStateToken);
+            anticipateNext(this::processOrbitStateToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
             if (currentOrbitStateHistoryMetadata.getCenter().getBody() != null) {
                 setMuCreated(currentOrbitStateHistoryMetadata.getCenter().getBody().getGM());
             }
@@ -298,9 +300,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 // this is the first (and unique) physical properties block, we need to allocate the container
                 physicBlock = new PhysicalProperties(metadata.getEpochT0());
             }
-            setFallback(this::processPhysicalPropertyToken);
+            anticipateNext(this::processPhysicalPropertyToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -318,9 +320,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             }
             currentCovarianceHistoryMetadata = new CovarianceHistoryMetadata(metadata.getEpochT0());
             currentCovarianceHistory         = new ArrayList<>();
-            setFallback(this::processCovarianceToken);
+            anticipateNext(this::processCovarianceToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
             covarianceBlocks.add(new CovarianceHistory(currentCovarianceHistoryMetadata,
                                                        currentCovarianceHistory));
             currentCovarianceHistoryMetadata = null;
@@ -342,9 +344,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             }
             currentManeuverHistoryMetadata = new ManeuverHistoryMetadata(metadata.getEpochT0());
             currentManeuverHistory         = new ArrayList<>();
-            setFallback(this::processManeuverToken);
+            anticipateNext(this::processManeuverToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
             maneuverBlocks.add(new ManeuverHistory(currentManeuverHistoryMetadata,
                                                    currentManeuverHistory));
             currentManeuverHistoryMetadata = null;
@@ -364,9 +366,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 // this is the first (and unique) perturbations parameters block, we need to allocate the container
                 perturbationsBlock = new Perturbations(context.getDataContext().getCelestialBodies());
             }
-            setFallback(this::processPerturbationToken);
+            anticipateNext(this::processPerturbationToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -382,9 +384,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 // this is the first (and unique) orbit determination block, we need to allocate the container
                 orbitDeterminationBlock = new OrbitDetermination();
             }
-            setFallback(this::processOrbitDeterminationToken);
+            anticipateNext(this::processOrbitDeterminationToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -400,9 +402,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 // this is the first (and unique) user-defined parameters block, we need to allocate the container
                 userDefinedBlock = new UserDefined();
             }
-            setFallback(this::processUserDefinedToken);
+            anticipateNext(this::processUserDefinedToken);
         } else {
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -415,6 +417,10 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         finalizeData();
         if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
             userDefinedBlock = null;
+        }
+        if (perturbationsBlock != null) {
+            // this may be Double.NaN, but it will be handled correctly
+            setMuParsed(perturbationsBlock.getGm());
         }
         final OcmData data = new OcmData(orbitBlocks, physicBlock, covarianceBlocks,
                                          maneuverBlocks, perturbationsBlock,
@@ -480,7 +486,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             if (currentOrbitStateHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
                 currentOrbitStateHistoryMetadata.checkMandatoryEntries();
-                setFallback(this::processDataSubStructureToken);
+                anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
                 return true;
@@ -511,7 +517,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         if (physicBlock == null) {
             physicBlock = new PhysicalProperties(metadata.getEpochT0());
         }
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
                    PhysicalPropertiesKey.valueOf(token.getName()).process(token, context, physicBlock);
@@ -540,7 +546,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             if (currentCovarianceHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
                 currentCovarianceHistoryMetadata.checkMandatoryEntries();
-                setFallback(this::processDataSubStructureToken);
+                anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
                 return true;
@@ -548,11 +554,12 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
                 final int n = currentCovarianceHistoryMetadata.getCovUnits().size();
-                if (fields.length != 1 + (n * (n + 1) / 2)) {
+                if (fields.length - 1 != currentCovarianceHistoryMetadata.getCovOrdering().nbElements(n)) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 currentCovarianceHistory.add(new Covariance(currentCovarianceHistoryMetadata.getCovType(),
+                                                            currentCovarianceHistoryMetadata.getCovOrdering(),
                                                             context.getTimeSystem().getConverter(context).parse(fields[0]),
                                                             fields, 1));
                 return true;
@@ -582,7 +589,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             if (currentManeuverHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
                 currentManeuverHistoryMetadata.checkMandatoryEntries();
-                setFallback(this::processDataSubStructureToken);
+                anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
                 return true;
@@ -612,7 +619,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processPerturbationToken(final ParseToken token) {
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
                    PerturbationsKey.valueOf(token.getName()).process(token, context, perturbationsBlock);
@@ -630,7 +637,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         if (orbitDeterminationBlock == null) {
             orbitDeterminationBlock = new OrbitDetermination();
         }
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
                    OrbitDeterminationKey.valueOf(token.getName()).process(token, context, orbitDeterminationBlock);
@@ -648,7 +655,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         if (userDefinedBlock == null) {
             userDefinedBlock = new UserDefined();
         }
-        setFallback(this::processDataSubStructureToken);
+        anticipateNext(this::processDataSubStructureToken);
         if ("COMMENT".equals(token.getName())) {
             return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
         } else if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {

@@ -22,8 +22,8 @@ package org.orekit.utils.units;
  */
 enum TokenType {
 
-    /** Unit with a SI prefix. */
-    PREFIXED_UNIT,
+    /** Identifier. */
+    IDENTIFIER,
 
     /** Power operator. */
     POWER,
@@ -44,6 +44,9 @@ enum TokenType {
     SQUARE_ROOT,
 
     /** Integer. */
-    INTEGER;
+    INTEGER,
+
+    /** Fraction. */
+    FRACTION;
 
 }

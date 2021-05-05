@@ -31,7 +31,6 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -703,11 +702,7 @@ public class TLE implements TimeStamped, Serializable {
      * @return string representation of this TLE set
      */
     public String toString() {
-        try {
-            return getLine1() + System.getProperty("line.separator") + getLine2();
-        } catch (OrekitException oe) {
-            throw new OrekitInternalError(oe);
-        }
+        return getLine1() + System.getProperty("line.separator") + getLine2();
     }
 
     /**

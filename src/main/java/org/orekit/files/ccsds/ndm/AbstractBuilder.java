@@ -16,16 +16,19 @@
  */
 package org.orekit.files.ccsds.ndm;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmParser;
 import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmParser;
 import org.orekit.files.ccsds.ndm.odm.opm.OpmParser;
+import org.orekit.files.ccsds.ndm.tdm.RangeUnits;
+import org.orekit.files.ccsds.ndm.tdm.RangeUnitsConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Abstract builder for all {@link NdmFile CCSDS Message} files parsers/writers.
+/** Abstract builder for all {@link NdmConstituent CCSDS Message} files parsers/writers.
  * @param <T> type of the builder
  * @author Luc Maisonobe
  * @since 11.0
@@ -41,34 +44,49 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
 
+    /** Spin axis in spacecraft body frame. */
+    private final Vector3D spinAxis;
+
+    /** Converter for {@link RangeUnits#RU Range Units}. */
+    private final RangeUnitsConverter rangeUnitsConverter;
+
     /**
      * Complete constructor.
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param spinAxis spin axis in spacecraft body frame
+     * @param rangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      */
     protected AbstractBuilder(final IERSConventions conventions, final DataContext dataContext,
-                              final AbsoluteDate missionReferenceDate) {
+                              final AbsoluteDate missionReferenceDate, final Vector3D spinAxis,
+                              final RangeUnitsConverter rangeUnitsConverter) {
         this.conventions          = conventions;
         this.dataContext          = dataContext;
         this.missionReferenceDate = missionReferenceDate;
+        this.spinAxis             = spinAxis;
+        this.rangeUnitsConverter  = rangeUnitsConverter;
     }
 
     /** Build an instance.
      * @param newConventions IERS Conventions
      * @param newDataContext used to retrieve frames, time scales, etc.
      * @param newMissionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param newSpinAxis spin axis in spacecraft body frame
+     * @param newRangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      * @return new instance
      */
     protected abstract T create(IERSConventions newConventions, DataContext newDataContext,
-                                AbsoluteDate newMissionReferenceDate);
+                                AbsoluteDate newMissionReferenceDate, Vector3D newSpinAxis,
+                                RangeUnitsConverter newRangeUnitsConverter);
 
     /** Set up IERS conventions.
      * @param newConventions IERS Conventions
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withConventions(final IERSConventions newConventions) {
-        return create(newConventions, getDataContext(), getMissionReferenceDate());
+        return create(newConventions, getDataContext(), getMissionReferenceDate(),
+                      getSpinAxis(), getRangeUnitsConverter());
     }
 
     /** Get the IERS conventions.
@@ -83,7 +101,8 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withDataContext(final DataContext newDataContext) {
-        return create(getConventions(), newDataContext, getMissionReferenceDate());
+        return create(getConventions(), newDataContext, getMissionReferenceDate(),
+                      getSpinAxis(), getRangeUnitsConverter());
     }
 
     /** Get the data context.
@@ -104,7 +123,8 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), getDataContext(), newMissionReferenceDate);
+        return create(getConventions(), getDataContext(), newMissionReferenceDate,
+                      getSpinAxis(), getRangeUnitsConverter());
     }
 
     /** Get the mission reference date or Mission Elapsed Time or Mission Relative Time time systems.
@@ -112,6 +132,42 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      */
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
+    }
+
+    /** Set up spin axis direction.
+     * <p>
+     * The spin axis is used only by {@link AemParser} and {@link ApmParser}.
+     * </p>
+     * @param newSpinAxis spin axis in spacecraft body frame
+     * @return a new builder with updated configuration (the instance is not changed)
+     */
+    public T withSpinAxis(final Vector3D newSpinAxis) {
+        return create(getConventions(), getDataContext(), getMissionReferenceDate(),
+                      newSpinAxis, getRangeUnitsConverter());
+    }
+
+    /**
+     * Get spin axis in spacecraft body frame.
+     * @return spin axis
+     */
+    public Vector3D getSpinAxis() {
+        return spinAxis;
+    }
+
+    /** Set up the converter for {@link RangeUnits#RU Range Units}.
+     * @param newRangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
+     * @return a new builder with updated configuration (the instance is not changed)
+     */
+    public T withRangeUnitsConverter(final RangeUnitsConverter newRangeUnitsConverter) {
+        return create(getConventions(), getDataContext(), getMissionReferenceDate(),
+                      getSpinAxis(), rangeUnitsConverter);
+    }
+
+    /** Get the converter for {@link RangeUnits#RU Range Units}.
+     * @return converter for {@link RangeUnits#RU Range Units}
+     */
+    public RangeUnitsConverter getRangeUnitsConverter() {
+        return rangeUnitsConverter;
     }
 
 }

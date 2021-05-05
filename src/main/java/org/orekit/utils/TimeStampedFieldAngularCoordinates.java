@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link FieldAngularCoordinates}.
@@ -41,7 +42,7 @@ import org.orekit.time.TimeStamped;
  * @since 7.0
  */
 public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
-    extends FieldAngularCoordinates<T> {
+    extends FieldAngularCoordinates<T> implements FieldTimeStamped<T> {
 
     /** The date. */
     private final FieldAbsoluteDate<T> date;
@@ -179,9 +180,8 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                                                         getRotation().applyInverseTo(getRotationAcceleration().negate()));
     }
 
-    /** Get the date.
-     * @return date
-     */
+    /** {@inheritDoc} */
+    @Override
     public FieldAbsoluteDate<T> getDate() {
         return date;
     }

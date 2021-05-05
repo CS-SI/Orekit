@@ -546,15 +546,15 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         buffer.append(ParseUtils.buildSatelliteNumber(satelliteNumber, "satelliteNumber-2"));
 
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding(INCLINATION, f34.format(FastMath.toDegrees(inclination)), ' ', 8, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding(INCLINATION, f34.format(FastMath.toDegrees(inclination).getReal()), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding("raan", f34.format(FastMath.toDegrees(raan)), ' ', 8, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("raan", f34.format(FastMath.toDegrees(raan).getReal()), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
         buffer.append(ParseUtils.addPadding(ECCENTRICITY, (int) FastMath.rint(eccentricity.getReal() * 1.0e7), '0', 7, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding("pa", f34.format(FastMath.toDegrees(pa)), ' ', 8, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("pa", f34.format(FastMath.toDegrees(pa).getReal()), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly).getReal()), ' ', 8, true, satelliteNumber));
 
         buffer.append(' ');
         buffer.append(ParseUtils.addPadding(MEAN_MOTION, f211.format(meanMotion.getReal() * 43200.0 / FastMath.PI), ' ', 11, true, satelliteNumber));

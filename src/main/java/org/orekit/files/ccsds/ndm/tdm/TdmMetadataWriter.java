@@ -64,23 +64,23 @@ class TdmMetadataWriter extends AbstractWriter {
         generator.writeEntry(TdmMetadataKey.STOP_TIME.name(),  timeConverter, metadata.getStopTime(),   false);
 
         // participants
-        generator.writeEntry(TdmMetadataKey.PARTICIPANT_1.name(), metadata.getParticipants().get(1), true);
-        generator.writeEntry(TdmMetadataKey.PARTICIPANT_2.name(), metadata.getParticipants().get(2), false);
-        generator.writeEntry(TdmMetadataKey.PARTICIPANT_3.name(), metadata.getParticipants().get(3), false);
-        generator.writeEntry(TdmMetadataKey.PARTICIPANT_4.name(), metadata.getParticipants().get(4), false);
-        generator.writeEntry(TdmMetadataKey.PARTICIPANT_5.name(), metadata.getParticipants().get(5), false);
+        generator.writeEntry(TdmMetadataKey.PARTICIPANT_1.name(), metadata.getParticipants().get(1), null, true);
+        generator.writeEntry(TdmMetadataKey.PARTICIPANT_2.name(), metadata.getParticipants().get(2), null, false);
+        generator.writeEntry(TdmMetadataKey.PARTICIPANT_3.name(), metadata.getParticipants().get(3), null, false);
+        generator.writeEntry(TdmMetadataKey.PARTICIPANT_4.name(), metadata.getParticipants().get(4), null, false);
+        generator.writeEntry(TdmMetadataKey.PARTICIPANT_5.name(), metadata.getParticipants().get(5), null, false);
 
         final TrackingMode mode = metadata.getMode();
         generator.writeEntry(TdmMetadataKey.MODE.name(), mode, false);
         if (mode == TrackingMode.SEQUENTIAL) {
-            generator.writeEntry(TdmMetadataKey.PATH.name(), intArrayToString(metadata.getPath()), true);
+            generator.writeEntry(TdmMetadataKey.PATH.name(), intArrayToString(metadata.getPath()),  null, true);
         } else if (mode == TrackingMode.SINGLE_DIFF) {
-            generator.writeEntry(TdmMetadataKey.PATH_1.name(), intArrayToString(metadata.getPath1()), true);
-            generator.writeEntry(TdmMetadataKey.PATH_2.name(), intArrayToString(metadata.getPath2()), true);
+            generator.writeEntry(TdmMetadataKey.PATH_1.name(), intArrayToString(metadata.getPath1()), null, true);
+            generator.writeEntry(TdmMetadataKey.PATH_2.name(), intArrayToString(metadata.getPath2()), null, true);
         }
 
-        generator.writeEntry(TdmMetadataKey.TRANSMIT_BAND.name(),          metadata.getTransmitBand(),          false);
-        generator.writeEntry(TdmMetadataKey.RECEIVE_BAND.name(),           metadata.getReceiveBand(),           false);
+        generator.writeEntry(TdmMetadataKey.TRANSMIT_BAND.name(),          metadata.getTransmitBand(), null, false);
+        generator.writeEntry(TdmMetadataKey.RECEIVE_BAND.name(),           metadata.getReceiveBand(),  null, false);
         if (metadata.getTurnaroundNumerator() != 0 || metadata.getTurnaroundDenominator() != 0) {
             generator.writeEntry(TdmMetadataKey.TURNAROUND_NUMERATOR.name(),   metadata.getTurnaroundNumerator(),   false);
             generator.writeEntry(TdmMetadataKey.TURNAROUND_DENOMINATOR.name(), metadata.getTurnaroundDenominator(), false);
@@ -96,7 +96,7 @@ class TdmMetadataWriter extends AbstractWriter {
         generator.writeEntry(TdmMetadataKey.RANGE_UNITS.name(),            metadata.getRangeUnits(),                       false);
         generator.writeEntry(TdmMetadataKey.ANGLE_TYPE.name(),             metadata.getAngleType(),                        false);
         if (metadata.getReferenceFrame() != null) {
-            generator.writeEntry(TdmMetadataKey.REFERENCE_FRAME.name(),    metadata.getReferenceFrame().getName(), false);
+            generator.writeEntry(TdmMetadataKey.REFERENCE_FRAME.name(),    metadata.getReferenceFrame().getName(), null, false);
         }
         generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_1.name(),       metadata.getTransmitDelays().get(1), Unit.SECOND, false);
         generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_2.name(),       metadata.getTransmitDelays().get(2), Unit.SECOND, false);

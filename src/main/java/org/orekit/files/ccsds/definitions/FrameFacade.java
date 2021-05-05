@@ -109,10 +109,6 @@ public class FrameFacade {
     }
 
     /** Map an Orekit frame to a CCSDS frame facade.
-     *
-     * <p> The goal of this method is to perform the opposite mapping of {@link
-     * #getFrame(IERSConventions, boolean, DataContext)}.
-     *
      * @param frame a reference frame.
      * @return the CCSDSFrame corresponding to the Orekit frame
      */

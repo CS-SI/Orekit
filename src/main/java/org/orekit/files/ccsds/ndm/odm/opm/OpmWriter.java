@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceWriter;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataWriter;
@@ -66,8 +67,9 @@ public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetad
         super(OpmFile.ROOT, OpmFile.FORMAT_VERSION_KEY, CCSDS_OPM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
+                  () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0));
+                  () -> 0.0, () -> 1.0, () -> null));
     }
 
     /** Write one segment.
@@ -84,10 +86,12 @@ public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetad
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
-                                      oldContext::getClockRate));
+                                      oldContext::getClockRate,
+                                      oldContext::getSpinAxis));
         new CommonMetadataWriter(metadata, getTimeConverter()).write(generator);
 
         // start data block

@@ -104,8 +104,9 @@ public class StreamingOemWriter {
          * {@inheritDoc}
          *
          * <p> Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeHeader(Generator)
-         * writeHeader} if it is the first segment) and {@link OemWriter#writeMetadata()} to start the segment.
+         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeMessageHeader(Generator,
+         * Header) writeHeader} if it is the first segment) and {@link OemWriter#writeMetadata(Generator, OemMetadata)}
+         * to start the segment.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {

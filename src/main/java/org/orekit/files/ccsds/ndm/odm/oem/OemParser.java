@@ -24,11 +24,13 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.Units;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.CommonParser;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.StateVector;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
@@ -61,7 +63,7 @@ import org.orekit.utils.units.Unit;
  * @author sports
  * @since 6.1
  */
-public class OemParser extends CommonParser<OemFile, OemParser> implements EphemerisFileParser<OemFile> {
+public class OemParser extends OdmParser<OemFile, OemParser> implements EphemerisFileParser<OemFile> {
 
     /** Comment marker. */
     private static final String COMMENT = "COMMENT";
@@ -116,13 +118,14 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
      * (may be null if time system is absolute)
      * @param mu gravitational coefficient
      * @param defaultInterpolationDegree default interpolation degree
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public OemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
-                     final int defaultInterpolationDegree) {
+                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
         super(OemFile.ROOT, OemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, mu);
+              missionReferenceDate, mu, parsedUnitsBehavior);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -154,21 +157,21 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -188,16 +191,17 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         }
         metadata = new OemMetadata(defaultInterpolationDegree);
         context  = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                      this::getDataContext, this::getMissionReferenceDate,
-                                      metadata::getTimeSystem, () -> 0.0, () -> 1.0);
-        setFallback(this::processMetadataToken);
+                                      this::getDataContext, this::getParsedUnitsBehavior,
+                                      this::getMissionReferenceDate,
+                                      metadata::getTimeSystem, () -> 0.0, () -> 1.0, () -> null);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -206,7 +210,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.checkMandatoryEntries();
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;
     }
 
@@ -214,14 +218,14 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     @Override
     public boolean prepareData() {
         currentBlock = new OemData();
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inData() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnCovarianceToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnCovarianceToken);
         return true;
     }
 
@@ -260,12 +264,12 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     boolean manageXmlStateVectorSection(final boolean starting) {
         if (starting) {
             stateVectorBlock = new StateVector();
-            setFallback(this::processXmlStateVectorToken);
+            anticipateNext(this::processXmlStateVectorToken);
         } else {
             currentBlock.addData(stateVectorBlock.toTimeStampedPVCoordinates(),
                                  stateVectorBlock.hasAcceleration());
             stateVectorBlock = null;
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -280,13 +284,13 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
             // save the current metadata for later retrieval of reference frame
             final CommonMetadata savedMetadata = metadata;
             currentCovariance = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
-            setFallback(getFileFormat() == FileFormat.XML ?
+            anticipateNext(getFileFormat() == FileFormat.XML ?
                         this::processXmlCovarianceToken :
                         this::processKvnCovarianceToken);
         } else {
             currentBlock.addCovarianceMatrix(currentCovariance);
             currentCovariance = null;
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
         return true;
     }
@@ -361,13 +365,13 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                 stateVectorBlock.setP(0, Unit.KILOMETRE.toSI(Double.parseDouble(fields[1])));
                 stateVectorBlock.setP(1, Unit.KILOMETRE.toSI(Double.parseDouble(fields[2])));
                 stateVectorBlock.setP(2, Unit.KILOMETRE.toSI(Double.parseDouble(fields[3])));
-                stateVectorBlock.setV(0, Unit.KILOMETRE.toSI(Double.parseDouble(fields[4])));
-                stateVectorBlock.setV(1, Unit.KILOMETRE.toSI(Double.parseDouble(fields[5])));
-                stateVectorBlock.setV(2, Unit.KILOMETRE.toSI(Double.parseDouble(fields[6])));
+                stateVectorBlock.setV(0, Units.KM_PER_S.toSI(Double.parseDouble(fields[4])));
+                stateVectorBlock.setV(1, Units.KM_PER_S.toSI(Double.parseDouble(fields[5])));
+                stateVectorBlock.setV(2, Units.KM_PER_S.toSI(Double.parseDouble(fields[6])));
                 if (fields.length == 10) {
-                    stateVectorBlock.setA(0, Unit.KILOMETRE.toSI(Double.parseDouble(fields[7])));
-                    stateVectorBlock.setA(1, Unit.KILOMETRE.toSI(Double.parseDouble(fields[8])));
-                    stateVectorBlock.setA(2, Unit.KILOMETRE.toSI(Double.parseDouble(fields[9])));
+                    stateVectorBlock.setA(0, Units.KM_PER_S2.toSI(Double.parseDouble(fields[7])));
+                    stateVectorBlock.setA(1, Units.KM_PER_S2.toSI(Double.parseDouble(fields[8])));
+                    stateVectorBlock.setA(2, Units.KM_PER_S2.toSI(Double.parseDouble(fields[9])));
                 }
                 return currentBlock.addData(stateVectorBlock.toTimeStampedPVCoordinates(),
                                             stateVectorBlock.hasAcceleration());
@@ -386,7 +390,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processXmlStateVectorToken(final ParseToken token) {
-        setFallback(this::processXmlSubStructureToken);
+        anticipateNext(this::processXmlSubStructureToken);
         try {
             return token.getName() != null &&
                    StateVectorKey.valueOf(token.getName()).process(token, context, stateVectorBlock);
@@ -401,7 +405,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processKvnCovarianceToken(final ParseToken token) {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
         if (token.getName() != null) {
             if (OemDataSubStructureKey.COVARIANCE.name().equals(token.getName()) ||
                 OemDataSubStructureKey.covarianceMatrix.name().equals(token.getName())) {
@@ -466,7 +470,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processXmlCovarianceToken(final ParseToken token) {
-        setFallback(this::processXmlSubStructureToken);
+        anticipateNext(this::processXmlSubStructureToken);
         try {
             return token.getName() != null &&
                    CartesianCovarianceKey.valueOf(token.getName()).process(token, context, currentCovariance);
