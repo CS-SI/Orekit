@@ -19,8 +19,8 @@ package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.navigation.QZSSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.QZSSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagator;
+import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -51,7 +51,7 @@ public class Rtcm1044Data extends RtcmEphemerisData {
     /**
      * Get the QZSS navigation message corresponding to the current RTCM data.
      * <p>
-     * This object can be used to initialize a {@link QZSSPropagator}
+     * This object can be used to initialize a {@link GNSSPropagator}
      * <p>
      * This method uses the {@link DataContext#getDefault()} to initialize
      * the time scales used to configure the reference epochs of the navigation
@@ -67,7 +67,7 @@ public class Rtcm1044Data extends RtcmEphemerisData {
     /**
      * Get the QZSS navigation message corresponding to the current RTCM data.
      * <p>
-     * This object can be used to initialize a {@link QZSSPropagator}
+     * This object can be used to initialize a {@link GNSSPropagator}
      * <p>
      * When calling this method, the reference epochs of the navigation message
      * (i.e. ephemeris and clock epochs) are initialized using the provided time scales.

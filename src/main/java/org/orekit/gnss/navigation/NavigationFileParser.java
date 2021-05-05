@@ -40,6 +40,13 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.gnss.navigation.NavigationFile.TimeSystemCorrection;
+import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.GNSSDate;
@@ -645,7 +652,7 @@ public class NavigationFileParser {
             @Override
             public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
                 // Toe
-                pi.gpsNav.setToe(parseDouble(line, 4, 19));
+                pi.gpsNav.setTime(parseDouble(line, 4, 19));
                 // Cic
                 pi.gpsNav.setCic(parseDouble(line, 23, 19));
                 // Omega0
@@ -761,7 +768,7 @@ public class NavigationFileParser {
             @Override
             public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
                 // Toe
-                pi.galileoNav.setToe(parseDouble(line, 4, 19));
+                pi.galileoNav.setTime(parseDouble(line, 4, 19));
                 // Cic
                 pi.galileoNav.setCic(parseDouble(line, 23, 19));
                 // Omega0
@@ -877,7 +884,7 @@ public class NavigationFileParser {
             @Override
             public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
                 // Toe
-                pi.beidouNav.setToe(parseDouble(line, 4, 19));
+                pi.beidouNav.setTime(parseDouble(line, 4, 19));
                 // Cic
                 pi.beidouNav.setCic(parseDouble(line, 23, 19));
                 // Omega0
@@ -996,7 +1003,7 @@ public class NavigationFileParser {
             @Override
             public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
                 // Toe
-                pi.qzssNav.setToe(parseDouble(line, 4, 19));
+                pi.qzssNav.setTime(parseDouble(line, 4, 19));
                 // Cic
                 pi.qzssNav.setCic(parseDouble(line, 23, 19));
                 // Omega0
@@ -1112,7 +1119,7 @@ public class NavigationFileParser {
             @Override
             public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
                 // Toe
-                pi.irnssNav.setToe(parseDouble(line, 4, 19));
+                pi.irnssNav.setTime(parseDouble(line, 4, 19));
                 // Cic
                 pi.irnssNav.setCic(parseDouble(line, 23, 19));
                 // Omega0
