@@ -33,6 +33,7 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GLONASSEphemeris;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
@@ -72,7 +73,11 @@ public class GLONASSNumericalPropagatorTest {
         final ClassicalRungeKuttaIntegrator integrator = new ClassicalRungeKuttaIntegrator(10.);
 
         // Initialize the propagator
-        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(integrator, ephemeris, false).build();
+        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(integrator, ephemeris, false).
+                        attitudeProvider(Propagator.DEFAULT_LAW).
+                        mass(1521.0).
+                        eci(FramesFactory.getEME2000()).
+                        build();
 
         // Target date
         final AbsoluteDate target = new AbsoluteDate(new DateComponents(2012, 9, 7),

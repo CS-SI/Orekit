@@ -34,6 +34,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
@@ -84,6 +85,7 @@ public class GPSPropagatorTest {
             dtRelMax = FastMath.max(dtRelMax, corrections[1]);
             Assert.assertEquals(0.0, corrections[2], Precision.SAFE_MIN);
         }
+        Assert.assertEquals(0.0,        almanacs.get(0).getToc(), 1.0e-12);
         Assert.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
         Assert.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }
@@ -91,7 +93,12 @@ public class GPSPropagatorTest {
     @Test
     public void testGPSCycle() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).
+                        attitudeProvider(Propagator.DEFAULT_LAW).
+                        mass(1521.0).
+                        eci(FramesFactory.getEME2000()).
+                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                        build();
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -337,7 +344,7 @@ public class GPSPropagatorTest {
     public void testIssue544() {
         // Builds the GPSPropagator from the almanac
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
-        // In order to test the issue, we volontary set a Double.NaN value in the date.
+        // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur

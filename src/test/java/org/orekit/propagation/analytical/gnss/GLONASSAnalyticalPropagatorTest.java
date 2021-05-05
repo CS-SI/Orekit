@@ -41,6 +41,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -66,7 +67,12 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testPerfectValues() {
         // Build the propagator
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).
+                        attitudeProvider(Propagator.DEFAULT_LAW).
+                        mass(1521.0).
+                        eci(FramesFactory.getEME2000()).
+                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                        build();
 
         // Target
         final AbsoluteDate target = new AbsoluteDate(new DateComponents(2007, 12, 23),
@@ -91,7 +97,7 @@ public class GLONASSAnalyticalPropagatorTest {
                                                                         -3249.98587740305799));
 
         // Check
-        Assert.assertEquals(Propagator.DEFAULT_MASS, propagator.getMass(target), 0.1);
+        Assert.assertEquals(1521.0, propagator.getMass(target), 0.1);
         Assert.assertEquals(0.0, pvFinal.getPosition().distance(pvExpected.getPosition()), 1.1e-7);
         Assert.assertEquals(0.0, pvFinal.getVelocity().distance(pvExpected.getVelocity()), 1.1e-5);
 

@@ -193,7 +193,7 @@ public class QZSSPropagatorTest {
     public void testIssue544() {
         // Builds the QZSSPropagator from the almanac
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
-        // In order to test the issue, we volontary set a Double.NaN value in the date.
+        // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
