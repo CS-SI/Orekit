@@ -26,7 +26,7 @@ import java.util.Set;
 
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateVectorFunction;
+import org.hipparchus.analysis.CalculusFieldUnivariateVectorFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -619,7 +619,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * </p>
      */
     protected class FieldIntegrableFunction<T extends CalculusFieldElement<T>>
-            implements RealFieldUnivariateVectorFunction<T> {
+            implements CalculusFieldUnivariateVectorFunction<T> {
 
         /** Current state. */
         private final FieldSpacecraftState<T> state;
@@ -1386,7 +1386,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param field      field utilized by default
          * @return the integral of the weighted function.
          */
-        public <T extends CalculusFieldElement<T>> T[] integrate(final RealFieldUnivariateVectorFunction<T> f,
+        public <T extends CalculusFieldElement<T>> T[] integrate(final CalculusFieldUnivariateVectorFunction<T> f,
                 final T lowerBound, final T upperBound, final Field<T> field) {
 
             final T zero = field.getZero();
@@ -1496,7 +1496,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param field   field utilized by default
          * @return the integral of the weighted function.
          */
-        private <T extends CalculusFieldElement<T>> T[] basicIntegrate(final RealFieldUnivariateVectorFunction<T> f,
+        private <T extends CalculusFieldElement<T>> T[] basicIntegrate(final CalculusFieldUnivariateVectorFunction<T> f,
                 final T[] points, final T[] weights, final Field<T> field) {
 
             T x = points[0];

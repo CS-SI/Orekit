@@ -18,7 +18,7 @@ package org.orekit.models.earth;
 
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -505,7 +505,7 @@ public class Geoid implements EarthShape {
         final T highPoint = maxAbscissa2.sqrt();
 
         // line search function
-        final RealFieldUnivariateFunction<T> heightFunction = z -> {
+        final CalculusFieldUnivariateFunction<T> heightFunction = z -> {
             try {
                 final FieldGeodeticPoint<T> geodetic =
                         transform(line.pointAt(z), bodyFrame, date);

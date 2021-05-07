@@ -18,7 +18,7 @@ package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -155,7 +155,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         final T aNight   = field.getZero().add(NIGHT_TURN_LIMIT);
         T       aNoon    = FastMath.atan(muRate.divide(yawRate));
         if (FastMath.abs(realBeta).getReal() < aNoon.getReal()) {
-            final RealFieldUnivariateFunction<T> f = yawEnd -> {
+            final CalculusFieldUnivariateFunction<T> f = yawEnd -> {
                 final T delta = muRate.multiply(yawEnd).divide(yawRate);
                 return yawEnd.subtract(FastMath.abs(context.computePhi(realBeta, delta).
                                                     subtract(context.computePhi(realBeta, delta.negate()))).

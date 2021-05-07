@@ -18,7 +18,7 @@ package org.orekit.frames;
 
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -158,7 +158,7 @@ class L2TransformProvider implements TransformProvider {
         final T baseR = bigR.multiply(FastMath.cbrt(massRatio / 3) + 1);
 
         // Accurate position of L2 point, by solving the L2 equilibrium equation
-        final RealFieldUnivariateFunction<T> l2Equation = r -> {
+        final CalculusFieldUnivariateFunction<T> l2Equation = r -> {
             final T rminusbigR = r.subtract(bigR);
             final T lhs1       = r.multiply(r).reciprocal();
             final T lhs2       = rminusbigR.multiply(rminusbigR).reciprocal().multiply(massRatio);
