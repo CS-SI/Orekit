@@ -18,7 +18,7 @@ package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.gnss.navigation.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;

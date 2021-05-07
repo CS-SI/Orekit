@@ -29,9 +29,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.BeidouAlmanac;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.navigation.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouAlmanac;
+import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
@@ -50,15 +51,27 @@ public class BeidouPropagatorTest {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 18 for May 28th 2019
-        almanac = new BeidouAlmanac(18, 694, 4096, 6493.3076, 0.00482368,
-                                    0.0, -0.01365602, 1.40069711, -2.11437379e-9,
-                                    3.11461541, -2.53029382, 0.0001096725, 7.27596e-12, 0);
+        almanac = new BeidouAlmanac();
+        almanac.setPRN(18);
+        almanac.setWeek(694);
+        almanac.setTime(4096.0);
+        almanac.setSqrtA(6493.3076);
+        almanac.setE(0.00482368);
+        almanac.setI0(0.0, -0.01365602);
+        almanac.setOmega0(1.40069711);
+        almanac.setOmegaDot(-2.11437379e-9);
+        almanac.setPa(3.11461541);
+        almanac.setM0(-2.53029382);
+        almanac.setAf0(0.0001096725);
+        almanac.setAf1(7.27596e-12);
+        almanac.setHealth(0);
+        almanac.setDate(new GNSSDate(almanac.getWeek(), 1000.0 * almanac.getTime(), SatelliteSystem.BEIDOU).getDate());
     }
 
     @Test
     public void testBeidouCycle() {
         // Builds the BeiDou propagator from the almanac
-        final BeidouPropagator propagator = new BeidouPropagator.Builder(almanac).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
         // Intermediate verification
         Assert.assertEquals(18,           almanac.getPRN());
         Assert.assertEquals(0,            almanac.getHealth());
@@ -67,7 +80,7 @@ public class BeidouPropagatorTest {
         // Propagate at the BeiDou date and one BeiDou cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
-        final double bdtCycleDuration = BeidouOrbitalElements.BEIDOU_WEEK_IN_SECONDS * BeidouOrbitalElements.BEIDOU_WEEK_NB;
+        final double bdtCycleDuration = almanac.getCycleDuration();
         final AbsoluteDate date1 = date0.shiftedBy(bdtCycleDuration);
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
 
@@ -78,9 +91,9 @@ public class BeidouPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the BeiDou propagator from the almanac
-        final BeidouPropagator propagator = new BeidouPropagator.Builder(almanac).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
         Assert.assertEquals("EME2000", propagator.getFrame().getName());
-        Assert.assertEquals(3.986004418e+14, BeidouOrbitalElements.BEIDOU_MU, 1.0e6);
+        Assert.assertEquals(3.986004418e+14, almanac.getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -96,14 +109,14 @@ public class BeidouPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            BeidouPropagator propagator = new BeidouPropagator.Builder(almanac).build();
+            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
             propagator.resetInitialState(propagator.getInitialState());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
-            BeidouPropagator propagator = new BeidouPropagator.Builder(almanac).build();
+            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -118,8 +131,8 @@ public class BeidouPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        BeidouPropagator propagator = new BeidouPropagator.Builder(almanac).build();
-        BeidouOrbitalElements elements = propagator.getBeidouOrbitalElements();
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        GNSSOrbitalElements elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.BEIDOU).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
@@ -150,7 +163,7 @@ public class BeidouPropagatorTest {
         final BeidouNavigationMessage boe = new BeidouNavigationMessage();
         boe.setPRN(7);
         boe.setWeek(713);
-        boe.setToe(284400.0);
+        boe.setTime(284400.0);
         boe.setSqrtA(6492.84515953064);
         boe.setE(0.00728036486543715);
         boe.setDeltaN(2.1815194404696853E-9);
@@ -170,7 +183,7 @@ public class BeidouPropagatorTest {
         // Date of the BeiDou orbital elements (GPStime - BDTtime = 14s)
         final AbsoluteDate target = boe.getDate().shiftedBy(-14.0);
         // Build the BeiDou propagator
-        final BeidouPropagator propagator = new BeidouPropagator.Builder(boe).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(boe).build();
         // Compute the PV coordinates at the date of the BeiDou orbital elements
         final PVCoordinates pv = propagator.getPVCoordinates(target, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Computed position
@@ -183,8 +196,8 @@ public class BeidouPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the BeidouPropagator from the almanac
-        final BeidouPropagator propagator = new BeidouPropagator.Builder(almanac).build();
-        // In order to test the issue, we volontary set a Double.NaN value in the date.
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
