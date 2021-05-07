@@ -28,7 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
@@ -195,7 +195,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
          * @param <T> type of the field elements
          * @return position-velocity at the specified date
          */
-        <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
+        <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
 
     }
 
@@ -1066,7 +1066,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
 
             // get raw PV from Chebyshev polynomials
             PosVelChebyshev chebyshev;
@@ -1097,7 +1097,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
             return FieldPVCoordinates.getZero(date.getField());
         }
 

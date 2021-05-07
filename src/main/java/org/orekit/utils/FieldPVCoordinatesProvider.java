@@ -17,7 +17,7 @@
 
 package org.orekit.utils;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -29,7 +29,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * and many others...
  * </p>
  */
-public interface FieldPVCoordinatesProvider<T extends RealFieldElement<T>> {
+public interface FieldPVCoordinatesProvider<T extends CalculusFieldElement<T>> {
 
     /** Get the {@link FieldPVCoordinates} of the body in the selected frame.
      * @param date current date

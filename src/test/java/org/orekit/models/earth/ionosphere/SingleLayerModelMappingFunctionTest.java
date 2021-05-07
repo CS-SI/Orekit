@@ -17,7 +17,7 @@
 package org.orekit.models.earth.ionosphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -55,7 +55,7 @@ public class SingleLayerModelMappingFunctionTest {
         doTestFieldMappingFactor(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldMappingFactor(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldMappingFactor(final Field<T> field) {
         final T zero = field.getZero();
         // Model
         final IonosphericMappingFunction model = new SingleLayerModelMappingFunction();

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableSet;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -189,10 +189,10 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
-     * @param <T> extends RealFieldElements
+     * @param <T> extends CalculusFieldElements
      * @return the parameters given the date
      */
-    public <T extends RealFieldElement<T>> T[] extractParameters(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
                                                                  final FieldAbsoluteDate<T> date) {
 
         // Get the tropospheric parameter drivers of the date
@@ -226,7 +226,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final  FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final  FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Extract the proper parameters valid at date from the input array
         final T[] extractedParameters = extractParameters(parameters, date);

@@ -20,7 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -136,7 +136,7 @@ public class GLONASSNumericalPropagatorTest {
         doTestFromITRF2008ToPZ90Field(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFromITRF2008ToPZ90Field(final Field<T> field)  {
+    private <T extends CalculusFieldElement<T>> void doTestFromITRF2008ToPZ90Field(final Field<T> field)  {
         // Reference for the test
         // "PARAMETRY ZEMLI 1990" (PZ-90.11) Reference Document
         //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014" 

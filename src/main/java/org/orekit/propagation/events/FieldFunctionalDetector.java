@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import java.util.function.Function;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
@@ -41,7 +41,7 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
  * @author Evan Ward
  * @since 10.2
  */
-public class FieldFunctionalDetector<T extends RealFieldElement<T>>
+public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldFunctionalDetector<T>, T> {
 
     /** The g function. */
@@ -99,8 +99,8 @@ public class FieldFunctionalDetector<T extends RealFieldElement<T>>
 
     /**
      * Create a new event detector with a new g function, keeping all other attributes the
-     * same. It is recommended to use {@link #withMaxCheck(RealFieldElement)} and {@link
-     * #withThreshold(RealFieldElement)} to set appropriate values for this g function.
+     * same. It is recommended to use {@link #withMaxCheck(CalculusFieldElement)} and {@link
+     * #withThreshold(CalculusFieldElement)} to set appropriate values for this g function.
      *
      * @param newGFunction the new g function.
      * @return a new detector with the new g function.

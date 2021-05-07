@@ -21,7 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -438,7 +438,7 @@ public class TideTest {
                 }
 
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return null;
                 }
                 

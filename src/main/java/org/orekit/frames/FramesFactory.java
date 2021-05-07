@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
@@ -684,7 +684,7 @@ public class FramesFactory {
      * @return transform between the two frames, avoiding interpolation
      * @since 9.0
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
                                                                                                  final FieldAbsoluteDate<T> date) {
 
         // common ancestor to both frames in the frames tree

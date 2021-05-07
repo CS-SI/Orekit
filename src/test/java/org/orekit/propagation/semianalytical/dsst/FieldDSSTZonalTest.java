@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -71,7 +71,7 @@ public class FieldDSSTZonalTest {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
         
         final T zero = field.getZero();
         
@@ -135,7 +135,7 @@ public class FieldDSSTZonalTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
         final T zero = field.getZero();
  
         final FieldSpacecraftState<T> meanState = getGEOState(field);
@@ -175,7 +175,7 @@ public class FieldDSSTZonalTest {
         doTestIssue625(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue625(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue625(final Field<T> field) {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -476,7 +476,7 @@ public class FieldDSSTZonalTest {
       
     }
     
-    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
         
         final T zero = field.getZero();
         // No shadow at this date

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FDSFactory;
@@ -98,7 +98,7 @@ public class CR3BPForceModel extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
 
         // Spacecraft Velocity
@@ -172,7 +172,7 @@ public class CR3BPForceModel extends AbstractForceModel {
      * @param s SpacecraftState
      * @return Spacecraft Potential
      */
-    public <T extends RealFieldElement<T>> FieldDerivativeStructure<T> getPotential(final FieldSpacecraftState<T> s) {
+    public <T extends CalculusFieldElement<T>> FieldDerivativeStructure<T> getPotential(final FieldSpacecraftState<T> s) {
 
         // Spacecraft Position
         final T x = s.getPVCoordinates().getPosition().getX();
@@ -214,7 +214,7 @@ public class CR3BPForceModel extends AbstractForceModel {
 
     @Override
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 

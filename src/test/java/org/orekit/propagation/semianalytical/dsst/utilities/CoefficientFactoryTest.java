@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
 import org.hipparchus.complex.Complex;
@@ -150,7 +150,7 @@ public class CoefficientFactoryTest {
      * Qns test based on two computation method. As methods are independent, if they give the same
      * results, we assume them to be consistent.
      */
-    private <T extends RealFieldElement<T>> void doTestQnsField(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestQnsField(Field<T> field) {
         final T zero = field.getZero();
         Assert.assertEquals(1., getQnsPolynomialValue(0, 0, 0), 0.);
         // Method comparison :
@@ -199,7 +199,7 @@ public class CoefficientFactoryTest {
     /** Gs and Hs computation test based on 2 independent methods.
      *  If they give same results, we assume them to be consistent.
      */
-    private <T extends RealFieldElement<T>> void doTestGsHsField(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGsHsField(Field<T> field) {
         final T zero = field.getZero();
         final int s = 50;
         final MersenneTwister random = new MersenneTwister(123456789);
@@ -274,7 +274,7 @@ public class CoefficientFactoryTest {
      * @param s s value
      * @return the polynomial value evaluated at γ
      */
-    private static <T extends RealFieldElement<T>> T getQnsPolynomialValue(final T gamma, final int n, final int s) {
+    private static <T extends CalculusFieldElement<T>> T getQnsPolynomialValue(final T gamma, final int n, final int s) {
         PolynomialFunction derivative;
         if (QNS_MAP.containsKey(new NSKey(n, s))) {
             derivative = QNS_MAP.get(new NSKey(n, s));
@@ -317,7 +317,7 @@ public class CoefficientFactoryTest {
      *         The 1st element contains the G<sub>s</sub> value.
      *         The 2nd element contains the H<sub>s</sub> value.
      */
-    private static <T extends RealFieldElement<T>> T[] getGsHs(final T k, final T h,
+    private static <T extends CalculusFieldElement<T>> T[] getGsHs(final T k, final T h,
                                     final T a, final T b, final int s,
                                     final Field<T> field) {
         final FieldComplex<T> as   = new FieldComplex<>(k, h).pow(s);
@@ -329,7 +329,7 @@ public class CoefficientFactoryTest {
         return values;
     }
 
-    private static class FieldComplex <T extends RealFieldElement<T>> {
+    private static class FieldComplex <T extends CalculusFieldElement<T>> {
 
         /** The imaginary part. */
         private final T imaginary;

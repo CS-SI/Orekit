@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Barycentric Coordinate Time.
  * <p>Coordinate time at the center of mass of the Solar System.
@@ -67,7 +67,7 @@ public class TCBScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
         return tdb.offsetFromTAI(date).add(date.durationFrom(referenceDate).multiply(LB_RATE));
     }
 

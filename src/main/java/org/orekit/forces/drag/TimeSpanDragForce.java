@@ -22,7 +22,7 @@ import java.util.NavigableSet;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -263,7 +263,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
         // Local atmospheric density
         final FieldAbsoluteDate<T> date     = s.getDate();
@@ -330,7 +330,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
      * </p>
      */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
 
         // Get the transitions' dates from the TimeSpanMap
         final AbsoluteDate[] transitionDates = getTransitionDates();
@@ -415,14 +415,14 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #acceleration(FieldSpacecraftState, RealFieldElement[]) acceleration} method.
+     * {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[]) acceleration} method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the parameters given the date
      */
-    public <T extends RealFieldElement<T>> T[] extractParameters(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
                                                                  final FieldAbsoluteDate<T> date) {
 
         // Get the drag parameter drivers of the date

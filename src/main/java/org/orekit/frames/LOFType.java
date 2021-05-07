@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -56,7 +56,7 @@ public enum LOFType {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
@@ -91,7 +91,7 @@ public enum LOFType {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
@@ -132,7 +132,7 @@ public enum LOFType {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
@@ -171,7 +171,7 @@ public enum LOFType {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.MINUS_K),
@@ -207,7 +207,7 @@ public enum LOFType {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
             return LVLH_CCSDS.rotationFromInertial(field, pv);
         }
@@ -238,7 +238,7 @@ public enum LOFType {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
@@ -261,7 +261,7 @@ public enum LOFType {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
             final FieldVector3D<T> m = pv.getMomentum();
             return new FieldRotation<>(new FieldVector3D<>(m.getY().negate(), m.getX(), field.getZero()),
@@ -297,7 +297,7 @@ public enum LOFType {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
             final FieldVector3D<T> m = pv.getMomentum();
             return new FieldRotation<>(new FieldVector3D<>(m.getY().negate(), m.getX(), field.getZero()),
@@ -336,7 +336,7 @@ public enum LOFType {
      * @return transform from the frame where position-velocity are defined to local orbital frame
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> FieldTransform<T> transformFromInertial(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> transformFromInertial(final FieldAbsoluteDate<T> date,
                                                                                    final FieldPVCoordinates<T> pv) {
 
         // compute the translation part of the transform
@@ -380,7 +380,7 @@ public enum LOFType {
      * @return rotation from inertial frame to local orbital frame
      * @since 9.0
      */
-    public abstract <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field,
+    public abstract <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field,
                                                                                           FieldPVCoordinates<T> pv);
 
 }

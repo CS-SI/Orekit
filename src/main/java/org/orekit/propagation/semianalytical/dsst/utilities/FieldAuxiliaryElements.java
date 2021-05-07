@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -30,7 +30,7 @@ import org.orekit.time.FieldAbsoluteDate;
  *  Most of them are defined in Danielson paper at § 2.1.
  *  </p>
  */
-public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
+public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
 
     /** \(2\pi\) . */
     public static final double TWO_PI = 2 * FastMath.PI;
@@ -192,7 +192,7 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
      * @param a angle to normalize
      * @param center center of the desired 2&pi; interval for the result
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
+     * @deprecated replaced by {@link MathUtils#normalizeAngle(CalculusFieldElement, CalculusFieldElement)}
      */
     @Deprecated
     public T normalizeAngle(final T a, final T center) {

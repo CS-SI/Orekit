@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -182,7 +182,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero         = field.getZero();
@@ -282,7 +282,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
         final T[] delays = computeZenithDelay(point, parameters, date);
@@ -319,7 +319,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
      * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
+    public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -368,7 +368,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
      * @param B2 Semi-annual amplitude of the coefficient
      * @return the mapping function coefficient at a given day.
      */
-    private <T extends RealFieldElement<T>> T computeSeasonalFit(final int doy, final T A0, final T A1,
+    private <T extends CalculusFieldElement<T>> T computeSeasonalFit(final int doy, final T A0, final T A1,
                                                                  final T A2, final T B1, final T B2) {
         final double coef = (doy / 365.25) * 2 * FastMath.PI;
         final SinCos sc1  = FastMath.sinCos(coef);

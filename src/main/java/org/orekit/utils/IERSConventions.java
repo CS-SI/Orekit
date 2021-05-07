@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
@@ -138,7 +138,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return epsilonA.value(evaluateTC(date, timeScales));
                 }
 
@@ -249,7 +249,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
                     final T[] xy             = xySum.value(elements);
@@ -363,7 +363,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
                     final T[] psiEpsilon = psiEpsilonSeries.value(elements);
                     final T[] result = MathArrays.buildArray(date.getField(), 3);
@@ -416,7 +416,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final T dtai = date.durationFrom(gmstReference);
@@ -470,7 +470,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final T dtai = date.durationFrom(gmstReference);
@@ -522,7 +522,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // compute equation of equinoxes
                     final T[] angles = nutation.value(date);
@@ -668,7 +668,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     final FieldPoleCorrection<T> pole = eopHistory.getPoleCorrection(date);
                     final T[] a = MathArrays.buildArray(date.getField(), 2);
                     a[0] = pole.getXp().add(pole.getYp().multiply(coupling)).multiply(globalFactor);
@@ -696,7 +696,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     // there are no model for ocean pole tide prior to conventions 2010
                     return MathArrays.buildArray(date.getField(), 2);
                 }
@@ -826,7 +826,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return epsilonA.value(evaluateTC(date, timeScales));
                 }
 
@@ -867,7 +867,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     return xys.value(arguments.evaluateAll(date));
                 }
 
@@ -961,7 +961,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
                     final T[] luniSolar = luniSolarSeries.value(elements);
                     final T[] planetary = planetarySeries.value(elements);
@@ -1007,7 +1007,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return era.value(date).add(minusEO.value(evaluateTC(date, timeScales)));
                 }
 
@@ -1046,7 +1046,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return minusEO.derivative(evaluateTC(date, timeScales)).add(era.getRate());
                 }
 
@@ -1122,7 +1122,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // evaluate equation of origins
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
@@ -1364,7 +1364,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
                     final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -1470,7 +1470,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     // there are no model for ocean pole tide prior to conventions 2010
                     return MathArrays.buildArray(date.getField(), 2);
                 }
@@ -1586,7 +1586,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return epsilonA.value(evaluateTC(date, timeScales));
                 }
 
@@ -1626,7 +1626,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     return xys.value(arguments.evaluateAll(date));
                 }
 
@@ -1754,7 +1754,7 @@ public enum IERSConventions {
          * @param eopHistory EOP history
          * @return array containing m₁ and m₂
          */
-        private <T extends RealFieldElement<T>> T[] computePoleWobble(final FieldAbsoluteDate<T> date, final EOPHistory eopHistory) {
+        private <T extends CalculusFieldElement<T>> T[] computePoleWobble(final FieldAbsoluteDate<T> date, final EOPHistory eopHistory) {
 
             // polynomial model from IERS 2010, table 7.7
             final double f0 = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
@@ -1837,7 +1837,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
                     // evaluate wobble variables
                     final T[] wobbleM = computePoleWobble(date, eopHistory);
@@ -1889,7 +1889,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
                     final T[] v = MathArrays.buildArray(date.getField(), 2);
 
@@ -1978,7 +1978,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
                     final T[] psiEpsilon = psiEpsilonSeries.value(elements);
                     final T[] result = MathArrays.buildArray(date.getField(), 3);
@@ -2023,7 +2023,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return era.value(date).add(minusEO.value(evaluateTC(date, timeScales)));
                 }
 
@@ -2062,7 +2062,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return minusEO.derivative(evaluateTC(date, timeScales)).add(era.getRate());
                 }
 
@@ -2120,7 +2120,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // evaluate equation of origins
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
@@ -2278,7 +2278,7 @@ public enum IERSConventions {
      * @see #evaluateTC(FieldAbsoluteDate, TimeScales)
      */
     @DefaultDataContext
-    public <T extends RealFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date) {
         return evaluateTC(date, DataContext.getDefault().getTimeScales());
     }
 
@@ -2289,7 +2289,7 @@ public enum IERSConventions {
      * @return date offset in Julian centuries
      * @since 10.1
      */
-    public <T extends RealFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date,
                                                         final TimeScales timeScales) {
         return date.durationFrom(getNutationReferenceEpoch(timeScales))
                 .divide(Constants.JULIAN_CENTURY);
@@ -3063,7 +3063,7 @@ public enum IERSConventions {
          * @param <T> type of the field elements
          * @return correction value (0 before 1997-02-27)
          */
-        public static <T extends RealFieldElement<T>> T value(
+        public static <T extends CalculusFieldElement<T>> T value(
                 final FieldDelaunayArguments<T> arguments,
                 final TimeScale tai) {
             /* Start date for applying Moon corrections to the equation of the equinoxes.
@@ -3158,7 +3158,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
             // split the date offset as a full number of days plus a smaller part
             final int secondsInDay = 86400;
@@ -3264,7 +3264,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
             final T[] a = MathArrays.buildArray(date.getField(), 3);
             final T tc = evaluateTC(date, timeScales);
             a[0] = psiA.value(tc);
@@ -3311,7 +3311,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
             return kSeries.value(arguments.evaluateAll(date));
         }
 
@@ -3356,7 +3356,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
             final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
             final T[] correction    = correctionSeries.value(elements);

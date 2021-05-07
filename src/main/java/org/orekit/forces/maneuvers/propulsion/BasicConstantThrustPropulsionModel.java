@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -128,13 +128,13 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] parameters) {
         return new FieldVector3D<T>(parameters[0], direction);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getFlowRate(final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> T getFlowRate(final T[] parameters) {
         return parameters[1];
     }
 }
