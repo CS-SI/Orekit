@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -37,7 +37,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * @author Luc Maisonobe
  * @since 9.0
  */
-public class FieldAltitudeDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldAltitudeDetector<T>, T> {
+public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldAltitudeDetector<T>, T> {
 
     /** Threshold altitude value (m). */
     private final T altitude;

@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -41,7 +41,7 @@ import org.orekit.utils.ElevationMask;
  * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * @author Hank Grabowski
  */
-public class FieldElevationDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldElevationDetector<T>, T> {
+public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldElevationDetector<T>, T> {
 
     /** Elevation mask used for calculations, if defined. */
     private final ElevationMask elevationMask;

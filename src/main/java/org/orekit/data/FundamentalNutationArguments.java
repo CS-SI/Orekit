@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
@@ -332,7 +332,7 @@ public class FundamentalNutationArguments implements Serializable {
      * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
      * @return value of the polynomial
      */
-    private <T extends RealFieldElement<T>> T value(final T tc, final double[] coefficients) {
+    private <T extends CalculusFieldElement<T>> T value(final T tc, final double[] coefficients) {
         T value = tc.getField().getZero();
         for (int i = coefficients.length - 1; i >= 0; --i) {
             value = tc.multiply(value).add(coefficients[i]);
@@ -346,7 +346,7 @@ public class FundamentalNutationArguments implements Serializable {
      * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
      * @return time derivative of the polynomial
      */
-    private <T extends RealFieldElement<T>> T derivative(final T tc, final double[] coefficients) {
+    private <T extends CalculusFieldElement<T>> T derivative(final T tc, final double[] coefficients) {
         T derivative = tc.getField().getZero();
         for (int i = coefficients.length - 1; i > 0; --i) {
             derivative = tc.multiply(derivative).add(i * coefficients[i]);
@@ -403,7 +403,7 @@ public class FundamentalNutationArguments implements Serializable {
      * @param <T> type of the field elements
      * @return all fundamental arguments for the current date (Delaunay plus planetary)
      */
-    public <T extends RealFieldElement<T>> FieldBodiesElements<T> evaluateAll(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldBodiesElements<T> evaluateAll(final FieldAbsoluteDate<T> date) {
 
         final T tc       = conventions.evaluateTC(date, timeScales);
         final T gamma    = gmstFunction == null ?

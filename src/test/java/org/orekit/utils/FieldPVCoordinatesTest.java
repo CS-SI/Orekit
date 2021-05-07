@@ -17,7 +17,7 @@
 package org.orekit.utils;
 
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -737,7 +737,7 @@ public class FieldPVCoordinatesTest {
                                    factory.variable(2, z));
     }
 
-    private <T extends RealFieldElement<T>> void checkPV(FieldPVCoordinates<T> expected, FieldPVCoordinates<T> real, double epsilon) {
+    private <T extends CalculusFieldElement<T>> void checkPV(FieldPVCoordinates<T> expected, FieldPVCoordinates<T> real, double epsilon) {
         Assert.assertEquals(expected.getPosition().getX().getReal(), real.getPosition().getX().getReal(), epsilon);
         Assert.assertEquals(expected.getPosition().getY().getReal(), real.getPosition().getY().getReal(), epsilon);
         Assert.assertEquals(expected.getPosition().getZ().getReal(), real.getPosition().getZ().getReal(), epsilon);
@@ -746,11 +746,11 @@ public class FieldPVCoordinatesTest {
         Assert.assertEquals(expected.getVelocity().getZ().getReal(), real.getVelocity().getZ().getReal(), epsilon);
     }
 
-    private interface OrbitFunction<T extends RealFieldElement<T>>  {
+    private interface OrbitFunction<T extends CalculusFieldElement<T>>  {
         FieldVector3D<T> apply(final FieldCartesianOrbit<T> o);
     }
 
-    private <T extends RealFieldElement<T>> FieldVector3D<T> differentiate(FieldCartesianOrbit<T> orbit,
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> differentiate(FieldCartesianOrbit<T> orbit,
                                                                            OrbitFunction<T> picker) {
         try {
             FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();

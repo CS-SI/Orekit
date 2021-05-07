@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -95,7 +95,7 @@ public interface DSSTForceModel {
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      */
-    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
+    <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                               PropagationType type, T[] parameters);
 
     /** Get force model parameters.
@@ -117,7 +117,7 @@ public interface DSSTForceModel {
      * @return force model parameters
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
         final List<ParameterDriver> drivers = getParametersDrivers();
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {
@@ -144,7 +144,7 @@ public interface DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return the mean element rates dai/dt
      */
-    <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
+    <T extends CalculusFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
                                                            FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
 
 
@@ -160,7 +160,7 @@ public interface DSSTForceModel {
      * @return array of events detectors or null if the model is not
      * related to any discrete events
      */
-    <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field);
+    <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field);
 
     /** Register an attitude provider.
      * <p>
@@ -192,7 +192,7 @@ public interface DSSTForceModel {
      * @param meanStates mean states information: date, kinematics, attitude
      */
     @SuppressWarnings("unchecked")
-    <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters, FieldSpacecraftState<T>... meanStates);
+    <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(T[] parameters, FieldSpacecraftState<T>... meanStates);
 
     /** Get the drivers for force model parameters.
      * @return drivers for force model parameters

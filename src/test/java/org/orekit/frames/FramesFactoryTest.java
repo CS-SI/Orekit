@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -156,7 +156,7 @@ public class FramesFactoryTest {
                                      new PVCoordinates(new Vector3D(sin, Vector3D.PLUS_I),
                                                        Vector3D.ZERO));
             }
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+            public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 throw new UnsupportedOperationException("never called in this test");
             }
         };
@@ -198,7 +198,7 @@ public class FramesFactoryTest {
                                      new PVCoordinates(new Vector3D(sin, Vector3D.PLUS_I),
                                                        Vector3D.ZERO));
             }
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+            public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 throw new UnsupportedOperationException("never called in this test");
             }
         };

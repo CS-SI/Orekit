@@ -17,7 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -61,7 +61,7 @@ public class FixedTroposphericModelTest {
         doTestFieldModel(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldModel(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldModel(final Field<T> field) {
         final T zero = field.getZero();
         // check with (artificial) test values from tropospheric-delay.txt
         Assert.assertEquals(2.5d, model.pathDelay(zero.add(FastMath.toRadians(90d)), new FieldGeodeticPoint<T>(zero, zero, zero), null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), epsilon);
@@ -95,7 +95,7 @@ public class FixedTroposphericModelTest {
         doTestFieldSymmetry(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldSymmetry(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldSymmetry(final Field<T> field) {
         final T zero = field.getZero();
         for (int elevation = 0; elevation < 90; elevation += 10) {
             final T delay1 = model.pathDelay(zero.add(FastMath.toRadians(elevation)),

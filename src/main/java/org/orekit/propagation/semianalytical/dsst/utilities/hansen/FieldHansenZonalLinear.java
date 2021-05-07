@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -34,7 +34,7 @@ import org.hipparchus.util.MathArrays;
  * @author Lucian Barbulescu
  * @author Bryan Cazabonne
  */
-public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
+public class FieldHansenZonalLinear <T extends CalculusFieldElement<T>> {
 
     /** The number of coefficients that will be computed with a set of roots. */
     private static final int SLICE = 10;

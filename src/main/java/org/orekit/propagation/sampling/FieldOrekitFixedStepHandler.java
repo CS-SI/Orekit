@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -27,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
-public interface FieldOrekitFixedStepHandler<T extends RealFieldElement<T>> {
+public interface FieldOrekitFixedStepHandler<T extends CalculusFieldElement<T>> {
 
     /** Initialize step handler at the start of a propagation.
      * <p>

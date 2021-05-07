@@ -19,7 +19,7 @@ package org.orekit.forces.empirical;
 import java.util.Arrays;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -228,7 +228,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                                  mass, maneuverLaw, maneuver, accelerationLaw, lofAcceleration, 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void doTestEquivalentManeuver(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> void doTestEquivalentManeuver(final Field<T> field,
                                                                           final double mass,
                                                                           final AttitudeProvider maneuverLaw,
                                                                           final ConstantThrustManeuver maneuver,
@@ -252,7 +252,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         // (hence mass remains constant)
         AdaptiveStepsizeFieldIntegrator<T> integrator0 =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 100, tolerance[0], tolerance[1]);
-        integrator0.setInitialStepSize(field.getZero().add(60));
+        integrator0.setInitialStepSize(60);
         final FieldNumericalPropagator<T> propagator0 = new FieldNumericalPropagator<>(field, integrator0);
         propagator0.setInitialState(initialState);
         propagator0.setAttitudeProvider(maneuverLaw);
@@ -264,7 +264,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         // propagator 1 uses a constant acceleration
         AdaptiveStepsizeFieldIntegrator<T> integrator1 =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 100, tolerance[0], tolerance[1]);
-        integrator1.setInitialStepSize(field.getZero().add(60));
+        integrator1.setInitialStepSize(60);
         final FieldNumericalPropagator<T> propagator1 = new FieldNumericalPropagator<>(field, integrator1);
         propagator1.setInitialState(initialState);
         propagator1.setAttitudeProvider(accelerationLaw);

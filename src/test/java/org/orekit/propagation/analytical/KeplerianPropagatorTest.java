@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -400,7 +400,7 @@ public class KeplerianPropagatorTest {
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
-            public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+            public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                                 FieldAbsoluteDate<T> date, Frame frame)
                 {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
@@ -446,7 +446,7 @@ public class KeplerianPropagatorTest {
                                                                         throw new OrekitException((Throwable) null,
                                                                                                   new DummyLocalizable("dummy error"));
                                                                     }
-                                                                    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+                                                                    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                                                                                         FieldAbsoluteDate<T> date, Frame frame)
                                                                         {
                                                                         throw new OrekitException((Throwable) null,

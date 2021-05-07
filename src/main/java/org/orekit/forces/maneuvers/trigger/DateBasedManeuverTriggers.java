@@ -19,7 +19,7 @@ package org.orekit.forces.maneuvers.trigger;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -133,7 +133,7 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         // In forward propagation direction, firing must be enabled
         // at start time and disabled at end time; in backward
         // propagation direction, firing must be enabled
@@ -159,7 +159,7 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
     }
 
     @Override
-    public <T extends RealFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date,
                                                             final T[] parameters) {
         // Firing state does not depend on a parameter driver here
         return isFiring(date.toAbsoluteDate());

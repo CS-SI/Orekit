@@ -18,7 +18,7 @@ package org.orekit.forces.empirical;
 
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -64,7 +64,7 @@ public interface AccelerationModel {
      * @param <T> type of the elements
      * @return norm of the acceleration
      */
-    <T extends RealFieldElement<T>> T signedAmplitude(FieldSpacecraftState<T> state, T[] parameters);
+    <T extends CalculusFieldElement<T>> T signedAmplitude(FieldSpacecraftState<T> state, T[] parameters);
 
     /** Get the drivers for acceleration model parameters.
      * @return drivers for acceleration model parameters

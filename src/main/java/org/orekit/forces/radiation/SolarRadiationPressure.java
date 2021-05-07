@@ -18,7 +18,7 @@ package org.orekit.forces.radiation;
 
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -120,7 +120,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
 
         final FieldAbsoluteDate<T> date         = s.getDate();
@@ -205,11 +205,11 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
      * @param position the satellite's position in the selected frame.
      * @param frame in which is defined the position
      * @param date the date
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return lighting ratio
           * @since 7.1
      */
-    public <T extends RealFieldElement<T>> T getLightingRatio(final FieldVector3D<T> position,
+    public <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldVector3D<T> position,
                                                               final Frame frame,
                                                               final FieldAbsoluteDate<T> date) {
 
@@ -278,7 +278,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
      * @param <T> type fo the field elements
      * @return min value
      */
-    private <T extends RealFieldElement<T>> T min(final double d, final T f) {
+    private <T extends CalculusFieldElement<T>> T min(final double d, final T f) {
         return (f.getReal() > d) ? f.getField().getZero().add(d) : f;
     }
 
@@ -288,7 +288,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
      * @param <T> type fo the field elements
      * @return max value
      */
-    private <T extends RealFieldElement<T>> T max(final double d, final T f) {
+    private <T extends CalculusFieldElement<T>> T max(final double d, final T f) {
         return (f.getReal() <= d) ? f.getField().getZero().add(d) : f;
     }
 

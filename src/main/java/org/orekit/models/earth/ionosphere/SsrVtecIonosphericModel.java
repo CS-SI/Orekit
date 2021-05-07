@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -120,7 +120,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
 
         // Field
@@ -225,7 +225,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
      * @param <T> type of the elements
      * @return the slant TEC for the current ionospheric layer
      */
-    private static <T extends RealFieldElement<T>> T stecIonosphericLayer(final SsrIm201Data im201Data, final SsrIm201Header im201Header,
+    private static <T extends CalculusFieldElement<T>> T stecIonosphericLayer(final SsrIm201Data im201Data, final SsrIm201Header im201Header,
                                                                           final T elevation, final T azimuth,
                                                                           final FieldGeodeticPoint<T> point) {
 
@@ -288,7 +288,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
      * @param <T> type of the elements
      * @return the spherical Earth’s central angle in radians
      */
-    private static <T extends RealFieldElement<T>> T calculatePsi(final T hR, final double hI,
+    private static <T extends CalculusFieldElement<T>> T calculatePsi(final T hR, final double hI,
                                                                   final T elevation) {
         final T ratio = hR.add(EARTH_RADIUS).divide(EARTH_RADIUS + hI);
         return elevation.add(FastMath.asin(ratio.multiply(FastMath.cos(elevation)))).negate().add(SEMI_PI);
@@ -313,7 +313,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
      * @param <T> type of the elements
      * @return the latitude of the pierce point in the spherical Earth model in radians
      */
-    private static <T extends RealFieldElement<T>> T calculatePiercePointLatitude(final FieldSinCos<T> scPhiR,
+    private static <T extends CalculusFieldElement<T>> T calculatePiercePointLatitude(final FieldSinCos<T> scPhiR,
                                                                                   final FieldSinCos<T> scPsi,
                                                                                   final FieldSinCos<T> scA) {
         return FastMath.asin(scPhiR.sin().multiply(scPsi.cos()).add(scPhiR.cos().multiply(scPsi.sin()).multiply(scA.cos())));
@@ -350,7 +350,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
      * @param <T> type of the elements
      * @return the longitude of the pierce point in the spherical Earth model in radians
      */
-    private static <T extends RealFieldElement<T>> T calculatePiercePointLongitude(final FieldSinCos<T> scA,
+    private static <T extends CalculusFieldElement<T>> T calculatePiercePointLongitude(final FieldSinCos<T> scA,
                                                                                    final T phiPP, final T psiPP,
                                                                                    final T phiR, final T lambdaR) {
 
@@ -381,7 +381,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
      * @param <T> type of the elements
      * @return the mean sun fixed longitude phase in radians
      */
-    private static <T extends RealFieldElement<T>> T calculateSunLongitude(final SsrIm201Header im201Header, final T lambdaPP) {
+    private static <T extends CalculusFieldElement<T>> T calculateSunLongitude(final SsrIm201Header im201Header, final T lambdaPP) {
         final double t = getTime(im201Header);
         return MathUtils.normalizeAngle(lambdaPP.add((t - 50400.0) * FastMath.PI / 43200.0), lambdaPP.getField().getZero().add(FastMath.PI));
     }
@@ -439,7 +439,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
      * @param <T> type of the elements
      * @return the VTEC contribution for the current ionospheric layer in TECU
      */
-    private static <T extends RealFieldElement<T>> T calculateVTEC(final int degree, final int order,
+    private static <T extends CalculusFieldElement<T>> T calculateVTEC(final int degree, final int order,
                                                                    final double[][] cnm, final double[][] snm,
                                                                    final T phiPP, final T lambdaS) {
 

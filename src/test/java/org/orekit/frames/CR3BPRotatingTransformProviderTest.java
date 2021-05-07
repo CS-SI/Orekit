@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
@@ -77,7 +77,7 @@ public class CR3BPRotatingTransformProviderTest {
         doTestFieldTransformationOrientationForEarthMoon(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldTransformationOrientationForEarthMoon(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldTransformationOrientationForEarthMoon(final Field<T> field) {
 
         // Load Bodies
         final CelestialBody moon = CelestialBodyFactory.getMoon();
@@ -142,7 +142,7 @@ public class CR3BPRotatingTransformProviderTest {
         doTestFieldSunEarth(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldSunEarth(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldSunEarth(final Field<T> field) {
 
         // Load Bodies
         final CelestialBody sun = CelestialBodyFactory.getSun();
@@ -208,7 +208,7 @@ public class CR3BPRotatingTransformProviderTest {
         doTestFieldSunJupiter(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldSunJupiter(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldSunJupiter(final Field<T> field) {
 
         // Load Bodies
         final CelestialBody sun = CelestialBodyFactory.getSun();
@@ -262,7 +262,7 @@ public class CR3BPRotatingTransformProviderTest {
         doTestFieldBaryOrientation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldBaryOrientation(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldBaryOrientation(final Field<T> field) {
 
         final TimeScale timeScale = TimeScalesFactory.getUTC();
         final FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 01, 1, 11, 58, 20.000,

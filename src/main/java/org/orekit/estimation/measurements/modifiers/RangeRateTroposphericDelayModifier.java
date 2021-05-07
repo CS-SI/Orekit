@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -122,7 +122,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
      * @param parameters tropospheric model parameters
      * @return the measurement error due to Troposphere
      */
-    public <T extends RealFieldElement<T>> T rangeRateErrorTroposphericModel(final GroundStation station,
+    public <T extends CalculusFieldElement<T>> T rangeRateErrorTroposphericModel(final GroundStation station,
                                                                              final FieldSpacecraftState<T> state,
                                                                              final T[] parameters) {
         // Field

@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
@@ -41,7 +41,7 @@ import org.orekit.utils.ParameterDriver;
  * @see FieldOrbit
  * @author Guylaine Prat
  */
-public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
+public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
 
     /** Initial state. */
@@ -73,7 +73,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      *
      * @param initialFieldOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
-     * @see #FieldKeplerianPropagator(FieldOrbit, AttitudeProvider, RealFieldElement)
+     * @see #FieldKeplerianPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement)
      */
     @DefaultDataContext
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final T mu) {

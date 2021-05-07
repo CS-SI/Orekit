@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -73,7 +73,7 @@ public class FieldIntegratedEphemerisTest {
         doTestNoReset(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNormalKeplerIntegration(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNormalKeplerIntegration(Field<T> field) {
         FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
         // Keplerian propagator definition
@@ -116,7 +116,7 @@ public class FieldIntegratedEphemerisTest {
 
     }
 
-    private <T extends RealFieldElement<T>>  void doTestGetFrame(Field<T> field) {
+    private <T extends CalculusFieldElement<T>>  void doTestGetFrame(Field<T> field) {
         FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
         // setup
@@ -132,7 +132,7 @@ public class FieldIntegratedEphemerisTest {
         Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestAdditionalState(Field<T> field) {
+    private <T extends CalculusFieldElement<T>>  void doTestAdditionalState(Field<T> field) {
         final FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
 
@@ -177,7 +177,7 @@ public class FieldIntegratedEphemerisTest {
 
             Method propagateOrbit = ephemeris.getClass().getDeclaredMethod("propagateOrbit",
                                                                            FieldAbsoluteDate.class,
-                                                                           RealFieldElement[].class);
+                                                                           CalculusFieldElement[].class);
             propagateOrbit.setAccessible(true);
             @SuppressWarnings("unchecked")
             FieldOrbit<T> orbit = (FieldOrbit<T>) propagateOrbit.invoke(ephemeris, finalDate, null);
@@ -190,7 +190,7 @@ public class FieldIntegratedEphemerisTest {
 
     }
 
-    private <T extends RealFieldElement<T>>  void doTestNoReset(Field<T> field) {
+    private <T extends CalculusFieldElement<T>>  void doTestNoReset(Field<T> field) {
         final FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
 
@@ -221,7 +221,7 @@ public class FieldIntegratedEphemerisTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
     }
 
-    private <T extends RealFieldElement<T>> FieldNumericalPropagator<T> createPropagator(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> FieldNumericalPropagator<T> createPropagator(Field<T> field) {
         double[] absTolerance= {
             0.0001, 1.0e-11, 1.0e-11, 1.0e-8, 1.0e-8, 1.0e-8, 0.001
         };
@@ -230,13 +230,13 @@ public class FieldIntegratedEphemerisTest {
         };
         OrbitType type = OrbitType.EQUINOCTIAL;
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 500, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(100));
+        integrator.setInitialStepSize(100);
         FieldNumericalPropagator<T> numericalPropagator = new FieldNumericalPropagator<>(field, integrator);
         numericalPropagator.setOrbitType(type);
         return numericalPropagator;
     }
 
-    private <T extends RealFieldElement<T>> FieldOrbit<T> createOrbit(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> FieldOrbit<T> createOrbit(Field<T> field) {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
