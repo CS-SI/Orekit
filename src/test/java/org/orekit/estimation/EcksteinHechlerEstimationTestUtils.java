@@ -1,15 +1,9 @@
 package org.orekit.estimation;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -17,40 +11,35 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.frames.FieldTransform;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
-import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
-import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
 public class EcksteinHechlerEstimationTestUtils {
     
+    /**
+     * Build an Eckstein-Hechler model
+     * @param dataRoot data root
+     * @return a configured context for the test
+     */
     public static EcksteinHechlerContext myContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
@@ -59,41 +48,14 @@ public class EcksteinHechlerEstimationTestUtils {
         context.utc = TimeScalesFactory.getUTC();
         context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
         context.displacements = new StationDisplacement[0];
-        String Myframename = "MyEarthFrame";
-        final AbsoluteDate datedef = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc);
-        final double omega = Constants.WGS84_EARTH_ANGULAR_VELOCITY;
-        final Vector3D rotationRate = new Vector3D(0.0, 0.0, omega);
-
-        TransformProvider MyEarthFrame = new TransformProvider() {
-            private static final long serialVersionUID = 1L;
-            public Transform getTransform(final AbsoluteDate date) {
-                final double rotationduration = date.durationFrom(datedef);
-                final Vector3D alpharot = new Vector3D(rotationduration, rotationRate);
-                final Rotation rotation = new Rotation(Vector3D.PLUS_K, -alpharot.getZ(),
-                                                       RotationConvention.VECTOR_OPERATOR);
-                return new Transform(date, rotation, rotationRate);
-            }
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-                final T rotationduration = date.durationFrom(datedef);
-                final FieldVector3D<T> alpharot = new FieldVector3D<>(rotationduration, rotationRate);
-                final FieldRotation<T> rotation = new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
-                                                                      alpharot.getZ().negate(),
-                                                                      RotationConvention.VECTOR_OPERATOR);
-                return new FieldTransform<>(date, rotation, new FieldVector3D<>(date.getField(), rotationRate));
-            }
-        };
-        Frame FrameTest = new Frame(FramesFactory.getEME2000(), MyEarthFrame, Myframename, true);
 
         // Earth is spherical, rotating in one sidereal day
-        context.earth   = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0.0, FrameTest);
-        context.sun     = CelestialBodyFactory.getSun();
-        context.moon    = CelestialBodyFactory.getMoon();
-        context.gravity = GravityFieldFactory.getUnnormalizedProvider(6, 0);
+        context.earth   = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                               Constants.WGS84_EARTH_FLATTENING,
+                                               FramesFactory.getITRF(context.conventions, true));
 
-        //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
-        //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
-        //                );
-        //context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
+        // 6x0 gravity field (Consistent with Eckstein-Hechler model)
+        context.gravity = GravityFieldFactory.getUnnormalizedProvider(6, 0);
         
         // Stations
         context.stations = Arrays.asList(context.createStation(51.50, -0.13, 200.0, "London"),
@@ -116,111 +78,38 @@ public class EcksteinHechlerEstimationTestUtils {
         return context;
 
     }
-    
-    public static EcksteinHechlerContext geoStationnaryContext(final String dataRoot) {
 
-        Utils.setDataRoot(dataRoot);
-        EcksteinHechlerContext context = new EcksteinHechlerContext();
-        context.conventions = IERSConventions.IERS_2010;
-        context.utc = TimeScalesFactory.getUTC();
-        context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
-        context.displacements = new StationDisplacement[0];
-        String Myframename = "MyEarthFrame";
-        final AbsoluteDate datedef = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc);
-        final double omega = Constants.WGS84_EARTH_ANGULAR_VELOCITY;
-        final Vector3D rotationRate = new Vector3D(0.0, 0.0, omega);
-
-        TransformProvider MyEarthFrame = new TransformProvider() {
-            private static final long serialVersionUID = 1L;
-            public Transform getTransform(final AbsoluteDate date) {
-                final double rotationduration = date.durationFrom(datedef);
-                final Vector3D alpharot = new Vector3D(rotationduration, rotationRate);
-                final Rotation rotation = new Rotation(Vector3D.PLUS_K, -alpharot.getZ(),
-                                                       RotationConvention.VECTOR_OPERATOR);
-                return new Transform(date, rotation, rotationRate);
-            }
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-                final T rotationduration = date.durationFrom(datedef);
-                final FieldVector3D<T> alpharot = new FieldVector3D<>(rotationduration, rotationRate);
-                final FieldRotation<T> rotation = new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
-                                                                      alpharot.getZ().negate(),
-                                                                      RotationConvention.VECTOR_OPERATOR);
-                return new FieldTransform<>(date, rotation, new FieldVector3D<>(date.getField(), rotationRate));
-            }
-        };
-        Frame FrameTest = new Frame(FramesFactory.getEME2000(), MyEarthFrame, Myframename, true);
-
-        // Earth is spherical, rotating in one sidereal day
-        context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0.0, FrameTest);
-        context.sun   = CelestialBodyFactory.getSun();
-        context.moon  = CelestialBodyFactory.getMoon();
-        context.gravity = GravityFieldFactory.getUnnormalizedProvider(6, 0);
-        
-        // semimajor axis for a geostationnary satellite
-        double da = FastMath.cbrt(context.gravity.getMu() / (omega * omega));
-
-        //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
-        //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
-        //                );
-        context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
-
-        // Station position & velocity in EME2000
-        final Vector3D geovelocity = new Vector3D (0., 0., 0.);
-
-        // Compute the frames transformation from station frame to EME2000
-        Transform topoToEME =
-        context.stations.get(0).getBaseFrame().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
-
-        // Station position in EME2000 at reference date
-        Vector3D stationPositionEME = topoToEME.transformPosition(Vector3D.ZERO);
-
-        // Satellite position and velocity in Station Frame
-        final Vector3D sat_pos          = new Vector3D(0., 0., da-stationPositionEME.getNorm());
-        final Vector3D acceleration     = new Vector3D(-context.gravity.getMu(), sat_pos);
-        final PVCoordinates pv_sat_topo = new PVCoordinates(sat_pos, geovelocity, acceleration);
-
-        // satellite position in EME2000
-        final PVCoordinates pv_sat_iner = topoToEME.transformPVCoordinates(pv_sat_topo);
-
-        // Geo-stationary Satellite Orbit, tightly above the station (l0-L0)
-        context.initialOrbit = new EquinoctialOrbit(pv_sat_iner,
-                                                    FramesFactory.getEME2000(),
-                                                    new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc),
-                                                    context.gravity.getMu());
-
-        context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
-
-        // Turn-around range stations
-        // Map entry = master station
-        // Map value = slave station associated
-        context.TARstations = new HashMap<GroundStation, GroundStation>();
-
-        context.TARstations.put(context.createStation(  41.977, 13.600,  671.354, "Fucino"),
-                                context.createStation(  43.604,  1.444,  263.0  , "Toulouse"));
-
-        context.TARstations.put(context.createStation(  49.867,  8.65 ,  144.0  , "Darmstadt"),
-                                context.createStation( -25.885, 27.707, 1566.633, "Pretoria"));
-
-        return context;
-
-    }
-
+    /**
+     * Create the propagator
+     * @param initialOrbit initial orbit to initialize the propagator
+     * @param propagatorBuilder propagator builder
+     * @return the configured propagator
+     */
     public static Propagator createPropagator(final Orbit initialOrbit,
                                               final PropagatorBuilder propagatorBuilder) {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(initialOrbit,
-                                            PositionAngle.TRUE,
-                                            orbitArray, null);
+
+         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit, propagatorBuilder.getPositionAngle(),
+                                                          orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
         }
 
-        return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters()); 
 
     }
 
+    /**
+     * Create the measurements used for the validation
+     * @param propagator propagator used to generate the measurements
+     * @param creator measurement creator
+     * @param startPeriod start period 
+     * @param endPeriod end period
+     * @param step measurement step
+     * @return the list of observed measurements
+     */
     public static List<ObservedMeasurement<?>> createMeasurements(final Propagator propagator,
                                                                   final MeasurementCreator creator,
                                                                   final double startPeriod, final double endPeriod,

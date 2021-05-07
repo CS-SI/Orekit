@@ -63,12 +63,18 @@ public abstract class AbstractAnalyticalPartialDerivativesEquations {
         return name;
     }
 
-    // Getter of the Flag for Jacobian matrices initialization. //
+    /**
+     * Getter of the flag of Jacobian matrices initialization.
+     * @return true if Jacobian matrices are initialized
+     */
     public boolean isInitialized() {
         return initialized;
     }
 
-    // Setter of the Flag for Jacobian matrices initialization. //
+    /**
+     * Setter of the flag of Jacobian matrices initialization.
+     * @param initialized true if Jacobian matrices are initialized
+     */
     protected void setInitialized(final boolean initialized) {
         this.initialized = initialized;
     }

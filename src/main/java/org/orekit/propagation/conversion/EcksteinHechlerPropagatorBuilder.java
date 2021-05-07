@@ -209,11 +209,13 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     }
 
     /** {@inheritDoc} */
+    @Override
     public EcksteinHechlerPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         return new EcksteinHechlerPropagator(createInitialOrbit(), getAttitudeProvider(), provider);
     }
 
+    /** {@inheritDoc} */
     @Override
     public AbstractBatchLSModel buildLSModel(final PropagatorBuilder[] builders,
                                              final List<ObservedMeasurement<?>> measurements,
@@ -222,6 +224,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
         return new EcksteinHechlerBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
+    /** {@inheritDoc} */
     @Override
     public AbstractKalmanModel buildKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
                                                 final List<CovarianceMatrixProvider> covarianceMatricesProviders,

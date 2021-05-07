@@ -47,22 +47,22 @@ public class EcksteinHechlerGradientConverter extends AbstractAnalyticalGradient
         super(FREE_STATE_PARAMETERS);
 
         // Convert to cartesian orbit
-        final Orbit eck = state.getOrbit();
+        final Orbit orbit = state.getOrbit();
 
         // position always has derivatives
-        final Vector3D pos = eck.getPVCoordinates().getPosition();
+        final Vector3D pos = orbit.getPVCoordinates().getPosition();
         final FieldVector3D<Gradient> posG = new FieldVector3D<>(Gradient.variable(FREE_STATE_PARAMETERS, 0, pos.getX()),
                                                                  Gradient.variable(FREE_STATE_PARAMETERS, 1, pos.getY()),
                                                                  Gradient.variable(FREE_STATE_PARAMETERS, 2, pos.getZ()));
 
         // velocity may have derivatives or not
-        final Vector3D vel = eck.getPVCoordinates().getVelocity();
+        final Vector3D vel = orbit.getPVCoordinates().getVelocity();
         final FieldVector3D<Gradient> velG = new FieldVector3D<>(Gradient.variable(FREE_STATE_PARAMETERS, 3, vel.getX()),
                                                                  Gradient.variable(FREE_STATE_PARAMETERS, 4, vel.getY()),
                                                                  Gradient.variable(FREE_STATE_PARAMETERS, 5, vel.getZ()));
 
         // acceleration never has derivatives
-        final Vector3D acc = eck.getPVCoordinates().getAcceleration();
+        final Vector3D acc = orbit.getPVCoordinates().getAcceleration();
         final FieldVector3D<Gradient> accG = new FieldVector3D<>(Gradient.constant(FREE_STATE_PARAMETERS, acc.getX()),
                                                                  Gradient.constant(FREE_STATE_PARAMETERS, acc.getY()),
                                                                  Gradient.constant(FREE_STATE_PARAMETERS, acc.getZ()));
@@ -70,10 +70,10 @@ public class EcksteinHechlerGradientConverter extends AbstractAnalyticalGradient
         // mass never has derivatives
         final Gradient gM = Gradient.constant(FREE_STATE_PARAMETERS, state.getMass());
 
-        final Gradient gMu = Gradient.constant(FREE_STATE_PARAMETERS, state.getMu());
+        final Gradient gMu = Gradient.constant(FREE_STATE_PARAMETERS, propagator.getMu());
 
         final FieldOrbit<Gradient> gOrbit =
-                        new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(eck.getDate(), posG, velG, accG),
+                        new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(orbit.getDate(), posG, velG, accG),
                                                   state.getFrame(), gMu);
 
         final double[] ck0 = propagator.getCk0();

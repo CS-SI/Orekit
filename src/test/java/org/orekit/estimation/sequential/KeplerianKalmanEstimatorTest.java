@@ -19,12 +19,10 @@ package org.orekit.estimation.sequential;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.KeplerianContext;
@@ -33,17 +31,12 @@ import org.orekit.estimation.measurements.KeplerianRangeMeasurementCreator;
 import org.orekit.estimation.measurements.KeplerianRangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
-import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 
@@ -109,9 +102,9 @@ public class KeplerianKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 5.74e-4; // With numerical propagator: 5.80e-8;
+        final double   posEps            = 6.8e-9;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.45e-6; // With numerical propagator: 2.28e-11;
+        final double   velEps            = 2.8e-12;
         KeplerianEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                                     refOrbit, positionAngle,
                                                     expectedDeltaPos, posEps,
@@ -168,96 +161,13 @@ public class KeplerianKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.1e-7; // With numerical propagator: 5.80e-8;
+        final double   posEps            = 6.8e-9;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 4.3e-11; // With numerical propagator: 2.28e-11;
+        final double   velEps            = 2.8e-12;
         KeplerianEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                                     refOrbit, positionAngle,
                                                     expectedDeltaPos, posEps,
                                                     expectedDeltaVel, velEps);
-    }
-
-    /**
-     * Perfect range measurements with a biased start and an on-board antenna range offset
-     * Keplerian formalism 
-     */
-    @Test
-    public void testKeplerianRangeWithOnBoardAntennaOffset() {
-
-        // Create context
-        KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
-
-        // Create initial orbit and propagator builder
-        final PositionAngle positionAngle = PositionAngle.MEAN;
-        final double        dP            = 1.;
-        final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(dP);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
-        
-        // Antenna phase center definition
-        final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
-        
-        // Create perfect range measurements with antenna offset
-        Orbit initialOrbit = context.initialOrbit;
-        final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(initialOrbit,
-                                                                                    propagatorBuilder);
-        final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(propagator,
-                                                                        new KeplerianRangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
-                                                                        1.0, 3.0, 300.0);
-
-        // Add antenna offset to the measurements
-        final OnBoardAntennaRangeModifier obaModifier = new OnBoardAntennaRangeModifier(antennaPhaseCenter);
-        for (final ObservedMeasurement<?> range : measurements) {
-            ((Range) range).addModifier(obaModifier);
-        }
-        
-        // Reference propagator for estimation performances
-        final KeplerianPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
-        // Reference position/velocity at last measurement date
-        final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
-        // Change semi-major axis of 1.2m as in the batch test
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
-        aDriver.setValue(aDriver.getValue() + 1.2);
-        aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
-
-        // Cartesian covariance matrix initialization
-        // 100m on position / 1e-2m/s on velocity 
-        final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            10., 10., 10., 1e-3, 1e-3, 1e-3
-        });
-        
-        // Jacobian of the orbital parameters w/r to Cartesian
-        initialOrbit = OrbitType.KEPLERIAN.convertType(initialOrbit);
-        final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.MEAN, dYdC);
-        final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
-        // Equinoctial initial covariance matrix
-        final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
-
-        // Process noise matrix is set to 0 here
-        RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
-        
-        // Build the Kalman filter
-        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList(), null).
-                        build();
-        
-        // Filter the measurements and check the results
-        final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 4.05; // With numerical propagator: 4.57e-3;
-        final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.56e-3; // With numerical propagator: 7.29e-6;
-        KeplerianEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps);
     }
     
     /**
@@ -330,9 +240,9 @@ public class KeplerianKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 0.65; // With numerical propagator: 1.2e-6;
+        final double   posEps            = 7.3e-4;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.23e-4; // With numerical propagator: 4.2e-10;
+        final double   velEps            = 3.5e-7;
         KeplerianEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,

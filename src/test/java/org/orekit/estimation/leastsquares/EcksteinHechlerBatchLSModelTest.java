@@ -32,7 +32,7 @@ public class EcksteinHechlerBatchLSModelTest {
 
         final EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.myContext("regular-data:potential:tides");
 
-        final EcksteinHechlerPropagatorBuilder propagatorBuilder = context.createBuilder(0.001);
+        final EcksteinHechlerPropagatorBuilder propagatorBuilder = context.createBuilder(1.0);
         final EcksteinHechlerPropagatorBuilder[] builders = { propagatorBuilder };
 
         // create perfect PV measurements
@@ -62,12 +62,7 @@ public class EcksteinHechlerBatchLSModelTest {
                 Assert.assertEquals(0,
                                     initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
                                     3.0e-8);
-                
-                
-                System.out.println(initialOrbit.getPVCoordinates().getPosition());
-                System.out.println(newOrbits[0].getPVCoordinates().getPosition());
-                
-                
+
                 Assert.assertEquals(0,
                                     Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                                       newOrbits[0].getPVCoordinates().getPosition()),
@@ -94,7 +89,6 @@ public class EcksteinHechlerBatchLSModelTest {
         int index = 0;
         
         for (ObservedMeasurement<?> measurement : measurements) {
-            System.out.println(measurement.getDimension());
             for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
                 Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 5.e-7);
@@ -103,7 +97,7 @@ public class EcksteinHechlerBatchLSModelTest {
         Assert.assertEquals(index, value.getFirst().getDimension());
 
     }
-    
+
     @Test
     public void testBackwardPropagation() {
 

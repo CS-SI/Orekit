@@ -91,12 +91,14 @@ public class KeplerianPartialDerivativesEquations extends AbstractAnalyticalPart
         }
 
         // store the matrices as a single dimension array
-        setInitialized(true);
         final KeplerianJacobiansMapper mapper = getMapper();
         final double[] p = new double[mapper.getAdditionalStateDimension()];
 
         final double[][] dY1dP = new double[0][0];
         mapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
+
+        // Jacobian matrices are now initialized
+        setInitialized(true);
 
         // set value in propagator
         return s1.addAdditionalState(getName(), p);

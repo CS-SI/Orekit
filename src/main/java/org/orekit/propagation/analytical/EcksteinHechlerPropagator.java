@@ -460,6 +460,43 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
     }
 
+    /**
+     * Get the reference radius of the Earth for the potential model.
+     * @return the reference radius in meters
+     */
+    public double getReferenceRadius() {
+        return referenceRadius;
+    }
+
+    /**
+     * Get the central attraction coefficient used for the model.
+     * @return the central attraction coefficient
+     */
+    public double getMu() {
+        return mu;
+    }
+
+    /**
+     * Get the un-normalized zonal coefficients.
+     * @return the un-normalized zonal coefficients
+     */
+    public double[] getCk0() {
+        return ck0;
+    }
+
+    /** {@inheritDoc} */
+    protected double getMass(final AbsoluteDate date) {
+        return models.get(date).mass;
+    }
+
+    /**
+     * Get the initial state type.
+     * @return MEAN or OSCULATING
+     */
+    public PropagationType getInitialType() {
+        return initialType;
+    }
+
     /** {@inheritDoc}
      * <p>The new initial state to consider
      * must be defined with an osculating orbit.</p>
@@ -988,36 +1025,6 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
         return alphaE;
 
-    }
-
-
-    public EHModel getInitialModel() {
-        return initialModel;
-    }
-
-    public TimeSpanMap<EHModel> getModels() {
-        return models;
-    }
-
-    public double getReferenceRadius() {
-        return referenceRadius;
-    }
-
-    public double getMu() {
-        return mu;
-    }
-
-    public double[] getCk0() {
-        return ck0;
-    }
-
-    /** {@inheritDoc} */
-    protected double getMass(final AbsoluteDate date) {
-        return models.get(date).mass;
-    }
-
-    public PropagationType getInitialType() {
-        return initialType;
     }
 
 }

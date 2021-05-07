@@ -48,7 +48,7 @@ public class EcksteinHechlerPartialDerivativesEquations extends AbstractAnalytic
     public EcksteinHechlerPartialDerivativesEquations(final String name,
                                                       final EcksteinHechlerPropagator propagator) {
         super(name);
-        this.propagator  = propagator;
+        this.propagator = propagator;
     }
 
     /** Set the initial value of the Jacobian with respect to state.
@@ -91,12 +91,14 @@ public class EcksteinHechlerPartialDerivativesEquations extends AbstractAnalytic
         }
 
         // store the matrices as a single dimension array
-        setInitialized(true);
         final EcksteinHechlerJacobiansMapper mapper = getMapper();
         final double[] p = new double[mapper.getAdditionalStateDimension()];
 
         final double[][] dY1dP = new double[0][0];
         mapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
+
+        // Jacobian matrices are now initialized
+        setInitialized(true);
 
         // set value in propagator
         return s1.addAdditionalState(getName(), p);

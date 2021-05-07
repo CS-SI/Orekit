@@ -55,15 +55,15 @@ public abstract class AbstractAnalyticalJacobiansMapper extends AbstractJacobian
 
         // map the converted state Jacobian to one-dimensional array
         int index = 0;
-        for (int i = 0; i < getStateDimension(); ++i) {
-            for (int j = 0; j < getStateDimension(); ++j) {
+        for (int i = 0; i < stateDimension; ++i) {
+            for (int j = 0; j < stateDimension; ++j) {
                 p[index++] = (i == j) ? 1.0 : 0.0;
             }
         }
 
         if (getParameters() != 0) {
             // map the converted parameters Jacobian to one dimensional array
-            for (int i = 0; i < getStateDimension(); i++ ) {
+            for (int i = 0; i < stateDimension; i++ ) {
                 for (int j = 0; j < getParameters(); ++j) {
                     p[index++] = dY1dP[i][j];
                 }
@@ -74,18 +74,20 @@ public abstract class AbstractAnalyticalJacobiansMapper extends AbstractJacobian
 
     /** Fill Jacobians rows.
      * @param derivatives derivatives of a component
-     * @param index component index (0 for a, 1 for e, 2 for i, 3 for RAAN, 4 for PA, 5 for TrueAnomaly)
+     * @param index component index
      * @param grad Jacobian of mean elements rate with respect to mean elements
      */
     protected void addToRow(final double[] derivatives,
                           final int index,
                           final double[][] grad) {
-        for (int i = 0; i < getStateDimension(); i++) {
+        for (int i = 0; i < stateDimension; i++) {
             grad[index][i] += derivatives[i];
         }
     }
 
-    // Get the dimension of the state vector.//
+    /** Get the state dimension.
+     * @return the state dimension
+     */
     public int getStateDimension() {
         return stateDimension;
     }

@@ -17,7 +17,6 @@
 package org.orekit.propagation.analytical;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
@@ -27,10 +26,6 @@ import org.orekit.utils.ParameterDriversList;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
- * <p>
- * This class does not hold the states by itself. Instances of this class are guaranteed
- * to be immutable.
- * </p>
  * @author Nicolas Fialton
  */
 public class KeplerianJacobiansMapper extends AbstractAnalyticalJacobiansMapper {
@@ -44,31 +39,31 @@ public class KeplerianJacobiansMapper extends AbstractAnalyticalJacobiansMapper 
     /** Propagator computing state evolution. */
     private final KeplerianPropagator propagator;
 
-    /** Selected parameters for Jacobian computation. */
-    private final ParameterDriversList parameters;
-
     /** Simple constructor.
      * @param name name of the Jacobians
      * @param propagator the propagator that will handle the orbit propagation
      */
     public KeplerianJacobiansMapper(final String name,
                                     final KeplerianPropagator propagator) {
-
+        // No propagation parameters estimated with Eckstein-Hechler propagator
         super(name, new ParameterDriversList(), KeplerianGradientConverter.FREE_STATE_PARAMETERS);
-        this.name       = name;
-        this.propagator = propagator;
+        // Initialize fields
+        this.name            = name;
+        this.propagator      = propagator;
         this.stateTransition = null;
-        this.parameters = new ParameterDriversList();
     }
 
     /** {@inheritDoc} */
     @Override
     public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
+        // Number of state parameters
+        final int stateDimension = getStateDimension();
 
-        for (int i = 0; i < getStateDimension(); i++) {
+        // Fill dYdY0 matrix
+        for (int i = 0; i < stateDimension; i++) {
             final double[] row = dYdY0[i];
-            for (int j = 0; j < getStateDimension(); j++) {
-                row[j] = stateTransition[i * getStateDimension() + j];
+            for (int j = 0; j < stateDimension; j++) {
+                row[j] = stateTransition[i * stateDimension + j];
             }
         }
     }
@@ -76,22 +71,11 @@ public class KeplerianJacobiansMapper extends AbstractAnalyticalJacobiansMapper 
     /** {@inheritDoc} */
     @Override
     public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
-
-        if (parameters.getNbParams() != 0) {
-
-            for (int i = 0; i < getStateDimension(); i++) {
-                final double[] row = dYdP[i];
-                for (int j = 0; j < parameters.getNbParams(); j++) {
-                    row[j] = stateTransition[getStateDimension() * getStateDimension() + (j + parameters.getNbParams() * i)];
-                }
-            }
-
-        }
+        // Nothing to do: No propagation parameters with Keplerian model
     }
 
     /** {@inheritDoc} */
     @Override
-    @DefaultDataContext
     public void analyticalDerivatives(final SpacecraftState s) {
 
         final double[] p = s.getAdditionalState(name);

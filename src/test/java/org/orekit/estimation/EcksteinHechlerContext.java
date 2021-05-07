@@ -1,10 +1,8 @@
 package org.orekit.estimation;
 
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.GroundStation;
@@ -22,18 +20,12 @@ public class EcksteinHechlerContext {
 
     public IERSConventions                        conventions;
     public OneAxisEllipsoid                       earth;
-    public CelestialBody                          sun;
-    public CelestialBody                          moon;
     public UnnormalizedSphericalHarmonicsProvider gravity;
     public TimeScale                              utc;
     public UT1Scale                               ut1;
     public Orbit                                  initialOrbit;
     public StationDisplacement[]                  displacements;
     public List<GroundStation>                    stations;
-    // Stations for turn-around range
-    // Map entry = master station
-    // Map value = slave station associated
-    public Map<GroundStation, GroundStation>      TARstations;
 
     public EcksteinHechlerPropagatorBuilder createBuilder(final double dP) {
 
@@ -44,12 +36,13 @@ public class EcksteinHechlerContext {
 
     }
 
-    GroundStation createStation(double latitudeInDegrees, double longitudeInDegrees,
-                                double altitude, String name) {
+    public  GroundStation createStation(double latitudeInDegrees, double longitudeInDegrees,
+                                        double altitude, String name) {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
         return new GroundStation(new TopocentricFrame(earth, gp, name),
                                  ut1.getEOPHistory(), displacements);
     }
+
 }

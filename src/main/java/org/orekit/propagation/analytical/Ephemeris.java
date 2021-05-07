@@ -166,6 +166,14 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         this.extrapolationThreshold = extrapolationThreshold;
     }
 
+
+    /** Get the thread-safe cache of spacecraft states.
+     * @return the thread-safe cache of spacecraft states
+     */
+    public ImmutableTimeStampedCache<SpacecraftState> getCache() {
+        return cache;
+    }
+
     /** Get the first date of the range.
      * @return the first date of the range
      */
@@ -359,10 +367,5 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         }
 
     }
-
-    public ImmutableTimeStampedCache<SpacecraftState> getCache() {
-        return cache;
-    }
-
 
 }
