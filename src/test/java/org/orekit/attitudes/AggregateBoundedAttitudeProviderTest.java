@@ -19,7 +19,7 @@ package org.orekit.attitudes;
 import java.util.Collections;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.Decimal64Field;
@@ -84,7 +84,7 @@ public class AggregateBoundedAttitudeProviderTest {
         doTestFieldAEM(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldAEM(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldAEM(final Field<T> field) {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -140,7 +140,7 @@ public class AggregateBoundedAttitudeProviderTest {
         doTestFieldOutsideBounds(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {
+    private <T extends CalculusFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));

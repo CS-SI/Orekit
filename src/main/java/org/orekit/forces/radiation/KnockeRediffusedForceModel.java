@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -178,7 +178,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.of();
     }
 
@@ -253,7 +253,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
         // Get date
         final FieldAbsoluteDate<T> date = s.getDate();
@@ -370,10 +370,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
      * Its value is in [0;1].
      * @param date the date
      * @param phi the equatorial latitude in rad
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the albedo in [0;1]
      */
-    private <T extends RealFieldElement<T>> T computeAlbedo(final FieldAbsoluteDate<T> date, final T phi) {
+    private <T extends CalculusFieldElement<T>> T computeAlbedo(final FieldAbsoluteDate<T> date, final T phi) {
 
         // Get duration since coefficient reference epoch
         final T deltaT = date.durationFrom(referenceEpoch);
@@ -434,10 +434,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
      * Its value is in [0;1].
      * @param date the date
      * @param phi the equatorial latitude in rad
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the emissivity in [0;1]
      */
-    private <T extends RealFieldElement<T>> T computeEmissivity(final FieldAbsoluteDate<T> date, final T phi) {
+    private <T extends CalculusFieldElement<T>> T computeEmissivity(final FieldAbsoluteDate<T> date, final T phi) {
 
         // Get duration since coefficient reference epoch
         final T deltaT = date.durationFrom(referenceEpoch);
@@ -476,10 +476,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
     /** Compute total solar flux impacting Earth.
      * @param sunPosition the Sun position in an Earth centered frame
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the total solar flux impacting Earth in J/m^3
      */
-    private <T extends RealFieldElement<T>> T computeSolarFlux(final FieldVector3D<T> sunPosition) {
+    private <T extends CalculusFieldElement<T>> T computeSolarFlux(final FieldVector3D<T> sunPosition) {
 
         // Compute Earth - Sun distance in UA
         final T earthSunDistance = sunPosition.getNorm().divide(Constants.JPL_SSD_ASTRONOMICAL_UNIT);
@@ -568,10 +568,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
      * @param sunPosition the position of the Sun in the spacecraft frame
      * @param earth the Earth model
      * @param elementArea the area of the current element
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the rediffused flux from considered element on the spacecraft
      */
-    private <T extends RealFieldElement<T>> FieldVector3D<T> computeElementaryFlux(final FieldSpacecraftState<T> state,
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> computeElementaryFlux(final FieldSpacecraftState<T> state,
                                                                                    final FieldVector3D<T> elementCenter,
                                                                                    final FieldVector3D<T> sunPosition,
                                                                                    final OneAxisEllipsoid earth,

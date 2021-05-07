@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -55,7 +55,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class FieldAttitude<T extends RealFieldElement<T>>
+public class FieldAttitude<T extends CalculusFieldElement<T>>
     implements FieldTimeStamped<T>, FieldTimeShiftable<FieldAttitude<T>, T>, FieldTimeInterpolable<FieldAttitude<T>, T> {
 
 

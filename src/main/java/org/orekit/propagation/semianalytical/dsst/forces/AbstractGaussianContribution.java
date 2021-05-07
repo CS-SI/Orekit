@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.RealFieldUnivariateVectorFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -237,7 +237,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(
+    public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(
             final FieldAuxiliaryElements<T> auxiliaryElements, final PropagationType type, final T[] parameters) {
 
         final Field<T> field = auxiliaryElements.getDate().getField();
@@ -273,7 +273,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @param parameters        parameters values of the force model parameters
      * @return new force model context
      */
-    private <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(
+    private <T extends CalculusFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(
             final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
         return new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
     }
@@ -309,7 +309,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
             final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
 
         // Container for attributes
@@ -358,7 +358,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @return the integration limits in L
      */
-    protected abstract <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
+    protected abstract <T extends CalculusFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
             FieldAuxiliaryElements<T> auxiliaryElements);
 
     /**
@@ -401,7 +401,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @param parameters values of the force model parameters
      * @return the mean element rates
      */
-    protected <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
+    protected <T extends CalculusFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
             final GaussQuadrature gauss, final T low, final T high,
             final FieldAbstractGaussianContributionContext<T> context, final T[] parameters) {
 
@@ -455,7 +455,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @param context container for attributes
      * @return estimated magnitude of weighted differences
      */
-    private <T extends RealFieldElement<T>> T getRatesDiff(final T[] meanRef, final T[] meanCur,
+    private <T extends CalculusFieldElement<T>> T getRatesDiff(final T[] meanRef, final T[] meanCur,
             final FieldAbstractGaussianContributionContext<T> context) {
 
         // Auxiliary elements related to the current orbit
@@ -509,7 +509,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
             final FieldSpacecraftState<T>... meanStates) {
 
         // Field used by default
@@ -587,7 +587,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @param field   field used by default
      * @return computed coefficients
      */
-    private <T extends RealFieldElement<T>> T[][] computeRhoSigmaCoefficients(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T[][] computeRhoSigmaCoefficients(final FieldAbsoluteDate<T> date,
             final FieldAbstractGaussianContributionContext<T> context, final Field<T> field) {
         // zero
         final T zero = field.getZero();
@@ -618,7 +618,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * This class is a rewrite of {@link IntegrableFunction} for field elements
      * </p>
      */
-    protected class FieldIntegrableFunction<T extends RealFieldElement<T>>
+    protected class FieldIntegrableFunction<T extends CalculusFieldElement<T>>
             implements RealFieldUnivariateVectorFunction<T> {
 
         /** Current state. */
@@ -1386,7 +1386,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param field      field utilized by default
          * @return the integral of the weighted function.
          */
-        public <T extends RealFieldElement<T>> T[] integrate(final RealFieldUnivariateVectorFunction<T> f,
+        public <T extends CalculusFieldElement<T>> T[] integrate(final RealFieldUnivariateVectorFunction<T> f,
                 final T lowerBound, final T upperBound, final Field<T> field) {
 
             final T zero = field.getZero();
@@ -1437,7 +1437,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param a       Lower bound of the integration interval.
          * @param b       Lower bound of the integration interval
          */
-        private <T extends RealFieldElement<T>> void transform(final T[] points, final T[] weights, final T a,
+        private <T extends CalculusFieldElement<T>> void transform(final T[] points, final T[] weights, final T a,
                 final T b) {
             // Scaling
             final T scale = (b.subtract(a)).divide(2.);
@@ -1496,7 +1496,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param field   field utilized by default
          * @return the integral of the weighted function.
          */
-        private <T extends RealFieldElement<T>> T[] basicIntegrate(final RealFieldUnivariateVectorFunction<T> f,
+        private <T extends CalculusFieldElement<T>> T[] basicIntegrate(final RealFieldUnivariateVectorFunction<T> f,
                 final T[] points, final T[] weights, final Field<T> field) {
 
             T x = points[0];
@@ -1655,7 +1655,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @author Petre Bazavan
      * @author Lucian Barbulescu
      */
-    protected class FieldFourierCjSjCoefficients<T extends RealFieldElement<T>> {
+    protected class FieldFourierCjSjCoefficients<T extends CalculusFieldElement<T>> {
 
         /** Maximum possible value for j. */
         private final int jMax;
@@ -2047,7 +2047,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @author Lucian Barbulescu
      *
      */
-    protected static class FieldGaussianShortPeriodicCoefficients<T extends RealFieldElement<T>>
+    protected static class FieldGaussianShortPeriodicCoefficients<T extends CalculusFieldElement<T>>
             implements FieldShortPeriodTerms<T> {
 
         /** Maximum value for j index. */
@@ -2622,7 +2622,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @author Petre Bazavan
      * @author Lucian Barbulescu
      */
-    protected static class FieldUijVijCoefficients<T extends RealFieldElement<T>> {
+    protected static class FieldUijVijCoefficients<T extends CalculusFieldElement<T>> {
 
         /**
          * The U₁<sup>j</sup> coefficients.
@@ -3010,7 +3010,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    protected static class FieldSlot<T extends RealFieldElement<T>> {
+    protected static class FieldSlot<T extends CalculusFieldElement<T>> {
 
         /**
          * The coefficients D<sub>i</sub><sup>j</sup>.

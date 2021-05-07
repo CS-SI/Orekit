@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Elements of the bodies having an effect on nutation.
@@ -27,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public final class FieldBodiesElements<T extends RealFieldElement<T>> extends  FieldDelaunayArguments<T> {
+public final class FieldBodiesElements<T extends CalculusFieldElement<T>> extends  FieldDelaunayArguments<T> {
 
     /** Mean Mercury longitude. */
     private final T lMe;

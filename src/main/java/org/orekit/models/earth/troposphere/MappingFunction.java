@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
@@ -52,6 +52,6 @@ public interface MappingFunction {
      * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    <T extends RealFieldElement<T>> T[] mappingFactors(T elevation, FieldGeodeticPoint<T> point, FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> T[] mappingFactors(T elevation, FieldGeodeticPoint<T> point, FieldAbsoluteDate<T> date);
 
 }

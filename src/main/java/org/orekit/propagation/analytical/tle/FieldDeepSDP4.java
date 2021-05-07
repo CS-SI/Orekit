@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -44,7 +44,7 @@ import org.orekit.utils.Constants;
  * @author Thomas Paulet (field translation)
  * @since 11.0
  */
-public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
+public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<T> {
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -143,7 +143,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param parameters SGP4 and SDP4 model parameters
-     * @see #FieldDeepSDP4(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
+     * @see #FieldDeepSDP4(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
     public FieldDeepSDP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,

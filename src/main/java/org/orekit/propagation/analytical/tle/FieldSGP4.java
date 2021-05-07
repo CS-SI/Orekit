@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.orekit.annotation.DefaultDataContext;
@@ -38,7 +38,7 @@ import org.orekit.frames.Frame;
  * @author Thomas Paulet (field translation)
  * @since 11.0
  */
-public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator<T> {
+public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropagator<T> {
 
     /** If perige is less than 220 km, some calculus are avoided. */
     private boolean lessThan220;
@@ -67,7 +67,7 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param parameters SGP4 and SDP4 model parameters
-     * @see #FieldSGP4(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
+     * @see #FieldSGP4(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
     public FieldSGP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,

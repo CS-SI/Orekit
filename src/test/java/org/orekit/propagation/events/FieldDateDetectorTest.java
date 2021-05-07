@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import java.lang.reflect.Array;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -73,7 +73,7 @@ public class FieldDateDetectorTest {
         doTestGenericHandler(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestSimpleTimer(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSimpleTimer(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -104,7 +104,7 @@ public class FieldDateDetectorTest {
     }
 
 
-    private <T extends RealFieldElement<T>> void doTestEmbeddedTimer(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEmbeddedTimer(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -148,7 +148,7 @@ public class FieldDateDetectorTest {
     }
 
 
-    private <T extends RealFieldElement<T>> void doTestAutoEmbeddedTimer(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAutoEmbeddedTimer(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -186,7 +186,7 @@ public class FieldDateDetectorTest {
         Assert.assertEquals(100, evtno);
     }
 
-    private <T extends RealFieldElement<T>> void doTestExceptionTimer(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestExceptionTimer(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -227,7 +227,7 @@ public class FieldDateDetectorTest {
      * Check that a generic event handler can be used with an event detector.
      */
 
-    private <T extends RealFieldElement<T>> void doTestGenericHandler(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGenericHandler(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -281,7 +281,7 @@ public class FieldDateDetectorTest {
         Assert.assertEquals(dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
     }
 
-    private <T extends RealFieldElement<T>> FieldTimeStamped<T>[] toArray(final FieldAbsoluteDate<T> date) {
+    private <T extends CalculusFieldElement<T>> FieldTimeStamped<T>[] toArray(final FieldAbsoluteDate<T> date) {
         @SuppressWarnings("unchecked")
         final FieldTimeStamped<T>[] array = (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 1);
         array[0] = date;

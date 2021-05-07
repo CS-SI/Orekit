@@ -16,7 +16,7 @@
  */
 package org.orekit.attitudes;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -63,7 +63,7 @@ public class FixedFrameBuilder implements AttitudeBuilder {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldAttitude<T>
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T>
         build(final Frame frame, final FieldPVCoordinatesProvider<T> pvProv,
               final TimeStampedFieldAngularCoordinates<T> rawAttitude) {
 

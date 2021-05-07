@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -251,7 +251,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                  mass, maneuverLaw, maneuver, accelerationLaw, lofAcceleration, 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void doTestEquivalentManeuver(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> void doTestEquivalentManeuver(final Field<T> field,
                                                                           final double mass,
                                                                           final AttitudeProvider maneuverLaw,
                                                                           final ConstantThrustManeuver maneuver,

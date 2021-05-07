@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -80,7 +80,7 @@ public class NewtonianAttraction extends AbstractForceModel {
      * @param field field to which the state belongs
      * @return mu central attraction coefficient (m³/s²)
      */
-    public <T extends RealFieldElement<T>> T getMu(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> T getMu(final Field<T> field) {
         final T zero = field.getZero();
         return zero.add(gmParameterDriver.getValue());
     }
@@ -93,7 +93,7 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
                                                                 final FieldTimeDerivativesEquations<T> adder) {
         final Field<T> field = s.getDate().getField();
         adder.addKeplerContribution(getMu(field));
@@ -109,7 +109,7 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
         final T mu = parameters[0];
         final T r2 = s.getPVCoordinates().getPosition().getNormSq();
@@ -124,7 +124,7 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 

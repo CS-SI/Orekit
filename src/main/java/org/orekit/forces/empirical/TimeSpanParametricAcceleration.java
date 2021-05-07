@@ -23,7 +23,7 @@ import java.util.NavigableSet;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
@@ -267,7 +267,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> state,
                                                                          final T[] parameters) {
 
         // Date
@@ -306,7 +306,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
@@ -375,14 +375,14 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #acceleration(FieldSpacecraftState, RealFieldElement[]) acceleration} method.
+     * {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[]) acceleration} method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the parameters given the date
      */
-    public <T extends RealFieldElement<T>> T[] extractParameters(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
                                                                  final FieldAbsoluteDate<T> date) {
 
         // Get the acceleration parameter drivers of the date

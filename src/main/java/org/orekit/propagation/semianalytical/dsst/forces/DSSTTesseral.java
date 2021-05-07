@@ -28,7 +28,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -367,7 +367,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
+    public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
                                                                                      final T[] parameters) {
 
@@ -460,7 +460,7 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return new force model context
      */
-    private <T extends RealFieldElement<T>> FieldDSSTTesseralContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
+    private <T extends CalculusFieldElement<T>> FieldDSSTTesseralContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                        final T[] parameters) {
         return new FieldDSSTTesseralContext<>(auxiliaryElements, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod, parameters);
     }
@@ -496,7 +496,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState,
+    public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState,
                                                                   final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                   final T[] parameters) {
 
@@ -598,7 +598,7 @@ public class DSSTTesseral implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
                                                                        final FieldSpacecraftState<T>... meanStates) {
 
         // Field used by default
@@ -716,7 +716,7 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param context container for attributes
      * @param field field used by default
      */
-    private <T extends RealFieldElement<T>> void buildCoefficients(final FieldFourierCjSjCoefficients<T> cjsjFourier,
+    private <T extends CalculusFieldElement<T>> void buildCoefficients(final FieldFourierCjSjCoefficients<T> cjsjFourier,
                                                                    final FieldAbsoluteDate<T> date,
                                                                    final FieldSlot<T> slot,
                                                                    final int m, final int j, final T tnota,
@@ -765,7 +765,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
         return null;
     }
 
@@ -970,7 +970,7 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param hansenObjects initialization of hansen objects
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
      */
-    private <T extends RealFieldElement<T>> T[][] computeNSum(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T[][] computeNSum(final FieldAbsoluteDate<T> date,
                                                               final int j, final int m, final int s, final int maxN,
                                                               final T[] roaPow,
                                                               final FieldGHmsjPolynomials<T> ghMSJ,
@@ -1389,7 +1389,7 @@ public class DSSTTesseral implements DSSTForceModel {
      *  disturbing function (2.7.1-16) with m != 0 into (2.2-10)
      *  </p>
      */
-    private class FieldFourierCjSjCoefficients <T extends RealFieldElement<T>> {
+    private class FieldFourierCjSjCoefficients <T extends CalculusFieldElement<T>> {
 
         /** Absolute limit for j ( -jMax <= j <= jMax ).  */
         private final int jMax;
@@ -1894,7 +1894,7 @@ public class DSSTTesseral implements DSSTForceModel {
      * @author Sorin Scortan
      *
      */
-    private static class FieldTesseralShortPeriodicCoefficients <T extends RealFieldElement<T>> implements FieldShortPeriodTerms<T> {
+    private static class FieldTesseralShortPeriodicCoefficients <T extends CalculusFieldElement<T>> implements FieldShortPeriodTerms<T> {
 
         /** Retrograde factor I.
          *  <p>
@@ -2197,7 +2197,7 @@ public class DSSTTesseral implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    private static class FieldSlot <T extends RealFieldElement<T>> {
+    private static class FieldSlot <T extends CalculusFieldElement<T>> {
 
         /** The coefficients C<sub>i</sub><sup>j</sup><sup>m</sup>.
          * <p>
@@ -2507,7 +2507,7 @@ public class DSSTTesseral implements DSSTForceModel {
      *  </pre>
      *  </p>
      */
-    private class FieldUAnddU <T extends RealFieldElement<T>> {
+    private class FieldUAnddU <T extends CalculusFieldElement<T>> {
 
         /** dU / da. */
         private T dUda;
@@ -2802,7 +2802,7 @@ public class DSSTTesseral implements DSSTForceModel {
     }
 
     /** Computes init values of the Hansen Objects. */
-    private class FieldHansenObjects<T extends RealFieldElement<T>> {
+    private class FieldHansenObjects<T extends CalculusFieldElement<T>> {
 
         /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
          * The indexes are s + maxDegree and j */

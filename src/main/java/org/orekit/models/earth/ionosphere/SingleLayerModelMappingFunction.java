@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 
 /**
@@ -78,7 +78,7 @@ public class SingleLayerModelMappingFunction implements IonosphericMappingFuncti
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T mappingFactor(final T elevation) {
+    public <T extends CalculusFieldElement<T>> T mappingFactor(final T elevation) {
         // Calculate the zenith angle from the elevation
         final T z = FastMath.abs(elevation.negate().add(0.5 * FastMath.PI));
         // Distance ratio

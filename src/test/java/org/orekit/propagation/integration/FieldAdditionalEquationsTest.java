@@ -17,7 +17,7 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
@@ -56,7 +56,7 @@ public class FieldAdditionalEquationsTest {
         doTestInitNumerical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestInitNumerical(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInitNumerical(Field<T> field) {
         // setup
         final double reference = 1.25;
         InitCheckerEquations<T> checker = new InitCheckerEquations<>(reference);
@@ -98,7 +98,7 @@ public class FieldAdditionalEquationsTest {
         tolerance    = null;
     }
 
-    public static class InitCheckerEquations<T extends RealFieldElement<T>> implements FieldAdditionalEquations<T> {
+    public static class InitCheckerEquations<T extends CalculusFieldElement<T>> implements FieldAdditionalEquations<T> {
 
         private double expected;
         private boolean called;

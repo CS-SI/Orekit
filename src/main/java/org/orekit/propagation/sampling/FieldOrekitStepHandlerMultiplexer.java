@@ -19,7 +19,7 @@ package org.orekit.propagation.sampling;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -27,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Luc Maisonobe
  */
-public class FieldOrekitStepHandlerMultiplexer<T extends RealFieldElement<T>> implements FieldOrekitStepHandler<T> {
+public class FieldOrekitStepHandlerMultiplexer<T extends CalculusFieldElement<T>> implements FieldOrekitStepHandler<T> {
 
     /** Underlying step handlers. */
     private final List<FieldOrekitStepHandler<T>> handlers;
