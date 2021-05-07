@@ -19,7 +19,7 @@ package org.orekit.propagation.analytical.tle;
 
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -55,7 +55,7 @@ import org.orekit.utils.ParameterDriver;
  * <p>
  * Deep- or near- space propagator is selected internally according to NORAD recommendations
  * so that the user has not to worry about the used computation methods. One instance is created
- * for each TLE (this instance can only be get using {@link #selectExtrapolator(FieldTLE, RealFieldElement[])} method,
+ * for each TLE (this instance can only be get using {@link #selectExtrapolator(FieldTLE, CalculusFieldElement[])} method,
  * and can compute {@link PVCoordinates position and velocity coordinates} at any
  * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided
  * TLE epoch (of course this accuracy is not really measurable nor predictable: according to
@@ -72,7 +72,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 11.0
  * @see FieldTLE
  */
-public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
+public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
@@ -187,7 +187,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param parameters SGP4 and SDP4 model parameters
-     * @see #FieldTLEPropagator(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
+     * @see #FieldTLEPropagator(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
     protected FieldTLEPropagator(final FieldTLE<T> initialTLE,
@@ -233,10 +233,10 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
-     * @see #selectExtrapolator(FieldTLE, Frames, RealFieldElement[])
+     * @see #selectExtrapolator(FieldTLE, Frames, CalculusFieldElement[])
      */
     @DefaultDataContext
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {
         return selectExtrapolator(tle, DataContext.getDefault().getFrames(), parameters);
     }
 
@@ -250,7 +250,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @return the correct propagator.
      * @param <T> elements type
      */
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames, final T[] parameters) {
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames, final T[] parameters) {
         return selectExtrapolator(
                 tle,
                 Propagator.getDefaultLaw(frames),
@@ -269,10 +269,10 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
-     * @see #selectExtrapolator(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
+     * @see #selectExtrapolator(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
                                                    final AttitudeProvider attitudeProvider,
                                                    final T mass,
                                                    final T[] parameters) {
@@ -290,7 +290,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @return the correct propagator.
      * @param <T> elements type
      */
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
                                                    final AttitudeProvider attitudeProvider,
                                                    final T mass,
                                                    final Frame teme,

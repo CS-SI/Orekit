@@ -18,7 +18,7 @@ package org.orekit.utils;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -702,7 +702,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @return a new pv coordinates which is the image of u by the rotation
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
+    public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
 
         final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
         final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
@@ -725,7 +725,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @return a new pv coordinates which is the image of u by the rotation
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
+    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
 
         final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
         final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -263,7 +263,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         final Field<T> field = date.getField();
@@ -319,7 +319,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * @param field field used by default
      * @return the delta R correction term in m
      */
-    private  <T extends RealFieldElement<T>> T getDeltaR(final T height, final T zenith,
+    private  <T extends CalculusFieldElement<T>> T getDeltaR(final T height, final T zenith,
                                                          final Field<T> field) {
         final T zero = field.getZero();
         // limit the height to a range of [0, 5000] m
@@ -413,7 +413,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     /** Get the low elevation threshold value for path delay computation.
      * @return low elevation threshold, in rad.
      * @see #pathDelay(double, GeodeticPoint, double[], AbsoluteDate)
-     * @see #pathDelay(RealFieldElement, FieldGeodeticPoint, RealFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(CalculusFieldElement, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
      * @since 10.2
      */
     public double getLowElevationThreshold() {
@@ -423,7 +423,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     /** Set the low elevation threshold value for path delay computation.
      * @param lowElevationThreshold The new value for the threshold [rad]
      * @see #pathDelay(double, GeodeticPoint, double[], AbsoluteDate)
-     * @see #pathDelay(RealFieldElement, FieldGeodeticPoint, RealFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(CalculusFieldElement, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
      * @since 10.2
      */
     public void setLowElevationThreshold(final double lowElevationThreshold) {

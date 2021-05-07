@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -246,7 +246,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         final T zero = date.getField().getZero();
 
@@ -334,7 +334,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @param <T> type of the field elements
      * @return computed transform with derivatives
      */
-    private <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
                                                                            final T theta, final T thetaDot,
                                                                            final T xpNeg, final T xpNegDot,
                                                                            final T ypNeg, final T ypNegDot) {
@@ -389,7 +389,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @return current value of the linear model
      * @param <T> type of the filed elements
      */
-    private <T extends RealFieldElement<T>> T linearModel(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T linearModel(final FieldAbsoluteDate<T> date,
                                                           final ParameterDriver offsetDriver,
                                                           final ParameterDriver driftDriver) {
         if (offsetDriver.getReferenceDate() == null) {
@@ -478,7 +478,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
             final T dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver).divide(EARTH_ANGULAR_VELOCITY);
             return baseUT1.offsetFromTAI(date).add(dut1);
         }

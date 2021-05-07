@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -120,7 +120,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Zenith delay
         final T[] delays = computeZenithDelay(point, parameters, date);
@@ -190,7 +190,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
      * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
+    public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -289,7 +289,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
      * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
      */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
 
@@ -343,7 +343,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
     * @param point station location
     * @return the laser frequency parameter f(lambda).
     */
-    private <T extends RealFieldElement<T>> T getSiteFunctionValue(final FieldGeodeticPoint<T> point) {
+    private <T extends CalculusFieldElement<T>> T getSiteFunctionValue(final FieldGeodeticPoint<T> point) {
         return FastMath.cos(point.getLatitude().multiply(2.)).multiply(0.00266).add(point.getAltitude().multiply(0.00000028)).negate().add(1.);
     }
 
@@ -373,7 +373,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
    * @param point station location
    * @return the value of the coefficient
    */
-    private <T extends RealFieldElement<T>> T computeMFCoeffient(final double a0, final double a1, final double a2, final double a3,
+    private <T extends CalculusFieldElement<T>> T computeMFCoeffient(final double a0, final double a1, final double a2, final double a3,
                                                                  final double T, final FieldGeodeticPoint<T> point) {
         return point.getAltitude().multiply(a3).add(FastMath.cos(point.getLatitude()).multiply(a2)).add(a0 + a1 * T);
     }

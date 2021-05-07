@@ -17,7 +17,7 @@
 package org.orekit.files.ccsds.ndm.adm;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -248,7 +248,7 @@ public class AttitudeEndoints implements AttitudeBuilder {
 
     /**  {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>>
+    public <T extends CalculusFieldElement<T>>
         FieldAttitude<T> build(final Frame frame, final FieldPVCoordinatesProvider<T> pvProv,
                                final TimeStampedFieldAngularCoordinates<T> rawAttitude) {
 

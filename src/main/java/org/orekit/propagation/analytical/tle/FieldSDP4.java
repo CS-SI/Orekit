@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
@@ -40,7 +40,7 @@ import org.orekit.utils.Constants;
  * @author Thomas Paulet (field translation)
  * @since 11.0
  */
-abstract class FieldSDP4<T extends RealFieldElement<T>>  extends FieldTLEPropagator<T> {
+abstract class FieldSDP4<T extends CalculusFieldElement<T>>  extends FieldTLEPropagator<T> {
 
     // CHECKSTYLE: stop VisibilityModifier check
 

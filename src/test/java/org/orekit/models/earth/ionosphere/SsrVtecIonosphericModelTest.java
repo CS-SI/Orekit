@@ -19,7 +19,7 @@ package org.orekit.models.earth.ionosphere;
 import java.util.Collections;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.Decimal64Field;
@@ -122,7 +122,7 @@ public class SsrVtecIonosphericModelTest {
         doTestFieldDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
         final T zero = field.getZero();
         // Frequency
         final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
@@ -189,7 +189,7 @@ public class SsrVtecIonosphericModelTest {
         doTestFieldZeroDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
         final T zero = field.getZero();
         // Frequency
         final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
@@ -357,7 +357,7 @@ public class SsrVtecIonosphericModelTest {
         doTestFieldDelayRange(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldDelayRange(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldDelayRange(final Field<T> field) {
         final T zero = field.getZero();
         // Frequency
         final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;

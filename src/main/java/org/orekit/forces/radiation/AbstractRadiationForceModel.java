@@ -19,7 +19,7 @@ package org.orekit.forces.radiation;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
@@ -80,7 +80,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.of(new FieldUmbraDetector<>(field), new FieldPenumbraDetector<>(field));
     }
 
@@ -115,10 +115,10 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
      * Get the useful angles for eclipse computation.
      * @param sunPosition Sun position in the selected frame
      * @param position the satellite's position in the selected frame.
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
      */
-    protected <T extends RealFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> sunPosition, final FieldVector3D<T> position) {
+    protected <T extends CalculusFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> sunPosition, final FieldVector3D<T> position) {
         final T[] angle = MathArrays.buildArray(position.getX().getField(), 3);
 
         final FieldVector3D<T> mP           = position.negate();
@@ -248,7 +248,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
     }
 
     /** This class defines the umbra entry/exit detector. */
-    private class FieldUmbraDetector<T extends RealFieldElement<T>>
+    private class FieldUmbraDetector<T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldUmbraDetector<T>, T> {
 
         /** Build a new instance.
@@ -307,7 +307,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
     }
 
     /** This class defines the penumbra entry/exit detector. */
-    private class FieldPenumbraDetector<T extends RealFieldElement<T>>
+    private class FieldPenumbraDetector<T extends CalculusFieldElement<T>>
           extends FieldAbstractDetector<FieldPenumbraDetector<T>, T> {
 
         /** Build a new instance.

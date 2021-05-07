@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -35,17 +35,17 @@ import org.orekit.propagation.events.FieldEventDetector;
  *
  * @param <T> the type of {@link EventDetector} that this event handler will handle events
  *            for.
- * @param <E> the type of {@link RealFieldElement} to use instead of {@code double}.
+ * @param <E> the type of {@link CalculusFieldElement} to use instead of {@code double}.
  * @author Evan Ward
  * @see RecordAndContinue
  * @since 9.3
  */
 public class FieldRecordAndContinue
-        <T extends FieldEventDetector<E>, E extends RealFieldElement<E>>
+        <T extends FieldEventDetector<E>, E extends CalculusFieldElement<E>>
         implements FieldEventHandler<T, E> {
 
     /** A single event detected during propagation. */
-    public static class Event<T, F extends RealFieldElement<F>> {
+    public static class Event<T, F extends CalculusFieldElement<F>> {
 
         /** The observed state. */
         private final FieldSpacecraftState<F> state;

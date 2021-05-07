@@ -17,7 +17,7 @@
 package org.orekit.models.earth.atmosphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -506,7 +506,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return total mass-Density at input position (kg/m³)
      */
-    public <T extends RealFieldElement<T>> T getDensity(final T dateMJD, final T sunRA, final T sunDecli,
+    public <T extends CalculusFieldElement<T>> T getDensity(final T dateMJD, final T sunRA, final T sunDecli,
                                                         final T satLon, final T satLat, final T satAlt,
                                                         final double f10, final double f10B, final double s10,
                                                         final double s10B, final double xm10, final double xm10B,
@@ -806,7 +806,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type of the filed elements
      * @return dTc correction
      */
-    private static <T extends RealFieldElement<T>> T dTc(final double f10, final T solarTime,
+    private static <T extends CalculusFieldElement<T>> T dTc(final double f10, final T solarTime,
                                                          final T satLat, final T satAlt) {
         T dTc = solarTime.getField().getZero();
         final T      st = solarTime.divide(24.0);
@@ -871,7 +871,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return the value of the polynomial
      */
-    private static <T extends RealFieldElement<T>>  T poly1CDTC(final double fs, final T st, final T cs) {
+    private static <T extends CalculusFieldElement<T>>  T poly1CDTC(final double fs, final T st, final T cs) {
         return    st.multiply(CDTC[6]).
               add(CDTC[5]).multiply(st).
               add(CDTC[4]).multiply(st).
@@ -908,7 +908,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return the value of the polynomial
      */
-    private static <T extends RealFieldElement<T>>  T poly2CDTC(final double fs, final T st, final T cs) {
+    private static <T extends CalculusFieldElement<T>>  T poly2CDTC(final double fs, final T st, final T cs) {
         return         st.multiply(CDTC[19]).
                    add(CDTC[18]).multiply(st).
                    add(CDTC[17]).multiply(cs).multiply(st).
@@ -939,7 +939,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return the value of the polynomial
      */
-    private static <T extends RealFieldElement<T>>  T poly1BDTC(final double fs, final T st, final T cs, final T hp) {
+    private static <T extends CalculusFieldElement<T>>  T poly1BDTC(final double fs, final T st, final T cs, final T hp) {
         return     st.multiply(BDTC[6]).
                add(BDTC[5]).multiply(st).
                add(BDTC[4]).multiply(st).
@@ -968,7 +968,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return the value of the polynomial
      */
-    private static <T extends RealFieldElement<T>>  T poly2BDTC(final T st) {
+    private static <T extends CalculusFieldElement<T>>  T poly2BDTC(final T st) {
         return     st.multiply(BDTC[17]).
                add(BDTC[16]).multiply(st).
                add(BDTC[15]).multiply(st).
@@ -995,7 +995,7 @@ public class JB2008 implements Atmosphere {
      * @return mean molecular mass
      * @param <T> type fo the field elements
      */
-    private static <T extends RealFieldElement<T>>  T mBar(final T z) {
+    private static <T extends CalculusFieldElement<T>>  T mBar(final T z) {
         final T dz = z.subtract(100.);
         T amb = z.getField().getZero().add(CMB[6]);
         for (int i = 5; i >= 0; --i) {
@@ -1024,7 +1024,7 @@ public class JB2008 implements Atmosphere {
      * @return temperature profile
      * @param <T> type fo the field elements
      */
-    private static <T extends RealFieldElement<T>>  T localTemp(final T z, final T[] tc) {
+    private static <T extends CalculusFieldElement<T>>  T localTemp(final T z, final T[] tc) {
         final T dz = z.subtract(125.);
         if (dz.getReal() <= 0.) {
             return dz.multiply(-9.8204695e-6).subtract(7.3039742e-4).multiply(dz).multiply(dz).add(1.0).multiply(dz).multiply(tc[1]).add(tc[0]);
@@ -1047,7 +1047,7 @@ public class JB2008 implements Atmosphere {
      * @return the gravity (m/s2)
      * @param <T> type fo the field elements
      */
-    private static <T extends RealFieldElement<T>>  T gravity(final T z) {
+    private static <T extends CalculusFieldElement<T>>  T gravity(final T z) {
         final T tmp = z.divide(EARTH_RADIUS).add(1);
         return tmp.multiply(tmp).reciprocal().multiply(Constants.G0_STANDARD_GRAVITY);
     }
@@ -1094,7 +1094,7 @@ public class JB2008 implements Atmosphere {
      * @return semi-annual variation
      * @param <T> type fo the field elements
      */
-    private static <T extends RealFieldElement<T>>  T semian08(final T doy, final T alt,
+    private static <T extends CalculusFieldElement<T>>  T semian08(final T doy, final T alt,
                                                                final double f10B, final double s10B, final double xm10B) {
 
         final T htz = alt.divide(1000.0);
@@ -1154,7 +1154,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type of the field elements
      * @return the number days in year
      */
-    private static <T extends RealFieldElement<T>> T dayOfYear(final T dateMJD) {
+    private static <T extends CalculusFieldElement<T>> T dayOfYear(final T dateMJD) {
         final T d1950 = dateMJD.subtract(33281);
 
         int iyday = (int) d1950.getReal();
@@ -1180,7 +1180,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return min value
      */
-    private <T extends RealFieldElement<T>> T min(final double d, final T f) {
+    private <T extends CalculusFieldElement<T>> T min(final double d, final T f) {
         return (f.getReal() > d) ? f.getField().getZero().add(d) : f;
     }
 
@@ -1190,7 +1190,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return max value
      */
-    private <T extends RealFieldElement<T>> T max(final double d, final T f) {
+    private <T extends CalculusFieldElement<T>> T max(final double d, final T f) {
         return (f.getReal() <= d) ? f.getField().getZero().add(d) : f;
     }
 
@@ -1235,7 +1235,7 @@ public class JB2008 implements Atmosphere {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
                                                         final Frame frame) {
 

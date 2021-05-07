@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
@@ -92,7 +92,7 @@ public class GMSTScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
 
         // julian seconds since reference date
         final T ts = date.durationFrom(referenceDate);

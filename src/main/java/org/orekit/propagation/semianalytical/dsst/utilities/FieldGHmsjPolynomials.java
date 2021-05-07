@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 
 /** Compute the G<sub>ms</sub><sup>j</sup> and the H<sub>ms</sub><sup>j</sup>
@@ -29,7 +29,7 @@ import org.hipparchus.util.FastMath;
  *  @author Romain Di Costanzo
  *  @author Bryan Cazabonne (field translation)
  */
-public class FieldGHmsjPolynomials <T extends RealFieldElement<T>> {
+public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
     /** C<sub>j</sub>(k, h), S<sub>j</sub>(k, h) coefficient.
      * (k, h) are the (x, y) component of the eccentricity vector in equinoctial elements
      */

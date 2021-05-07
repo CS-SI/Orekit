@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -46,7 +46,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * </p>
  * @author Luc Maisonobe
  */
-public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> implements FieldPropagator<T> {
+public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>> implements FieldPropagator<T> {
 
     /** Propagation mode. */
     private int mode;

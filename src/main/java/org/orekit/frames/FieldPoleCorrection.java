@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Simple container class for pole correction parameters.
  * <p>This class is a simple container, it does not provide
@@ -25,7 +25,7 @@ import org.hipparchus.RealFieldElement;
  * @since 9.0
  * @author Luc Maisonobe
  */
-public class FieldPoleCorrection<T extends RealFieldElement<T>> {
+public class FieldPoleCorrection<T extends CalculusFieldElement<T>> {
 
     /** x<sub>p</sub> parameter (radians). */
     private final T xp;

@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.drag;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -62,7 +62,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
      * @param <T> type of the field elements
      * @return true if state corresponds to derivatives with respect to state
      */
-    protected <T extends RealFieldElement<T>> boolean isDSStateDerivative(final FieldSpacecraftState<T> state) {
+    protected <T extends CalculusFieldElement<T>> boolean isDSStateDerivative(final FieldSpacecraftState<T> state) {
         try {
             final DerivativeStructure dsMass = (DerivativeStructure) state.getMass();
             final int o = dsMass.getOrder();
@@ -94,7 +94,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
      * @param <T> type of the field elements
      * @return true if state corresponds to derivatives with respect to state
      */
-    protected <T extends RealFieldElement<T>> boolean isGradientStateDerivative(final FieldSpacecraftState<T> state) {
+    protected <T extends CalculusFieldElement<T>> boolean isGradientStateDerivative(final FieldSpacecraftState<T> state) {
         try {
             final Gradient gMass = (Gradient) state.getMass();
             final int p = gMass.getFreeParameters();

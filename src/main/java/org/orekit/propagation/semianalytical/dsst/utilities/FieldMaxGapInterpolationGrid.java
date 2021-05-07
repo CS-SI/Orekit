@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 
@@ -30,7 +30,7 @@ import org.hipparchus.util.MathArrays;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class FieldMaxGapInterpolationGrid <T extends RealFieldElement<T>> implements FieldInterpolationGrid<T> {
+public class FieldMaxGapInterpolationGrid <T extends CalculusFieldElement<T>> implements FieldInterpolationGrid<T> {
 
     /** Maximum time gap. */
     private final T maxGap;

@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -85,7 +85,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
      * @param parameters ionospheric model parameters
      * @return the measurement error due to ionosphere
      */
-    private <T extends RealFieldElement<T>> T phaseErrorIonosphericModel(final GroundStation station,
+    private <T extends CalculusFieldElement<T>> T phaseErrorIonosphericModel(final GroundStation station,
                                                                          final FieldSpacecraftState<T> state,
                                                                          final T[] parameters) {
 

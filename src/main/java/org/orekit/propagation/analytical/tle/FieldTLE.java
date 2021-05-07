@@ -25,7 +25,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -67,7 +67,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thomas Paulet (field translation)
  * @since 11.0
  */
-public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped<T>, Serializable {
+public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, Serializable {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
@@ -308,8 +308,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @param meanAnomaly mean anomaly (rad)
      * @param revolutionNumberAtEpoch revolution number at epoch
      * @param bStar ballistic coefficient
-     * @see #FieldTLE(int, char, int, int, String, int, int, FieldAbsoluteDate, RealFieldElement, RealFieldElement,
-     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, int, double, TimeScale)
+     * @see #FieldTLE(int, char, int, int, String, int, int, FieldAbsoluteDate, CalculusFieldElement, CalculusFieldElement,
+     * CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, int, double, TimeScale)
      */
     @DefaultDataContext
     public FieldTLE(final int satelliteNumber, final char classification,
@@ -744,7 +744,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @return TLE matching with Spacecraft State and template identification
      */
     @DefaultDataContext
-    public static <T extends RealFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE) {
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE) {
         return stateToTLE(state, templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
     }
 
@@ -764,7 +764,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @return TLE matching with Spacecraft State and template identification
      */
     @DefaultDataContext
-    public static <T extends RealFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
                                                                          final double epsilon, final int maxIterations) {
 
         // get keplerian parameters from state
@@ -844,7 +844,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @return TLE with template identification and new orbital parameters
      */
     @DefaultDataContext
-    private static <T extends RealFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit, final FieldTLE<T> templateTLE) {
+    private static <T extends CalculusFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit, final FieldTLE<T> templateTLE) {
         // Keplerian parameters
         final T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
         final T e           = keplerianOrbit.getE();

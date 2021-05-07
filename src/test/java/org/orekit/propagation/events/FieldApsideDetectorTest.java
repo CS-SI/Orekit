@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -47,7 +47,7 @@ public class FieldApsideDetectorTest {
         doTestSimple(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestSimple(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSimple(Field<T> field) {
         final T zero = field.getZero();
 
         final TimeScale utc = TimeScalesFactory.getUTC();

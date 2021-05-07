@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 import java.util.Collection;
 import java.util.stream.Stream;
@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  * @param <KK> type of the field elements
  * @author Luc Maisonobe
  */
-public interface FieldTimeInterpolable <T extends FieldTimeInterpolable<T, KK>, KK extends RealFieldElement<KK>> {
+public interface FieldTimeInterpolable <T extends FieldTimeInterpolable<T, KK>, KK extends CalculusFieldElement<KK>> {
 
     /** Get an interpolated instance.
      * <p>

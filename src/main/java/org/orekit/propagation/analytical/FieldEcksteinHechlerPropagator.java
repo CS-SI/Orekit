@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -56,7 +56,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @see FieldOrbit
  * @author Guylaine Prat
  */
-public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
+public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
     /** Initial Eckstein-Hechler model. */
     private FieldEHModel<T> initialModel;
@@ -103,7 +103,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
-     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, RealFieldElement,
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement,
      * UnnormalizedSphericalHarmonicsProvider, UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics, PropagationType)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
@@ -145,7 +145,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
      * @see org.orekit.utils.Constants
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, double,
-     * RealFieldElement, double, double, double, double, double)
+     * CalculusFieldElement, double, double, double, double, double)
      */
     @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
@@ -168,7 +168,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
-     * RealFieldElement, UnnormalizedSphericalHarmonicsProvider)
+     * CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider)
      */
     @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
@@ -203,7 +203,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
-     * RealFieldElement, double, RealFieldElement, double, double, double, double, double)
+     * CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, double)
      */
     @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
@@ -266,7 +266,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, RealFieldElement,
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement,
      * UnnormalizedSphericalHarmonicsProvider, PropagationType)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
@@ -299,8 +299,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, RealFieldElement, double,
-     *                                      RealFieldElement, double, double, double, double, double, PropagationType)
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double,
+     *                                      CalculusFieldElement, double, double, double, double, double, PropagationType)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
@@ -550,7 +550,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
-    private static class FieldEHModel<T extends RealFieldElement<T>> {
+    private static class FieldEHModel<T extends CalculusFieldElement<T>> {
 
         /** Mean FieldOrbit. */
         private final FieldCircularOrbit<T> mean;
@@ -991,10 +991,10 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param <T> the type of the field elements
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
      * @since 1.2
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
+     * @deprecated replaced by {@link MathUtils#normalizeAngle(CalculusFieldElement, CalculusFieldElement)}
      */
     @Deprecated
-    public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
+    public static <T extends CalculusFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
     }
 

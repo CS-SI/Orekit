@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -52,10 +52,10 @@ public interface ManeuverTriggers {
 
     /** Get the event detectors associated with the triggers.
      * @param field field to which the state belongs
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return the event detectors
      */
-    <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
+    <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
 
     /** Find out if the maneuver is firing or not.
      * @param date current date
@@ -67,10 +67,10 @@ public interface ManeuverTriggers {
     /** Find out if the maneuver is firing or not.
      * @param date current date
      * @param parameters maneuver triggers parameters
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return true if the maneuver is firing, false otherwise
      */
-    <T extends RealFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters);
+    <T extends CalculusFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters);
 
     /** Get the maneuver triggers parameter drivers.
      * @return maneuver triggers parameter drivers

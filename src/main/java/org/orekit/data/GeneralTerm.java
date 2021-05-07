@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Class for general terms.
  * @author Luc Maisonobe
@@ -121,7 +121,7 @@ class GeneralTerm extends SeriesTerm {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
+    protected <T extends CalculusFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
         return elements.getL().multiply(cL).
                add(elements.getLPrime().multiply(cLPrime)).
                add(elements.getF().multiply(cF)).
@@ -139,7 +139,7 @@ class GeneralTerm extends SeriesTerm {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T argumentDerivative(final FieldBodiesElements<T> elements) {
+    protected <T extends CalculusFieldElement<T>> T argumentDerivative(final FieldBodiesElements<T> elements) {
         return elements.getLDot().multiply(cL).
                add(elements.getLPrimeDot().multiply(cLPrime)).
                add(elements.getFDot().multiply(cF)).

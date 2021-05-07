@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -158,7 +158,7 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
         // Date
         final FieldAbsoluteDate<T> date = state.getDate();
@@ -252,7 +252,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param satP satellite position
      * @return the STEC in TECUnits
      */
-    public <T extends RealFieldElement<T>> T stec(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T stec(final FieldAbsoluteDate<T> date,
                                                   final FieldGeodeticPoint<T> recP,
                                                   final FieldGeodeticPoint<T> satP) {
 
@@ -333,7 +333,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param dateTime current date and time componentns
      * @return result of the integration
      */
-    private <T extends RealFieldElement<T>> T stecIntegration(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T stecIntegration(final Field<T> field,
                                                               final FieldSegment<T> seg,
                                                               final DateTimeComponents dateTime) {
         // Integration points
@@ -380,7 +380,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param parameters NeQuick model parameters
      * @return electron density [m^-3]
      */
-    private <T extends RealFieldElement<T>> T electronDensity(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T electronDensity(final Field<T> field,
                                                               final T h,
                                                               final FieldNeQuickParameters<T> parameters) {
         // Convert height in kilometers
@@ -474,7 +474,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param parameters NeQuick model parameters
      * @return the electron density N in m-3
      */
-    private <T extends RealFieldElement<T>> T bottomElectronDensity(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final Field<T> field,
                                                                     final T h,
                                                                     final FieldNeQuickParameters<T> parameters) {
 
@@ -582,7 +582,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param parameters NeQuick model parameters
      * @return the electron density N in m-3
      */
-    private <T extends RealFieldElement<T>> T topElectronDensity(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T topElectronDensity(final Field<T> field,
                                                                  final T h,
                                                                  final FieldNeQuickParameters<T> parameters) {
 
@@ -659,7 +659,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param power power for exponential function
      * @return clipped exponential value
      */
-    private <T extends RealFieldElement<T>> T clipExp(final Field<T> field, final T power) {
+    private <T extends CalculusFieldElement<T>> T clipExp(final Field<T> field, final T power) {
         final T zero = field.getZero();
         if (power.getReal() > 80.0) {
             return zero.add(5.5406E34);
@@ -1149,7 +1149,7 @@ public class NeQuickModel implements IonosphericModel {
      * Container for ray-perigee parameters.
      * By convention, point 1 is at lower height.
      */
-    private static class FieldRay <T extends RealFieldElement<T>> {
+    private static class FieldRay <T extends CalculusFieldElement<T>> {
 
         /** Threshold for ray-perigee parameters computation. */
         private static final double THRESHOLD = 1.0e-10;
@@ -1464,7 +1464,7 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     /** Performs the computation of the coordinates along the integration path. */
-    private static class FieldSegment <T extends RealFieldElement<T>> {
+    private static class FieldSegment <T extends CalculusFieldElement<T>> {
 
         /** Latitudes [rad]. */
         private final T[] latitudes;

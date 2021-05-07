@@ -18,7 +18,7 @@ package org.orekit.utils;
 
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
@@ -41,7 +41,7 @@ public class ExtendedPVCoordinatesTest {
             }
             
             @Override
-            public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
+            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
                 getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
                     {
                 return new TimeStampedFieldPVCoordinates<>(date,

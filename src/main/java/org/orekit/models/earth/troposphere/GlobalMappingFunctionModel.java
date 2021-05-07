@@ -17,7 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -175,7 +175,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final FieldAbsoluteDate<T> date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);

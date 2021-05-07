@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.utils.Constants;
 
 /** Scale for on-board clock.
@@ -126,7 +126,7 @@ public class SatelliteClockScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
         return date.durationFrom(epoch).multiply(drift).add(offsetAtEpoch);
     }
 

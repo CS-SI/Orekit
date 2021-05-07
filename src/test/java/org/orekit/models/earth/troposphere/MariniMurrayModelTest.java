@@ -18,7 +18,7 @@ package org.orekit.models.earth.troposphere;
 
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -71,7 +71,7 @@ public class MariniMurrayModelTest {
         doTestFieldDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
         final T zero = field.getZero();
         final T elevation = zero.add(FastMath.toRadians(10d));
         final T height = zero.add(100d);
@@ -98,7 +98,7 @@ public class MariniMurrayModelTest {
         doTestFieldFixedHeight(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         T lastDelay  = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
@@ -125,7 +125,7 @@ public class MariniMurrayModelTest {
         doCompareFieldExpectedValues(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
 
         T zero = field.getZero();
         T height = zero;

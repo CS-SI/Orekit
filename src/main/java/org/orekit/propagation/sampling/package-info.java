@@ -29,7 +29,7 @@
  *
  * <p>
  * Both regular propagators using double numbers for state components and field based propagators
- * using any kind of {@link org.hipparchus.RealFieldElement field} are available. A typical
+ * using any kind of {@link org.hipparchus.CalculusFieldElement field} are available. A typical
  * example is to use {@link org.hipparchus.analysis.differentiation.DerivativeStructure derivative
  * structure} objects to propagate orbits using Taylor Algebra, for either high order uncertainties
  * propagation or very fast Monte-Carlo simulations.

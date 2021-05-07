@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -75,7 +75,7 @@ public class FieldDSSTTesseralTest {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
         
         final T zero = field.getZero();
         // Central Body geopotential 4x4
@@ -141,7 +141,7 @@ public class FieldDSSTTesseralTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
         
         final T zero = field.getZero();
         Utils.setDataRoot("regular-data:potential/icgem-format");
@@ -201,7 +201,7 @@ public class FieldDSSTTesseralTest {
         doTestIssue625(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue625(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue625(final Field<T> field) {
 
         final T zero = field.getZero();
         // Central Body geopotential 4x4
@@ -262,7 +262,7 @@ public class FieldDSSTTesseralTest {
         doTestIssue736(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue736(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue736(final Field<T> field) {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =

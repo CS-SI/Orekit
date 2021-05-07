@@ -19,7 +19,7 @@ package org.orekit.frames;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
@@ -104,7 +104,7 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // get the transform from the current EOP
         final FieldTransform<T> rawTransform = rawProvider.getTransform(date);

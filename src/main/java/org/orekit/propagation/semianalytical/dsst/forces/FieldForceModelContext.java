@@ -16,14 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
 /** Base class for dsst force models parameter containers.
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public abstract class FieldForceModelContext<T extends RealFieldElement<T>> {
+public abstract class FieldForceModelContext<T extends CalculusFieldElement<T>> {
 
     /** Common parameters used by all DSST forces. */
     private final FieldAuxiliaryElements<T> auxiliaryElements;

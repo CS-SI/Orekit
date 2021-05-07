@@ -18,7 +18,7 @@
 package org.orekit.propagation.events.handlers;
 
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -30,7 +30,7 @@ import org.orekit.propagation.events.FieldEventDetector;
  *
  * @param <T> class type for the generic version
  */
-public class FieldStopOnEvent <KK extends FieldEventDetector<T>, T extends RealFieldElement<T>>
+public class FieldStopOnEvent <KK extends FieldEventDetector<T>, T extends CalculusFieldElement<T>>
                                     implements FieldEventHandler<KK, T> {
 
     /**

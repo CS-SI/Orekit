@@ -19,7 +19,7 @@ package org.orekit.utils;
 import java.util.Collection;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
@@ -41,7 +41,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 7.0
  */
-public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
+public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T>>
     extends FieldAngularCoordinates<T> implements FieldTimeStamped<T> {
 
     /** The date. */
@@ -298,7 +298,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         TimeStampedFieldAngularCoordinates<T> interpolate(final AbsoluteDate date,
                                                           final AngularDerivativesFilter filter,
                                                           final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {
@@ -336,7 +336,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         TimeStampedFieldAngularCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                           final AngularDerivativesFilter filter,
                                                           final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {

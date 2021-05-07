@@ -18,7 +18,7 @@ package org.orekit.attitudes;
 
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -309,7 +309,7 @@ public class LofOffsetTest {
         Assert.assertEquals(expectedZ, Vector3D.dotProduct(v, zLof), 1.0e-8);
     }
 
-    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
+    private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
         {
