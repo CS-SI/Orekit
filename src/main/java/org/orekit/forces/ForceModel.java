@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
@@ -68,7 +68,7 @@ public interface ForceModel {
      * Initialize the force model at the start of propagation. This method will be called
      * before any calls to {@link #addContribution(SpacecraftState, TimeDerivativesEquations)},
      * {@link #addContribution(FieldSpacecraftState, FieldTimeDerivativesEquations)},
-     * {@link #acceleration(SpacecraftState, double[])} or {@link #acceleration(FieldSpacecraftState, RealFieldElement[])}
+     * {@link #acceleration(SpacecraftState, double[])} or {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[])}
      *
      * <p> The default implementation of this method does nothing.</p>
      *
@@ -97,7 +97,7 @@ public interface ForceModel {
      * @param adder object where the contribution should be added
      * @param <T> type of the elements
      */
-    default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
+    default <T extends CalculusFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField())));
     }
 
@@ -120,7 +120,7 @@ public interface ForceModel {
      * @return force model parameters
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
         final List<ParameterDriver> drivers = getParametersDrivers();
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {
@@ -152,7 +152,7 @@ public interface ForceModel {
      * @param <T> type of the elements
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
 
     /** Get the discrete events related to the model.
      * @return stream of events detectors
@@ -161,10 +161,10 @@ public interface ForceModel {
 
     /** Get the discrete events related to the model.
      * @param field field to which the state belongs
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return stream of events detectors
      */
-    <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
+    <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
 
     /** Get the drivers for force model parameters.
      * @return drivers for force model parameters

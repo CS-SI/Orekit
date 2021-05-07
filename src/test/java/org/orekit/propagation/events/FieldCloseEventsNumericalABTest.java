@@ -53,7 +53,7 @@ public class FieldCloseEventsNumericalABTest extends FieldCloseEventsAbstractTes
         final DormandPrince853FieldIntegrator<Decimal64> starter =
                 new DormandPrince853FieldIntegrator<>(
                         field, stepSize / 100, stepSize / 10, tol[0], tol[1]);
-        starter.setInitialStepSize(v(stepSize / 20));
+        starter.setInitialStepSize(stepSize / 20);
         integrator.setStarterIntegrator(starter);
         final FieldNumericalPropagator<Decimal64> propagator =
                 new FieldNumericalPropagator<>(field, integrator);

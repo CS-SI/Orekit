@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** This interface represents objects that can be shifted in time.
  * @param <T> Type of the object.
@@ -24,7 +24,7 @@ import org.hipparchus.RealFieldElement;
  * @author Luc Maisonobe
  * @since 9.0
  */
-public interface FieldTimeShiftable<T extends FieldTimeInterpolable<T, KK>, KK extends RealFieldElement<KK>> {
+public interface FieldTimeShiftable<T extends FieldTimeInterpolable<T, KK>, KK extends CalculusFieldElement<KK>> {
 
     /** Get a time-shifted instance.
      * @param dt time shift in seconds

@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /**
  * Interface for mapping functions used in the ionospheric delay computation.
@@ -47,6 +47,6 @@ public interface IonosphericMappingFunction {
      * @param <T> type of the elements
      * @return the ionospheric mapping factor.
      */
-    <T extends RealFieldElement<T>> T mappingFactor(T elevation);
+    <T extends CalculusFieldElement<T>> T mappingFactor(T elevation);
 
 }

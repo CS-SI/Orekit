@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -658,7 +658,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @return solar array normal in spacecraft frame
      * @param <T> type of the field elements
      */
-    public synchronized <T extends RealFieldElement<T>> FieldVector3D<T> getNormal(final FieldAbsoluteDate<T> date,
+    public synchronized <T extends CalculusFieldElement<T>> FieldVector3D<T> getNormal(final FieldAbsoluteDate<T> date,
                                                                                    final Frame frame,
                                                                                    final FieldVector3D<T> position,
                                                                                    final FieldRotation<T> rotation) {
@@ -810,7 +810,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
         dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final  T density, final FieldVector3D<T> relativeVelocity,
@@ -854,7 +854,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
         radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
@@ -937,7 +937,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param <T> type of the field elements
      * @return contribution of the facet to force in spacecraft frame
      */
-    private <T extends RealFieldElement<T>> FieldVector3D<T>
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T>
         facetRadiationAcceleration(final FieldVector3D<T> normal, final double area, final FieldVector3D<T> fluxSat,
                                    final T dot, final T[] parameters) {
 

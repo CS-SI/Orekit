@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.util.MathArrays;
@@ -146,7 +146,7 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
+        public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                          PropagationType type,
                                                                                          T[] parameters) {
             return new ArrayList<FieldShortPeriodTerms<T>>();
@@ -165,7 +165,7 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
+        public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
                                                                       FieldAuxiliaryElements<T> auxiliaryElements,
                                                                       T[] parameters) {
             
@@ -196,7 +196,7 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field) {
+        public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field) {
             return null;
         }
 
@@ -210,7 +210,7 @@ public class DSSTPartialDerivativesEquationsTest {
         
         @Override
         @SuppressWarnings("unchecked")
-        public <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters,
+        public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(T[] parameters,
                                                                            FieldSpacecraftState<T>... meanStates) {
         }
 

@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.maneuvers.propulsion;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -231,10 +231,10 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
             final FieldAbsoluteDate<T> date, final Frame frame) {
         throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED,
-                "ThrustDirectionAndAttitudeProvider with RealFieldElement");
+                "ThrustDirectionAndAttitudeProvider with CalculusFieldElement");
     }
 
     /**

@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events.handlers;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -36,7 +36,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @param <KK> object type that the handler is called from
  * @since 6.1
  */
-public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends RealFieldElement<T>> {
+public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> {
 
     /** Initialize event handler at the start of a propagation.
      * <p>

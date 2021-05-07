@@ -18,21 +18,21 @@ package org.orekit.bodies;
 
 import java.text.NumberFormat;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.CompositeFormat;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 
-/** Point location relative to a 2D body surface, using {@link RealFieldElement}.
+/** Point location relative to a 2D body surface, using {@link CalculusFieldElement}.
  * <p>Instance of this class are guaranteed to be immutable.</p>
  * @param <T> the type of the field elements
  * @since 7.1
  * @see BodyShape
  * @author Luc Maisonobe
  */
-public class FieldGeodeticPoint<T extends RealFieldElement<T>> {
+public class FieldGeodeticPoint<T extends CalculusFieldElement<T>> {
 
     /** Latitude of the point (rad). */
     private final T latitude;

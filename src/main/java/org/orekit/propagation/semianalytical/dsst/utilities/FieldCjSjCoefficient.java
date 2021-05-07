@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 
@@ -36,7 +36,7 @@ import org.hipparchus.exception.NullArgumentException;
  *  {@link ArrayList} of {@link Complex} number, the C<sub>j</sub>(k, h) being
  *  represented by the real and the S<sub>j</sub>(k, h) by the imaginary part.
  */
-public class FieldCjSjCoefficient <T extends RealFieldElement<T>> {
+public class FieldCjSjCoefficient <T extends CalculusFieldElement<T>> {
 
     /** Zero for initialization. /*/
     private final T zero;
@@ -133,7 +133,7 @@ public class FieldCjSjCoefficient <T extends RealFieldElement<T>> {
         jLast = j;
     }
 
-    private static class FieldComplex <T extends RealFieldElement<T>> {
+    private static class FieldComplex <T extends CalculusFieldElement<T>> {
 
         /** The imaginary part. */
         private final T imaginary;

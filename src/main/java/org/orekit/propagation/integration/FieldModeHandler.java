@@ -16,13 +16,13 @@
  */
 package org.orekit.propagation.integration;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Common interface for all propagator mode handlers initialization.
  * @author Luc Maisonobe
  */
-public interface FieldModeHandler<T extends RealFieldElement<T>> {
+public interface FieldModeHandler<T extends CalculusFieldElement<T>> {
 
     /**
      * Initialize the mode handler.

@@ -25,7 +25,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -55,14 +55,14 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * This abstract class allows to provide easily the full set of {@link
  * org.orekit.propagation.FieldPropagator FieldPropagator} methods, including all propagation
  * modes support and discrete events support for any simple propagation method. Only
- * two methods must be implemented by derived classes: {@link #propagateOrbit(FieldAbsoluteDate, RealFieldElement[])}
+ * two methods must be implemented by derived classes: {@link #propagateOrbit(FieldAbsoluteDate, CalculusFieldElement[])}
  * and {@link #getMass(FieldAbsoluteDate)}. The first method should perform straightforward
  * propagation starting from some internally stored initial state up to the specified target date.
  * </p>
  * @author Luc Maisonobe
  */
 
-public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldElement<T>> extends FieldAbstractPropagator<T> {
+public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T> {
 
     /** Provider for attitude computation. */
     private FieldPVCoordinatesProvider<T> pvProvider;

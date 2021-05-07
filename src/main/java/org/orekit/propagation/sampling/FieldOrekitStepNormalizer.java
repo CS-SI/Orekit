@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -29,7 +29,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
-public class FieldOrekitStepNormalizer <T extends RealFieldElement<T>> implements FieldOrekitStepHandler<T> {
+public class FieldOrekitStepNormalizer <T extends CalculusFieldElement<T>> implements FieldOrekitStepHandler<T> {
 
     /** Fixed time step. */
     private T h;

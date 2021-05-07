@@ -19,7 +19,7 @@ package org.orekit.forces.drag;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -99,7 +99,7 @@ public class IsotropicDrag implements DragSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
         dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final T density,

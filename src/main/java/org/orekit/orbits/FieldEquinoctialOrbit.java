@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -76,7 +76,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
  */
-public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
+public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 
     /** Semi-major axis (m). */
     private final T a;
@@ -245,7 +245,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvCoordinates the position, velocity and acceleration
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
@@ -349,7 +349,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvCoordinates the position end velocity
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
@@ -528,7 +528,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param <T> Type of the field elements
      * @return the true longitude argument
      */
-    public static <T extends RealFieldElement<T>> T eccentricToTrue(final T lE, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T eccentricToTrue(final T lE, final T ex, final T ey) {
         final T epsilon           = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
         final FieldSinCos<T> scLE = FastMath.sinCos(lE);
         final T cosLE             = scLE.cos();
@@ -545,7 +545,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param <T> Type of the field elements
      * @return the eccentric longitude argument
      */
-    public static <T extends RealFieldElement<T>> T trueToEccentric(final T lv, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T trueToEccentric(final T lv, final T ex, final T ey) {
         final T epsilon           = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
         final FieldSinCos<T> scLv = FastMath.sinCos(lv);
         final T cosLv             = scLv.cos();
@@ -562,7 +562,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param <T> Type of the field elements
      * @return the eccentric longitude argument
      */
-    public static <T extends RealFieldElement<T>> T meanToEccentric(final T lM, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T meanToEccentric(final T lM, final T ex, final T ey) {
         // Generalization of Kepler equation to equinoctial parameters
         // with lE = PA + RAAN + E and
         //      lM = PA + RAAN + M = lE - ex.sin(lE) + ey.cos(lE)
@@ -596,7 +596,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param <T> Type of the field elements
      * @return the mean longitude argument
      */
-    public static <T extends RealFieldElement<T>> T eccentricToMean(final T lE, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T eccentricToMean(final T lE, final T ex, final T ey) {
         final FieldSinCos<T> scLE = FastMath.sinCos(lE);
         return lE.subtract(ex.multiply(scLE.sin())).add(ey.multiply(scLE.cos()));
     }
@@ -1091,10 +1091,10 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param center center of the desired 2&pi; interval for the result
      * @param <T> the type of the field elements
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
+     * @deprecated replaced by {@link MathUtils#normalizeAngle(CalculusFieldElement, CalculusFieldElement)}
      */
     @Deprecated
-    public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
+    public static <T extends CalculusFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
     }
 

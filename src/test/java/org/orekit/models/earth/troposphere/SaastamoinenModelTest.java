@@ -20,7 +20,7 @@ package org.orekit.models.earth.troposphere;
 import static org.junit.Assert.assertEquals;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -64,7 +64,7 @@ public class SaastamoinenModelTest {
         doTestFieldFixedElevation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldFixedElevation(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldFixedElevation(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
@@ -95,7 +95,7 @@ public class SaastamoinenModelTest {
         doTestFieldFixedHeight(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
@@ -167,7 +167,7 @@ public class SaastamoinenModelTest {
         doTestFieldNegativeHeight(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldNegativeHeight(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldNegativeHeight(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
@@ -199,7 +199,7 @@ public class SaastamoinenModelTest {
     @Test
     public void testIssue654FieldLowElevation() { doTestFieldLowElevation(Decimal64Field.getInstance()); }
 
-    private <T extends RealFieldElement<T>> void doTestFieldLowElevation(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldLowElevation(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
@@ -235,7 +235,7 @@ public class SaastamoinenModelTest {
         doCompareFieldExpectedValues(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
@@ -268,7 +268,7 @@ public class SaastamoinenModelTest {
         doTestFieldIssue572(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldIssue572(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldIssue572(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();

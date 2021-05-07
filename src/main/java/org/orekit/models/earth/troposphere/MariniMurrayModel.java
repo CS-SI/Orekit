@@ -19,7 +19,7 @@ package org.orekit.models.earth.troposphere;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -96,7 +96,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         final double A = 0.002357 * P0 + 0.000141 * e0;
         final T K = FastMath.cos(point.getLatitude().multiply(2.)).multiply(0.00968).negate().add(1.163).subtract(0.00104 * T0).add(0.00001435 * P0);
@@ -141,7 +141,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
     * @param point station location
     * @return the laser frequency parameter f(lambda).
     */
-    private <T extends RealFieldElement<T>> T getSiteFunctionValue(final FieldGeodeticPoint<T> point) {
+    private <T extends CalculusFieldElement<T>> T getSiteFunctionValue(final FieldGeodeticPoint<T> point) {
         return FastMath.cos(point.getLatitude().multiply(2)).multiply(0.0026).add(point.getAltitude().multiply(0.001).multiply(0.00031)).negate().add(1.);
     }
 

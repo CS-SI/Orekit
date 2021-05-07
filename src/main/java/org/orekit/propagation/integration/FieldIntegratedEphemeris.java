@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.FieldDenseOutputModel;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.orekit.errors.OrekitException;
@@ -66,7 +66,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
+public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     extends FieldAbstractAnalyticalPropagator<T> implements FieldBoundedPropagator<T> {
 
     /** Event detection requires evaluating the state slightly before / past an event. */

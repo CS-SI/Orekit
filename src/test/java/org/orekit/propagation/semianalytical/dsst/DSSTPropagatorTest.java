@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -1132,7 +1132,7 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
             return null;
         }
 
@@ -1152,7 +1152,7 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        protected <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
+        protected <T extends CalculusFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
                                                                  FieldAuxiliaryElements<T> auxiliaryElements) {
             final Field<T> field = state.getDate().getField();
             final T zero = field.getZero();
@@ -1196,7 +1196,7 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
             return FieldVector3D.getZero(s.getDate().getField());
         }
 
@@ -1208,7 +1208,7 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

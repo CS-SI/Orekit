@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -188,7 +188,7 @@ public class AttitudesSequenceTest {
         doTestDayNightSwitchField(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)
         {
 
         //  Initial state definition : date, orbit

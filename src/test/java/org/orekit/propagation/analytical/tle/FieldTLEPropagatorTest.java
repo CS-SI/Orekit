@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -71,7 +71,7 @@ public class FieldTLEPropagatorTest {
         doTestComparisonWithNonField(Decimal64Field.getInstance());
     }
 
-    public <T extends RealFieldElement<T>> void doTestSlaveMode(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestSlaveMode(Field<T> field) {
         
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
@@ -97,7 +97,7 @@ public class FieldTLEPropagatorTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void doTestEphemerisMode(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestEphemerisMode(Field<T> field) {
         
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
@@ -145,7 +145,7 @@ public class FieldTLEPropagatorTest {
 
     /** Test if body center belongs to the direction pointed by the satellite
      */
-    public <T extends RealFieldElement<T>> void doTestBodyCenterInPointingDirection(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestBodyCenterInPointingDirection(Field<T> field) {
 
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
@@ -180,7 +180,7 @@ public class FieldTLEPropagatorTest {
 
     }
 
-    private static class FieldDistanceChecker<T extends RealFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
+    private static class FieldDistanceChecker<T extends CalculusFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
 
         private final Frame itrf;
         private double minDistance;
@@ -233,7 +233,7 @@ public class FieldTLEPropagatorTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void doTestComparisonWithNonField(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestComparisonWithNonField(Field<T> field) {
         
         // propagation time.
         final double propagtime = 10 * 60;

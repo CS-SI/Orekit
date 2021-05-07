@@ -17,7 +17,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -31,7 +31,7 @@ import org.hipparchus.util.MathArrays;
  * @since 11.0
  * @author Bryan Cazabonne
  */
-public class FieldLegendrePolynomials<T extends RealFieldElement<T>> {
+public class FieldLegendrePolynomials<T extends CalculusFieldElement<T>> {
 
     /** Array for the Legendre polynomials. */
     private T[][] pCoef;

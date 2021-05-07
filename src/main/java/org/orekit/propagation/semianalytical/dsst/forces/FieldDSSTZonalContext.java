@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
@@ -30,7 +30,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     // Common factors for potential computation
     /** A = sqrt(μ * a). */

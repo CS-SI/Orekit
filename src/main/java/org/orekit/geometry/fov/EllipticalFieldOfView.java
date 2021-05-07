@@ -16,7 +16,7 @@
  */
 package org.orekit.geometry.fov;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -395,7 +395,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
      * @param <T> type of the field element
      * @return direction
      */
-    private <T extends RealFieldElement<T>> FieldVector3D<T> directionAt(final T d1, final T d2, final double sign) {
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> directionAt(final T d1, final T d2, final double sign) {
         final T cos1 = FastMath.cos(d1);
         final T cos2 = FastMath.cos(d2);
         final T a1   = cos1.subtract(cos2.multiply(dotF1F2)).multiply(d);
