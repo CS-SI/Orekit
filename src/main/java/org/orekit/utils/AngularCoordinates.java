@@ -103,6 +103,16 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         this.rotationAcceleration = rotationAcceleration;
     }
 
+    /**
+     * Builds angular coordinates with the given rotation, zero angular
+     * velocity, and zero angular acceleration.
+     *
+     * @param rotation rotation
+     */
+    public AngularCoordinates(final Rotation rotation) {
+        this(rotation, Vector3D.ZERO);
+    }
+
     /** Build the rotation that transforms a pair of pv coordinates into another one.
 
      * <p><em>WARNING</em>! This method requires much more stringent assumptions on

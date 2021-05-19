@@ -200,6 +200,16 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         }
     }
 
+    /**
+     * Builds PV coordinates with the givne position, zero velocity, and zero
+     * acceleration.
+     *
+     * @param position position vector (m)
+     */
+    public PVCoordinates(final Vector3D position) {
+        this(position, Vector3D.ZERO);
+    }
+
     /** Transform the instance to a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
      * <p>
      * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
