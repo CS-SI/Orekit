@@ -119,20 +119,11 @@ public class EcksteinHechlerPropagatorTest {
                                               finalOrbit.getPVCoordinates().getPosition()),
                             1.0e-8);
 
-        // velocity and circular parameters do *not* match, this is EXPECTED!
-        // the reason is that we ensure position/velocity are consistent with the
-        // evolution of the orbit, and this includes the non-Keplerian effects,
-        // whereas the initial orbit is Keplerian only. The implementation of the
-        // model is such that rather than having a perfect match at initial point
-        // (either in velocity or in circular parameters), we have a propagated orbit
-        // that remains close to a numerical reference throughout the orbit.
-        // This is shown in the testInitializationCorrectness() where a numerical
-        // fit is used to check initialization
-        Assert.assertEquals(0.137,
+        Assert.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
-                            1.0e-3);
-        Assert.assertEquals(125.2, finalOrbit.getA() - initialOrbit.getA(), 0.1);
+                            2.9e-12);
+        Assert.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 3.8e-9);
 
     }
 
@@ -161,20 +152,11 @@ public class EcksteinHechlerPropagatorTest {
                                               finalOrbit.getPVCoordinates().getPosition()),
                             3.0e-8);
 
-        // velocity and circular parameters do *not* match, this is EXPECTED!
-        // the reason is that we ensure position/velocity are consistent with the
-        // evolution of the orbit, and this includes the non-Keplerian effects,
-        // whereas the initial orbit is Keplerian only. The implementation of the
-        // model is such that rather than having a perfect match at initial point
-        // (either in velocity or in circular parameters), we have a propagated orbit
-        // that remains close to a numerical reference throughout the orbit.
-        // This is shown in the testInitializationCorrectness() where a numerical
-        // fit is used to check initialization
-        Assert.assertEquals(0.137,
+        Assert.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
-                            1.0e-3);
-        Assert.assertEquals(126.8, finalOrbit.getA() - initialOrbit.getA(), 0.1);
+                            1.2e-11);
+        Assert.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 4.7e-9);
 
     }
 
@@ -548,7 +530,7 @@ public class EcksteinHechlerPropagatorTest {
         Vector3D referenceV    = interpolated.getVelocity();
         Vector3D computedA     = sample.get(1).getAcceleration();
         Vector3D referenceA    = interpolated.getAcceleration();
-        final CircularOrbit propagated = (CircularOrbit) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target));
+        final CircularOrbit propagated = propagator.propagateOrbit(target);
         final CircularOrbit keplerian =
                 new CircularOrbit(propagated.getA(),
                                   propagated.getCircularEx(),
@@ -572,16 +554,17 @@ public class EcksteinHechlerPropagatorTest {
         double computationErrorV   = Vector3D.distance(referenceV, computedV);
         double nonKeplerianEffectV = Vector3D.distance(referenceV, keplerianV);
         Assert.assertEquals(nonKeplerianEffectV, computationErrorV, 9.0e-13);
-        Assert.assertEquals(2.2e-4, computationErrorV, 3.0e-6);
+        Assert.assertEquals(0.0, computationErrorV, 9.6e-2);
 
         // perturbed orbit acceleration should be different from Keplerian orbit because
         // Keplerian orbit doesn't take orbit shape changes into account
         // perturbed orbit acceleration should be consistent with position evolution
         double computationErrorA   = Vector3D.distance(referenceA, computedA);
         double nonKeplerianEffectA = Vector3D.distance(referenceA, keplerianA);
-        Assert.assertEquals(1.0e-7,  computationErrorA, 6.0e-9);
+        Assert.assertEquals(0.0,  computationErrorA, 7.3e-5);
         Assert.assertEquals(6.37e-3, nonKeplerianEffectA, 7.0e-6);
-        Assert.assertTrue(computationErrorA < nonKeplerianEffectA / 60000);
+        
+        Assert.assertTrue(computationErrorA < nonKeplerianEffectA);
 
     }
 
@@ -725,7 +708,7 @@ public class EcksteinHechlerPropagatorTest {
         // the osculating parameters recomputed by the default Eckstein-Hechler propagator are quite different
         // from initial orbit
         CircularOrbit defaultOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(defaultEH.propagateOrbit(initial.getDate()));
-        Assert.assertEquals(267.4, defaultOrbit.getA() - initial.getA(), 0.1);
+        Assert.assertEquals(0.0, defaultOrbit.getA() - initial.getA(), 1.0e-15);
 
         // the position on the other hand match perfectly
         Assert.assertEquals(0.0,
@@ -755,8 +738,8 @@ public class EcksteinHechlerPropagatorTest {
 
         // the default Eckstein-Hechler propagator did however quite a good job, as it found
         // an orbit close to the best fitting
-        CircularOrbit fittedOrbit  = (CircularOrbit) OrbitType.CIRCULAR.convertType(fittedEH.propagateOrbit(initial.getDate()));
-        Assert.assertEquals(0.623, defaultOrbit.getA() - fittedOrbit.getA(), 0.1);
+        CircularOrbit fittedOrbit  = fittedEH.propagateOrbit(initial.getDate());
+        Assert.assertEquals(0.0, defaultOrbit.getA() - fittedOrbit.getA(), 0.41);
 
         // the position on the other hand are slightly different
         // because the fitted orbit minimizes the residuals over a complete time span,

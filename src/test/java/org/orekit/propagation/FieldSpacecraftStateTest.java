@@ -931,6 +931,7 @@ public class FieldSpacecraftStateTest {
         Assert.assertEquals(+1, finalState.getAdditionalState(name)[0].getReal(), 1.0e-15);
 
     }
+    
 
     private <T extends CalculusFieldElement<T>> void doTestIssue775(final Field<T> field) {
         final T zero = field.getZero();
@@ -961,7 +962,6 @@ public class FieldSpacecraftStateTest {
           withoutOrbit = withoutOrbit.interpolate(states.get(10).getDate(), states.stream());
           Assert.assertEquals(0.0, FieldVector3D.distance(withoutOrbit.getAbsPVA().getPosition(), states.get(10).getAbsPVA().getPosition()).getReal(), 1.0e-10);
     }
-
     
     
     
