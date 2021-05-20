@@ -18,9 +18,7 @@ package org.orekit.propagation.analytical;
 
 import java.io.Serializable;
 
-import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
@@ -41,7 +39,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates a {@link org.orekit.propagation.SpacecraftState}
  *  using the analytical Eckstein-Hechler model.
@@ -78,6 +75,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </p>
  * @see Orbit
  * @author Guylaine Prat
+ * @author Nicolas Fialton (no CartesianOrbit)
  */
 public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
@@ -517,7 +515,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         while (i++ < 100) {
 
             // recompute the osculating parameters from the current mean parameters
-            final UnivariateDerivative2[] parameters = current.propagateParameters(current.mean.getDate());
+            final UnivariateDerivative1[] parameters = current.propagateParameters(current.mean.getDate());
 
             // adapted parameters residuals
             final double deltaA      = osculating.getA()          - parameters[0].getValue();
@@ -558,12 +556,27 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    public CartesianOrbit propagateOrbit(final AbsoluteDate date) {
-        // compute Cartesian parameters, taking derivatives into account
+    public CircularOrbit propagateOrbit(final AbsoluteDate date) {
+        // compute Circular parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final EHModel current = models.get(date);
-        return new CartesianOrbit(toCartesian(date, current.propagateParameters(date)),
-                                  current.mean.getFrame(), mu);
+        final UnivariateDerivative1[] parameters = current.propagateParameters(date);
+        return new CircularOrbit(parameters[0].getValue(),
+                                 parameters[1].getValue(),
+                                 parameters[2].getValue(),
+                                 parameters[3].getValue(),
+                                 parameters[4].getValue(),
+                                 parameters[5].getValue(),
+                                 parameters[0].getFirstDerivative(),
+                                 parameters[1].getFirstDerivative(),
+                                 parameters[2].getFirstDerivative(),
+                                 parameters[3].getFirstDerivative(),
+                                 parameters[4].getFirstDerivative(),
+                                 parameters[5].getFirstDerivative(),
+                                 PositionAngle.MEAN,
+                                 current.mean.getFrame(),
+                                 date,
+                                 mu);
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
@@ -777,117 +790,115 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
          * @param date target date for the orbit
          * @return propagated parameters
          */
-        public UnivariateDerivative2[] propagateParameters(final AbsoluteDate date) {
+        public UnivariateDerivative1[] propagateParameters(final AbsoluteDate date) {
 
             // Keplerian evolution
-            final UnivariateDerivative2 dt = new UnivariateDerivative2(date.durationFrom(mean.getDate()), 1.0, 0.0);
-            final UnivariateDerivative2 xnot = dt.multiply(xnotDot);
+            final UnivariateDerivative1 dt = new UnivariateDerivative1(date.durationFrom(mean.getDate()), 1.0);
+            final UnivariateDerivative1 xnot = dt.multiply(xnotDot);
 
             // secular effects
 
             // eccentricity
-            final UnivariateDerivative2 x   = xnot.multiply(rdpom + rdpomp);
-            final UnivariateDerivative2 cx  = x.cos();
-            final UnivariateDerivative2 sx  = x.sin();
-            final UnivariateDerivative2 exm = cx.multiply(mean.getCircularEx()).
-                                              add(sx.multiply(eps2 - (1.0 - eps1) * mean.getCircularEy()));
-            final UnivariateDerivative2 eym = sx.multiply((1.0 + eps1) * mean.getCircularEx()).
-                                              add(cx.multiply(mean.getCircularEy() - eps2)).
-                                              add(eps2);
+            final UnivariateDerivative1 x   = xnot.multiply(rdpom + rdpomp);
+            final UnivariateDerivative1 cx  = x.cos();
+            final UnivariateDerivative1 sx  = x.sin();
+            final UnivariateDerivative1 exm = cx.multiply(mean.getCircularEx()).
+                                             add(sx.multiply(eps2 - (1.0 - eps1) * mean.getCircularEy()));
+            final UnivariateDerivative1 eym = sx.multiply((1.0 + eps1) * mean.getCircularEx()).
+                                             add(cx.multiply(mean.getCircularEy() - eps2)).
+                                             add(eps2);
 
-            // no secular effect on inclination
+            // no secular effect on inlination
 
-            // right ascension of ascending node
-            final UnivariateDerivative2 omm = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
-                                                                                               FastMath.PI),
-                                                                      ommD * xnotDot,
-                                                                      0.0);
+            // right ascension of asceding node
+            final UnivariateDerivative1 omm = new UnivariateDerivative1(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
+                                                                                              FastMath.PI),
+                                                                     ommD * xnotDot);
 
             // latitude argument
-            final UnivariateDerivative2 xlm = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(),
-                                                                                                 FastMath.PI),
-                                                                        aMD * xnotDot,
-                                                                        0.0);
+            final UnivariateDerivative1 xlm = new UnivariateDerivative1(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(),
+                                                                                                FastMath.PI),
+                                                                       aMD * xnotDot);
 
             // periodical terms
-            final UnivariateDerivative2 cl1 = xlm.cos();
-            final UnivariateDerivative2 sl1 = xlm.sin();
-            final UnivariateDerivative2 cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
-            final UnivariateDerivative2 sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
-            final UnivariateDerivative2 cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
-            final UnivariateDerivative2 sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
-            final UnivariateDerivative2 cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
-            final UnivariateDerivative2 sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
-            final UnivariateDerivative2 cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
-            final UnivariateDerivative2 sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
-            final UnivariateDerivative2 cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
+            final UnivariateDerivative1 cl1 = xlm.cos();
+            final UnivariateDerivative1 sl1 = xlm.sin();
+            final UnivariateDerivative1 cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
+            final UnivariateDerivative1 sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
+            final UnivariateDerivative1 cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
+            final UnivariateDerivative1 sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
+            final UnivariateDerivative1 cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
+            final UnivariateDerivative1 sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
+            final UnivariateDerivative1 cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
+            final UnivariateDerivative1 sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
+            final UnivariateDerivative1 cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
 
-            final UnivariateDerivative2 qh  = eym.subtract(eps2).multiply(kh);
-            final UnivariateDerivative2 ql  = exm.multiply(kl);
+            final UnivariateDerivative1 qh  = eym.subtract(eps2).multiply(kh);
+            final UnivariateDerivative1 ql  = exm.multiply(kl);
 
-            final UnivariateDerivative2 exmCl1 = exm.multiply(cl1);
-            final UnivariateDerivative2 exmSl1 = exm.multiply(sl1);
-            final UnivariateDerivative2 eymCl1 = eym.multiply(cl1);
-            final UnivariateDerivative2 eymSl1 = eym.multiply(sl1);
-            final UnivariateDerivative2 exmCl2 = exm.multiply(cl2);
-            final UnivariateDerivative2 exmSl2 = exm.multiply(sl2);
-            final UnivariateDerivative2 eymCl2 = eym.multiply(cl2);
-            final UnivariateDerivative2 eymSl2 = eym.multiply(sl2);
-            final UnivariateDerivative2 exmCl3 = exm.multiply(cl3);
-            final UnivariateDerivative2 exmSl3 = exm.multiply(sl3);
-            final UnivariateDerivative2 eymCl3 = eym.multiply(cl3);
-            final UnivariateDerivative2 eymSl3 = eym.multiply(sl3);
-            final UnivariateDerivative2 exmCl4 = exm.multiply(cl4);
-            final UnivariateDerivative2 exmSl4 = exm.multiply(sl4);
-            final UnivariateDerivative2 eymCl4 = eym.multiply(cl4);
-            final UnivariateDerivative2 eymSl4 = eym.multiply(sl4);
+            final UnivariateDerivative1 exmCl1 = exm.multiply(cl1);
+            final UnivariateDerivative1 exmSl1 = exm.multiply(sl1);
+            final UnivariateDerivative1 eymCl1 = eym.multiply(cl1);
+            final UnivariateDerivative1 eymSl1 = eym.multiply(sl1);
+            final UnivariateDerivative1 exmCl2 = exm.multiply(cl2);
+            final UnivariateDerivative1 exmSl2 = exm.multiply(sl2);
+            final UnivariateDerivative1 eymCl2 = eym.multiply(cl2);
+            final UnivariateDerivative1 eymSl2 = eym.multiply(sl2);
+            final UnivariateDerivative1 exmCl3 = exm.multiply(cl3);
+            final UnivariateDerivative1 exmSl3 = exm.multiply(sl3);
+            final UnivariateDerivative1 eymCl3 = eym.multiply(cl3);
+            final UnivariateDerivative1 eymSl3 = eym.multiply(sl3);
+            final UnivariateDerivative1 exmCl4 = exm.multiply(cl4);
+            final UnivariateDerivative1 exmSl4 = exm.multiply(sl4);
+            final UnivariateDerivative1 eymCl4 = eym.multiply(cl4);
+            final UnivariateDerivative1 eymSl4 = eym.multiply(sl4);
 
             // semi major axis
-            final UnivariateDerivative2 rda = exmCl1.multiply(ax1).
-                                              add(eymSl1.multiply(ay1)).
-                                              add(sl1.multiply(as1)).
-                                              add(cl2.multiply(ac2)).
-                                              add(exmCl3.add(eymSl3).multiply(axy3)).
-                                              add(sl3.multiply(as3)).
-                                              add(cl4.multiply(ac4)).
-                                              add(sl5.multiply(as5)).
-                                              add(cl6.multiply(ac6));
+            final UnivariateDerivative1 rda = exmCl1.multiply(ax1).
+                                             add(eymSl1.multiply(ay1)).
+                                             add(sl1.multiply(as1)).
+                                             add(cl2.multiply(ac2)).
+                                             add(exmCl3.add(eymSl3).multiply(axy3)).
+                                             add(sl3.multiply(as3)).
+                                             add(cl4.multiply(ac4)).
+                                             add(sl5.multiply(as5)).
+                                             add(cl6.multiply(ac6));
 
             // eccentricity
-            final UnivariateDerivative2 rdex = cl1.multiply(ex1).
-                                               add(exmCl2.multiply(exx2)).
-                                               add(eymSl2.multiply(exy2)).
-                                               add(cl3.multiply(ex3)).
-                                               add(exmCl4.add(eymSl4).multiply(ex4));
-            final UnivariateDerivative2 rdey = sl1.multiply(ey1).
-                                               add(exmSl2.multiply(eyx2)).
-                                               add(eymCl2.multiply(eyy2)).
-                                               add(sl3.multiply(ey3)).
-                                               add(exmSl4.subtract(eymCl4).multiply(ey4));
+            final UnivariateDerivative1 rdex = cl1.multiply(ex1).
+                                              add(exmCl2.multiply(exx2)).
+                                              add(eymSl2.multiply(exy2)).
+                                              add(cl3.multiply(ex3)).
+                                              add(exmCl4.add(eymSl4).multiply(ex4));
+            final UnivariateDerivative1 rdey = sl1.multiply(ey1).
+                                              add(exmSl2.multiply(eyx2)).
+                                              add(eymCl2.multiply(eyy2)).
+                                              add(sl3.multiply(ey3)).
+                                              add(exmSl4.subtract(eymCl4).multiply(ey4));
 
             // ascending node
-            final UnivariateDerivative2 rdom = exmSl1.multiply(rx1).
-                                               add(eymCl1.multiply(ry1)).
-                                               add(sl2.multiply(r2)).
-                                               add(eymCl3.subtract(exmSl3).multiply(r3)).
-                                               add(ql.multiply(rl));
+            final UnivariateDerivative1 rdom = exmSl1.multiply(rx1).
+                                              add(eymCl1.multiply(ry1)).
+                                              add(sl2.multiply(r2)).
+                                              add(eymCl3.subtract(exmSl3).multiply(r3)).
+                                              add(ql.multiply(rl));
 
             // inclination
-            final UnivariateDerivative2 rdxi = eymSl1.multiply(iy1).
-                                               add(exmCl1.multiply(ix1)).
-                                               add(cl2.multiply(i2)).
-                                               add(exmCl3.add(eymSl3).multiply(i3)).
-                                               add(qh.multiply(ih));
+            final UnivariateDerivative1 rdxi = eymSl1.multiply(iy1).
+                                              add(exmCl1.multiply(ix1)).
+                                              add(cl2.multiply(i2)).
+                                              add(exmCl3.add(eymSl3).multiply(i3)).
+                                              add(qh.multiply(ih));
 
             // latitude argument
-            final UnivariateDerivative2 rdxl = exmSl1.multiply(lx1).
+            final UnivariateDerivative1 rdxl = exmSl1.multiply(lx1).
                                                add(eymCl1.multiply(ly1)).
                                                add(sl2.multiply(l2)).
                                                add(exmSl3.subtract(eymCl3).multiply(l3)).
                                                add(ql.multiply(ll));
 
             // osculating parameters
-            return new UnivariateDerivative2[] {
+            return new UnivariateDerivative1[] {
                 rda.add(1.0).multiply(mean.getA()),
                 rdex.add(exm),
                 rdey.add(eym),
@@ -897,91 +908,6 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             };
 
         }
-
-    }
-
-    /** Convert circular parameters <em>with derivatives</em> to Cartesian coordinates.
-     * @param date date of the orbital parameters
-     * @param parameters circular parameters (a, ex, ey, i, raan, alphaM)
-     * @return Cartesian coordinates consistent with values and derivatives
-     */
-    private TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final UnivariateDerivative2[] parameters) {
-
-        // evaluate coordinates in the orbit canonical reference frame
-        final UnivariateDerivative2 cosOmega = parameters[4].cos();
-        final UnivariateDerivative2 sinOmega = parameters[4].sin();
-        final UnivariateDerivative2 cosI     = parameters[3].cos();
-        final UnivariateDerivative2 sinI     = parameters[3].sin();
-        final UnivariateDerivative2 alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
-        final UnivariateDerivative2 cosAE    = alphaE.cos();
-        final UnivariateDerivative2 sinAE    = alphaE.sin();
-        final UnivariateDerivative2 ex2      = parameters[1].multiply(parameters[1]);
-        final UnivariateDerivative2 ey2      = parameters[2].multiply(parameters[2]);
-        final UnivariateDerivative2 exy      = parameters[1].multiply(parameters[2]);
-        final UnivariateDerivative2 q        = ex2.add(ey2).subtract(1).negate().sqrt();
-        final UnivariateDerivative2 beta     = q.add(1).reciprocal();
-        final UnivariateDerivative2 bx2      = beta.multiply(ex2);
-        final UnivariateDerivative2 by2      = beta.multiply(ey2);
-        final UnivariateDerivative2 bxy      = beta.multiply(exy);
-        final UnivariateDerivative2 u        = bxy.multiply(sinAE).subtract(parameters[1].add(by2.subtract(1).multiply(cosAE)));
-        final UnivariateDerivative2 v        = bxy.multiply(cosAE).subtract(parameters[2].add(bx2.subtract(1).multiply(sinAE)));
-        final UnivariateDerivative2 x        = parameters[0].multiply(u);
-        final UnivariateDerivative2 y        = parameters[0].multiply(v);
-
-        // canonical orbit reference frame
-        final FieldVector3D<UnivariateDerivative2> p =
-                new FieldVector3D<>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
-                                    x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
-                                    y.multiply(sinI));
-
-        // dispatch derivatives
-        final Vector3D p0 = new Vector3D(p.getX().getValue(),
-                                         p.getY().getValue(),
-                                         p.getZ().getValue());
-        final Vector3D p1 = new Vector3D(p.getX().getFirstDerivative(),
-                                         p.getY().getFirstDerivative(),
-                                         p.getZ().getFirstDerivative());
-        final Vector3D p2 = new Vector3D(p.getX().getSecondDerivative(),
-                                         p.getY().getSecondDerivative(),
-                                         p.getZ().getSecondDerivative());
-        return new TimeStampedPVCoordinates(date, p0, p1, p2);
-
-    }
-
-    /** Computes the eccentric latitude argument from the mean latitude argument.
-     * @param alphaM = M + Ω mean latitude argument (rad)
-     * @param ex e cos(Ω), first component of circular eccentricity vector
-     * @param ey e sin(Ω), second component of circular eccentricity vector
-     * @return the eccentric latitude argument.
-     */
-    private UnivariateDerivative2 meanToEccentric(final UnivariateDerivative2 alphaM,
-                                                  final UnivariateDerivative2 ex,
-                                                  final UnivariateDerivative2 ey) {
-        // Generalization of Kepler equation to circular parameters
-        // with alphaE = PA + E and
-        //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-        UnivariateDerivative2 alphaE        = alphaM;
-        UnivariateDerivative2 shift         = alphaM.getField().getZero();
-        UnivariateDerivative2 alphaEMalphaM = alphaM.getField().getZero();
-        UnivariateDerivative2 cosAlphaE     = alphaE.cos();
-        UnivariateDerivative2 sinAlphaE     = alphaE.sin();
-        int                 iter          = 0;
-        do {
-            final UnivariateDerivative2 f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
-            final UnivariateDerivative2 f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
-            final UnivariateDerivative2 f0 = alphaEMalphaM.subtract(f2);
-
-            final UnivariateDerivative2 f12 = f1.multiply(2);
-            shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
-
-            alphaEMalphaM  = alphaEMalphaM.subtract(shift);
-            alphaE         = alphaM.add(alphaEMalphaM);
-            cosAlphaE      = alphaE.cos();
-            sinAlphaE      = alphaE.sin();
-
-        } while (++iter < 50 && FastMath.abs(shift.getValue()) > 1.0e-12);
-
-        return alphaE;
 
     }
 
