@@ -25,6 +25,13 @@ import java.util.Map;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.ionosphere.NeQuickModel;
+import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 
 /**

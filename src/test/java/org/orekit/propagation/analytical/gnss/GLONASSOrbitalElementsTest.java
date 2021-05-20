@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical.gnss;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 
 public class GLONASSOrbitalElementsTest {
