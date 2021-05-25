@@ -75,7 +75,7 @@ import org.orekit.utils.TimeSpanMap;
  * </p>
  * @see Orbit
  * @author Guylaine Prat
- * @author Nicolas Fialton (no CartesianOrbit)
+ * @author Nicolas Fialton (CircularOrbit only)
  */
 public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 

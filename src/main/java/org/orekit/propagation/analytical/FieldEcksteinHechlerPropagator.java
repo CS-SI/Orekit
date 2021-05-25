@@ -21,8 +21,7 @@ import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -34,7 +33,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
-import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
@@ -45,7 +43,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
  *  using the analytical Eckstein-Hechler model.
@@ -55,6 +52,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * retrograde).</p>
  * @see FieldOrbit
  * @author Guylaine Prat
+ * @author Nicolas Fialton (FieldCircularOrbit only)
  */
 public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
@@ -502,7 +500,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         while (i++ < 100) {
 
             // recompute the osculating parameters from the current mean parameters
-            final FieldUnivariateDerivative2<T>[] parameters = current.propagateParameters(current.mean.getDate());
+            final FieldUnivariateDerivative1<T>[] parameters = current.propagateParameters(current.mean.getDate());
             // adapted parameters residuals
             final T deltaA      = osculating.getA()         .subtract(parameters[0].getValue());
             final T deltaEx     = osculating.getCircularEx().subtract(parameters[1].getValue());
@@ -541,12 +539,27 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
 
     /** {@inheritDoc} */
     @Override
-    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldCircularOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final FieldEHModel<T> current = models.get(date);
-        return new FieldCartesianOrbit<>(toCartesian(date, current.propagateParameters(date)),
-                                         current.mean.getFrame(), mu);
+        final FieldUnivariateDerivative1<T>[] param = current.propagateParameters(date);
+        return new FieldCircularOrbit<T>(param[0].getValue(),
+                                         param[1].getValue(),
+                                         param[2].getValue(),
+                                         param[3].getValue(),
+                                         param[4].getValue(),
+                                         param[5].getValue(),
+                                         param[0].getFirstDerivative(),
+                                         param[1].getFirstDerivative(),
+                                         param[2].getFirstDerivative(),
+                                         param[3].getFirstDerivative(),
+                                         param[4].getFirstDerivative(),
+                                         param[5].getFirstDerivative(),
+                                         PositionAngle.MEAN,
+                                         current.mean.getFrame(),
+                                         date,
+                                         mu);
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
@@ -757,75 +770,73 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
          * @param date target date for the FieldOrbit
          * @return propagated parameters
          */
-        public FieldUnivariateDerivative2<T>[] propagateParameters(final FieldAbsoluteDate<T> date) {
+        public FieldUnivariateDerivative1<T>[] propagateParameters(final FieldAbsoluteDate<T> date) {
             final Field<T> field = date.durationFrom(mean.getDate()).getField();
             final T one = field.getOne();
             final T zero = field.getZero();
             // Keplerian evolution
-            final FieldUnivariateDerivative2<T> dt = new FieldUnivariateDerivative2<>(date.durationFrom(mean.getDate()), one, zero);
-            final FieldUnivariateDerivative2<T> xnot = dt.multiply(xnotDot);
+            final FieldUnivariateDerivative1<T> dt = new FieldUnivariateDerivative1<>(date.durationFrom(mean.getDate()), one);
+            final FieldUnivariateDerivative1<T> xnot = dt.multiply(xnotDot);
 
             // secular effects
 
             // eccentricity
-            final FieldUnivariateDerivative2<T> x   = xnot.multiply(rdpom.add(rdpomp));
-            final FieldUnivariateDerivative2<T> cx  = x.cos();
-            final FieldUnivariateDerivative2<T> sx  = x.sin();
-            final FieldUnivariateDerivative2<T> exm = cx.multiply(mean.getCircularEx()).
+            final FieldUnivariateDerivative1<T> x   = xnot.multiply(rdpom.add(rdpomp));
+            final FieldUnivariateDerivative1<T> cx  = x.cos();
+            final FieldUnivariateDerivative1<T> sx  = x.sin();
+            final FieldUnivariateDerivative1<T> exm = cx.multiply(mean.getCircularEx()).
                                             add(sx.multiply(eps2.subtract(one.subtract(eps1).multiply(mean.getCircularEy()))));
-            final FieldUnivariateDerivative2<T> eym = sx.multiply(eps1.add(1.0).multiply(mean.getCircularEx())).
+            final FieldUnivariateDerivative1<T> eym = sx.multiply(eps1.add(1.0).multiply(mean.getCircularEx())).
                                             add(cx.multiply(mean.getCircularEy().subtract(eps2))).
                                             add(eps2);
             // no secular effect on inclination
 
             // right ascension of ascending node
-            final FieldUnivariateDerivative2<T> omm =
-                           new FieldUnivariateDerivative2<>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getValue())),
+            final FieldUnivariateDerivative1<T> omm =
+                           new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getValue())),
                                                                                      zero.add(FastMath.PI)),
-                                                            ommD.multiply(xnotDot),
-                                                            zero);
+                                                            ommD.multiply(xnotDot));
             // latitude argument
-            final FieldUnivariateDerivative2<T> xlm =
-                            new FieldUnivariateDerivative2<>(MathUtils.normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getValue())),
+            final FieldUnivariateDerivative1<T> xlm =
+                            new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getValue())),
                                                                                     zero.add(FastMath.PI)),
-                                                           aMD.multiply(xnotDot),
-                                                           zero);
+                                                           aMD.multiply(xnotDot));
 
             // periodical terms
-            final FieldUnivariateDerivative2<T> cl1 = xlm.cos();
-            final FieldUnivariateDerivative2<T> sl1 = xlm.sin();
-            final FieldUnivariateDerivative2<T> cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
-            final FieldUnivariateDerivative2<T> sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
-            final FieldUnivariateDerivative2<T> cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
-            final FieldUnivariateDerivative2<T> sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
-            final FieldUnivariateDerivative2<T> cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
-            final FieldUnivariateDerivative2<T> sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
-            final FieldUnivariateDerivative2<T> cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
-            final FieldUnivariateDerivative2<T> sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
-            final FieldUnivariateDerivative2<T> cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
+            final FieldUnivariateDerivative1<T> cl1 = xlm.cos();
+            final FieldUnivariateDerivative1<T> sl1 = xlm.sin();
+            final FieldUnivariateDerivative1<T> cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
+            final FieldUnivariateDerivative1<T> sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
+            final FieldUnivariateDerivative1<T> cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
+            final FieldUnivariateDerivative1<T> sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
+            final FieldUnivariateDerivative1<T> cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
+            final FieldUnivariateDerivative1<T> sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
+            final FieldUnivariateDerivative1<T> cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
+            final FieldUnivariateDerivative1<T> sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
+            final FieldUnivariateDerivative1<T> cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
 
-            final FieldUnivariateDerivative2<T> qh  = eym.subtract(eps2).multiply(kh);
-            final FieldUnivariateDerivative2<T> ql  = exm.multiply(kl);
+            final FieldUnivariateDerivative1<T> qh  = eym.subtract(eps2).multiply(kh);
+            final FieldUnivariateDerivative1<T> ql  = exm.multiply(kl);
 
-            final FieldUnivariateDerivative2<T> exmCl1 = exm.multiply(cl1);
-            final FieldUnivariateDerivative2<T> exmSl1 = exm.multiply(sl1);
-            final FieldUnivariateDerivative2<T> eymCl1 = eym.multiply(cl1);
-            final FieldUnivariateDerivative2<T> eymSl1 = eym.multiply(sl1);
-            final FieldUnivariateDerivative2<T> exmCl2 = exm.multiply(cl2);
-            final FieldUnivariateDerivative2<T> exmSl2 = exm.multiply(sl2);
-            final FieldUnivariateDerivative2<T> eymCl2 = eym.multiply(cl2);
-            final FieldUnivariateDerivative2<T> eymSl2 = eym.multiply(sl2);
-            final FieldUnivariateDerivative2<T> exmCl3 = exm.multiply(cl3);
-            final FieldUnivariateDerivative2<T> exmSl3 = exm.multiply(sl3);
-            final FieldUnivariateDerivative2<T> eymCl3 = eym.multiply(cl3);
-            final FieldUnivariateDerivative2<T> eymSl3 = eym.multiply(sl3);
-            final FieldUnivariateDerivative2<T> exmCl4 = exm.multiply(cl4);
-            final FieldUnivariateDerivative2<T> exmSl4 = exm.multiply(sl4);
-            final FieldUnivariateDerivative2<T> eymCl4 = eym.multiply(cl4);
-            final FieldUnivariateDerivative2<T> eymSl4 = eym.multiply(sl4);
+            final FieldUnivariateDerivative1<T> exmCl1 = exm.multiply(cl1);
+            final FieldUnivariateDerivative1<T> exmSl1 = exm.multiply(sl1);
+            final FieldUnivariateDerivative1<T> eymCl1 = eym.multiply(cl1);
+            final FieldUnivariateDerivative1<T> eymSl1 = eym.multiply(sl1);
+            final FieldUnivariateDerivative1<T> exmCl2 = exm.multiply(cl2);
+            final FieldUnivariateDerivative1<T> exmSl2 = exm.multiply(sl2);
+            final FieldUnivariateDerivative1<T> eymCl2 = eym.multiply(cl2);
+            final FieldUnivariateDerivative1<T> eymSl2 = eym.multiply(sl2);
+            final FieldUnivariateDerivative1<T> exmCl3 = exm.multiply(cl3);
+            final FieldUnivariateDerivative1<T> exmSl3 = exm.multiply(sl3);
+            final FieldUnivariateDerivative1<T> eymCl3 = eym.multiply(cl3);
+            final FieldUnivariateDerivative1<T> eymSl3 = eym.multiply(sl3);
+            final FieldUnivariateDerivative1<T> exmCl4 = exm.multiply(cl4);
+            final FieldUnivariateDerivative1<T> exmSl4 = exm.multiply(sl4);
+            final FieldUnivariateDerivative1<T> eymCl4 = eym.multiply(cl4);
+            final FieldUnivariateDerivative1<T> eymSl4 = eym.multiply(sl4);
 
             // semi major axis
-            final FieldUnivariateDerivative2<T> rda = exmCl1.multiply(ax1).
+            final FieldUnivariateDerivative1<T> rda = exmCl1.multiply(ax1).
                                             add(eymSl1.multiply(ay1)).
                                             add(sl1.multiply(as1)).
                                             add(cl2.multiply(ac2)).
@@ -836,39 +847,39 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                             add(cl6.multiply(ac6));
 
             // eccentricity
-            final FieldUnivariateDerivative2<T> rdex = cl1.multiply(ex1).
+            final FieldUnivariateDerivative1<T> rdex = cl1.multiply(ex1).
                                              add(exmCl2.multiply(exx2)).
                                              add(eymSl2.multiply(exy2)).
                                              add(cl3.multiply(ex3)).
                                              add(exmCl4.add(eymSl4).multiply(ex4));
-            final FieldUnivariateDerivative2<T> rdey = sl1.multiply(ey1).
+            final FieldUnivariateDerivative1<T> rdey = sl1.multiply(ey1).
                                              add(exmSl2.multiply(eyx2)).
                                              add(eymCl2.multiply(eyy2)).
                                              add(sl3.multiply(ey3)).
                                              add(exmSl4.subtract(eymCl4).multiply(ey4));
 
             // ascending node
-            final FieldUnivariateDerivative2<T> rdom = exmSl1.multiply(rx1).
+            final FieldUnivariateDerivative1<T> rdom = exmSl1.multiply(rx1).
                                              add(eymCl1.multiply(ry1)).
                                              add(sl2.multiply(r2)).
                                              add(eymCl3.subtract(exmSl3).multiply(r3)).
                                              add(ql.multiply(rl));
 
             // inclination
-            final FieldUnivariateDerivative2<T> rdxi = eymSl1.multiply(iy1).
+            final FieldUnivariateDerivative1<T> rdxi = eymSl1.multiply(iy1).
                                              add(exmCl1.multiply(ix1)).
                                              add(cl2.multiply(i2)).
                                              add(exmCl3.add(eymSl3).multiply(i3)).
                                              add(qh.multiply(ih));
 
             // latitude argument
-            final FieldUnivariateDerivative2<T> rdxl = exmSl1.multiply(lx1).
+            final FieldUnivariateDerivative1<T> rdxl = exmSl1.multiply(lx1).
                                              add(eymCl1.multiply(ly1)).
                                              add(sl2.multiply(l2)).
                                              add(exmSl3.subtract(eymCl3).multiply(l3)).
                                              add(ql.multiply(ll));
             // osculating parameters
-            final FieldUnivariateDerivative2<T>[] FTD = MathArrays.buildArray(rdxl.getField(), 6);
+            final FieldUnivariateDerivative1<T>[] FTD = MathArrays.buildArray(rdxl.getField(), 6);
 
             FTD[0] = rda.add(1.0).multiply(mean.getA());
             FTD[1] = rdex.add(exm);
@@ -879,91 +890,6 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             return FTD;
 
         }
-
-    }
-
-    /** Convert circular parameters <em>with derivatives</em> to Cartesian coordinates.
-     * @param date date of the parameters
-     * @param parameters circular parameters (a, ex, ey, i, raan, alphaM)
-     * @return Cartesian coordinates consistent with values and derivatives
-     */
-    private TimeStampedFieldPVCoordinates<T> toCartesian(final FieldAbsoluteDate<T> date, final FieldUnivariateDerivative2<T>[] parameters) {
-
-        // evaluate coordinates in the FieldOrbit canonical reference frame
-        final FieldUnivariateDerivative2<T> cosOmega = parameters[4].cos();
-        final FieldUnivariateDerivative2<T> sinOmega = parameters[4].sin();
-        final FieldUnivariateDerivative2<T> cosI     = parameters[3].cos();
-        final FieldUnivariateDerivative2<T> sinI     = parameters[3].sin();
-        final FieldUnivariateDerivative2<T> alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
-        final FieldUnivariateDerivative2<T> cosAE    = alphaE.cos();
-        final FieldUnivariateDerivative2<T> sinAE    = alphaE.sin();
-        final FieldUnivariateDerivative2<T> ex2      = parameters[1].multiply(parameters[1]);
-        final FieldUnivariateDerivative2<T> ey2      = parameters[2].multiply(parameters[2]);
-        final FieldUnivariateDerivative2<T> exy      = parameters[1].multiply(parameters[2]);
-        final FieldUnivariateDerivative2<T> q        = ex2.add(ey2).subtract(1).negate().sqrt();
-        final FieldUnivariateDerivative2<T> beta     = q.add(1).reciprocal();
-        final FieldUnivariateDerivative2<T> bx2      = beta.multiply(ex2);
-        final FieldUnivariateDerivative2<T> by2      = beta.multiply(ey2);
-        final FieldUnivariateDerivative2<T> bxy      = beta.multiply(exy);
-        final FieldUnivariateDerivative2<T> u        = bxy.multiply(sinAE).subtract(parameters[1].add(by2.subtract(1).multiply(cosAE)));
-        final FieldUnivariateDerivative2<T> v        = bxy.multiply(cosAE).subtract(parameters[2].add(bx2.subtract(1).multiply(sinAE)));
-        final FieldUnivariateDerivative2<T> x        = parameters[0].multiply(u);
-        final FieldUnivariateDerivative2<T> y        = parameters[0].multiply(v);
-
-        // canonical FieldOrbit reference frame
-        final FieldVector3D<FieldUnivariateDerivative2<T>> p =
-                new FieldVector3D<>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
-                                    x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
-                                    y.multiply(sinI));
-
-        // dispatch derivatives
-        final FieldVector3D<T> p0 = new FieldVector3D<>(p.getX().getValue(),
-                                                        p.getY().getValue(),
-                                                        p.getZ().getValue());
-        final FieldVector3D<T> p1 = new FieldVector3D<>(p.getX().getFirstDerivative(),
-                                                        p.getY().getFirstDerivative(),
-                                                        p.getZ().getFirstDerivative());
-        final FieldVector3D<T> p2 = new FieldVector3D<>(p.getX().getSecondDerivative(),
-                                                        p.getY().getSecondDerivative(),
-                                                        p.getZ().getSecondDerivative());
-        return new TimeStampedFieldPVCoordinates<>(date, p0, p1, p2);
-
-    }
-
-    /** Computes the eccentric latitude argument from the mean latitude argument.
-     * @param alphaM = M + Ω mean latitude argument (rad)
-     * @param ex e cos(Ω), first component of circular eccentricity vector
-     * @param ey e sin(Ω), second component of circular eccentricity vector
-     * @return the eccentric latitude argument.
-     */
-    private FieldUnivariateDerivative2<T> meanToEccentric(final FieldUnivariateDerivative2<T> alphaM,
-                                                final FieldUnivariateDerivative2<T> ex,
-                                                final FieldUnivariateDerivative2<T> ey) {
-        // Generalization of Kepler equation to circular parameters
-        // with alphaE = PA + E and
-        //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-        FieldUnivariateDerivative2<T> alphaE        = alphaM;
-        FieldUnivariateDerivative2<T> shift         = alphaM.getField().getZero();
-        FieldUnivariateDerivative2<T> alphaEMalphaM = alphaM.getField().getZero();
-        FieldUnivariateDerivative2<T> cosAlphaE     = alphaE.cos();
-        FieldUnivariateDerivative2<T> sinAlphaE     = alphaE.sin();
-        int                 iter          = 0;
-        do {
-            final FieldUnivariateDerivative2<T> f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
-            final FieldUnivariateDerivative2<T> f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
-            final FieldUnivariateDerivative2<T> f0 = alphaEMalphaM.subtract(f2);
-
-            final FieldUnivariateDerivative2<T> f12 = f1.multiply(2);
-            shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
-
-            alphaEMalphaM  = alphaEMalphaM.subtract(shift);
-            alphaE         = alphaM.add(alphaEMalphaM);
-            cosAlphaE      = alphaE.cos();
-            sinAlphaE      = alphaE.sin();
-
-        } while (++iter < 50 && FastMath.abs(shift.getValue().getReal()) > 1.0e-12);
-
-        return alphaE;
 
     }
 
