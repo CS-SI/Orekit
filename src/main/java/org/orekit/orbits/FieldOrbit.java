@@ -21,8 +21,8 @@ package org.orekit.orbits;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldDecompositionSolver;
-import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.FieldQRDecomposition;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -561,7 +561,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
 
         // invert the direct Jacobian
         final FieldMatrix<T> matrix = MatrixUtils.createFieldMatrix(directJacobian);
-        final FieldDecompositionSolver<T> solver = new FieldLUDecomposition<>(matrix).getSolver();
+        final FieldDecompositionSolver<T> solver = new FieldQRDecomposition<>(matrix).getSolver();
         return solver.getInverse().getData();
 
     }
