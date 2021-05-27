@@ -221,19 +221,19 @@ public class BodyCenterPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-5 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-5 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-13);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-8);
 
     }
 
@@ -497,19 +497,19 @@ public class BodyCenterPointingTest {
                                                        s0.getAttitude().getRotation());
         T evolutionAngleMinus = FieldRotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus.getReal(), 1.0e-6 * evolutionAngleMinus.getReal());
+        Assert.assertEquals(0.0, errorAngleMinus.getReal(), 1.0e-5 * evolutionAngleMinus.getReal());
         T errorAnglePlus      = FieldRotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(zero.add(-h)).getAttitude().getRotation());
         T evolutionAnglePlus  = FieldRotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus.getReal(), 1.0e-6 * evolutionAnglePlus.getReal());
+        Assert.assertEquals(0.0, errorAnglePlus.getReal(), 1.0e-5 * evolutionAnglePlus.getReal());
 
         FieldVector3D<T> spin0 = s0.getAttitude().getSpin();
         FieldVector3D<T> reference = FieldAngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm().getReal() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.0e-13);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.0e-8);
 
     }
 

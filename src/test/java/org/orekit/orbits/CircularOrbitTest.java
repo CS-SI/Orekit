@@ -757,17 +757,17 @@ public class CircularOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(true,
-                            397, 1.88e-8,
-                            610, 3.52e-6,
-                            4870, 115);
+                            397, 1.27e-8,
+                            610, 1.54e-6,
+                            4870, 41.5);
     }
 
     @Test
     public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(false,
-                            397, 0.0372,
-                            610.0, 1.23,
-                            4870, 8869);
+                            397, 0.0390,
+                            610.0, 1.29,
+                            4870, 9479);
     }
 
     private void doTestInterpolation(boolean useDerivatives,

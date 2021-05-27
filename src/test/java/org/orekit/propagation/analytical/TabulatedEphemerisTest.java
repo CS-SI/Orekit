@@ -60,7 +60,7 @@ public class TabulatedEphemerisTest {
             public SpacecraftState filter(SpacecraftState state) {
                 return state;
             }
-        }, 6.62e-4, 1.89e-5);
+        }, 0.459, 2.25e-4);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class TabulatedEphemerisTest {
         // with Keplerian-only acceleration, interpolation is quite wrong
         checkInterpolation(new StateFilter() {
             public SpacecraftState filter(SpacecraftState state) {
-                CartesianOrbit c = (CartesianOrbit) state.getOrbit();
+                Orbit c = state.getOrbit();
                 Vector3D p    = c.getPVCoordinates().getPosition();
                 Vector3D v    = c.getPVCoordinates().getVelocity();
                 double r2 = p.getNormSq();
@@ -81,7 +81,7 @@ public class TabulatedEphemerisTest {
                                            state.getMass(),
                                            state.getAdditionalStates());
             }
-        }, 8.5, 0.22);
+        }, 8.5, 0.29);
     }
 
     private void checkInterpolation(StateFilter f, double expectedDP, double expectedDV)
@@ -145,12 +145,12 @@ public class TabulatedEphemerisTest {
         Assert.assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
         Assert.assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
 
-        double maxP     = 0;
+        double maxP    = 0;
         double maxV    = 0;
         for (double dt = 0; dt < 3600; dt += 1) {
             AbsoluteDate date = initDate.shiftedBy(dt);
-            CartesianOrbit c1 = (CartesianOrbit) eck.propagate(date).getOrbit();
-            CartesianOrbit c2 = (CartesianOrbit) te.propagate(date).getOrbit();
+            Orbit c1 = eck.propagate(date).getOrbit();
+            Orbit c2 = te.propagate(date).getOrbit();
             maxP  = FastMath.max(maxP,
                                  Vector3D.distance(c1.getPVCoordinates().getPosition(),
                                                    c2.getPVCoordinates().getPosition()));

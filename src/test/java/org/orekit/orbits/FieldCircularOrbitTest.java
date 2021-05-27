@@ -112,17 +112,18 @@ public class FieldCircularOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), true,
-                            397, 1.88e-8,
-                            610, 3.52e-6,
-                            4870, 115);
+                            397, 1.26e-8,
+                            610, 1.54e-6,
+                            4870, 41.4);
+        
     }
 
     @Test
     public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), false,
-                            397, 0.0372,
-                            610.0, 1.23,
-                            4870, 8869);
+                            397, 0.0389,
+                            610.0, 1.29,
+                            4870, 9479);
     }
 
     @Test
@@ -948,7 +949,7 @@ public class FieldCircularOrbitTest {
                 }
 
                 public void visit(int row, int column, T value) {
-                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 3.0e-9);
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 5.2e-9);
                 }
 
                 public T end() {

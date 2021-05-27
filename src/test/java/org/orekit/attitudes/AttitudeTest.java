@@ -163,9 +163,9 @@ public class AttitudeTest {
             maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError);
         }
         Assert.assertTrue(maxShiftAngleError         > 4.0e-6);
-        Assert.assertTrue(maxInterpolationAngleError < 1.5e-13);
+        Assert.assertTrue(maxInterpolationAngleError < 3.9e-7);
         Assert.assertTrue(maxShiftRateError          > 6.0e-8);
-        Assert.assertTrue(maxInterpolationRateError  < 2.5e-14);
+        Assert.assertTrue(maxInterpolationRateError  < 3.4e-8);
 
         // past sample end, interpolation error should increase, but still be far better than quadratic shift
         maxShiftAngleError = 0;
@@ -189,9 +189,9 @@ public class AttitudeTest {
             maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError);
         }
         Assert.assertTrue(maxShiftAngleError         > 9.0e-6);
-        Assert.assertTrue(maxInterpolationAngleError < 6.0e-11);
+        Assert.assertTrue(maxInterpolationAngleError < 2.0e-4);
         Assert.assertTrue(maxShiftRateError          > 9.0e-8);
-        Assert.assertTrue(maxInterpolationRateError  < 4.0e-12);
+        Assert.assertTrue(maxInterpolationRateError  < 2.0e-5);
 
     }
 

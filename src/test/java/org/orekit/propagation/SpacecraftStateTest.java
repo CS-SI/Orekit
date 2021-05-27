@@ -126,9 +126,9 @@ public class SpacecraftStateTest {
 
         }
 
-        Assert.assertEquals(0.40,   maxResidualP, 0.01);
-        Assert.assertEquals(4.9e-4, maxResidualV, 1.0e-5);
-        Assert.assertEquals(7.7e-6, maxResidualA, 1.0e-7);
+        Assert.assertEquals(171.33,   maxResidualP, 0.01);
+        Assert.assertEquals(0.34439, maxResidualV, 1.0e-5);
+        Assert.assertEquals(9.4e-4, maxResidualA, 1.0e-5);
         Assert.assertEquals(2.8e-6, maxResidualR, 1.0e-1);
 
     }
@@ -136,9 +136,9 @@ public class SpacecraftStateTest {
     @Test
     public void testInterpolation()
         throws ParseException, OrekitException {
-        checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450);
-        checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0);
-        checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0);
+        checkInterpolationError( 2, 1193.70142, 0.55944382, 169842699.90e-9, 0.0, 450 * 450);
+        checkInterpolationError( 3,     14.071, 0.00704568,    207929.63e-9, 0.0, 0.0);
+        checkInterpolationError( 4,       0.14, 0.00007293,     38092.12e-9, 0.0, 0.0);
     }
 
     private void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,

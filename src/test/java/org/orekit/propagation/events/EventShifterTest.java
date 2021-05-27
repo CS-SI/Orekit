@@ -170,13 +170,13 @@ public class EventShifterTest {
             double error = entry.getTimeError();
             if (entry.name.contains("10s")) {
                 Assert.assertTrue(error > 1.0e-6);
-                Assert.assertTrue(error < 3.0e-6);
+                Assert.assertTrue(error < 2.4e-4);
             } else if (entry.name.contains("100s")) {
                 Assert.assertTrue(error > 0.001);
-                Assert.assertTrue(error < 0.003);
+                Assert.assertTrue(error < 0.006);
             } else if (entry.name.contains("1000s")) {
                 Assert.assertTrue(error > 0.7);
-                Assert.assertTrue(error < 1.1);
+                Assert.assertTrue(error < 1.2);
             }
         }
     }

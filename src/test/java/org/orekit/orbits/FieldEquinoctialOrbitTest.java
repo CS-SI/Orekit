@@ -128,17 +128,17 @@ public class FieldEquinoctialOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), true,
-                            397, 1.17e-8,
-                            610, 4.49e-6,
-                            4870, 115);
+                            397, 2.36e-8,
+                            610, 2.12e-6,
+                            4870, 47.5);
     }
 
     @Test
     public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), false,
-                            397, 0.0372,
-                            610.0, 1.23,
-                            4879, 8871);
+                            397, 0.0390,
+                            610.0, 1.29,
+                            4879, 9481);
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -874,7 +874,7 @@ public class FieldEquinoctialOrbitTest {
                 }
 
                 public void visit(int row, int column, T value) {
-                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.0e-9);
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.0e-8);
                 }
 
                 public T end() {

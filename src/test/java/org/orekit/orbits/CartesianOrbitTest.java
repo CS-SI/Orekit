@@ -516,15 +516,15 @@ public class CartesianOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(true,
-                            394, 2.28e-8, 3.21, 1.39e-9,
-                            2474, 6842, 6.55, 186);
+                            394, 3.97, 3.31, 0.42,
+                            2474, 5.45e11, 6.55, 1.46e10);
     }
 
     @Test
     public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(false,
-                            394, 2.61, 3.21, 0.154,
-                            2474, 2.28e12, 6.55, 6.22e10);
+                            394, 3.18, 3.31, 0.437,
+                            2474, 1.80e12, 6.55, 4.94e10);
     }
 
     private void doTestInterpolation(boolean useDerivatives,

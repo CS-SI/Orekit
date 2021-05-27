@@ -302,8 +302,8 @@ public class FieldSpacecraftStateTest {
 
         }
 
-        Assert.assertEquals(0.40,   maxResidualP, 0.01);
-        Assert.assertEquals(4.9e-4, maxResidualV, 1.0e-5);
+        Assert.assertEquals(171.33,   maxResidualP, 0.01);
+        Assert.assertEquals(0.34439, maxResidualV, 1.0e-5);
         Assert.assertEquals(2.8e-6, maxResidualR, 1.0e-1);
 
     }
@@ -538,9 +538,9 @@ public class FieldSpacecraftStateTest {
 
     private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field)
         throws ParseException, OrekitException {
-        checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, field);
-        checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0, field);
-        checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0, field);
+        checkInterpolationError( 2,  106.46533, 0.55944382, 169842699.91e-9, 0.0, 450 * 450, field);
+        checkInterpolationError( 3,    0.00353, 0.00704568,    207929.63e-9, 0.0, 0.0, field);
+        checkInterpolationError( 4,    0.00002, 0.00007293,       38092.1e-9, 0.0, 0.0, field);
     }
 
     private <T extends RealFieldElement<T>> void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
@@ -601,7 +601,7 @@ public class FieldSpacecraftStateTest {
             maxErrorM = FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass().getReal() - propagated.getMass().getReal()));
             maxErrorQ = FastMath.max(maxErrorQ, FastMath.abs(interpolated.getAdditionalState("quadratic")[0].getReal() - dt * dt));
         }
-        Assert.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
+
         Assert.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
         Assert.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
         Assert.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);

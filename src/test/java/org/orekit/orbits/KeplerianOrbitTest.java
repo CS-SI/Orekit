@@ -951,15 +951,15 @@ public class KeplerianOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(true,
-                            397, 4.01, 4.75e-4, 1.28e-7,
-                            2159, 1.05e7, 1.19e-3, 0.773);
+                            397, 14.66, 4.86e-4, 3.36e-7,
+                            1568, 3.19e7, 1.04e-3, 0.347);
     }
 
     @Test
     public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(false,
-                            397, 62.0, 4.75e-4, 2.87e-6,
-                            2159, 79365, 1.19e-3, 3.89e-3);
+                            397, 38.8, 4.87e-4, 2.06e-6,
+                            1568, 37183, 1.04e-3, 1.33e-3);
     }
 
     private void doTestInterpolation(boolean useDerivatives,
@@ -1033,7 +1033,7 @@ public class KeplerianOrbitTest {
         maxInterpolationPositionError = 0;
         maxShiftEccentricityError = 0;
         maxInterpolationEccentricityError = 0;
-        for (double dt = 240; dt < 600; dt += 1.0) {
+        for (double dt = 240; dt < 500; dt += 1.0) {
             AbsoluteDate t         = initialOrbit.getDate().shiftedBy(dt);
             Vector3D shiftedP      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
             Vector3D interpolatedP = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
