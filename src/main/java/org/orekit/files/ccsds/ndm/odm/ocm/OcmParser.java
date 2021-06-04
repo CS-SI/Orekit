@@ -76,14 +76,14 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
     /** Context binding valid for current metadata. */
     private ContextBinding context;
 
-    /** Orbital state histories logical blocks. */
-    private List<OrbitStateHistory> orbitBlocks;
+    /** Trajectory state histories logical blocks. */
+    private List<TrajectoryStateHistory> trajectoryBlocks;
 
-    /** Current orbit state metadata. */
-    private OrbitStateHistoryMetadata currentOrbitStateHistoryMetadata;
+    /** Current trajectory state metadata. */
+    private TrajectoryStateHistoryMetadata currentTrajectoryStateHistoryMetadata;
 
-    /** Current orbit state time history being read. */
-    private List<OrbitState> currentOrbitStateHistory;
+    /** Current trajectory state time history being read. */
+    private List<TrajectoryState> currentTrajectoryStateHistory;
 
     /** Physical properties logical block. */
     private PhysicalProperties physicBlock;
@@ -167,7 +167,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         header                  = new Header(3.0);
         metadata                = null;
         context                 = null;
-        orbitBlocks             = null;
+        trajectoryBlocks        = null;
         physicBlock             = null;
         covarianceBlocks        = null;
         maneuverBlocks          = null;
@@ -250,41 +250,41 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
     @Override
     public boolean finalizeData() {
         // fix gravitational parameter now that all sections have been completed
-        final List<OrbitStateHistory> old = orbitBlocks;
+        final List<TrajectoryStateHistory> old = trajectoryBlocks;
         if (old != null) {
-            orbitBlocks = new ArrayList<>(old.size());
-            for (final OrbitStateHistory osh : old) {
-                orbitBlocks.add(new OrbitStateHistory(osh.getMetadata(), osh.getOrbitalStates(), getSelectedMu()));
+            trajectoryBlocks = new ArrayList<>(old.size());
+            for (final TrajectoryStateHistory osh : old) {
+                trajectoryBlocks.add(new TrajectoryStateHistory(osh.getMetadata(), osh.getTrajectoryStates(), getSelectedMu()));
             }
         }
         return true;
     }
 
-    /** Manage orbit state history section.
+    /** Manage trajectory state history section.
      * @param starting if true, parser is entering the section
      * otherwise it is leaving the section
      * @return always return true
      */
-    boolean manageOrbitStateSection(final boolean starting) {
+    boolean manageTrajectoryStateSection(final boolean starting) {
         if (starting) {
-            if (orbitBlocks == null) {
-                // this is the first orbit block, we need to allocate the container
-                orbitBlocks = new ArrayList<>();
+            if (trajectoryBlocks == null) {
+                // this is the first trajectory block, we need to allocate the container
+                trajectoryBlocks = new ArrayList<>();
             }
-            currentOrbitStateHistoryMetadata = new OrbitStateHistoryMetadata(metadata.getEpochT0(),
-                                                                             getDataContext());
-            currentOrbitStateHistory         = new ArrayList<>();
-            anticipateNext(this::processOrbitStateToken);
+            currentTrajectoryStateHistoryMetadata = new TrajectoryStateHistoryMetadata(metadata.getEpochT0(),
+                                                                                       getDataContext());
+            currentTrajectoryStateHistory         = new ArrayList<>();
+            anticipateNext(this::processTrajectoryStateToken);
         } else {
             anticipateNext(structureProcessor);
-            if (currentOrbitStateHistoryMetadata.getCenter().getBody() != null) {
-                setMuCreated(currentOrbitStateHistoryMetadata.getCenter().getBody().getGM());
+            if (currentTrajectoryStateHistoryMetadata.getCenter().getBody() != null) {
+                setMuCreated(currentTrajectoryStateHistoryMetadata.getCenter().getBody().getGM());
             }
             // we temporarily set gravitational parameter to NaN,
             // as we may get a proper one in the perturbations section
-            orbitBlocks.add(new OrbitStateHistory(currentOrbitStateHistoryMetadata,
-                                                  currentOrbitStateHistory,
-                                                  Double.NaN));
+            trajectoryBlocks.add(new TrajectoryStateHistory(currentTrajectoryStateHistoryMetadata,
+                                                            currentTrajectoryStateHistory,
+                                                            Double.NaN));
         }
         return true;
     }
@@ -422,7 +422,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             // this may be Double.NaN, but it will be handled correctly
             setMuParsed(perturbationsBlock.getGm());
         }
-        final OcmData data = new OcmData(orbitBlocks, physicBlock, covarianceBlocks,
+        final OcmData data = new OcmData(trajectoryBlocks, physicBlock, covarianceBlocks,
                                          maneuverBlocks, perturbationsBlock,
                                          orbitDeterminationBlock, userDefinedBlock);
         data.validate(header.getFormatVersion());
@@ -467,25 +467,25 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         }
     }
 
-    /** Process one orbit state history data token.
+    /** Process one trajectory state history data token.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processOrbitStateToken(final ParseToken token) {
+    private boolean processTrajectoryStateToken(final ParseToken token) {
         if (token.getName() != null && !token.getName().equals(OcmFile.ORB_LINE)) {
             // we are in the section metadata part
             try {
-                return OrbitStateHistoryMetadataKey.valueOf(token.getName()).
-                       process(token, context, currentOrbitStateHistoryMetadata);
+                return TrajectoryStateHistoryMetadataKey.valueOf(token.getName()).
+                       process(token, context, currentTrajectoryStateHistoryMetadata);
             } catch (IllegalArgumentException iae) {
                 // token has not been recognized
                 return false;
             }
         } else {
             // we are in the section data part
-            if (currentOrbitStateHistory.isEmpty()) {
+            if (currentTrajectoryStateHistory.isEmpty()) {
                 // we are starting the real data section, we can now check metadata is complete
-                currentOrbitStateHistoryMetadata.validate(header.getFormatVersion());
+                currentTrajectoryStateHistoryMetadata.validate(header.getFormatVersion());
                 anticipateNext(this::processDataSubStructureToken);
             }
             if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
@@ -493,14 +493,14 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
             }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
-                // as ORB_UNITS is optional and indeed MUST match type, get them directly from type
-                final List<Unit> units = currentOrbitStateHistoryMetadata.getOrbType().getUnits();
+                // as TRAJ_UNITS is optional and indeed MUST match type, get them directly from type
+                final List<Unit> units = currentTrajectoryStateHistoryMetadata.getTrajType().getUnits();
                 if (fields.length != units.size() + 1) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 final AbsoluteDate epoch = context.getTimeSystem().getConverter(context).parse(fields[0]);
-                return currentOrbitStateHistory.add(new OrbitState(currentOrbitStateHistoryMetadata.getOrbType(),
+                return currentTrajectoryStateHistory.add(new TrajectoryState(currentTrajectoryStateHistoryMetadata.getTrajType(),
                                                                    epoch, fields, 1, units));
             } catch (NumberFormatException | OrekitIllegalArgumentException e) {
                 throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,

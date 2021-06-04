@@ -29,17 +29,17 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Orbit state history.
+/** Trajectory state history.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OrbitStateHistory implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
+public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
 
     /** Metadata. */
-    private final OrbitStateHistoryMetadata metadata;
+    private final TrajectoryStateHistoryMetadata metadata;
 
-    /** Orbital states. */
-    private final List<OrbitState> states;
+    /** Trajectory states. */
+    private final List<TrajectoryState> states;
 
     /** Gravitational parameter in m³/s². */
     private final double mu;
@@ -49,8 +49,8 @@ public class OrbitStateHistory implements EphemerisFile.EphemerisSegment<TimeSta
      * @param states orbital states
      * @param mu gravitational parameter in m³/s²
      */
-    OrbitStateHistory(final OrbitStateHistoryMetadata metadata,
-                      final List<OrbitState> states,
+    TrajectoryStateHistory(final TrajectoryStateHistoryMetadata metadata,
+                      final List<TrajectoryState> states,
                       final double mu) {
         this.metadata = metadata;
         this.states   = states;
@@ -60,14 +60,14 @@ public class OrbitStateHistory implements EphemerisFile.EphemerisSegment<TimeSta
     /** Get metadata.
      * @return metadata
      */
-    public OrbitStateHistoryMetadata getMetadata() {
+    public TrajectoryStateHistoryMetadata getMetadata() {
         return metadata;
     }
 
-    /** Get the orbital states.
-     * @return orbital states
+    /** Get the trajectory states.
+     * @return trajectory states
      */
-    public List<OrbitState> getOrbitalStates() {
+    public List<TrajectoryState> getTrajectoryStates() {
         return Collections.unmodifiableList(states);
     }
 
@@ -80,10 +80,10 @@ public class OrbitStateHistory implements EphemerisFile.EphemerisSegment<TimeSta
     /** {@inheritDoc} */
     @Override
     public Frame getFrame() {
-        final Frame frame = metadata.getOrbReferenceFrame().asFrame();
+        final Frame frame = metadata.getTrajReferenceFrame().asFrame();
         if (frame == null) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
-                                      metadata.getOrbReferenceFrame().getName());
+                                      metadata.getTrajReferenceFrame().getName());
         }
         return frame;
     }

@@ -34,7 +34,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 11.0
  */
 public class OcmFile extends NdmConstituent<Header, Segment<OcmMetadata, OcmData>>
-    implements EphemerisFile<TimeStampedPVCoordinates, OrbitStateHistory> {
+    implements EphemerisFile<TimeStampedPVCoordinates, TrajectoryStateHistory> {
 
     /** Root element for XML messages. */
     public static final String ROOT = "ocm";
@@ -113,7 +113,7 @@ public class OcmFile extends NdmConstituent<Header, Segment<OcmMetadata, OcmData
         } else {
             name = UNKNOWN_OBJECT;
         }
-        final List<OrbitStateHistory> histories = getSegments().get(0).getData().getOrbitBlocks();
+        final List<TrajectoryStateHistory> histories = getSegments().get(0).getData().getOTrajectoryBlocks();
         final OcmSatelliteEphemeris   ose       = new OcmSatelliteEphemeris(name, mu, histories);
         return Collections.singletonMap(name, ose);
     }

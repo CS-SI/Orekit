@@ -55,49 +55,51 @@ INTERP_METHOD_EOP         = LAGRANGE_ORDER_5
 CELESTIAL_SOURCE          = JPL_DE_430
 META_STOP
 
-ORB_START
+TRAJ_START
 COMMENT                   this is number 1 ORB comment
-ORB_ID                    = orbit 1
-ORB_PREV_ID               = orbit 0
-ORB_NEXT_ID               = orbit 2
-ORB_BASIS                 = DETERMINED_OD
-ORB_BASIS_ID              = OD_17
+TRAJ_ID                   = orbit 1
+TRAJ_PREV_ID              = orbit 0
+TRAJ_NEXT_ID              = orbit 2
+TRAJ_BASIS                = DETERMINED_OD
+TRAJ_BASIS_ID             = OD_17
 INTERPOLATION             = HERMITE
 INTERPOLATION_DEGREE      = 3
 ORB_AVERAGING             = ECKSTEIN_HECHLER
 CENTER_NAME               = EARTH
-ORB_REF_FRAME             = TOD
-ORB_FRAME_EPOCH           = 2019-07-23T00:00:00.000
+TRAJ_REF_FRAME            = TOD
+TRAJ_FRAME_EPOCH          = 2019-07-23T00:00:00.000
 USEABLE_START_TIME        = 2019-204T09:30:00Z
 USEABLE_STOP_TIME         = 2019-204T09:59:59.999Z
-ORB_TYPE                  = CARTPVA
-ORB_UNITS                 = [km,km,km,km/s,km/s,km/s,km/s**2,km/s**2,km/s**2]
+ORB_REVNUM                = 17
+ORB_REVNUM_BASIS          = 1
+TRAJ_TYPE                 = CARTPVA
+TRAJ_UNITS                = [km,km,km,km/s,km/s,km/s,km/s**2,km/s**2,km/s**2]
   0.0 1000.0 2000.0 3000.0 3.0 2.0 1.0 0.002 -0.003 -0.004
 300.0 2000.0 3000.0 4000.0 4.0 3.0 2.0 0.003 -0.004 -0.005
 600.0 3000.0 4000.0 5000.0 5.0 4.0 3.0 0.004 -0.005 -0.006
-ORB_STOP
+TRAJ_STOP
 
-ORB_START
+TRAJ_START
 COMMENT                   this is number 2 ORB comment
-ORB_ID                    = orbit 2
-ORB_PREV_ID               = orbit 1
-ORB_NEXT_ID               = orbit 3
-ORB_BASIS                 = PREDICTED
-ORB_BASIS_ID              = SIMULATION
+TRAJ_ID                   = orbit 2
+TRAJ_PREV_ID              = orbit 1
+TRAJ_NEXT_ID              = orbit 3
+TRAJ_BASIS                = PREDICTED
+TRAJ_BASIS_ID             = SIMULATION
 INTERPOLATION             = LAGRANGE
 INTERPOLATION_DEGREE      = 8
 ORB_AVERAGING             = OSCULATING
 CENTER_NAME               = EARTH
-ORB_REF_FRAME             = TOD
-ORB_FRAME_EPOCH           = 2019-07-23T00:00:00.000
+TRAJ_REF_FRAME            = TOD
+TRAJ_FRAME_EPOCH          = 2019-07-23T00:00:00.000
 USEABLE_START_TIME        = 2019-204T10:00:00Z
 USEABLE_STOP_TIME         = 2019-204T10:29:59.999Z
-ORB_TYPE                  = CARTP
-ORB_UNITS                 = [km,km,km]
+TRAJ_TYPE                 = CARTP
+TRAJ_UNITS                = [km,km,km]
 1800.0 4000.0 5000.0 6000.0
 2100.0 5000.0 6000.0 7000.0
 2400.0 6000.0 7000.0 8000.0
-ORB_STOP
+TRAJ_STOP
 
 PHYS_START
 COMMENT                   this is PHYS comment

@@ -26,11 +26,11 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
 
-/** Orbit state entry.
+/** Trajectory state entry.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OrbitState implements TimeStamped {
+public class TrajectoryState implements TimeStamped {
 
     /** Type of the elements. */
     private final ElementsType type;
@@ -38,18 +38,18 @@ public class OrbitState implements TimeStamped {
     /** Entry date. */
     private final AbsoluteDate date;
 
-    /** Orbital elements. */
+    /** Trajectory elements. */
     private final double[] elements;
 
     /** Simple constructor.
      * @param type type of the elements
      * @param date entry date
-     * @param fields orbital elements
+     * @param fields trajectory elements
      * @param first index of first field to consider
      * @param units units to use for parsing
      */
-    public OrbitState(final ElementsType type, final AbsoluteDate date,
-                      final String[] fields, final int first, final List<Unit> units) {
+    public TrajectoryState(final ElementsType type, final AbsoluteDate date,
+                           final String[] fields, final int first, final List<Unit> units) {
         this.type     = type;
         this.date     = date;
         this.elements = new double[units.size()];
@@ -64,8 +64,8 @@ public class OrbitState implements TimeStamped {
         return date;
     }
 
-    /** Get orbital elements.
-     * @return orbital elements
+    /** Get trajectory elements.
+     * @return trajectory elements
      */
     public double[] getElements() {
         return elements.clone();

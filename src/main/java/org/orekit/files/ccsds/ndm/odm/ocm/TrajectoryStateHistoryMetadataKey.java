@@ -23,30 +23,30 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 
-/** Keys for {@link OrbitStateHistoryMetadata orbit state history container} entries.
+/** Keys for {@link TrajectoryStateHistoryMetadata rajectory state history container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum OrbitStateHistoryMetadataKey {
+public enum TrajectoryStateHistoryMetadataKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
-    /** Orbit identification number. */
-    ORB_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbID)),
+    /** Trajectory identification number. */
+    TRAJ_ID((token, context, container) -> token.processAsNormalizedString(container::setTrajID)),
 
-    /** Identification number of previous orbit. */
-    ORB_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbPrevID)),
+    /** Identification number of previous trajectory. */
+    TRAJ_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setTrajPrevID)),
 
-    /** Identification number of next orbit. */
-    ORB_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbNextID)),
+    /** Identification number of next trajectory. */
+    TRAJ_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setTrajNextID)),
 
-    /** Basis of this orbit state time history data. */
-    ORB_BASIS((token, context, container) -> token.processAsNormalizedString(container::setOrbBasis)),
+    /** Basis of this trajectory state time history data. */
+    TRAJ_BASIS((token, context, container) -> token.processAsNormalizedString(container::setTrajBasis)),
 
-    /** Identification number of the orbit determination or simulation upon which this orbit is based.*/
-    ORB_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbBasisID)),
+    /** Identification number of the orbit determination or simulation upon which this trajectory is based.*/
+    TRAJ_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setTrajBasisID)),
 
     /** Interpolation method to be used. */
     INTERPOLATION((token, context, container) -> token.processAsEnum(InterpolationMethod.class, container::setInterpolationMethod)),
@@ -57,15 +57,15 @@ public enum OrbitStateHistoryMetadataKey {
     /** Type of averaging (Osculating, mean Brouwer, other...). */
     ORB_AVERAGING((token, context, container) -> token.processAsUppercaseString(container::setOrbAveraging)),
 
-    /** Origin of the reference frame of the orbit. */
+    /** Origin of the reference frame of the trajectory. */
     CENTER_NAME((token, context, container) -> token.processAsCenter(container::setCenter,
                                                                      context.getDataContext().getCelestialBodies())),
 
-    /** Reference frame of the orbit. */
-    ORB_REF_FRAME((token, context, container) -> token.processAsFrame(container::setOrbReferenceFrame, context, true, false, false)),
+    /** Reference frame of the trajectory. */
+    TRAJ_REF_FRAME((token, context, container) -> token.processAsFrame(container::setTrajReferenceFrame, context, true, false, false)),
 
-    /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}. */
-    ORB_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setOrbFrameEpoch, context)),
+    /** Epoch of the {@link #TRAJ_REF_FRAME trajectory reference frame}. */
+    TRAJ_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setTrajFrameEpoch, context)),
 
     /** Useable start time entry. */
     USEABLE_START_TIME((token, context, container) -> token.processAsDate(container::setUseableStartTime, context)),
@@ -73,13 +73,19 @@ public enum OrbitStateHistoryMetadataKey {
     /** Useable stop time entry. */
     USEABLE_STOP_TIME((token, context, container) -> token.processAsDate(container::setUseableStopTime, context)),
 
-    /** Orbit element set type.
+    /** Integer orbit revolution number entry. */
+    ORB_REVNUM((token, context, container) -> token.processAsInteger(container::setOrbRevNum)),
+
+    /** Basis for orbit revolution number entry. */
+    ORB_REVNUM_BASIS((token, context, container) -> token.processAsInteger(container::setOrbRevNumBasis)),
+
+    /** Trajectory element set type.
      * @see ElementsType
      */
-    ORB_TYPE((token, context, container) -> token.processAsEnum(ElementsType.class, container::setOrbType)),
+    TRAJ_TYPE((token, context, container) -> token.processAsEnum(ElementsType.class, container::setTrajType)),
 
-    /** SI units for each elements of the orbit state. */
-    ORB_UNITS((token, context, container) -> token.processAsUnitList(container::setOrbUnits));
+    /** SI units for each elements of the trajectory state. */
+    TRAJ_UNITS((token, context, container) -> token.processAsUnitList(container::setTrajUnits));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -87,7 +93,7 @@ public enum OrbitStateHistoryMetadataKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    OrbitStateHistoryMetadataKey(final TokenProcessor processor) {
+    TrajectoryStateHistoryMetadataKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -97,7 +103,7 @@ public enum OrbitStateHistoryMetadataKey {
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ContextBinding context, final OrbitStateHistoryMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final TrajectoryStateHistoryMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -109,7 +115,7 @@ public enum OrbitStateHistoryMetadataKey {
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ContextBinding context, OrbitStateHistoryMetadata container);
+        boolean process(ParseToken token, ContextBinding context, TrajectoryStateHistoryMetadata container);
     }
 
 }

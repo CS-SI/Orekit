@@ -88,11 +88,11 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
             generator.enterSection(XmlStructureKey.data.name());
         }
 
-        // orbit history
-        if (segment.getData().getOrbitBlocks() != null && !segment.getData().getOrbitBlocks().isEmpty()) {
-            for (final OrbitStateHistory history : segment.getData().getOrbitBlocks()) {
-                // write optional orbits history block
-                new OrbitStateHistoryWriter(history, getTimeConverter()).write(generator);
+        // trajectory history
+        if (segment.getData().getOTrajectoryBlocks() != null && !segment.getData().getOTrajectoryBlocks().isEmpty()) {
+            for (final TrajectoryStateHistory history : segment.getData().getOTrajectoryBlocks()) {
+                // write optional trajectory history block
+                new TrajectoryStateHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 

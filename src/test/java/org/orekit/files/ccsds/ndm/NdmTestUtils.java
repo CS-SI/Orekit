@@ -44,8 +44,8 @@ import org.orekit.files.ccsds.ndm.odm.ocm.CovarianceHistory;
 import org.orekit.files.ccsds.ndm.odm.ocm.Maneuver;
 import org.orekit.files.ccsds.ndm.odm.ocm.ManeuverHistory;
 import org.orekit.files.ccsds.ndm.odm.ocm.OcmSatelliteEphemeris;
-import org.orekit.files.ccsds.ndm.odm.ocm.OrbitState;
-import org.orekit.files.ccsds.ndm.odm.ocm.OrbitStateHistory;
+import org.orekit.files.ccsds.ndm.odm.ocm.TrajectoryState;
+import org.orekit.files.ccsds.ndm.odm.ocm.TrajectoryStateHistory;
 import org.orekit.files.ccsds.ndm.odm.oem.OemSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.tdm.Observation;
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -106,7 +106,7 @@ public class NdmTestUtils {
                    original instanceof AemSatelliteEphemeris ||
                    original instanceof CovarianceHistory     ||
                    original instanceof ManeuverHistory       ||
-                   original instanceof OrbitState            ||
+                   original instanceof TrajectoryState            ||
                    original instanceof Covariance            ||
                    original instanceof Maneuver              ||
                    original instanceof Observation           ||
@@ -124,8 +124,8 @@ public class NdmTestUtils {
         } else if (original instanceof OdMethodFacade) {
             checkOdMethodFacade((OdMethodFacade) original, (OdMethodFacade) rebuilt);
             return true;
-        } else if (original instanceof OrbitStateHistory) {
-            checkOrbitStateHistory((OrbitStateHistory) original, (OrbitStateHistory) rebuilt);
+        } else if (original instanceof TrajectoryStateHistory) {
+            checkOrbitStateHistory((TrajectoryStateHistory) original, (TrajectoryStateHistory) rebuilt);
             return true;
         } else if (original instanceof DataContext) {
             return true;
@@ -257,13 +257,13 @@ public class NdmTestUtils {
         Assert.assertEquals(original.getTool(), rebuilt.getTool());
     }
 
-    public static void checkOrbitStateHistory(final OrbitStateHistory original, final OrbitStateHistory rebuilt) {
+    public static void checkOrbitStateHistory(final TrajectoryStateHistory original, final TrajectoryStateHistory rebuilt) {
         // we don't use checkContainer here because the history getters are redundant
         // with embedded metadata and states, and because the getFrame() method
         // that would be called automatically may trhow an exception
         // so we just jump down to metadata and states
         Assert.assertTrue(recurseCheck(original.getMetadata(), rebuilt.getMetadata()));
-        checkList(original.getOrbitalStates(), rebuilt.getOrbitalStates());
+        checkList(original.getTrajectoryStates(), rebuilt.getTrajectoryStates());
     }
 
     public static void checkDate(final AbsoluteDate original, final AbsoluteDate rebuilt) {

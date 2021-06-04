@@ -24,15 +24,15 @@ TAIMUTC_AT_TZERO      = 36      [s]
 UT1MUTC_AT_TZERO      = .357    [s]
 META_STOP
 
-ORB_START
+TRAJ_START
 COMMENT          GEOCENTRIC, CARTESIAN, EARTH FIXED
 COMMENT          THIS IS MY SECOND COMMENT LINE
-ORB_BASIS             = PREDICTED
-ORB_REF_FRAME         = EFG
-ORB_TYPE              = CARTPV
-ORB_UNITS             = [km, km, km, km/s, km/s, km/s]
+TRAJ_BASIS            = PREDICTED
+TRAJ_REF_FRAME        = EFG
+TRAJ_TYPE             = CARTPV
+TRAJ_UNITS            = [km, km, km, km/s, km/s, km/s]
 1998-12-18T14:28:25.1172 2854.533 -2916.187 -5360.774 5.688 4.652 0.520
-ORB_STOP
+TRAJ_STOP
 
 PHYS_START
 COMMENT S/C Physical Characteristics:

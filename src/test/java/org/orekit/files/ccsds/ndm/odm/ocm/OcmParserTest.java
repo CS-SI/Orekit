@@ -146,6 +146,22 @@ public class OcmParserTest {
     }
 
     @Test
+    public void testMissingRevnumBasis() throws URISyntaxException {
+        final String name = "/ccsds/odm/ocm/OCM-missing-revnum-basis.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            buildOcmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assert.assertEquals(TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name(), oe.getParts()[0]);
+        }
+    }
+
+    @Test
     public void testSpuriousMetaDataSection() throws URISyntaxException {
         final String name = "/ccsds/odm/ocm/OCM-spurious-metadata-section.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -224,8 +240,8 @@ public class OcmParserTest {
                                   parseMessage(source);
         Assert.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
         Assert.assertEquals("728b0d2a-01fc-4d0e-9f0a-370c6930ea84", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
-        final OrbitStateHistory h = ocm.getData().getOrbitBlocks().get(0);
-        Assert.assertEquals("ZZRF", h.getMetadata().getOrbReferenceFrame().getName());
+        final TrajectoryStateHistory h = ocm.getData().getOTrajectoryBlocks().get(0);
+        Assert.assertEquals("ZZRF", h.getMetadata().getTrajReferenceFrame().getName());
         List<TimeStampedPVCoordinates> l = h.getCoordinates();
         Assert.assertEquals( 3.0e6, l.get(0).getPosition().getX(), 1.0e-9);
         Assert.assertEquals( 4.0e6, l.get(0).getPosition().getY(), 1.0e-9);
@@ -234,7 +250,7 @@ public class OcmParserTest {
         Assert.assertEquals(-2.0e3, l.get(0).getVelocity().getY(), 1.0e-12);
         Assert.assertEquals(-3.0e3, l.get(0).getVelocity().getZ(), 1.0e-1);
         try {
-            ocm.getData().getOrbitBlocks().get(0).getFrame();
+            ocm.getData().getOTrajectoryBlocks().get(0).getFrame();
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
@@ -252,7 +268,7 @@ public class OcmParserTest {
                                   parseMessage(source);
         Assert.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
         Assert.assertEquals("b77d785c-f7a8-4a80-a9b1-a540eac19d7a", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
-        Assert.assertNull(ocm.getData().getOrbitBlocks());
+        Assert.assertNull(ocm.getData().getOTrajectoryBlocks());
         Assert.assertEquals(1, ocm.getData().getUserDefinedBlock().getComments().size());
         Assert.assertEquals("some user data", ocm.getData().getUserDefinedBlock().getComments().get(0));
         Assert.assertEquals(1, ocm.getData().getUserDefinedBlock().getParameters().size());
@@ -287,17 +303,17 @@ public class OcmParserTest {
         Assert.assertEquals(t0, file.getMetadata().getEpochT0());
         Assert.assertEquals(TimeSystem.UTC, file.getMetadata().getTimeSystem());
 
-        // orbit data
-        Assert.assertEquals(1, file.getData().getOrbitBlocks().size());
-        OrbitStateHistory history = file.getData().getOrbitBlocks().get(0);
+        // trajectory data
+        Assert.assertEquals(1, file.getData().getOTrajectoryBlocks().size());
+        TrajectoryStateHistory history = file.getData().getOTrajectoryBlocks().get(0);
         Assert.assertEquals("intervening data records omitted between DT=20.0 and DT=500.0",
                             history.getMetadata().getComments().get(0));
         Assert.assertEquals("OSCULATING", history.getMetadata().getOrbAveraging());
         Assert.assertEquals("EARTH", history.getMetadata().getCenter().getName());
-        Assert.assertEquals(CelestialBodyFrame.ITRF2000, history.getMetadata().getOrbReferenceFrame().asCelestialBodyFrame());
-        Assert.assertEquals(ElementsType.CARTPV, history.getMetadata().getOrbType());
+        Assert.assertEquals(CelestialBodyFrame.ITRF2000, history.getMetadata().getTrajReferenceFrame().asCelestialBodyFrame());
+        Assert.assertEquals(ElementsType.CARTPV, history.getMetadata().getTrajType());
         Assert.assertEquals(0.0, file.getMetadata().getEpochT0().durationFrom(t0), 1.0e-15);
-        List<OrbitState> states = history.getOrbitalStates();
+        List<TrajectoryState> states = history.getTrajectoryStates();
         Assert.assertEquals(4, states.size());
 
         Assert.assertEquals(0.0, states.get(0).getDate().durationFrom(t0), 1.0e-15);
@@ -378,35 +394,35 @@ public class OcmParserTest {
         Assert.assertEquals(36.0,                                  file.getMetadata().getTaimutcT0(), 1.0e-15);
         Assert.assertEquals(0.357,                                 file.getMetadata().getUt1mutcT0(), 1.0e-15);
 
-        // check orbit data
-        Assert.assertEquals(1, file.getData().getOrbitBlocks().size());
-        final OrbitStateHistory orb = file.getData().getOrbitBlocks().get(0);
+        // check trajectory data
+        Assert.assertEquals(1, file.getData().getOTrajectoryBlocks().size());
+        final TrajectoryStateHistory orb = file.getData().getOTrajectoryBlocks().get(0);
         Assert.assertEquals(2, orb.getMetadata().getComments().size());
         Assert.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", orb.getMetadata().getComments().get(0));
         Assert.assertEquals("THIS IS MY SECOND COMMENT LINE",     orb.getMetadata().getComments().get(1));
-        Assert.assertEquals("PREDICTED", orb.getMetadata().getOrbBasis());
-        Assert.assertEquals("EFG", orb.getMetadata().getOrbReferenceFrame().getName());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asFrame());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asCelestialBodyFrame());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asOrbitRelativeFrame());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asSpacecraftBodyFrame());
-        Assert.assertEquals(ElementsType.CARTPV, orb.getMetadata().getOrbType());
-        Assert.assertEquals(6, orb.getMetadata().getOrbUnits().size());
-        Assert.assertEquals("km",   orb.getMetadata().getOrbUnits().get(0).getName());
-        Assert.assertEquals("km",   orb.getMetadata().getOrbUnits().get(1).getName());
-        Assert.assertEquals("km",   orb.getMetadata().getOrbUnits().get(2).getName());
-        Assert.assertEquals("km/s", orb.getMetadata().getOrbUnits().get(3).getName());
-        Assert.assertEquals("km/s", orb.getMetadata().getOrbUnits().get(4).getName());
-        Assert.assertEquals("km/s", orb.getMetadata().getOrbUnits().get(5).getName());
-        Assert.assertEquals(1, orb.getOrbitalStates().size());
+        Assert.assertEquals("PREDICTED", orb.getMetadata().getTrajBasis());
+        Assert.assertEquals("EFG", orb.getMetadata().getTrajReferenceFrame().getName());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asFrame());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asCelestialBodyFrame());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asOrbitRelativeFrame());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asSpacecraftBodyFrame());
+        Assert.assertEquals(ElementsType.CARTPV, orb.getMetadata().getTrajType());
+        Assert.assertEquals(6, orb.getMetadata().getTrajUnits().size());
+        Assert.assertEquals("km",   orb.getMetadata().getTrajUnits().get(0).getName());
+        Assert.assertEquals("km",   orb.getMetadata().getTrajUnits().get(1).getName());
+        Assert.assertEquals("km",   orb.getMetadata().getTrajUnits().get(2).getName());
+        Assert.assertEquals("km/s", orb.getMetadata().getTrajUnits().get(3).getName());
+        Assert.assertEquals("km/s", orb.getMetadata().getTrajUnits().get(4).getName());
+        Assert.assertEquals("km/s", orb.getMetadata().getTrajUnits().get(5).getName());
+        Assert.assertEquals(1, orb.getTrajectoryStates().size());
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 25.1172, ts),
-                            orb.getOrbitalStates().get(0).getDate());
-        Assert.assertEquals( 2854533.0, orb.getOrbitalStates().get(0).getElements()[0], 1.0e-10);
-        Assert.assertEquals(-2916187.0, orb.getOrbitalStates().get(0).getElements()[1], 1.0e-10);
-        Assert.assertEquals(-5360774.0, orb.getOrbitalStates().get(0).getElements()[2], 1.0e-10);
-        Assert.assertEquals(    5688.0, orb.getOrbitalStates().get(0).getElements()[3], 1.0e-10);
-        Assert.assertEquals(    4652.0, orb.getOrbitalStates().get(0).getElements()[4], 1.0e-10);
-        Assert.assertEquals(     520.0, orb.getOrbitalStates().get(0).getElements()[5], 1.0e-10);
+                            orb.getTrajectoryStates().get(0).getDate());
+        Assert.assertEquals( 2854533.0, orb.getTrajectoryStates().get(0).getElements()[0], 1.0e-10);
+        Assert.assertEquals(-2916187.0, orb.getTrajectoryStates().get(0).getElements()[1], 1.0e-10);
+        Assert.assertEquals(-5360774.0, orb.getTrajectoryStates().get(0).getElements()[2], 1.0e-10);
+        Assert.assertEquals(    5688.0, orb.getTrajectoryStates().get(0).getElements()[3], 1.0e-10);
+        Assert.assertEquals(    4652.0, orb.getTrajectoryStates().get(0).getElements()[4], 1.0e-10);
+        Assert.assertEquals(     520.0, orb.getTrajectoryStates().get(0).getElements()[5], 1.0e-10);
 
         // check physical data
         PhysicalProperties phys = file.getData().getPhysicBlock();
@@ -524,32 +540,32 @@ public class OcmParserTest {
         Assert.assertEquals(36.0,                                  file.getMetadata().getTaimutcT0(), 1.0e-15);
         Assert.assertEquals(0.357,                                 file.getMetadata().getUt1mutcT0(), 1.0e-15);
 
-        // check orbit data
-        Assert.assertEquals(1, file.getData().getOrbitBlocks().size());
-        final OrbitStateHistory orb = file.getData().getOrbitBlocks().get(0);
+        // check trajectory data
+        Assert.assertEquals(1, file.getData().getOTrajectoryBlocks().size());
+        final TrajectoryStateHistory orb = file.getData().getOTrajectoryBlocks().get(0);
         Assert.assertEquals(2, orb.getMetadata().getComments().size());
         Assert.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", orb.getMetadata().getComments().get(0));
         Assert.assertEquals("THIS IS MY SECOND COMMENT LINE",     orb.getMetadata().getComments().get(1));
-        Assert.assertEquals("PREDICTED", orb.getMetadata().getOrbBasis());
-        Assert.assertEquals("EFG", orb.getMetadata().getOrbReferenceFrame().getName());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asFrame());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asCelestialBodyFrame());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asOrbitRelativeFrame());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asSpacecraftBodyFrame());
-        Assert.assertEquals(ElementsType.CARTPVA, orb.getMetadata().getOrbType());
-        Assert.assertNull(orb.getMetadata().getOrbUnits());
-        Assert.assertEquals(1, orb.getOrbitalStates().size());
+        Assert.assertEquals("PREDICTED", orb.getMetadata().getTrajBasis());
+        Assert.assertEquals("EFG", orb.getMetadata().getTrajReferenceFrame().getName());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asFrame());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asCelestialBodyFrame());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asOrbitRelativeFrame());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asSpacecraftBodyFrame());
+        Assert.assertEquals(ElementsType.CARTPVA, orb.getMetadata().getTrajType());
+        Assert.assertNull(orb.getMetadata().getTrajUnits());
+        Assert.assertEquals(1, orb.getTrajectoryStates().size());
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 0, 0, 0.0, ts),
-                            orb.getOrbitalStates().get(0).getDate());
-        Assert.assertEquals( 2854500.0, orb.getOrbitalStates().get(0).getElements()[0], 1.0e-10);
-        Assert.assertEquals(-2916200.0, orb.getOrbitalStates().get(0).getElements()[1], 1.0e-10);
-        Assert.assertEquals(-5360700.0, orb.getOrbitalStates().get(0).getElements()[2], 1.0e-10);
-        Assert.assertEquals(    5900.0, orb.getOrbitalStates().get(0).getElements()[3], 1.0e-10);
-        Assert.assertEquals(    4860.0, orb.getOrbitalStates().get(0).getElements()[4], 1.0e-10);
-        Assert.assertEquals(     520.0, orb.getOrbitalStates().get(0).getElements()[5], 1.0e-10);
-        Assert.assertEquals(       3.7, orb.getOrbitalStates().get(0).getElements()[6], 1.0e-10);
-        Assert.assertEquals(      -3.8, orb.getOrbitalStates().get(0).getElements()[7], 1.0e-10);
-        Assert.assertEquals(      -7.0, orb.getOrbitalStates().get(0).getElements()[8], 1.0e-10);
+                            orb.getTrajectoryStates().get(0).getDate());
+        Assert.assertEquals( 2854500.0, orb.getTrajectoryStates().get(0).getElements()[0], 1.0e-10);
+        Assert.assertEquals(-2916200.0, orb.getTrajectoryStates().get(0).getElements()[1], 1.0e-10);
+        Assert.assertEquals(-5360700.0, orb.getTrajectoryStates().get(0).getElements()[2], 1.0e-10);
+        Assert.assertEquals(    5900.0, orb.getTrajectoryStates().get(0).getElements()[3], 1.0e-10);
+        Assert.assertEquals(    4860.0, orb.getTrajectoryStates().get(0).getElements()[4], 1.0e-10);
+        Assert.assertEquals(     520.0, orb.getTrajectoryStates().get(0).getElements()[5], 1.0e-10);
+        Assert.assertEquals(       3.7, orb.getTrajectoryStates().get(0).getElements()[6], 1.0e-10);
+        Assert.assertEquals(      -3.8, orb.getTrajectoryStates().get(0).getElements()[7], 1.0e-10);
+        Assert.assertEquals(      -7.0, orb.getTrajectoryStates().get(0).getElements()[8], 1.0e-10);
 
         // check physical data
         PhysicalProperties phys = file.getData().getPhysicBlock();
@@ -622,71 +638,71 @@ public class OcmParserTest {
         Assert.assertEquals(t0, file.getMetadata().getEpochT0());
         Assert.assertEquals("UTC", file.getMetadata().getTimeSystem().name());
 
-        // check orbit data
-        Assert.assertEquals(1, file.getData().getOrbitBlocks().size());
-        final OrbitStateHistory orb = file.getData().getOrbitBlocks().get(0);
+        // check trajectory data
+        Assert.assertEquals(1, file.getData().getOTrajectoryBlocks().size());
+        final TrajectoryStateHistory orb = file.getData().getOTrajectoryBlocks().get(0);
         Assert.assertEquals(2, orb.getMetadata().getComments().size());
         Assert.assertEquals("ORBIT EPHEMERIS INCORPORATING DEPLOYMENTS AND MANEUVERS (BELOW)", orb.getMetadata().getComments().get(0));
         Assert.assertEquals("intervening data records omitted after DT=20.0",     orb.getMetadata().getComments().get(1));
-        Assert.assertEquals("PREDICTED", orb.getMetadata().getOrbBasis()); // default value, not present in the file
-        Assert.assertEquals("TOD", orb.getMetadata().getOrbReferenceFrame().getName());
-        Assert.assertNotNull(orb.getMetadata().getOrbReferenceFrame().asFrame());
-        Assert.assertEquals(CelestialBodyFrame.TOD, orb.getMetadata().getOrbReferenceFrame().asCelestialBodyFrame());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asOrbitRelativeFrame());
-        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asSpacecraftBodyFrame());
-        Assert.assertEquals(t0, orb.getMetadata().getOrbFrameEpoch());
-        Assert.assertEquals(ElementsType.CARTPVA, orb.getMetadata().getOrbType());
-        Assert.assertEquals(9, orb.getMetadata().getOrbUnits().size());
-        Assert.assertEquals("km",      orb.getMetadata().getOrbUnits().get(0).getName());
-        Assert.assertEquals("km",      orb.getMetadata().getOrbUnits().get(1).getName());
-        Assert.assertEquals("km",      orb.getMetadata().getOrbUnits().get(2).getName());
-        Assert.assertEquals("km/s",    orb.getMetadata().getOrbUnits().get(3).getName());
-        Assert.assertEquals("km/s",    orb.getMetadata().getOrbUnits().get(4).getName());
-        Assert.assertEquals("km/s",    orb.getMetadata().getOrbUnits().get(5).getName());
-        Assert.assertEquals("km/s**2", orb.getMetadata().getOrbUnits().get(6).getName());
-        Assert.assertEquals("km/s**2", orb.getMetadata().getOrbUnits().get(7).getName());
-        Assert.assertEquals("km/s**2", orb.getMetadata().getOrbUnits().get(8).getName());
-        Assert.assertEquals(4, orb.getOrbitalStates().size());
-        Assert.assertEquals(       0.0,  orb.getOrbitalStates().get(0).getDate().durationFrom(t0), 1.0e-10);
-        Assert.assertEquals( 2789600.0,  orb.getOrbitalStates().get(0).getElements()[0], 1.0e-10);
-        Assert.assertEquals( -280000.0,  orb.getOrbitalStates().get(0).getElements()[1], 1.0e-10);
-        Assert.assertEquals(-1746800.0,  orb.getOrbitalStates().get(0).getElements()[2], 1.0e-10);
-        Assert.assertEquals(    4730.0,  orb.getOrbitalStates().get(0).getElements()[3], 1.0e-10);
-        Assert.assertEquals(   -2500.0,  orb.getOrbitalStates().get(0).getElements()[4], 1.0e-10);
-        Assert.assertEquals(   -1040.0,  orb.getOrbitalStates().get(0).getElements()[5], 1.0e-10);
-        Assert.assertEquals(       8.0,  orb.getOrbitalStates().get(0).getElements()[6], 1.0e-10);
-        Assert.assertEquals(       1.0,  orb.getOrbitalStates().get(0).getElements()[7], 1.0e-10);
-        Assert.assertEquals(    -159.0,  orb.getOrbitalStates().get(0).getElements()[8], 1.0e-10);
-        Assert.assertEquals(      10.0,  orb.getOrbitalStates().get(1).getDate().durationFrom(t0), 1.0e-10);
-        Assert.assertEquals( 2783400.0,  orb.getOrbitalStates().get(1).getElements()[0], 1.0e-10);
-        Assert.assertEquals( -308100.0,  orb.getOrbitalStates().get(1).getElements()[1], 1.0e-10);
-        Assert.assertEquals(-1877100.0,  orb.getOrbitalStates().get(1).getElements()[2], 1.0e-10);
-        Assert.assertEquals(    5190.0,  orb.getOrbitalStates().get(1).getElements()[3], 1.0e-10);
-        Assert.assertEquals(   -2420.0,  orb.getOrbitalStates().get(1).getElements()[4], 1.0e-10);
-        Assert.assertEquals(   -2000.0,  orb.getOrbitalStates().get(1).getElements()[5], 1.0e-10);
-        Assert.assertEquals(       8.0,  orb.getOrbitalStates().get(1).getElements()[6], 1.0e-10);
-        Assert.assertEquals(       1.0,  orb.getOrbitalStates().get(1).getElements()[7], 1.0e-10);
-        Assert.assertEquals(       1.0,  orb.getOrbitalStates().get(1).getElements()[8], 1.0e-10);
-        Assert.assertEquals(      20.0,  orb.getOrbitalStates().get(2).getDate().durationFrom(t0), 1.0e-10);
-        Assert.assertEquals( 2776000.0,  orb.getOrbitalStates().get(2).getElements()[0], 1.0e-10);
-        Assert.assertEquals( -336900.0,  orb.getOrbitalStates().get(2).getElements()[1], 1.0e-10);
-        Assert.assertEquals(-2008700.0,  orb.getOrbitalStates().get(2).getElements()[2], 1.0e-10);
-        Assert.assertEquals(    5640.0,  orb.getOrbitalStates().get(2).getElements()[3], 1.0e-10);
-        Assert.assertEquals(   -2340.0,  orb.getOrbitalStates().get(2).getElements()[4], 1.0e-10);
-        Assert.assertEquals(   -1950.0,  orb.getOrbitalStates().get(2).getElements()[5], 1.0e-10);
-        Assert.assertEquals(       8.0,  orb.getOrbitalStates().get(2).getElements()[6], 1.0e-10);
-        Assert.assertEquals(       1.0,  orb.getOrbitalStates().get(2).getElements()[7], 1.0e-10);
-        Assert.assertEquals(     159.0,  orb.getOrbitalStates().get(2).getElements()[8], 1.0e-10);
-        Assert.assertEquals(     500.0,  orb.getOrbitalStates().get(3).getDate().durationFrom(t0), 1.0e-10);
-        Assert.assertEquals( 2164375.0,  orb.getOrbitalStates().get(3).getElements()[0], 1.0e-10);
-        Assert.assertEquals( 1115811.0,  orb.getOrbitalStates().get(3).getElements()[1], 1.0e-10);
-        Assert.assertEquals( -688131.0,  orb.getOrbitalStates().get(3).getElements()[2], 1.0e-10);
-        Assert.assertEquals(   -3533.28, orb.getOrbitalStates().get(3).getElements()[3], 1.0e-10);
-        Assert.assertEquals(   -2884.52, orb.getOrbitalStates().get(3).getElements()[4], 1.0e-10);
-        Assert.assertEquals(     885.35, orb.getOrbitalStates().get(3).getElements()[5], 1.0e-10);
-        Assert.assertEquals(       0.0,  orb.getOrbitalStates().get(3).getElements()[6], 1.0e-10);
-        Assert.assertEquals(       0.0,  orb.getOrbitalStates().get(3).getElements()[7], 1.0e-10);
-        Assert.assertEquals(       0.0,  orb.getOrbitalStates().get(3).getElements()[8], 1.0e-10);
+        Assert.assertEquals("PREDICTED", orb.getMetadata().getTrajBasis()); // default value, not present in the file
+        Assert.assertEquals("TOD", orb.getMetadata().getTrajReferenceFrame().getName());
+        Assert.assertNotNull(orb.getMetadata().getTrajReferenceFrame().asFrame());
+        Assert.assertEquals(CelestialBodyFrame.TOD, orb.getMetadata().getTrajReferenceFrame().asCelestialBodyFrame());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asOrbitRelativeFrame());
+        Assert.assertNull(orb.getMetadata().getTrajReferenceFrame().asSpacecraftBodyFrame());
+        Assert.assertEquals(t0, orb.getMetadata().getTrajFrameEpoch());
+        Assert.assertEquals(ElementsType.CARTPVA, orb.getMetadata().getTrajType());
+        Assert.assertEquals(9, orb.getMetadata().getTrajUnits().size());
+        Assert.assertEquals("km",      orb.getMetadata().getTrajUnits().get(0).getName());
+        Assert.assertEquals("km",      orb.getMetadata().getTrajUnits().get(1).getName());
+        Assert.assertEquals("km",      orb.getMetadata().getTrajUnits().get(2).getName());
+        Assert.assertEquals("km/s",    orb.getMetadata().getTrajUnits().get(3).getName());
+        Assert.assertEquals("km/s",    orb.getMetadata().getTrajUnits().get(4).getName());
+        Assert.assertEquals("km/s",    orb.getMetadata().getTrajUnits().get(5).getName());
+        Assert.assertEquals("km/s**2", orb.getMetadata().getTrajUnits().get(6).getName());
+        Assert.assertEquals("km/s**2", orb.getMetadata().getTrajUnits().get(7).getName());
+        Assert.assertEquals("km/s**2", orb.getMetadata().getTrajUnits().get(8).getName());
+        Assert.assertEquals(4, orb.getTrajectoryStates().size());
+        Assert.assertEquals(       0.0,  orb.getTrajectoryStates().get(0).getDate().durationFrom(t0), 1.0e-10);
+        Assert.assertEquals( 2789600.0,  orb.getTrajectoryStates().get(0).getElements()[0], 1.0e-10);
+        Assert.assertEquals( -280000.0,  orb.getTrajectoryStates().get(0).getElements()[1], 1.0e-10);
+        Assert.assertEquals(-1746800.0,  orb.getTrajectoryStates().get(0).getElements()[2], 1.0e-10);
+        Assert.assertEquals(    4730.0,  orb.getTrajectoryStates().get(0).getElements()[3], 1.0e-10);
+        Assert.assertEquals(   -2500.0,  orb.getTrajectoryStates().get(0).getElements()[4], 1.0e-10);
+        Assert.assertEquals(   -1040.0,  orb.getTrajectoryStates().get(0).getElements()[5], 1.0e-10);
+        Assert.assertEquals(       8.0,  orb.getTrajectoryStates().get(0).getElements()[6], 1.0e-10);
+        Assert.assertEquals(       1.0,  orb.getTrajectoryStates().get(0).getElements()[7], 1.0e-10);
+        Assert.assertEquals(    -159.0,  orb.getTrajectoryStates().get(0).getElements()[8], 1.0e-10);
+        Assert.assertEquals(      10.0,  orb.getTrajectoryStates().get(1).getDate().durationFrom(t0), 1.0e-10);
+        Assert.assertEquals( 2783400.0,  orb.getTrajectoryStates().get(1).getElements()[0], 1.0e-10);
+        Assert.assertEquals( -308100.0,  orb.getTrajectoryStates().get(1).getElements()[1], 1.0e-10);
+        Assert.assertEquals(-1877100.0,  orb.getTrajectoryStates().get(1).getElements()[2], 1.0e-10);
+        Assert.assertEquals(    5190.0,  orb.getTrajectoryStates().get(1).getElements()[3], 1.0e-10);
+        Assert.assertEquals(   -2420.0,  orb.getTrajectoryStates().get(1).getElements()[4], 1.0e-10);
+        Assert.assertEquals(   -2000.0,  orb.getTrajectoryStates().get(1).getElements()[5], 1.0e-10);
+        Assert.assertEquals(       8.0,  orb.getTrajectoryStates().get(1).getElements()[6], 1.0e-10);
+        Assert.assertEquals(       1.0,  orb.getTrajectoryStates().get(1).getElements()[7], 1.0e-10);
+        Assert.assertEquals(       1.0,  orb.getTrajectoryStates().get(1).getElements()[8], 1.0e-10);
+        Assert.assertEquals(      20.0,  orb.getTrajectoryStates().get(2).getDate().durationFrom(t0), 1.0e-10);
+        Assert.assertEquals( 2776000.0,  orb.getTrajectoryStates().get(2).getElements()[0], 1.0e-10);
+        Assert.assertEquals( -336900.0,  orb.getTrajectoryStates().get(2).getElements()[1], 1.0e-10);
+        Assert.assertEquals(-2008700.0,  orb.getTrajectoryStates().get(2).getElements()[2], 1.0e-10);
+        Assert.assertEquals(    5640.0,  orb.getTrajectoryStates().get(2).getElements()[3], 1.0e-10);
+        Assert.assertEquals(   -2340.0,  orb.getTrajectoryStates().get(2).getElements()[4], 1.0e-10);
+        Assert.assertEquals(   -1950.0,  orb.getTrajectoryStates().get(2).getElements()[5], 1.0e-10);
+        Assert.assertEquals(       8.0,  orb.getTrajectoryStates().get(2).getElements()[6], 1.0e-10);
+        Assert.assertEquals(       1.0,  orb.getTrajectoryStates().get(2).getElements()[7], 1.0e-10);
+        Assert.assertEquals(     159.0,  orb.getTrajectoryStates().get(2).getElements()[8], 1.0e-10);
+        Assert.assertEquals(     500.0,  orb.getTrajectoryStates().get(3).getDate().durationFrom(t0), 1.0e-10);
+        Assert.assertEquals( 2164375.0,  orb.getTrajectoryStates().get(3).getElements()[0], 1.0e-10);
+        Assert.assertEquals( 1115811.0,  orb.getTrajectoryStates().get(3).getElements()[1], 1.0e-10);
+        Assert.assertEquals( -688131.0,  orb.getTrajectoryStates().get(3).getElements()[2], 1.0e-10);
+        Assert.assertEquals(   -3533.28, orb.getTrajectoryStates().get(3).getElements()[3], 1.0e-10);
+        Assert.assertEquals(   -2884.52, orb.getTrajectoryStates().get(3).getElements()[4], 1.0e-10);
+        Assert.assertEquals(     885.35, orb.getTrajectoryStates().get(3).getElements()[5], 1.0e-10);
+        Assert.assertEquals(       0.0,  orb.getTrajectoryStates().get(3).getElements()[6], 1.0e-10);
+        Assert.assertEquals(       0.0,  orb.getTrajectoryStates().get(3).getElements()[7], 1.0e-10);
+        Assert.assertEquals(       0.0,  orb.getTrajectoryStates().get(3).getElements()[8], 1.0e-10);
 
         // check physical data
         PhysicalProperties phys = file.getData().getPhysicBlock();
@@ -906,34 +922,36 @@ public class OcmParserTest {
         Assert.assertEquals("LAGRANGE ORDER 5",                    file.getMetadata().getInterpMethodEOP());
         Assert.assertEquals("JPL DE 430",                          file.getMetadata().getCelestialSource());
 
-        // check orbit data
-        Assert.assertEquals(2, file.getData().getOrbitBlocks().size());
-        OrbitStateHistory osh0 = file.getData().getOrbitBlocks().get(0);
+        // check trajectory data
+        Assert.assertEquals(2, file.getData().getOTrajectoryBlocks().size());
+        TrajectoryStateHistory osh0 = file.getData().getOTrajectoryBlocks().get(0);
         Assert.assertEquals("this is number 1 ORB comment", osh0.getMetadata().getComments().get(0));
-        Assert.assertEquals("orbit 1",       osh0.getMetadata().getOrbID());
-        Assert.assertEquals("orbit 0",       osh0.getMetadata().getOrbPrevID());
-        Assert.assertEquals("orbit 2",       osh0.getMetadata().getOrbNextID());
-        Assert.assertEquals("DETERMINED OD", osh0.getMetadata().getOrbBasis());
-        Assert.assertEquals("OD 17",         osh0.getMetadata().getOrbBasisID());
+        Assert.assertEquals("orbit 1",       osh0.getMetadata().getTrajID());
+        Assert.assertEquals("orbit 0",       osh0.getMetadata().getTrajPrevID());
+        Assert.assertEquals("orbit 2",       osh0.getMetadata().getTrajNextID());
+        Assert.assertEquals("DETERMINED OD", osh0.getMetadata().getTrajBasis());
+        Assert.assertEquals("OD 17",         osh0.getMetadata().getTrajBasisID());
         Assert.assertEquals(InterpolationMethod.HERMITE, osh0.getMetadata().getInterpolationMethod());
         Assert.assertEquals(3, osh0.getMetadata().getInterpolationDegree());
         Assert.assertEquals("ECKSTEIN HECHLER", osh0.getMetadata().getOrbAveraging());
         Assert.assertEquals(CenterName.EARTH.name(), osh0.getMetadata().getCenter().getName());
-        Assert.assertEquals(CelestialBodyFrame.TOD, osh0.getMetadata().getOrbReferenceFrame().asCelestialBodyFrame());
-        Assert.assertEquals(    0.0,   osh0.getMetadata().getOrbFrameEpoch().durationFrom(epoch),    1.0e-12);
+        Assert.assertEquals(CelestialBodyFrame.TOD, osh0.getMetadata().getTrajReferenceFrame().asCelestialBodyFrame());
+        Assert.assertEquals(    0.0,   osh0.getMetadata().getTrajFrameEpoch().durationFrom(epoch),    1.0e-12);
         Assert.assertEquals(34200.0,   osh0.getMetadata().getUseableStartTime().durationFrom(epoch), 1.0e-12);
         Assert.assertEquals(35999.999, osh0.getMetadata().getUseableStopTime().durationFrom(epoch),  1.0e-12);
-        Assert.assertEquals(ElementsType.CARTPVA, osh0.getMetadata().getOrbType());
-        Assert.assertEquals(9, osh0.getMetadata().getOrbUnits().size());
-        Assert.assertEquals(Unit.KILOMETRE,  osh0.getMetadata().getOrbUnits().get(0));
-        Assert.assertEquals(Unit.KILOMETRE,  osh0.getMetadata().getOrbUnits().get(1));
-        Assert.assertEquals(Unit.KILOMETRE,  osh0.getMetadata().getOrbUnits().get(2));
-        Assert.assertEquals(Units.KM_PER_S,  osh0.getMetadata().getOrbUnits().get(3));
-        Assert.assertEquals(Units.KM_PER_S,  osh0.getMetadata().getOrbUnits().get(4));
-        Assert.assertEquals(Units.KM_PER_S,  osh0.getMetadata().getOrbUnits().get(5));
-        Assert.assertEquals(Units.KM_PER_S2, osh0.getMetadata().getOrbUnits().get(6));
-        Assert.assertEquals(Units.KM_PER_S2, osh0.getMetadata().getOrbUnits().get(7));
-        Assert.assertEquals(Units.KM_PER_S2, osh0.getMetadata().getOrbUnits().get(8));
+        Assert.assertEquals(17, osh0.getMetadata().getOrbRevNum());
+        Assert.assertEquals( 1, osh0.getMetadata().getOrbRevNumBasis());
+        Assert.assertEquals(ElementsType.CARTPVA, osh0.getMetadata().getTrajType());
+        Assert.assertEquals(9, osh0.getMetadata().getTrajUnits().size());
+        Assert.assertEquals(Unit.KILOMETRE,  osh0.getMetadata().getTrajUnits().get(0));
+        Assert.assertEquals(Unit.KILOMETRE,  osh0.getMetadata().getTrajUnits().get(1));
+        Assert.assertEquals(Unit.KILOMETRE,  osh0.getMetadata().getTrajUnits().get(2));
+        Assert.assertEquals(Units.KM_PER_S,  osh0.getMetadata().getTrajUnits().get(3));
+        Assert.assertEquals(Units.KM_PER_S,  osh0.getMetadata().getTrajUnits().get(4));
+        Assert.assertEquals(Units.KM_PER_S,  osh0.getMetadata().getTrajUnits().get(5));
+        Assert.assertEquals(Units.KM_PER_S2, osh0.getMetadata().getTrajUnits().get(6));
+        Assert.assertEquals(Units.KM_PER_S2, osh0.getMetadata().getTrajUnits().get(7));
+        Assert.assertEquals(Units.KM_PER_S2, osh0.getMetadata().getTrajUnits().get(8));
         Assert.assertEquals(3, osh0.getCoordinates().size());
         Assert.assertEquals(   0.0, osh0.getCoordinates().get(0).getDate().durationFrom(epoch), 1.0e-10);
         Assert.assertEquals( 1.0e6, osh0.getCoordinates().get(0).getPosition().getX(), 1.0e-10);
@@ -941,13 +959,15 @@ public class OcmParserTest {
         Assert.assertEquals( 3.0e3, osh0.getCoordinates().get(1).getVelocity().getY(), 1.0e-10);
         Assert.assertEquals( 600.0, osh0.getCoordinates().get(2).getDate().durationFrom(epoch), 1.0e-10);
         Assert.assertEquals(  -6.0, osh0.getCoordinates().get(2).getAcceleration().getZ(), 1.0e-10);
-        OrbitStateHistory osh1 = file.getData().getOrbitBlocks().get(1);
+        TrajectoryStateHistory osh1 = file.getData().getOTrajectoryBlocks().get(1);
         Assert.assertEquals("this is number 2 ORB comment", osh1.getMetadata().getComments().get(0));
-        Assert.assertEquals("orbit 2",    osh1.getMetadata().getOrbID());
-        Assert.assertEquals("orbit 1",    osh1.getMetadata().getOrbPrevID());
-        Assert.assertEquals("orbit 3",    osh1.getMetadata().getOrbNextID());
-        Assert.assertEquals("PREDICTED",  osh1.getMetadata().getOrbBasis());
-        Assert.assertEquals("SIMULATION", osh1.getMetadata().getOrbBasisID());
+        Assert.assertEquals("orbit 2",    osh1.getMetadata().getTrajID());
+        Assert.assertEquals("orbit 1",    osh1.getMetadata().getTrajPrevID());
+        Assert.assertEquals("orbit 3",    osh1.getMetadata().getTrajNextID());
+        Assert.assertEquals("PREDICTED",  osh1.getMetadata().getTrajBasis());
+        Assert.assertEquals("SIMULATION", osh1.getMetadata().getTrajBasisID());
+        Assert.assertEquals(-1,           osh1.getMetadata().getOrbRevNum());
+        Assert.assertEquals(-1,           osh1.getMetadata().getOrbRevNumBasis());
         Assert.assertEquals(3, osh1.getCoordinates().size());
         Assert.assertEquals(1800.0, osh1.getCoordinates().get(0).getDate().durationFrom(epoch), 1.0e-10);
         Assert.assertEquals(2100.0, osh1.getCoordinates().get(1).getDate().durationFrom(epoch), 1.0e-10);
