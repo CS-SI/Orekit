@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -364,7 +364,7 @@ public class YawCompensationTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final YawCompensation provider,
+    private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final YawCompensation provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame) {
 

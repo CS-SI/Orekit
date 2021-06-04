@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -76,7 +76,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
  */
-public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
+public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 
     /** Indicator for non-Keplerian acceleration. */
     private final transient boolean hasNonKeplerianAcceleration;
@@ -98,7 +98,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position, velocity and acceleration of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
@@ -123,7 +123,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined

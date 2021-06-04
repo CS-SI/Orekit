@@ -19,7 +19,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -43,6 +43,6 @@ public interface TransformProvider extends Serializable {
      * @return transform at specified date
           * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date);
 
 }

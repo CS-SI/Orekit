@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -127,7 +127,7 @@ public class AbsolutePartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> void
+        public <T extends CalculusFieldElement<T>> void
             addContribution(FieldSpacecraftState<T> s,
                             FieldTimeDerivativesEquations<T> adder) {
         }
@@ -140,7 +140,7 @@ public class AbsolutePartialDerivativesEquationsTest {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
             this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
@@ -159,7 +159,7 @@ public class AbsolutePartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

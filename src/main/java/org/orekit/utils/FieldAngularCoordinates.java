@@ -17,7 +17,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
@@ -40,7 +40,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
 /** Simple container for rotation / rotation rate pairs, using {@link
- * RealFieldElement}.
+ * CalculusFieldElement}.
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
  * a simple quadratic model. It is <em>not</em> intended as a replacement for
@@ -56,7 +56,7 @@ import org.orekit.errors.OrekitMessages;
  * @since 6.0
  * @see AngularCoordinates
  */
-public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
+public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
 
     /** rotation. */
@@ -220,7 +220,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param <T> the type of the field elements
      * @return a new fixed orientation parallel with reference frame
      */
-    public static <T extends RealFieldElement<T>> FieldAngularCoordinates<T> getIdentity(final Field<T> field) {
+    public static <T extends CalculusFieldElement<T>> FieldAngularCoordinates<T> getIdentity(final Field<T> field) {
         return new FieldAngularCoordinates<>(field, AngularCoordinates.IDENTITY);
     }
 
@@ -242,7 +242,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @exception MathIllegalArgumentException if vectors are inconsistent and
      * no solution can be found
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> inverseCrossProducts(final FieldVector3D<T> v1, final FieldVector3D<T> c1,
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> inverseCrossProducts(final FieldVector3D<T> v1, final FieldVector3D<T> c1,
                                                                                          final FieldVector3D<T> v2, final FieldVector3D<T> c2,
                                                                                          final double tolerance)
         throws MathIllegalArgumentException {
@@ -518,7 +518,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param <T> the type of the field elements
      * @return rotation rate allowing to go from start to end orientations
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         FieldVector3D<T> estimateRate(final FieldRotation<T> start,
                                       final FieldRotation<T> end,
                                       final double dt) {
@@ -534,7 +534,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param <T> the type of the field elements
      * @return rotation rate allowing to go from start to end orientations
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         FieldVector3D<T> estimateRate(final FieldRotation<T> start,
                                       final FieldRotation<T> end,
                                       final T dt) {
@@ -809,7 +809,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param sign multiplicative sign for quaternion components
      * @return modified Rodrigues vector and derivatives (vector on row 0, first derivative
      * on row 1, second derivative on row 2)
-     * @see #createFromModifiedRodrigues(RealFieldElement[][])
+     * @see #createFromModifiedRodrigues(CalculusFieldElement[][])
      * @since 9.0
      */
     public T[][] getModifiedRodrigues(final double sign) {
@@ -930,7 +930,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @see #getModifiedRodrigues(double)
      * @since 9.0
      */
-    public static <T extends RealFieldElement<T>>  FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r) {
+    public static <T extends CalculusFieldElement<T>>  FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r) {
 
         // rotation
         final T rSquared = r[0][0].multiply(r[0][0]).add(r[0][1].multiply(r[0][1])).add(r[0][2].multiply(r[0][2]));

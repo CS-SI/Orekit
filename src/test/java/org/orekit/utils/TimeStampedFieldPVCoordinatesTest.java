@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
@@ -536,7 +536,7 @@ public class TimeStampedFieldPVCoordinatesTest {
         doTestIssue774(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue774(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue774(final Field<T> field) {
 
         final T zero = field.getZero();
 
@@ -564,7 +564,7 @@ public class TimeStampedFieldPVCoordinatesTest {
         return new PolynomialFunction(coeff);
     }
 
-    private <T extends RealFieldElement<T>> void checkPV(TimeStampedFieldPVCoordinates<T> expected,
+    private <T extends CalculusFieldElement<T>> void checkPV(TimeStampedFieldPVCoordinates<T> expected,
                                                          TimeStampedFieldPVCoordinates<T> real, double epsilon) {
         Assert.assertEquals(expected.getDate(), real.getDate());
         Assert.assertEquals(expected.getPosition().getX().getReal(),     real.getPosition().getX().getReal(), epsilon);

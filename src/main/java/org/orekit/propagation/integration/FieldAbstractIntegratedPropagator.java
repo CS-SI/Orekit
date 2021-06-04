@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.ode.FieldDenseOutputModel;
@@ -62,7 +62,7 @@ import org.orekit.time.FieldAbsoluteDate;
  *  methods for both numerical and semi-analytical propagators.
  *  @author Luc Maisonobe
  */
-public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldElement<T>> extends FieldAbstractPropagator<T> {
+public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T> {
 
     /** Event detectors not related to force models. */
     private final List<FieldEventDetector<T>> detectors;
@@ -202,7 +202,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Get the central attraction coefficient μ.
      * @return mu central attraction coefficient (m³/s²)
-     * @see #setMu(RealFieldElement)
+     * @see #setMu(CalculusFieldElement)
      */
     public T getMu() {
         return stateMapper.getMu();
@@ -630,7 +630,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     }
 
     /** Differential equations for the main state (orbit, attitude and mass). */
-    public interface MainStateEquations<T extends RealFieldElement<T>> {
+    public interface MainStateEquations<T extends CalculusFieldElement<T>> {
 
         /**
          * Initialize the equations at the start of propagation. This method will be

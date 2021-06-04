@@ -28,7 +28,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
@@ -223,7 +223,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
+        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
             getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
             final Field<T> field = date.getField();
             return TimeStampedFieldPVCoordinates.interpolate(date,

@@ -19,7 +19,7 @@ package org.orekit.models.earth.atmosphere;
 import java.util.Arrays;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -1184,7 +1184,7 @@ public class NRLMSISE00 implements Atmosphere {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
                                                         final Frame frame) {
         // check if data are available :
@@ -1242,7 +1242,7 @@ public class NRLMSISE00 implements Atmosphere {
      * @param <T> type of the filed elements
      * @return the local solar time (hour in [0, 24[)
      */
-    private <T extends RealFieldElement<T>> T localSolarTime(final AbsoluteDate date,
+    private <T extends CalculusFieldElement<T>> T localSolarTime(final AbsoluteDate date,
                                                              final FieldVector3D<T> position,
                                                              final Frame frame) {
         final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
@@ -2681,7 +2681,7 @@ public class NRLMSISE00 implements Atmosphere {
      * @param <T> type of the field elements
      * @since 9.0
      */
-    public class FieldOutput<T extends RealFieldElement<T>> {
+    public class FieldOutput<T extends CalculusFieldElement<T>> {
 
         /** Type of the field elements. */
         private final Field<T> field;

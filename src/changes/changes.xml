@@ -21,8 +21,17 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="784">
+        Updated architecture of GNSS orbit propagators.
+      </action>
+      <action dev="bryan" type="update" issue="782">
+        Updated error message of Orekit internal error exception.
+      </action>
       <action dev="luc" type="add">
         Added support for reading and writing CCSDS NDM composite messages.
+      </action>
+      <action dev="afossa" type="fix" issue="781">
+        Fixed parsing in buildLine2() method of FieldTLE.
       </action>
       <action dev="luc" type="fix" issue="776">
         Fixed associativity in units parsing.

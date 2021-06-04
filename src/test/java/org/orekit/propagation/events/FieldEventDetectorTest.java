@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import java.lang.reflect.Array;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
@@ -64,7 +64,7 @@ public class FieldEventDetectorTest {
         doTestEventHandlerInit(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestEventHandlerInit(Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field)
             {
 
         final T zero = field.getZero();
@@ -114,7 +114,7 @@ public class FieldEventDetectorTest {
         doTestBasicScheduling(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestBasicScheduling(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestBasicScheduling(Field<T> field) {
 
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -138,7 +138,7 @@ public class FieldEventDetectorTest {
 
     }
 
-    private static class OutOfOrderChecker<T extends RealFieldElement<T>>
+    private static class OutOfOrderChecker<T extends CalculusFieldElement<T>>
         implements FieldEventHandler<FieldDateDetector<T>, T>, FieldOrekitFixedStepHandler<T> {
 
         private FieldAbsoluteDate<T> triggerDate;
@@ -180,7 +180,7 @@ public class FieldEventDetectorTest {
         doTestIssue108Numerical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue108Numerical(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue108Numerical(Field<T> field) {
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668),
@@ -209,7 +209,7 @@ public class FieldEventDetectorTest {
         doTestIssue108Analytical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue108Analytical(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue108Analytical(Field<T> field) {
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668),
@@ -235,7 +235,7 @@ public class FieldEventDetectorTest {
         Assert.assertEquals(n + 1, counter.getCount());
     }
 
-    private static class GCallsCounter<T extends RealFieldElement<T>> extends FieldAbstractDetector<GCallsCounter<T>, T> {
+    private static class GCallsCounter<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<GCallsCounter<T>, T> {
 
         private int count;
 
@@ -267,7 +267,7 @@ public class FieldEventDetectorTest {
         doTestNoisyGFunction(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNoisyGFunction(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNoisyGFunction(Field<T> field) {
 
         final T zero = field.getZero();
 
@@ -305,7 +305,7 @@ public class FieldEventDetectorTest {
         Assert.assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
     }
 
-    private static class FieldCloseApproachDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldCloseApproachDetector<T>, T> {
+    private static class FieldCloseApproachDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldCloseApproachDetector<T>, T> {
 
         private final FieldPVCoordinatesProvider<T> provider;
 
@@ -339,7 +339,7 @@ public class FieldEventDetectorTest {
         doTestWrappedException(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestWrappedException(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestWrappedException(Field<T> field) {
         final T zero = field.getZero();
         final Throwable dummyCause = new RuntimeException();
         try {
@@ -378,7 +378,7 @@ public class FieldEventDetectorTest {
         doTestDefaultMethods(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDefaultMethods(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDefaultMethods(final Field<T> field) {
         FieldEventDetector<T> dummyDetector = new FieldEventDetector<T>() {
 
             @Override

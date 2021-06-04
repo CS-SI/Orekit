@@ -34,7 +34,9 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.navigation.SBASNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
+import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.SBASOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
@@ -81,10 +83,9 @@ public class SBASPropagatorTest {
     @Test
     public void testPropagationAtReferenceTime() {
         // SBAS propagator
-        final SBASPropagator propagator = new SBASPropagator.
-                        Builder(soe, frames).
+        final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).
                         attitudeProvider(InertialProvider.EME2000_ALIGNED).
-                        mu(SBASOrbitalElements.SBAS_MU).
+                        mu(GNSSConstants.SBAS_MU).
                         mass(SBASPropagator.DEFAULT_MASS).
                         eci(FramesFactory.getEME2000()).
                         ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, true)).
@@ -110,7 +111,7 @@ public class SBASPropagatorTest {
     @Test
     public void testPropagation() {
         // SBAS propagator
-        final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
+        final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
         // Propagation
         final PVCoordinates pv = propagator.propagateInEcef(soe.getDate().shiftedBy(1.0));
         // Position/Velocity/Acceleration
@@ -132,7 +133,7 @@ public class SBASPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the SBAS propagator from the ephemeris
-        final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
+        final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
         Assert.assertEquals("EME2000", propagator.getFrame().getName());
         Assert.assertEquals(3.986005e+14, propagator.getMU(), 1.0e6);
         Assert.assertEquals(propagator.getECI().getName(), propagator.getFrame().getName());
@@ -155,7 +156,7 @@ public class SBASPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
+        final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
         SBASOrbitalElements elements = propagator.getSBASOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 1000.0 * elements.getTime(), SatelliteSystem.SBAS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -183,14 +184,14 @@ public class SBASPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
+            final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
             propagator.resetInitialState(propagator.getInitialState());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
-            final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
+            final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

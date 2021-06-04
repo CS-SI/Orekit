@@ -38,11 +38,11 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.GlonassUserRangeAccuracy;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.SignalInSpaceAccuracy;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.UserRangeAccuracy;
-import org.orekit.gnss.navigation.BeidouNavigationMessage;
-import org.orekit.gnss.navigation.GLONASSNavigationMessage;
-import org.orekit.gnss.navigation.GPSNavigationMessage;
-import org.orekit.gnss.navigation.GalileoNavigationMessage;
-import org.orekit.gnss.navigation.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
 
 /** Enum containing the supported RTCM messages types.
 *
@@ -99,7 +99,7 @@ public enum RtcmMessageType implements MessageType {
             gpsNavMessage.setE(RtcmDataField.DF090.doubleValue(encodedMessage));
             gpsNavMessage.setCus(RtcmDataField.DF091.doubleValue(encodedMessage));
             gpsNavMessage.setSqrtA(RtcmDataField.DF092.doubleValue(encodedMessage));
-            gpsNavMessage.setToe(RtcmDataField.DF093.doubleValue(encodedMessage));
+            gpsNavMessage.setTime(RtcmDataField.DF093.doubleValue(encodedMessage));
             gpsNavMessage.setCic(RtcmDataField.DF094.doubleValue(encodedMessage));
             gpsNavMessage.setOmega0(RtcmDataField.DF095.doubleValue(encodedMessage));
             gpsNavMessage.setCis(RtcmDataField.DF096.doubleValue(encodedMessage));
@@ -234,7 +234,7 @@ public enum RtcmMessageType implements MessageType {
             beidouNavMessage.setE(RtcmDataField.DF502.doubleValue(encodedMessage));
             beidouNavMessage.setCus(RtcmDataField.DF503.doubleValue(encodedMessage));
             beidouNavMessage.setSqrtA(RtcmDataField.DF504.doubleValue(encodedMessage));
-            beidouNavMessage.setToe(RtcmDataField.DF505.doubleValue(encodedMessage));
+            beidouNavMessage.setTime(RtcmDataField.DF505.doubleValue(encodedMessage));
             beidouNavMessage.setCic(RtcmDataField.DF506.doubleValue(encodedMessage));
             beidouNavMessage.setOmega0(RtcmDataField.DF507.doubleValue(encodedMessage));
             beidouNavMessage.setCis(RtcmDataField.DF508.doubleValue(encodedMessage));
@@ -286,7 +286,7 @@ public enum RtcmMessageType implements MessageType {
             qzssNavMessage.setE(RtcmDataField.DF439.doubleValue(encodedMessage));
             qzssNavMessage.setCus(RtcmDataField.DF440.doubleValue(encodedMessage));
             qzssNavMessage.setSqrtA(RtcmDataField.DF441.doubleValue(encodedMessage));
-            qzssNavMessage.setToe(RtcmDataField.DF442.doubleValue(encodedMessage));
+            qzssNavMessage.setTime(RtcmDataField.DF442.doubleValue(encodedMessage));
             qzssNavMessage.setCic(RtcmDataField.DF443.doubleValue(encodedMessage));
             qzssNavMessage.setOmega0(RtcmDataField.DF444.doubleValue(encodedMessage));
             qzssNavMessage.setCis(RtcmDataField.DF445.doubleValue(encodedMessage));
@@ -367,7 +367,7 @@ public enum RtcmMessageType implements MessageType {
             galileoNavMessage.setE(RtcmDataField.DF301.doubleValue(encodedMessage));
             galileoNavMessage.setCus(RtcmDataField.DF302.doubleValue(encodedMessage));
             galileoNavMessage.setSqrtA(RtcmDataField.DF303.doubleValue(encodedMessage));
-            galileoNavMessage.setToe(RtcmDataField.DF304.doubleValue(encodedMessage));
+            galileoNavMessage.setTime(RtcmDataField.DF304.doubleValue(encodedMessage));
             galileoNavMessage.setCic(RtcmDataField.DF305.doubleValue(encodedMessage));
             galileoNavMessage.setOmega0(RtcmDataField.DF306.doubleValue(encodedMessage));
             galileoNavMessage.setCis(RtcmDataField.DF307.doubleValue(encodedMessage));

@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
@@ -48,7 +48,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @param <D> class type for the generic version
  */
-public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFieldElement<T>> {
+public class FieldEventState<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> {
 
     /** Event detector. */
     private D detector;
@@ -554,7 +554,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * Class to hold the data related to an event occurrence that is needed to decide how
      * to modify integration.
      */
-    public static class EventOccurrence<T extends RealFieldElement<T>> {
+    public static class EventOccurrence<T extends CalculusFieldElement<T>> {
 
         /** User requested action. */
         private final Action action;

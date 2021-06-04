@@ -30,9 +30,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.GalileoAlmanac;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.navigation.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GalileoAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
@@ -51,7 +52,7 @@ public class GalileoPropagatorTest {
         goe = new GalileoNavigationMessage();
         goe.setPRN(4);
         goe.setWeek(1024);
-        goe.setToe(293400.0);
+        goe.setTime(293400.0);
         goe.setSqrtA(5440.602949142456);
         goe.setDeltaN(3.7394414770330066E-9);
         goe.setE(2.4088891223073006E-4);
@@ -78,11 +79,25 @@ public class GalileoPropagatorTest {
     @Test
     public void testGalileoCycle() {
         // Reference for the almanac: 2019-05-28T09:40:01.0Z
-        final GalileoAlmanac almanac = new GalileoAlmanac(1, 1024, 293400.0, 0.013671875,
-                                                          0.000152587890625, 0.003356933593, 4,
-                                                          0.2739257812499857891, -1.74622982740407E-9,
-                                                          0.7363586425, 0.27276611328124, -0.0006141662597,
-                                                          -7.275957614183E-12, 0, 0, 0);
+        final GalileoAlmanac almanac = new GalileoAlmanac();
+        almanac.setPRN(1);
+        almanac.setWeek(1024);
+        almanac.setTime(293400.0);
+        almanac.setDeltaSqrtA(0.013671875);
+        almanac.setE(0.000152587890625);
+        almanac.setDeltaInc(0.003356933593);
+        almanac.setIOD(4);
+        almanac.setOmega0(0.2739257812499857891);
+        almanac.setOmegaDot(-1.74622982740407E-9);
+        almanac.setPa(0.7363586425);
+        almanac.setM0(0.27276611328124);
+        almanac.setAf0(-0.0006141662597);
+        almanac.setAf1(-7.275957614183E-12);
+        almanac.setHealthE1(0);
+        almanac.setHealthE5a(0);
+        almanac.setHealthE5b(0);
+        almanac.setDate(new GNSSDate(almanac.getWeek(), 1000.0 * almanac.getTime(), SatelliteSystem.GALILEO).getDate());
+
         // Intermediate verification
         Assert.assertEquals(1,                   almanac.getPRN());
         Assert.assertEquals(1024,                almanac.getWeek());
@@ -94,11 +109,11 @@ public class GalileoPropagatorTest {
         Assert.assertEquals(-7.275957614183E-12, almanac.getAf1(), 1.0e-15);
 
         // Builds the GalileoPropagator from the almanac
-        GalileoPropagator propagator = new GalileoPropagator.Builder(almanac).build();
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
         // Propagate at the Galileo date and one Galileo cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
-        final double galCycleDuration = GalileoOrbitalElements.GALILEO_WEEK_IN_SECONDS * GalileoOrbitalElements.GALILEO_WEEK_NB;
+        final double galCycleDuration = almanac.getCycleDuration();
         final AbsoluteDate date1 = date0.shiftedBy(galCycleDuration);
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
 
@@ -109,9 +124,9 @@ public class GalileoPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the GalileoPropagator from the ephemeris
-        GalileoPropagator propagator = new GalileoPropagator.Builder(goe).build();
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
         Assert.assertEquals("EME2000", propagator.getFrame().getName());
-        Assert.assertEquals(3.986004418e+14, GalileoOrbitalElements.GALILEO_MU, 1.0e6);
+        Assert.assertEquals(3.986004418e+14, goe.getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -127,14 +142,14 @@ public class GalileoPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            GalileoPropagator propagator = new GalileoPropagator.Builder(goe).build();
+            GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
             propagator.resetInitialState(propagator.getInitialState());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
-            GalileoPropagator propagator = new GalileoPropagator.Builder(goe).build();
+            GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -149,8 +164,8 @@ public class GalileoPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        GalileoPropagator propagator = new GalileoPropagator.Builder(goe).build();
-        GalileoOrbitalElements elements = propagator.getGalileoOrbitalElements();
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
+        GNSSOrbitalElements elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.GALILEO).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
@@ -179,7 +194,7 @@ public class GalileoPropagatorTest {
         // Date of the Galileo orbital elements, 10 April 2019 at 09:30:00 UTC
         final AbsoluteDate target = goe.getDate();
         // Build the Galileo propagator
-        final GalileoPropagator propagator = new GalileoPropagator.Builder(goe).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
         // Compute the PV coordinates at the date of the Galileo orbital elements
         final PVCoordinates pv = propagator.getPVCoordinates(target, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Computed position
@@ -192,8 +207,8 @@ public class GalileoPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the GalileoPropagator from the almanac
-        final GalileoPropagator propagator = new GalileoPropagator.Builder(goe).build();
-        // In order to test the issue, we volontary set a Double.NaN value in the date.
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
+        // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur

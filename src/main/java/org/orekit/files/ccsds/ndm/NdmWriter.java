@@ -124,6 +124,7 @@ public class NdmWriter {
      * @param <H> type of the header
      * @param <S> type of the segments
      * @param <F> type of the file
+     * @throws IOException if the stream cannot write to stream
      */
     public <H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>>
         void writeConstituent(final Generator generator, final F constituent) throws IOException {
@@ -146,6 +147,7 @@ public class NdmWriter {
      * @param <S> type of the segments
      * @param <F> type of the file
      * @return writer suited for the constituent
+     * @throws IOException if the stream cannot write to stream
      */
     @SuppressWarnings("unchecked")
     private <H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>>

@@ -17,7 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -71,7 +71,7 @@ public class FieldGlobalMappingFunctionModelTest {
         doTestMappingFactors(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
         final T zero = field.getZero();
         // Site (NRAO, Green Bank, WV): latitude:  0.6708665767 radians
         //                              longitude: -1.393397187 radians
@@ -109,7 +109,7 @@ public class FieldGlobalMappingFunctionModelTest {
         doTestFixedHeight(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         MappingFunction model = new GlobalMappingFunctionModel();

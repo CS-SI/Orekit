@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -27,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
-public interface FieldOrekitStepInterpolator<T extends RealFieldElement<T>> {
+public interface FieldOrekitStepInterpolator<T extends CalculusFieldElement<T>> {
 
     /**
      * Get the state at previous grid point date.

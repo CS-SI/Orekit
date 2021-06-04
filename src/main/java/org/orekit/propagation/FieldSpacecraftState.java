@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -79,7 +79,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @author Vincent Mouraux
  */
-public class FieldSpacecraftState <T extends RealFieldElement<T>>
+public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     implements FieldTimeStamped<T>, FieldTimeShiftable<FieldSpacecraftState<T>, T>, FieldTimeInterpolable<FieldSpacecraftState<T>, T> {
 
     /** Default mass. */
@@ -474,7 +474,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * @param <T>      the type of the field elements
      * @exception IllegalArgumentException if orbit and attitude dates are not equal
      */
-    private static <T extends RealFieldElement<T>> void checkConsistency(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
+    private static <T extends CalculusFieldElement<T>> void checkConsistency(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
         throws IllegalArgumentException {
         if (FastMath.abs(absPva.getDate().durationFrom(attitude.getDate())).getReal() >
             DATE_INCONSISTENCY_THRESHOLD) {
@@ -721,7 +721,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     /** Check if an additional state is available.
      * @param name name of the additional state
      * @return true if the additional state is available
-     * @see #addAdditionalState(String, RealFieldElement...)
+     * @see #addAdditionalState(String, CalculusFieldElement...)
      * @see #getAdditionalState(String)
      * @see #getAdditionalStates()
      */
@@ -769,7 +769,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     /** Get an additional state.
      * @param name name of the additional state
      * @return value of the additional state
-          * @see #addAdditionalState(String, RealFieldElement...)
+          * @see #addAdditionalState(String, CalculusFieldElement...)
      * @see #hasAdditionalState(String)
      * @see #getAdditionalStates()
      */
@@ -782,7 +782,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
 
     /** Get an unmodifiable map of additional states.
      * @return unmodifiable map of additional states
-     * @see #addAdditionalState(String, RealFieldElement...)
+     * @see #addAdditionalState(String, CalculusFieldElement...)
      * @see #hasAdditionalState(String)
      * @see #getAdditionalState(String)
      */
