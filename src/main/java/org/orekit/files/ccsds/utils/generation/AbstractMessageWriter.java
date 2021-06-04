@@ -28,9 +28,11 @@ import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 
 /**
  * Base class for Navigation Data Message (NDM) files.
@@ -60,6 +62,9 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
     /** Current converter for dates. */
     private TimeConverter timeConverter;
 
+    /** Current format version. */
+    private double version;
+
     /**
      * Constructor used to create a new NDM writer configured with the necessary parameters
      * to successfully fill in all required fields that aren't part of a standard object.
@@ -77,6 +82,7 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
         this.root             = root;
         this.defaultVersion   = defaultVersion;
         this.formatVersionKey = formatVersionKey;
+        this.version          = defaultVersion;
 
         setContext(context);
 
@@ -104,12 +110,43 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
         return timeConverter;
     }
 
+    /** Get the default format version.
+     * @return default format version
+     */
+    public double getDefaultVersion() {
+        return defaultVersion;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeHeader(final Generator generator, final H header) throws IOException {
 
-        final double version = (header == null || Double.isNaN(header.getFormatVersion())) ?
-                               defaultVersion : header.getFormatVersion();
+        final ZonedDateTime zdt = ZonedDateTime.now(ZoneOffset.UTC);
+        final TimeScale     utc = context.getDataContext().getTimeScales().getUTC();
+        final AbsoluteDate date = new AbsoluteDate(zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth(),
+                                                   zdt.getHour(), zdt.getMinute(), zdt.getSecond(),
+                                                   utc);
+
+        // validate before writing
+        if (header != null) {
+
+            if (!Double.isNaN(header.getFormatVersion())) {
+                // save format version for validating segments
+                version = header.getFormatVersion();
+            }
+
+            if (header.getCreationDate() == null) {
+                header.setCreationDate(date);
+            }
+
+            if (header.getOriginator() == null) {
+                header.setOriginator(DEFAULT_ORIGINATOR);
+            }
+
+            header.validate(version);
+
+        }
+
         generator.startMessage(root, formatVersionKey, version);
 
         if (generator.getFormat() == FileFormat.XML) {
@@ -122,26 +159,17 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
         }
 
         // creation date is informational only, but mandatory and always in UTC
-        if (header == null || header.getCreationDate() == null) {
-            final ZonedDateTime zdt = ZonedDateTime.now(ZoneOffset.UTC);
-            generator.writeEntry(HeaderKey.CREATION_DATE.name(),
-                                 generator.dateToString(zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth(),
-                                                        zdt.getHour(), zdt.getMinute(), (double) zdt.getSecond()),
-                                 null, true);
-        } else {
-            final DateTimeComponents creationDate =
-                            header.getCreationDate().getComponents(context.getDataContext().getTimeScales().getUTC());
-            final DateComponents dc = creationDate.getDate();
-            final TimeComponents tc = creationDate.getTime();
-            generator.writeEntry(HeaderKey.CREATION_DATE.name(),
-                                 generator.dateToString(dc.getYear(), dc.getMonth(), dc.getDay(),
-                                                        tc.getHour(), tc.getMinute(), tc.getSecond()),
-                                 null, true);
-        }
+        final DateTimeComponents creationDate = ((header == null) ? date : header.getCreationDate()).getComponents(utc);
+        final DateComponents     dc           = creationDate.getDate();
+        final TimeComponents     tc           = creationDate.getTime();
+        generator.writeEntry(HeaderKey.CREATION_DATE.name(),
+                             generator.dateToString(dc.getYear(), dc.getMonth(), dc.getDay(),
+                                                    tc.getHour(), tc.getMinute(), tc.getSecond()),
+                             null, true);
 
         // Use built-in default if mandatory originator not present
         generator.writeEntry(HeaderKey.ORIGINATOR.name(),
-                             (header == null || header.getOriginator() == null) ? DEFAULT_ORIGINATOR : header.getOriginator(),
+                             header == null ? DEFAULT_ORIGINATOR : header.getOriginator(),
                              null, true);
 
         if (header != null) {
@@ -164,21 +192,28 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
     /** {@inheritDoc} */
     @Override
     public void writeSegment(final Generator generator, final S segment) throws IOException {
+
+        // validate before writing
+        segment.getMetadata().validate(version);
+        segment.getData().validate(version);
+
         if (generator.getFormat() == FileFormat.XML) {
             generator.enterSection(XmlStructureKey.segment.name());
         }
-        writeSegmentContent(generator, segment);
+        writeSegmentContent(generator, version, segment);
         if (generator.getFormat() == FileFormat.XML) {
             generator.exitSection();
         }
+
     }
 
     /** Write one segment content (without XML wrapping).
      * @param generator generator to use for producing output
+     * @param formatVersion format version to use
      * @param segment segment to write
      * @throws IOException if any buffer writing operations fails
      */
-    public abstract void writeSegmentContent(Generator generator, S segment) throws IOException;
+    public abstract void writeSegmentContent(Generator generator, double formatVersion, S segment) throws IOException;
 
     /** {@inheritDoc} */
     @Override

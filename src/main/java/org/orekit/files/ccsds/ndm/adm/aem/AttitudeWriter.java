@@ -88,7 +88,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
                           final int unitsColumn) {
         this.writer      = writer;
         this.header      = header;
-        this.metadata    = template.copy();
+        this.metadata    = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
         this.fileFormat  = fileFormat;
         this.outputName  = outputName;
         this.unitsColumn = unitsColumn;

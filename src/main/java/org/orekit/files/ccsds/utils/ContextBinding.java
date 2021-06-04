@@ -20,7 +20,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
@@ -65,9 +64,6 @@ public class ContextBinding {
     /** Supplier for clock rate in spacecraft clock (SCLK) time system. */
     private final DoubleSupplier clockRateSupplier;
 
-    /** Supplier for spin axis in spacecraft body frame. */
-    private final Supplier<Vector3D> spinAxisSupplier;
-
     /** Create a new context.
      * @param conventionsSupplier supplier for IERS conventions to use
      * @param simpleEOPSupplier supplier for simple or accurate EOP interpolation indicator
@@ -78,7 +74,6 @@ public class ContextBinding {
      * @param timeSystemSupplier supplier for reference system for interpreting dates
      * @param clockCountSupplier supplier for clock count at reference date in spacecraft clock (SCLK) time system
      * @param clockRateSupplier supplier for clock rate in spacecraft clock (SCLK) time system
-     * @param spinAxisSupplier supplier for spin axis in spacecraft body frame
      */
     public ContextBinding(final Supplier<IERSConventions>     conventionsSupplier,
                           final BooleanSupplier               simpleEOPSupplier,
@@ -87,8 +82,7 @@ public class ContextBinding {
                           final Supplier<AbsoluteDate>        referenceDateSupplier,
                           final Supplier<TimeSystem>          timeSystemSupplier,
                           final DoubleSupplier                clockCountSupplier,
-                          final DoubleSupplier                clockRateSupplier,
-                          final Supplier<Vector3D>            spinAxisSupplier) {
+                          final DoubleSupplier                clockRateSupplier) {
         this.behaviorSupplier      = behaviorSupplier;
         this.conventionsSupplier   = conventionsSupplier;
         this.simpleEOPSupplier     = simpleEOPSupplier;
@@ -97,7 +91,6 @@ public class ContextBinding {
         this.timeSystemSupplier    = timeSystemSupplier;
         this.clockCountSupplier    = clockCountSupplier;
         this.clockRateSupplier     = clockRateSupplier;
-        this.spinAxisSupplier      = spinAxisSupplier;
     }
 
     /** Get the behavior to adopt for handling parsed units.
@@ -154,13 +147,6 @@ public class ContextBinding {
      */
     public double getClockRate() {
         return clockRateSupplier.getAsDouble();
-    }
-
-    /** Get spin axis in spacecraft body frame.
-     * @return spin axis in spacecraft body frame
-     */
-    public Vector3D getSpinAxis() {
-        return spinAxisSupplier.get();
     }
 
 }

@@ -152,7 +152,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header();
+        header                    = new Header(3.0);
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
@@ -189,7 +189,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -203,7 +203,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
-                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0, () -> null);
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         anticipateNext(this::processMetadataToken);
         return true;
     }
@@ -219,7 +219,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
     @Override
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         if (metadata.getCenter().getBody() != null) {
             setMuCreated(metadata.getCenter().getBody().getGM());
         }
@@ -260,7 +260,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
                                              spacecraftParametersBlock, covarianceBlock,
                                              maneuverBlocks, userDefinedBlock,
                                              mass);
-            data.checkMandatoryEntries();
+            data.validate(header.getFormatVersion());
             segments.add(new Segment<>(metadata, data));
         }
         metadata                  = null;

@@ -77,9 +77,24 @@ public class CommentsContainer implements Section {
         }
     }
 
+    /** Complain if a key is not allowed.
+     * @param version format version
+     * @param field field to check
+     * @param key key associated with the field
+     * @param minVersion version at which key started to be allowed
+     * @param maxVersion version at which key started to be forbidden
+     */
+    public void checkAllowed(final double version, final Object field, final Enum<?> key,
+                             final double minVersion, final double maxVersion) {
+        if (field != null && (version < minVersion || version >= maxVersion)) {
+            throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
+                                      key.name(), version);
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
+    public void validate(final double version) {
         // nothing to do here
     }
 

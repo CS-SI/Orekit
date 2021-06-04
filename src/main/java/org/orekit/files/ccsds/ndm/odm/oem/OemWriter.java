@@ -234,12 +234,14 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
-                  () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0, () -> null));
+                  () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final OemSegment segment) throws IOException {
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final OemSegment segment)
+        throws IOException {
 
         final OemMetadata metadata = segment.getMetadata();
         writeMetadata(generator, metadata);

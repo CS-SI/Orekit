@@ -48,7 +48,7 @@ public interface MessageWriter<H extends Header, S extends Segment<?, ?>, F exte
 
     /** Write header for the file.
      * @param generator generator to use for producing output
-     * @param header header to write
+     * @param header header to write (creation date and originator will be added if missing)
      * @throws IOException if the stream cannot write to stream
      */
     void writeHeader(Generator generator, H header) throws IOException;

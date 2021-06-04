@@ -316,6 +316,9 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = epoca di riferimento specifica dell''agenzia m
 # missing mandatory key {0} in CCSDS file {1}
 CCSDS_MISSING_KEYWORD = chiave {0} mancante nel file CCSDS {1}
 
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = parola-chiave inattesa alla linea {0} del file CCSDS {1}:\n{2}
 
@@ -327,9 +330,6 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = nessuna massa associata al veicolo spaziale nel 
 
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = le convenzioni IERS non sono state inizializzate prima della lettura
-
-# no spin axis direction has been set before parsing
-CCSDS_UNKNOWN_SPIN_AXIS = <MISSING TRANSLATION>
 
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = il sistema di riferimento {0} non è valido in questo contesto del file CCSDS

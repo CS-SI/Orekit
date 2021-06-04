@@ -316,6 +316,9 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = missing agency epoch in CCSDS date
 # missing mandatory key {0} in CCSDS file {1}
 CCSDS_MISSING_KEYWORD = missing mandatory key {0} in CCSDS file {1}
 
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = key {0} is not allowed in format version {1}
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 
@@ -327,9 +330,6 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = there is no spacecraft mass associated with this
 
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = no IERS conventions have been set before parsing
-
-# no spin axis direction has been set before parsing
-CCSDS_UNKNOWN_SPIN_AXIS = no spin axis direction has been set before parsing
 
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = frame {0} is not valid in this CCSDS file context

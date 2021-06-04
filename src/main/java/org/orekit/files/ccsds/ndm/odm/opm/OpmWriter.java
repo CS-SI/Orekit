@@ -69,15 +69,13 @@ public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetad
                   () -> conventions, () -> false, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0, () -> null));
+                  () -> 0.0, () -> 1.0));
     }
 
-    /** Write one segment.
-     * @param generator generator to use for producing output
-     * @param segment segment to write
-     * @throws IOException if any buffer writing operations fails
-     */
-    public void writeSegmentContent(final Generator generator, final Segment<CommonMetadata, OpmData> segment)
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final Segment<CommonMetadata, OpmData> segment)
         throws IOException {
 
         // write the metadata
@@ -90,8 +88,7 @@ public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetad
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
-                                      oldContext::getClockRate,
-                                      oldContext::getSpinAxis));
+                                      oldContext::getClockRate));
         new CommonMetadataWriter(metadata, getTimeConverter()).write(generator);
 
         // start data block

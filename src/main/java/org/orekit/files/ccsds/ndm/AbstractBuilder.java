@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmParser;
@@ -44,9 +43,6 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
 
-    /** Spin axis in spacecraft body frame. */
-    private final Vector3D spinAxis;
-
     /** Converter for {@link RangeUnits#RU Range Units}. */
     private final RangeUnitsConverter rangeUnitsConverter;
 
@@ -55,16 +51,14 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param spinAxis spin axis in spacecraft body frame
      * @param rangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      */
     protected AbstractBuilder(final IERSConventions conventions, final DataContext dataContext,
-                              final AbsoluteDate missionReferenceDate, final Vector3D spinAxis,
+                              final AbsoluteDate missionReferenceDate,
                               final RangeUnitsConverter rangeUnitsConverter) {
         this.conventions          = conventions;
         this.dataContext          = dataContext;
         this.missionReferenceDate = missionReferenceDate;
-        this.spinAxis             = spinAxis;
         this.rangeUnitsConverter  = rangeUnitsConverter;
     }
 
@@ -72,21 +66,18 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @param newConventions IERS Conventions
      * @param newDataContext used to retrieve frames, time scales, etc.
      * @param newMissionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param newSpinAxis spin axis in spacecraft body frame
      * @param newRangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      * @return new instance
      */
     protected abstract T create(IERSConventions newConventions, DataContext newDataContext,
-                                AbsoluteDate newMissionReferenceDate, Vector3D newSpinAxis,
-                                RangeUnitsConverter newRangeUnitsConverter);
+                                AbsoluteDate newMissionReferenceDate, RangeUnitsConverter newRangeUnitsConverter);
 
     /** Set up IERS conventions.
      * @param newConventions IERS Conventions
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withConventions(final IERSConventions newConventions) {
-        return create(newConventions, getDataContext(), getMissionReferenceDate(),
-                      getSpinAxis(), getRangeUnitsConverter());
+        return create(newConventions, getDataContext(), getMissionReferenceDate(), getRangeUnitsConverter());
     }
 
     /** Get the IERS conventions.
@@ -101,8 +92,7 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withDataContext(final DataContext newDataContext) {
-        return create(getConventions(), newDataContext, getMissionReferenceDate(),
-                      getSpinAxis(), getRangeUnitsConverter());
+        return create(getConventions(), newDataContext, getMissionReferenceDate(), getRangeUnitsConverter());
     }
 
     /** Get the data context.
@@ -123,8 +113,7 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), getDataContext(), newMissionReferenceDate,
-                      getSpinAxis(), getRangeUnitsConverter());
+        return create(getConventions(), getDataContext(), newMissionReferenceDate, getRangeUnitsConverter());
     }
 
     /** Get the mission reference date or Mission Elapsed Time or Mission Relative Time time systems.
@@ -134,33 +123,12 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
         return missionReferenceDate;
     }
 
-    /** Set up spin axis direction.
-     * <p>
-     * The spin axis is used only by {@link AemParser} and {@link ApmParser}.
-     * </p>
-     * @param newSpinAxis spin axis in spacecraft body frame
-     * @return a new builder with updated configuration (the instance is not changed)
-     */
-    public T withSpinAxis(final Vector3D newSpinAxis) {
-        return create(getConventions(), getDataContext(), getMissionReferenceDate(),
-                      newSpinAxis, getRangeUnitsConverter());
-    }
-
-    /**
-     * Get spin axis in spacecraft body frame.
-     * @return spin axis
-     */
-    public Vector3D getSpinAxis() {
-        return spinAxis;
-    }
-
     /** Set up the converter for {@link RangeUnits#RU Range Units}.
      * @param newRangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withRangeUnitsConverter(final RangeUnitsConverter newRangeUnitsConverter) {
-        return create(getConventions(), getDataContext(), getMissionReferenceDate(),
-                      getSpinAxis(), rangeUnitsConverter);
+        return create(getConventions(), getDataContext(), getMissionReferenceDate(), newRangeUnitsConverter);
     }
 
     /** Get the converter for {@link RangeUnits#RU Range Units}.

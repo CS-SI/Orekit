@@ -61,15 +61,13 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
                   () -> conventions, () -> false, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> null, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0, () -> null));
+                  () -> 0.0, () -> 1.0));
     }
 
-    /** Write one segment.
-     * @param generator generator to use for producing output
-     * @param segment segment to write
-     * @throws IOException if any buffer writing operations fails
-     */
-    public void writeSegmentContent(final Generator generator, final Segment<OcmMetadata, OcmData> segment)
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final Segment<OcmMetadata, OcmData> segment)
         throws IOException {
 
         // write the metadata
@@ -82,8 +80,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
                                       metadata::getEpochT0,
                                       metadata::getTimeSystem,
                                       metadata::getSclkOffsetAtEpoch,
-                                      metadata::getSclkSecPerSISec,
-                                      oldContext::getSpinAxis));
+                                      metadata::getSclkSecPerSISec));
         new OcmMetadataWriter(metadata, getTimeConverter()).write(generator);
 
         // start data block
@@ -91,11 +88,11 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
             generator.enterSection(XmlStructureKey.data.name());
         }
 
-        // orbit history
-        if (segment.getData().getOrbitBlocks() != null && !segment.getData().getOrbitBlocks().isEmpty()) {
-            for (final OrbitStateHistory history : segment.getData().getOrbitBlocks()) {
-                // write optional orbits history block
-                new OrbitStateHistoryWriter(history, getTimeConverter()).write(generator);
+        // trajectory history
+        if (segment.getData().getOTrajectoryBlocks() != null && !segment.getData().getOTrajectoryBlocks().isEmpty()) {
+            for (final TrajectoryStateHistory history : segment.getData().getOTrajectoryBlocks()) {
+                // write optional trajectory history block
+                new TrajectoryStateHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 

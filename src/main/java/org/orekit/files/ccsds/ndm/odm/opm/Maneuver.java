@@ -56,8 +56,8 @@ public class Maneuver extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(epochIgnition,  ManeuverKey.MAN_EPOCH_IGNITION);
         checkNotNull(referenceFrame, ManeuverKey.MAN_REF_FRAME);
         checkNotNaN(duration,        ManeuverKey.MAN_DURATION);

@@ -44,7 +44,7 @@ public class HeaderProcessingState implements ProcessingState {
         this.context = new ContextBinding(
             parser::getConventions, parser::isSimpleEOP,
             parser::getDataContext, parser::getParsedUnitsBehavior, () -> null,
-            () -> TimeSystem.UTC, () -> 0.0, () -> 1.0, () -> null);
+            () -> TimeSystem.UTC, () -> 0.0, () -> 1.0);
         this.parser  = parser;
     }
 

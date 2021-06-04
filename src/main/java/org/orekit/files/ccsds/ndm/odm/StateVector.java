@@ -57,8 +57,8 @@ public class StateVector extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(epoch, StateVectorKey.EPOCH);
         if (Double.isNaN(position[0] + position[1] + position[2])) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}");

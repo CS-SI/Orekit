@@ -44,8 +44,8 @@ public class AdmMetadata extends Metadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(objectName, AdmMetadataKey.OBJECT_NAME);
         checkNotNull(objectID,   AdmMetadataKey.OBJECT_ID);
     }

@@ -18,9 +18,9 @@
         <data>
           <orb>
              <COMMENT>GEOCENTRIC, CARTESIAN, EARTH FIXED</COMMENT>
-             <ORB_BASIS>PREDICTED</ORB_BASIS >
-             <ORB_REF_FRAME>EFG</ORB_REF_FRAME>
-             <ORB_TYPE>CARTPVA</ORB_TYPE>
+             <TRAJ_BASIS>PREDICTED</TRAJ_BASIS >
+             <TRAJ_REF_FRAME>EFG</TRAJ_REF_FRAME>
+             <TRAJ_TYPE>CARTPVA</TRAJ_TYPE>
              <orbLine>0.0  2854.5 -2916.2 -5360.7 5.90 4.86 0.52 0.0037 -0.0038 -0.0070</orbLine>
           </orb>
           <userDef>

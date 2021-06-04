@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.util.Arrays;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -32,9 +31,6 @@ class AttitudeEntry {
     /** Metadata used to interpret the data fields. */
     private final AemMetadata metadata;
 
-    /** Spin axis in spacecraft body frame. */
-    private final Vector3D spinAxis;
-
     /** Epoch. */
     private AbsoluteDate epoch;
 
@@ -43,12 +39,9 @@ class AttitudeEntry {
 
     /** Build an uninitialized entry.
      * @param metadata metadata used to interpret the data fields
-     * @param spinAxis spin axis in spacecraft body frame
-     * (may be null if attitude type is neither spin nor spin/nutation)
      */
-    AttitudeEntry(final AemMetadata metadata, final Vector3D spinAxis) {
+    AttitudeEntry(final AemMetadata metadata) {
         this.metadata   = metadata;
-        this.spinAxis   = spinAxis;
         this.components = new double[8];
         Arrays.fill(components, Double.NaN);
     }
@@ -117,7 +110,7 @@ class AttitudeEntry {
         return metadata.getAttitudeType().build(metadata.isFirst(),
                                                 metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                 metadata.getEulerRotSeq(), metadata.isSpacecraftBodyRate(),
-                                                spinAxis, epoch, components);
+                                                epoch, components);
     }
 
 }

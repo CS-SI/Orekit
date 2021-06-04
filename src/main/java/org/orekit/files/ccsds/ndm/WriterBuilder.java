@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
@@ -74,29 +73,25 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      * @param dataContext data context used to retrieve frames, time scales, etc.
      */
     public WriterBuilder(final DataContext dataContext) {
-        this(IERSConventions.IERS_2010, dataContext, null, null, new IdentityConverter());
+        this(IERSConventions.IERS_2010, dataContext, null, new IdentityConverter());
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param spinAxis spin axis in spacecraft body frame
      * @param rangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      */
     private WriterBuilder(final IERSConventions conventions, final DataContext dataContext,
-                          final AbsoluteDate missionReferenceDate, final Vector3D spinAxis,
-                          final RangeUnitsConverter rangeUnitsConverter) {
-        super(conventions, dataContext, missionReferenceDate, spinAxis, rangeUnitsConverter);
+                          final AbsoluteDate missionReferenceDate, final RangeUnitsConverter rangeUnitsConverter) {
+        super(conventions, dataContext, missionReferenceDate, rangeUnitsConverter);
     }
 
     /** {@inheritDoc} */
     @Override
     protected WriterBuilder create(final IERSConventions newConventions, final DataContext newDataContext,
-                                   final AbsoluteDate newMissionReferenceDate,
-                                   final Vector3D newSpinAxis, final RangeUnitsConverter newRangeUnitsConverter) {
-        return new WriterBuilder(newConventions, newDataContext, newMissionReferenceDate,
-                                 newSpinAxis, newRangeUnitsConverter);
+                                   final AbsoluteDate newMissionReferenceDate, final RangeUnitsConverter newRangeUnitsConverter) {
+        return new WriterBuilder(newConventions, newDataContext, newMissionReferenceDate, newRangeUnitsConverter);
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.NdmFile Navigation Data Messages}.
@@ -138,14 +133,14 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      * @return a new writer
      */
     public ApmWriter buildApmWriter() {
-        return new ApmWriter(getConventions(), getDataContext(), getMissionReferenceDate(), getSpinAxis());
+        return new ApmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.aem.AemFile Attitude Ephemeris Messages}.
      * @return a new writer
      */
     public AemWriter buildAemWriter() {
-        return new AemWriter(getConventions(), getDataContext(), getMissionReferenceDate(), getSpinAxis());
+        return new AemWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.

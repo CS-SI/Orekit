@@ -88,7 +88,7 @@ public class StreamingAemWriterTest {
 
             // Initialize the header and metadata
             // Here, we use only one data segment.
-            Header header = new Header();
+            Header header = new Header(3.0);
             header.setOriginator(originator);
             header.addComment(headerCmt);
 

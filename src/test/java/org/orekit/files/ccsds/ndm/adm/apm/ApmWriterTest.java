@@ -16,14 +16,24 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import java.io.CharArrayWriter;
+import java.io.IOException;
+
+import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.data.DataSource;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 
 public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadata, ApmData>, ApmFile> {
 
@@ -70,6 +80,24 @@ public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadat
     @Test
     public void testWriteExample6() {
         doTest("/ccsds/adm/apm/APMExample6.txt");
+    }
+
+    @Test
+    public void testWrongVersion() throws IOException {
+        final String  name = "/ccsds/adm/apm/APMExample1.txt";
+        final ApmFile file = new ParserBuilder().
+                             buildApmParser().
+                             parseMessage(new DataSource(name, () -> getClass().getResourceAsStream(name)));
+        file.getHeader().setFormatVersion(1.0);
+        file.getHeader().setMessageId("this message is only allowed in format version 2.0 and later");
+        try (Generator generator = new XmlGenerator(new CharArrayWriter(), XmlGenerator.DEFAULT_INDENT, "", false)) {
+            new WriterBuilder().buildApmWriter().writeMessage(generator, file);
+            Assert.fail("an exception should heave been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
+            Assert.assertEquals(HeaderKey.MESSAGE_ID.name(), oe.getParts()[0]);
+        }
+        
     }
 
 }

@@ -29,7 +29,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 11.0
  */
 public class OcmSatelliteEphemeris
-    implements EphemerisFile.SatelliteEphemeris<TimeStampedPVCoordinates, OrbitStateHistory> {
+    implements EphemerisFile.SatelliteEphemeris<TimeStampedPVCoordinates, TrajectoryStateHistory> {
 
     /** Name of the object. */
     private final String name;
@@ -38,7 +38,7 @@ public class OcmSatelliteEphemeris
     private final double mu;
 
     /** The ephemeris data for the satellite. */
-    private final List<OrbitStateHistory> blocks;
+    private final List<TrajectoryStateHistory> blocks;
 
     /**
      * Create a container for the set of ephemeris blocks in the file that pertain to
@@ -48,7 +48,7 @@ public class OcmSatelliteEphemeris
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      * @param blocks containing ephemeris data for the satellite.
      */
-    public OcmSatelliteEphemeris(final String name, final double mu, final List<OrbitStateHistory> blocks) {
+    public OcmSatelliteEphemeris(final String name, final double mu, final List<TrajectoryStateHistory> blocks) {
         this.name   = name;
         this.mu     = mu;
         this.blocks = blocks;
@@ -68,7 +68,7 @@ public class OcmSatelliteEphemeris
 
     /** {@inheritDoc} */
     @Override
-    public List<OrbitStateHistory> getSegments() {
+    public List<TrajectoryStateHistory> getSegments() {
         return Collections.unmodifiableList(blocks);
     }
 

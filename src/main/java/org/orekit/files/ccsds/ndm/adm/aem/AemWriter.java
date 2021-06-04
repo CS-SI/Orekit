@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -274,22 +273,23 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param spinAxis spin axis in spacecraft body frame
      * @since 11.0
      */
     public AemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate, final Vector3D spinAxis) {
+                     final AbsoluteDate missionReferenceDate) {
         super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, CCSDS_AEM_VERS,
               new ContextBinding(
                   () -> conventions,
                   () -> true, () -> dataContext, () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0, () -> spinAxis));
+                  () -> 0.0, () -> 1.0));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final AemSegment segment) throws IOException {
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final AemSegment segment)
+        throws IOException {
 
         final AemMetadata metadata = segment.getMetadata();
         writeMetadata(generator, metadata);
@@ -319,8 +319,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
-                                      oldContext::getClockRate,
-                                      oldContext::getSpinAxis));
+                                      oldContext::getClockRate));
 
         // Start metadata
         generator.enterSection(generator.getFormat() == FileFormat.KVN ?
@@ -410,7 +409,6 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                                                                           metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                           metadata.getEulerRotSeq(),
                                                                           metadata.isSpacecraftBodyRate(),
-                                                                          getContext().getSpinAxis(),
                                                                           attitude);
 
         if (generator.getFormat() == FileFormat.KVN) {

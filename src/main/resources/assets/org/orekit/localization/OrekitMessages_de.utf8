@@ -316,6 +316,9 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = fehlende Agentur Epoche in CCSDS Datum
 # missing mandatory key {0} in CCSDS file {1}
 CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
 
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = unerwartetes Schlüsselwort in CCSDS Zeilennummer {0} in Datei {1}:\n{2}
 
@@ -327,9 +330,6 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = keine Satellitenmasse definiert in dieser ODM Da
 
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = es wurden keine IERS Richtlinien eingestellt vor dem Parsen
-
-# no spin axis direction has been set before parsing
-CCSDS_UNKNOWN_SPIN_AXIS = <MISSING TRANSLATION>
 
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = Koordinatennetz {0} ist nicht gültig im Kontext dieser CCSDS Datei

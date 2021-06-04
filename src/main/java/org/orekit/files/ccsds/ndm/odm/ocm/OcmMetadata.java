@@ -176,7 +176,7 @@ public class OcmMetadata extends OdmMetadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
+    public void validate(final double version) {
         // we don't call super.checkMandatoryEntries() because
         // all of the parameters considered mandatory at ODM level
         // for OPM, OMM and OEM are in fact optional in OCM

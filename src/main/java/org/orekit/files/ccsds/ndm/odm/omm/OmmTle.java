@@ -70,8 +70,8 @@ public class OmmTle extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNaN(meanMotionDot,     OmmTleKey.MEAN_MOTION_DOT);
         checkNotNaN(meanMotionDotDot,  OmmTleKey.MEAN_MOTION_DDOT);
         checkNotNegative(noradID,      OmmTleKey.NORAD_CAT_ID);

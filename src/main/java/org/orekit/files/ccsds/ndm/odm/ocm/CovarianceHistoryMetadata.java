@@ -90,8 +90,8 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         if (covUnits != null) {
             covType.checkUnits(covUnits);
         }

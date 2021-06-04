@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -63,9 +62,6 @@ public abstract class AdmParser<T extends NdmConstituent<?, ?>, P extends Abstra
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
 
-    /** Spin axis in spacecraft body frame. */
-    private final Vector3D spinAxis;
-
     /** Complete constructor.
      * @param root root element for XML files
      * @param formatVersionKey key for format version
@@ -74,17 +70,13 @@ public abstract class AdmParser<T extends NdmConstituent<?, ?>, P extends Abstra
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
-     * @param spinAxis spin axis in spacecraft body frame
-     * (may be null if attitude type is neither spin nor spin/nutation)
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     protected AdmParser(final String root, final String formatVersionKey, final IERSConventions conventions,
                         final boolean simpleEOP, final DataContext dataContext,
-                        final AbsoluteDate missionReferenceDate, final Vector3D spinAxis,
-                        final ParsedUnitsBehavior parsedUnitsBehavior) {
+                        final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior) {
         super(root, formatVersionKey, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
         this.missionReferenceDate = missionReferenceDate;
-        this.spinAxis             = spinAxis;
     }
 
     /** {@inheritDoc} */
@@ -108,14 +100,6 @@ public abstract class AdmParser<T extends NdmConstituent<?, ?>, P extends Abstra
      */
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
-    }
-
-    /**
-     * Get spin axis in spacecraft body frame.
-     * @return spin axis
-     */
-    public Vector3D getSpinAxis() {
-        return spinAxis;
     }
 
     /** Process a CCSDS Euler angles sequence as a {@link RotationOrder}.

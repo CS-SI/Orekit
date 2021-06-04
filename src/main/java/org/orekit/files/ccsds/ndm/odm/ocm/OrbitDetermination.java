@@ -125,8 +125,8 @@ public class OrbitDetermination extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(id,     OrbitDeterminationKey.OD_ID);
         checkNotNull(method, OrbitDeterminationKey.OD_METHOD);
         checkNotNull(epoch,  OrbitDeterminationKey.OD_EPOCH);

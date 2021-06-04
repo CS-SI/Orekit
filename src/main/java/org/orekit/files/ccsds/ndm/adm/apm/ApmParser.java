@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
@@ -103,15 +102,12 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
-     * @param spinAxis spin axis in spacecraft body frame
-     * (may be null if attitude type is neither spin nor spin/nutation)
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public ApmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate, final Vector3D spinAxis,
-                     final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior) {
         super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, spinAxis, parsedUnitsBehavior);
+              missionReferenceDate, parsedUnitsBehavior);
     }
 
     /** {@inheritDoc} */
@@ -123,7 +119,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header();
+        header                    = new Header(2.0);
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
@@ -159,7 +155,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -173,8 +169,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
-                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0,
-                                       this::getSpinAxis);
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         anticipateNext(this::processMetadataToken);
         return true;
     }
@@ -189,7 +184,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean finalizeMetadata() {
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         return true;
     }
 
@@ -216,7 +211,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
             for (final Maneuver maneuver : maneuvers) {
                 data.addManeuver(maneuver);
             }
-            data.checkMandatoryEntries();
+            data.validate(header.getFormatVersion());
             segments.add(new Segment<>(metadata, data));
         }
         metadata                  = null;

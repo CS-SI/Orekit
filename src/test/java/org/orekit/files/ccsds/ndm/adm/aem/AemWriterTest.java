@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
@@ -30,14 +29,11 @@ public class AemWriterTest extends AbstractWriterTest<Header, AemSegment, AemFil
     protected AemParser getParser() {
         return new ParserBuilder().
                withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
-               withSpinAxis(Vector3D.PLUS_I).
                buildAemParser();
     }
 
     protected AemWriter getWriter() {
-        return new WriterBuilder().
-               withSpinAxis(Vector3D.PLUS_I).
-               buildAemWriter();
+        return new WriterBuilder().buildAemWriter();
     }
 
     @Test

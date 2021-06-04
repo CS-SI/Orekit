@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.junit.Assert;
@@ -110,12 +109,10 @@ public class NdmWriterTest {
 
         final ParserBuilder pb = new ParserBuilder().
                                       withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
-                                      withSpinAxis(Vector3D.PLUS_I).
                                       withMu(Constants.EIGEN5C_EARTH_MU).
                                       withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000", TimeScalesFactory.getUTC()));
 
         final WriterBuilder wb = new WriterBuilder().
-                                 withSpinAxis(pb.getSpinAxis()).
                                  withMissionReferenceDate(pb.getMissionReferenceDate());
 
         // pool of constituents

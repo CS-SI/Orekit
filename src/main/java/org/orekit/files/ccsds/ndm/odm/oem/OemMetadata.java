@@ -55,8 +55,8 @@ public class OemMetadata extends CommonMetadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        checkMandatoryEntriesExceptDates();
+    public void validate(final double version) {
+        checkMandatoryEntriesExceptDates(version);
         checkNotNull(startTime, OemMetadataKey.START_TIME);
         checkNotNull(stopTime,  OemMetadataKey.STOP_TIME);
     }
@@ -65,9 +65,10 @@ public class OemMetadata extends CommonMetadata {
      * <p>
      * This method should throw an exception if some mandatory entry is missing
      * </p>
+     * @param version format version
      */
-    void checkMandatoryEntriesExceptDates() {
-        super.checkMandatoryEntries();
+    void checkMandatoryEntriesExceptDates(final double version) {
+        super.validate(version);
     }
 
     /** Get start of total time span covered by ephemerides data and
@@ -169,11 +170,12 @@ public class OemMetadata extends CommonMetadata {
     }
 
     /** Copy the instance, making sure mandatory fields have been initialized.
+     * @param version format version
      * @return a new copy
      */
-    OemMetadata copy() {
+    OemMetadata copy(final double version) {
 
-        checkMandatoryEntriesExceptDates();
+        checkMandatoryEntriesExceptDates(version);
 
         // allocate new instance
         final OemMetadata copy = new OemMetadata(getInterpolationDegree());
