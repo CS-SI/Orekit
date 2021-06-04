@@ -874,7 +874,7 @@ public class FieldEquinoctialOrbitTest {
                 }
 
                 public void visit(int row, int column, T value) {
-                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.0e-9);
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.4e-9);
                 }
 
                 public T end() {
