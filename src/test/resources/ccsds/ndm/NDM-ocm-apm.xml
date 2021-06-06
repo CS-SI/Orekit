@@ -16,13 +16,13 @@
           <UT1MUTC_AT_TZERO units="s">.357</UT1MUTC_AT_TZERO> 
         </metadata>
         <data>
-          <orb>
+          <traj>
              <COMMENT>GEOCENTRIC, CARTESIAN, EARTH FIXED</COMMENT>
              <TRAJ_BASIS>PREDICTED</TRAJ_BASIS >
              <TRAJ_REF_FRAME>EFG</TRAJ_REF_FRAME>
              <TRAJ_TYPE>CARTPVA</TRAJ_TYPE>
-             <orbLine>0.0  2854.5 -2916.2 -5360.7 5.90 4.86 0.52 0.0037 -0.0038 -0.0070</orbLine>
-          </orb>
+             <trajLine>0.0  2854.5 -2916.2 -5360.7 5.90 4.86 0.52 0.0037 -0.0038 -0.0070</trajLine>
+          </traj>
           <userDef>
              <USER_DEFINED parameter="EARTH_MODEL">WGS-84</USER_DEFINED>
           </userDef>
