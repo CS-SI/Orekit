@@ -29,7 +29,7 @@ public enum OcmDataSubStructureKey {
     TRAJ((token, parser) -> parser.manageTrajectoryStateSection(token.getType() == TokenType.START)),
 
     /** Trajectory state time history section. */
-    orb((token, parser) -> parser.manageTrajectoryStateSection(token.getType() == TokenType.START)),
+    traj((token, parser) -> parser.manageTrajectoryStateSection(token.getType() == TokenType.START)),
 
     /** Physical properties section. */
     PHYS((token, parser) -> parser.managePhysicalPropertiesSection(token.getType() == TokenType.START)),

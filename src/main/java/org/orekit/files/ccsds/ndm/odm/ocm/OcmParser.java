@@ -472,7 +472,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
      * @return true if token was processed, false otherwise
      */
     private boolean processTrajectoryStateToken(final ParseToken token) {
-        if (token.getName() != null && !token.getName().equals(OcmFile.ORB_LINE)) {
+        if (token.getName() != null && !token.getName().equals(OcmFile.TRAJ_LINE)) {
             // we are in the section metadata part
             try {
                 return TrajectoryStateHistoryMetadataKey.valueOf(token.getName()).

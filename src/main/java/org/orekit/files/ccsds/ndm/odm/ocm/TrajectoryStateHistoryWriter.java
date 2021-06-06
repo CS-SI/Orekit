@@ -45,7 +45,7 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
      */
     TrajectoryStateHistoryWriter(final TrajectoryStateHistory trajectoryStateHistory,
                                  final TimeConverter timeConverter) {
-        super(OcmDataSubStructureKey.orb.name(), OcmDataSubStructureKey.TRAJ.name());
+        super(OcmDataSubStructureKey.traj.name(), OcmDataSubStructureKey.TRAJ.name());
         this.history       = trajectoryStateHistory;
         this.timeConverter = timeConverter;
     }
@@ -98,7 +98,7 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
                 line.append(AccurateFormatter.format(units.get(i).fromSI(elements[i])));
             }
             if (generator.getFormat() == FileFormat.XML) {
-                generator.writeEntry(OcmFile.ORB_LINE, line.toString(), null, true);
+                generator.writeEntry(OcmFile.TRAJ_LINE, line.toString(), null, true);
             } else {
                 generator.writeRawData(line);
                 generator.newLine();
