@@ -171,6 +171,104 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
     }
 
+
+    /** Get the Jacobian B1 (only short period derivatives).
+     * <p>
+     * This method extract the data from the {@code shortPeriodDerivatives} and put it in the
+     * {@code dYdY0} array.
+     * </p>
+     * @param dYdY0 placeholder where to put the Jacobian
+     * @see #etStateJacobian(SpacecraftState, double[][])
+     */
+    public void getB1(final double[][] dYdY0) {
+
+        for (int i = 0; i < STATE_DIMENSION; i++) {
+            final double[] row = dYdY0[i];
+            for (int j = 0; j < STATE_DIMENSION; j++) {
+                row[j] = shortPeriodDerivatives[i * STATE_DIMENSION + j];
+            }
+        }
+    }
+
+    /** Get the Jacobian B2 (only additional state) with respect to state from a one-dimensional additional state array.
+     * <p>
+     * This method extract the data from the {@code state} and put it in the
+     * {@code dYdY0} array.
+     * </p>
+     * @param state spacecraft state
+     * @param dYdY0 placeholder where to put the Jacobian with respect to state
+     * @see #etStateJacobian(SpacecraftState, double[][])
+     */
+    public void getB2(final SpacecraftState state, final double[][] dYdY0) {
+
+        // extract additional state
+        final double[] p = state.getAdditionalState(name);
+
+        for (int i = 0; i < STATE_DIMENSION; i++) {
+            final double[] row = dYdY0[i];
+            for (int j = 0; j < STATE_DIMENSION; j++) {
+                row[j] = p[i * STATE_DIMENSION + j];
+            }
+        }
+
+    }
+
+    /** Get the Jacobian B3 (only additional state) with respect to parameters from a one-dimensional additional state array.
+     * <p>
+     * This method extract the data from the {@code state} and put it in the
+     * {@code dYdP} array.
+     * </p>
+     * <p>
+     * If no parameters have been set in the constructor, the method returns immediately and
+     * does not reference {@code dYdP} which can safely be null in this case.
+     * </p>
+     * @param state spacecraft state
+     * @param dYdP placeholder where to put the Jacobian with respect to parameters
+     * @see #getParametersJacobian(SpacecraftState, double[][])
+     */
+    public void getB3(final SpacecraftState state, final double[][] dYdP) {
+
+        if (parameters.getNbParams() != 0) {
+
+            // extract the additional state
+            final double[] p = state.getAdditionalState(name);
+
+            for (int i = 0; i < STATE_DIMENSION; i++) {
+                final double[] row = dYdP[i];
+                for (int j = 0; j < parameters.getNbParams(); j++) {
+                    row[j] = p[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbParams() * i)];
+                }
+            }
+        }
+    }
+
+    /** Get the Jacobian B4 (only short period derivatives).
+     * <p>
+     * This method extract the data from the {@code shortPeriodDerivatives} and put it in the
+     * {@code dYdP} array.
+     * </p>
+     * <p>
+     * If no parameters have been set in the constructor, the method returns immediately and
+     * does not reference {@code dYdP} which can safely be null in this case.
+     * </p>
+     * @param dYdP placeholder where to put the Jacobian with respect to parameters
+     * @see #getParametersJacobian(SpacecraftState, double[][])
+     */
+    public void getB4(final double[][] dYdP) {
+
+        if (parameters.getNbParams() != 0) {
+
+            for (int i = 0; i < STATE_DIMENSION; i++) {
+                final double[] row = dYdP[i];
+                for (int j = 0; j < parameters.getNbParams(); j++) {
+                    row[j] = shortPeriodDerivatives[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbParams() * i)];
+                }
+            }
+
+        }
+
+    }
+
     /** Compute the derivatives of the short period terms related to the additional state parameters.
     * @param s Current state information: date, kinematics, attitude, and additional state
     */

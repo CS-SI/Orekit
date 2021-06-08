@@ -791,6 +791,24 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     }
 
+
+    /** Get the short period terms value.
+     * @param meanState the mean state
+     * @return shortPeriodTerms short period terms
+     * @since 7.1
+     */
+    public double[] getShortPeriodTermsValue(final SpacecraftState meanState) {
+        final double[] sptValue = new double[6];
+
+        for (ShortPeriodTerms spt : mapper.getShortPeriodTerms()) {
+            for (int i = 0; i < 6; i++) {
+                sptValue[i] += spt.value(meanState.getOrbit())[i];
+            }
+        }
+        return sptValue;
+    }
+
+
     /** Internal mapper using mean parameters plus short periodic terms. */
     private static class MeanPlusShortPeriodicMapper extends StateMapper {
 
