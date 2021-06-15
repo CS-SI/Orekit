@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="793">
+        Updated SP3File visibility to public.
+      </action>
       <action dev="bryan" type="update" issue="784">
         Updated architecture of GNSS orbit propagators.
       </action>
