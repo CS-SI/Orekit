@@ -2330,7 +2330,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         @Override
         public T g(FieldSpacecraftState<T> s) {
-            return FastMath.signum(g.g(s));
+            return FastMath.sign(g.g(s));
         }
 
         @Override
