@@ -775,12 +775,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     @Test
     public void testMoonEclipse() {
 
-        // Configure Orekit
-        final File home       = new File(System.getProperty("user.home"));
-        final File orekitData = new File(home, "orekit-data");
-        final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-        manager.addProvider(new DirectoryCrawler(orekitData));
-
+        Utils.setDataRoot("2007");
         final ExtendedPVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
         final ExtendedPVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
         final Frame GCRF = FramesFactory.getGCRF();
