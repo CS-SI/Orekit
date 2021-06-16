@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
@@ -26,7 +26,7 @@ import org.orekit.utils.IERSConventions;
 
 /** Factory for predefined reference frames.
  *
- * <h1> FramesFactory Presentation </h1>
+ * <h2> FramesFactory Presentation </h2>
  * <p>
  * Several predefined reference {@link Frame frames} are implemented in OREKIT.
  * They are linked together in a tree with the <i>Geocentric
@@ -684,7 +684,7 @@ public class FramesFactory {
      * @return transform between the two frames, avoiding interpolation
      * @since 9.0
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
                                                                                                  final FieldAbsoluteDate<T> date) {
 
         // common ancestor to both frames in the frames tree

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,18 +21,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.hipparchus.Field;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well1024a;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScalesFactory;
 
 public class TimeStampedFieldAngularCoordinatesTest {
@@ -361,6 +373,148 @@ public class TimeStampedFieldAngularCoordinatesTest {
 
     }
 
+    @Test
+    public void testDerivativesStructures0() {
+        RandomGenerator random = new Well1024a(0x18a0a08fd63f047al);
+
+        FieldRotation<Decimal64> r    = randomRotation64(random);
+        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
+        TimeStampedFieldAngularCoordinates<Decimal64> ac =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 r, o, oDot);
+        TimeStampedFieldAngularCoordinates<Decimal64> rebuilt =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 ac.toDerivativeStructureRotation(0));
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationRate().getNorm().getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm().getReal(), 1.0e-15);
+    }
+
+    @Test
+    public void testDerivativesStructures1() {
+        RandomGenerator random = new Well1024a(0x8f8fc6d27bbdc46dl);
+
+        FieldRotation<Decimal64> r    = randomRotation64(random);
+        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
+        TimeStampedFieldAngularCoordinates<Decimal64> ac =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 r, o, oDot);
+        TimeStampedFieldAngularCoordinates<Decimal64> rebuilt =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 ac.toDerivativeStructureRotation(1));
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm().getReal(), 1.0e-15);
+    }
+
+    @Test
+    public void testDerivativesStructures2() {
+        RandomGenerator random = new Well1024a(0x1633878dddac047dl);
+
+        FieldRotation<Decimal64> r    = randomRotation64(random);
+        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
+        TimeStampedFieldAngularCoordinates<Decimal64> ac =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 r, o, oDot);
+        TimeStampedFieldAngularCoordinates<Decimal64> rebuilt =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 ac.toDerivativeStructureRotation(2));
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
+
+    }
+
+    @Test
+    public void testUnivariateDerivative1() {
+        RandomGenerator random = new Well1024a(0x6de8cce747539904l);
+
+        FieldRotation<Decimal64> r    = randomRotation64(random);
+        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
+        TimeStampedFieldAngularCoordinates<Decimal64> ac =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 r, o, oDot);
+        FieldRotation<FieldUnivariateDerivative1<Decimal64>> rotationUD = ac.toUnivariateDerivative1Rotation();
+        FieldRotation<FieldDerivativeStructure<Decimal64>>   rotationDS = ac.toDerivativeStructureRotation(1);
+        Assert.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ0().getPartialDerivative(1).getReal(), rotationUD.getQ0().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(1).getReal(), rotationUD.getQ1().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(1).getReal(), rotationUD.getQ2().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(1).getReal(), rotationUD.getQ3().getFirstDerivative().getReal(), 1.0e-15);
+
+        TimeStampedFieldAngularCoordinates<Decimal64> rebuilt =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 rotationUD);
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
+
+    }
+
+    @Test
+    public void testUnivariateDerivative2() {
+        RandomGenerator random = new Well1024a(0x255710c8fa2247ecl);
+
+        FieldRotation<Decimal64> r    = randomRotation64(random);
+        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
+        TimeStampedFieldAngularCoordinates<Decimal64> ac =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 r, o, oDot);
+        FieldRotation<FieldUnivariateDerivative2<Decimal64>> rotationUD = ac.toUnivariateDerivative2Rotation();
+        FieldRotation<FieldDerivativeStructure<Decimal64>>   rotationDS = ac.toDerivativeStructureRotation(2);
+        Assert.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ0().getPartialDerivative(1).getReal(), rotationUD.getQ0().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(1).getReal(), rotationUD.getQ1().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(1).getReal(), rotationUD.getQ2().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(1).getReal(), rotationUD.getQ3().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ0().getPartialDerivative(2).getReal(), rotationUD.getQ0().getSecondDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(2).getReal(), rotationUD.getQ1().getSecondDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(2).getReal(), rotationUD.getQ2().getSecondDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(2).getReal(), rotationUD.getQ3().getSecondDerivative().getReal(), 1.0e-15);
+
+        TimeStampedFieldAngularCoordinates<Decimal64> rebuilt =
+                        new TimeStampedFieldAngularCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
+                                                                 rotationUD);
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
+
+    }
+
+    @Test
+    public void testIssue773() {
+        doTestIssue773(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue773(final Field<T> field) {
+        // Epoch
+        final AbsoluteDate date = new AbsoluteDate();
+
+        // Coordinates
+        final TimeStampedAngularCoordinates angular =
+                        new TimeStampedAngularCoordinates(date,
+                                                          new Rotation(0., 0., 0., 0., false),
+                                                          Vector3D.ZERO,
+                                                          Vector3D.ZERO);
+
+        // Time stamped object
+        final FieldTimeStamped<T> timeStamped =
+                        new TimeStampedFieldAngularCoordinates<>(field, angular);
+
+        // Verify
+        Assert.assertEquals(0.0, date.durationFrom(timeStamped.getDate().toAbsoluteDate()), Double.MIN_VALUE);
+    }
+
     private FieldVector3D<DerivativeStructure> randomVector(Random random, double norm) {
         double n = random.nextDouble() * norm;
         double x = random.nextDouble();
@@ -399,6 +553,27 @@ public class TimeStampedFieldAngularCoordinatesTest {
         return new FieldVector3D<>(factory.variable(0, x),
                                    factory.variable(1, y),
                                    factory.variable(2, z));
+    }
+
+    private FieldRotation<Decimal64> randomRotation64(RandomGenerator random) {
+        double q0 = random.nextDouble() * 2 - 1;
+        double q1 = random.nextDouble() * 2 - 1;
+        double q2 = random.nextDouble() * 2 - 1;
+        double q3 = random.nextDouble() * 2 - 1;
+        double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
+        return new FieldRotation<>(new Decimal64(q0 / q),
+                                   new Decimal64(q1 / q),
+                                   new Decimal64(q2 / q),
+                                   new Decimal64(q3 / q),
+                                   false);
+    }
+
+    private FieldVector3D<Decimal64> randomVector64(RandomGenerator random, double norm) {
+        double n = random.nextDouble() * norm;
+        double x = random.nextDouble();
+        double y = random.nextDouble();
+        double z = random.nextDouble();
+        return new FieldVector3D<>(n, new FieldVector3D<>(new Decimal64(x), new Decimal64(y), new Decimal64(z)).normalize());
     }
 
 }

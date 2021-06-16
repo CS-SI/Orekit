@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -72,7 +72,7 @@ public class FieldDSSTThirdBodyTest {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field)  {
+    private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field)  {
         
         final T zero = field.getZero();
         
@@ -107,7 +107,7 @@ public class FieldDSSTThirdBodyTest {
         // Force model parameters
         final T[] parameters = moon.getParameters(field);
         // Initialize force model
-        moon.initialize(auxiliaryElements,
+        moon.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
 
         final T[] elements = MathArrays.buildArray(field, 7);
@@ -133,7 +133,7 @@ public class FieldDSSTThirdBodyTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
         final T zero = field.getZero();
  
         final FieldSpacecraftState<T> meanState = getGEOState(field);
@@ -151,7 +151,7 @@ public class FieldDSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters(field)));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field)));
             force.updateShortPeriodTerms(force.getParameters(field), meanState);
         }
 
@@ -221,7 +221,7 @@ public class FieldDSSTThirdBodyTest {
             Arrays.fill(shortPeriod, zero);
             
             final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-            shortPeriodTerms.addAll(force.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
             force.updateShortPeriodTerms(dsParameters, dsState);
             
             for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -347,7 +347,7 @@ public class FieldDSSTThirdBodyTest {
           
             // Compute Jacobian using directly the method
             final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-            shortPeriodTerms.addAll(forceModel.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+            shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
             forceModel.updateShortPeriodTerms(dsParameters, dsState);
             final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
@@ -435,7 +435,7 @@ public class FieldDSSTThirdBodyTest {
       
     }
 
-    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
                     
         final T zero = field.getZero();
         // No shadow at this date
@@ -462,7 +462,7 @@ public class FieldDSSTThirdBodyTest {
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             double[] parameters = force.getParameters();
-            shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
             force.updateShortPeriodTerms(parameters, state);
         }
         

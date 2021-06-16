@@ -214,8 +214,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
                                       stateDim, dY1dP.length);
         }
-        if ((dY1dP == null && selected.getNbParams() != 0) ||
-            (dY1dP != null && selected.getNbParams() != dY1dP[0].length)) {
+        if (dY1dP == null && selected.getNbParams() != 0 ||
+            dY1dP != null && selected.getNbParams() != dY1dP[0].length) {
             throw new OrekitException(new OrekitException(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
                                                           dY1dP == null ? 0 : dY1dP[0].length, selected.getNbParams()));
         }

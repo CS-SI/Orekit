@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -126,12 +126,12 @@ public class DirectoryCrawler implements DataProvider {
                     } else {
 
                         // apply all registered filters
-                        NamedData data = new NamedData(file.getName(), () -> new FileInputStream(file));
+                        DataSource data = new DataSource(file.getName(), () -> new FileInputStream(file));
                         data = manager.applyAllFilters(data);
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file
-                            try (InputStream input = data.getStreamOpener().openStream()) {
+                            try (InputStream input = data.getStreamOpener().openOnce()) {
                                 visitor.loadData(input, file.getPath());
                                 loaded = true;
                             }

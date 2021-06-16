@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Interface for time scales.
  * <p>This is the interface representing all time scales. Time scales are related
@@ -46,7 +46,7 @@ public interface TimeScale extends Serializable {
      * @see #offsetToTAI(DateComponents, TimeComponents)
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> T offsetFromTAI(FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> T offsetFromTAI(FieldAbsoluteDate<T> date);
 
     /** Get the offset to convert locations from instance to {@link TAIScale}.
      * @param date date location in the time scale
@@ -88,7 +88,7 @@ public interface TimeScale extends Serializable {
      * @return true if time is within a leap second introduction
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
+    default <T extends CalculusFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
         return false;
     }
 
@@ -120,7 +120,7 @@ public interface TimeScale extends Serializable {
      * @return 60 or 61 depending on leap seconds introduction
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
+    default <T extends CalculusFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
         return 60;
     }
 
@@ -146,7 +146,7 @@ public interface TimeScale extends Serializable {
      * @return value of the previous leap
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
+    default <T extends CalculusFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
         return date.getField().getZero();
     }
 

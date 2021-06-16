@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -32,7 +32,7 @@ import org.orekit.time.FieldTimeStamped;
  * <p>This class finds date events (i.e. occurrence of some predefined dates).</p>
  * <p>As of version 5.1, it is an enhanced date detector:</p>
  * <ul>
- *   <li>it can be defined without prior date ({@link #FieldDateDetector(RealFieldElement, RealFieldElement, FieldTimeStamped...)})</li>
+ *   <li>it can be defined without prior date ({@link #FieldDateDetector(CalculusFieldElement, CalculusFieldElement, FieldTimeStamped...)})</li>
  *   <li>several dates can be added ({@link #addEventDate(FieldAbsoluteDate)})</li>
  * </ul>
  * <p>The gap between the added dates must be more than the maxCheck.</p>
@@ -43,7 +43,7 @@ import org.orekit.time.FieldTimeStamped;
  * @author Luc Maisonobe
  * @author Pascal Parraud
  */
-public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldDateDetector<T>, T>
+public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldDateDetector<T>, T>
     implements FieldTimeStamped<T> {
 
     /** Last date for g computation. */
@@ -143,7 +143,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * </ul>
      * @param target target date
      * @throws IllegalArgumentException if the date is too close from already defined interval
-     * @see #FieldDateDetector(RealFieldElement, RealFieldElement, FieldTimeStamped...)
+     * @see #FieldDateDetector(CalculusFieldElement, CalculusFieldElement, FieldTimeStamped...)
      */
     public void addEventDate(final FieldAbsoluteDate<T> target) throws IllegalArgumentException {
         final boolean increasing;
@@ -200,7 +200,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
     }
 
     /** Event date specification. */
-    private static class FieldEventDate<T extends RealFieldElement<T>> implements FieldTimeStamped<T> {
+    private static class FieldEventDate<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
 
         /** Event date. */
         private final FieldAbsoluteDate<T> eventDate;

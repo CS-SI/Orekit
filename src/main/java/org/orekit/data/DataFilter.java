@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import java.io.IOException;
  */
 public interface DataFilter {
 
-    /** Filter the named data.
+    /** Filter the data source.
      * <p>
      * Filtering is often based on suffix. For example a gzip compressed
      * file will have an original name of the form base.ext.gz when the
@@ -40,18 +40,18 @@ public interface DataFilter {
      * This implies that the filter, <em>must</em> perform some checks to see if it must
      * be applied or not. If for example there is a need for a deciphering filter
      * to be applied once to all data, then the filter should for example check
-     * for a suffix in the {@link NamedData#getName() name} and create a new
-     * filtered {@link NamedData} instance <em>only</em> if the suffix is present,
+     * for a suffix in the {@link DataSource#getName() name} and create a new
+     * filtered {@link DataSource} instance <em>only</em> if the suffix is present,
      * removing the suffix from the filtered instance. Failing to do so and simply
      * creating a filtered instance with one deciphering layer without changing the
      * name would result in an infinite stack of deciphering filters being built, until
      * a stack overflow or memory exhaustion exception occurs.
      * </p>
-     * @param original original named data
-     * @return filtered named data, or {@code original} if this filter
-     * does not apply to this named data
+     * @param original original data source
+     * @return filtered data source, or {@code original} if this filter
+     * does not apply to this data source
      * @exception IOException if filtered stream cannot be created
      */
-    NamedData filter(NamedData original) throws IOException;
+    DataSource filter(DataSource original) throws IOException;
 
 }

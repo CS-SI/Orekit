@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,11 @@
  */
 package org.orekit.forces.empirical;
 
-import org.hipparchus.RealFieldElement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -42,7 +46,7 @@ public class PolynomialAccelerationModel implements AccelerationModel {
     private static final double ACCELERATION_SCALE = FastMath.scalb(1.0, -20);
 
     /** Drivers for the polynomial coefficients. */
-    private final ParameterDriver[] drivers;
+    private final List<ParameterDriver> drivers;
 
     /** Reference date for computing polynomials. */
     private AbsoluteDate referenceDate;
@@ -54,15 +58,15 @@ public class PolynomialAccelerationModel implements AccelerationModel {
      * @param degree polynomial degree (i.e. a value of 0 corresponds to a constant acceleration)
      */
     public PolynomialAccelerationModel(final String prefix,
-                                        final AbsoluteDate referenceDate,
-                                        final int degree) {
+                                       final AbsoluteDate referenceDate,
+                                       final int degree) {
         // Reference date
         this.referenceDate = referenceDate;
         // Parameter drivers
-        this.drivers       = new ParameterDriver[degree + 1];
-        for (int i = 0; i < drivers.length; ++i) {
-            drivers[i] = new ParameterDriver(prefix + "[" + i + "]", 0.0, ACCELERATION_SCALE,
-                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        drivers = new ArrayList<>();
+        for (int i = 0; i < degree + 1; ++i) {
+            drivers.add(new ParameterDriver(prefix + "[" + i + "]", 0.0, ACCELERATION_SCALE,
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
         }
     }
 
@@ -88,7 +92,7 @@ public class PolynomialAccelerationModel implements AccelerationModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T signedAmplitude(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> T signedAmplitude(final FieldSpacecraftState<T> state,
                                                              final T[] parameters) {
         final T dt = state.getDate().durationFrom(referenceDate);
         T amplitude = dt.getField().getZero();
@@ -100,8 +104,8 @@ public class PolynomialAccelerationModel implements AccelerationModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return drivers.clone();
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.unmodifiableList(drivers);
     }
 
 }

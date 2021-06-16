@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
@@ -26,6 +26,7 @@ import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -54,7 +55,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @since 9.2
  */
-class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTimeStamped<T> {
+class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
 
     /** Derivation order. */
     private static final int ORDER = 2;
@@ -488,8 +489,9 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         final FieldPVCoordinates<T> velocity      = new FieldPVCoordinates<>(v, a, keplerianJerk);
         final FieldPVCoordinates<T> momentum      = svPV.crossProduct(velocity);
 
-        final FieldDerivativeStructure<T> c = FastMath.cos(yaw).negate();
-        final FieldDerivativeStructure<T> s = FastMath.sin(yaw).negate();
+        final FieldSinCos<FieldDerivativeStructure<T>> sc = FastMath.sinCos(yaw);
+        final FieldDerivativeStructure<T> c = sc.cos().negate();
+        final FieldDerivativeStructure<T> s = sc.sin().negate();
         final T                           z = yaw.getFactory().getValueField().getZero();
         final FieldVector3D<T> m0 = new FieldVector3D<>(s.getValue(),              c.getValue(),              z);
         final FieldVector3D<T> m1 = new FieldVector3D<>(s.getPartialDerivative(1), c.getPartialDerivative(1), z);
@@ -505,7 +507,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return Orbit Normal yaw, using inertial frame as reference
      */
     public TimeStampedFieldAngularCoordinates<T> orbitNormalYaw() {
-        final FieldTransform<T> t = LOFType.VVLH.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
+        final FieldTransform<T> t = LOFType.LVLH_CCSDS.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
         return new TimeStampedFieldAngularCoordinates<>(date,
                                                         t.getRotation(),
                                                         t.getRotationRate(),

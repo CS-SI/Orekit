@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -154,8 +154,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 // go ahead one step size
                 final SpacecraftState previous = state;
                 AbsoluteDate t = previous.getDate().shiftedBy(stepSize);
-                if ((dt == 0) || ((dt > 0) ^ (t.compareTo(target) <= 0)) ||
-                        (FastMath.abs(target.durationFrom(t)) <= epsilon)) {
+                if (dt == 0 || ((dt > 0) ^ (t.compareTo(target) <= 0)) ||
+                        FastMath.abs(target.durationFrom(t)) <= epsilon) {
                     // current step exceeds target
                     // or is target to within double precision
                     t = target;
@@ -246,6 +246,9 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
                     // get state at event time
                     SpacecraftState eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
+
+                    // restrict the interpolator to the first part of the step, up to the event
+                    restricted = restricted.restrictStep(previous, eventState);
 
                     // try to advance all event states to current time
                     for (final EventState<?> state : eventsStates) {

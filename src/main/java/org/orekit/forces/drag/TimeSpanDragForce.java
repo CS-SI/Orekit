@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.NavigableSet;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -263,7 +263,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
         // Local atmospheric density
         final FieldAbsoluteDate<T> date     = s.getDate();
@@ -330,7 +330,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
      * </p>
      */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
 
         // Get the transitions' dates from the TimeSpanMap
         final AbsoluteDate[] transitionDates = getTransitionDates();
@@ -358,7 +358,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
      * </p>
      */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
 
         // Get all transitions from the TimeSpanMap
         final List<ParameterDriver> listParameterDrivers = new ArrayList<>();
@@ -383,7 +383,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         }
 
         // Return an array of parameter drivers with no duplicated name
-        return listParameterDrivers.toArray(new ParameterDriver[0]);
+        return listParameterDrivers;
 
     }
 
@@ -397,14 +397,14 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     public double[] extractParameters(final double[] parameters, final AbsoluteDate date) {
 
         // Get the drag parameter drivers of the date
-        final ParameterDriver[] dragParameterDriver = getDragSensitive(date).getDragParametersDrivers();
+        final List<ParameterDriver> dragParameterDriver = getDragSensitive(date).getDragParametersDrivers();
 
         // Find out the indexes of the parameters in the whole array of parameters
-        final ParameterDriver[] allParameters = getParametersDrivers();
-        final double[] outParameters = new double[dragParameterDriver.length];
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final double[] outParameters = new double[dragParameterDriver.size()];
         int index = 0;
-        for (int i = 0; i < allParameters.length; i++) {
-            final String driverName = allParameters[i].getName();
+        for (int i = 0; i < allParameters.size(); i++) {
+            final String driverName = allParameters.get(i).getName();
             for (ParameterDriver dragDriver : dragParameterDriver) {
                 if (dragDriver.getName().equals(driverName)) {
                     outParameters[index++] = parameters[i];
@@ -415,25 +415,25 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #acceleration(FieldSpacecraftState, RealFieldElement[]) acceleration} method.
+     * {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[]) acceleration} method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the parameters given the date
      */
-    public <T extends RealFieldElement<T>> T[] extractParameters(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
                                                                  final FieldAbsoluteDate<T> date) {
 
         // Get the drag parameter drivers of the date
-        final ParameterDriver[] dragPD = getDragSensitive(date.toAbsoluteDate()).getDragParametersDrivers();
+        final List<ParameterDriver> dragPD = getDragSensitive(date.toAbsoluteDate()).getDragParametersDrivers();
 
         // Find out the indexes of the parameters in the whole array of parameters
-        final ParameterDriver[] allParameters = getParametersDrivers();
-        final T[] outParameters = MathArrays.buildArray(date.getField(), dragPD.length);
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final T[] outParameters = MathArrays.buildArray(date.getField(), dragPD.size());
         int index = 0;
-        for (int i = 0; i < allParameters.length; i++) {
-            final String driverName = allParameters[i].getName();
+        for (int i = 0; i < allParameters.size(); i++) {
+            final String driverName = allParameters.get(i).getName();
             for (ParameterDriver dragDriver : dragPD) {
                 if (dragDriver.getName().equals(driverName)) {
                     outParameters[index++] = parameters[i];

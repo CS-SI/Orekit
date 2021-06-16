@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -88,7 +88,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @param parameters ionospheric model parameters
      * @return the measurement error due to ionosphere
      */
-    private <T extends RealFieldElement<T>> T rangeErrorIonosphericModel(final GroundStation station,
+    private <T extends CalculusFieldElement<T>> T rangeErrorIonosphericModel(final GroundStation station,
                                                                          final FieldSpacecraftState<T> state,
                                                                          final T[] parameters) {
          // Base frame associated with the station

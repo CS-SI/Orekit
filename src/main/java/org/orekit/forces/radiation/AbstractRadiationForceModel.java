@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
@@ -71,7 +71,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
     protected AbstractRadiationForceModel(final ExtendedPVCoordinatesProvider sun, final double equatorialRadius) {
         this.sun                  = sun;
         this.equatorialRadius     = equatorialRadius;
-        this.otherOccultingBodies = new HashMap<ExtendedPVCoordinatesProvider, Double>();
+        this.otherOccultingBodies = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -87,9 +87,9 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
         detectors[0] = new UmbraDetector();
         detectors[1] = new PenumbraDetector();
         int i = 2;
-        for (ExtendedPVCoordinatesProvider provider: otherOccultingBodies.keySet()) {
-            detectors[i]     = new GeneralUmbraDetector(provider, otherOccultingBodies.get(provider));
-            detectors[i + 1] = new GeneralPenumbraDetector(provider, otherOccultingBodies.get(provider));
+        for (Map.Entry<ExtendedPVCoordinatesProvider, Double> entry : otherOccultingBodies.entrySet()) {
+            detectors[i]     = new GeneralUmbraDetector(entry.getKey(),    entry.getValue());
+            detectors[i + 1] = new GeneralPenumbraDetector(entry.getKey(), entry.getValue());
             i = i + 2;
         }
         return Stream.of(detectors);
@@ -97,16 +97,17 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         final T zero = field.getZero();
         @SuppressWarnings("unchecked")
-        final FieldEventDetector<T>[] detectors = (FieldEventDetector<T>[]) Array.newInstance(FieldEventDetector.class, 2 + 2 * otherOccultingBodies.size());
+        final FieldEventDetector<T>[] detectors = (FieldEventDetector<T>[]) Array.newInstance(FieldEventDetector.class,
+                                                                                              2 + 2 * otherOccultingBodies.size());
         detectors[0] = new FieldUmbraDetector<>(field);
         detectors[1] = new FieldPenumbraDetector<>(field);
         int i = 2;
-        for (ExtendedPVCoordinatesProvider provider: otherOccultingBodies.keySet()) {
-            detectors[i]     = new FieldGeneralUmbraDetector<>(field, provider, zero.add(otherOccultingBodies.get(provider)));
-            detectors[i + 1] = new FieldGeneralPenumbraDetector<>(field, provider, zero.add(otherOccultingBodies.get(provider)));
+        for (Map.Entry<ExtendedPVCoordinatesProvider, Double> entry : otherOccultingBodies.entrySet()) {
+            detectors[i]     = new FieldGeneralUmbraDetector<>(field, entry.getKey(),    zero.newInstance(entry.getValue()));
+            detectors[i + 1] = new FieldGeneralPenumbraDetector<>(field, entry.getKey(), zero.newInstance(entry.getValue()));
             i = i + 2;
         }
         return Stream.of(detectors);
@@ -172,10 +173,10 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
      * Get the useful angles for eclipse computation.
      * @param sunPosition Sun position in the selected frame
      * @param position the satellite's position in the selected frame.
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
      */
-    protected <T extends RealFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> sunPosition, final FieldVector3D<T> position) {
+    protected <T extends CalculusFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> sunPosition, final FieldVector3D<T> position) {
         final T[] angle = MathArrays.buildArray(position.getX().getField(), 3);
 
         final FieldVector3D<T> mP           = position.negate();
@@ -207,9 +208,9 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
      * @param <T> extends RealFieldElement
      * @return the 3 angles {(satOcculting, satOcculted), Occulting body apparent radius, Occulted body apparent radius}
      */
-    protected <T extends RealFieldElement<T>> T[] getGeneralEclipseAngles(final FieldVector3D<T> position,
-                                                                          final FieldVector3D<T> occultingPosition, final T occultingRadius,
-                                                                          final FieldVector3D<T> occultedPosition, final T occultedRadius) {
+    protected <T extends CalculusFieldElement<T>> T[] getGeneralEclipseAngles(final FieldVector3D<T> position,
+                                                                              final FieldVector3D<T> occultingPosition, final T occultingRadius,
+                                                                              final FieldVector3D<T> occultedPosition, final T occultedRadius) {
         final T[] angle = MathArrays.buildArray(position.getX().getField(), 3);
 
         final FieldVector3D<T> satOccultedVector = occultedPosition.subtract(position);
@@ -282,15 +283,15 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
          * @param handler event handler to call at event occurrences
          * @since 6.1
          */
-        private UmbraDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler<? super UmbraDetector> handler) {
+        private UmbraDetector(final double maxCheck, final double threshold, final int maxIter,
+                              final EventHandler<? super UmbraDetector> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected UmbraDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super UmbraDetector> newHandler) {
+        protected UmbraDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
+                                       final EventHandler<? super UmbraDetector> newHandler) {
             return new UmbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -335,15 +336,15 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
          * @param handler event handler to call at event occurrences
          * @since 6.1
          */
-        private PenumbraDetector(final double maxCheck, final double threshold,
-                                 final int maxIter, final EventHandler<? super PenumbraDetector> handler) {
+        private PenumbraDetector(final double maxCheck, final double threshold, final int maxIter,
+                                 final EventHandler<? super PenumbraDetector> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected PenumbraDetector create(final double newMaxCheck, final double newThreshold,
-                                          final int newMaxIter, final EventHandler<? super PenumbraDetector> newHandler) {
+        protected PenumbraDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
+                                          final EventHandler<? super PenumbraDetector> newHandler) {
             return new PenumbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -361,7 +362,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
     }
 
     /** This class defines the umbra entry/exit detector. */
-    private class FieldUmbraDetector<T extends RealFieldElement<T>>
+    private class FieldUmbraDetector<T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldUmbraDetector<T>, T> {
 
         /** Build a new instance.
@@ -392,16 +393,14 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
          * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          */
-        private FieldUmbraDetector(final T maxCheck, final T threshold,
-                                   final int maxIter,
+        private FieldUmbraDetector(final T maxCheck, final T threshold, final int maxIter,
                                    final FieldEventHandler<? super FieldUmbraDetector<T>, T> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected FieldUmbraDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                               final int newMaxIter,
+        protected FieldUmbraDetector<T> create(final T newMaxCheck, final T newThreshold, final int newMaxIter,
                                                final FieldEventHandler<? super FieldUmbraDetector<T>, T> newHandler) {
             return new FieldUmbraDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
@@ -420,7 +419,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
     }
 
     /** This class defines the penumbra entry/exit detector. */
-    private class FieldPenumbraDetector<T extends RealFieldElement<T>>
+    private class FieldPenumbraDetector<T extends CalculusFieldElement<T>>
           extends FieldAbstractDetector<FieldPenumbraDetector<T>, T> {
 
         /** Build a new instance.
@@ -451,16 +450,14 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
          * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          */
-        private FieldPenumbraDetector(final T maxCheck, final T threshold,
-                                      final int maxIter,
+        private FieldPenumbraDetector(final T maxCheck, final T threshold, final int maxIter,
                                       final FieldEventHandler<? super FieldPenumbraDetector<T>, T> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected FieldPenumbraDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                                  final int newMaxIter,
+        protected FieldPenumbraDetector<T> create(final T newMaxCheck, final T newThreshold, final int newMaxIter,
                                                   final FieldEventHandler<? super FieldPenumbraDetector<T>, T> newHandler) {
             return new FieldPenumbraDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
@@ -517,15 +514,15 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
          * @param handler event handler to call at event occurrences
          * @since 6.1
          */
-        private GeneralUmbraDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler<? super GeneralUmbraDetector> handler) {
+        private GeneralUmbraDetector(final double maxCheck, final double threshold, final int maxIter,
+                                     final EventHandler<? super GeneralUmbraDetector> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected GeneralUmbraDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super GeneralUmbraDetector> newHandler) {
+        protected GeneralUmbraDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
+                                              final EventHandler<? super GeneralUmbraDetector> newHandler) {
             return new GeneralUmbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -537,7 +534,8 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
         public double g(final SpacecraftState s) {
             final double[] angle = getGeneralEclipseAngles(s.getPVCoordinates().getPosition(),
                                                            provider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
-                                                           radius, sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(), Constants.SUN_RADIUS);
+                                                           radius, sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
+                                                           Constants.SUN_RADIUS);
             return angle[0] - angle[1] + angle[2] - ANGULAR_MARGIN;
         }
 
@@ -582,15 +580,15 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
          * @param handler event handler to call at event occurrences
          * @since 6.1
          */
-        private GeneralPenumbraDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler<? super GeneralPenumbraDetector> handler) {
+        private GeneralPenumbraDetector(final double maxCheck, final double threshold, final int maxIter,
+                                        final EventHandler<? super GeneralPenumbraDetector> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected GeneralPenumbraDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super GeneralPenumbraDetector> newHandler) {
+        protected GeneralPenumbraDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
+                                                 final EventHandler<? super GeneralPenumbraDetector> newHandler) {
             return new GeneralPenumbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -602,14 +600,15 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
         public double g(final SpacecraftState s) {
             final double[] angle = getGeneralEclipseAngles(s.getPVCoordinates().getPosition(),
                                                            provider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
-                                                           radius, sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(), Constants.SUN_RADIUS);
+                                                           radius, sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
+                                                           Constants.SUN_RADIUS);
             return angle[0] - angle[1] - angle[2] + ANGULAR_MARGIN;
         }
 
     }
 
     /** This class defines the umbra entry/exit detector. */
-    private class FieldGeneralUmbraDetector<T extends RealFieldElement<T>>
+    private class FieldGeneralUmbraDetector<T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldGeneralUmbraDetector<T>, T> {
 
         /** Occulting body PV provider. */
@@ -658,9 +657,8 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
 
         /** {@inheritDoc} */
         @Override
-        protected FieldGeneralUmbraDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                               final int newMaxIter,
-                                               final FieldEventHandler<? super FieldGeneralUmbraDetector<T>, T> newHandler) {
+        protected FieldGeneralUmbraDetector<T> create(final T newMaxCheck, final T newThreshold, final int newMaxIter,
+                                                      final FieldEventHandler<? super FieldGeneralUmbraDetector<T>, T> newHandler) {
             return new FieldGeneralUmbraDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -680,7 +678,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
     }
 
     /** This class defines the umbra entry/exit detector. */
-    private class FieldGeneralPenumbraDetector<T extends RealFieldElement<T>>
+    private class FieldGeneralPenumbraDetector<T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldGeneralPenumbraDetector<T>, T> {
 
         /** Occulting body PV provider. */
@@ -721,17 +719,15 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
          * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          */
-        private FieldGeneralPenumbraDetector(final T maxCheck, final T threshold,
-                                   final int maxIter,
-                                   final FieldEventHandler<? super FieldGeneralPenumbraDetector<T>, T> handler) {
+        private FieldGeneralPenumbraDetector(final T maxCheck, final T threshold, final int maxIter,
+                                             final FieldEventHandler<? super FieldGeneralPenumbraDetector<T>, T> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected FieldGeneralPenumbraDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                               final int newMaxIter,
-                                               final FieldEventHandler<? super FieldGeneralPenumbraDetector<T>, T> newHandler) {
+        protected FieldGeneralPenumbraDetector<T> create(final T newMaxCheck, final T newThreshold, final int newMaxIter,
+                                                         final FieldEventHandler<? super FieldGeneralPenumbraDetector<T>, T> newHandler) {
             return new FieldGeneralPenumbraDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 

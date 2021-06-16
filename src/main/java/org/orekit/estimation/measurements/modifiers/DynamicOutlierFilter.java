@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,7 +66,7 @@ public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends Outl
 
         // Do not apply the filter if current iteration/measurement is lower than
         // warmup attribute or if the attribute sigma has not been initialized yet
-        if ((estimated.getIteration() > getWarmup()) && (sigma != null)) {
+        if (estimated.getIteration() > getWarmup() && sigma != null) {
 
             final double[] observed    = estimated.getObservedMeasurement().getObservedValue();
             final double[] theoretical = estimated.getEstimatedValue();

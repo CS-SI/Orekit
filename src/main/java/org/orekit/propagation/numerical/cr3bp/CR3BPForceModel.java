@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,12 @@
  */
 package org.orekit.propagation.numerical.cr3bp;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FDSFactory;
@@ -96,7 +98,7 @@ public class CR3BPForceModel extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
 
         // Spacecraft Velocity
@@ -170,7 +172,7 @@ public class CR3BPForceModel extends AbstractForceModel {
      * @param s SpacecraftState
      * @return Spacecraft Potential
      */
-    public <T extends RealFieldElement<T>> FieldDerivativeStructure<T> getPotential(final FieldSpacecraftState<T> s) {
+    public <T extends CalculusFieldElement<T>> FieldDerivativeStructure<T> getPotential(final FieldSpacecraftState<T> s) {
 
         // Spacecraft Position
         final T x = s.getPVCoordinates().getPosition().getX();
@@ -212,15 +214,13 @@ public class CR3BPForceModel extends AbstractForceModel {
 
     @Override
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
     /** {@inheritDoc} */
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            muParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(muParameterDriver);
     }
 
     /** {@inheritDoc} */

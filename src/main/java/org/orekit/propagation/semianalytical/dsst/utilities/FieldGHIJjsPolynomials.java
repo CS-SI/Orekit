@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Compute the G<sub>js</sub>, H<sub>js</sub>, I<sub>js</sub> and J<sub>js</sub>
  *  polynomials in the equinoctial elements h, k and the direction cosines α and β
@@ -28,7 +28,7 @@ import org.hipparchus.RealFieldElement;
  *  @author Lucian Barbulescu
  *  @author Bryan Cazabonne (field translation)
  */
-public class FieldGHIJjsPolynomials<T extends RealFieldElement<T>> {
+public class FieldGHIJjsPolynomials<T extends CalculusFieldElement<T>> {
 
     /** C<sub>j</sub>(k, h), S<sub>j</sub>(k, h) coefficient.
      * (k, h) are the (x, y) component of the eccentricity vector in equinoctial elements

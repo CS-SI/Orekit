@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -107,9 +107,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         throws IllegalArgumentException {
 
         // range check
-        if ((hour   < 0) || (hour   >  23) ||
-            (minute < 0) || (minute >  59) ||
-            (second < 0) || (second >= 61.0)) {
+        if (hour < 0 || hour > 23 ||
+            minute < 0 || minute > 59 ||
+            second < 0 || second >= 61.0) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_HMS_TIME,
                                                      hour, minute, second);
         }

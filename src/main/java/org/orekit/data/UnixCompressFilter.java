@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,13 +36,13 @@ public class UnixCompressFilter implements DataFilter {
 
     /** {@inheritDoc} */
     @Override
-    public NamedData filter(final NamedData original) {
+    public DataSource filter(final DataSource original) {
         final String                 oName   = original.getName();
-        final NamedData.StreamOpener oOpener = original.getStreamOpener();
+        final DataSource.StreamOpener oOpener = original.getStreamOpener();
         if (oName.endsWith(SUFFIX)) {
             final String                 fName   = oName.substring(0, oName.length() - SUFFIX.length());
-            final NamedData.StreamOpener fOpener = () -> new ZInputStream(oName, new Buffer(oOpener.openStream()));
-            return new NamedData(fName, fOpener);
+            final DataSource.StreamOpener fOpener = () -> new ZInputStream(oName, new Buffer(oOpener.openOnce()));
+            return new DataSource(fName, fOpener);
         } else {
             return original;
         }

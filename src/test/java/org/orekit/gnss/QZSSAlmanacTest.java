@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.propagation.analytical.gnss.data.QZSSAlmanac;
 import org.orekit.time.GNSSDate;
 
 public class QZSSAlmanacTest {
@@ -229,75 +230,65 @@ public class QZSSAlmanacTest {
          */
         private QZSSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name) {
             try {
-                // Initializes fields
-                int prn = 0;
-                int health = 0;
-                int week = 0;
-                double ecc = 0;
-                double toa = 0;
-                double inc = 0;
-                double dom = 0;
-                double sqa = 0;
-                double om0 = 0;
-                double aop = 0;
-                double anom = 0;
-                double af0 = 0;
-                double af1 = 0;
+                // Initializes almanac
+                final QZSSAlmanac almanac = new QZSSAlmanac();
+                almanac.setSource(SOURCE);
+
                 // Initializes checks
                 final boolean[] checks = new boolean[KEY.length];
                 // Loop over entries
                 for (Pair<String, String> entry: entries) {
                     if (entry.getKey().toLowerCase().startsWith(KEY[0])) {
                         // Gets the PRN of the SVN
-                        prn = Integer.parseInt(entry.getValue());
+                        almanac.setPRN(Integer.parseInt(entry.getValue()));
                         checks[0] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[1])) {
                         // Gets the Health status
-                        health = Integer.parseInt(entry.getValue());
+                        almanac.setHealth(Integer.parseInt(entry.getValue()));
                         checks[1] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[2])) {
                         // Gets the eccentricity
-                        ecc = Double.parseDouble(entry.getValue());
+                        almanac.setE(Double.parseDouble(entry.getValue()));
                         checks[2] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[3])) {
                         // Gets the Time of Applicability
-                        toa = Double.parseDouble(entry.getValue());
+                        almanac.setTime(Double.parseDouble(entry.getValue()));
                         checks[3] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[4])) {
                         // Gets the Inclination
-                        inc = Double.parseDouble(entry.getValue());
+                        almanac.setI0(Double.parseDouble(entry.getValue()));
                         checks[4] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[5])) {
                         // Gets the Rate of Right Ascension
-                        dom = Double.parseDouble(entry.getValue());
+                        almanac.setOmegaDot(Double.parseDouble(entry.getValue()));
                         checks[5] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[6])) {
                         // Gets the square root of the semi-major axis
-                        sqa = Double.parseDouble(entry.getValue());
+                        almanac.setSqrtA(Double.parseDouble(entry.getValue()));
                         checks[6] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[7])) {
                         // Gets the Right Ascension of Ascending Node
-                        om0 = Double.parseDouble(entry.getValue());
+                        almanac.setOmega0(Double.parseDouble(entry.getValue()));
                         checks[7] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[8])) {
                         // Gets the Argument of Perigee
-                        aop = Double.parseDouble(entry.getValue());
+                        almanac.setPa(Double.parseDouble(entry.getValue()));
                         checks[8] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[9])) {
                         // Gets the Mean Anomalie
-                        anom = Double.parseDouble(entry.getValue());
+                        almanac.setM0(Double.parseDouble(entry.getValue()));
                         checks[9] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[10])) {
                         // Gets the SV clock bias
-                        af0 = Double.parseDouble(entry.getValue());
+                        almanac.setAf0(Double.parseDouble(entry.getValue()));
                         checks[10] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[11])) {
                         // Gets the SV clock Drift
-                        af1 = Double.parseDouble(entry.getValue());
+                        almanac.setAf1(Double.parseDouble(entry.getValue()));
                         checks[11] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[12])) {
                         // Gets the week number
-                        week = Integer.parseInt(entry.getValue());
+                        almanac.setWeek(Integer.parseInt(entry.getValue()));
                         checks[12] = true;
                     } else {
                         // Unknown entry: the file is not a YUMA file
@@ -309,8 +300,8 @@ public class QZSSAlmanacTest {
                 // If all expected fields have been read
                 if (readOK(checks)) {
                     // Returns a QZSSAlmanac built from the entries
-                    return new QZSSAlmanac(SOURCE, prn, week, toa, sqa, ecc, inc, om0, dom,
-                                           aop, anom, af0, af1, health);
+                    almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime() * 1000.0, SatelliteSystem.QZSS).getDate());
+                    return almanac;
                 } else {
                     // The file is not a YUMA file
                     throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,

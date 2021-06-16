@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 import java.lang.reflect.Array;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldGradient;
@@ -40,7 +40,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
  * @author Lucian Barbulescu
  * @author Bryan Cazabonne
  */
-public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
+public class FieldHansenTesseralLinear <T extends CalculusFieldElement<T>> {
 
     /** The number of coefficients that will be computed with a set of roots. */
     private static final int SLICE = 10;
@@ -450,7 +450,7 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
      * in Danielson 2.7.3-10 and 3.3-5
      * </p>
      */
-    private static class FieldHansenCoefficientsBySeries <T extends RealFieldElement<T>> {
+    private static class FieldHansenCoefficientsBySeries <T extends CalculusFieldElement<T>> {
 
         /** -n-1 coefficient. */
         private final int mnm1;
@@ -498,7 +498,7 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
          * @param chi &Chi;
          * @param chi2 &Chi;²
          * @return the value of the Hansen coefficient and its derivative for e²
-         * @deprecated as of 10.2, replaced by {@link #getValueGradient(RealFieldElement, RealFieldElement, RealFieldElement)}
+         * @deprecated as of 10.2, replaced by {@link #getValueGradient(CalculusFieldElement, CalculusFieldElement, CalculusFieldElement)}
          */
         @SuppressWarnings("unused")
         @Deprecated

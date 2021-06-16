@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,10 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
-import org.hipparchus.RealFieldElement;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -54,12 +57,12 @@ public interface PropulsionModel {
      * @param s current spacecraft state
      * @param maneuverAttitude current attitude in maneuver
      * @param parameters propulsion model parameters
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return acceleration
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
-                                                                            FieldAttitude<T> maneuverAttitude,
-                                                                            T[] parameters);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
+                                                                     FieldAttitude<T> maneuverAttitude,
+                                                                     T[] parameters);
 
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
      *@param s current spacecraft state
@@ -71,17 +74,17 @@ public interface PropulsionModel {
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
      *@param s current spacecraft state
      * @param parameters propulsion model parameters
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return mass derivative in kg/s
      */
-    <T extends RealFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s,
-                                                                T[] parameters);
+    <T extends CalculusFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s,
+                                                         T[] parameters);
 
     /** Get the propulsion model parameter drivers.
      * @return propulsion model parameter drivers
      */
-    default ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {};
+    default List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Get the maneuver name.

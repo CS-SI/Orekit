@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -39,73 +40,73 @@ public class ITRFVersionLoaderTest {
                 new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
 
         // action + verify
-        Assert.assertThat(loader.getConfiguration("eopc04_05.00", 0).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("eopc04_05.00", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(loader.getConfiguration("eopc04_05_IAU2000.00", 0).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("eopc04_05_IAU2000.00", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(loader.getConfiguration("eopc04_08.00", 0).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("eopc04_08.00", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2008));
-        Assert.assertThat(loader.getConfiguration("eopc04_08_IAU2000.00", 0).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("eopc04_08_IAU2000.00", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2008));
-        Assert.assertThat(loader.getConfiguration("eopc04_14.00", 0).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("eopc04_14.00", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2014));
-        Assert.assertThat(loader.getConfiguration("eopc04_14_IAU2000.00", 0).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("eopc04_14_IAU2000.00", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2014));
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletina-xi-001.txt", 54000).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2000));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletina-xxi-001.txt", 55555).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletina-xxvi-001.txt", 57777).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2008));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletina-xxxi-001.txt", 58484).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2014));
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletinb_IAU1980-123.txt", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletinb_IAU2000-123.txt", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletinb-123.txt", 55555).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletinb.123", 55555).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletinb-123.txt", 57777).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2008));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletinb.123", 57777).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2008));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletinb-123.txt", 58484).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2014));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("bulletinb.123", 58484).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2014));
 
-        Assert.assertThat(loader.getConfiguration("finals.all", 0).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("finals.all", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2000));
-        Assert.assertThat(loader.getConfiguration("finals2000A.all", 0).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("finals2000A.all", 0).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2000));
-        Assert.assertThat(loader.getConfiguration("finals.all", 55555).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("finals.all", 55555).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(loader.getConfiguration("finals2000A.all", 55555).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("finals2000A.all", 55555).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(loader.getConfiguration("finals.all", 57777).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("finals.all", 57777).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2008));
-        Assert.assertThat(loader.getConfiguration("finals2000A.all", 57777).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("finals2000A.all", 57777).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2008));
-        Assert.assertThat(loader.getConfiguration("finals.all", 58484).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("finals.all", 58484).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2014));
-        Assert.assertThat(loader.getConfiguration("finals2000A.all", 58484).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("finals2000A.all", 58484).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2014));
     }
 
@@ -117,17 +118,17 @@ public class ITRFVersionLoaderTest {
         ItrfVersionProvider loader =
                 new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
 
-        Assert.assertThat(loader.getConfiguration("/finals.all", 55555).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("/finals.all", 55555).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(loader.getConfiguration("\\finals.all", 55555).getVersion(),
+        MatcherAssert.assertThat(loader.getConfiguration("\\finals.all", 55555).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader .getConfiguration(
                                 "https://user@example.com:port/path/finals.all?a=b#c",
                                 55555)
                         .getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 loader.getConfiguration("a.zip!/finals.all", 55555).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
     }

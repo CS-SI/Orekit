@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -85,9 +85,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
                                   final List<ObservableSatellite> satellites) {
 
         this.supportedParameters = new ArrayList<ParameterDriver>();
-        for (final ParameterDriver parameterDriver : supportedParameters) {
-            this.supportedParameters.add(parameterDriver);
-        }
 
         this.date       = date;
         this.observed   = new double[] {
@@ -282,7 +279,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @return <em>positive</em> delay between signal emission and signal reception dates
      * @param <T> the type of the components
      */
-    public static <T extends RealFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
+    public static <T extends CalculusFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
                                                                        final FieldVector3D<T> receiverPosition,
                                                                        final FieldAbsoluteDate<T> signalArrivalDate) {
 

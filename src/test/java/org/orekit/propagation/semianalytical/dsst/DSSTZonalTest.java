@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -87,7 +87,7 @@ public class DSSTZonalTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
         // Initialize force model
-        zonal.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
+        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
         
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
@@ -120,7 +120,7 @@ public class DSSTZonalTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         zonal.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(zonal.initialize(aux, PropagationType.OSCULATING, zonal.getParameters()));
+        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters()));
         zonal.updateShortPeriodTerms(zonal.getParameters(), meanState);
 
         double[] y = new double[6];
@@ -175,11 +175,11 @@ public class DSSTZonalTest {
 
         // Zonal force model
         final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
-        zonal.initialize(auxiliaryElements, PropagationType.MEAN, zonal.getParameters());
+        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters());
 
         // Zonal force model with default constructor
         final DSSTZonal zonalDefault = new DSSTZonal(provider);
-        zonalDefault.initialize(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters());
+        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters());
 
         // Compute mean element rate for the zonal force model
         final double[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters());

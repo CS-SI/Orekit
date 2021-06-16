@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -180,7 +180,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
         doTestFootprint(new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                   FastMath.toRadians(4.0), FastMath.toRadians(2.0),
                                                   0.0),
-                        new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
+                        new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                       FastMath.toRadians(10),
                                       FastMath.toRadians(20),
                                       FastMath.toRadians(5)),
@@ -192,7 +192,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
         doTestFootprint(new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                   FastMath.toRadians(4.0), FastMath.toRadians(2.0),
                                                   0.0),
-                        new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
+                        new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                       FastMath.toRadians(-10),
                                       FastMath.toRadians(-39),
                                       FastMath.toRadians(-5)),
@@ -213,7 +213,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
         doTestFOVAwayFromEarth(new EllipticalFieldOfView(Vector3D.MINUS_K, Vector3D.PLUS_I,
                                                          FastMath.toRadians(4.0), FastMath.toRadians(2.0),
                                                          0.0),
-                               new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
+                               new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                              FastMath.toRadians(-10),
                                              FastMath.toRadians(-39),
                                              FastMath.toRadians(-5)),

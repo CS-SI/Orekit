@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -28,7 +29,7 @@ import java.util.stream.Stream;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -37,6 +38,7 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.nonstiff.LutherIntegrator;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -44,6 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
@@ -58,10 +61,12 @@ import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.CartesianOrbit;
@@ -89,6 +94,8 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -125,10 +132,10 @@ public class NumericalPropagatorTest {
         propagator.propagate(target);
 
         // verify
-        Assert.assertThat(actualDate[0], CoreMatchers.is(target));
-        Assert.assertThat(actualState[0].getDate().durationFrom(initDate),
+        MatcherAssert.assertThat(actualDate[0], CoreMatchers.is(target));
+        MatcherAssert.assertThat(actualState[0].getDate().durationFrom(initDate),
                 CoreMatchers.is(0.0));
-        Assert.assertThat(actualState[0].getPVCoordinates(),
+        MatcherAssert.assertThat(actualState[0].getPVCoordinates(),
                 OrekitMatchers.pvIs(initialState.getPVCoordinates()));
     }
 
@@ -149,7 +156,7 @@ public class NumericalPropagatorTest {
         for (SpacecraftState state : states) {
             PVCoordinates actual =
                     ephemeris.propagate(state.getDate()).getPVCoordinates();
-            Assert.assertThat(actual, OrekitMatchers.pvIs(state.getPVCoordinates()));
+            MatcherAssert.assertThat(actual, OrekitMatchers.pvIs(state.getPVCoordinates()));
         }
     }
 
@@ -1409,7 +1416,75 @@ public class NumericalPropagatorTest {
         // Handler is deactivated (no dates recorded between start and stop date)
         Assert.assertEquals(0, dateRecorderHandler.handledDatesOutOfInterval.size());
     }
-    
+
+    @Test
+    public void testResetStateForward() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final NumericalPropagator propagator =
+                        new NumericalPropagator(new LutherIntegrator(300.0),
+                                                new LofOffset(eme2000, LOFType.LVLH));
+        propagator.resetInitialState(new SpacecraftState(orbit));
+
+        // maneuver along Z in attitude aligned with LVLH will change orbital plane
+        final AbsoluteDate maneuverDate = date.shiftedBy(1000.0);
+        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
+                                                          new Vector3D(0.0, 0.0, -100.0),
+                                                          350.0));
+
+        final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
+        propagator.setMasterMode(60.0, (state, isLast) -> {
+            final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
+            if (state.getDate().isBefore(maneuverDate)) {
+                Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            } else {
+                Assert.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            }
+        });
+
+        propagator.propagate(orbit.getDate().shiftedBy(1500.0));
+
+    }
+
+    @Test
+    public void testResetStateBackward() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final NumericalPropagator propagator =
+                        new NumericalPropagator(new LutherIntegrator(300.0),
+                                                new LofOffset(eme2000, LOFType.LVLH));
+        propagator.resetInitialState(new SpacecraftState(orbit));
+
+        // maneuver along Z in attitude aligned with LVLH will change orbital plane
+        final AbsoluteDate maneuverDate = date.shiftedBy(-1000.0);
+        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
+                                                          new Vector3D(0.0, 0.0, -100.0),
+                                                          350.0));
+
+        final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
+        propagator.setMasterMode(60.0, (state, isLast) -> {
+            final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
+            if (state.getDate().isAfter(maneuverDate)) {
+                Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            } else {
+                Assert.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            }
+        });
+
+        propagator.propagate(orbit.getDate().shiftedBy(-1500.0));
+
+    }
+
     /** Record the dates treated by the handler.
      *  If they are out of an interval defined by a start and final date.
      */
@@ -1576,7 +1651,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> void
+        public <T extends CalculusFieldElement<T>> void
         addContribution(FieldSpacecraftState<T> s,
                         FieldTimeDerivativesEquations<T> adder) {
         }
@@ -1590,7 +1665,7 @@ public class NumericalPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
             return FieldVector3D.getZero(s.getDate().getField());
@@ -1602,22 +1677,22 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
             return Stream.empty();
         }
 
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[0];
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
 
         @Override
         public ParameterDriver getParameterDriver(String name)
             {
-            final ParameterDriver[] drivers =  getParametersDrivers();
-            final String[] names = new String[drivers.length];
+            final List<ParameterDriver> drivers =  getParametersDrivers();
+            final String[] names = new String[drivers.size()];
             for (int i = 0; i < names.length; ++i) {
-                names[i] = drivers[i].getName();
+                names[i] = drivers.get(i).getName();
             }
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
                                       name, names);

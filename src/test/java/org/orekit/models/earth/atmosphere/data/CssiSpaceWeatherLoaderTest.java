@@ -70,7 +70,7 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     private CssiSpaceWeatherData loadCswl() {
-        CssiSpaceWeatherData cswl = new CssiSpaceWeatherData("SpaceWeather-All-v1.2_snapshot_20200224.txt");
+        CssiSpaceWeatherData cswl = new CssiSpaceWeatherData(CssiSpaceWeatherData.DEFAULT_SUPPORTED_NAMES);
         return cswl;
     }
 

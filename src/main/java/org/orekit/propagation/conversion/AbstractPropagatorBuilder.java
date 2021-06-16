@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -382,6 +382,16 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      */
     protected List<AdditionalEquations> getAdditionalEquations() {
         return additionalEquations;
+    }
+
+    /** Deselects orbital and propagation drivers. */
+    public void deselectDynamicParameters() {
+        for (ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
+        }
+        for (ParameterDriver driver : getOrbitalParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
+        }
     }
 
 }

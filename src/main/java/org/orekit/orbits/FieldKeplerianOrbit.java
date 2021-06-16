@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -80,7 +81,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Andrea Antolino
  * @since 9.0
  */
-public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
+public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
@@ -293,7 +294,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvCoordinates the PVCoordinates of the satellite
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
@@ -313,7 +314,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvCoordinates the PVCoordinates of the satellite
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
@@ -433,7 +434,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param FieldPVCoordinates the PVCoordinates of the satellite
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
@@ -635,9 +636,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param <T> type of the field elements
      * @return v the true anomaly
      */
-    public static <T extends RealFieldElement<T>> T ellipticEccentricToTrue(final T E, final T e) {
+    public static <T extends CalculusFieldElement<T>> T ellipticEccentricToTrue(final T E, final T e) {
         final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
-        return E.add(beta.multiply(E.sin()).divide(beta.multiply(E.cos()).subtract(1).negate()).atan().multiply(2));
+        final FieldSinCos<T> scE = FastMath.sinCos(E);
+        return E.add(beta.multiply(scE.sin()).divide(beta.multiply(scE.cos()).subtract(1).negate()).atan().multiply(2));
     }
 
     /** Computes the elliptic eccentric anomaly from the true anomaly.
@@ -646,9 +648,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param <T> type of the field elements
      * @return E the elliptic eccentric anomaly
      */
-    public static <T extends RealFieldElement<T>> T trueToEllipticEccentric(final T v, final T e) {
+    public static <T extends CalculusFieldElement<T>> T trueToEllipticEccentric(final T v, final T e) {
         final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
-        return v.subtract((beta.multiply(v.sin()).divide(beta.multiply(v.cos()).add(1))).atan().multiply(2));
+        final FieldSinCos<T> scv = FastMath.sinCos(v);
+        return v.subtract((beta.multiply(scv.sin()).divide(beta.multiply(scv.cos()).add(1))).atan().multiply(2));
     }
 
     /** Computes the true anomaly from the hyperbolic eccentric anomaly.
@@ -657,7 +660,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param <T> type of the field elements
      * @return v the true anomaly
      */
-    public static <T extends RealFieldElement<T>> T hyperbolicEccentricToTrue(final T H, final T e) {
+    public static <T extends CalculusFieldElement<T>> T hyperbolicEccentricToTrue(final T H, final T e) {
         final T s    = e.add(1).divide(e.subtract(1)).sqrt();
         final T tanH = H.multiply(0.5).tanh();
         return s.multiply(tanH).atan().multiply(2);
@@ -669,8 +672,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param <T> type of the field elements
      * @return H the hyperbolic eccentric anomaly
      */
-    public static <T extends RealFieldElement<T>> T trueToHyperbolicEccentric(final T v, final T e) {
-        final T sinhH = e.multiply(e).subtract(1).sqrt().multiply(v.sin()).divide(e.multiply(v.cos()).add(1));
+    public static <T extends CalculusFieldElement<T>> T trueToHyperbolicEccentric(final T v, final T e) {
+        final FieldSinCos<T> scv = FastMath.sinCos(v);
+        final T sinhH = e.multiply(e).subtract(1).sqrt().multiply(scv.sin()).divide(e.multiply(scv.cos()).add(1));
         return sinhH.asinh();
     }
 
@@ -680,7 +684,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param <T> type of the field elements
      * @return M the mean anomaly
      */
-    public static <T extends RealFieldElement<T>> T hyperbolicEccentricToMean(final T H, final T e) {
+    public static <T extends CalculusFieldElement<T>> T hyperbolicEccentricToMean(final T H, final T e) {
         return e.multiply(H.sinh()).subtract(H);
     }
 
@@ -695,7 +699,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param <T> type of the field elements
      * @return E the eccentric anomaly
      */
-    public static <T extends RealFieldElement<T>> T meanToEllipticEccentric(final T M, final T e) {
+    public static <T extends CalculusFieldElement<T>> T meanToEllipticEccentric(final T M, final T e) {
         // reduce M to [-PI PI) interval
         final T reducedM = MathUtils.normalizeAngle(M, M.getField().getZero());
 
@@ -729,8 +733,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
             final T f;
             T fd;
-            final T fdd  = e.multiply(E.sin());
-            final T fddd = e.multiply(E.cos());
+            final FieldSinCos<T> scE = FastMath.sinCos(E);
+            final T fdd  = e.multiply(scE.sin());
+            final T fddd = e.multiply(scE.cos());
 
             if (noCancellationRisk) {
 
@@ -767,7 +772,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param <T> Type of the field elements
      * @return E - e sin(E)
      */
-    private static <T extends RealFieldElement<T>> T eMeSinE(final T E, final T e) {
+    private static <T extends CalculusFieldElement<T>> T eMeSinE(final T E, final T e) {
 
         T x = (e.negate().add(1)).multiply(E.sin());
         final T mE2 = E.negate().multiply(E);
@@ -793,14 +798,14 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param <T> Type of the field elements
      * @return H the hyperbolic eccentric anomaly
      */
-    public static <T extends RealFieldElement<T>> T meanToHyperbolicEccentric(final T M, final T e) {
+    public static <T extends CalculusFieldElement<T>> T meanToHyperbolicEccentric(final T M, final T e) {
 
         // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
         // Initial guess
         T H;
         if (e.getReal() < 1.6) {
-            if ((-FastMath.PI < M.getReal() && M.getReal() < 0.) || M.getReal() > FastMath.PI) {
+            if (-FastMath.PI < M.getReal() && M.getReal() < 0. || M.getReal() > FastMath.PI) {
                 H = M.subtract(e);
             } else {
                 H = M.add(e);
@@ -845,7 +850,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param <T> type of the field elements
      * @return M the mean anomaly
      */
-    public static <T extends RealFieldElement<T>> T ellipticEccentricToMean(final T E, final T e) {
+    public static <T extends CalculusFieldElement<T>> T ellipticEccentricToMean(final T E, final T e) {
         return E.subtract(e.multiply(E.sin()));
     }
 
@@ -987,12 +992,15 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
 
         // preliminary variables
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        final T cosPa   = pa.cos();
-        final T sinPa   = pa.sin();
-        final T cosI    = i.cos();
-        final T sinI    = i.sin();
+        final FieldSinCos<T> scRaan = FastMath.sinCos(raan);
+        final FieldSinCos<T> scPa   = FastMath.sinCos(pa);
+        final FieldSinCos<T> scI    = FastMath.sinCos(i);
+        final T cosRaan = scRaan.cos();
+        final T sinRaan = scRaan.sin();
+        final T cosPa   = scPa.cos();
+        final T sinPa   = scPa.sin();
+        final T cosI    = scI.cos();
+        final T sinI    = scI.sin();
         final T crcp    = cosRaan.multiply(cosPa);
         final T crsp    = cosRaan.multiply(sinPa);
         final T srcp    = sinRaan.multiply(cosPa);
@@ -1007,11 +1015,11 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             // elliptical case
 
             // elliptic eccentric anomaly
-            final T uME2   = e.negate().add(1).multiply(e.add(1));
-            final T s1Me2  = uME2.sqrt();
-            final T E      = getEccentricAnomaly();
-            final T cosE   = E.cos();
-            final T sinE   = E.sin();
+            final T uME2             = e.negate().add(1).multiply(e.add(1));
+            final T s1Me2            = uME2.sqrt();
+            final FieldSinCos<T> scE = FastMath.sinCos(getEccentricAnomaly());
+            final T cosE             = scE.cos();
+            final T sinE             = scE.sin();
 
             // coordinates of position and velocity in the orbital plane
             final T x      = a.multiply(cosE.subtract(e));
@@ -1029,11 +1037,12 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             // hyperbolic case
 
             // compute position and velocity factors
-            final T sinV      = v.sin();
-            final T cosV      = v.cos();
-            final T f         = a.multiply(e.multiply(e).negate().add(1));
-            final T posFactor = f.divide(e.multiply(cosV).add(1));
-            final T velFactor = FastMath.sqrt(getMu().divide(f));
+            final FieldSinCos<T> scV = FastMath.sinCos(v);
+            final T sinV             = scV.sin();
+            final T cosV             = scV.cos();
+            final T f                = a.multiply(e.multiply(e).negate().add(1));
+            final T posFactor        = f.divide(e.multiply(cosV).add(1));
+            final T velFactor        = FastMath.sqrt(getMu().divide(f));
 
             final FieldVector3D<T> position     = new FieldVector3D<>(posFactor.multiply(cosV), p, posFactor.multiply(sinV), q);
             final FieldVector3D<T> velocity     = new FieldVector3D<>(velFactor.multiply(sinV).negate(), p, velFactor.multiply(e.add(cosV)), q);
@@ -1282,10 +1291,12 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T epsilon    = oMe2.sqrt();
         final T sqrtRec    = epsilon.reciprocal();
 
-        final T cosI       = i.cos();
-        final T sinI       = i.sin();
-        final T cosPA      = pa.cos();
-        final T sinPA      = pa.sin();
+        final FieldSinCos<T> scI  = FastMath.sinCos(i);
+        final FieldSinCos<T> scPA = FastMath.sinCos(pa);
+        final T cosI       = scI.cos();
+        final T sinI       = scI.sin();
+        final T cosPA      = scPA.cos();
+        final T sinPA      = scPA.sin();
 
         final T pv         = FieldVector3D.dotProduct(position, velocity);
         final T cosE       = a.subtract(r).divide(a.multiply(e));
@@ -1414,8 +1425,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T a2         = a.multiply(a);
         final T rOa        = r.divide(absA);
 
-        final T cosI       = i.cos();
-        final T sinI       = i.sin();
+        final FieldSinCos<T> scI = FastMath.sinCos(i);
+        final T cosI       = scI.cos();
+        final T sinI       = scI.sin();
 
         final T pv         = FieldVector3D.dotProduct(position, velocity);
 
@@ -1529,16 +1541,14 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         // dM = (1 - e cos E) dE - sin E de
         // which is inverted and rewritten as:
         // dE = a/r dM + sin E a/r de
-        final T eccentricAnomaly = getEccentricAnomaly();
-        final T cosE             = eccentricAnomaly.cos();
-        final T sinE             = eccentricAnomaly.sin();
-        final T aOr              = e.negate().multiply(cosE).add(1).reciprocal();
+        final FieldSinCos<T> scE = FastMath.sinCos(getEccentricAnomaly());
+        final T aOr              = e.negate().multiply(scE.cos()).add(1).reciprocal();
 
         // update anomaly row
         final T[] eRow           = jacobian[1];
         final T[] anomalyRow     = jacobian[5];
         for (int j = 0; j < anomalyRow.length; ++j) {
-            anomalyRow[j] = aOr.multiply(anomalyRow[j].add(sinE.multiply(eRow[j])));
+            anomalyRow[j] = aOr.multiply(anomalyRow[j].add(scE.sin().multiply(eRow[j])));
         }
 
         return jacobian;
@@ -1608,12 +1618,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T e2               = e.multiply(e);
         final T oMe2             = e2.negate().add(1);
         final T epsilon          = oMe2.sqrt();
-        final T eccentricAnomaly = getEccentricAnomaly();
-        final T cosE             = eccentricAnomaly.cos();
-        final T sinE             = eccentricAnomaly.sin();
-        final T aOr              = e.multiply(cosE).negate().add(1).reciprocal();
+        final FieldSinCos<T> scE = FastMath.sinCos(getEccentricAnomaly());
+        final T aOr              = e.multiply(scE.cos()).negate().add(1).reciprocal();
         final T aFactor          = epsilon.multiply(aOr);
-        final T eFactor          = sinE.multiply(aOr).divide(epsilon);
+        final T eFactor          = scE.sin().multiply(aOr).divide(epsilon);
 
         // update anomaly row
         final T[] eRow           = jacobian[1];
@@ -1720,7 +1728,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     private void checkParameterRangeInclusive(final String parameterName, final double parameter,
                                               final double lowerBound, final double upperBound) {
-        if ((parameter < lowerBound) || (parameter > upperBound)) {
+        if (parameter < lowerBound || parameter > upperBound) {
             throw new OrekitException(OrekitMessages.INVALID_PARAMETER_RANGE, parameterName,
                                       parameter, lowerBound, upperBound);
         }
@@ -1744,10 +1752,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param center center of the desired 2&pi; interval for the result
      * @param <T> the type of the field elements
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
+     * @deprecated replaced by {@link MathUtils#normalizeAngle(CalculusFieldElement, CalculusFieldElement)}
      */
     @Deprecated
-    public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
+    public static <T extends CalculusFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -56,7 +56,7 @@ public class FieldAttitudeTest {
         doTestInterpolation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShift(final Field<T> field){
+    private <T extends CalculusFieldElement<T>> void doTestShift(final Field<T> field){
         T zero = field.getZero();
         T one  = field.getOne();
         T rate = one.multiply(2 * FastMath.PI / (12 * 60));
@@ -82,7 +82,7 @@ public class FieldAttitudeTest {
     }
 
 
-    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSpin(final Field<T> field) {
         T zero = field.getZero();
         T rate = zero.add(2 * FastMath.PI / (12 * 60));
         FieldAttitude<T> attitude = new FieldAttitude<>(new FieldAbsoluteDate<>(field), FramesFactory.getEME2000(),
@@ -117,7 +117,7 @@ public class FieldAttitudeTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInterpolation(final Field<T> field) {
 
         T zero = field.getZero();
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.orekit.time.TimeStamped;
 import org.orekit.utils.ImmutableTimeStampedCache;
 
 /**
- * This class stocks all the information of the Consolidated laser ranging Data Format (CRD) parsed
+ * This class stores all the information of the Consolidated laser ranging Data Format (CRD) parsed
  * by CRDParser. It contains the header and a list of data records.
  * @author Bryan Cazabonne
  * @since 10.3
@@ -360,7 +360,7 @@ public class CRDFile {
         /** Elevation [rad]. */
         private final double elevation;
 
-        /** Direction flag (0 = transmit & receive ; 1 = transmit ; 2 = receive). */
+        /** Direction flag (0 = transmit &#38; receive ; 1 = transmit ; 2 = receive). */
         private final int directionFlag;
 
         /** Angle origin indicator.
@@ -423,7 +423,7 @@ public class CRDFile {
         }
 
         /**
-         * Get the direction flag (0 = transmit & receive ; 1 = transmit ; 2 = receive).
+         * Get the direction flag (0 = transmit &#38; receive ; 1 = transmit ; 2 = receive).
          * @return the direction flag
          */
         public int getDirectionFlag() {
@@ -570,9 +570,9 @@ public class CRDFile {
         private void bracketDate(final AbsoluteDate date) {
 
             // don't search if the cached selection is fine
-            if ((previousParam != null) &&
-                (date.durationFrom(previousParam.getDate()) > 0) &&
-                (date.durationFrom(nextParam.getDate()) <= 0 )) {
+            if (previousParam != null &&
+                date.durationFrom(previousParam.getDate()) > 0 &&
+                date.durationFrom(nextParam.getDate()) <= 0) {
                 return;
             }
 

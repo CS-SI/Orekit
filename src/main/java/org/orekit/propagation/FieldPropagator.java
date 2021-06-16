@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation;
 import java.util.Collection;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
@@ -47,7 +47,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
  *
  */
 
-public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVCoordinatesProvider<T> {
+public interface FieldPropagator<T extends CalculusFieldElement<T>> extends FieldPVCoordinatesProvider<T> {
 
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
@@ -76,7 +76,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @return one of {@link #SLAVE_MODE}, {@link #MASTER_MODE},
      * {@link #EPHEMERIS_GENERATION_MODE}
      * @see #setSlaveMode()
-     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
+     * @see #setMasterMode(CalculusFieldElement, FieldOrekitFixedStepHandler)
      * @see #setMasterMode(FieldOrekitStepHandler)
      * @see #setEphemerisMode()
      */
@@ -87,7 +87,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * The (slave) propagator computes this result and return it to the calling
      * (master) application, without any intermediate feedback.
      * <p>This is the default mode.
-     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
+     * @see #setMasterMode(CalculusFieldElement, FieldOrekitFixedStepHandler)
      * @see #setMasterMode(FieldOrekitStepHandler)
      * @see #setEphemerisMode()
      * @see #getMode()
@@ -115,7 +115,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * loop calls the (slave) application callback methods at each finalized step.</p>
      * @param handler handler called at the end of each finalized step
      * @see #setSlaveMode()
-     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
+     * @see #setMasterMode(CalculusFieldElement, FieldOrekitFixedStepHandler)
      * @see #setEphemerisMode()
      * @see #getMode()
      * @see #MASTER_MODE
@@ -132,7 +132,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      *  time steps.</p>
      * @see #getGeneratedEphemeris()
      * @see #setSlaveMode()
-     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
+     * @see #setMasterMode(CalculusFieldElement, FieldOrekitFixedStepHandler)
      * @see #setMasterMode(FieldOrekitStepHandler)
      * @see #getMode()
      * @see #EPHEMERIS_GENERATION_MODE

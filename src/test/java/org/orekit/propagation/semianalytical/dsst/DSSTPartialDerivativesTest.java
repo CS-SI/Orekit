@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -447,8 +447,8 @@ public class DSSTPartialDerivativesTest {
                                            OrbitType orbitType,
                                            DSSTForceModel... models) {
 
-        final double minStep = 0.001;
-        final double maxStep = 1000;
+        final double minStep = 6000.0;
+        final double maxStep = 86400.0;
         
         double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         DSSTPropagator propagator =

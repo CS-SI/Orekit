@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -294,7 +294,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-15, false);
 
     }
@@ -318,7 +318,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-15, false);
 
     }
@@ -660,8 +660,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
-        
+        integrator.setInitialStepSize(60);
+
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -687,7 +687,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1000., NP, FNP,
                                   1.0e-30, 5.0e-10, 3.0e-11, 3.0e-10,
@@ -731,7 +731,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -765,35 +765,35 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
-    
+
     /** Testing if eclipses due to Moon are considered.
      * Earth is artificially reduced to a single point to only consider Moon effect.
      * Reference values are presented in "A Study of Solar Radiation Pressure acting on GPS Satellites"
      * written by Laurent Olivier Froideval in 2009.
-     * Modifications of the step handler and time span able to print lighting ratios other a year and get a reference like graph. 
+     * Modifications of the step handler and time span able to print lighting ratios other a year and get a reference like graph.
      */
     @Test
     public void testMoonEclipse() {
-        
+
         // Configure Orekit
         final File home       = new File(System.getProperty("user.home"));
         final File orekitData = new File(home, "orekit-data");
         final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         manager.addProvider(new DirectoryCrawler(orekitData));
-        
+
         final ExtendedPVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
         final ExtendedPVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
         final Frame GCRF = FramesFactory.getGCRF();
         final AbsoluteDate date = new AbsoluteDate(2007, 01, 01, 6, 0, 0, TimeScalesFactory.getGPS());
         final double dt = 3600 * 24 * 180;
         final AbsoluteDate target = date.shiftedBy(dt);
-        
+
         //PV coordinates from sp3 file esa14081.sp3 PRN 03
         final PVCoordinates refPV = new PVCoordinates(new Vector3D(14986728.76145754, 14849687.258579938, -16523319.786690142),
                                                       new Vector3D(-3152.6722260146, 1005.6757515113, -1946.9273038773));
         final Orbit orbit = new CartesianOrbit(refPV, GCRF, date, Constants.EIGEN5C_EARTH_MU);
         final SpacecraftState initialState = new SpacecraftState(orbit);
-        
+
         // Create SRP perturbation with Moon and Earth
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
@@ -815,7 +815,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         propagator.setMasterMode(600, new MoonEclipseStepHandler(moon, sun, srp));
         propagator.propagate(target);
     }
-    
+
     /** Specialized step handler.
      * <p>This class extends the step handler in order to print on the output stream at the given step.<p>
      * @author Thomas Paulet
@@ -850,29 +850,29 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             final Vector3D moonPos = moon.getPVCoordinates(date, frame).getPosition();
             final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
             final Vector3D statePos = currentState.getPVCoordinates().getPosition();
-            
-            // Moon umbra and penumbra conditions 
-            final double[] moonAngles = srp.getGeneralEclipseAngles(statePos, moonPos, Constants.MOON_EQUATORIAL_RADIUS, 
+
+            // Moon umbra and penumbra conditions
+            final double[] moonAngles = srp.getGeneralEclipseAngles(statePos, moonPos, Constants.MOON_EQUATORIAL_RADIUS,
                                                                     sunPos, Constants.SUN_RADIUS);
             final double moonUmbra = moonAngles[0] - moonAngles[1] + moonAngles[2];
             final boolean isInMoonUmbra = (moonUmbra < 1.0e-10);
-            
+
             final double moonPenumbra = moonAngles[0] - moonAngles[1] - moonAngles[2];
             final boolean isInMoonPenumbra = (moonPenumbra < -1.0e-10);
-            
+
             // Earth umbra and penumbra conditions
             final double[] earthAngles = srp.getEclipseAngles(sunPos, statePos);
-            
+
             final double earthUmbra = earthAngles[0] - earthAngles[1] + earthAngles[2];
             final boolean isInEarthUmbra = (earthUmbra < 1.0e-10);
-            
+
             final double earthPenumbra = earthAngles[0] - earthAngles[1] - earthAngles[2];
             final boolean isInEarthPenumbra = (earthPenumbra < -1.0e-10);
-            
-            
+
+
             // Compute lighting ration
             final double lightingRatio = srp.getTotalLightingRatio(statePos, frame, date);
-            
+
             // Check behaviour
             if (isInMoonUmbra || isInEarthUmbra) {
                 Assert.assertEquals(0.0, lightingRatio, 1e-8);

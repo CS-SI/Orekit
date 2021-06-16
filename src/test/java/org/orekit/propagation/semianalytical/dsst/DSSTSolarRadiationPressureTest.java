@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -105,7 +105,7 @@ public class DSSTSolarRadiationPressureTest {
         // Force model parameters
         final double[] parameters = srp.getParameters();
         // Initialize force model
-        srp.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
+        srp.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
         // Register the attitude provider to the force model
         AttitudeProvider attitudeProvider = new InertialProvider(rotation);
@@ -155,7 +155,7 @@ public class DSSTSolarRadiationPressureTest {
                                                                                      0.2, 0.6);
 
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
-                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(sun,
@@ -170,7 +170,7 @@ public class DSSTSolarRadiationPressureTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         srp.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(srp.initialize(aux, PropagationType.OSCULATING, srp.getParameters()));
+        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters()));
         srp.updateShortPeriodTerms(srp.getParameters(), meanState);
 
         double[] y = new double[6];

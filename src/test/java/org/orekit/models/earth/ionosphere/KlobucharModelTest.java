@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.models.earth.ionosphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
@@ -104,7 +104,7 @@ public class KlobucharModelTest {
         doTestFieldDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
         final T zero = field.getZero();
 
         final T latitude  = zero.add(FastMath.toRadians(45));
@@ -148,11 +148,11 @@ public class KlobucharModelTest {
     }
 
     @Test
-    public <T extends RealFieldElement<T>> void compareFieldExpectedValue() {
+    public <T extends CalculusFieldElement<T>> void compareFieldExpectedValue() {
         doCompareFieldExpectedValue(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doCompareFieldExpectedValue(final Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValue(final Field<T> field)
         throws IllegalArgumentException, OrekitException {
         final T zero = field.getZero();
 
@@ -212,11 +212,11 @@ public class KlobucharModelTest {
     }
 
     @Test
-    public <T extends RealFieldElement<T>> void testFieldEquality() {
+    public <T extends CalculusFieldElement<T>> void testFieldEquality() {
         doTestFieldEquality(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldEquality(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldEquality(final Field<T> field) {
         // Common parameters
         final T zero = field.getZero();
         final AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 35, 04.245, TimeScalesFactory.getUTC());

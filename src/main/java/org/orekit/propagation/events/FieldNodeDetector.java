@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -46,7 +46,7 @@ import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
  */
-public class FieldNodeDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldNodeDetector<T>, T> {
+public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldNodeDetector<T>, T> {
 
     /** Frame in which the equator is defined. */
     private final Frame frame;

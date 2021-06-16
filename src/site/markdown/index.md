@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS GROUP
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -28,6 +28,7 @@
     * high accuracy absolute dates
     * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, IRNSS ...)
     * transparent handling of leap seconds
+    * support for CCSDS time code standards
 
   * Geometry
 
@@ -67,9 +68,9 @@
     * analytical models for small maneuvers without propagation
     * impulse maneuvers for any propagator type
     * continuous maneuvers for numerical propagator type
-    * configurable low thrust maneuver model based on detectors
+    * configurable low thrust maneuver model based on event detectors
     * propulsion models intended to be used with maneuver class
-    * interface for the maneuver triggers
+    * user-friendly interface for the maneuver triggers
 
   * Propagation
 
@@ -88,7 +89,9 @@
         * radiation pressure with eclipses
         * solid tides, with or without solid pole tide
         * ocean tides, with or without ocean pole tide
-        * general relativity
+        * Earth's albedo and infrared
+        * empirical accelerations to account for the unmodeled forces
+        * general relativity (including Lense-Thirring and De Sitter corrections)
         * multiple maneuvers
         * state of the art ODE integrators (adaptive stepsize with error control,
           continuous output, switching functions, G-stop, step normalization ...)
@@ -162,7 +165,7 @@
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
-    * loading of CCSDS Attitude Data Messages (both AEM, and APM types are supported)
+    * loading and writing of CCSDS Attitude Data Messages (both AEM, and APM types are supported, in both KVN and XML formats, standalone or in combined NDM)
 
   * Orbit determination
   
@@ -180,7 +183,7 @@
         * measurements parameters estimation (biases, satellite clock offset, station clock offset,
           station position, pole motion and rate, prime meridian correction and rate, total zenith
           delay in tropospheric correction)
-    * Use numerical propagator or DSST propagator
+    * can be used with numerical, DSST, or SDP4/SGP4 propagators
     * multi-satellites orbit determination
     * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
@@ -194,13 +197,17 @@
         * position-velocity
         * position
         * inter-satellites range (one way and two way)
+        * inter-satellites GNSS phase
         * GNSS code
         * GNSS phase with integer ambiguity resolution and wind-up effect
         * multiplexed
     * possibility to add custom measurements
+    * loading of ILRS CRD laser ranging measurements file
+    * loading and writing of CCSDS Tracking Data Messages (in both KVN and XML formats, standalone or in combined NDM)
     * several predefined modifiers
         * tropospheric effects
         * ionospheric effects
+        * clock relativistic effects
         * station offsets
         * biases
         * delays
@@ -227,13 +234,18 @@
     * loading of ANTEX antenna models file
     * loading of RINEX observation files (version 2 and version 3)
     * support for Hatanaka compact RINEX format
+    * loading of SINEX station file
+    * loading of RINEX clock files (version 2 and version 3)
+    * parsing of IGS SSR messages for all constellations (version 1)
+    * implementation of Ntrip protocol
 
   * Orbit file handling
   
     * loading of SP3 orbit files (from version a to d)
-    * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
+    * loading and writing of CCSDS Orbit Data Messages (both OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format
+    * loading of ILRS CPF orbit files
 
   * Earth models
   
@@ -245,7 +257,7 @@
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * Global Ionospheric Map model
     * NeQuick ionospheric model
-    * Estimated ionospheric model
+    * VTEC estimated ionospheric model
     * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field

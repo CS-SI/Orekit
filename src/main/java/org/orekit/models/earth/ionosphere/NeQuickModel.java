@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -158,7 +158,7 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
         // Date
         final FieldAbsoluteDate<T> date = state.getDate();
@@ -252,7 +252,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param satP satellite position
      * @return the STEC in TECUnits
      */
-    public <T extends RealFieldElement<T>> T stec(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T stec(final FieldAbsoluteDate<T> date,
                                                   final FieldGeodeticPoint<T> recP,
                                                   final FieldGeodeticPoint<T> satP) {
 
@@ -333,7 +333,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param dateTime current date and time componentns
      * @return result of the integration
      */
-    private <T extends RealFieldElement<T>> T stecIntegration(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T stecIntegration(final Field<T> field,
                                                               final FieldSegment<T> seg,
                                                               final DateTimeComponents dateTime) {
         // Integration points
@@ -380,7 +380,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param parameters NeQuick model parameters
      * @return electron density [m^-3]
      */
-    private <T extends RealFieldElement<T>> T electronDensity(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T electronDensity(final Field<T> field,
                                                               final T h,
                                                               final FieldNeQuickParameters<T> parameters) {
         // Convert height in kilometers
@@ -474,7 +474,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param parameters NeQuick model parameters
      * @return the electron density N in m-3
      */
-    private <T extends RealFieldElement<T>> T bottomElectronDensity(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final Field<T> field,
                                                                     final T h,
                                                                     final FieldNeQuickParameters<T> parameters) {
 
@@ -582,7 +582,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param parameters NeQuick model parameters
      * @return the electron density N in m-3
      */
-    private <T extends RealFieldElement<T>> T topElectronDensity(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T topElectronDensity(final Field<T> field,
                                                                  final T h,
                                                                  final FieldNeQuickParameters<T> parameters) {
 
@@ -659,7 +659,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param power power for exponential function
      * @return clipped exponential value
      */
-    private <T extends RealFieldElement<T>> T clipExp(final Field<T> field, final T power) {
+    private <T extends CalculusFieldElement<T>> T clipExp(final Field<T> field, final T power) {
         final T zero = field.getZero();
         if (power.getReal() > 80.0) {
             return zero.add(5.5406E34);
@@ -969,6 +969,9 @@ public class NeQuickModel implements IonosphericModel {
         /** Ray-perigee longitude [rad]. */
         private final double lonP;
 
+        /** Sine and cosine of ray-perigee latitude. */
+        private final SinCos scLatP;
+
         /** Sine of azimuth of satellite as seen from ray-perigee. */
         private final double sinAzP;
 
@@ -993,10 +996,11 @@ public class NeQuickModel implements IonosphericModel {
             final double lon2     = satP.getLongitude();
             final SinCos scLatSat = FastMath.sinCos(lat2);
             final SinCos scLatRec = FastMath.sinCos(lat1);
+            final SinCos scLon21  = FastMath.sinCos(lon2 - lon1);
 
             // Zenith angle computation (Eq. 153 to 155)
             final double cosD = scLatRec.sin() * scLatSat.sin() +
-                            scLatRec.cos() * scLatSat.cos() * FastMath.cos(lon2 - lon1);
+                                scLatRec.cos() * scLatSat.cos() * scLon21.cos();
             final double sinD = FastMath.sqrt(1.0 - cosD * cosD);
             final double z = FastMath.atan2(sinD, cosD - (r1 / r2));
 
@@ -1025,7 +1029,7 @@ public class NeQuickModel implements IonosphericModel {
                 // Ray-perigee latitude (Eq. 158 to 163)
                 final double deltaP   = 0.5 * FastMath.PI - z;
                 final SinCos scDeltaP = FastMath.sinCos(deltaP);
-                final double sinAz    = FastMath.sin(lon2 - lon1) * scLatSat.cos() / sinD;
+                final double sinAz    = scLon21.sin() * scLatSat.cos() / sinD;
                 final double cosAz    = (scLatSat.sin() - cosD * scLatRec.sin()) / (sinD * scLatRec.cos());
                 final double sinLatP  = scLatRec.sin() * scDeltaP.cos() - scLatRec.cos() * scDeltaP.sin() * cosAz;
                 final double cosLatP  = FastMath.sqrt(1.0 - sinLatP * sinLatP);
@@ -1038,8 +1042,13 @@ public class NeQuickModel implements IonosphericModel {
 
             }
 
-            // Sine and cosie of azimuth of satellite as seen from ray-perigee
-            final double psi = greatCircleAngle(lat2, lon2);
+            // Sine and cosine of ray-perigee latitude
+            this.scLatP = FastMath.sinCos(latP);
+
+            final SinCos scLon = FastMath.sinCos(lon2 - lonP);
+            // Sine and cosine of azimuth of satellite as seen from ray-perigee
+            final double psi   = greatCircleAngle(scLatSat, scLon);
+            final SinCos scPsi = FastMath.sinCos(psi);
             if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD) {
                 // Eq. 172 and 173
                 this.sinAzP = 0.0;
@@ -1050,8 +1059,8 @@ public class NeQuickModel implements IonosphericModel {
                 }
             } else {
                 // Eq. 174 and 175
-                this.sinAzP = scLatSat.cos() * FastMath.sin(lon2 - lonP) / FastMath.sin(psi);
-                this.cosAzP = (scLatSat.sin() - FastMath.sin(latP) * FastMath.cos(psi)) / (FastMath.cos(latP) * FastMath.sin(psi));
+                this.sinAzP =  scLatSat.cos() * scLon.sin()                 /  scPsi.sin();
+                this.cosAzP = (scLatSat.sin() - scLatP.sin() * scPsi.cos()) / (scLatP.cos() * scPsi.sin());
             }
 
             // Integration en points s1 and s2 in meters (Eq. 176 and 177)
@@ -1120,16 +1129,16 @@ public class NeQuickModel implements IonosphericModel {
          * <p>
          * This method used the equations 168 to 171 pf the reference document.
          * </p>
-         * @param latitude satellite latitude in radians
-         * @param longitude satellite longitude in radians
+         * @param scLat sine and cosine of satellite latitude
+         * @param scLon sine and cosine of satellite longitude minus receiver longitude
          * @return the great circle angle in radians
          */
-        private double greatCircleAngle(final double latitude, final double longitude) {
+        private double greatCircleAngle(final SinCos scLat, final SinCos scLon) {
             if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD) {
-                return FastMath.abs(latitude - latP);
+                return FastMath.abs(FastMath.asin(scLat.sin()) - latP);
             } else {
-                final double cosPhi = FastMath.sin(latP) * FastMath.sin(latitude) +
-                                FastMath.cos(latP) * FastMath.cos(latitude) * FastMath.cos(longitude - lonP);
+                final double cosPhi = scLatP.sin() * scLat.sin() +
+                                      scLatP.cos() * scLat.cos() * scLon.cos();
                 final double sinPhi = FastMath.sqrt(1.0 - cosPhi * cosPhi);
                 return FastMath.atan2(sinPhi, cosPhi);
             }
@@ -1140,7 +1149,7 @@ public class NeQuickModel implements IonosphericModel {
      * Container for ray-perigee parameters.
      * By convention, point 1 is at lower height.
      */
-    private static class FieldRay <T extends RealFieldElement<T>> {
+    private static class FieldRay <T extends CalculusFieldElement<T>> {
 
         /** Threshold for ray-perigee parameters computation. */
         private static final double THRESHOLD = 1.0e-10;
@@ -1159,6 +1168,9 @@ public class NeQuickModel implements IonosphericModel {
 
         /** Ray-perigee longitude [rad]. */
         private final T lonP;
+
+        /** Sine and cosine of ray-perigee latitude. */
+        private final FieldSinCos<T> scLatP;
 
         /** Sine of azimuth of satellite as seen from ray-perigee. */
         private final T sinAzP;
@@ -1230,8 +1242,13 @@ public class NeQuickModel implements IonosphericModel {
 
             }
 
+            // Sine and cosine of ray-perigee latitude
+            this.scLatP = FastMath.sinCos(latP);
+
+            final FieldSinCos<T> scLon = FastMath.sinCos(lon2.subtract(lonP));
             // Sine and cosie of azimuth of satellite as seen from ray-perigee
-            final T psi = greatCircleAngle(lat2, lon2);
+            final T psi = greatCircleAngle(scLatSat, scLon);
+            final FieldSinCos<T> scPsi = FastMath.sinCos(psi);
             if (FastMath.abs(FastMath.abs(latP).getReal() - 0.5 * FastMath.PI) < THRESHOLD) {
                 // Eq. 172 and 173
                 this.sinAzP = field.getZero();
@@ -1242,8 +1259,8 @@ public class NeQuickModel implements IonosphericModel {
                 }
             } else {
                 // Eq. 174 and 175
-                this.sinAzP = scLatSat.cos().multiply(FastMath.sin(lon2.subtract(lonP))).divide(FastMath.sin(psi));
-                this.cosAzP = scLatSat.sin().subtract(FastMath.sin(latP).multiply(FastMath.cos(psi))).divide(FastMath.cos(latP).multiply(FastMath.sin(psi)));
+                this.sinAzP = scLatSat.cos().multiply(scLon.sin()).divide(scPsi.sin());
+                this.cosAzP = scLatSat.sin().subtract(scLatP.sin().multiply(scPsi.cos())).divide(scLatP.cos().multiply(scPsi.sin()));
             }
 
             // Integration en points s1 and s2 in meters (Eq. 176 and 177)
@@ -1312,16 +1329,16 @@ public class NeQuickModel implements IonosphericModel {
          * <p>
          * This method used the equations 168 to 171 pf the reference document.
          * </p>
-         * @param latitude satellite latitude in radians
-         * @param longitude satellite longitude in radians
+         * @param scLat sine and cosine of satellite latitude
+         * @param scLon sine and cosine of satellite longitude minus receiver longitude
          * @return the great circle angle in radians
          */
-        private T greatCircleAngle(final T latitude, final T longitude) {
+        private T greatCircleAngle(final FieldSinCos<T> scLat, final FieldSinCos<T> scLon) {
             if (FastMath.abs(FastMath.abs(latP).getReal() - 0.5 * FastMath.PI) < THRESHOLD) {
-                return FastMath.abs(latitude.subtract(latP));
+                return FastMath.abs(FastMath.asin(scLat.sin()).subtract(latP));
             } else {
-                final T cosPhi = FastMath.sin(latP).multiply(FastMath.sin(latitude)).
-                                add(FastMath.cos(latP).multiply(FastMath.cos(latitude)).multiply(FastMath.cos(longitude.subtract(lonP))));
+                final T cosPhi = scLatP.sin().multiply(scLat.sin()).add(
+                                 scLatP.cos().multiply(scLat.cos()).multiply(scLon.cos()));
                 final T sinPhi = FastMath.sqrt(cosPhi.multiply(cosPhi).negate().add(1.0));
                 return FastMath.atan2(sinPhi, cosPhi);
             }
@@ -1447,7 +1464,7 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     /** Performs the computation of the coordinates along the integration path. */
-    private static class FieldSegment <T extends RealFieldElement<T>> {
+    private static class FieldSegment <T extends CalculusFieldElement<T>> {
 
         /** Latitudes [rad]. */
         private final T[] latitudes;

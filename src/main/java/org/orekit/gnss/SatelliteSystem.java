@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,8 @@ import java.util.Map;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 
 /**
  * Enumerate for satellite system.
@@ -94,6 +96,48 @@ public enum SatelliteSystem {
             throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_SATELLITE_SYSTEM, s.charAt(0));
         }
         return satelliteSystem;
+    }
+
+    /** Get default time scale for satellite system.
+     * @param timeScales the set of timeScales to use
+     * @return the default time scale among the given set matching to satellite system,
+     *         null if there are not
+     */
+    public TimeScale getDefaultTimeSystem(final TimeScales timeScales) {
+
+        TimeScale timeScale = null;
+        switch (this) {
+            case GPS:
+                timeScale = timeScales.getGPS();
+                break;
+
+            case GALILEO:
+                timeScale = timeScales.getGST();
+                break;
+
+            case GLONASS:
+                timeScale = timeScales.getGLONASS();
+                break;
+
+            case QZSS:
+                timeScale = timeScales.getQZSS();
+                break;
+
+            case BEIDOU:
+                timeScale = timeScales.getBDT();
+                break;
+
+            case IRNSS:
+                timeScale = timeScales.getIRNSS();
+                break;
+
+            // Default value is null
+            default:
+                timeScale = null;
+                break;
+        }
+
+        return timeScale;
     }
 
 }

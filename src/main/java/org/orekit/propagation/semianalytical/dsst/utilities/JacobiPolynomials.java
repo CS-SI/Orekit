@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldGradient;
@@ -147,7 +147,7 @@ public class JacobiPolynomials {
      * @deprecated as of 10.2, replace by {@link #getValue(int, int, int, FieldDerivativeStructure)}
      */
     @Deprecated
-    public static <T extends RealFieldElement<T>> FieldDerivativeStructure<T> getValue(final int l, final int v, final int w,
+    public static <T extends CalculusFieldElement<T>> FieldDerivativeStructure<T> getValue(final int l, final int v, final int w,
                                                                                        final FieldDerivativeStructure<T> gamma) {
 
         final List<PolynomialFunction> polyList;
@@ -191,7 +191,7 @@ public class JacobiPolynomials {
      * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
      * @since 10.2
      */
-    public static <T extends RealFieldElement<T>> FieldGradient<T> getValue(final int l, final int v, final int w,
+    public static <T extends CalculusFieldElement<T>> FieldGradient<T> getValue(final int l, final int v, final int w,
                                                                             final FieldGradient<T> gamma) {
 
         final List<PolynomialFunction> polyList;
@@ -264,12 +264,12 @@ public class JacobiPolynomials {
         @Override
         public boolean equals(final Object key) {
 
-            if ((key == null) || !(key instanceof JacobiKey)) {
+            if (!(key instanceof JacobiKey)) {
                 return false;
             }
 
             final JacobiKey otherK = (JacobiKey) key;
-            return (v == otherK.v) && (w == otherK.w);
+            return v == otherK.v && w == otherK.w;
 
         }
     }

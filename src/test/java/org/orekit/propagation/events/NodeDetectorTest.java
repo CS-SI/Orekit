@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -116,6 +116,19 @@ public class NodeDetectorTest {
         double t2 = orbit2.getKeplerianPeriod();
         Assert.assertEquals(t1, t2, t1 / 10000);
         Assert.assertEquals(t2 / 3, detector2.getMaxCheckInterval(), t2 / 10000);
+
+    }
+
+    @Test
+    public void testIssue728() {
+
+        NodeDetector detector1 = new NodeDetector(FramesFactory.getEME2000());
+        Assert.assertEquals(1800.0, detector1.getMaxCheckInterval(), 1.0e-3);
+        Assert.assertEquals(1.0e-3, detector1.getThreshold(), 1.0e-12);
+
+        NodeDetector detector2 = detector1.withMaxCheck(3000.0).withThreshold(1.0e-6);
+        Assert.assertEquals(3000.0, detector2.getMaxCheckInterval(), 1.0e-3);
+        Assert.assertEquals(1.0e-6, detector2.getThreshold(), 1.0e-12);
 
     }
 

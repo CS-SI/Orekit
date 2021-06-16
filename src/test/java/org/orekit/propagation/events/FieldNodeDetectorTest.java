@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -48,7 +48,7 @@ public class FieldNodeDetectorTest {
         doTestIssue158(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>void doTestIssue138(Field<T> field) {
+    private <T extends CalculusFieldElement<T>>void doTestIssue138(Field<T> field) {
         T zero = field.getZero();
         T a = zero.add(800000 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
         T e = zero.add(0.0001);
@@ -94,7 +94,7 @@ public class FieldNodeDetectorTest {
 
     }
 
-    private <T extends RealFieldElement<T>>void doTestIssue158(Field<T> field) {
+    private <T extends CalculusFieldElement<T>>void doTestIssue158(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 

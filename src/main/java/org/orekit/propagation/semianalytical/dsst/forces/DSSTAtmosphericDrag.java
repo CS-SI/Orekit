@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.List;
+
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
@@ -115,7 +117,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
         return null;
     }
 
@@ -141,7 +143,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
+    protected <T extends CalculusFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
                                                              final FieldAuxiliaryElements<T> auxiliaryElements) {
 
         final Field<T> field = state.getDate().getField();
@@ -172,7 +174,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] getParametersDriversWithoutMu() {
+    protected List<ParameterDriver> getParametersDriversWithoutMu() {
         return drag.getParametersDrivers();
     }
 

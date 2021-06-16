@@ -1,7 +1,7 @@
 package org.orekit.propagation.sampling;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,7 +30,7 @@ public class FieldOrekitFixedStepHandlerMultiplexerTest {
         doTestMultiplexer(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestMultiplexer(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestMultiplexer(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -60,7 +60,7 @@ public class FieldOrekitFixedStepHandlerMultiplexerTest {
         Assert.assertEquals(3, incrementationHandler.getValue());
     }
 
-    private class FieldInitCheckerHandler<T extends RealFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
+    private class FieldInitCheckerHandler<T extends CalculusFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
 
         private double expected;
         private boolean initialized;
@@ -90,7 +90,7 @@ public class FieldOrekitFixedStepHandlerMultiplexerTest {
 
     }
 
-    private class FieldIncrementationHandler<T extends RealFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
+    private class FieldIncrementationHandler<T extends CalculusFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
 
         private int value;
 

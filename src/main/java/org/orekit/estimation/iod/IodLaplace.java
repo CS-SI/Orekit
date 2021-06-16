@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.util.FastMath;
+import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -50,6 +51,26 @@ public class IodLaplace {
      */
     public IodLaplace(final double mu) {
         this.mu = mu;
+    }
+
+    /** Estimate the orbit from three angular observations at the same location.
+     *
+     * @param frame inertial frame for observer coordinates and orbit estimate
+     * @param obsPva Observer coordinates at time of raDec2
+     * @param raDec1 first angular observation
+     * @param raDec2 second angular observation
+     * @param raDec3 third angular observation
+     * @return estimate of the orbit at the central date or null if
+     *         no estimate is possible with the given data
+     * @since 11.0
+     */
+    public CartesianOrbit estimate(final Frame frame, final PVCoordinates obsPva,
+                                   final AngularRaDec raDec1, final AngularRaDec raDec2,
+                                   final AngularRaDec raDec3) {
+        return estimate(frame, obsPva,
+                        raDec1.getDate(), lineOfSight(raDec1),
+                        raDec2.getDate(), lineOfSight(raDec2),
+                        raDec3.getDate(), lineOfSight(raDec3));
     }
 
     /** Estimate orbit from three line of sight angles from the same location.
@@ -139,6 +160,35 @@ public class IodLaplace {
         return new CartesianOrbit(new PVCoordinates(posVec, velVec), frame, obsDate2, mu);
     }
 
+    /**
+     * Calculates the line of sight vector.
+     * @param alpha right ascension angle, in radians
+     * @param delta declination angle, in radians
+     * @return the line of sight vector
+     * @since 11.0
+     */
+    public static Vector3D lineOfSight(final double alpha, final double delta) {
+        return new Vector3D(FastMath.cos(delta) * FastMath.cos(alpha),
+                            FastMath.cos(delta) * FastMath.sin(alpha),
+                            FastMath.sin(delta));
+    }
+
+    /**
+     * Calculate the line of sight vector from an AngularRaDec measurement.
+     * @param raDec measurement
+     * @return the line of sight vector
+     * @since 11.0
+     */
+    public static Vector3D lineOfSight(final AngularRaDec raDec) {
+
+        // Observed values
+        final double[] observed = raDec.getObservedValue();
+
+        // Return
+        return lineOfSight(observed[0], observed[1]);
+
+    }
+
     /** Calculate the determinant of the matrix with given column vectors.
      *
      * @param col0 Matrix column 0
@@ -154,4 +204,5 @@ public class IodLaplace {
         mat.setColumn(2, col2.toArray());
         return new LUDecomposition(mat).getDeterminant();
     }
+
 }

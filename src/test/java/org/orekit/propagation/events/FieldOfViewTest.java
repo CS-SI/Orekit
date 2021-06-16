@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -248,7 +248,7 @@ public class FieldOfViewTest {
                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                   Constants.EIGEN5C_EARTH_MU);
         Propagator propagator = new KeplerianPropagator(orbit);
-        propagator.setAttitudeProvider(new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
+        propagator.setAttitudeProvider(new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                      FastMath.toRadians(10),
                                                      FastMath.toRadians(20),
                                                      FastMath.toRadians(5)));

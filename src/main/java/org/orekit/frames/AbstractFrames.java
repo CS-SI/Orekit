@@ -821,8 +821,8 @@ public abstract class AbstractFrames implements Frames {
             if (other instanceof ITRFKey) {
                 final ITRFKey key = (ITRFKey) other;
                 return version     == key.version     &&
-                        conventions == key.conventions &&
-                        simpleEOP   == key.simpleEOP;
+                       conventions == key.conventions &&
+                       simpleEOP   == key.simpleEOP;
             }
 
             return false;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 
 /** Interpolation grid where a fixed number of points are
@@ -28,7 +28,7 @@ import org.hipparchus.util.MathArrays;
  * while for long steps the points will be far away one from each other
  * </p>
  */
-public class FieldFixedNumberInterpolationGrid<T extends RealFieldElement<T>> implements FieldInterpolationGrid<T> {
+public class FieldFixedNumberInterpolationGrid<T extends CalculusFieldElement<T>> implements FieldInterpolationGrid<T> {
 
     /** Number of points in the grid per step. */
     private final int pointsPerStep;

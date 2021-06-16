@@ -1,4 +1,4 @@
- /* Copyright 2002-2020 CS GROUP
+ /* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
@@ -1019,19 +1020,19 @@ public class EquinoctialOrbitTest {
                                                             orbit.getHyDot(),
                                                             orbit.getLDot(type),
                                                             type, orbit.getFrame(), orbit.getDate(), orbit.getMu());
-            Assert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                1));
-            Assert.assertThat(rebuilt.getEquinoctialEx(),                    relativelyCloseTo(orbit.getEquinoctialEx(),    1));
-            Assert.assertThat(rebuilt.getEquinoctialEy(),                    relativelyCloseTo(orbit.getEquinoctialEy(),    1));
-            Assert.assertThat(rebuilt.getHx(),                               relativelyCloseTo(orbit.getHx(),               1));
-            Assert.assertThat(rebuilt.getHy(),                               relativelyCloseTo(orbit.getHy(),               1));
-            Assert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),             1));
-            Assert.assertThat(rebuilt.getEquinoctialExDot(),                 relativelyCloseTo(orbit.getEquinoctialExDot(), 1));
-            Assert.assertThat(rebuilt.getEquinoctialEyDot(),                 relativelyCloseTo(orbit.getEquinoctialEyDot(), 1));
-            Assert.assertThat(rebuilt.getHxDot(),                            relativelyCloseTo(orbit.getHxDot(),            1));
-            Assert.assertThat(rebuilt.getHyDot(),                            relativelyCloseTo(orbit.getHyDot(),            1));
+            MatcherAssert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                1));
+            MatcherAssert.assertThat(rebuilt.getEquinoctialEx(),                    relativelyCloseTo(orbit.getEquinoctialEx(),    1));
+            MatcherAssert.assertThat(rebuilt.getEquinoctialEy(),                    relativelyCloseTo(orbit.getEquinoctialEy(),    1));
+            MatcherAssert.assertThat(rebuilt.getHx(),                               relativelyCloseTo(orbit.getHx(),               1));
+            MatcherAssert.assertThat(rebuilt.getHy(),                               relativelyCloseTo(orbit.getHy(),               1));
+            MatcherAssert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),             1));
+            MatcherAssert.assertThat(rebuilt.getEquinoctialExDot(),                 relativelyCloseTo(orbit.getEquinoctialExDot(), 1));
+            MatcherAssert.assertThat(rebuilt.getEquinoctialEyDot(),                 relativelyCloseTo(orbit.getEquinoctialEyDot(), 1));
+            MatcherAssert.assertThat(rebuilt.getHxDot(),                            relativelyCloseTo(orbit.getHxDot(),            1));
+            MatcherAssert.assertThat(rebuilt.getHyDot(),                            relativelyCloseTo(orbit.getHyDot(),            1));
             for (PositionAngle type2 : PositionAngle.values()) {
-                Assert.assertThat(rebuilt.getL(type2),    relativelyCloseTo(orbit.getL(type2),    1));
-                Assert.assertThat(rebuilt.getLDot(type2), relativelyCloseTo(orbit.getLDot(type2), 1));
+                MatcherAssert.assertThat(rebuilt.getL(type2),    relativelyCloseTo(orbit.getL(type2),    1));
+                MatcherAssert.assertThat(rebuilt.getLDot(type2), relativelyCloseTo(orbit.getLDot(type2), 1));
             }
         }
 

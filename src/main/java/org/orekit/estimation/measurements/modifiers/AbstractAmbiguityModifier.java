@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ public class AbstractAmbiguityModifier {
      * @param ambiguity initial value of ambiguity
      */
     public AbstractAmbiguityModifier(final int key, final double ambiguity) {
-        this.ambiguity = new ParameterDriver("amgiguity-" + key, ambiguity, AMBIGUITY_SCALE,
+        this.ambiguity = new ParameterDriver("ambiguity-" + key, ambiguity, AMBIGUITY_SCALE,
                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -96,9 +96,9 @@ public class AttitudesSequenceTest {
         // Attitudes sequence definition
         EventsLogger logger = new EventsLogger();
         final AttitudesSequence attitudesSequence = new AttitudesSequence();
-        final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+        final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
-        final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
+        final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                         new EclipseDetector(sun, 696000000.,
@@ -188,7 +188,7 @@ public class AttitudesSequenceTest {
         doTestDayNightSwitchField(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)
         {
 
         //  Initial state definition : date, orbit
@@ -204,9 +204,9 @@ public class AttitudesSequenceTest {
         // Attitudes sequence definition
         EventsLogger logger = new EventsLogger();
         final AttitudesSequence attitudesSequence = new AttitudesSequence();
-        final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+        final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
-        final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
+        final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                 new EclipseDetector(sun, 696000000.,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.geometry.spherical.twod.Vertex;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -159,9 +160,10 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         this.sampledZone  = sampledZone;
 
         final EnclosingBall<Sphere2D, S2Point> cap = zone.getEnclosingCap();
+        final SinCos sc = FastMath.sinCos(cap.getRadius());
         this.capCenter    = cap.getCenter().getVector();
-        this.capCos       = FastMath.cos(cap.getRadius());
-        this.capSin       = FastMath.sin(cap.getRadius());
+        this.capCos       = sc.cos();
+        this.capSin       = sc.sin();
 
     }
 

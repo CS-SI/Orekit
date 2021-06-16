@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -142,7 +142,6 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         DerivativeStructure mu  = factory.constant(Constants.EIGEN5C_EARTH_MU);
 
         Field<DerivativeStructure> field = a_0.getField();
-        DerivativeStructure zero = field.getZero();
 
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
@@ -163,7 +162,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -199,7 +198,6 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         Gradient mu  = Gradient.constant(freeParameters, Constants.EIGEN5C_EARTH_MU);
 
         Field<Gradient> field = a_0.getField();
-        Gradient zero = field.getZero();
 
         FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
 
@@ -220,7 +218,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -276,7 +274,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -358,7 +356,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final SingleBodyRelativeAttraction forceModel = new SingleBodyRelativeAttraction(moon);
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-16, false);
     }
 
@@ -377,7 +375,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final SingleBodyRelativeAttraction forceModel = new SingleBodyRelativeAttraction(moon);
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-16, false);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,17 +20,15 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.gnss.data.SBASOrbitalElements;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 /**
@@ -61,140 +59,30 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
     private final Frame ecef;
 
     /**
-     * This nested class aims at building a SBASPropagator.
-     * <p>It implements the classical builder pattern.</p>
-     *
-     */
-    public static class Builder {
-
-        /** The SBAS orbital elements. */
-        private final SBASOrbitalElements orbit;
-
-        /** The Earth gravity coefficient used for SBAS propagation. */
-        private double mu;
-
-        /** The attitude provider. */
-        private AttitudeProvider attitudeProvider;
-
-        /** The mass. */
-        private double mass = DEFAULT_MASS;
-
-        /** The ECI frame. */
-        private Frame eci  = null;
-
-        /** The ECEF frame. */
-        private Frame ecef = null;
-
-        /** Initializes the builder.
-         * <p>The SBAS orbital elements is the only requested parameter to build a SBASPropagator.</p>
-         * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
-         * The Earth gravity coefficient is set by default to the
-         *  {@link org.orekit.propagation.analytical.gnss.SBASOrbitalElements#SBAS_MU SBAS_MU}.<br>
-         * The mass is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-         * The ECI frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
-         * The ECEF frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
-         * </p>
-         *
-         * @param sbasOrbElt the SBAS orbital elements to be used by the SBAS propagator.
-         * @param frames     set of reference frames to use to initialize {@link
-         *                   #ecef(Frame)}, {@link #eci(Frame)}, and {@link
-         *                   #attitudeProvider(AttitudeProvider)}.
-         * @see #attitudeProvider(AttitudeProvider provider)
-         * @see #mu(double coefficient)
-         * @see #mass(double mass)
-         * @see #eci(Frame inertial)
-         * @see #ecef(Frame bodyFixed)
-         */
-        public Builder(final SBASOrbitalElements sbasOrbElt, final Frames frames) {
-            this.orbit = sbasOrbElt;
-            this.eci   = frames.getEME2000();
-            this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
-            this.mu    = SBASOrbitalElements.SBAS_MU;
-            this.attitudeProvider = new InertialProvider(eci);
-        }
-
-        /** Sets the attitude provider.
-         *
-         * @param userProvider the attitude provider
-         * @return the updated builder
-         */
-        public Builder attitudeProvider(final AttitudeProvider userProvider) {
-            this.attitudeProvider = userProvider;
-            return this;
-        }
-
-        /** Sets the Earth gravity coefficient.
-        *
-        * @param coefficient the Earth gravity coefficient
-        * @return the updated builder
-        */
-        public Builder mu(final double coefficient) {
-            this.mu = coefficient;
-            return this;
-        }
-
-        /** Sets the mass.
-         *
-         * @param userMass the mass (in kg)
-         * @return the updated builder
-         */
-        public Builder mass(final double userMass) {
-            this.mass = userMass;
-            return this;
-        }
-
-        /** Sets the Earth Centered Inertial frame used for propagation.
-         *
-         * @param inertial the ECI frame
-         * @return the updated builder
-         */
-        public Builder eci(final Frame inertial) {
-            this.eci = inertial;
-            return this;
-        }
-
-        /** Sets the Earth Centered Earth Fixed frame assimilated to the WGS84 ECEF.
-         *
-         * @param bodyFixed the ECEF frame
-         * @return the updated builder
-         */
-        public Builder ecef(final Frame bodyFixed) {
-            this.ecef = bodyFixed;
-            return this;
-        }
-
-        /** Finalizes the build.
-         *
-         * @return the built SBASPropagator
-         */
-        public SBASPropagator build() {
-            return new SBASPropagator(this);
-        }
-
-    }
-
-    /**
      * Private constructor.
-     * @param builder the builder
+     * @param sbasOrbit Glonass orbital elements
+     * @param eci Earth Centered Inertial frame
+     * @param ecef Earth Centered Earth Fixed frame
+     * @param provider Attitude provider
+     * @param mass Satellite mass (kg)
+     * @param mu Earth's gravity coefficient used for SBAS propagation
      */
-    private SBASPropagator(final Builder builder) {
-        super(builder.attitudeProvider);
+    SBASPropagator(final SBASOrbitalElements sbasOrbit, final Frame eci,
+                   final Frame ecef, final AttitudeProvider provider,
+                   final double mass, final double mu) {
+        super(provider);
         // Stores the SBAS orbital elements
-        this.sbasOrbit = builder.orbit;
+        this.sbasOrbit = sbasOrbit;
         // Sets the start date as the date of the orbital elements
         setStartDate(sbasOrbit.getDate());
         // Sets the mu
-        this.mu = builder.mu;
+        this.mu = mu;
         // Sets the mass
-        this.mass = builder.mass;
+        this.mass = mass;
         // Sets the Earth Centered Inertial frame
-        this.eci  = builder.eci;
+        this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
-        this.ecef = builder.ecef;
+        this.ecef = ecef;
     }
 
     /**
@@ -208,7 +96,7 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
      */
     public PVCoordinates propagateInEcef(final AbsoluteDate date) {
         // Duration from SBAS ephemeris Reference date
-        final UnivariateDerivative2 dt = new UnivariateDerivative2( getDT(date), 1.0, 0.0);
+        final UnivariateDerivative2 dt = new UnivariateDerivative2(getDT(date), 1.0, 0.0);
         // Satellite coordinates
         final UnivariateDerivative2 x = dt.multiply(dt.multiply(0.5 * sbasOrbit.getXDotDot()).add(sbasOrbit.getXDot())).add(sbasOrbit.getX());
         final UnivariateDerivative2 y = dt.multiply(dt.multiply(0.5 * sbasOrbit.getYDotDot()).add(sbasOrbit.getYDot())).add(sbasOrbit.getY());

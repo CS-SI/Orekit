@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -86,7 +86,7 @@ public class LofOffsetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
         return attitudeLaw.getAttitude(pvProv, date, frame);
     }
@@ -129,7 +129,7 @@ public class LofOffsetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date,
                                                                                         final Frame frame) {
 
@@ -190,8 +190,8 @@ public class LofOffsetPointing extends GroundPointing {
             (gpIntersection == null) ? null : shape.transform(gpIntersection);
 
         // Check there is an intersection and it is not in the reverse pointing direction
-        if ((pIntersection == null) ||
-            (Vector3D.dotProduct(pIntersection.subtract(pBodyFrame), pointingBodyFrame) < 0)) {
+        if (pIntersection == null ||
+            Vector3D.dotProduct(pIntersection.subtract(pBodyFrame), pointingBodyFrame) < 0) {
             throw new OrekitException(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND);
         }
 
@@ -205,7 +205,7 @@ public class LofOffsetPointing extends GroundPointing {
      * @param <T> type of the field elements
      * @return intersection point in body frame (only the position is set!)
      */
-    private <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> losIntersectionWithBody(final FieldTransform<T> scToBody) {
+    private <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> losIntersectionWithBody(final FieldTransform<T> scToBody) {
 
         // compute satellite pointing axis and position/velocity in body frame
         final FieldVector3D<T> pointingBodyFrame = scToBody.transformVector(satPointingVector);
@@ -225,8 +225,8 @@ public class LofOffsetPointing extends GroundPointing {
             (gpIntersection == null) ? null : shape.transform(gpIntersection);
 
         // Check there is an intersection and it is not in the reverse pointing direction
-        if ((pIntersection == null) ||
-            (FieldVector3D.dotProduct(pIntersection.subtract(pBodyFrame), pointingBodyFrame).getReal() < 0)) {
+        if (pIntersection == null ||
+            FieldVector3D.dotProduct(pIntersection.subtract(pBodyFrame), pointingBodyFrame).getReal() < 0) {
             throw new OrekitException(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND);
         }
 

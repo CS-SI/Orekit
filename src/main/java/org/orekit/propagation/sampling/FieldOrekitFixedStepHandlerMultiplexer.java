@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.sampling;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -28,7 +28,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class FieldOrekitFixedStepHandlerMultiplexer<T extends RealFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
+public class FieldOrekitFixedStepHandlerMultiplexer<T extends CalculusFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
 
     /** Underlying step handlers. */
     private final List<FieldOrekitFixedStepHandler<T>> handlers;

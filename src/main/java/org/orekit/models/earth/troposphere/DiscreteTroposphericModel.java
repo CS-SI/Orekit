@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,16 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import org.hipparchus.RealFieldElement;
+import java.util.List;
+
+import org.hipparchus.Field;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.MathArrays;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -35,56 +42,60 @@ import org.orekit.time.FieldAbsoluteDate;
  * </ul>
  * @author Bryan Cazabonne
  */
-public interface DiscreteTroposphericModel extends MappingFunction {
+public interface DiscreteTroposphericModel {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
      *
      * @param elevation the elevation of the satellite, in radians
-     * @param height the height of the station in m above sea level
-     * @param parameters tropospheric model parameters.
+     * @param point station location
+     * @param parameters tropospheric model parameters
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    double pathDelay(double elevation, double height, double[] parameters, AbsoluteDate date);
+    double pathDelay(double elevation, GeodeticPoint point, double[] parameters, AbsoluteDate date);
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
      *
      * @param <T> type of the elements
      * @param elevation the elevation of the satellite, in radians
-     * @param height the height of the station in m above sea level
-     * @param parameters tropospheric model parameters.
+     * @param point station location
+     * @param parameters tropospheric model parameters
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    <T extends RealFieldElement<T>> T pathDelay(T elevation, T height, T[] parameters, FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
 
-    /** This method allows the  computation of the zenith hydrostatic and
-     * zenith wet delay. The resulting element is an array having the following form:
-     * <ul>
-     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
-     * <li>double[1] = D<sub>wz</sub> → zenith wet delay
-     * </ul>
-     * @param height the height of the station in m above sea level.
-     * @param parameters tropospheric model parameters.
-     * @param date current date
-     * @return a two components array containing the zenith hydrostatic and wet delays.
+    /** Get the drivers for tropospheric model parameters.
+     * @return drivers for tropospheric model parameters
      */
-     double[] computeZenithDelay(double height, double[] parameters, AbsoluteDate date);
+    List<ParameterDriver> getParametersDrivers();
 
-    /** This method allows the  computation of the zenith hydrostatic and
-     * zenith wet delay. The resulting element is an array having the following form:
-     * <ul>
-     * <li>T[0] = D<sub>hz</sub> → zenith hydrostatic delay
-     * <li>T[1] = D<sub>wz</sub> → zenith wet delay
-     * </ul>
+    /** Get tropospheric model parameters.
+     * @return tropospheric model parameters
+     */
+    default double[] getParameters() {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue();
+        }
+        return parameters;
+    }
+
+    /** Get tropospheric model parameters.
+     * @param field field to which the elements belong
      * @param <T> type of the elements
-     * @param height the height of the station in m above sea level.
-     * @param parameters tropospheric model parameters.
-     * @param date current date
-     * @return a two components array containing the zenith hydrostatic and wet delays.
+     * @return tropospheric model parameters
      */
-    <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, FieldAbsoluteDate<T> date);
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
+        }
+        return parameters;
+    }
 
 }

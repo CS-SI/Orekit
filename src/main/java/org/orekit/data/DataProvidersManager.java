@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -147,7 +147,7 @@ public class DataProvidersManager {
 
         // get the path containing all components
         final String path = System.getProperty(OREKIT_DATA_PATH);
-        if ((path != null) && !"".equals(path)) {
+        if (path != null && !"".equals(path)) {
 
             // extract the various components
             for (final String name : path.split(System.getProperty("path.separator"))) {
@@ -221,7 +221,7 @@ public class DataProvidersManager {
 
     /** Add a data filter.
      * @param filter filter to add
-     * @see #applyAllFilters(NamedData)
+     * @see #applyAllFilters(DataSource)
      * @see #clearFilters()
      * @since 9.2
      */
@@ -247,20 +247,20 @@ public class DataProvidersManager {
      * applied on top of filter B which itself is applied on top of
      * another instance of filter A.
      * </p>
-     * @param original original named data
-     * @return fully filtered named data
+     * @param original original data source
+     * @return fully filtered data source
      * @exception IOException if some data stream cannot be filtered
      * @see #addFilter(DataFilter)
      * @see #clearFilters()
      * @since 9.2
      */
-    public NamedData applyAllFilters(final NamedData original)
+    public DataSource applyAllFilters(final DataSource original)
         throws IOException {
-        NamedData top = original;
+        DataSource top = original;
         for (boolean filtering = true; filtering;) {
             filtering = false;
             for (final DataFilter filter : filters) {
-                final NamedData filtered = filter.filter(top);
+                final DataSource filtered = filter.filter(top);
                 if (filtered != top) {
                     // the filter has been applied, we need to restart the loop
                     top       = filtered;

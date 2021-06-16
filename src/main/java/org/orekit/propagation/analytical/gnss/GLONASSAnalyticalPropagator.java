@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,25 +20,24 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 /**
@@ -96,7 +95,6 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         B  = k3 * k3 / (6 * k1);
     }
 
-    // Fields
     /** The GLONASS orbital elements used. */
     private final GLONASSOrbitalElements glonassOrbit;
 
@@ -113,171 +111,29 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
     private final DataContext dataContext;
 
     /**
-     * This nested class aims at building a GLONASSPropagator.
-     * <p>It implements the classical builder pattern.</p>
-     *
-     */
-    public static class Builder {
-
-        // Required parameter
-        /** The GLONASS orbital elements. */
-        private final GLONASSOrbitalElements orbit;
-
-        // Optional parameters
-        /** The attitude provider. */
-        private AttitudeProvider attitudeProvider;
-        /** The mass. */
-        private double mass = DEFAULT_MASS;
-        /** The ECI frame. */
-        private Frame eci  = null;
-        /** The ECEF frame. */
-        private Frame ecef = null;
-        /** Data context. */
-        private DataContext dataContext;
-
-        /** Initializes the builder.
-         * <p>The GLONASS orbital elements is the only requested parameter to build a GLONASSPropagator.</p>
-         * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
-         *  default data context.<br>
-         * The mass is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-         * The data context is by default to the
-         *  {@link DataContext#getDefault() default data context}.<br>
-         * The ECI frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-         *  context.<br>
-         * The ECEF frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-         *  CIO/2010-based ITRF simple EOP} in the default data context.
-         * </p>
-         *
-         * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-         * Another data context can be set using
-         * {@code Builder(final GLONASSOrbitalElements gpsOrbElt, final DataContext dataContext)}</p>
-         *
-         * @param glonassOrbElt the GLONASS orbital elements to be used by the GLONASS propagator.
-         * @see #attitudeProvider(AttitudeProvider provider)
-         * @see #mass(double mass)
-         * @see #eci(Frame inertial)
-         * @see #ecef(Frame bodyFixed)
-         */
-        @DefaultDataContext
-        public Builder(final GLONASSOrbitalElements glonassOrbElt) {
-            this(glonassOrbElt, DataContext.getDefault());
-        }
-
-        /** Initializes the builder.
-         * <p>The GLONASS orbital elements is the only requested parameter to build a GLONASSPropagator.</p>
-         * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#getDefaultLaw(Frames)}.<br>
-         * The mass is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-         * The ECI frame is set by default to the
-         *  {@link Frames#getEME2000() EME2000 frame}.<br>
-         * The ECEF frame is set by default to the
-         *  {@link Frames#getITRF(IERSConventions, boolean) CIO/2010-based ITRF simple
-         *  EOP}.
-         * </p>
-         *
-         * @param glonassOrbElt the GLONASS orbital elements to be used by the GLONASS propagator.
-         * @param dataContext the data context to use for frames and time scales.
-         * @see #attitudeProvider(AttitudeProvider provider)
-         * @see #mass(double mass)
-         * @see #eci(Frame inertial)
-         * @see #ecef(Frame bodyFixed)
-         * @since 10.1
-         */
-        public Builder(final GLONASSOrbitalElements glonassOrbElt,
-                       final DataContext dataContext) {
-            this.orbit = glonassOrbElt;
-            this.dataContext = dataContext;
-            final Frames frames = dataContext.getFrames();
-            this.eci   = frames.getEME2000();
-            this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
-            attitudeProvider = Propagator.getDefaultLaw(frames);
-        }
-
-        /** Sets the attitude provider.
-         *
-         * @param userProvider the attitude provider
-         * @return the updated builder
-         */
-        public Builder attitudeProvider(final AttitudeProvider userProvider) {
-            this.attitudeProvider = userProvider;
-            return this;
-        }
-
-        /** Sets the mass.
-         *
-         * @param userMass the mass (in kg)
-         * @return the updated builder
-         */
-        public Builder mass(final double userMass) {
-            this.mass = userMass;
-            return this;
-        }
-
-        /** Sets the Earth Centered Inertial frame used for propagation.
-         *
-         * @param inertial the ECI frame
-         * @return the updated builder
-         */
-        public Builder eci(final Frame inertial) {
-            this.eci = inertial;
-            return this;
-        }
-
-        /** Sets the Earth Centered Earth Fixed frame assimilated to the WGS84 ECEF.
-         *
-         * @param bodyFixed the ECEF frame
-         * @return the updated builder
-         */
-        public Builder ecef(final Frame bodyFixed) {
-            this.ecef = bodyFixed;
-            return this;
-        }
-
-        /**
-         * Sets the data context used by the propagator. Does not update the ECI or ECEF
-         * frames which must be done separately using {@link #eci(Frame)} and {@link
-         * #ecef(Frame)}.
-         *
-         * @param context used for propagation.
-         * @return the updated builder.
-         */
-        public Builder dataContext(final DataContext context) {
-            this.dataContext = context;
-            return this;
-        }
-
-        /** Finalizes the build.
-         *
-         * @return the built GLONASSPropagator
-         */
-        public GLONASSAnalyticalPropagator build() {
-            return new GLONASSAnalyticalPropagator(this);
-        }
-
-    }
-
-    /**
      * Private constructor.
-     * @param builder the builder
+     * @param glonassOrbit Glonass orbital elements
+     * @param eci Earth Centered Inertial frame
+     * @param ecef Earth Centered Earth Fixed frame
+     * @param provider Attitude provider
+     * @param mass Satellite mass (kg)
+     * @param context Data context
      */
-    private GLONASSAnalyticalPropagator(final Builder builder) {
-        super(builder.attitudeProvider);
-        this.dataContext = builder.dataContext;
+    GLONASSAnalyticalPropagator(final GLONASSOrbitalElements glonassOrbit, final Frame eci,
+                                final Frame ecef, final AttitudeProvider provider,
+                                final double mass, final DataContext context) {
+        super(provider);
+        this.dataContext = context;
         // Stores the GLONASS orbital elements
-        this.glonassOrbit = builder.orbit;
+        this.glonassOrbit = glonassOrbit;
         // Sets the start date as the date of the orbital elements
         setStartDate(glonassOrbit.getDate());
         // Sets the mass
-        this.mass = builder.mass;
+        this.mass = mass;
         // Sets the Earth Centered Inertial frame
-        this.eci  = builder.eci;
+        this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
-        this.ecef = builder.ecef;
+        this.ecef = ecef;
     }
 
     /**
@@ -302,7 +158,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 w = FastMath.floor(dTpr.divide(GLONASS_MEAN_DRACONIAN_PERIOD + glonassOrbit.getDeltaT()));
 
         // Current inclination
-        final UnivariateDerivative2 i = zero.add(GLONASS_MEAN_INCLINATION / 180 * GLONASSOrbitalElements.GLONASS_PI + glonassOrbit.getDeltaI());
+        final UnivariateDerivative2 i = zero.add(GLONASS_MEAN_INCLINATION / 180 * GNSSConstants.GLONASS_PI + glonassOrbit.getDeltaI());
 
         // Eccentricity
         final UnivariateDerivative2 e = zero.add(glonassOrbit.getE());
@@ -311,7 +167,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 tDR = w.multiply(2.0).add(1.0).multiply(glonassOrbit.getDeltaTDot()).
                                           add(glonassOrbit.getDeltaT()).
                                           add(GLONASS_MEAN_DRACONIAN_PERIOD);
-        final UnivariateDerivative2 n = tDR.divide(2.0 * GLONASSOrbitalElements.GLONASS_PI).reciprocal();
+        final UnivariateDerivative2 n = tDR.divide(2.0 * GNSSConstants.GLONASS_PI).reciprocal();
 
         // Semi-major axis : computed by successive approximation
         final UnivariateDerivative2 sma = computeSma(tDR, i, e);
@@ -340,8 +196,9 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 m = m1.add(n.multiply(correction));
 
         // Take into consideration the periodic perturbations
-        final UnivariateDerivative2 h = e.multiply(FastMath.sin(pa));
-        final UnivariateDerivative2 l = e.multiply(FastMath.cos(pa));
+        final FieldSinCos<UnivariateDerivative2> scPa = FastMath.sinCos(pa);
+        final UnivariateDerivative2 h = e.multiply(scPa.sin());
+        final UnivariateDerivative2 l = e.multiply(scPa.cos());
         // δa1
         final UnivariateDerivative2[] d1 = getParameterDifferentials(sma, i, h, l, m1);
         // δa2
@@ -359,9 +216,9 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
             paCorr = zero;
         } else {
             if (lCorr.getValue() == eCorr.getValue()) {
-                paCorr = zero.add(0.5 * GLONASSOrbitalElements.GLONASS_PI);
+                paCorr = zero.add(0.5 * GNSSConstants.GLONASS_PI);
             } else if (lCorr.getValue() == -eCorr.getValue()) {
-                paCorr = zero.add(-0.5 * GLONASSOrbitalElements.GLONASS_PI);
+                paCorr = zero.add(-0.5 * GNSSConstants.GLONASS_PI);
             } else {
                 paCorr = FastMath.atan2(hCorr, lCorr);
             }
@@ -382,18 +239,17 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 rk    = pCorr.divide(eCorr.multiply(FastMath.cos(vk)).add(1.0));
 
         // Positions in orbital plane
-        final UnivariateDerivative2 xk = FastMath.cos(phik).multiply(rk);
-        final UnivariateDerivative2 yk = FastMath.sin(phik).multiply(rk);
+        final FieldSinCos<UnivariateDerivative2> scPhik = FastMath.sinCos(phik);
+        final UnivariateDerivative2 xk = scPhik.cos().multiply(rk);
+        final UnivariateDerivative2 yk = scPhik.sin().multiply(rk);
 
         // Coordinates of position
-        final UnivariateDerivative2 cosL = FastMath.cos(lambdaCorr);
-        final UnivariateDerivative2 sinL = FastMath.sin(lambdaCorr);
-        final UnivariateDerivative2 cosI = FastMath.cos(iCorr);
-        final UnivariateDerivative2 sinI = FastMath.sin(iCorr);
+        final FieldSinCos<UnivariateDerivative2> scL = FastMath.sinCos(lambdaCorr);
+        final FieldSinCos<UnivariateDerivative2> scI = FastMath.sinCos(iCorr);
         final FieldVector3D<UnivariateDerivative2> positionwithDerivatives =
-                        new FieldVector3D<>(xk.multiply(cosL).subtract(yk.multiply(sinL).multiply(cosI)),
-                                            xk.multiply(sinL).add(yk.multiply(cosL).multiply(cosI)),
-                                            yk.multiply(sinI));
+                        new FieldVector3D<>(xk.multiply(scL.cos()).subtract(yk.multiply(scL.sin()).multiply(scI.cos())),
+                                            xk.multiply(scL.sin()).add(yk.multiply(scL.cos()).multiply(scI.cos())),
+                                            yk.multiply(scI.sin()));
 
         return new PVCoordinates(new Vector3D(positionwithDerivatives.getX().getValue(),
                                               positionwithDerivatives.getY().getValue(),
@@ -578,9 +434,9 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         while (!isLastStep) {
 
             // a(n+1) computation
-            final UnivariateDerivative2 tOCKo2p     = tOCK.divide(2.0 * GLONASSOrbitalElements.GLONASS_PI);
+            final UnivariateDerivative2 tOCKo2p     = tOCK.divide(2.0 * GNSSConstants.GLONASS_PI);
             final UnivariateDerivative2 tOCKo2pPow2 = tOCKo2p.multiply(tOCKo2p);
-            anp1 = FastMath.cbrt(tOCKo2pPow2.multiply(GLONASSOrbitalElements.GLONASS_MU));
+            anp1 = FastMath.cbrt(tOCKo2pPow2.multiply(GNSSConstants.GLONASS_MU));
 
             // p(n+1) computation
             final UnivariateDerivative2 p = anp1.multiply(ome2);
@@ -664,18 +520,23 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 b     = aeoa2.multiply(1.5 * GLONASS_J20);
 
         // Commons Parameters
-        final UnivariateDerivative2 cosI   = FastMath.cos(i);
-        final UnivariateDerivative2 sinI   = FastMath.sin(i);
+        final FieldSinCos<UnivariateDerivative2> scI   = FastMath.sinCos(i);
+        final FieldSinCos<UnivariateDerivative2> scLk  = FastMath.sinCos(m);
+        final FieldSinCos<UnivariateDerivative2> sc2Lk = FieldSinCos.sum(scLk, scLk);
+        final FieldSinCos<UnivariateDerivative2> sc3Lk = FieldSinCos.sum(scLk, sc2Lk);
+        final FieldSinCos<UnivariateDerivative2> sc4Lk = FieldSinCos.sum(sc2Lk, sc2Lk);
+        final UnivariateDerivative2 cosI   = scI.cos();
+        final UnivariateDerivative2 sinI   = scI.sin();
         final UnivariateDerivative2 cosI2  = cosI.multiply(cosI);
         final UnivariateDerivative2 sinI2  = sinI.multiply(sinI);
-        final UnivariateDerivative2 cosLk  = FastMath.cos(m);
-        final UnivariateDerivative2 sinLk  = FastMath.sin(m);
-        final UnivariateDerivative2 cos2Lk = FastMath.cos(m.multiply(2.0));
-        final UnivariateDerivative2 sin2Lk = FastMath.sin(m.multiply(2.0));
-        final UnivariateDerivative2 cos3Lk = FastMath.cos(m.multiply(3.0));
-        final UnivariateDerivative2 sin3Lk = FastMath.sin(m.multiply(3.0));
-        final UnivariateDerivative2 cos4Lk = FastMath.cos(m.multiply(4.0));
-        final UnivariateDerivative2 sin4Lk = FastMath.sin(m.multiply(4.0));
+        final UnivariateDerivative2 cosLk  = scLk.cos();
+        final UnivariateDerivative2 sinLk  = scLk.sin();
+        final UnivariateDerivative2 cos2Lk = sc2Lk.cos();
+        final UnivariateDerivative2 sin2Lk = sc2Lk.sin();
+        final UnivariateDerivative2 cos3Lk = sc3Lk.cos();
+        final UnivariateDerivative2 sin3Lk = sc3Lk.sin();
+        final UnivariateDerivative2 cos4Lk = sc4Lk.cos();
+        final UnivariateDerivative2 sin4Lk = sc4Lk.sin();
 
         // h*cos(nLk), l*cos(nLk), h*sin(nLk) and l*sin(nLk)
         // n = 1
@@ -763,7 +624,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @return the Earth gravity coefficient.
      */
     public static double getMU() {
-        return GLONASSOrbitalElements.GLONASS_MU;
+        return GNSSConstants.GLONASS_MU;
     }
 
     /**
@@ -813,7 +674,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         // Transforms the PVCoordinates to ECI frame
         final PVCoordinates pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
         // Returns the Cartesian orbit
-        return new CartesianOrbit(pvaInECI, eci, date, GLONASSOrbitalElements.GLONASS_MU);
+        return new CartesianOrbit(pvaInECI, eci, date, GNSSConstants.GLONASS_MU);
     }
 
 }

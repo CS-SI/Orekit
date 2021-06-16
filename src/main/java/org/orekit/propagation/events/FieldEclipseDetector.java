@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -36,7 +36,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Pascal Parraud
  */
-public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldEclipseDetector<T>, T> {
+public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldEclipseDetector<T>, T> {
 
 
     /** Occulting body. */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.utils;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -192,7 +192,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         this.frame = absPv1.getFrame();
     }
 
-    /** Builds a AbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a AbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link Derivative}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.
@@ -200,9 +200,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param frame the frame in which the parameters are defined
      * @param date date of the built coordinates
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
-            final FieldVector3D<DerivativeStructure> p) {
+    public <U extends Derivative<U>> AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
+                                                           final FieldVector3D<U> p) {
         super(date, p);
         this.frame = frame;
     }

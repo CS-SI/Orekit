@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -198,8 +197,7 @@ public class TropoModifierTest {
             // add modifier
             final GroundStation stationParameter = ((Range) measurement).getStation();
             final TopocentricFrame baseFrame = stationParameter.getBaseFrame();
-            final GeodeticPoint point = baseFrame.getPoint();
-            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
             final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(tropoModel);
             
@@ -254,8 +252,7 @@ public class TropoModifierTest {
             // add modifier
             final GroundStation stationParameter = phase.getStation();
             final TopocentricFrame baseFrame = stationParameter.getBaseFrame();
-            final GeodeticPoint point = baseFrame.getPoint();
-            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
             final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(tropoModel);
             
@@ -344,9 +341,10 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -385,9 +383,10 @@ public class TropoModifierTest {
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -402,8 +401,7 @@ public class TropoModifierTest {
             // add modifier
             final GroundStation stationParameter = ((RangeRate) measurement).getStation();
             final TopocentricFrame baseFrame = stationParameter.getBaseFrame();
-            final GeodeticPoint point = baseFrame.getPoint();
-            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(tropoModel, false);
 
@@ -504,8 +502,7 @@ public class TropoModifierTest {
             // add modifier
             final GroundStation stationParameter = ((AngularAzEl) measurement).getStation();
             final TopocentricFrame baseFrame = stationParameter.getBaseFrame();
-            final GeodeticPoint point = baseFrame.getPoint();
-            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
             final AngularTroposphericDelayModifier modifier = new AngularTroposphericDelayModifier(tropoModel);
 

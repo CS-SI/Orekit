@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
@@ -1085,21 +1086,21 @@ public class CircularOrbitTest {
                                                             orbit.getRightAscensionOfAscendingNodeDot(),
                                                             orbit.getAlphaDot(type),
                                                             type, orbit.getFrame(), orbit.getDate(), orbit.getMu());
-            Assert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                                1));
-            Assert.assertThat(rebuilt.getCircularEx(),                       relativelyCloseTo(orbit.getCircularEx(),                       1));
-            Assert.assertThat(rebuilt.getCircularEy(),                       relativelyCloseTo(orbit.getCircularEy(),                       1));
-            Assert.assertThat(rebuilt.getE(),                                relativelyCloseTo(orbit.getE(),                                1));
-            Assert.assertThat(rebuilt.getI(),                                relativelyCloseTo(orbit.getI(),                                1));
-            Assert.assertThat(rebuilt.getRightAscensionOfAscendingNode(),    relativelyCloseTo(orbit.getRightAscensionOfAscendingNode(),    1));
-            Assert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),                             1));
-            Assert.assertThat(rebuilt.getCircularExDot(),                    relativelyCloseTo(orbit.getCircularExDot(),                    1));
-            Assert.assertThat(rebuilt.getCircularEyDot(),                    relativelyCloseTo(orbit.getCircularEyDot(),                    1));
-            Assert.assertThat(rebuilt.getEDot(),                             relativelyCloseTo(orbit.getEDot(),                             1));
-            Assert.assertThat(rebuilt.getIDot(),                             relativelyCloseTo(orbit.getIDot(),                             1));
-            Assert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot(), 1));
+            MatcherAssert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                                1));
+            MatcherAssert.assertThat(rebuilt.getCircularEx(),                       relativelyCloseTo(orbit.getCircularEx(),                       1));
+            MatcherAssert.assertThat(rebuilt.getCircularEy(),                       relativelyCloseTo(orbit.getCircularEy(),                       1));
+            MatcherAssert.assertThat(rebuilt.getE(),                                relativelyCloseTo(orbit.getE(),                                1));
+            MatcherAssert.assertThat(rebuilt.getI(),                                relativelyCloseTo(orbit.getI(),                                1));
+            MatcherAssert.assertThat(rebuilt.getRightAscensionOfAscendingNode(),    relativelyCloseTo(orbit.getRightAscensionOfAscendingNode(),    1));
+            MatcherAssert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),                             1));
+            MatcherAssert.assertThat(rebuilt.getCircularExDot(),                    relativelyCloseTo(orbit.getCircularExDot(),                    1));
+            MatcherAssert.assertThat(rebuilt.getCircularEyDot(),                    relativelyCloseTo(orbit.getCircularEyDot(),                    1));
+            MatcherAssert.assertThat(rebuilt.getEDot(),                             relativelyCloseTo(orbit.getEDot(),                             1));
+            MatcherAssert.assertThat(rebuilt.getIDot(),                             relativelyCloseTo(orbit.getIDot(),                             1));
+            MatcherAssert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot(), 1));
             for (PositionAngle type2 : PositionAngle.values()) {
-                Assert.assertThat(rebuilt.getAlpha(type2),    relativelyCloseTo(orbit.getAlpha(type2),    1));
-                Assert.assertThat(rebuilt.getAlphaDot(type2), relativelyCloseTo(orbit.getAlphaDot(type2), 1));
+                MatcherAssert.assertThat(rebuilt.getAlpha(type2),    relativelyCloseTo(orbit.getAlpha(type2),    1));
+                MatcherAssert.assertThat(rebuilt.getAlphaDot(type2), relativelyCloseTo(orbit.getAlphaDot(type2), 1));
             }
         }
 

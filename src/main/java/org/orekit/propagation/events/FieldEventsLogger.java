@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ package org.orekit.propagation.events;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -45,7 +45,7 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Luc Maisonobe
  */
-public class FieldEventsLogger<T extends RealFieldElement<T>> {
+public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
 
 
 
@@ -106,7 +106,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
     }
 
     /** Class for logged events entries. */
-    public static class FieldLoggedEvent <T extends RealFieldElement<T>> {
+    public static class FieldLoggedEvent <T extends CalculusFieldElement<T>> {
 
         /** Event detector triggered. */
         private final FieldEventDetector<T> detector;

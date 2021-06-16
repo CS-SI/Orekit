@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.maneuvers.propulsion.AbstractConstantThrustPropulsionModel;
@@ -276,7 +276,7 @@ public class ConstantThrustManeuver extends Maneuver {
      * @return true if maneuver is on at this state
      * @since 10.1
      */
-    public <T extends RealFieldElement<T>> boolean isFiring(final FieldSpacecraftState<T> s) {
+    public <T extends CalculusFieldElement<T>> boolean isFiring(final FieldSpacecraftState<T> s) {
         return isFiring(s.getDate().toAbsoluteDate());
     }
 

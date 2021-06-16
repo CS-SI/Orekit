@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.orekit.gnss;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +35,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -155,30 +157,30 @@ public class RinexLoader {
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      *
-     * @param input data input stream
-     * @param name name of the file (or zip entry)
-     * @see #RinexLoader(InputStream, String, TimeScales)
+     * @param source source for the RINEX data
+     * @see #RinexLoader(DataSource, TimeScales)
      */
     @DefaultDataContext
-    public RinexLoader(final InputStream input, final String name) {
-        this(input, name, DataContext.getDefault().getTimeScales());
+    public RinexLoader(final DataSource source) {
+        this(source, DataContext.getDefault().getTimeScales());
     }
 
     /**
      * Loads RINEX from the given input stream using the specified auxiliary data.
      *
-     * @param input data input stream
-     * @param name name of the file (or zip entry)
+     * @param source source for the RINEX data
      * @param timeScales the set of time scales to use when parsing dates.
      * @since 10.1
      */
-    public RinexLoader(final InputStream input,
-                       final String name,
+    public RinexLoader(final DataSource source,
                        final TimeScales timeScales) {
         try {
             this.timeScales = timeScales;
             observationDataSets = new ArrayList<>();
-            new Parser().loadData(input, name);
+            try (InputStream         is  = source.getStreamOpener().openOnce();
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+                new Parser().loadData(bis, source.getName());
+            }
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
@@ -295,10 +297,10 @@ public class RinexLoader {
                 formatVersion = parseDouble(0, 9);
                 final int format100 = (int) FastMath.rint(100 * formatVersion);
 
-                if ((format100 != 200) && (format100 != 210) && (format100 != 211) &&
-                    (format100 != 212) && (format100 != 220) && (format100 != 300) &&
-                    (format100 != 301) && (format100 != 302) && (format100 != 303) &&
-                    (format100 != 304)) {
+                if (format100 != 200 && format100 != 210 && format100 != 211 &&
+                    format100 != 212 && format100 != 220 && format100 != 300 &&
+                    format100 != 301 && format100 != 302 && format100 != 303 &&
+                    format100 != 304) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                 }
 
@@ -483,8 +485,8 @@ public class RinexLoader {
                                         //We make sure that we have read all the mandatory fields inside the header of the Rinex
                                         if (!inRinexVersion || !inRunBy || !inMarkerName ||
                                             !inObserver || !inRecType || !inAntType ||
-                                            (formatVersion < 2.20 && !inAproxPos) ||
-                                            (formatVersion < 2.20 && !inAntDelta) ||
+                                            formatVersion < 2.20 && !inAproxPos ||
+                                            formatVersion < 2.20 && !inAntDelta ||
                                             !inTypesObs || !inFirstObs) {
                                             throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);
                                         }
@@ -947,8 +949,8 @@ public class RinexLoader {
                                         if (!inRinexVersion || !inRunBy || !inMarkerName ||
                                             !inObserver || !inRecType || !inAntType ||
                                             !inAntDelta || !inTypesObs || !inFirstObs ||
-                                            (formatVersion >= 3.01 && !inPhaseShift) ||
-                                            (formatVersion >= 3.03 && (!inGlonassSlot || !inGlonassCOD))) {
+                                            formatVersion >= 3.01 && !inPhaseShift ||
+                                            formatVersion >= 3.03 && (!inGlonassSlot || !inGlonassCOD)) {
                                             throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);
                                         }
 
@@ -1247,105 +1249,6 @@ public class RinexLoader {
             }
         }
 
-        /** Corrections of Differential Code Biases (DCBs) applied.
-         * Contains information on the programs used to correct the observations
-         * in RINEX files for differential code biases.
-         */
-        public class AppliedDCBS {
-
-            /** Satellite system. */
-            private final SatelliteSystem satelliteSystem;
-
-            /** Program name used to apply differential code bias corrections. */
-            private final String progDCBS;
-
-            /** Source of corrections (URL). */
-            private final String sourceDCBS;
-
-            /** Simple constructor.
-             * @param satelliteSystem satellite system
-             * @param progDCBS Program name used to apply DCBs
-             * @param sourceDCBS Source of corrections (URL)
-             */
-            private AppliedDCBS(final SatelliteSystem satelliteSystem,
-                                final String progDCBS, final String sourceDCBS) {
-                this.satelliteSystem = satelliteSystem;
-                this.progDCBS        = progDCBS;
-                this.sourceDCBS      = sourceDCBS;
-            }
-
-            /** Get the satellite system.
-             * @return satellite system
-             */
-            public SatelliteSystem getSatelliteSystem() {
-                return satelliteSystem;
-            }
-
-            /** Get the program name used to apply DCBs.
-             * @return  Program name used to apply DCBs
-             */
-            public String getProgDCBS() {
-                return progDCBS;
-            }
-
-            /** Get the source of corrections.
-             * @return Source of corrections (URL)
-             */
-            public String getSourceDCBS() {
-                return sourceDCBS;
-            }
-
-        }
-
-        /** Corrections of antenna phase center variations (PCVs) applied.
-         * Contains information on the programs used to correct the observations
-         * in RINEX files for antenna phase center variations.
-         */
-        public class AppliedPCVS {
-
-            /** Satellite system. */
-            private final SatelliteSystem satelliteSystem;
-
-            /** Program name used to antenna center variation corrections. */
-            private final String progPCVS;
-
-            /** Source of corrections (URL). */
-            private final String sourcePCVS;
-
-            /** Simple constructor.
-             * @param satelliteSystem satellite system
-             * @param progPCVS Program name used for PCVs
-             * @param sourcePCVS Source of corrections (URL)
-             */
-            private AppliedPCVS(final SatelliteSystem satelliteSystem,
-                                final String progPCVS, final String sourcePCVS) {
-                this.satelliteSystem = satelliteSystem;
-                this.progPCVS        = progPCVS;
-                this.sourcePCVS      = sourcePCVS;
-            }
-
-            /** Get the satellite system.
-             * @return satellite system
-             */
-            public SatelliteSystem getSatelliteSystem() {
-                return satelliteSystem;
-            }
-
-            /** Get the program name used to apply PCVs.
-             * @return  Program name used to apply PCVs
-             */
-            public String getProgPCVS() {
-                return progPCVS;
-            }
-
-            /** Get the source of corrections.
-             * @return Source of corrections (URL)
-             */
-            public String getSourcePCVS() {
-                return sourcePCVS;
-            }
-
-        }
     }
 
 }

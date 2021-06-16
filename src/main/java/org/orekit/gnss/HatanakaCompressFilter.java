@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataFilter;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -49,25 +49,25 @@ public class HatanakaCompressFilter implements DataFilter {
 
     /** {@inheritDoc} */
     @Override
-    public NamedData filter(final NamedData original) {
+    public DataSource filter(final DataSource original) {
 
         final String                 oName   = original.getName();
-        final NamedData.StreamOpener oOpener = original.getStreamOpener();
+        final DataSource.StreamOpener oOpener = original.getStreamOpener();
 
         final Matcher rinex2Matcher = RINEX_2_PATTERN.matcher(oName);
         if (rinex2Matcher.matches()) {
             // this is a rinex 2 file compressed with Hatanaka method
             final String                 fName   = rinex2Matcher.group(1) + "o";
-            final NamedData.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openStream());
-            return new NamedData(fName, fOpener);
+            final DataSource.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openOnce());
+            return new DataSource(fName, fOpener);
         }
 
         final Matcher rinex3Matcher = RINEX_3_PATTERN.matcher(oName);
         if (rinex3Matcher.matches()) {
             // this is a rinex 3 file compressed with Hatanaka method
             final String                 fName   = rinex3Matcher.group(1) + ".rnx";
-            final NamedData.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openStream());
-            return new NamedData(fName, fOpener);
+            final DataSource.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openOnce());
+            return new DataSource(fName, fOpener);
         }
 
         // it is not an Hatanaka compressed rinex file
@@ -691,7 +691,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
             // extract format version
             final int cVersion100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
-            if ((cVersion100 != 100) && (cVersion100 != 300)) {
+            if (cVersion100 != 100 && cVersion100 != 300) {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
             }
             if (!CRINEX_VERSION_TYPE.equals(parseString(line1, LABEL_START, CRINEX_VERSION_TYPE.length()))) {

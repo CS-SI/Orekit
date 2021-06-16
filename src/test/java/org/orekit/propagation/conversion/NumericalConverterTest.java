@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -254,6 +254,24 @@ public class NumericalConverterTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+        }
+    }
+    
+    @Test
+    public void testDeselectOrbitals() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
+                                                       dp54Builder,
+                                                       PositionAngle.TRUE, 1.0);
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertTrue(driver.isSelected());
+        }
+        builder.deselectDynamicParameters();
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertFalse(driver.isSelected());
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,10 +29,10 @@ public class OrekitInternalErrorTest {
         OrekitInternalError e = new OrekitInternalError(null);
         Assert.assertEquals(OrekitMessages.INTERNAL_ERROR, e.getSpecifier());
         Assert.assertEquals(1, e.getParts().length);
-        Assert.assertEquals("https://gitlab.orekit.org/orekit/orekit/issues", e.getParts()[0]);
-        Assert.assertTrue(e.getMessage().contains("https://gitlab.orekit.org/orekit/orekit/issues"));
+        Assert.assertEquals("https://forum.orekit.org", e.getParts()[0]);
+        Assert.assertTrue(e.getMessage().contains("https://forum.orekit.org"));
         Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("erreur interne, merci de signaler le problème en ouvrant une fiche d'anomalie sur https://gitlab.orekit.org/orekit/orekit/issues",
+        Assert.assertEquals("erreur interne, merci de signaler le problème en ouvrant une nouvelle discussion sur https://forum.orekit.org",
                             e.getMessage(Locale.FRENCH));
     }
 

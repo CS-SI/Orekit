@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="http://sanaregistry.org/r/ndmxml/ndmxml-1.0-master.xsd"
+  id="CCSDS_AEM_VERS" version="1.0">
+  <header>
+    <COMMENT>This example corresponds to ADM Blue Book Figure 4-2
+    </COMMENT>
+    <CREATION_DATE>2008-071T17:09:49</CREATION_DATE>
+    <ORIGINATOR>GSFC FDF</ORIGINATOR>
+  </header>
+  <body>
+    <segment>
+      <metadata>
+        <COMMENT>This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.</COMMENT>
+        <COMMENT>It is to be used for attitude reconstruction only. The relative accuracy of these</COMMENT>
+        <COMMENT>attitudes is 0.1 degrees per axis.</COMMENT>
+        <OBJECT_NAME>ST5-224</OBJECT_NAME>
+        <OBJECT_ID>2006224</OBJECT_ID>
+        <CENTER_NAME>EARTH</CENTER_NAME>
+        <REF_FRAME_A>J2000</REF_FRAME_A>
+        <REF_FRAME_B>SC_BODY_1</REF_FRAME_B>
+        <ATTITUDE_DIR>A2B</ATTITUDE_DIR>
+        <TIME_SYSTEM>UTC</TIME_SYSTEM>
+        <START_TIME>2006-090T05:00:00.071</START_TIME>
+        <USEABLE_START_TIME>2006-090T05:00:00.071</USEABLE_START_TIME>
+        <USEABLE_STOP_TIME>2006-090T05:00:00.946</USEABLE_STOP_TIME>
+        <STOP_TIME>2006-090T05:00:00.946</STOP_TIME>
+        <ATTITUDE_TYPE>SPIN</ATTITUDE_TYPE>
+      </metadata>
+      <data>
+        <COMMENT>Spin KF ground solution, SPINKF rates</COMMENT>
+        <attitudeState>
+          <spin>
+            <EPOCH>2006-090T05:00:00.071</EPOCH>
+            <SPIN_ALPHA>2.6862511e+002</SPIN_ALPHA>
+            <SPIN_DELTA>6.8448486e+001</SPIN_DELTA>
+            <SPIN_ANGLE>1.5969509e+002</SPIN_ANGLE>
+            <SPIN_ANGLE_VEL>-1.0996528e+002</SPIN_ANGLE_VEL>
+          </spin>
+        </attitudeState>
+        <attitudeState>
+          <spin>
+            <EPOCH>2006-090T05:00:00.196</EPOCH>
+            <SPIN_ALPHA>2.6863990e+002</SPIN_ALPHA>
+            <SPIN_DELTA>6.8432197e+001</SPIN_DELTA>
+            <SPIN_ANGLE>1.4593720e+002</SPIN_ANGLE>
+            <SPIN_ANGLE_VEL>-1.0996493e+002</SPIN_ANGLE_VEL>
+          </spin>
+        </attitudeState>
+        <attitudeState>
+          <spin>
+            <EPOCH>2006-090T05:00:00.321</EPOCH>
+            <SPIN_ALPHA>2.6864591e+002</SPIN_ALPHA>
+            <SPIN_DELTA>6.8412960e+001</SPIN_DELTA>
+            <SPIN_ANGLE>1.3218766e+002</SPIN_ANGLE>
+            <SPIN_ANGLE_VEL>-1.0996455e+002</SPIN_ANGLE_VEL>
+          </spin>
+        </attitudeState>
+        <attitudeState>
+          <spin>
+            <EPOCH>2006-090T05:00:00.446</EPOCH>
+            <SPIN_ALPHA>2.6863697e+002</SPIN_ALPHA>
+            <SPIN_DELTA>6.8392049e+001</SPIN_DELTA>
+            <SPIN_ANGLE>1.1845280e+002</SPIN_ANGLE>
+            <SPIN_ANGLE_VEL>-1.0996402e+002</SPIN_ANGLE_VEL>
+          </spin>
+        </attitudeState>
+        <attitudeState>
+          <spin>
+            <EPOCH>2006-090T05:00:00.571</EPOCH>
+            <SPIN_ALPHA>2.6861072e+002</SPIN_ALPHA>
+            <SPIN_DELTA>6.8371266e+001</SPIN_DELTA>
+            <SPIN_ANGLE>1.0473305e+002</SPIN_ANGLE>
+            <SPIN_ANGLE_VEL>-1.0996370e+002</SPIN_ANGLE_VEL>
+          </spin>
+        </attitudeState>
+        <attitudeState>
+          <spin>
+            <EPOCH>2006-090T05:00:00.696</EPOCH>
+            <SPIN_ALPHA>2.6856625e+002</SPIN_ALPHA>
+            <SPIN_DELTA>6.8353279e+001</SPIN_DELTA>
+            <SPIN_ANGLE>9.1030304e+001</SPIN_ANGLE>
+            <SPIN_ANGLE_VEL>-1.0996339e+002</SPIN_ANGLE_VEL>
+          </spin>
+        </attitudeState>
+        <attitudeState>
+          <spin>
+            <EPOCH>2006-090T05:00:00.821</EPOCH>
+            <SPIN_ALPHA>2.6850631e+002</SPIN_ALPHA>
+            <SPIN_DELTA>6.8340398e+001</SPIN_DELTA>
+            <SPIN_ANGLE>7.7341548e+001</SPIN_ANGLE>
+            <SPIN_ANGLE_VEL>-1.0996317e+002</SPIN_ANGLE_VEL>
+          </spin>
+        </attitudeState>
+        <attitudeState>
+          <spin>
+            <EPOCH>2006-090T05:00:00.946</EPOCH>
+            <SPIN_ALPHA>2.6843571e+002</SPIN_ALPHA>
+            <SPIN_DELTA>6.8332398e+001</SPIN_DELTA>
+            <SPIN_ANGLE>6.3662262e+001</SPIN_ANGLE>
+            <SPIN_ANGLE_VEL>-1.0996304e+002</SPIN_ANGLE_VEL>
+          </spin>
+        </attitudeState>
+      </data>
+    </segment>
+  </body>
+</aem>

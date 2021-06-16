@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -256,7 +256,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             try {
                 // ensure we are notified of any mu change
-                model.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+                model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver) {

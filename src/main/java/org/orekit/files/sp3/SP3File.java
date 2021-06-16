@@ -27,9 +27,9 @@ import java.util.function.Function;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
+import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -38,7 +38,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Thomas Neidhart
  * @author Evan Ward
  */
-public class SP3File implements EphemerisFile {
+public class SP3File
+    implements EphemerisFile<SP3File.SP3Coordinate, SP3File.SP3Ephemeris> {
     /** String representation of the center of ephemeris coordinate system. **/
     public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
@@ -104,22 +105,6 @@ public class SP3File implements EphemerisFile {
 
     }
 
-    /** Time system used throughout this SP3 file. */
-    public enum TimeSystem {
-        /** Global Positioning System. */
-        GPS,
-        /** GLONASS. */
-        GLO,
-        /** GALILEO. */
-        GAL,
-        /** International Atomic Time. */
-        TAI,
-        /** Coordinated Universal Time. */
-        UTC,
-        /** Quasi-Zenith System. */
-        QZS
-    }
-
     /** File type. */
     private SP3FileType type;
 
@@ -167,12 +152,6 @@ public class SP3File implements EphemerisFile {
     /** Indicates if data contains velocity or not. */
     private CartesianDerivativesFilter filter;
 
-    /** Time scale of dates in the ephemeris file. */
-    private TimeScale timeScale;
-
-    /** Time scale, as specified in the file. */
-    private String timeScaleString;
-
     /** Standard gravitational parameter in m^3 / s^2. */
     private final double mu;
 
@@ -192,9 +171,9 @@ public class SP3File implements EphemerisFile {
      * @param interpolationSamples number of samples to use in interpolation.
      * @param frameBuilder         for constructing a reference frame from the identifier
      */
-    SP3File(final double mu,
-            final int interpolationSamples,
-            final Function<? super String, ? extends Frame> frameBuilder) {
+    public SP3File(final double mu,
+                   final int interpolationSamples,
+                   final Function<? super String, ? extends Frame> frameBuilder) {
         this.mu = mu;
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder = frameBuilder;
@@ -207,26 +186,8 @@ public class SP3File implements EphemerisFile {
      *
      * @param filter that indicates which derivatives of position are available.
      */
-    void setFilter(final CartesianDerivativesFilter filter) {
+    public void setFilter(final CartesianDerivativesFilter filter) {
         this.filter = filter;
-    }
-
-    /**
-     * Set the time scale.
-     *
-     * @param timeScale use to parse dates in this file.
-     */
-    void setTimeScale(final TimeScale timeScale) {
-        this.timeScale = timeScale;
-    }
-
-    /**
-     * Set the string used to define the time scale.
-     *
-     * @param timeScaleString the time scale identifier used in the file.
-     */
-    void setTimeScaleString(final String timeScaleString) {
-        this.timeScaleString = timeScaleString;
     }
 
     /** Returns the {@link SP3FileType} associated with this SP3 file.
@@ -239,7 +200,7 @@ public class SP3File implements EphemerisFile {
     /** Set the file type for this SP3 file.
      * @param fileType the file type to be set
      */
-    void setType(final SP3FileType fileType) {
+    public void setType(final SP3FileType fileType) {
         this.type = fileType;
     }
 
@@ -253,7 +214,7 @@ public class SP3File implements EphemerisFile {
     /** Set the time system used in this SP3 file.
      * @param system the time system to be set
      */
-    void setTimeSystem(final TimeSystem system) {
+    public void setTimeSystem(final TimeSystem system) {
         this.timeSystem = system;
     }
 
@@ -267,7 +228,7 @@ public class SP3File implements EphemerisFile {
     /** Set the data used indicator for this SP3 file.
      * @param data the data used indicator to be set
      */
-    void setDataUsed(final String data) {
+    public void setDataUsed(final String data) {
         this.dataUsed = data;
     }
 
@@ -281,7 +242,7 @@ public class SP3File implements EphemerisFile {
     /** Set the epoch of the SP3 file.
      * @param time the epoch to be set
      */
-    void setEpoch(final AbsoluteDate time) {
+    public void setEpoch(final AbsoluteDate time) {
         this.epoch = time;
     }
 
@@ -295,7 +256,7 @@ public class SP3File implements EphemerisFile {
     /** Set the GPS week of the SP3 file.
      * @param week the GPS week to be set
      */
-    void setGpsWeek(final int week) {
+    public void setGpsWeek(final int week) {
         this.gpsWeek = week;
     }
 
@@ -309,7 +270,7 @@ public class SP3File implements EphemerisFile {
     /** Set the seconds of the GPS week for this SP3 file.
      * @param seconds the seconds to be set
      */
-    void setSecondsOfWeek(final double seconds) {
+    public void setSecondsOfWeek(final double seconds) {
         this.secondsOfWeek = seconds;
     }
 
@@ -323,7 +284,7 @@ public class SP3File implements EphemerisFile {
     /** Set the julian day for this SP3 file.
      * @param day the julian day to be set
      */
-    void setJulianDay(final int day) {
+    public void setJulianDay(final int day) {
         this.julianDay = day;
     }
 
@@ -337,7 +298,7 @@ public class SP3File implements EphemerisFile {
     /** Set the day fraction for this SP3 file.
      * @param fraction the day fraction to be set
      */
-    void setDayFraction(final double fraction) {
+    public void setDayFraction(final double fraction) {
         this.dayFraction = fraction;
     }
 
@@ -351,7 +312,7 @@ public class SP3File implements EphemerisFile {
     /** Set the epoch interval for this SP3 file.
      * @param interval the interval between orbit entries
      */
-    void setEpochInterval(final double interval) {
+    public void setEpochInterval(final double interval) {
         this.epochInterval = interval;
     }
 
@@ -365,7 +326,7 @@ public class SP3File implements EphemerisFile {
     /** Set the number of epochs as contained in the SP3 file.
      * @param epochCount the number of epochs to be set
      */
-    void setNumberOfEpochs(final int epochCount) {
+    public void setNumberOfEpochs(final int epochCount) {
         this.numberOfEpochs = epochCount;
     }
 
@@ -379,7 +340,7 @@ public class SP3File implements EphemerisFile {
     /** Set the coordinate system used for the orbit entries.
      * @param system the coordinate system to be set
      */
-    void setCoordinateSystem(final String system) {
+    public void setCoordinateSystem(final String system) {
         this.coordinateSystem = system;
     }
 
@@ -402,7 +363,7 @@ public class SP3File implements EphemerisFile {
      * @param oTypeKey the orbit type key to be set
      * @since 9.3
      */
-    void setOrbitTypeKey(final String oTypeKey) {
+    public void setOrbitTypeKey(final String oTypeKey) {
         this.orbitTypeKey = oTypeKey;
         this.orbitType    = SP3OrbitType.parseType(oTypeKey);
     }
@@ -417,7 +378,7 @@ public class SP3File implements EphemerisFile {
     /** Set the agency string for this SP3 file.
      * @param agencyStr the agency string to be set
      */
-    void setAgency(final String agencyStr) {
+    public void setAgency(final String agencyStr) {
         this.agency = agencyStr;
     }
 
@@ -448,7 +409,7 @@ public class SP3File implements EphemerisFile {
      * @param index    is the index of the satellite.
      * @param accuracy of the satellite, in m.
      */
-    void setAccuracy(final int index, final double accuracy) {
+    public void setAccuracy(final int index, final double accuracy) {
         int n = index;
         for (final SP3Ephemeris ephemeris : satellites.values()) {
             if (n == 0) {
@@ -465,7 +426,7 @@ public class SP3File implements EphemerisFile {
      * @param index    is the index of the satellite.
      * @return accuracy of the satellite, in m.
      */
-    double getAccuracy(final int index) {
+    public double getAccuracy(final int index) {
         int n = index;
         for (final SP3Ephemeris ephemeris : satellites.values()) {
             if (n == 0) {
@@ -492,12 +453,14 @@ public class SP3File implements EphemerisFile {
      * @param satId the satellite identifier
      * @param coord the P/V coordinate of the satellite
      */
-    void addSatelliteCoordinate(final String satId, final SP3Coordinate coord) {
+    public void addSatelliteCoordinate(final String satId, final SP3Coordinate coord) {
         satellites.get(satId).coordinates.add(coord);
     }
 
     /** An ephemeris for a single satellite in a SP3 file. */
-    public class SP3Ephemeris implements SatelliteEphemeris, EphemerisSegment {
+    public class SP3Ephemeris
+        implements  EphemerisFile.SatelliteEphemeris<SP3Coordinate, SP3Ephemeris>,
+                    EphemerisFile.EphemerisSegment<SP3Coordinate> {
 
         /** Satellite ID. */
         private final String id;
@@ -511,7 +474,7 @@ public class SP3File implements EphemerisFile {
          *
          * @param id of the satellite.
          */
-        SP3Ephemeris(final String id) {
+        public SP3Ephemeris(final String id) {
             this.id = id;
             this.coordinates = new ArrayList<>();
         }
@@ -527,28 +490,8 @@ public class SP3File implements EphemerisFile {
         }
 
         @Override
-        public String getFrameCenterString() {
-            return SP3_FRAME_CENTER_STRING;
-        }
-
-        @Override
-        public String getFrameString() {
-            return getCoordinateSystem();
-        }
-
-        @Override
         public Frame getFrame() {
-            return frameBuilder.apply(getFrameString());
-        }
-
-        @Override
-        public String getTimeScaleString() {
-            return timeScaleString;
-        }
-
-        @Override
-        public TimeScale getTimeScale() {
-            return timeScale;
+            return frameBuilder.apply(SP3_FRAME_CENTER_STRING);
         }
 
         @Override
@@ -592,7 +535,7 @@ public class SP3File implements EphemerisFile {
          *
          * @param accuracy in m.
          */
-        void setAccuracy(final double accuracy) {
+        public void setAccuracy(final double accuracy) {
             this.accuracy = accuracy;
         }
 
@@ -627,9 +570,9 @@ public class SP3File implements EphemerisFile {
          * @param position of the satellite.
          * @param clock    correction in s.
          */
-        SP3Coordinate(final AbsoluteDate date,
-                      final Vector3D position,
-                      final double clock) {
+        public SP3Coordinate(final AbsoluteDate date,
+                             final Vector3D position,
+                             final double clock) {
             this(date, position, Vector3D.ZERO, clock, 0);
         }
 
@@ -642,11 +585,11 @@ public class SP3File implements EphemerisFile {
          * @param clock     correction in s.
          * @param clockRate in s / s.
          */
-        SP3Coordinate(final AbsoluteDate date,
-                      final Vector3D position,
-                      final Vector3D velocity,
-                      final double clock,
-                      final double clockRate) {
+        public SP3Coordinate(final AbsoluteDate date,
+                             final Vector3D position,
+                             final Vector3D velocity,
+                             final double clock,
+                             final double clockRate) {
             super(date, position, velocity, Vector3D.ZERO);
             this.clock = clock;
             this.clockRate = clockRate;

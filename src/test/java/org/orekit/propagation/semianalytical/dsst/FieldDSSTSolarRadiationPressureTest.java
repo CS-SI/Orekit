@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -86,7 +86,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
         
         final T zero = field.getZero();
         
@@ -142,7 +142,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         // Force model parameters
         final T[] parameters = srp.getParameters(field);
         // Initialize force model
-        srp.initialize(auxiliaryElements,
+        srp.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
 
         // Compute the mean element rate
@@ -168,7 +168,7 @@ public class FieldDSSTSolarRadiationPressureTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
  
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
@@ -195,7 +195,7 @@ public class FieldDSSTSolarRadiationPressureTest {
                                                                                      0.2, 0.6);
         
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
-                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(sun,
@@ -210,7 +210,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         srp.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(srp.initialize(aux, PropagationType.OSCULATING, srp.getParameters(field)));
+        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters(field)));
         srp.updateShortPeriodTerms(srp.getParameters(field), meanState);
 
         T[] y = MathArrays.buildArray(field, 6);
@@ -255,7 +255,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         
         // Attitude
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
-                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         // Force model
@@ -279,7 +279,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(srp.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         srp.updateShortPeriodTerms(dsParameters, dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -385,7 +385,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         
         // Attitude
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
-                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         // Force model
@@ -414,7 +414,7 @@ public class FieldDSSTSolarRadiationPressureTest {
       
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(srp.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         srp.updateShortPeriodTerms(dsParameters, dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -506,7 +506,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
         
         double[] shortPeriod = new double[6];

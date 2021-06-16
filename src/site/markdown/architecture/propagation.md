@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS GROUP
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -373,7 +373,7 @@ propagation. As can be seen, the process is very close the one for the numerical
 Since 9.0, most of the Orekit propagators (in fact all of them except DSST) have both a regular
 version the propagates states based on classical real numbers (i.e. double precision numbers)
 and a more general version that propagates states based on any class that implements the
-`RealFieldElement` interface from Hipparchus. Such classes mimic real numbers in the way they
+`CalculusFieldElement` interface from Hipparchus. Such classes mimic real numbers in the way they
 support all operations from the real field (addition, subtraction, multiplication, division,
 but also direct and inverse trigonometric functions, direct and inverse hyperbolic functions,
 logarithms, powers, roots...).
@@ -382,7 +382,7 @@ logarithms, powers, roots...).
 
 ### Taylor algebra
 
-A very important implementation of the `RealFieldElement` interface is the `DerivativeStructure`
+A very important implementation of the `CalculusFieldElement` interface is the `DerivativeStructure`
 class, which in addition to compute the result of the canonical operation (add, multiply, sin,
 atanh...) also computes its derivatives, with respect to any number of variables and to any
 derivation order. If for example a user starts a computation with 6 canonical variables px,
@@ -423,7 +423,7 @@ analyses more often use several thousands of evaluations, the payoff is really i
 
 ### Parallel computation
 
-Another important implementation of the `RealFieldElement` interface is the `Tuple`
+Another important implementation of the `CalculusFieldElement` interface is the `Tuple`
 class, which computes the same operation on a number of components of a tuple, hence
 allowing to perform parallel orbit propagation in one run. Each spacecraft will correspond
 to one component of the tuple. The first spacecraft (component at index 0) is the reference.

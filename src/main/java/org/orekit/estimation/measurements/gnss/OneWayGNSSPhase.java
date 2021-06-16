@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -106,6 +106,13 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
      */
     public double getWavelength() {
         return wavelength;
+    }
+
+    /** Get the driver for phase ambiguity.
+     * @return the driver for phase ambiguity
+     */
+    public ParameterDriver getAmbiguityDriver() {
+        return ambiguityDriver;
     }
 
     /** {@inheritDoc} */

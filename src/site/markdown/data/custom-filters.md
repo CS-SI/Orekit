@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS GROUP
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -16,11 +16,11 @@
 
 As explained on the [filtering](./filtering.html) page, the `DataProvidersManager.applyAllFilters`
 method works by looping over all registered `DataFilter` instances and calling their `filter` method
-with the current `NamedData`. If the `filter` method returns the _exact same instance_ that was passed
+with the current `DataSource`. If the `filter` method returns the _exact same instance_ that was passed
 to it, it means the filter does not do anything. In this case, the `DataProvidersManager.applyAllFilters`
 method just continues its loop and check the next filter. If the `filter` method returns a different
-`NamedData` instance that was passed to it, it means the filter does indeed act on the bytes stream.
-In this case, the `DataProvidersManager.applyAllFilters` method sets the current `NamedData` to the
+`DataSource` instance that was passed to it, it means the filter does indeed act on the bytes stream.
+In this case, the `DataProvidersManager.applyAllFilters` method sets the current `DataSource` to the
 returned value and restart its loop from the beginning.
 
 This algorithm allows the same filter to be applied several time if needed, and it also allows
@@ -34,27 +34,27 @@ on the fly when data is loaded.
 ## Implementing a filter
 
 As per the way the `applyAllFilters` method works, the `filter` method must be implemented in such
-a way that it should check the `NamedData` passed to it and return its parameter if it considers
-it should not filter it, or return a new `NamedData` if it considers is should filter it.
+a way that it should check the `DataSource` passed to it and return its parameter if it considers
+it should not filter it, or return a new `DataSource` if it considers is should filter it.
 
 Checking is typically done using only the name and looking for files extensions, but it could as
 well be made by opening temporarily the stream to read just the first few bytes to look for some
-magic number and closing it afterwards, as the `NamedData` passed as a parameter has an `openStream`
+magic number and closing it afterwards, as the `DataSource` passed as a parameter has an `openStream`
 method that can be called as many times as one wants.
 
 As `applyAllFilters` restarts its loop from the beginning each time a filter is added to the stack,
 some care must be taken to avoid stacking an infinite number of instances of the same filter on top
-of each other. This means that the filtered `NamedData` returned after filtering should be recognized
+of each other. This means that the filtered `DataSource` returned after filtering should be recognized
 as already filtered and not matched again by the same filter. If the check is based on file names
-extensions (like `.gz` for gzip-compressed files), then if the original `NamedData` has a name of
+extensions (like `.gz` for gzip-compressed files), then if the original `DataSource` has a name of
 the form `base.ext.gz` than the filtered file should have a name of the form `base.ext`. Another point
-is that if a filters does not act on a `NamedData`, then it _must_ return the same instance that
+is that if a filters does not act on a `DataSource`, then it _must_ return the same instance that
 was passed to it, it must _not_ simply create a transparent filter that just passes names and bytes
 unchanged, otherwise it would be considered as a valid filter and added again and again until either
 a stack overflow or memory exhaustion exception occurs.
 
 The filtering part itself is implemented by opening the bytes stream from the underlying original
-`NamedData`, reading raw bytes from it, performing the processing on these bytes (uncompressing,
+`DataSource`, reading raw bytes from it, performing the processing on these bytes (uncompressing,
 deciphering, ...) and returning them as another stream.
 
 The following example shows how to do that for a dummy deciphering algorithm based on a simple
@@ -70,13 +70,13 @@ XOR (this is a toy example only, not intended to be secure at all).
 
         /** {@inheritDoc} */
         @Override
-        public NamedData filter(final NamedData original) {
+        public DataSource filter(final DataSource original) {
             final String                 oName   = original.getName();
-            final NamedData.StreamOpener oOpener = original.getStreamOpener();
+            final DataSource.StreamOpener oOpener = original.getStreamOpener();
             if (oName.endsWith(SUFFIX)) {
                 final String                 fName   = oName.substring(0, oName.length() - SUFFIX.length());
-                final NamedData.StreamOpener fOpener = () -> new XORInputStream(oName, oOpener.openStream());
-                return new NamedData(fName, fOpener);
+                final DataSource.StreamOpener fOpener = () -> new XORInputStream(oName, oOpener.openStream());
+                return new DataSource(fName, fOpener);
             } else {
                 return original;
             }

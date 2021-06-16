@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -247,7 +247,7 @@ public class GTODProviderTest {
         Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
-    private <T extends RealFieldElement<T>> void checkPV(FieldPVCoordinates<T> reference,
+    private <T extends CalculusFieldElement<T>> void checkPV(FieldPVCoordinates<T> reference,
                                                          FieldPVCoordinates<T> result,
                                                          double expectedPositionError,
                                                          double expectedVelocityError) {

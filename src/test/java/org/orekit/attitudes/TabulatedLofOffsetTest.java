@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -112,7 +113,7 @@ public class TabulatedLofOffsetTest {
                                                2, AngularDerivativesFilter.USE_R);
                 Rotation rebuilt = tabulated.getAttitude(orbit, orbit.getDate(), orbit.getFrame()).getRotation();
                 Assert.assertEquals(0.0, Rotation.distance(offsetAtt, rebuilt), 1.2e-15);
-
+                Assert.assertEquals(3, tabulated.getTable().size());
             }
         }
     }
@@ -139,12 +140,15 @@ public class TabulatedLofOffsetTest {
                                                              offsetProper, Vector3D.ZERO, Vector3D.ZERO));
             }
         });
-        originalPropagator.propagate(orbit.getDate().shiftedBy(2000));
+        final AbsoluteDate endDate = orbit.getDate().shiftedBy(2000);
+        originalPropagator.propagate(endDate);
         originalPropagator.setSlaveMode();
 
         // use the sample and compare it to original
-        final AttitudeProvider tabulated = new TabulatedLofOffset(orbit.getFrame(), type, sample,
-                                                                  6, AngularDerivativesFilter.USE_RR);
+        final BoundedAttitudeProvider tabulated = new TabulatedLofOffset(orbit.getFrame(), type, sample,
+                                                                         6, AngularDerivativesFilter.USE_RR);
+        Assert.assertEquals(0., orbit.getDate().durationFrom(tabulated.getMinDate()), Double.MIN_VALUE);
+        Assert.assertEquals(0., endDate.durationFrom(tabulated.getMaxDate()), Double.MIN_VALUE);
         final Propagator rebuildingPropagator = new KeplerianPropagator(orbit);
         rebuildingPropagator.setAttitudeProvider(tabulated);
         rebuildingPropagator.setMasterMode(0.3, new OrekitFixedStepHandler() {
@@ -162,7 +166,7 @@ public class TabulatedLofOffsetTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
+    private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
         {
@@ -173,6 +177,24 @@ public class TabulatedLofOffsetTest {
         Assert.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
         Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
         Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+    }
+
+    @Test
+    public void testNonPseudoInertialFrame() {
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        try {
+            new TabulatedLofOffset(itrf, LOFType.QSW,
+                                   Arrays.asList(new TimeStampedAngularCoordinates(orbit.getDate().shiftedBy(-10),
+                                                                                   Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO),
+                                                 new TimeStampedAngularCoordinates(orbit.getDate().shiftedBy(0),
+                                                                                   Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO),
+                                                 new TimeStampedAngularCoordinates(orbit.getDate().shiftedBy(+10),
+                                                                                   Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO)),
+                                   2, AngularDerivativesFilter.USE_R);
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oe.getSpecifier());
+            Assert.assertEquals(itrf.getName(), oe.getParts()[0]);
+        }
     }
 
     @Before

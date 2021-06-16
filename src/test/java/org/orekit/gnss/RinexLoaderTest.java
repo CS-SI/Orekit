@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,13 +26,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.RinexLoader.Parser.AppliedDCBS;
-import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -60,12 +58,11 @@ public class RinexLoaderTest {
     @Test
     public void testReadError() {
         try {
-            final InputStream failingStream = new InputStream() {
+            new RinexLoader(new DataSource("read-error", () -> new InputStream() {
                 public int read() throws IOException {
                     throw new IOException("boo!");
                 }
-            };
-            new RinexLoader(failingStream, "read-error");
+            }));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals("boo!", oe.getSpecifier().getSourceString());
@@ -765,20 +762,15 @@ public class RinexLoaderTest {
     }
 
     private RinexLoader load(final String name) {
-        return new RinexLoader(Utils.class.getClassLoader().getResourceAsStream(name), name);
+        return new RinexLoader(new DataSource(name,
+                                              () -> Utils.class.getClassLoader().getResourceAsStream(name)));
      }
 
     private RinexLoader loadCompressed(final String name) {
-        RinexLoader loader = null;
-        try {
-            final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
-                                                () -> Utils.class.getClassLoader().getResourceAsStream(name));
-            NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-            loader = new RinexLoader(filtered.getStreamOpener().openStream(), filtered.getName());
-        } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
-        }
-        return loader;
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
+                                              () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        return new RinexLoader(filtered);
      }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -59,7 +59,7 @@ class MODProvider implements TransformProvider {
     private final Rotation r4;
 
     /** Constant rotations between ecliptic and equator poles at J2000.0. */
-    private final transient Map<Field<? extends RealFieldElement<?>>, FieldRotation<? extends RealFieldElement<?>>> fieldR4;
+    private final transient Map<Field<? extends CalculusFieldElement<?>>, FieldRotation<? extends CalculusFieldElement<?>>> fieldR4;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -95,7 +95,7 @@ class MODProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute the precession angles phiA, omegaA, chiA
         final T[] angles = precessionFunction.value(date);
