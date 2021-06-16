@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.BSPTree;
 import org.hipparchus.geometry.partitioning.Hyperplane;
@@ -41,6 +42,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 
 /** Class used to tessellate an interest zone on an ellipsoid in either
@@ -64,6 +66,11 @@ import org.orekit.errors.OrekitInternalError;
  * @since 7.1
  */
 public class EllipsoidTessellator {
+
+    /** Safety limit to avoid infinite loops during tesselation due to numerical noise.
+     * @since 10.3.1
+     */
+    private static final int MAX_ITER = 1000;
 
     /** Number of segments tiles sides are split into for tiles fine positioning. */
     private final int quantization;
@@ -164,7 +171,12 @@ public class EllipsoidTessellator {
         SphericalPolygonsSet          remaining   = (SphericalPolygonsSet) zone.copySelf();
         S2Point                       inside      = getInsidePoint(remaining);
 
+        int count = 0;
         while (inside != null) {
+
+            if (++count > MAX_ITER) {
+                throw new OrekitException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, MAX_ITER);
+            }
 
             // find a mesh covering at least one connected part of the zone
             final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
@@ -236,7 +248,12 @@ public class EllipsoidTessellator {
         SphericalPolygonsSet                 remaining   = (SphericalPolygonsSet) zone.copySelf();
         S2Point                              inside      = getInsidePoint(remaining);
 
+        int count = 0;
         while (inside != null) {
+
+            if (++count > MAX_ITER) {
+                throw new OrekitException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, MAX_ITER);
+            }
 
             // find a mesh covering at least one connected part of the zone
             final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
@@ -317,7 +334,12 @@ public class EllipsoidTessellator {
         boolean expanding = true;
         final Queue<Mesh.Node> newNodes = new LinkedList<Mesh.Node>();
         newNodes.addAll(seeds);
+        int count = 0;
         while (expanding) {
+
+            if (++count > MAX_ITER) {
+                throw new OrekitException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, MAX_ITER);
+            }
 
             // first expansion step: set up the mesh so that all its
             // inside nodes are completely surrounded by at least

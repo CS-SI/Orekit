@@ -20,6 +20,14 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="10.3.1" date="2021-06-16"
+             description="Version 10.3.1 is a patch release of Orekit.
+             It fixes one critical bug that could cause potential infinite loops in tesselation
+             in very rare cases due to numerical noise.">
+   	  <action dev="luc" type="fix" issue="792">
+      	Fixed potential infinite loops in tesselation in very rare cases due to numerical noise.
+      </action>
+    </release>
     <release version="10.3" date="2020-12-21"
              description="Version 10.3 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced
@@ -34,8 +42,8 @@
              during state transition matrix calculation. It also fixes issues in Kalman
              orbit determination and CCSDS ADM format. See the list below for a full
              description of the changes.">
-   	  <action dev="bryan" type="update" issue="741">
-      	Updated Hipparchus version to 1.8 and updated code with new functionalities.
+      <action dev="bryan" type="update" issue="741">
+        Updated Hipparchus version to 1.8 and updated code with new functionalities.
       </action>
    	  <action dev="bryan" type="add" issue="740">
       	Added aggregator for bounded attitude providers.
