@@ -116,29 +116,30 @@ with version 4.1, and up to 7.2, Orekit depends only on officially released vers
 Apache Commons Math. Starting with version 8.0, Orekit has switched from Apache Commons
 Math to Hipparchus
 
-    version    |                             dependency
----------------|---------------------------------------------
-  Orekit 4.1   | Apache Commons Math 2.0
-  Orekit 5.0   | Apache Commons Math 2.1
-  Orekit 5.0.3 | Apache Commons Math 2.2
-  Orekit 6.0   | Apache Commons Math 3.2
-  Orekit 6.1   | Apache Commons Math 3.2
-  Orekit 7.0   | Apache Commons Math 3.4.1
-  Orekit 7.1   | Apache Commons Math 3.6
-  Orekit 7.2   | Apache Commons Math 3.6.1
-  Orekit 7.2.1 | Apache Commons Math 3.6.1
-  Orekit 8.0   | Hipparchus          1.0
-  Orekit 8.0.1 | Hipparchus          1.0
-  Orekit 9.0   | Hipparchus          1.1
-  Orekit 9.0.1 | Hipparchus          1.1
-  Orekit 9.1   | Hipparchus          1.2
-  Orekit 9.2   | Hipparchus          1.3
-  Orekit 9.3   | Hipparchus          1.4
-  Orekit 9.3.1 | Hipparchus          1.4
-  Orekit 10.0  | Hipparchus          1.5
-  Orekit 10.1  | Hipparchus          1.6
-  Orekit 10.2  | Hipparchus          1.7
-  Orekit 10.3  | Hipparchus          1.8
+    version     |                             dependency
+----------------|---------------------------------------------
+  Orekit 4.1    | Apache Commons Math 2.0
+  Orekit 5.0    | Apache Commons Math 2.1
+  Orekit 5.0.3  | Apache Commons Math 2.2
+  Orekit 6.0    | Apache Commons Math 3.2
+  Orekit 6.1    | Apache Commons Math 3.2
+  Orekit 7.0    | Apache Commons Math 3.4.1
+  Orekit 7.1    | Apache Commons Math 3.6
+  Orekit 7.2    | Apache Commons Math 3.6.1
+  Orekit 7.2.1  | Apache Commons Math 3.6.1
+  Orekit 8.0    | Hipparchus          1.0
+  Orekit 8.0.1  | Hipparchus          1.0
+  Orekit 9.0    | Hipparchus          1.1
+  Orekit 9.0.1  | Hipparchus          1.1
+  Orekit 9.1    | Hipparchus          1.2
+  Orekit 9.2    | Hipparchus          1.3
+  Orekit 9.3    | Hipparchus          1.4
+  Orekit 9.3.1  | Hipparchus          1.4
+  Orekit 10.0   | Hipparchus          1.5
+  Orekit 10.1   | Hipparchus          1.6
+  Orekit 10.2   | Hipparchus          1.7
+  Orekit 10.3   | Hipparchus          1.8
+  Orekit 10.3.1 | Hipparchus          1.8
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 
