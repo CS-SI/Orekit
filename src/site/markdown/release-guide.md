@@ -349,7 +349,9 @@ Several edits need to be made to the Orekit website after the vote.
 Edit `download/.htaccess` and replace the URLs of the 3 Orekit artifacts
 with the ones used to create the release notes.
 
-Edit `_layouts/home_orekit.html` and edit the text of the bug button to use the new version.
+Edit `_data/orekit/versions.yml` and update the versions list.
+
+Edit `_layouts/home_orekit.html` and update the text of the big button to use the new version.
 
 Edit `overview.html` with the new Hipparchus version. Don't forget to update the
 overview.png image with the new dependencies.
