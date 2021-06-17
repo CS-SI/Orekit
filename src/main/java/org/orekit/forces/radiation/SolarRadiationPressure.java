@@ -291,9 +291,9 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
             // Other occulting bodies
             int k = 1;
-            for (ExtendedPVCoordinatesProvider provider: otherOccultingBodies.keySet()) {
-                occultingBodyPositions[k] = provider.getPVCoordinates(date, frame).getPosition();
-                occultingBodyRadiuses[k] = otherOccultingBodies.get(provider);
+            for (Map.Entry<ExtendedPVCoordinatesProvider, Double> entry : otherOccultingBodies.entrySet()) {
+                occultingBodyPositions[k] = entry.getKey().getPVCoordinates(date, frame).getPosition();
+                occultingBodyRadiuses[k]  = entry.getValue();
                 ++k;
             }
             for (int i = 0; i < n; ++i) {
@@ -517,9 +517,9 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
             // Other occulting bodies
             int k = 1;
-            for (ExtendedPVCoordinatesProvider provider: otherOccultingBodies.keySet()) {
-                occultingBodyPositions.add(k, provider.getPVCoordinates(date, frame).getPosition());
-                occultingBodyRadiuses[k] = zero.add(otherOccultingBodies.get(provider));
+            for (Map.Entry<ExtendedPVCoordinatesProvider, Double> entry: otherOccultingBodies.entrySet()) {
+                occultingBodyPositions.add(k, entry.getKey().getPVCoordinates(date, frame).getPosition());
+                occultingBodyRadiuses[k] = zero.newInstance(entry.getValue());
                 ++k;
             }
             for (int i = 0; i < n; ++i) {
