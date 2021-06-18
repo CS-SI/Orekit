@@ -1,4 +1,4 @@
-/* Contributed in the public domain.
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
