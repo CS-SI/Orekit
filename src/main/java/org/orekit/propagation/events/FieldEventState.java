@@ -26,7 +26,9 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -304,50 +306,59 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         T loopG = ga;
         while ((afterRootG.getReal() == 0.0 || afterRootG.getReal() > 0.0 == g0Positive) &&
                 strictlyAfter(afterRootT, tb)) {
-            if (loopG.getReal() == 0.0) {
-                // ga == 0.0 and gb may or may not be 0.0
-                // handle the root at ta first
-                beforeRootT = loopT;
-                beforeRootG = loopG;
-                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
-                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
-            } else {
-                // both non-zero, the usual case, use a root finder.
-                // time zero for evaluating the function f. Needs to be final
-                final FieldAbsoluteDate<T> fT0 = loopT;
-                final UnivariateFunction f = dt -> {
-                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
-                };
-                // tb as a double for use in f
-                final T tbDouble = tb.durationFrom(fT0);
-                if (forward) {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
-                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    beforeRootG = zero.add(interval.getLeftValue());
-                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    afterRootG = zero.add(interval.getRightValue());
+            try {
+                if (loopG.getReal() == 0.0) {
+                    // ga == 0.0 and gb may or may not be 0.0
+                    // handle the root at ta first
+                    beforeRootT = loopT;
+                    beforeRootG = loopG;
+                    afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
+                    afterRootG = g(interpolator.getInterpolatedState(afterRootT));
                 } else {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
-                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    beforeRootG = zero.add(interval.getRightValue());
-                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    afterRootG = zero.add(interval.getLeftValue());
+                    // both non-zero, the usual case, use a root finder.
+                    // time zero for evaluating the function f. Needs to be final
+                    final FieldAbsoluteDate<T> fT0 = loopT;
+                    final UnivariateFunction f = dt -> {
+                        return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
+                    };
+                    // tb as a double for use in f
+                    final T tbDouble = tb.durationFrom(fT0);
+                    if (forward) {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
+                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        beforeRootG = zero.add(interval.getLeftValue());
+                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        afterRootG = zero.add(interval.getRightValue());
+                    } else {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
+                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        beforeRootG = zero.add(interval.getRightValue());
+                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        afterRootG = zero.add(interval.getLeftValue());
+                    }
+                }
+                // tolerance is set to less than 1 ulp
+                // assume tolerance is 1 ulp
+                if (beforeRootT.equals(afterRootT)) {
+                    afterRootT = nextAfter(afterRootT);
+                    afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+                }
+                // check loop is making some progress
+                check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
+                      !forward && afterRootT.compareTo(beforeRootT) < 0);
+                // setup next iteration
+                loopT = afterRootT;
+                loopG = afterRootG;
+            }
+            catch (RuntimeException e) {
+                if (forward) {
+                    throw new OrekitException(e, OrekitMessages.FIND_ROOT, detector, ta, ga, tb, gb, lastT, lastG);
+                } else {
+                    throw new OrekitException(e, OrekitMessages.FIND_ROOT, detector, tb, gb, ta, ga, lastT, lastG);
                 }
             }
-            // tolerance is set to less than 1 ulp
-            // assume tolerance is 1 ulp
-            if (beforeRootT.equals(afterRootT)) {
-                afterRootT = nextAfter(afterRootT);
-                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
-            }
-            // check loop is making some progress
-            check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
-                  !forward && afterRootT.compareTo(beforeRootT) < 0);
-            // setup next iteration
-            loopT = afterRootT;
-            loopG = afterRootG;
         }
 
         // figure out the result of root finding, and return accordingly
