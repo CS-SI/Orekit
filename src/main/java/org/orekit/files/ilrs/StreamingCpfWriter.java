@@ -110,7 +110,7 @@ public class StreamingCpfWriter {
     private final CPFHeader header;
 
     /**
-     * Create an OEM writer than streams data to the given output stream.
+     * Create a CPF writer than streams data to the given output stream.
      *
      * @param writer     the output stream for the CPF file.
      * @param timeScale  for all times in the CPF
@@ -348,7 +348,7 @@ public class StreamingCpfWriter {
                 writeValue(cpfWriter, I2, (int) dtcStart.getTime().getSecond());
 
                 // write ending epoch
-                final AbsoluteDate ending = cpfHeader.getStartEpoch();
+                final AbsoluteDate ending = cpfHeader.getEndEpoch();
                 final DateTimeComponents dtcEnd = ending.getComponents(timescale);
                 writeValue(cpfWriter, I4, dtcEnd.getDate().getYear());
                 writeValue(cpfWriter, I2, dtcEnd.getDate().getMonth());

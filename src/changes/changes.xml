@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="796">
+        Fixed writing of line H2 in CPF file header.
+      </action>
       <action dev="thomas" type="fix" issue="702">
         Added possibility to take in account several bodies while computing SRP perturbation.
       </action>
