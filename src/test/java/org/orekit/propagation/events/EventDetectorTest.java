@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -297,6 +298,38 @@ public class EventDetectorTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertSame(dummyCause, oe.getCause());
+        }
+    }
+
+    @Test
+    public void testMathRuntimeException() {
+        try {
+            // initial conditions
+            Frame eme2000 = FramesFactory.getEME2000();
+            TimeScale utc = TimeScalesFactory.getUTC();
+            final AbsoluteDate initialDate = new AbsoluteDate(2011, 5, 11, utc);
+            EquinoctialOrbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008462.4706055815, -3155502.5373837613, -5044275.9880020910),
+                                                                                   new Vector3D(-5012.9298276860990, 1920.3567095973078, -5172.7403501801580)), eme2000,
+                                                                 initialDate, Constants.WGS84_EARTH_MU);
+            KeplerianPropagator k = new KeplerianPropagator(initialOrbit);
+            k.addEventDetector(new AbstractDetector(100, 1e-6, 5, new ContinueOnEvent()) {
+                double lastValue = -1;
+                @Override
+                public double g(final SpacecraftState s) {
+                    lastValue = lastValue * -1;
+                    return lastValue;
+                }
+
+                @Override
+                protected AbstractDetector create(double newMaxCheck, double newThreshold, int newMaxIter, EventHandler newHandler) {
+                    throw new UnsupportedOperationException("this class to be used locally");
+                }
+            });
+            k.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
+            Assert.fail("an exception should have been thrown");
+        }
+        catch (RuntimeException oe) {
+            Assert.assertSame(MathIllegalStateException.class, oe.getCause().getClass());
         }
     }
 

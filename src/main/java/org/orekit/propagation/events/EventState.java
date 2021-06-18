@@ -299,50 +299,57 @@ public class EventState<T extends EventDetector> {
         double loopG = ga;
         while ((afterRootG == 0.0 || afterRootG > 0.0 == g0Positive) &&
                 strictlyAfter(afterRootT, tb)) {
-            if (loopG == 0.0) {
-                // ga == 0.0 and gb may or may not be 0.0
-                // handle the root at ta first
-                beforeRootT = loopT;
-                beforeRootG = loopG;
-                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
-                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
-            } else {
-                // both non-zero, the usual case, use a root finder.
-                // time zero for evaluating the function f. Needs to be final
-                final AbsoluteDate fT0 = loopT;
-                final UnivariateFunction f = dt -> {
-                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt)));
-                };
-                // tb as a double for use in f
-                final double tbDouble = tb.durationFrom(fT0);
-                if (forward) {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, 0, tbDouble);
-                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    beforeRootG = interval.getLeftValue();
-                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    afterRootG = interval.getRightValue();
+            try {
+                if (loopG == 0.0) {
+                    // ga == 0.0 and gb may or may not be 0.0
+                    // handle the root at ta first
+                    beforeRootT = loopT;
+                    beforeRootG = loopG;
+                    afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
+                    afterRootG = g(interpolator.getInterpolatedState(afterRootT));
                 } else {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, tbDouble, 0);
-                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    beforeRootG = interval.getRightValue();
-                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    afterRootG = interval.getLeftValue();
+                    // both non-zero, the usual case, use a root finder.
+                    // time zero for evaluating the function f. Needs to be final
+                    final AbsoluteDate fT0 = loopT;
+                    final UnivariateFunction f = dt -> {
+                        return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt)));
+                    };
+                    // tb as a double for use in f
+                    final double tbDouble = tb.durationFrom(fT0);
+                    if (forward) {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, 0, tbDouble);
+                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        beforeRootG = interval.getLeftValue();
+                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        afterRootG = interval.getRightValue();
+                    } else {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, tbDouble, 0);
+                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        beforeRootG = interval.getRightValue();
+                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        afterRootG = interval.getLeftValue();
+                    }
                 }
+                // tolerance is set to less than 1 ulp
+                // assume tolerance is 1 ulp
+                if (beforeRootT.equals(afterRootT)) {
+                    afterRootT = nextAfter(afterRootT);
+                    afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+                }
+                // check loop is making some progress
+                check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
+                      !forward && afterRootT.compareTo(beforeRootT) < 0);
+                // setup next iteration
+                loopT = afterRootT;
+                loopG = afterRootG;
             }
-            // tolerance is set to less than 1 ulp
-            // assume tolerance is 1 ulp
-            if (beforeRootT.equals(afterRootT)) {
-                afterRootT = nextAfter(afterRootT);
-                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+            catch (RuntimeException e) {
+                throw new RuntimeException(
+                        String.format("%s failed to find root between %s (g=%f) and %s (g=%f) : %s\nLast iteration at %s (g=%f)", detector, ta, ga, tb, gb, e.getMessage(), loopT,
+                                      loopG), e);
             }
-            // check loop is making some progress
-            check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
-                  !forward && afterRootT.compareTo(beforeRootT) < 0);
-            // setup next iteration
-            loopT = afterRootT;
-            loopG = afterRootG;
         }
 
         // figure out the result of root finding, and return accordingly
