@@ -220,10 +220,10 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
         angle[0] = FieldVector3D.angle(satOccultedVector, satOccultingVector);
 
         // Occulting body apparent radius
-        angle[1] = satOccultingVector.getNorm().reciprocal().multiply(occultingRadius).asin();
+        angle[1] = occultingRadius.divide(satOccultingVector.getNorm()).asin();
 
         // Occulted body apparent radius
-        angle[2] = satOccultedVector.getNorm().reciprocal().multiply(occultedRadius).asin();
+        angle[2] = occultedRadius.divide(satOccultedVector.getNorm()).asin();
 
         return angle;
     }

@@ -129,12 +129,12 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final FieldAbsoluteDate<T> date         = s.getDate();
         final Frame                frame        = s.getFrame();
         final FieldVector3D<T>     position     = s.getPVCoordinates().getPosition();
-        final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition());
+        final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
         final T                    r2           = sunSatVector.getNormSq();
 
         // compute flux
         final T                ratio = getTotalLightingRatio(position, frame, date);
-        final T                rawP  = ratio.divide(r2).multiply(kRef);
+        final T                rawP  = ratio.multiply(kRef).divide(r2);
         final FieldVector3D<T> flux  = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
@@ -339,7 +339,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
                     final double alphaSunSq = alphaSun * alphaSun;
                     final double mutualEclipseCorrection = (1 - eclipseRatioIJ) * alphaJSq / alphaSunSq;
 
-                    // Secondary body totaly occults Sun, no more computations are required, full eclipse is occuring.
+                    // Secondary body totally occults Sun, no more computations are required, full eclipse is occuring.
                     if (eclipseRatioJ ==  0.0 ) {
                         return 0.0;
                     }
@@ -531,7 +531,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
                                                                sunPosition,
                                                                zero.add(Constants.SUN_RADIUS));
 
-                // First body totaly occults Sun, full eclipse is occuring.
+                // First body totally occults Sun, full eclipse is occuring.
                 if (eclipseRatioI.getReal() == 0.0) {
                     return zero;
                 }
