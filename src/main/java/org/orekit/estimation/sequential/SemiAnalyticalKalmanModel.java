@@ -42,7 +42,6 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
-import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -51,14 +50,14 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
-/** Abstract class defining the process model dynamics to use with a {@link KalmanEstimator}.
+/** Abstract class defining the process model dynamics to use with a {@link SemiAnalyticalKalmanEstimator}.
  * @author Romain Gerbaud
  * @author Maxime Journot
  * @author Bryan Cazabonne
  * @author Thomas Paulet
- * @since 11.0
+ * @author Julie Bayard
  */
-public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
+public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
 
     /** Builders for propagators. */
     private final DSSTPropagatorBuilder builder;
@@ -85,7 +84,7 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
     private DSSTJacobiansMapper mapper;
 
     /** Propagators for the reference trajectories, up to current date. */
-    private DSSTPropagator referenceTrajectory;
+    private DSSTPropagator dsstPropagator;
 
     /** Current corrected estimate. */
     private ProcessEstimate correctedEstimate;
@@ -112,7 +111,7 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
     private EstimatedMeasurement<?> correctedMeasurement;
 
     /** Type of the orbit used for the propagation.*/
-    private PropagationType propagationType;
+    private PropagationType propagationType = PropagationType.OSCULATING;
 
     /** Type of the elements used to define the orbital state.*/
     private PropagationType stateType;
@@ -132,43 +131,49 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
     /** Old dY/dP used in the estimation of the state transition matrix. */
     private RealMatrix old_dYdP;
 
+    /** Previous state from the previous step Z. */
+    private RealVector oldState;
+
+    /** Previous correction state delta Z. */
+    private RealVector oldCorrectionState;
+
+    /** Boolean if there are propagation parameters. */
+    private Boolean usePropagationDrivers;
+
+    /** Boolean if there are measurements parameters. */
+    private Boolean useMeasurementDrivers;
+
 
 
     /** Kalman process model constructor (package private).
      * This constructor is used whenever state type and propagation type do not matter.
      * It is used for {@link KalmanModel} and {@link TLEKalmanModel}.
      * @param propagatorBuilder propagators builders used to evaluate the orbits.
-     * @param covarianceMatricesProvider providers for covariance matrices
+     * @param propagator used during the whole estimation, built with propagatorBuilder.
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @param mapper mapper for extracting Jacobians from integrated states
      */
     protected SemiAnalyticalKalmanModel(final DSSTPropagatorBuilder propagatorBuilder,
-                                  final CovarianceMatrixProvider covarianceMatricesProvider,
+                                  final DSSTPropagator propagator,
                                   final ParameterDriversList estimatedMeasurementParameters,
-                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix,
-                                  final DSSTJacobiansMapper mapper) {
-        this(propagatorBuilder, covarianceMatricesProvider, estimatedMeasurementParameters,
-             measurementProcessNoiseMatrix, mapper, PropagationType.MEAN, PropagationType.MEAN);
+                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        this(propagatorBuilder, propagator, estimatedMeasurementParameters,
+             measurementProcessNoiseMatrix, PropagationType.MEAN);
     }
 
     /** Kalman process model constructor (package private).
      * This constructor is used whenever propagation type and/or state type are to be specified.
      * It is used for {@link DSSTKalmanModel}.
      * @param propagatorBuilder propagators builders used to evaluate the orbits.
-     * @param covarianceMatricesProvider providers for covariance matrices
+     * @param propagator used during the whole estimation, built with propagatorBuilder.
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @param mapper mapper for extracting Jacobians from integrated states
-     * @param propagationType type of the orbit used for the propagation (mean or osculating), applicable only for DSST
      * @param stateType type of the elements used to define the orbital state (mean or osculating), applicable only for DSST
      */
     protected SemiAnalyticalKalmanModel(final DSSTPropagatorBuilder propagatorBuilder,
-                                  final CovarianceMatrixProvider covarianceMatricesProvider,
+                                  final DSSTPropagator propagator,
                                   final ParameterDriversList estimatedMeasurementParameters,
                                   final CovarianceMatrixProvider measurementProcessNoiseMatrix,
-                                  final DSSTJacobiansMapper mapper,
-                                  final PropagationType propagationType,
                                   final PropagationType stateType) {
 
         this.builder                         = propagatorBuilder;
@@ -177,8 +182,8 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
         this.currentMeasurementNumber        = 0;
         this.referenceDate                   = propagatorBuilder.getInitialOrbitDate();
         this.currentDate                     = referenceDate;
-        this.propagationType                 = propagationType;
         this.stateType                       = stateType;
+        this.oldCorrectionState              = MatrixUtils.createRealVector(nbOrbitalParameters);
 
         final Map<String, Integer> orbitalParameterColumns = new HashMap<>(nbOrbitalParameters);
         int columns = 0;
@@ -213,7 +218,14 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
         estimatedPropagationParametersNames.sort(Comparator.naturalOrder());
 
         this.nbPropagationParameters = estimatedPropagationParametersNames.size();
-        old_dYdP = MatrixUtils.createRealMatrix(nbOrbitalParameters, nbPropagationParameters);
+
+        if (nbPropagationParameters != 0) {
+            old_dYdP = MatrixUtils.createRealMatrix(nbOrbitalParameters, nbPropagationParameters);
+            this.usePropagationDrivers = true;
+        }
+        else {
+            this.usePropagationDrivers = false;
+        }
 
 
         // Populate the map of propagation drivers' columns and update the total number of columns
@@ -246,9 +258,9 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
         }
 
         // Build the reference propagators and add their partial derivatives equations implementation
-        this.mapper = mapper;
-        updateReferenceTrajectory(getEstimatedPropagator(), propagationType, stateType);
-        this.predictedSpacecraftState = referenceTrajectory.getInitialState();
+        //this.mapper = mapper;
+        defineReferenceTrajectory(propagator, stateType);
+        this.predictedSpacecraftState = dsstPropagator.getInitialState();
         this.correctedSpacecraftState = predictedSpacecraftState;
 
         // Initialize the estimated normalized state and fill its values
@@ -271,6 +283,8 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
         // Number of estimated measurement parameters
         this.nbMeasurementParameters = estimatedMeasurementParameters.getNbParams();
 
+        this.useMeasurementDrivers = this.nbMeasurementParameters != 0;
+
         // Number of estimated dynamic parameters (orbital + propagation)
         final int nbDyn  =  nbOrbitalParameters + nbPropagationParameters;
 
@@ -280,23 +294,22 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
                        estimatedMeasurementsParameters);
 
         correctedEstimate = new ProcessEstimate(0.0, correctedState, physicalProcessNoise);
+        this.oldState = correctedEstimate.getState();
 
     }
 
     /** Update the reference trajectories using the propagators as input.
      * @param propagator The new propagators to use
-     * @param pType propagationType type of the orbit used for the propagation (mean or osculating)
      * @param sType type of the elements used to define the orbital state (mean or osculating)
      */
-    private void updateReferenceTrajectory(final DSSTPropagator propagator,
-                                                        final PropagationType pType,
+    private void defineReferenceTrajectory(final DSSTPropagator propagator,
                                                         final PropagationType sType) {
         // Update the reference trajectory propagator
         setReferenceTrajectory(propagator);
 
         // Link the partial derivatives to this new propagator
         final String equationName = KalmanEstimator.class.getName() + "-derivatives-";
-        final DSSTPartialDerivativesEquations pde = new DSSTPartialDerivativesEquations(equationName, getReferenceTrajectory(), pType);
+        final DSSTPartialDerivativesEquations pde = new DSSTPartialDerivativesEquations(equationName, getReferenceTrajectory(), propagationType);
 
         // Reset the Jacobians
         final SpacecraftState rawState = getReferenceTrajectory().getInitialState();
@@ -311,7 +324,7 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
 
     /** Analytical computation of derivatives.
      * This method allow to compute analytical derivatives.
-     * @param state state used to calculate short period perturbations
+     * @param state mean state used to calculate short period perturbations
      */
     private void analyticalDerivativeComputations(final SpacecraftState state) {
         mapper.setShortPeriodJacobians(state);
@@ -706,18 +719,20 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
 
         // Compute B1 and B4
         final double[][] IpB1 = new double[nbOrbitalParameters][nbOrbitalParameters];
-        final double[][] B4 = new double[nbOrbitalParameters][nbPropagationParameters];
-
         mapper.getB1(IpB1);
-        mapper.getB4(B4);
-
         // Add identity matrix to B1
         for (int i = 0; i < nbOrbitalParameters; i++) {
             IpB1[i][i] += 1;
         }
-
         dShortPeriod_dMeanState.setSubMatrix(IpB1, 0, 0);
-        dShortPeriod_dMeanState.setSubMatrix(B4, 0, nbOrbitalParameters);
+
+
+        if (this.usePropagationDrivers) {
+            final double[][] B4 = new double[nbOrbitalParameters][nbPropagationParameters];
+            mapper.getB4(B4);
+            dShortPeriod_dMeanState.setSubMatrix(B4, 0, nbOrbitalParameters);
+
+        }
 
 
         // Observed measurement characteristics
@@ -749,9 +764,7 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
 
         final RealMatrix measurementMatrixOrbitProp = dMdY.multiply(dShortPeriod_dMeanState);
 
-
-
-        final RealMatrix measurementMatrix = MatrixUtils.createRealMatrix(nbMeasurementParameters, correctedEstimate.getState().getDimension());
+        final RealMatrix measurementMatrix = MatrixUtils.createRealMatrix(observedMeasurement.getDimension(), correctedEstimate.getState().getDimension());
         for (int i = 0; i < nbMeasurementParameters; i++) {
             for (int j = 0; j < nbOrbitalParameters; j++) {
                 final double driverScale = builder.getOrbitalParametersDrivers().getDrivers().get(j).getScale();
@@ -763,6 +776,7 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
                                            measurementMatrixOrbitProp.getEntry(i, j + nbOrbitalParameters) / sigma[i] * driverScale);
             }
         }
+
 
         // Normalized measurement matrix's columns related to measurement parameters
         // --------------------------------------------------------------
@@ -796,18 +810,17 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
      * Compute and add the short periodic variation to the mean {@link SpacecraftState}.
      * </p>
      * @param stm the state transition matrix
-     * @param oldStateCorrection the state correction of the previous step
      * @return osculating state
      */
-    private double[] computeOsculatingElements(final RealMatrix stm, final RealVector oldStateCorrection) {
+    private double[] computeOsculatingElements(final RealMatrix stm) {
 
         final double[][] B1 = new double[nbOrbitalParameters][nbOrbitalParameters];
         mapper.getB1(B1);
         final RealMatrix B1Matrix = MatrixUtils.createRealMatrix(B1);
 
-        final RealVector stateTransitionTerm = B1Matrix.add(MatrixUtils.createRealIdentityMatrix(nbOrbitalParameters)).multiply(stm).operate(oldStateCorrection);
+        final RealVector stateTransitionTerm = B1Matrix.add(MatrixUtils.createRealIdentityMatrix(nbOrbitalParameters)).multiply(stm).operate(oldCorrectionState);
 
-        final double[] spt = referenceTrajectory.getShortPeriodTermsValue(predictedSpacecraftState);
+        final double[] spt = dsstPropagator.getShortPeriodTermsValue(predictedSpacecraftState);
 
         final double[] mean = new double[6];
         OrbitType.EQUINOCTIAL.mapOrbitToArray(predictedSpacecraftState.getOrbit(), builder.getPositionAngle(), mean, null);
@@ -912,7 +925,7 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
         // Get the error state transition matrix (mxm)
         final RealMatrix stateTransitionMatrix = getErrorStateTransitionMatrix();
 
-        final double[] predictedOsculatedElements = computeOsculatingElements(stateTransitionMatrix, MatrixUtils.createRealVector(6 + nbPropagationParameters));
+        final double[] predictedOsculatedElements = computeOsculatingElements(stateTransitionMatrix);
 
         //elementsToSpacecraftState(final double[] elements, final SpacecraftState state, final double mass)
 
@@ -979,12 +992,15 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
         // Update the parameters with the estimated state
         // The min/max values of the parameters are handled by the ParameterDriver implementation
         correctedEstimate = estimate;
-        updateParameters();
+
+        // Udpate the state and its correction used during the computation of the next correction.
+        oldCorrectionState = estimate.getState().subtract(oldState);
+        oldState = estimate.getState();
+        //updateParameters() pour mettre à jour l'état avant de getEstimatedPropagtor;
 
         // Get the estimated propagator (mirroring parameter update in the builder)
         // and the estimated spacecraft state
-        final DSSTPropagator estimatedPropagator = getEstimatedPropagator();
-        correctedSpacecraftState = estimatedPropagator.getInitialState();
+        correctedSpacecraftState = dsstPropagator.getInitialState();
 
         // Compute the estimated measurement using estimated spacecraft state
         correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
@@ -992,7 +1008,7 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
                                                             new SpacecraftState[] {correctedSpacecraftState});
         // Update the trajectory
         // ---------------------
-        updateReferenceTrajectory(estimatedPropagator, propagationType, stateType);
+        //updateReferenceTrajectory(dsstPropagator, stateType);
 
     }
 
@@ -1009,7 +1025,7 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
         int jOrb = 0;
 
         // Propagate the reference trajectory to measurement date
-        predictedSpacecraftState = referenceTrajectory.propagate(currentDate);
+        predictedSpacecraftState = dsstPropagator.propagate(currentDate);
 
         // Update the builder with the predicted orbit
         // This updates the orbital drivers with the values of the predicted orbit
@@ -1033,6 +1049,7 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
     /** Update the estimated parameters after the correction phase of the filter.
      * The min/max allowed values are handled by the parameter themselves.
      */
+    @SuppressWarnings("unused")
     private void updateParameters() {
         final RealVector correctedState = correctedEstimate.getState();
         int i = 0;
@@ -1066,14 +1083,14 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
      * @return the referencetrajectories
      */
     public DSSTPropagator getReferenceTrajectory() {
-        return referenceTrajectory;
+        return dsstPropagator;
     }
 
     /** Setter for the reference trajectories.
      * @param referenceTrajectory the reference trajectories to be setted
      */
     public void setReferenceTrajectory(final DSSTPropagator referenceTrajectory) {
-        this.referenceTrajectory = referenceTrajectory;
+        this.dsstPropagator = referenceTrajectory;
     }
 
     /** Getter for the jacobian mappers.
@@ -1089,14 +1106,4 @@ public abstract class SemiAnalyticalKalmanModel implements OrekitStepHandler, Ka
     public void setMapper(final DSSTJacobiansMapper mapper) {
         this.mapper = mapper;
     }
-
-    /** Get the propagators estimated with the values set in the propagators builders.
-     * @return propagators based on the current values in the builder
-     */
-    public DSSTPropagator getEstimatedPropagator() {
-        // Return propagators built with current instantiation of the propagator builders
-        return getBuilder().buildPropagator(getBuilder().getSelectedNormalizedParameters());
-        // /!\ ##### Ici ajouter stepHandler : le même pour tous les propagateurs.
-    }
-
 }
