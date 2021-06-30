@@ -94,7 +94,7 @@ public class CRDFile {
         private List<RangeMeasurement> rangeData;
 
         /** Meteorological records. */
-        private final SortedSet<TimeStamped> meteoData;
+        private final SortedSet<MeteorologicalMeasurement> meteoData;
 
         /** Pointing angles records. */
         private List<AnglesMeasurement> anglesData;
@@ -501,13 +501,13 @@ public class CRDFile {
         private transient MeteorologicalMeasurement nextParam;
 
         /** List of meteo data. */
-        private final transient ImmutableTimeStampedCache<TimeStamped> meteo;
+        private final transient ImmutableTimeStampedCache<MeteorologicalMeasurement> meteo;
 
         /**
          * Constructor.
          * @param meteoData list of meteo data
          */
-        public Meteo(final SortedSet<TimeStamped> meteoData) {
+        public Meteo(final SortedSet<MeteorologicalMeasurement> meteoData) {
 
             // Size
             final int neighborsSize = (meteoData.size() < 2) ? meteoData.size() : N_NEIGHBORS;
@@ -525,7 +525,7 @@ public class CRDFile {
             } else {
 
                 // Meteo data
-                this.meteo = new ImmutableTimeStampedCache<TimeStamped>(neighborsSize, meteoData);
+                this.meteo = new ImmutableTimeStampedCache<MeteorologicalMeasurement>(neighborsSize, meteoData);
 
                 // Initialize first and last available dates
                 this.firstDate = meteoData.first().getDate();
@@ -533,6 +533,14 @@ public class CRDFile {
 
             }
 
+        }
+
+        /** Get an unmodifiable view of the tabulated meteorological data.
+         * @return unmodifiable view of the tabulated meteorological data
+         * @since 11.0
+         */
+        public List<MeteorologicalMeasurement> getData() {
+            return meteo.getAll();
         }
 
         /**
@@ -579,17 +587,17 @@ public class CRDFile {
             // Initialize previous and next parameters
             if (date.durationFrom(firstDate) <= 0) {
                 // Current date is before the first date
-                previousParam = (MeteorologicalMeasurement) meteo.getEarliest();
+                previousParam = meteo.getEarliest();
                 nextParam     = previousParam;
             } else if (date.durationFrom(lastDate) > 0) {
                 // Current date is after the last date
-                previousParam = (MeteorologicalMeasurement) meteo.getLatest();
+                previousParam = meteo.getLatest();
                 nextParam     = previousParam;
             } else {
                 // Current date is between first and last date
-                final List<TimeStamped> neighbors = meteo.getNeighbors(date).collect(Collectors.toList());
-                previousParam = (MeteorologicalMeasurement) neighbors.get(0);
-                nextParam     = (MeteorologicalMeasurement) neighbors.get(1);
+                final List<MeteorologicalMeasurement> neighbors = meteo.getNeighbors(date).collect(Collectors.toList());
+                previousParam = neighbors.get(0);
+                nextParam     = neighbors.get(1);
             }
 
         }
