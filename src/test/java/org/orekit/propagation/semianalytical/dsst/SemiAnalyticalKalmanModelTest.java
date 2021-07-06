@@ -18,7 +18,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
-import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -40,7 +39,6 @@ import org.orekit.files.ilrs.CPFFile;
 import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
 import org.orekit.files.ilrs.CPFParser;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.HatanakaCompressFilter;
@@ -48,6 +46,9 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.LutherIntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
@@ -118,7 +119,7 @@ public class SemiAnalyticalKalmanModelTest {
 
             // Run the test
             System.out.print(i + "  ");
-            run(kalman, measurements.subList(i*287, 288), cpfFile);
+            run(kalman, measurements.subList(i*287, 288), cpfFile, dsstPropagatorBuilder);
         }
         
         
@@ -134,7 +135,8 @@ public class SemiAnalyticalKalmanModelTest {
      */
     private void run(final SemiAnalyticalKalmanEstimator kalman,
                      final List<ObservedMeasurement<?>> measurements,
-                     final CPFFile cpfFile) {
+                     final CPFFile cpfFile,
+                     final DSSTPropagatorBuilder dsstPropagatorBuilder) {
 
         // Bounded propagator from the CPF file
         final CPFEphemeris ephemeris = cpfFile.getSatellites().get(cpfFile.getHeader().getIlrsSatelliteId());
@@ -146,7 +148,7 @@ public class SemiAnalyticalKalmanModelTest {
 
 
         // Process the measurement
-        final Orbit estimated = kalman.estimationStep(measurements).getInitialState().getOrbit();
+        final SpacecraftState estimated = kalman.estimationStep(measurements).getInitialState();
 
         // Reference position in both Earth and inertial frames
         final TimeStampedPVCoordinates pvITRF     = bounded.getPVCoordinates(estimated.getDate(), ephemeris.getFrame());
@@ -233,10 +235,10 @@ public class SemiAnalyticalKalmanModelTest {
        
         final Orbit initialOrbit = new CartesianOrbit(pvInitInertial, FramesFactory.getEME2000(), gravityField.getMu());
               
-        ODEIntegratorBuilder integrator = new LutherIntegratorBuilder(86400);
+        ODEIntegratorBuilder integrator = new ClassicalRungeKuttaIntegratorBuilder(86400);
         
                
-        DSSTPropagatorBuilder propagatorBuilder = new DSSTPropagatorBuilder(initialOrbit, integrator, 10, PropagationType.MEAN, PropagationType.OSCULATING);
+        DSSTPropagatorBuilder propagatorBuilder = new DSSTPropagatorBuilder(initialOrbit, integrator, 10, PropagationType.OSCULATING, PropagationType.OSCULATING);
         propagatorBuilder.addForceModel(new DSSTNewtonianAttraction(gravityField.getMu()));
         propagatorBuilder.addForceModel(new DSSTZonal(gravityField));
         propagatorBuilder.addForceModel(new DSSTTesseral(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityField));

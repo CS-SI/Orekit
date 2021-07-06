@@ -303,7 +303,7 @@ public class SemiAnalyticalKalmanEstimator {
                     throw new OrekitException(mrte);
                 }
                 measurementIndex += 1;
-                //System.out.println(observedMeasurements.get(measurementIndex).getDate());
+                //System.out.println(observedMeasurements.get(measurementIndex).getDate()); 
             }
         }
 

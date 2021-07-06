@@ -642,7 +642,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             mapper.getB2(predictedSpacecraftState, dYdY0List);
         }
 
-        // In case of OSCULATING propagation : short periodic terms are included
+        // In case of OSCULATING propagation : short periodic terms are included 
         else {
             mapper.getStateJacobian(predictedSpacecraftState, dYdY0List);
         }
