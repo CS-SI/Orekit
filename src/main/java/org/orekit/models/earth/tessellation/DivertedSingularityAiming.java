@@ -48,7 +48,7 @@ public class DivertedSingularityAiming implements TileAiming {
     private final Vector3D moment;
 
     /** Simple constructor.
-     * @param forbiddenZone zone out of which singulariry should be diverted
+     * @param forbiddenZone zone out of which singularity should be diverted
      */
     public DivertedSingularityAiming(final SphericalPolygonsSet forbiddenZone) {
         final S2Point outside = forbiddenZone.getEnclosingCap().getCenter().negate();
