@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
                        final ObservableSatellite satellite) {
-        super(date, angular, sigma, baseWeight, Arrays.asList(satellite));
+        super(date, angular, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getEastOffsetDriver());
         addParameterDriver(station.getNorthOffsetDriver());

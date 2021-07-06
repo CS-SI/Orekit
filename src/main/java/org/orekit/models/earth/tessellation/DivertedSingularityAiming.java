@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth.tessellation;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -60,7 +60,7 @@ public class DivertedSingularityAiming implements TileAiming {
     /** {@inheritDoc} */
     @Override
     public List<GeodeticPoint> getSingularPoints() {
-        return Arrays.asList(singularityGP);
+        return Collections.singletonList(singularityGP);
     }
 
     /** {@inheritDoc} */

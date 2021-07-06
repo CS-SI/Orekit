@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,7 +68,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
                      final boolean twoway, final ObservableSatellite satellite) {
-        super(date, rangeRate, sigma, baseWeight, Arrays.asList(satellite));
+        super(date, rangeRate, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getClockDriftDriver());
         addParameterDriver(satellite.getClockDriftDriver());

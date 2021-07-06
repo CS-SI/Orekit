@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -64,7 +64,7 @@ public class StreamingAemWriterTest {
     public void testWriteAemStepHandler() throws Exception {
 
         // Create a list of files
-        List<String> files = Arrays.asList("/ccsds/adm/aem/AEMExample07.txt");
+        List<String> files = Collections.singletonList("/ccsds/adm/aem/AEMExample07.txt");
         for (final String ex : files) {
 
             // Reference AEM file
