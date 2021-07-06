@@ -285,39 +285,25 @@ public class SemiAnalyticalKalmanEstimator {
         public void handleStep(final OrekitStepInterpolator interpolator,
                                final boolean isLast) {
 
-            System.out.println("##############HANDLE STEP");
+            //System.out.println("\n\n##############HANDLE STEP");
 
             //updateShortPeriodTerms(interpolator.getPreviousState());
 
             final AbsoluteDate nextStateDate = interpolator.getCurrentState().getDate();
-            
-            System.out.println(observedMeasurements.size());
-            System.out.println(observedMeasurements.get(measurementIndex).getDate());
-            System.out.println(nextStateDate);
-            System.out.println(observedMeasurements.get(measurementIndex).getDate().compareTo(nextStateDate));
 
             while (measurementIndex < observedMeasurements.size() && observedMeasurements.get(measurementIndex).getDate().compareTo(nextStateDate) < 0) {
-                
-                System.out.println("\nhere1\n");
-                System.out.print("######### Estimation step");
-                System.out.println("  " + observedMeasurements.get(measurementIndex).getDate().toString() +  "   " + nextStateDate.toString());
-                System.out.println(observedMeasurements.get(measurementIndex).getObservedValue()[0]);
-                
-                //try {
-                final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurements.get(measurementIndex)));
-                System.out.println("\nhere2\n");
-                processModel.finalizeEstimation(observedMeasurements.get(measurementIndex), estimate);
+                //System.out.println("######### Estimation step");
 
-                //} catch (MathRuntimeException mrte) {
-                //    throw new OrekitException(mrte);
-                //}
+                try {
+                    processModel.setPredictedSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(measurementIndex).getDate()));
+                    final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurements.get(measurementIndex)));
+                    processModel.finalizeEstimation(observedMeasurements.get(measurementIndex), estimate);
+
+                } catch (MathRuntimeException mrte) {
+                    throw new OrekitException(mrte);
+                }
                 measurementIndex += 1;
-                
-                System.out.println(observedMeasurements.size());
-                System.out.println(observedMeasurements.get(measurementIndex).getDate());
-                System.out.println(nextStateDate);
-                System.out.println(observedMeasurements.get(measurementIndex).getDate().compareTo(nextStateDate));
-                System.out.println("\nhere3\n");
+                //System.out.println(observedMeasurements.get(measurementIndex).getDate());
             }
         }
 
@@ -326,7 +312,7 @@ public class SemiAnalyticalKalmanEstimator {
 
             // Computate short periodic coefficients for this step
             for (DSSTForceModel forceModel : propagator.getAllForceModels()) {
-                System.out.println(forceModel.toString());
+
                 forceModel.updateShortPeriodTerms(forceModel.getParameters(), meanState);
             }
         }
