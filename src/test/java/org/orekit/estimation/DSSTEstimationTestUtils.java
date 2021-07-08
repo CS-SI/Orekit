@@ -17,6 +17,7 @@
 package org.orekit.estimation;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,7 +175,7 @@ public class DSSTEstimationTestUtils {
         //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
         //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
         //                );
-        context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
+        context.stations = Collections.singletonList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
 
         // Station position & velocity in EME2000
         final Vector3D geovelocity = new Vector3D (0., 0., 0.);
@@ -200,7 +201,7 @@ public class DSSTEstimationTestUtils {
                                                     new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc),
                                                     context.gravity.getMu());
 
-        context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
+        context.stations = Collections.singletonList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
 
         // Turn-around range stations
         // Map entry = master station

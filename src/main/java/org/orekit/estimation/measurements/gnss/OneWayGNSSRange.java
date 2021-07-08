@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,7 +77,7 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
                            final double range, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(date, range, sigma, baseWeight, Arrays.asList(local));
+        super(date, range, sigma, baseWeight, Collections.singletonList(local));
         // The local satellite clock offset affects the measurement
         addParameterDriver(local.getClockOffsetDriver());
         // Initialise fields

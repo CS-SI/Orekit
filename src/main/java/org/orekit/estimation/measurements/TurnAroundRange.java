@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,7 +79,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
                            final ObservableSatellite satellite) {
-        super(date, turnAroundRange, sigma, baseWeight, Arrays.asList(satellite));
+        super(date, turnAroundRange, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(masterStation.getClockOffsetDriver());
         addParameterDriver(masterStation.getEastOffsetDriver());
         addParameterDriver(masterStation.getNorthOffsetDriver());
