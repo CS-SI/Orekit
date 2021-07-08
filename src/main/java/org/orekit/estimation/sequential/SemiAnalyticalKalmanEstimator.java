@@ -21,6 +21,7 @@ import java.util.List;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -43,6 +44,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /**
@@ -90,6 +92,9 @@ public class SemiAnalyticalKalmanEstimator {
     /** Filter. */
     private final ExtendedKalmanFilter<MeasurementDecorator> filter;
 
+    /** Observer to retrieve current estimation info. */
+    private KalmanObserver observer;
+
     /** Propagator. */
     private final DSSTPropagator propagator;
 
@@ -107,15 +112,24 @@ public class SemiAnalyticalKalmanEstimator {
                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
         this.propagatorBuilder = propagatorBuilder;
-        this.referenceDate      = propagatorBuilder.getInitialOrbitDate();
-        this.propagator = propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        this.referenceDate     = propagatorBuilder.getInitialOrbitDate();
+        this.propagator        = propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        this.observer          = null;
 
         // Build the process model and measurement model
+        //Fixme
         this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilder, this.propagator, estimatedMeasurementParameters,
-                                                          measurementProcessNoiseMatrix, PropagationType.MEAN);
+                                                          measurementProcessNoiseMatrix, PropagationType.OSCULATING);
 
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 
+    }
+    
+    /** Set the observer.
+     * @param observer the observer
+     */
+    public void setObserver(final KalmanObserver observer) {
+        this.observer = observer;
     }
 
     /** Get the current measurement number.
@@ -291,13 +305,24 @@ public class SemiAnalyticalKalmanEstimator {
 
             final AbsoluteDate nextStateDate = interpolator.getCurrentState().getDate();
 
+            System.out.println(interpolator.getPreviousState().getOrbit());
+            
             while (measurementIndex < observedMeasurements.size() && observedMeasurements.get(measurementIndex).getDate().compareTo(nextStateDate) < 0) {
                 //System.out.println("######### Estimation step");
 
                 try {
+                    ObservedMeasurement <?> pv = observedMeasurements.get(measurementIndex);
+                    Vector3D positionMeasure = new Vector3D(pv.getObservedValue());
+                    SpacecraftState interpolated = interpolator.getInterpolatedState(observedMeasurements.get(measurementIndex).getDate());
+                    TimeStampedPVCoordinates pvC = interpolated.getPVCoordinates(); 
+                    System.out.println(pv.getDate() + "   " + Vector3D.distance(positionMeasure, pvC.getPosition()));
+
                     processModel.setPredictedSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(measurementIndex).getDate()));
                     final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurements.get(measurementIndex)));
                     processModel.finalizeEstimation(observedMeasurements.get(measurementIndex), estimate);
+                    if (observer != null) {
+                        observer.evaluationPerformed(processModel);
+                    }
 
                 } catch (MathRuntimeException mrte) {
                     throw new OrekitException(mrte);
@@ -305,6 +330,8 @@ public class SemiAnalyticalKalmanEstimator {
                 measurementIndex += 1;
                 //System.out.println(observedMeasurements.get(measurementIndex).getDate()); 
             }
+            
+            propagator.getInitialState();
         }
 
 

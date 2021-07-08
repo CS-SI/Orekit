@@ -34,16 +34,24 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.sequential.ConstantProcessNoise;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.KalmanEstimation;
+import org.orekit.estimation.sequential.KalmanObserver;
 import org.orekit.estimation.sequential.SemiAnalyticalKalmanEstimator;
 import org.orekit.files.ilrs.CPFFile;
 import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
 import org.orekit.files.ilrs.CPFParser;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.NewtonianAttraction;
+import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -51,7 +59,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.LutherIntegratorBuilder;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
@@ -107,7 +117,7 @@ public class SemiAnalyticalKalmanModelTest {
         // Read CPF file
         final CPFFile cpfFile = readCpfFile(filePath, "lageos2_cpf_160213_5441.sgf");
 
-        for (int i=1; i<2; i++) {
+        for (int i=0; i<1; i++) {
          // Propagator builder
             final DSSTPropagatorBuilder dsstPropagatorBuilder = buildPropagatorBuilder(cpfFile);
 
@@ -118,8 +128,9 @@ public class SemiAnalyticalKalmanModelTest {
             final List<ObservedMeasurement<?>> measurements = buildMeasurements(cpfFile);
 
             // Run the test
-            System.out.print(i + "  ");
-            run(kalman, measurements.subList(i*287, 288), cpfFile, dsstPropagatorBuilder);
+            //System.out.print(i + "  ");
+            run(kalman, measurements.subList(i*287, 287), cpfFile);
+            //run2(cpfFile);
         }
         
         
@@ -135,8 +146,7 @@ public class SemiAnalyticalKalmanModelTest {
      */
     private void run(final SemiAnalyticalKalmanEstimator kalman,
                      final List<ObservedMeasurement<?>> measurements,
-                     final CPFFile cpfFile,
-                     final DSSTPropagatorBuilder dsstPropagatorBuilder) {
+                     final CPFFile cpfFile) {
 
         // Bounded propagator from the CPF file
         final CPFEphemeris ephemeris = cpfFile.getSatellites().get(cpfFile.getHeader().getIlrsSatelliteId());
@@ -145,7 +155,7 @@ public class SemiAnalyticalKalmanModelTest {
         // Intialize container for statistics
         final StreamingStatistics positionStatistics = new StreamingStatistics();
 
-
+        kalman.setObserver(new KalmanOrbitDeterminationObserver());
 
         // Process the measurement
         final SpacecraftState estimated = kalman.estimationStep(measurements).getInitialState();
@@ -157,6 +167,7 @@ public class SemiAnalyticalKalmanModelTest {
 
         
         // Update statistics
+        
         positionStatistics.addValue(Vector3D.distance(pvInertial.getPosition(), estimated.getPVCoordinates().getPosition()));
 
         // Verify date
@@ -164,7 +175,7 @@ public class SemiAnalyticalKalmanModelTest {
 
         //System.out.println(pvInertial.getPosition());
         //System.out.println(estimated.getPVCoordinates().getPosition());
-        
+        System.out.println(pvInertial.getDate());
         System.out.println(positionStatistics.getMean());
         //System.out.println(positionStatistics.getMin());
         //System.out.println(positionStatistics.getMax());
@@ -173,6 +184,38 @@ public class SemiAnalyticalKalmanModelTest {
         //Assert.assertEquals(0.0, positionStatistics.getMin(),  0.0);
         //Assert.assertEquals(0.0, positionStatistics.getMax(),  3.06e-2);
 
+    }
+    
+    private void run2(final CPFFile cpfFile) {
+        final DSSTPropagatorBuilder dsstPropagatorBuilder = buildPropagatorBuilder(cpfFile);
+        final NumericalPropagatorBuilder numericalPropagatorBuilder = buildNumePropagatorBuilder(cpfFile);
+        
+        DSSTPropagator dsstProp = dsstPropagatorBuilder.buildPropagator(dsstPropagatorBuilder.getSelectedNormalizedParameters());
+        NumericalPropagator numeProp = numericalPropagatorBuilder.buildPropagator(numericalPropagatorBuilder.getSelectedNormalizedParameters());
+        
+        // Bounded propagator from the CPF file
+        final CPFEphemeris ephemeris = cpfFile.getSatellites().get(cpfFile.getHeader().getIlrsSatelliteId());
+        final BoundedPropagator bounded = ephemeris.getPropagator();
+        
+        
+     // Reference position in both Earth and inertial frames
+        final TimeStampedPVCoordinates pvITRF     = bounded.getPVCoordinates(bounded.getMaxDate(), ephemeris.getFrame());
+        final TimeStampedPVCoordinates pvInertial = ephemeris.getFrame().getTransformTo(FramesFactory.getEME2000(), bounded.getMaxDate()).
+                                                                             transformPVCoordinates(pvITRF);
+        
+        Vector3D dsstPosition =  dsstProp.propagate(bounded.getMaxDate()).getPVCoordinates().getPosition();
+        Vector3D numePosition =  numeProp.propagate(bounded.getMaxDate()).getPVCoordinates().getPosition();
+        
+        System.out.println(dsstPosition);
+        System.out.println(numePosition);
+        System.out.println(Vector3D.distance(pvInertial.getPosition(), dsstPosition));
+
+        System.out.println(Vector3D.distance(pvInertial.getPosition(), numePosition));
+
+        System.out.println(Vector3D.distance(numePosition, dsstPosition));
+        
+        System.out.println(pvInertial.getPosition());
+        
     }
 
     /**
@@ -234,17 +277,58 @@ public class SemiAnalyticalKalmanModelTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF(IERSConventions.IERS_2010, false));
        
         final Orbit initialOrbit = new CartesianOrbit(pvInitInertial, FramesFactory.getEME2000(), gravityField.getMu());
-              
-        ODEIntegratorBuilder integrator = new ClassicalRungeKuttaIntegratorBuilder(86400);
+        EquinoctialOrbit orbit = new EquinoctialOrbit(initialOrbit);
+               
+       
+        ODEIntegratorBuilder integrator = new ClassicalRungeKuttaIntegratorBuilder(initialOrbit.getKeplerianPeriod());
         
                
-        DSSTPropagatorBuilder propagatorBuilder = new DSSTPropagatorBuilder(initialOrbit, integrator, 10, PropagationType.OSCULATING, PropagationType.OSCULATING);
+        DSSTPropagatorBuilder propagatorBuilder = new DSSTPropagatorBuilder(orbit, integrator, 10, PropagationType.OSCULATING, PropagationType.OSCULATING);
         propagatorBuilder.addForceModel(new DSSTNewtonianAttraction(gravityField.getMu()));
         propagatorBuilder.addForceModel(new DSSTZonal(gravityField));
         propagatorBuilder.addForceModel(new DSSTTesseral(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityField));
         propagatorBuilder.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon(),gravityField.getMu()));
         propagatorBuilder.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun(),gravityField.getMu()));
+        
+        System.out.println(orbit.toString());
 
+        // Return a configured propagator builder
+        return propagatorBuilder;
+
+    }
+    
+    private static NumericalPropagatorBuilder buildNumePropagatorBuilder(final CPFFile cpfFile) {
+
+        // Bounded propagator from the CPF file
+        final CPFEphemeris ephemeris = cpfFile.getSatellites().get(cpfFile.getHeader().getIlrsSatelliteId());
+        final BoundedPropagator bounded = ephemeris.getPropagator();
+
+        // Initial date
+        final AbsoluteDate initialDate = bounded.getMinDate();
+
+        // Propagator configuration
+        //final SLRPropagatorConfig propagatorConfig = new SLRPropagatorConfig(context, initialDate);
+        
+
+        // Initial orbit
+        final TimeStampedPVCoordinates pvInitITRF = bounded.getPVCoordinates(initialDate, ephemeris.getFrame());
+        final TimeStampedPVCoordinates pvInitInertial = ephemeris.getFrame().getTransformTo(FramesFactory.getEME2000(), initialDate).
+                                                                             transformPVCoordinates(pvInitITRF);
+        
+        final NormalizedSphericalHarmonicsProvider gravityField = GravityFieldFactory.getNormalizedProvider(20, 20);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+       
+        final Orbit initialOrbit = new CartesianOrbit(pvInitInertial, FramesFactory.getEME2000(), gravityField.getMu());
+        
+        ODEIntegratorBuilder integrator = new ClassicalRungeKuttaIntegratorBuilder(1);
+
+        NumericalPropagatorBuilder propagatorBuilder = new NumericalPropagatorBuilder(initialOrbit, integrator, PositionAngle.TRUE, 10);
+        propagatorBuilder.addForceModel(new NewtonianAttraction(gravityField.getMu()));
+        propagatorBuilder.addForceModel(new HolmesFeatherstoneAttractionModel(earth.getBodyFrame(), gravityField));
+        propagatorBuilder.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
+        propagatorBuilder.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
+
+        
         // Return a configured propagator builder
         return propagatorBuilder;
 

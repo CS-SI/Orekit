@@ -148,9 +148,9 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
     protected SemiAnalyticalKalmanModel(final DSSTPropagatorBuilder propagatorBuilder,
-                                  final DSSTPropagator propagator,
-                                  final ParameterDriversList estimatedMeasurementParameters,
-                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+                                        final DSSTPropagator propagator,
+                                        final ParameterDriversList estimatedMeasurementParameters,
+                                        final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
         this(propagatorBuilder, propagator, estimatedMeasurementParameters,
              measurementProcessNoiseMatrix, PropagationType.MEAN);
     }
@@ -165,10 +165,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
      * @param stateType type of the elements used to define the orbital state (mean or osculating), applicable only for DSST
      */
     protected SemiAnalyticalKalmanModel(final DSSTPropagatorBuilder propagatorBuilder,
-                                  final DSSTPropagator propagator,
-                                  final ParameterDriversList estimatedMeasurementParameters,
-                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix,
-                                  final PropagationType stateType) {
+                                        final DSSTPropagator propagator,
+                                        final ParameterDriversList estimatedMeasurementParameters,
+                                        final CovarianceMatrixProvider measurementProcessNoiseMatrix,
+                                        final PropagationType stateType) {
 
         this.builder                         = propagatorBuilder;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
@@ -825,29 +825,32 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             mapper.getB1(B1);
             final RealMatrix B1Matrix = MatrixUtils.createRealMatrix(B1);
             stateTransitionTerm = B1Matrix.add(MatrixUtils.createRealIdentityMatrix(nbOrbitalParameters)).multiply(stm).operate(oldCorrectionState);
+            final double[] shortPeriodTerms = dsstPropagator.getShortPeriodTermsValue(predictedSpacecraftState);
+
+            final double[] mean = new double[6];
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(predictedSpacecraftState.getOrbit(), builder.getPositionAngle(), mean, null);
+            final double[] y = mean.clone();
+
+            for (int i = 0; i < shortPeriodTerms.length; i++) {
+                y[i] += shortPeriodTerms[i] + stateTransitionTerm.getEntry(i);
+            }
+            return y;
+
         }
 
         // In case of OSCULATING propagation : short periodic terms are already included
         else {
-            stateTransitionTerm = stm.operate(oldCorrectionState);
+            final double[] osculating = new double[6];
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(predictedSpacecraftState.getOrbit(), builder.getPositionAngle(), osculating, null);
+            return osculating;
         }
 
-        final double[] shortPeriodTerms = dsstPropagator.getShortPeriodTermsValue(predictedSpacecraftState);
-
-        final double[] mean = new double[6];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(predictedSpacecraftState.getOrbit(), builder.getPositionAngle(), mean, null);
-        final double[] y = mean.clone();
-
-        for (int i = 0; i < shortPeriodTerms.length; i++) {
-            y[i] += shortPeriodTerms[i] + stateTransitionTerm.getEntry(i);
-        }
-        return y;
     }
 
 
     private SpacecraftState elementsToSpacecraftState(final double[] elements) {
         return new SpacecraftState(OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, null, builder.getPositionAngle(),
-                               currentDate, predictedSpacecraftState.getMu(), predictedSpacecraftState.getFrame()),
+                                                                         currentDate, predictedSpacecraftState.getMu(), predictedSpacecraftState.getFrame()),
                                    predictedSpacecraftState.getAttitude(), predictedSpacecraftState.getMass(), predictedSpacecraftState.getAdditionalStates());
     }
 
@@ -1020,6 +1023,27 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Update the trajectory
         // ---------------------
         //updateReferenceTrajectory(dsstPropagator, stateType);
+        /** Update the estimated parameters after the correction phase of the filter.
+         * The min/max allowed values are handled by the parameter themselves.
+         */
+
+        int i = 0;
+        for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
+            // let the parameter handle min/max clipping
+            driver.setNormalizedValue(oldState.getEntry(i));
+            oldState.setEntry(i++, driver.getNormalizedValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
+            // let the parameter handle min/max clipping
+            driver.setNormalizedValue(oldState.getEntry(i));
+            oldState.setEntry(i++, driver.getNormalizedValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+            // let the parameter handle min/max clipping
+            driver.setNormalizedValue(oldState.getEntry(i));
+            oldState.setEntry(i++, driver.getNormalizedValue());
+
+        }
 
     }
 
