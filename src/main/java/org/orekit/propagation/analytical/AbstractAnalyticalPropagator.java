@@ -265,21 +265,30 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                     }
                     // all event detectors agree we can advance to the current event time
 
+                    // handle the first part of the step, up to the event
+                    if (getStepHandler() != null) {
+                        getStepHandler().handleStep(restricted, false);
+                    }
+
+                    // acknowledge event occurrence
                     final EventOccurrence occurrence = currentEvent.doEvent(eventState);
                     final Action action = occurrence.getAction();
                     isLastStep = action == Action.STOP;
 
                     if (isLastStep) {
+
                         // ensure the event is after the root if it is returned STOP
                         // this lets the user integrate to a STOP event and then restart
                         // integration from the same time.
+                        final SpacecraftState savedState = eventState;
                         eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
-                        restricted = restricted.restrictStep(previous, eventState);
-                    }
+                        restricted = restricted.restrictStep(savedState, eventState);
 
-                    // handle the first part of the step, up to the event
-                    if (getStepHandler() != null) {
-                        getStepHandler().handleStep(restricted, isLastStep);
+                        // handle the almost zero size last part of the final step, at event time
+                        if (getStepHandler() != null) {
+                            getStepHandler().handleStep(restricted, true);
+                        }
+
                     }
 
                     if (isLastStep) {

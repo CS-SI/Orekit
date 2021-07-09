@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="807">
+        Fixed scheduling between calls to step handlers and events handlers.
+      </action>
       <action dev="luc" type="fix" issue="806">
         Added restrictStep method to FieldOrekitStepInterpolator interface.
       </action>
