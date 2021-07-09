@@ -18,7 +18,6 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -64,7 +63,7 @@ class MeasurementHandler implements MultiSatStepHandler {
 
     /** {@inheritDoc} */
     @Override
-    public void handleStep(final List<OrekitStepInterpolator> interpolators, final boolean isLast) {
+    public void handleStep(final List<OrekitStepInterpolator> interpolators) {
 
         while (number < precompensated.size()) {
 
@@ -75,13 +74,6 @@ class MeasurementHandler implements MultiSatStepHandler {
             final AbsoluteDate currentDate = interpolators.get(0).getCurrentState().getDate();
             if (model.isForwardPropagation()  && next.getDate().compareTo(currentDate) > 0 ||
                 !model.isForwardPropagation() && next.getDate().compareTo(currentDate) < 0) {
-
-                // The next date is past the end of the interpolator,
-                // it will be picked-up in a future step
-                if (isLast) {
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-                }
                 return;
             }
 

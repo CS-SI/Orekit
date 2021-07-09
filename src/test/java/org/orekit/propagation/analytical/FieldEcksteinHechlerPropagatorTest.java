@@ -826,8 +826,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
             @Override
-            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
-            {
+            public void handleStep(FieldSpacecraftState<T> currentState) {
                 if (previous != null) {
                     Assert.assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
                 }

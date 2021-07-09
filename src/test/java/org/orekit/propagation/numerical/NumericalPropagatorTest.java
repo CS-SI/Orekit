@@ -146,8 +146,7 @@ public class NumericalPropagatorTest {
 
         // action
         final List<SpacecraftState> states = new ArrayList<>();
-        propagator.setEphemerisMode(
-                (interpolator, isLast) -> states.add(interpolator.getCurrentState()));
+        propagator.setEphemerisMode(interpolator -> states.add(interpolator.getCurrentState()));
         propagator.propagate(end);
         final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
 
@@ -569,8 +568,7 @@ public class NumericalPropagatorTest {
             private AbsoluteDate previousCall = null;
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
-            public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) {
+            public void handleStep(OrekitStepInterpolator interpolator) {
                 if (previousCall != null) {
                     Assert.assertTrue(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
                 }
@@ -1029,7 +1027,7 @@ public class NumericalPropagatorTest {
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
         final NumericalPropagator propagator = createPropagator(initialState, OrbitType.CARTESIAN, PositionAngle.TRUE);
         final double samplingStep = 10000.0;
-        propagator.setMasterMode(samplingStep, (state, isLast) -> states.add(state));
+        propagator.setMasterMode(samplingStep, state -> states.add(state));
         propagator.propagate(initialDate.shiftedBy(5 * samplingStep));
 
         // compute reference errors, using serial computation in a for loop
@@ -1438,7 +1436,7 @@ public class NumericalPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setMasterMode(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isBefore(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
@@ -1472,7 +1470,7 @@ public class NumericalPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setMasterMode(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isAfter(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
@@ -1506,7 +1504,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public void handleStep(SpacecraftState currentState, boolean isLast)
+        public void handleStep(SpacecraftState currentState)
                 {
           final AbsoluteDate date = currentState.getDate();
           if (date.compareTo(startDate) < 0 || date.compareTo(finalDate) > 0) {

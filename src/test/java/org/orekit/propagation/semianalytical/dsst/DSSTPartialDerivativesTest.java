@@ -481,19 +481,8 @@ public class DSSTPartialDerivativesTest {
             return dYdP;
         }
 
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
-
-        public void handleStep(OrekitStepInterpolator interpolator, boolean isLast) {
-            final SpacecraftState interpolated;
-            if (pickUpDate == null) {
-                // we want to pick up the Jacobians at the end of last step
-                if (isLast) {
-                    interpolated = interpolator.getCurrentState();
-                } else {
-                    return;
-                }
-            } else {
+        public void handleStep(OrekitStepInterpolator interpolator) {
+            if (pickUpDate != null) {
                 // we want to pick up some intermediate Jacobians
                 double dt0 = pickUpDate.durationFrom(interpolator.getPreviousState().getDate());
                 double dt1 = pickUpDate.durationFrom(interpolator.getCurrentState().getDate());
@@ -501,15 +490,21 @@ public class DSSTPartialDerivativesTest {
                     // the current step does not cover the pickup date
                     return;
                 } else {
-                    interpolated = interpolator.getInterpolatedState(pickUpDate);
+                    checkState(interpolator.getInterpolatedState(pickUpDate));
                 }
             }
+        }
 
-            Assert.assertEquals(1, interpolated.getAdditionalStates().size());
-            Assert.assertTrue(interpolated.getAdditionalStates().containsKey(mapper.getName()));
-            mapper.setShortPeriodJacobians(interpolated);
-            mapper.getStateJacobian(interpolated, dYdY0);
-            mapper.getParametersJacobian(interpolated, dYdP);
+        public void finish(SpacecraftState finalState) {
+            checkState(finalState);
+        }
+
+        private void checkState(final SpacecraftState state) {
+            Assert.assertEquals(1, state.getAdditionalStates().size());
+            Assert.assertTrue(state.getAdditionalStates().containsKey(mapper.getName()));
+            mapper.setShortPeriodJacobians(state);
+            mapper.getStateJacobian(state, dYdY0);
+            mapper.getParametersJacobian(state, dYdP);
 
         }
 

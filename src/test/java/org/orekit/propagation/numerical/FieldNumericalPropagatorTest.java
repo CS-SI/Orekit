@@ -667,8 +667,7 @@ public class FieldNumericalPropagatorTest {
             private FieldAbsoluteDate<T> previousCall = null;
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
             }
-            public void handleStep(FieldOrekitStepInterpolator<T> interpolator,
-                                   boolean isLast) {
+            public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
                 if (previousCall != null) {
                     System.out.println(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
                 }

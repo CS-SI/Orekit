@@ -75,7 +75,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState) {
         try {
             final double           n         = ambiguity.getParametersDrivers().get(0).getValue();
             final double           localClk  = local.getClockOffsetDriver().getValue();

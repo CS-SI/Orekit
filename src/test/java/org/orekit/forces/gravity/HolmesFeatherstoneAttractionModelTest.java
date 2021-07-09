@@ -849,8 +849,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         private PVCoordinatesProvider sun;
         private double previous;
-        public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+        public void handleStep(SpacecraftState currentState) {
 
 
             AbsoluteDate current = currentState.getDate();
@@ -867,8 +866,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     // test the difference with the analytical extrapolator Eckstein Hechler
     @Test
-    public void testEcksteinHechlerReference()
-        {
+    public void testEcksteinHechlerReference() {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -920,7 +918,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         }
 
         private EcksteinHechlerPropagator referencePropagator;
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
 
             SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
             Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();

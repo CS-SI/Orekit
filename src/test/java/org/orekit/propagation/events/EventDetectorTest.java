@@ -127,7 +127,7 @@ public class EventDetectorTest {
             return Action.CONTINUE;
         }
 
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             // step handling and event occurrences may be out of order up to one step
             // with variable steps, and two steps with fixed steps (due to the delay
             // induced by StepNormalizer)
@@ -181,10 +181,7 @@ public class EventDetectorTest {
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<GCallsCounter>());
         propagator.addEventDetector(counter);
-        propagator.setMasterMode(step, new OrekitFixedStepHandler() {
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
-            }
-        });
+        propagator.setMasterMode(step, currentState -> {});
         propagator.propagate(date.shiftedBy(n * step));
         Assert.assertEquals(n + 1, counter.getCount());
     }

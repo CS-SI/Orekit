@@ -684,9 +684,7 @@ public class DSSTPropagatorTest {
         // direct generation of states
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
-        propagator.setMasterMode(
-                600,
-                (currentState, isLast) -> states.add(currentState));
+        propagator.setMasterMode(600, currentState -> states.add(currentState));
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
 
         // ephemeris generation

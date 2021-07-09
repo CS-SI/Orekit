@@ -144,7 +144,7 @@ public class MarshallSolarActivityFutureEstimationTest {
         final AbsoluteDate resetDate = date.shiftedBy(0.8 * Constants.JULIAN_DAY + 0.1);
 
         final SpacecraftState[] lastState = new SpacecraftState[1];
-        final OrekitStepHandler stepSaver = (interpolator, isLast) -> {
+        final OrekitStepHandler stepSaver = interpolator -> {
             final AbsoluteDate start = interpolator.getPreviousState().getDate();
             if (start.compareTo(resetDate) < 0) {
                 lastState[0] = interpolator.getPreviousState();

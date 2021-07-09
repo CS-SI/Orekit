@@ -106,8 +106,7 @@ public class IntegratedEphemerisTest {
 
             private final Array2DRowRealMatrix dYdY0 = new Array2DRowRealMatrix(6, 6);
 
-            public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-                {
+            public void handleStep(OrekitStepInterpolator interpolator) {
                 SpacecraftState state = interpolator.getCurrentState();
                 Assert.assertEquals(mapper.getAdditionalStateDimension(),
                                     state.getAdditionalState(eqName).length);

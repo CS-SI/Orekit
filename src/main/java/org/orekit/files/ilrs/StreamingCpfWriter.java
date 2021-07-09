@@ -235,16 +235,28 @@ public class StreamingCpfWriter {
 
         /** {@inheritDoc}. */
         @Override
-        public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+        public void handleStep(final SpacecraftState currentState) {
             try {
 
                 // Write ephemeris line
                 writeEphemerisLine(currentState.getPVCoordinates(frame));
 
+            } catch (IOException e) {
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                          e.getLocalizedMessage());
+            }
+
+        }
+
+        /** {@inheritDoc}. */
+        @Override
+        public void finish(final SpacecraftState finalState) {
+            try {
+                // Write ephemeris line
+                writeEphemerisLine(finalState.getPVCoordinates(frame));
+
                 // Write end of file
-                if (isLast) {
-                    writeEndOfFile();
-                }
+                writeEndOfFile();
 
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,

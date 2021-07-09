@@ -1139,7 +1139,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         /** {@inheritDoc} */
         @SuppressWarnings("unchecked")
         @Override
-        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
+        public void handleStep(final FieldODEStateInterpolator<T> interpolator) {
 
             // Get the grid points to compute
             final T[] interpolationPoints =

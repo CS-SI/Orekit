@@ -156,7 +156,7 @@ public class FieldEventDetectorTest {
             return Action.CONTINUE;
         }
 
-        public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
+        public void handleStep(FieldSpacecraftState<T> currentState) {
             // step handling and event occurrences may be out of order up to one step
             // with variable steps, and two steps with fixed steps (due to the delay
             // induced by StepNormalizer)
@@ -227,10 +227,7 @@ public class FieldEventDetectorTest {
         GCallsCounter<T> counter = new GCallsCounter<>(zero.add(100000.0), zero.add(1.0e-6), 20,
                                                        new FieldStopOnEvent<GCallsCounter<T>, T>());
         propagator.addEventDetector(counter);
-        propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
-            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
-            }
-        });
+        propagator.setMasterMode(step, currentState -> {});
         propagator.propagate(date.shiftedBy(step.multiply(n)));
         Assert.assertEquals(n + 1, counter.getCount());
     }

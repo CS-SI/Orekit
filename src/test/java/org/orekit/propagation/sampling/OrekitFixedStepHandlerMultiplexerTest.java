@@ -83,7 +83,7 @@ public class OrekitFixedStepHandlerMultiplexerTest {
         }
 
         @Override
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             this.expected = 2.0;
         }
 
@@ -111,7 +111,7 @@ public class OrekitFixedStepHandlerMultiplexerTest {
         }
 
         @Override
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             this.value++;
         }
 

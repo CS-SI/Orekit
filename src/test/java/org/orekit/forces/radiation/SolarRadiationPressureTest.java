@@ -611,7 +611,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     private static class SolarStepHandler implements OrekitFixedStepHandler {
 
         @Override
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
@@ -872,7 +872,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+        public void handleStep(final SpacecraftState currentState) {
             final AbsoluteDate date = currentState.getDate();
             final Frame frame = currentState.getFrame();
 
@@ -1041,7 +1041,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final FieldSpacecraftState<T> currentState, final boolean isLast) {
+        public void handleStep(final FieldSpacecraftState<T> currentState) {
             final FieldAbsoluteDate<T> date = currentState.getDate();
             final Frame frame = currentState.getFrame();
 

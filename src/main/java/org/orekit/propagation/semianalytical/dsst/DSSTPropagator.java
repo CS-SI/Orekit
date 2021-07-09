@@ -1081,7 +1081,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
+        public void handleStep(final ODEStateInterpolator interpolator) {
 
             // Get the grid points to compute
             final double[] interpolationPoints =

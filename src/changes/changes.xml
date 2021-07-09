@@ -21,6 +21,15 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="808">
+        Moved isLast argument in step handler handleStep method to a separate method.
+      </action>
+      <action dev="luc" type="fix" issue="807">
+        Fixed scheduling between calls to step handlers and events handlers.
+      </action>
+      <action dev="luc" type="fix" issue="806">
+        Added restrictStep method to FieldOrekitStepInterpolator interface.
+      </action>
       <action dev="bryan" type="fix" issue="801">
         Added getter for meteorological data used in CRD data block.
       </action>

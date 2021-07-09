@@ -53,9 +53,16 @@ public class FieldOrekitStepHandlerMultiplexer<T extends CalculusFieldElement<T>
     }
 
     /** {@inheritDoc} */
-    public void handleStep(final FieldOrekitStepInterpolator<T> interpolator, final boolean isLast) {
+    public void handleStep(final FieldOrekitStepInterpolator<T> interpolator) {
         for (final FieldOrekitStepHandler<T> handler : handlers) {
-            handler.handleStep(interpolator, isLast);
+            handler.handleStep(interpolator);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void finish(final FieldSpacecraftState<T> finalState) {
+        for (final FieldOrekitStepHandler<T> handler : handlers) {
+            handler.finish(finalState);
         }
     }
 

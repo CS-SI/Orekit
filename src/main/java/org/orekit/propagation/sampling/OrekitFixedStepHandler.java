@@ -46,8 +46,16 @@ public interface OrekitFixedStepHandler {
 
     /** Handle the current step.
      * @param currentState current state at step time
-     * @param isLast if true, this is the last integration step
      */
-    void handleStep(SpacecraftState currentState, boolean isLast);
+    void handleStep(SpacecraftState currentState);
+
+    /**
+     * Finalize propagation.
+     * @param finalState state at propagation end
+     * @since 11.0
+     */
+    default void finish(SpacecraftState finalState) {
+        // nothing by default
+    }
 
 }

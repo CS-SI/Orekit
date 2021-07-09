@@ -175,7 +175,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator1.setAttitudeProvider(accelerationLaw);
         propagator1.addForceModel(parametricAcceleration);
 
-        MultiSatStepHandler handler = (interpolators, isLast) -> {
+        MultiSatStepHandler handler = interpolators -> {
             Vector3D p0 = interpolators.get(0).getCurrentState().getPVCoordinates().getPosition();
             Vector3D p1 = interpolators.get(1).getCurrentState().getPVCoordinates().getPosition();
             Assert.assertEquals(0.0, Vector3D.distance(p0, p1), positionTolerance);
@@ -393,7 +393,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         ObservableSatellite sat0 = new ObservableSatellite(0);
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         propagator0.setMasterMode(10.0,
-                                  (state, isLast) ->
+                                  state ->
                                   measurements.add(new PV(state.getDate(),
                                                           state.getPVCoordinates().getPosition(), state.getPVCoordinates().getVelocity(),
                                                           1.0e-3, 1.0e-6, 1.0, sat0)));

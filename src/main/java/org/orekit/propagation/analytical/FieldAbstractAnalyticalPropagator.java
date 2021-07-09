@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -239,11 +239,16 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             do {
                 eventLoop:
                 while (!occurringEvents.isEmpty()) {
+
                     // handle the chronologically first event
                     final FieldEventState<?, T> currentEvent = occurringEvents.poll();
 
                     // get state at event time
                     FieldSpacecraftState<T> eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
+
+                    // restrict the interpolator to the first part of the step, up to the event
+                    restricted = restricted.restrictStep(previous, eventState);
+
                     // try to advance all event states to current time
                     for (final FieldEventState<?, T> state : eventsStates) {
                         if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
@@ -258,19 +263,31 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                         }
                     }
                     // all event detectors agree we can advance to the current event time
+
+                    // handle the first part of the step, up to the event
+                    if (getStepHandler() != null) {
+                        getStepHandler().handleStep(restricted);
+                    }
+
+                    // acknowledge event occurrence
                     final EventOccurrence<T> occurrence = currentEvent.doEvent(eventState);
                     final Action action = occurrence.getAction();
                     isLastStep = action == Action.STOP;
                     if (isLastStep) {
+
                         // ensure the event is after the root if it is returned STOP
                         // this lets the user integrate to a STOP event and then restart
                         // integration from the same time.
+                        final FieldSpacecraftState<T> savedState = eventState;
                         eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
-                        restricted = new FieldBasicStepInterpolator(restricted.isForward(), previous, eventState);
-                    }
-                    // handle the first part of the step, up to the event
-                    if (getStepHandler() != null) {
-                        getStepHandler().handleStep(restricted, isLastStep);
+                        restricted = restricted.restrictStep(savedState, eventState);
+
+                        // handle the almost zero size last part of the final step, at event time
+                        if (getStepHandler() != null) {
+                            getStepHandler().handleStep(restricted);
+                            getStepHandler().finish(restricted.getCurrentState());
+                        }
+
                     }
 
                     if (isLastStep) {
@@ -329,7 +346,10 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
         // handle the remaining part of the step, after all events if any
         if (getStepHandler() != null) {
-            getStepHandler().handleStep(interpolator, isLastStep);
+            getStepHandler().handleStep(interpolator);
+            if (isLastStep) {
+                getStepHandler().finish(restricted.getCurrentState());
+            }
         }
         return current;
 
@@ -574,6 +594,13 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         @Override
         public boolean isForward() {
             return forward;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public FieldBasicStepInterpolator restrictStep(final FieldSpacecraftState<T> newPreviousState,
+                                                       final FieldSpacecraftState<T> newCurrentState) {
+            return new FieldBasicStepInterpolator(forward, newPreviousState, newCurrentState);
         }
 
     }

@@ -205,8 +205,7 @@ public class FieldTLEPropagatorTest {
         }
 
         @Override
-        public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
-            {
+        public void handleStep(FieldSpacecraftState<T> currentState) {
             // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
             FieldRotation<T> rotSat = currentState.getAttitude().getRotation();
 
