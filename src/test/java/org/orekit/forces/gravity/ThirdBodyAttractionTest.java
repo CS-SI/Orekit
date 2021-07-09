@@ -402,7 +402,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
             this.reference = reference;
         }
 
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             double t = currentState.getDate().durationFrom(reference);
             Assert.assertEquals(hXRef(t), currentState.getHx(), 1e-4);
             Assert.assertEquals(hYRef(t), currentState.getHy(), 1e-4);

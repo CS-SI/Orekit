@@ -76,7 +76,7 @@ public class FieldOrekitFixedStepHandlerMultiplexerTest {
         }
 
         @Override
-        public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
+        public void handleStep(FieldSpacecraftState<T> currentState) {
             this.expected = 2.0;
         }
 
@@ -104,7 +104,7 @@ public class FieldOrekitFixedStepHandlerMultiplexerTest {
         }
 
         @Override
-        public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
+        public void handleStep(FieldSpacecraftState<T> currentState) {
             this.value++;
         }
 

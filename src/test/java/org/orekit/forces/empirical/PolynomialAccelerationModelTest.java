@@ -158,7 +158,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         propagator1.setAttitudeProvider(accelerationLaw);
         propagator1.addForceModel(parametricAcceleration);
 
-        MultiSatStepHandler handler = (interpolators, isLast) -> {
+        MultiSatStepHandler handler = interpolators -> {
             Vector3D p0 = interpolators.get(0).getCurrentState().getPVCoordinates().getPosition();
             Vector3D p1 = interpolators.get(1).getCurrentState().getPVCoordinates().getPosition();
             Assert.assertEquals(0.0, Vector3D.distance(p0, p1), positionTolerance);

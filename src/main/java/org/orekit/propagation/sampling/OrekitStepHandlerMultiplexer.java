@@ -52,9 +52,16 @@ public class OrekitStepHandlerMultiplexer implements OrekitStepHandler {
     }
 
     /** {@inheritDoc} */
-    public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
+    public void handleStep(final OrekitStepInterpolator interpolator) {
         for (final OrekitStepHandler handler : handlers) {
-            handler.handleStep(interpolator, isLast);
+            handler.handleStep(interpolator);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void finish(final SpacecraftState finalState) {
+        for (final OrekitStepHandler handler : handlers) {
+            handler.finish(finalState);
         }
     }
 

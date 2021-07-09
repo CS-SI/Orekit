@@ -496,7 +496,7 @@ public class ECOM2Test extends AbstractForceModelTest {
 
     private static class SolarStepHandler implements OrekitFixedStepHandler {
 
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));

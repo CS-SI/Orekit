@@ -120,7 +120,7 @@ public class ElevationDetectorTest {
             return Action.CONTINUE;
         }
 
-        public void handleStep(SpacecraftState currentState, boolean isLast)
+        public void handleStep(SpacecraftState currentState)
             {
             BodyShape shape = topo.getParentShape();
             GeodeticPoint p =

@@ -267,7 +267,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
                     // handle the first part of the step, up to the event
                     if (getStepHandler() != null) {
-                        getStepHandler().handleStep(restricted, false);
+                        getStepHandler().handleStep(restricted);
                     }
 
                     // acknowledge event occurrence
@@ -286,7 +286,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
                         // handle the almost zero size last part of the final step, at event time
                         if (getStepHandler() != null) {
-                            getStepHandler().handleStep(restricted, true);
+                            getStepHandler().handleStep(restricted);
+                            getStepHandler().finish(restricted.getCurrentState());
                         }
 
                     }
@@ -345,7 +346,10 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         // handle the remaining part of the step, after all events if any
         if (getStepHandler() != null) {
-            getStepHandler().handleStep(interpolator, isLastStep);
+            getStepHandler().handleStep(interpolator);
+            if (isLastStep) {
+                getStepHandler().finish(restricted.getCurrentState());
+            }
         }
 
         return current;

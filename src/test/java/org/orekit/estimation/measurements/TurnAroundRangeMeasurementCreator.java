@@ -100,7 +100,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
      * See TurnAroundRange.java for more
      * Thus the spacecraft date is the date when the 1st leg of the path ends and the 2nd leg begins
      */
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState) {
         try {
             for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
 

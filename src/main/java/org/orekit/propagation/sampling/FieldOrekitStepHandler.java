@@ -38,12 +38,22 @@ public interface FieldOrekitStepHandler<T extends CalculusFieldElement<T>> {
      * @param s0 initial state
      * @param t target time for the integration
      */
-    void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t);
+    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+        // do nothing by default
+    }
 
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
-     * @param isLast if true, this is the last integration step
      */
-    void handleStep(FieldOrekitStepInterpolator<T> interpolator, boolean isLast);
+    void handleStep(FieldOrekitStepInterpolator<T> interpolator);
+
+    /**
+     * Finalize propagation.
+     * @param finalState state at propagation end
+     * @since 11.0
+     */
+    default void finish(FieldSpacecraftState<T> finalState) {
+        // nothing by default
+    }
 
 }

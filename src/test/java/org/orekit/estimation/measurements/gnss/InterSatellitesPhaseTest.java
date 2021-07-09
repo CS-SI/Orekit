@@ -44,7 +44,6 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
@@ -181,7 +180,7 @@ public class InterSatellitesPhaseTest {
 
         // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setMasterMode(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -320,7 +319,7 @@ public class InterSatellitesPhaseTest {
 
         // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setMasterMode(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -477,7 +476,7 @@ public class InterSatellitesPhaseTest {
 
         // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setMasterMode(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 

@@ -57,9 +57,17 @@ public class OrekitFixedStepHandlerMultiplexer implements OrekitFixedStepHandler
 
     /** {@inheritDoc} */
     @Override
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState) {
         for (final OrekitFixedStepHandler handler : handlers) {
-            handler.handleStep(currentState, isLast);
+            handler.handleStep(currentState);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final SpacecraftState finalState) {
+        for (final OrekitFixedStepHandler handler : handlers) {
+            handler.finish(finalState);
         }
     }
 

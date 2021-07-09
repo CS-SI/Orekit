@@ -159,8 +159,7 @@ public class TLEPropagatorTest {
             maxDistance = Double.NEGATIVE_INFINITY;
         }
 
-        public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+        public void handleStep(SpacecraftState currentState) {
             // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
             Rotation rotSat = currentState.getAttitude().getRotation();
 

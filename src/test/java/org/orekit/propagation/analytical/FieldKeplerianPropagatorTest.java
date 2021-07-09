@@ -120,7 +120,7 @@ public class FieldKeplerianPropagatorTest {
         Min minRadial     = new Min();
         Max maxRadial     = new Max();
         propagator.setMasterMode(field.getZero().add(10.0),
-                                 (s, isLast) -> {
+                                 s -> {
                                      FieldVector3D<Tuple> p = s.getPVCoordinates().getPosition();
                                      FieldVector3D<Tuple> v = s.getPVCoordinates().getVelocity();
                                      Vector3D p0 = new Vector3D(p.getX().getComponent(0),
@@ -562,11 +562,11 @@ public class FieldKeplerianPropagatorTest {
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
             }
             @Override
-            public void handleStep(FieldOrekitStepInterpolator<T> interpolator,
-                                   boolean isLast) {
-                if (isLast) {
-                    throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
-                }
+            public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
+            }
+            @Override
+            public void finish(FieldSpacecraftState<T> finalState) {
+                throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
             }
         });
 
@@ -709,8 +709,7 @@ public class FieldKeplerianPropagatorTest {
         propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
             @Override
-            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
-            {
+            public void handleStep(FieldSpacecraftState<T> currentState) {
                 if (previous != null) {
                     Assert.assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
                 }
@@ -730,14 +729,16 @@ public class FieldKeplerianPropagatorTest {
         final T step = orbit.getKeplerianPeriod().divide(100);
         propagator.setMasterMode(new FieldOrekitStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
+            private FieldAbsoluteDate<T> target;
             @Override
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+                target = t;
             }
             @Override
-            public void handleStep(FieldOrekitStepInterpolator<T> interpolator,
-                                   boolean isLast) {
-                if ((previous != null) && !isLast) {
-                    Assert.assertEquals(step.getReal(), interpolator.getCurrentState().getDate().durationFrom(previous).getReal(), 1.0e-10);
+            public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
+                final FieldAbsoluteDate<T> t = interpolator.getCurrentState().getDate();
+                if (previous != null && target.durationFrom(t).getReal() > 0.001) {
+                    Assert.assertEquals(step.getReal(), t.durationFrom(previous).getReal(), 1.0e-10);
                 }
                 previous = interpolator.getCurrentState().getDate();
             }

@@ -58,9 +58,17 @@ public class FieldOrekitFixedStepHandlerMultiplexer<T extends CalculusFieldEleme
 
     /** {@inheritDoc} */
     @Override
-    public void handleStep(final FieldSpacecraftState<T> currentState, final boolean isLast) {
+    public void handleStep(final FieldSpacecraftState<T> currentState) {
         for (final FieldOrekitFixedStepHandler<T> handler : handlers) {
-            handler.handleStep(currentState, isLast);
+            handler.handleStep(currentState);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final FieldSpacecraftState<T> finalState) {
+        for (final FieldOrekitFixedStepHandler<T> handler : handlers) {
+            handler.finish(finalState);
         }
     }
 

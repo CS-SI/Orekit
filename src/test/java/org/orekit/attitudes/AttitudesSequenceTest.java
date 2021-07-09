@@ -143,7 +143,7 @@ public class AttitudesSequenceTest {
         attitudesSequence.registerSwitchEvents(propagator);
 
         propagator.setMasterMode(60.0, new OrekitFixedStepHandler() {
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
+            public void handleStep(SpacecraftState currentState) {
                 // the Earth position in spacecraft frame should be along spacecraft Z axis
                 // during night time and away from it during day time due to roll and pitch offsets
                 final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
@@ -266,7 +266,7 @@ public class AttitudesSequenceTest {
         attitudesSequence.registerSwitchEvents(field, propagator);
 
         propagator.setMasterMode(field.getZero().add(60.0), new FieldOrekitFixedStepHandler<T>() {
-            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
+            public void handleStep(FieldSpacecraftState<T> currentState) {
                 // the Earth position in spacecraft frame should be along spacecraft Z axis
                 // during night time and away from it during day time due to roll and pitch offsets
                 final FieldVector3D<T> earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
@@ -416,7 +416,7 @@ public class AttitudesSequenceTest {
                                                                                  initialOrbit.getFrame())));
         propagator.setAttitudeProvider(attitudesSequence);
         attitudesSequence.registerSwitchEvents(propagator);
-        propagator.setMasterMode(10, (state, isLast) -> {
+        propagator.setMasterMode(10, state -> {
 
             Attitude nadirAttitude  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame());
             Attitude targetAttitude = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame());

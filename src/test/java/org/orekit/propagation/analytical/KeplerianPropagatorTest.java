@@ -119,7 +119,7 @@ public class KeplerianPropagatorTest {
 
         // action
         final List<SpacecraftState> states = new ArrayList<>();
-        propagator.setEphemerisMode((interpolator, isLast) -> {
+        propagator.setEphemerisMode(interpolator -> {
             states.add(interpolator.getCurrentState());
             states.add(interpolator.getPreviousState());
         });
@@ -419,13 +419,10 @@ public class KeplerianPropagatorTest {
         OrekitStepHandlerMultiplexer multiplexer = new OrekitStepHandlerMultiplexer();
         propagator.setMasterMode(multiplexer);
         multiplexer.add(new OrekitStepHandler() {
-            public void init(SpacecraftState s0, AbsoluteDate t) {
+            public void handleStep(OrekitStepInterpolator interpolator) {
             }
-            public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) {
-                if (isLast) {
-                    throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
-                }
+            public void finish(SpacecraftState finalState) {
+                throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
             }
         });
 
@@ -567,8 +564,7 @@ public class KeplerianPropagatorTest {
         final double step = 100.0;
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+            public void handleStep(SpacecraftState currentState) {
                 if (previous != null) {
                     Assert.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
@@ -588,10 +584,16 @@ public class KeplerianPropagatorTest {
         final double step = orbit.getKeplerianPeriod() / 100;
         propagator.setMasterMode(new OrekitStepHandler() {
             private AbsoluteDate previous;
-            public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) {
-                if ((previous != null) && !isLast) {
-                    Assert.assertEquals(step, interpolator.getCurrentState().getDate().durationFrom(previous), 1.0e-10);
+            private AbsoluteDate target;
+            @Override
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+                target = t;
+            }
+            @Override
+            public void handleStep(OrekitStepInterpolator interpolator) {
+                final AbsoluteDate t = interpolator.getCurrentState().getDate();
+                if (previous != null && target.durationFrom(t) > 0.001) {
+                    Assert.assertEquals(step, t.durationFrom(previous), 1.0e-10);
                 }
                 previous = interpolator.getCurrentState().getDate();
             }
@@ -699,7 +701,7 @@ public class KeplerianPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setMasterMode(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isBefore(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
@@ -730,7 +732,7 @@ public class KeplerianPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setMasterMode(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isAfter(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);

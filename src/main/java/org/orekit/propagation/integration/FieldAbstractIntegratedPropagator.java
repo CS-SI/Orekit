@@ -925,9 +925,17 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         }
 
         /** {@inheritDoc} */
-        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
+        public void handleStep(final FieldODEStateInterpolator<T> interpolator) {
             if (activate) {
-                handler.handleStep(this, isLast);
+                handler.handleStep(new FieldAdaptedStepInterpolator(interpolator));
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void finish(final FieldODEStateAndDerivative<T> finalState) {
+            if (activate) {
+                handler.finish(convert(finalState));
             }
         }
 
@@ -1030,53 +1038,57 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         }
 
         /** {@inheritDoc} */
-        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
+        public void handleStep(final FieldODEStateInterpolator<T> interpolator) {
             if (activate) {
-                model.handleStep(interpolator, isLast);
-                if (isLast) {
+                model.handleStep(interpolator);
+            }
+        }
 
-                    // set up the boundary dates
-                    final T tI = model.getInitialTime();
-                    final T tF = model.getFinalTime();
-                    // tI is almost? always zero
-                    final FieldAbsoluteDate<T> startDate =
-                                    stateMapper.mapDoubleToDate(tI);
-                    final FieldAbsoluteDate<T> finalDate =
-                                    stateMapper.mapDoubleToDate(tF, this.endDate);
-                    final FieldAbsoluteDate<T> minDate;
-                    final FieldAbsoluteDate<T> maxDate;
-                    if (tF.getReal() < tI.getReal()) {
-                        minDate = finalDate;
-                        maxDate = startDate;
-                    } else {
-                        minDate = startDate;
-                        maxDate = finalDate;
-                    }
+        /** {@inheritDoc} */
+        public void finish(final FieldODEStateAndDerivative<T> finalState) {
+            if (activate) {
 
-                    // get the initial additional states that are not managed
-                    final Map<String, T[]> unmanaged = new HashMap<String, T[]>();
-                    for (final Map.Entry<String, T[]> initial : getInitialState().getAdditionalStates().entrySet()) {
-                        if (!isAdditionalStateManaged(initial.getKey())) {
-                            // this additional state was in the initial state, but is unknown to the propagator
-                            // we simply copy its initial value as is
-                            unmanaged.put(initial.getKey(), initial.getValue());
-                        }
-                    }
-
-                    // get the names of additional states managed by differential equations
-                    final String[] names = new String[additionalEquations.size()];
-                    for (int i = 0; i < names.length; ++i) {
-                        names[i] = additionalEquations.get(i).getName();
-                    }
-
-                    // create the ephemeris
-                    ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
-                                                               stateMapper, propagationType, model, unmanaged,
-                                                               getAdditionalStateProviders(), names);
-
+                // set up the boundary dates
+                final T tI = model.getInitialTime();
+                final T tF = model.getFinalTime();
+                // tI is almost? always zero
+                final FieldAbsoluteDate<T> startDate =
+                                stateMapper.mapDoubleToDate(tI);
+                final FieldAbsoluteDate<T> finalDate =
+                                stateMapper.mapDoubleToDate(tF, this.endDate);
+                final FieldAbsoluteDate<T> minDate;
+                final FieldAbsoluteDate<T> maxDate;
+                if (tF.getReal() < tI.getReal()) {
+                    minDate = finalDate;
+                    maxDate = startDate;
+                } else {
+                    minDate = startDate;
+                    maxDate = finalDate;
                 }
 
+                // get the initial additional states that are not managed
+                final Map<String, T[]> unmanaged = new HashMap<String, T[]>();
+                for (final Map.Entry<String, T[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+                    if (!isAdditionalStateManaged(initial.getKey())) {
+                        // this additional state was in the initial state, but is unknown to the propagator
+                        // we simply copy its initial value as is
+                        unmanaged.put(initial.getKey(), initial.getValue());
+                    }
+                }
+
+                // get the names of additional states managed by differential equations
+                final String[] names = new String[additionalEquations.size()];
+                for (int i = 0; i < names.length; ++i) {
+                    names[i] = additionalEquations.get(i).getName();
+                }
+
+                // create the ephemeris
+                ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
+                                stateMapper, propagationType, model, unmanaged,
+                                getAdditionalStateProviders(), names);
+
             }
+
         }
 
         /** {@inheritDoc} */

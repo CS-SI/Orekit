@@ -73,7 +73,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState) {
         for (final GroundStation station : context.stations) {
             final double           groundDft = station.getClockDriftDriver().getValue();
             final double           satDft    = satellite.getClockDriftDriver().getValue();

@@ -612,6 +612,51 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     }
 
+    /** Convert a state from mathematical world to space flight dynamics world.
+     * @param os mathematical state
+     * @return space flight dynamics state
+     */
+    private SpacecraftState convert(final ODEStateAndDerivative os) {
+
+        SpacecraftState s =
+                        stateMapper.mapArrayToState(os.getTime(),
+                                                    os.getPrimaryState(),
+                                                    os.getPrimaryDerivative(),
+                                                    propagationType);
+        s = updateAdditionalStates(s);
+        for (int i = 0; i < additionalEquations.size(); ++i) {
+            final double[] secondary = os.getSecondaryState(i + 1);
+            s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
+        }
+
+        return s;
+
+    }
+
+    /** Convert a state from space flight dynamics world to mathematical world.
+     * @param state space flight dynamics state
+     * @return mathematical state
+     */
+    private ODEStateAndDerivative convert(final SpacecraftState state) {
+
+        // retrieve initial state
+        final double[] primary    = new double[getBasicDimension()];
+        final double[] primaryDot = new double[getBasicDimension()];
+        stateMapper.mapStateToArray(state, primary, primaryDot);
+
+        // secondary part of the ODE
+        final double[][] secondary    = new double[additionalEquations.size()][];
+        for (int i = 0; i < additionalEquations.size(); ++i) {
+            final AdditionalEquations additional = additionalEquations.get(i);
+            secondary[i] = state.getAdditionalState(additional.getName());
+        }
+
+        return new ODEStateAndDerivative(stateMapper.mapDateToDouble(state.getDate()),
+                                         primary, primaryDot,
+                                         secondary, null);
+
+    }
+
     /** Differential equations for the main state (orbit, attitude and mass). */
     public interface MainStateEquations {
 
@@ -855,9 +900,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
+        @Override
+        public void handleStep(final ODEStateInterpolator interpolator) {
             if (activate) {
-                handler.handleStep(new AdaptedStepInterpolator(interpolator), isLast);
+                handler.handleStep(new AdaptedStepInterpolator(interpolator));
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void finish(final ODEStateAndDerivative finalState) {
+            if (activate) {
+                handler.finish(convert(finalState));
             }
         }
 
@@ -907,51 +961,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         @Override
         public SpacecraftState getInterpolatedState(final AbsoluteDate date) {
             return convert(mathInterpolator.getInterpolatedState(date.durationFrom(stateMapper.getReferenceDate())));
-        }
-
-        /** Convert a state from mathematical world to space flight dynamics world.
-         * @param os mathematical state
-         * @return space flight dynamics state
-         */
-        private SpacecraftState convert(final ODEStateAndDerivative os) {
-
-            SpacecraftState s =
-                            stateMapper.mapArrayToState(os.getTime(),
-                                                        os.getPrimaryState(),
-                                                        os.getPrimaryDerivative(),
-                                                        propagationType);
-            s = updateAdditionalStates(s);
-            for (int i = 0; i < additionalEquations.size(); ++i) {
-                final double[] secondary = os.getSecondaryState(i + 1);
-                s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
-            }
-
-            return s;
-
-        }
-
-        /** Convert a state from space flight dynamics world to mathematical world.
-         * @param state space flight dynamics state
-         * @return mathematical state
-         */
-        private ODEStateAndDerivative convert(final SpacecraftState state) {
-
-            // retrieve initial state
-            final double[] primary    = new double[getBasicDimension()];
-            final double[] primaryDot = new double[getBasicDimension()];
-            stateMapper.mapStateToArray(state, primary, primaryDot);
-
-            // secondary part of the ODE
-            final double[][] secondary    = new double[additionalEquations.size()][];
-            for (int i = 0; i < additionalEquations.size(); ++i) {
-                final AdditionalEquations additional = additionalEquations.get(i);
-                secondary[i] = state.getAdditionalState(additional.getName());
-            }
-
-            return new ODEStateAndDerivative(stateMapper.mapDateToDouble(state.getDate()),
-                                             primary, primaryDot,
-                                             secondary, null);
-
         }
 
         /** {@inheritDoc}} */
@@ -1030,57 +1039,60 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
+        public void handleStep(final ODEStateInterpolator interpolator) {
             if (activate) {
                 if (this.handler != null) {
-                    this.handler.handleStep(interpolator, isLast);
+                    this.handler.handleStep(interpolator);
                 }
 
-                model.handleStep(interpolator, isLast);
-                if (isLast) {
-
-                    // set up the boundary dates
-                    final double tI = model.getInitialTime();
-                    final double tF = model.getFinalTime();
-                    // tI is almost? always zero
-                    final AbsoluteDate startDate =
-                                    stateMapper.mapDoubleToDate(tI);
-                    final AbsoluteDate finalDate =
-                                    stateMapper.mapDoubleToDate(tF, this.endDate);
-                    final AbsoluteDate minDate;
-                    final AbsoluteDate maxDate;
-                    if (tF < tI) {
-                        minDate = finalDate;
-                        maxDate = startDate;
-                    } else {
-                        minDate = startDate;
-                        maxDate = finalDate;
-                    }
-
-                    // get the initial additional states that are not managed
-                    final Map<String, double[]> unmanaged = new HashMap<String, double[]>();
-                    for (final Map.Entry<String, double[]> initial : getInitialState().getAdditionalStates().entrySet()) {
-                        if (!isAdditionalStateManaged(initial.getKey())) {
-                            // this additional state was in the initial state, but is unknown to the propagator
-                            // we simply copy its initial value as is
-                            unmanaged.put(initial.getKey(), initial.getValue());
-                        }
-                    }
-
-                    // get the names of additional states managed by differential equations
-                    final String[] names = new String[additionalEquations.size()];
-                    for (int i = 0; i < names.length; ++i) {
-                        names[i] = additionalEquations.get(i).getName();
-                    }
-
-                    // create the ephemeris
-                    ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                        stateMapper, propagationType, model, unmanaged,
-                                                        getAdditionalStateProviders(), names);
-
-                }
+                model.handleStep(interpolator);
             }
+        }
 
+        /** {@inheritDoc} */
+        public void finish(final ODEStateAndDerivative finalState) {
+            if (activate) {
+
+                // set up the boundary dates
+                final double tI = model.getInitialTime();
+                final double tF = model.getFinalTime();
+                // tI is almost? always zero
+                final AbsoluteDate startDate =
+                                stateMapper.mapDoubleToDate(tI);
+                final AbsoluteDate finalDate =
+                                stateMapper.mapDoubleToDate(tF, this.endDate);
+                final AbsoluteDate minDate;
+                final AbsoluteDate maxDate;
+                if (tF < tI) {
+                    minDate = finalDate;
+                    maxDate = startDate;
+                } else {
+                    minDate = startDate;
+                    maxDate = finalDate;
+                }
+
+                // get the initial additional states that are not managed
+                final Map<String, double[]> unmanaged = new HashMap<String, double[]>();
+                for (final Map.Entry<String, double[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+                    if (!isAdditionalStateManaged(initial.getKey())) {
+                        // this additional state was in the initial state, but is unknown to the propagator
+                        // we simply copy its initial value as is
+                        unmanaged.put(initial.getKey(), initial.getValue());
+                    }
+                }
+
+                // get the names of additional states managed by differential equations
+                final String[] names = new String[additionalEquations.size()];
+                for (int i = 0; i < names.length; ++i) {
+                    names[i] = additionalEquations.get(i).getName();
+                }
+
+                // create the ephemeris
+                ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
+                                                    stateMapper, propagationType, model, unmanaged,
+                                                    getAdditionalStateProviders(), names);
+
+            }
         }
 
         /** {@inheritDoc} */
