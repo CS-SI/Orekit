@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -239,11 +239,16 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             do {
                 eventLoop:
                 while (!occurringEvents.isEmpty()) {
+
                     // handle the chronologically first event
                     final FieldEventState<?, T> currentEvent = occurringEvents.poll();
 
                     // get state at event time
                     FieldSpacecraftState<T> eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
+
+                    // restrict the interpolator to the first part of the step, up to the event
+                    restricted = restricted.restrictStep(previous, eventState);
+
                     // try to advance all event states to current time
                     for (final FieldEventState<?, T> state : eventsStates) {
                         if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
@@ -266,7 +271,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                         // this lets the user integrate to a STOP event and then restart
                         // integration from the same time.
                         eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
-                        restricted = new FieldBasicStepInterpolator(restricted.isForward(), previous, eventState);
+                        restricted = restricted.restrictStep(previous, eventState);
                     }
                     // handle the first part of the step, up to the event
                     if (getStepHandler() != null) {
@@ -574,6 +579,13 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         @Override
         public boolean isForward() {
             return forward;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public FieldBasicStepInterpolator restrictStep(final FieldSpacecraftState<T> newPreviousState,
+                                                       final FieldSpacecraftState<T> newCurrentState) {
+            return new FieldBasicStepInterpolator(forward, newPreviousState, newCurrentState);
         }
 
     }

@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.ode.FieldDenseOutputModel;
@@ -37,6 +37,7 @@ import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
 import org.hipparchus.ode.FieldSecondaryODE;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.events.FieldODEEventHandler;
+import org.hipparchus.ode.sampling.AbstractFieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStepHandler;
 import org.hipparchus.util.MathArrays;
@@ -44,6 +45,7 @@ import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalStateException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
@@ -84,9 +86,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** Equations mapper. */
     private FieldEquationsMapper<T> equationsMapper;
-
-    /** Underlying raw rawInterpolator. */
-    private FieldODEStateInterpolator<T> mathInterpolator;
 
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
@@ -468,7 +467,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             final FieldODEState<T> mathInitialState = createInitialState(initialIntegrationState);
             final FieldExpandableODE<T> mathODE = createODE(integrator, mathInitialState);
             equationsMapper = mathODE.getMapper();
-            mathInterpolator = null;
             // initialize mode handler
             if (modeHandler != null) {
                 modeHandler.initialize(activateHandlers, tEnd);
@@ -626,6 +624,58 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         }
 
         return state;
+
+    }
+
+    /** Get the interpolated state.
+     * @param os mathematical state
+     * @return interpolated state at the current interpolation date
+                       * the date
+     * @see #getInterpolatedDate()
+     * @see #setInterpolatedDate(FieldAbsoluteDate<T>)
+     */
+    private FieldSpacecraftState<T> convert(final FieldODEStateAndDerivative<T> os) {
+        try {
+
+            FieldSpacecraftState<T> s =
+                    stateMapper.mapArrayToState(os.getTime(),
+                                                os.getPrimaryState(),
+                                                os.getPrimaryDerivative(),
+                                                propagationType);
+            s = updateAdditionalStates(s);
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                final T[] secondary = os.getSecondaryState(i + 1);
+                s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
+            }
+
+            return s;
+
+        } catch (OrekitException oe) {
+            throw new OrekitException(oe);
+        }
+    }
+
+    /** Convert a state from space flight dynamics world to mathematical world.
+     * @param state space flight dynamics state
+     * @return mathematical state
+     */
+    private FieldODEStateAndDerivative<T> convert(final FieldSpacecraftState<T> state) {
+
+        // retrieve initial state
+        final T[] primary    = MathArrays.buildArray(getField(), getBasicDimension());
+        final T[] primaryDot = MathArrays.buildArray(getField(), getBasicDimension());
+        stateMapper.mapStateToArray(state, primary, primaryDot);
+
+        // secondary part of the ODE
+        final T[][] secondary    = MathArrays.buildArray(getField(), additionalEquations.size(), -1);
+        for (int i = 0; i < additionalEquations.size(); ++i) {
+            final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
+            secondary[i] = state.getAdditionalState(additional.getName());
+        }
+
+        return new FieldODEStateAndDerivative<>(stateMapper.mapDateToDouble(state.getDate()),
+                                                primary, primaryDot,
+                                                secondary, null);
 
     }
 
@@ -845,8 +895,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * to Hipparchus {@link FieldODEStepHandler<T>} interface.
      * @author Luc Maisonobe
      */
-    private class FieldAdaptedStepHandler
-        implements FieldOrekitStepInterpolator<T>, FieldODEStepHandler<T>, FieldModeHandler<T> {
+    private class FieldAdaptedStepHandler implements FieldODEStepHandler<T>, FieldModeHandler<T> {
 
         /** Underlying handler. */
         private final FieldOrekitStepHandler<T> handler;
@@ -866,18 +915,38 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                                final FieldAbsoluteDate<T> targetDate) {
             this.activate = activateHandlers;
         }
+
         /** {@inheritDoc} */
         public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
-            handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                         stateMapper.mapDoubleToDate(t));
+            if (activate) {
+                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
+                             stateMapper.mapDoubleToDate(t));
+            }
         }
 
         /** {@inheritDoc} */
         public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
-            mathInterpolator = interpolator;
             if (activate) {
                 handler.handleStep(this, isLast);
             }
+        }
+
+    }
+
+    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepInterpolator<T>}
+     * to Hipparchus {@link FieldODEStepInterpolator<T>} interface.
+     * @author Luc Maisonobe
+     */
+    private class FieldAdaptedStepInterpolator implements FieldOrekitStepInterpolator<T> {
+
+        /** Underlying raw rawInterpolator. */
+        private final FieldODEStateInterpolator<T> mathInterpolator;
+
+        /** Build an instance.
+         * @param mathInterpolator underlying raw interpolator
+         */
+        FieldAdaptedStepInterpolator(final FieldODEStateInterpolator<T> mathInterpolator) {
+            this.mathInterpolator = mathInterpolator;
         }
 
         /** {@inheritDoc}} */
@@ -898,39 +967,25 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             return convert(mathInterpolator.getInterpolatedState(date.durationFrom(getStartDate())));
         }
 
-        /** Get the interpolated state.
-         * @param os mathematical state
-         * @return interpolated state at the current interpolation date
-                           * the date
-         * @see #getInterpolatedDate()
-         * @see #setInterpolatedDate(FieldAbsoluteDate<T>)
-         */
-        private FieldSpacecraftState<T> convert(final FieldODEStateAndDerivative<T> os) {
-            try {
-
-                FieldSpacecraftState<T> s =
-                        stateMapper.mapArrayToState(os.getTime(),
-                                                    os.getPrimaryState(),
-                                                    os.getPrimaryDerivative(),
-                                                    propagationType);
-                s = updateAdditionalStates(s);
-                for (int i = 0; i < additionalEquations.size(); ++i) {
-                    final T[] secondary = os.getSecondaryState(i + 1);
-                    s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
-                }
-
-                return s;
-
-            } catch (OrekitException oe) {
-                throw new OrekitException(oe);
-            }
-        }
-
         /** Check is integration direction is forward in date.
          * @return true if integration is forward in date
          */
         public boolean isForward() {
             return mathInterpolator.isForward();
+        }
+
+        /** {@inheritDoc}} */
+        @Override
+        public FieldAdaptedStepInterpolator restrictStep(final FieldSpacecraftState<T> newPreviousState,
+                                                         final FieldSpacecraftState<T> newCurrentState) {
+            try {
+                final AbstractFieldODEStateInterpolator<T> aosi = (AbstractFieldODEStateInterpolator<T>) mathInterpolator;
+                return new FieldAdaptedStepInterpolator(aosi.restrictStep(convert(newPreviousState),
+                                                                          convert(newCurrentState)));
+            } catch (ClassCastException cce) {
+                // this should never happen
+                throw new OrekitInternalError(cce);
+            }
         }
 
     }
