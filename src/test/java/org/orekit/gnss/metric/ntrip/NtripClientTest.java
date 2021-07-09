@@ -161,7 +161,7 @@ public class NtripClientTest {
         client.addObserver(1042, "RTCM3EPH01", new LoggingObserver());
         client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
         try {
-            Thread.sleep(400);
+            Thread.sleep(1000);
         } catch (InterruptedException ie) {
             // ignored
         }
