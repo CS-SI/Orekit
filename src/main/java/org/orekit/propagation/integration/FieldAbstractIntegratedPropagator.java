@@ -377,55 +377,31 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** {@inheritDoc} */
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> target) {
-        try {
-            if (getStartDate() == null) {
-                if (getInitialState() == null) {
-                    throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
-                }
-                setStartDate(getInitialState().getDate());
+        if (getStartDate() == null) {
+            if (getInitialState() == null) {
+                throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
             }
-            return propagate(getStartDate(), target);
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded OrekitException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof OrekitException) {
-                    throw (OrekitException) t;
-                }
-            }
-            throw new OrekitException(oe);
-
+            setStartDate(getInitialState().getDate());
         }
+        return propagate(getStartDate(), target);
     }
 
     /** {@inheritDoc} */
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tStart, final FieldAbsoluteDate<T> tEnd) {
-        try {
 
-            if (getInitialState() == null) {
-                throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
-            }
-
-            if (!tStart.equals(getInitialState().getDate())) {
-                // if propagation start date is not initial date,
-                // propagate from initial to start date without event detection
-                propagate(tStart, false);
-            }
-
-            // propagate from start date to end date with event detection
-            return propagate(tEnd, true);
-
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded OrekitException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof OrekitException) {
-                    throw (OrekitException) t;
-                }
-            }
-            throw new OrekitException(oe);
-
+        if (getInitialState() == null) {
+            throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
         }
+
+        if (!tStart.equals(getInitialState().getDate())) {
+            // if propagation start date is not initial date,
+            // propagate from initial to start date without event detection
+            propagate(tStart, false);
+        }
+
+        // propagate from start date to end date with event detection
+        return propagate(tEnd, true);
+
     }
 
     /** Propagation with or without event detection.
