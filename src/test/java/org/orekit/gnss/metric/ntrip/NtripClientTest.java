@@ -17,6 +17,7 @@
 package org.orekit.gnss.metric.ntrip;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -27,6 +28,15 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
 public class NtripClientTest {
+
+    @Test
+    public void testProxy() {
+        NtripClient client = new NtripClient("ntrip.example.org", NtripClient.DEFAULT_PORT);
+        client.setProxy(Proxy.Type.SOCKS, "localhost", 1080);
+        Assert.assertEquals(Proxy.Type.SOCKS, client.getProxy().type());
+        Assert.assertEquals("localhost", ((InetSocketAddress) client.getProxy().address()).getHostName());
+        Assert.assertEquals(1080, ((InetSocketAddress) client.getProxy().address()).getPort());
+    }
 
     @Test
     public void testUnknownProxy() {
@@ -147,6 +157,7 @@ public class NtripClientTest {
         Assert.assertEquals( 2, table.getCasters().size());
         Assert.assertEquals( 2, table.getNetworks().size());
         Assert.assertEquals(42, table.getDataStreams().size());
+        Assert.assertSame(table, client.getSourceTable());
     }
 
     @Test
@@ -251,7 +262,7 @@ public class NtripClientTest {
     }
 
     @Test
-    public void testAuthentication() {
+    public void testAuthenticationStream() {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/requires-basic-authentication.txt");
         server.run();
@@ -269,6 +280,71 @@ public class NtripClientTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.FAILED_AUTHENTICATION, oe.getSpecifier());
             Assert.assertEquals("RTCM3EPH01", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testAuthenticationCaster() {
+        DummyServer server = prepareServer("/gnss/ntrip/requires-basic-authentication.txt");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(100);
+        try {
+            client.getSourceTable();
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException ie) {
+                // ignored
+            }
+            client.stopStreaming(100);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.FAILED_AUTHENTICATION, oe.getSpecifier());
+            Assert.assertEquals("caster", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testForbiddenRequest() {
+        DummyServer server = prepareServer("/gnss/ntrip/forbidden-request.txt");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(100);
+        try {
+            client.getSourceTable();
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException ie) {
+                // ignored
+            }
+            client.stopStreaming(100);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CONNECTION_ERROR, oe.getSpecifier());
+            Assert.assertEquals("localhost", oe.getParts()[0]);
+            Assert.assertEquals("Forbidden", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testMissingFlags() {
+        DummyServer server = prepareServer("/gnss/ntrip/missing-flags.txt");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(100);
+        try {
+            client.getSourceTable();
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException ie) {
+                // ignored
+            }
+            client.stopStreaming(100);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.MISSING_HEADER, oe.getSpecifier());
+            Assert.assertEquals("localhost", oe.getParts()[0]);
+            Assert.assertEquals("Ntrip-Flags", oe.getParts()[1]);
         }
     }
 
