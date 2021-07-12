@@ -17,6 +17,7 @@
 package org.orekit.propagation.sampling;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.orekit.propagation.SpacecraftState;
@@ -26,22 +27,68 @@ import org.orekit.time.AbsoluteDate;
  *
  * @author Luc Maisonobe
  */
-public class OrekitStepHandlerMultiplexer implements OrekitStepHandler {
+public class StepHandlerMultiplexer implements OrekitStepHandler {
 
     /** Underlying step handlers. */
     private final List<OrekitStepHandler> handlers;
 
     /** Simple constructor.
      */
-    public OrekitStepHandlerMultiplexer() {
-        handlers = new ArrayList<OrekitStepHandler>();
+    public StepHandlerMultiplexer() {
+        handlers = new ArrayList<>();
     }
 
-    /** Add a step handler.
+    /** Add a handler for variable size step.
      * @param handler step handler to add
      */
     public void add(final OrekitStepHandler handler) {
         handlers.add(handler);
+    }
+
+    /** Add a handler for fixed size step.
+     * @param h fixed stepsize (s)
+     * @param handler handler called at the end of each finalized step
+     * @since 11.0
+     */
+    public void add(final double h, final OrekitFixedStepHandler handler) {
+        handlers.add(new OrekitStepNormalizer(h, handler));
+    }
+
+    /** Remove a handler.
+     * @param handler step handler to remove
+     * @since 11.0
+     */
+    public void remove(final OrekitStepHandler handler) {
+        final Iterator<OrekitStepHandler> iterator = handlers.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next() == handler) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
+
+    /** Remove a handler.
+     * @param handler step handler to remove
+     * @since 11.0
+     */
+    public void remove(final OrekitFixedStepHandler handler) {
+        final Iterator<OrekitStepHandler> iterator = handlers.iterator();
+        while (iterator.hasNext()) {
+            final OrekitStepHandler current = iterator.next();
+            if (current instanceof OrekitStepNormalizer &&
+                ((OrekitStepNormalizer) current).getFixedStepHandler() == handler) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
+
+    /** Remove all handlers managed by this multiplexer.
+     * @since 11.0
+     */
+    public void clear() {
+        handlers.clear();
     }
 
     /** {@inheritDoc} */

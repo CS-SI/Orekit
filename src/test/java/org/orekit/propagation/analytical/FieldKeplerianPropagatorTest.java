@@ -70,7 +70,7 @@ import org.orekit.propagation.events.FieldNodeDetector;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
-import org.orekit.propagation.sampling.FieldOrekitStepHandlerMultiplexer;
+import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -555,7 +555,7 @@ public class FieldKeplerianPropagatorTest {
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
-        FieldOrekitStepHandlerMultiplexer<T> multiplexer = new FieldOrekitStepHandlerMultiplexer<>();
+        FieldStepHandlerMultiplexer<T> multiplexer = new FieldStepHandlerMultiplexer<>();
         propagator.setMasterMode(multiplexer);
         multiplexer.add(new FieldOrekitStepHandler<T>() {
             @Override

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="810">
+        Merged multiplexers for fixed steps and variable steps.
+      </action>
       <action dev="luc" type="fix" issue="808">
         Moved isLast argument in step handler handleStep method to a separate method.
       </action>

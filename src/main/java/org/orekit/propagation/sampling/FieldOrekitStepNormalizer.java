@@ -54,6 +54,14 @@ public class FieldOrekitStepNormalizer <T extends CalculusFieldElement<T>> imple
         forward   = true;
     }
 
+    /** Get the underlying fixed step handler.
+     * @return underlying fixed step handler
+     * @since 11.0
+     */
+    public FieldOrekitFixedStepHandler<T> getFixedStepHandler() {
+        return handler;
+    }
+
     /** Determines whether this handler needs dense output.
      * This handler needs dense output in order to provide data at
      * regularly spaced steps regardless of the steps the propagator

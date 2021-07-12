@@ -17,6 +17,7 @@
 package org.orekit.propagation.sampling;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -27,15 +28,15 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Luc Maisonobe
  */
-public class FieldOrekitStepHandlerMultiplexer<T extends CalculusFieldElement<T>> implements FieldOrekitStepHandler<T> {
+public class FieldStepHandlerMultiplexer<T extends CalculusFieldElement<T>> implements FieldOrekitStepHandler<T> {
 
     /** Underlying step handlers. */
     private final List<FieldOrekitStepHandler<T>> handlers;
 
     /** Simple constructor.
      */
-    public FieldOrekitStepHandlerMultiplexer() {
-        handlers = new ArrayList<FieldOrekitStepHandler<T>>();
+    public FieldStepHandlerMultiplexer() {
+        handlers = new ArrayList<>();
     }
 
     /** Add a step handler.
@@ -43,6 +44,52 @@ public class FieldOrekitStepHandlerMultiplexer<T extends CalculusFieldElement<T>
      */
     public void add(final FieldOrekitStepHandler<T> handler) {
         handlers.add(handler);
+    }
+
+    /** Add a handler for fixed size step.
+     * @param h fixed stepsize (s)
+     * @param handler handler called at the end of each finalized step
+     * @since 11.0
+     */
+    public void add(final T h, final FieldOrekitFixedStepHandler<T> handler) {
+        handlers.add(new FieldOrekitStepNormalizer<>(h, handler));
+    }
+
+    /** Remove a handler.
+     * @param handler step handler to remove
+     * @since 11.0
+     */
+    public void remove(final FieldOrekitStepHandler<T> handler) {
+        final Iterator<FieldOrekitStepHandler<T>> iterator = handlers.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next() == handler) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
+
+    /** Remove a handler.
+     * @param handler step handler to remove
+     * @since 11.0
+     */
+    public void remove(final FieldOrekitFixedStepHandler<T> handler) {
+        final Iterator<FieldOrekitStepHandler<T>> iterator = handlers.iterator();
+        while (iterator.hasNext()) {
+            final FieldOrekitStepHandler<T> current = iterator.next();
+            if (current instanceof FieldOrekitStepNormalizer &&
+                ((FieldOrekitStepNormalizer<T>) current).getFixedStepHandler() == handler) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
+
+    /** Remove all handlers managed by this multiplexer.
+     * @since 11.0
+     */
+    public void clear() {
+        handlers.clear();
     }
 
     /** {@inheritDoc} */
