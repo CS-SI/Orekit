@@ -34,7 +34,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
     /** Fixed time step. */
     private double h;
 
-    /** Underlying step handler. */
+    /** Underlying fixed step handler. */
     private OrekitFixedStepHandler handler;
 
     /** Last State vector. */
@@ -52,6 +52,14 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
         this.handler   = handler;
         this.lastState = null;
         this.forward   = true;
+    }
+
+    /** Get the underlying fixed step handler.
+     * @return underlying fixed step handler
+     * @since 11.0
+     */
+    public OrekitFixedStepHandler getFixedStepHandler() {
+        return handler;
     }
 
     /** Determines whether this handler needs dense output.

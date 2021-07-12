@@ -65,7 +65,7 @@ import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.OrekitStepHandlerMultiplexer;
+import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -416,7 +416,7 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        OrekitStepHandlerMultiplexer multiplexer = new OrekitStepHandlerMultiplexer();
+        StepHandlerMultiplexer multiplexer = new StepHandlerMultiplexer();
         propagator.setMasterMode(multiplexer);
         multiplexer.add(new OrekitStepHandler() {
             public void handleStep(OrekitStepInterpolator interpolator) {

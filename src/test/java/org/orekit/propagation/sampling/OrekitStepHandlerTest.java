@@ -140,8 +140,8 @@ public class OrekitStepHandlerTest {
     }
 
     @Before
-    public void setUp()
-        {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
+
 }
