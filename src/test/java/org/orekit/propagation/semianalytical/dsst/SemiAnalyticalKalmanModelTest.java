@@ -158,7 +158,7 @@ public class SemiAnalyticalKalmanModelTest {
         kalman.setObserver(new KalmanOrbitDeterminationObserver());
 
         // Process the measurement
-        final SpacecraftState estimated = kalman.estimationStep(measurements).getInitialState();
+        final SpacecraftState estimated = kalman.processMeasurements(measurements).getInitialState();
 
         // Reference position in both Earth and inertial frames
         final TimeStampedPVCoordinates pvITRF     = bounded.getPVCoordinates(estimated.getDate(), ephemeris.getFrame());

@@ -19,72 +19,54 @@ package org.orekit.estimation.sequential;
 import java.util.List;
 
 import org.hipparchus.exception.MathRuntimeException;
-import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixDecomposer;
-import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
-import org.orekit.estimation.measurements.Position;
-import org.orekit.propagation.PropagationType;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
-
 
 /**
- * Implementation of a Kalman filter to perform orbit determination.
+ * Implementation of an Extended Semi-analytical Kalman Filter (ESKF) to perform orbit determination.
  * <p>
- * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
- * or {@link DSSTPropagator} .
+ * The filter uses a {@link DSSTPropagatorBuilder}.
  * </p>
  * <p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
  *   <li><b>Orbital parameters</b>:The position and velocity of the spacecraft, or, more generally, its orbit.<br>
  *       These parameters are retrieved from the reference trajectory propagator builder when the filter is initialized.</li>
- *   <li><b>Propagation parameters</b>: Some parameters modelling physical processes (SRP or drag coefficients etc...).<br>
+ *   <li><b>Propagation parameters</b>: Some parameters modelling physical processes (SRP or drag coefficients).<br>
  *       They are also retrieved from the propagator builder during the initialization phase.</li>
  *   <li><b>Measurements parameters</b>: Parameters related to measurements (station biases, positions etc...).<br>
  *       They are passed down to the filter in its constructor.</li>
  * </ol>
- * <p>
- * The total number of estimated parameters is m, the size of the state vector.
- * </p>
  * <p>
  * The Kalman filter implementation used is provided by the underlying mathematical library Hipparchus.
  * All the variables seen by Hipparchus (states, covariances, measurement matrices...) are normalized
  * using a specific scale for each estimated parameters or standard deviation noise for each measurement components.
  * </p>
  *
- * <p>A {@link SemiAnalyticalKalmanEstimator} object is built using the {@link KalmanEstimatorBuilder#build() build}
- * method of a {@link KalmanEstimatorBuilder}.</p>
+ * @see "Folcik Z., Orbit Determination Using Modern Filters/Smoothers and Continuous Thrust Modeling,
+ *       Master of Science Thesis, Department of Aeronautics and Astronautics, MIT, June, 2008."
  *
- * @author Romain Gerbaud
+ * @see "Cazabonne B., Bayard J., Journot M., and Cefola P. J., A Semi-analytical Approach for Orbit
+ *       Determination based on Extended Kalman Filter, AAS Paper 21-614, AAS/AIAA Astrodynamics
+ *       Specialist Conference, Big Sky, August 2021."
+ *
+ * @author Julie Bayard
+ * @author Bryan Cazabonne
  * @author Maxime Journot
- * @author Luc Maisonobe
  */
 public class SemiAnalyticalKalmanEstimator {
 
     /** Builders for orbit propagators. */
     private DSSTPropagatorBuilder propagatorBuilder;
-
-    /** Reference date. */
-    private final AbsoluteDate referenceDate;
 
     /** Kalman filter process model. */
     private final SemiAnalyticalKalmanModel processModel;
@@ -95,36 +77,32 @@ public class SemiAnalyticalKalmanEstimator {
     /** Observer to retrieve current estimation info. */
     private KalmanObserver observer;
 
-    /** Propagator. */
-    private final DSSTPropagator propagator;
-
     /** Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
      * @param propagatorBuilder propagator builder used to evaluate the orbit.
      * @param processNoiseMatrixProvider provider for process noise matrix
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @param observer observer for Kalman Filter estimations
      */
     public SemiAnalyticalKalmanEstimator(final MatrixDecomposer decomposer,
-                    final DSSTPropagatorBuilder propagatorBuilder,
-                    final CovarianceMatrixProvider processNoiseMatrixProvider,
-                    final ParameterDriversList estimatedMeasurementParameters,
-                    final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+                                         final DSSTPropagatorBuilder propagatorBuilder,
+                                         final CovarianceMatrixProvider covarianceMatrixProvider,
+                                         final ParameterDriversList estimatedMeasurementParameters,
+                                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
         this.propagatorBuilder = propagatorBuilder;
-        this.referenceDate     = propagatorBuilder.getInitialOrbitDate();
-        this.propagator        = propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
         this.observer          = null;
 
         // Build the process model and measurement model
-        //Fixme
-        this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilder, this.propagator, estimatedMeasurementParameters,
-                                                          measurementProcessNoiseMatrix, PropagationType.OSCULATING);
+        this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilder, covarianceMatrixProvider,
+        	                                              estimatedMeasurementParameters,  measurementProcessNoiseMatrix);
 
+        // Extended Kalman Filter of Hipparchus
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 
     }
-    
+
     /** Set the observer.
      * @param observer the observer
      */
@@ -215,134 +193,14 @@ public class SemiAnalyticalKalmanEstimator {
      * @param observedMeasurements the list of measurements to process
      * @return estimated propagators
      */
-    public DSSTPropagator estimationStep(final List<ObservedMeasurement<?>> observedMeasurements) {
+    public DSSTPropagator processMeasurements(final List<ObservedMeasurement<?>> observedMeasurements) {
         try {
-            final ESKFStepHandler stepHandler = new ESKFStepHandler(observedMeasurements);
-            propagator.setMasterMode(stepHandler);
-            propagator.propagate(observedMeasurements.get(0).getDate(), observedMeasurements.get(observedMeasurements.size() - 1).getDate());
-
-            return propagator;
-
+        	processModel.setObserver(observer);
+            return processModel.processMeasurements(observedMeasurements, filter);
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
         }
     }
 
-    /** Decorate an observed measurement.
-     * <p>
-     * The "physical" measurement noise matrix is the covariance matrix of the measurement.
-     * Normalizing it consists in applying the following equation: Rn[i,j] =  R[i,j]/σ[i]/σ[j]
-     * Thus the normalized measurement noise matrix is the matrix of the correlation coefficients
-     * between the different components of the measurement.
-     * </p>
-     * @param observedMeasurement the measurement
-     * @return decorated measurement
-     */
-    private MeasurementDecorator decorate(final ObservedMeasurement<?> observedMeasurement) {
-
-        // Normalized measurement noise matrix contains 1 on its diagonal and correlation coefficients
-        // of the measurement on its non-diagonal elements.
-        // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
-        // Normalizing it leaves us with the matrix of the correlation coefficients
-        final RealMatrix covariance;
-        if (observedMeasurement instanceof PV) {
-            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final PV pv = (PV) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
-        } else if (observedMeasurement instanceof Position) {
-            // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final Position position = (Position) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(position.getCorrelationCoefficientsMatrix());
-        } else {
-            // For other measurements we do not have a covariance matrix.
-            // Thus the correlation coefficients matrix is an identity matrix.
-            covariance = MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
-        }
-
-        return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
-
-    }
-
-
-
-
-    private class ESKFStepHandler implements OrekitStepHandler {
-
-        /** Index of the next measurement component. */
-        private int measurementIndex;
-
-        /** Underlying measurements. */
-        private List<ObservedMeasurement<?>> observedMeasurements;
-
-
-        /** Simple constructor.
-         * @param observedMeasurements underlying measurements
-         */
-        ESKFStepHandler(final List<ObservedMeasurement<?>> observedMeasurements) {
-            this.observedMeasurements = observedMeasurements;
-            this.measurementIndex = 0;
-        }
-
-        @Override
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            for (DSSTForceModel forceModel : propagator.getAllForceModels()) {
-                final AuxiliaryElements aux = new AuxiliaryElements(s0.getOrbit(), 1);
-                //forceModel.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, forceModel.getParameters());
-            }
-        }
-
-
-        /** {@inheritDoc}
-         *
-         * */
-        @Override
-        public void handleStep(final OrekitStepInterpolator interpolator,
-                               final boolean isLast) {
-
-            //System.out.println("\n\n##############HANDLE STEP");
-
-            //updateShortPeriodTerms(interpolator.getPreviousState());
-
-            final AbsoluteDate nextStateDate = interpolator.getCurrentState().getDate();
-
-            System.out.println(interpolator.getPreviousState().getOrbit());
-            
-            while (measurementIndex < observedMeasurements.size() && observedMeasurements.get(measurementIndex).getDate().compareTo(nextStateDate) < 0) {
-                //System.out.println("######### Estimation step");
-
-                try {
-                    ObservedMeasurement <?> pv = observedMeasurements.get(measurementIndex);
-                    Vector3D positionMeasure = new Vector3D(pv.getObservedValue());
-                    SpacecraftState interpolated = interpolator.getInterpolatedState(observedMeasurements.get(measurementIndex).getDate());
-                    TimeStampedPVCoordinates pvC = interpolated.getPVCoordinates(); 
-                    System.out.println(pv.getDate() + "   " + Vector3D.distance(positionMeasure, pvC.getPosition()));
-
-                    processModel.setPredictedSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(measurementIndex).getDate()));
-                    final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurements.get(measurementIndex)));
-                    processModel.finalizeEstimation(observedMeasurements.get(measurementIndex), estimate);
-                    if (observer != null) {
-                        observer.evaluationPerformed(processModel);
-                    }
-
-                } catch (MathRuntimeException mrte) {
-                    throw new OrekitException(mrte);
-                }
-                measurementIndex += 1;
-                //System.out.println(observedMeasurements.get(measurementIndex).getDate()); 
-            }
-            
-            propagator.getInitialState();
-        }
-
-
-        private void updateShortPeriodTerms(final SpacecraftState meanState) {
-
-            // Computate short periodic coefficients for this step
-            for (DSSTForceModel forceModel : propagator.getAllForceModels()) {
-
-                forceModel.updateShortPeriodTerms(forceModel.getParameters(), meanState);
-            }
-        }
-    }
 }
 

@@ -127,6 +127,20 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         this.stateType         = stateType;
     }
 
+    /** Get the type of the orbit used for the propagation (mean or osculating).
+     * @return the type of the orbit used for the propagation
+     */
+    public PropagationType getPropagationType() {
+    	return propagationType;
+    }
+
+    /** Get the type of the elements used to define the orbital state (mean or osculating).
+     * @return the type of the elements used to define the orbital state
+     */
+    public PropagationType getStateType() {
+    	return stateType;
+    }
+
     /** Create a copy of a DSSTPropagatorBuilder object.
      * @return Copied version of the DSSTPropagatorBuilder
      */

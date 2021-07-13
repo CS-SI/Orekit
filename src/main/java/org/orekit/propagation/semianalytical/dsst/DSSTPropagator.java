@@ -801,8 +801,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final double[] sptValue = new double[6];
 
         for (ShortPeriodTerms spt : mapper.getShortPeriodTerms()) {
-            for (int i = 0; i < 6; i++) {
-                sptValue[i] += spt.value(meanState.getOrbit())[i];
+            final double[] shortPeriodic = spt.value(meanState.getOrbit());
+            for (int i = 0; i < shortPeriodic.length; i++) {
+            	sptValue[i] += shortPeriodic[i];
             }
         }
         return sptValue;
