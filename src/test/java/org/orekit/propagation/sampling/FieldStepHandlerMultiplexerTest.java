@@ -1,6 +1,7 @@
 package org.orekit.propagation.sampling;
 
 import org.hipparchus.Field;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
@@ -14,6 +15,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
+import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -36,7 +38,7 @@ public class FieldStepHandlerMultiplexerTest {
     }
 
     @Test
-    public void testFixedStep() {
+    public void testMixedSteps() {
 
         Field<Decimal64> field = Decimal64Field.getInstance();
         Decimal64        zero  = field.getZero();
@@ -45,12 +47,14 @@ public class FieldStepHandlerMultiplexerTest {
         propagator.setMasterMode(multiplexer);
 
         FieldInitCheckerHandler initHandler = new FieldInitCheckerHandler(1.0);
-        FieldIncrementationHandler incrementation60Handler = new FieldIncrementationHandler();
-        FieldIncrementationHandler incrementation10Handler = new FieldIncrementationHandler();
+        FieldFixedCounter    counter60  = new FieldFixedCounter();
+        FieldVariableCounter counterVar = new FieldVariableCounter();
+        FieldFixedCounter    counter10  = new FieldFixedCounter();
 
         multiplexer.add(zero.newInstance(60.0), initHandler);
-        multiplexer.add(zero.newInstance(60.0), incrementation60Handler);
-        multiplexer.add(zero.newInstance(10.0), incrementation10Handler);
+        multiplexer.add(zero.newInstance(60.0), counter60);
+        multiplexer.add(counterVar);
+        multiplexer.add(zero.newInstance(10.0), counter10);
 
         Assert.assertFalse(initHandler.isInitialized());
         Assert.assertEquals(1.0, initHandler.getExpected(), Double.MIN_VALUE);
@@ -59,16 +63,19 @@ public class FieldStepHandlerMultiplexerTest {
 
         // verify
         Assert.assertTrue(initHandler.isInitialized());
+        Assert.assertEquals(2.0, initHandler.getExpected(), Double.MIN_VALUE);
 
-        // init called once
-        // handleStep called at t₀, t₀ + 60
-        // finish called at t₁
-        Assert.assertEquals( 4,  incrementation60Handler.getValue());
+        Assert.assertEquals( 1,  counter60.initCount);
+        Assert.assertEquals( 2,  counter60.handleCount);
+        Assert.assertEquals( 1,  counter60.finishCount);
 
-        // init called once
-        // handleStep called at t₀, t₀ + 10, t₀ + 20, t₀ + 30, t₀ + 40, t₀ + 50, t₀ + 60, t₀ + 70, t₀ + 80, t₀ + 90
-        // finish called at t₁
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
+        Assert.assertEquals( 1,  counterVar.initCount);
+        Assert.assertEquals( 2,  counterVar.handleCount);
+        Assert.assertEquals( 1,  counterVar.finishCount);
+
+        Assert.assertEquals( 1,  counter10.initCount);
+        Assert.assertEquals(10,  counter10.handleCount);
+        Assert.assertEquals( 1,  counter10.finishCount);
 
     }
 
@@ -81,35 +88,198 @@ public class FieldStepHandlerMultiplexerTest {
         Field<Decimal64> field = Decimal64Field.getInstance();
         Decimal64        zero  = field.getZero();
 
-        FieldIncrementationHandler incrementation60Handler = new FieldIncrementationHandler();
-        FieldIncrementationHandler incrementation10Handler = new FieldIncrementationHandler();
+        FieldFixedCounter    counter60  = new FieldFixedCounter();
+        FieldVariableCounter counterVar = new FieldVariableCounter();
+        FieldFixedCounter    counter10  = new FieldFixedCounter();
 
-        multiplexer.add(zero.newInstance(60.0), incrementation60Handler);
-        multiplexer.add(zero.newInstance(10.0), incrementation10Handler);
+        multiplexer.add(zero.newInstance(60.0), counter60);
+        multiplexer.add(counterVar);
+        multiplexer.add(zero.newInstance(10.0), counter10);
 
-        // first run with both handlers
+        // first run with all handlers
         propagator.propagate(initDate.shiftedBy(90.0));
-        Assert.assertEquals( 4,  incrementation60Handler.getValue());
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
+        Assert.assertEquals( 1,    counter60.initCount);
+        Assert.assertEquals( 2,    counter60.handleCount);
+        Assert.assertEquals( 1,    counter60.finishCount);
+        Assert.assertEquals(  0.0, counter60.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counterVar.initCount);
+        Assert.assertEquals( 2,    counterVar.handleCount);
+        Assert.assertEquals( 1,    counterVar.finishCount);
+        Assert.assertEquals(  0.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.finishCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
 
         // removing the handler at 10 seconds
-        multiplexer.remove(incrementation10Handler);
-        propagator.propagate(initDate, initDate.shiftedBy(90.0));
-        Assert.assertEquals( 8,  incrementation60Handler.getValue());
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
+        multiplexer.remove(counter10);
+        propagator.propagate(initDate.shiftedBy(100.0), initDate.shiftedBy(190.0));
+        Assert.assertEquals( 2,    counter60.initCount);
+        Assert.assertEquals( 4,    counter60.handleCount);
+        Assert.assertEquals( 2,    counter60.initCount);
+        Assert.assertEquals(100.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(190.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 2,    counterVar.initCount);
+        Assert.assertEquals( 4,    counterVar.handleCount);
+        Assert.assertEquals( 2,    counterVar.finishCount);
+        Assert.assertEquals(100.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(190.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
 
         // attempting to remove a handler already removed
-        multiplexer.remove(incrementation10Handler);
-        propagator.propagate(initDate, initDate.shiftedBy(90.0));
-        Assert.assertEquals(12,  incrementation60Handler.getValue());
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
+        multiplexer.remove(counter10);
+        propagator.propagate(initDate.shiftedBy(200.0), initDate.shiftedBy(290.0));
+        Assert.assertEquals( 3,    counter60.initCount);
+        Assert.assertEquals( 6,    counter60.handleCount);
+        Assert.assertEquals( 3,    counter60.finishCount);
+        Assert.assertEquals(200.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(290.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 3,    counterVar.initCount);
+        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.finishCount);
+        Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.finishCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
+        
+        // removing the handler with variable stepsize
+        multiplexer.remove(counterVar);
+        propagator.propagate(initDate.shiftedBy(300.0), initDate.shiftedBy(390.0));
+        Assert.assertEquals( 4,    counter60.initCount);
+        Assert.assertEquals( 8,    counter60.handleCount);
+        Assert.assertEquals( 4,    counter60.initCount);
+        Assert.assertEquals(300.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(390.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 3,    counterVar.initCount);
+        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.finishCount);
+        Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
+
+        // attempting to remove a handler already removed
+        multiplexer.remove(counterVar);
+        propagator.propagate(initDate.shiftedBy(400.0), initDate.shiftedBy(490.0));
+        Assert.assertEquals( 5,    counter60.initCount);
+        Assert.assertEquals(10,    counter60.handleCount);
+        Assert.assertEquals( 5,    counter60.finishCount);
+        Assert.assertEquals(400.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(490.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 3,    counterVar.initCount);
+        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.finishCount);
+        Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.finishCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
         
         // removing everything
         multiplexer.clear();
-        propagator.propagate(initDate, initDate.shiftedBy(90.0));
-        Assert.assertEquals(12,  incrementation60Handler.getValue());
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
-        
+        propagator.propagate(initDate.shiftedBy(500.0), initDate.shiftedBy(590.0));
+        Assert.assertEquals( 5,    counter60.initCount);
+        Assert.assertEquals(10,    counter60.handleCount);
+        Assert.assertEquals( 5,    counter60.finishCount);
+        Assert.assertEquals(400.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(490.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 3,    counterVar.initCount);
+        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.finishCount);
+        Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.finishCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
+                
+    }
+
+    @Test
+    public void testOnTheFlyChanges() {
+
+        final FieldStepHandlerMultiplexer<Decimal64> multiplexer = new FieldStepHandlerMultiplexer<>();
+        propagator.setMasterMode(multiplexer);
+
+        Field<Decimal64> field = Decimal64Field.getInstance();
+        Decimal64        zero  = field.getZero();
+
+        double               add60      =  3.0;
+        double               rem60      = 78.0;
+        FieldFixedCounter    counter60  = new FieldFixedCounter();
+        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(add60)).
+                                    withHandler((FieldSpacecraftState<Decimal64> s, FieldDateDetector<Decimal64> d, boolean i) -> {
+                                        multiplexer.add(zero.newInstance(60.0), counter60);
+                                        return Action.CONTINUE;
+                                    }));
+        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(rem60)).
+                                    withHandler((FieldSpacecraftState<Decimal64> s, FieldDateDetector<Decimal64> d, boolean i) -> {
+                                        multiplexer.remove(counter60);
+                                        return Action.CONTINUE;
+                                    }));
+
+        double               addVar     =  5.0;
+        double               remVar     =  7.0;
+        FieldVariableCounter counterVar = new FieldVariableCounter();
+        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(addVar)).
+                                    withHandler((FieldSpacecraftState<Decimal64> s, FieldDateDetector<Decimal64> d, boolean i) -> {
+                                        multiplexer.add(counterVar);
+                                        return Action.CONTINUE;
+                                    }));
+        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(remVar)).
+                                    withHandler((FieldSpacecraftState<Decimal64> s, FieldDateDetector<Decimal64> d, boolean i) -> {
+                                        multiplexer.remove(counterVar);
+                                        return Action.CONTINUE;
+                                    }));
+
+        double               add10      =  6.0;
+        double               rem10      = 82.0;
+        FieldFixedCounter    counter10  = new FieldFixedCounter();
+        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(add10)).
+                                    withHandler((FieldSpacecraftState<Decimal64> s, FieldDateDetector<Decimal64> d, boolean i) -> {
+                                        multiplexer.add(zero.newInstance(10.0), counter10);
+                                        return Action.CONTINUE;
+                                    }));
+        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(rem10)).
+                                    withHandler((FieldSpacecraftState<Decimal64> s, FieldDateDetector<Decimal64> d, boolean i) -> {
+                                        multiplexer.clear();
+                                        return Action.CONTINUE;
+                                    }));
+
+        // full run, which will add and remove step handlers on the fly
+        propagator.propagate(initDate.shiftedBy(90.0));
+        Assert.assertEquals( 1,     counter60.initCount);
+        Assert.assertEquals( 2,     counter60.handleCount);
+        Assert.assertEquals( 1,     counter60.finishCount);
+        Assert.assertEquals(add60,  counter60.start, 1.0e-15);
+        Assert.assertEquals(rem60,  counter60.stop, 1.0e-15);
+        Assert.assertEquals( 1,     counterVar.initCount);
+        Assert.assertEquals( 2,     counterVar.handleCount); // event at add10 splits the variable step in two parts
+        Assert.assertEquals( 1,     counterVar.finishCount);
+        Assert.assertEquals(addVar, counterVar.start, 1.0e-15);
+        Assert.assertEquals(remVar, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,     counter10.initCount);
+        Assert.assertEquals( 8,     counter10.handleCount);
+        Assert.assertEquals( 1,     counter10.finishCount);
+        Assert.assertEquals(add10,  counter10.start, 1.0e-15);
+        Assert.assertEquals(rem10,  counter10.stop, 1.0e-15);
+
     }
 
     private class FieldInitCheckerHandler implements FieldOrekitFixedStepHandler<Decimal64> {
@@ -142,31 +312,56 @@ public class FieldStepHandlerMultiplexerTest {
 
     }
 
-    private class FieldIncrementationHandler implements FieldOrekitFixedStepHandler<Decimal64> {
+    private class FieldFixedCounter implements FieldOrekitFixedStepHandler<Decimal64> {
 
-        private int value;
-
-        public FieldIncrementationHandler() {
-            this.value = 0;
-        }
+        private int    initCount;
+        private int    handleCount;
+        private int    finishCount;
+        private double start;
+        private double stop;
 
         @Override
         public void init(FieldSpacecraftState<Decimal64> s0, FieldAbsoluteDate<Decimal64> t, Decimal64 step) {
-            this.value++;
+            ++initCount;
+            start = s0.getDate().durationFrom(initDate).getReal();
         }
 
         @Override
         public void handleStep(FieldSpacecraftState<Decimal64> currentState) {
-            this.value++;
+            ++handleCount;
         }
 
         @Override
         public void finish(FieldSpacecraftState<Decimal64> finalState) {
-            this.value++;
+            ++finishCount;
+            stop = finalState.getDate().durationFrom(initDate).getReal();
         }
 
-        int getValue() {
-            return value;
+    }
+
+    private class FieldVariableCounter implements FieldOrekitStepHandler<Decimal64> {
+
+        private int    initCount;
+        private int    handleCount;
+        private int    finishCount;
+        private double start;
+        private double stop;
+
+        @Override
+        public void init(FieldSpacecraftState<Decimal64> s0, FieldAbsoluteDate<Decimal64> t) {
+            ++initCount;
+            start = s0.getDate().durationFrom(initDate).getReal();
+        }
+
+        @Override
+        public void handleStep(FieldOrekitStepInterpolator<Decimal64> interpolator) {
+            ++handleCount;
+        }
+
+        @Override
+        public void finish(FieldSpacecraftState<Decimal64> finalState) {
+            ++finishCount;
+            stop = finalState.getDate().durationFrom(initDate).getReal();
         }
 
     }

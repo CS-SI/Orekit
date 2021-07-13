@@ -39,7 +39,7 @@ public interface OrekitFixedStepHandler {
      * @param t target time for the integration
      * @param step the duration in seconds of the fixed step. This value is
      *             positive even if propagation is backwards.
-          * @since 9.0
+     * @since 9.0
      */
     default void init(SpacecraftState s0, AbsoluteDate t, double step) {
     }
