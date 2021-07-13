@@ -21,7 +21,10 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
-      <action dev="luc" type="fix" issue="810">
+      <action dev="luc" type="add" issue="811">
+        Allow on-the-fly add/remove/clean for step handlers.
+      </action>
+      <action dev="luc" type="add" issue="810">
         Merged multiplexers for fixed steps and variable steps.
       </action>
       <action dev="luc" type="fix" issue="808">

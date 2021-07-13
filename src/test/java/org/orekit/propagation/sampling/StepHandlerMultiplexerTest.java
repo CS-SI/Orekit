@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
+import org.hipparchus.ode.events.Action;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +28,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -46,18 +48,20 @@ public class StepHandlerMultiplexerTest {
     }
 
     @Test
-    public void testFixedStep() {
+    public void testMixedSteps() {
 
         StepHandlerMultiplexer multiplexer = new StepHandlerMultiplexer();
         propagator.setMasterMode(multiplexer);
 
         InitCheckerHandler initHandler = new InitCheckerHandler(1.0);
-        IncrementationHandler incrementation60Handler = new IncrementationHandler();
-        IncrementationHandler incrementation10Handler = new IncrementationHandler();
+        FixedCounter    counter60  = new FixedCounter();
+        VariableCounter counterVar = new VariableCounter();
+        FixedCounter    counter10  = new FixedCounter();
 
         multiplexer.add(60, initHandler);
-        multiplexer.add(60, incrementation60Handler);
-        multiplexer.add(10, incrementation10Handler);
+        multiplexer.add(60, counter60);
+        multiplexer.add(counterVar);
+        multiplexer.add(10, counter10);
 
         Assert.assertFalse(initHandler.isInitialized());
         Assert.assertEquals(1.0, initHandler.getExpected(), Double.MIN_VALUE);
@@ -68,15 +72,17 @@ public class StepHandlerMultiplexerTest {
         Assert.assertTrue(initHandler.isInitialized());
         Assert.assertEquals(2.0, initHandler.getExpected(), Double.MIN_VALUE);
 
-        // init called once
-        // handleStep called at t₀, t₀ + 60
-        // finish called at t₁
-        Assert.assertEquals( 4,  incrementation60Handler.getValue());
+        Assert.assertEquals( 1,  counter60.initCount);
+        Assert.assertEquals( 2,  counter60.handleCount);
+        Assert.assertEquals( 1,  counter60.finishCount);
 
-        // init called once
-        // handleStep called at t₀, t₀ + 10, t₀ + 20, t₀ + 30, t₀ + 40, t₀ + 50, t₀ + 60, t₀ + 70, t₀ + 80, t₀ + 90
-        // finish called at t₁
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
+        Assert.assertEquals( 1,  counterVar.initCount);
+        Assert.assertEquals( 2,  counterVar.handleCount);
+        Assert.assertEquals( 1,  counterVar.finishCount);
+
+        Assert.assertEquals( 1,  counter10.initCount);
+        Assert.assertEquals(10,  counter10.handleCount);
+        Assert.assertEquals( 1,  counter10.finishCount);
 
     }
 
@@ -86,35 +92,195 @@ public class StepHandlerMultiplexerTest {
         StepHandlerMultiplexer multiplexer = new StepHandlerMultiplexer();
         propagator.setMasterMode(multiplexer);
 
-        IncrementationHandler incrementation60Handler = new IncrementationHandler();
-        IncrementationHandler incrementation10Handler = new IncrementationHandler();
+        FixedCounter    counter60  = new FixedCounter();
+        VariableCounter counterVar = new VariableCounter();
+        FixedCounter    counter10  = new FixedCounter();
 
-        multiplexer.add(60, incrementation60Handler);
-        multiplexer.add(10, incrementation10Handler);
+        multiplexer.add(60, counter60);
+        multiplexer.add(counterVar);
+        multiplexer.add(10, counter10);
 
-        // first run with both handlers
+        // first run with all handlers
         propagator.propagate(initDate.shiftedBy(90.0));
-        Assert.assertEquals( 4,  incrementation60Handler.getValue());
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
+        Assert.assertEquals( 1,    counter60.initCount);
+        Assert.assertEquals( 2,    counter60.handleCount);
+        Assert.assertEquals( 1,    counter60.finishCount);
+        Assert.assertEquals(  0.0, counter60.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counterVar.initCount);
+        Assert.assertEquals( 2,    counterVar.handleCount);
+        Assert.assertEquals( 1,    counterVar.finishCount);
+        Assert.assertEquals(  0.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.finishCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
 
         // removing the handler at 10 seconds
-        multiplexer.remove(incrementation10Handler);
-        propagator.propagate(initDate, initDate.shiftedBy(90.0));
-        Assert.assertEquals( 8,  incrementation60Handler.getValue());
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
+        multiplexer.remove(counter10);
+        propagator.propagate(initDate.shiftedBy(100.0), initDate.shiftedBy(190.0));
+        Assert.assertEquals( 2,    counter60.initCount);
+        Assert.assertEquals( 4,    counter60.handleCount);
+        Assert.assertEquals( 2,    counter60.initCount);
+        Assert.assertEquals(100.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(190.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 2,    counterVar.initCount);
+        Assert.assertEquals( 4,    counterVar.handleCount);
+        Assert.assertEquals( 2,    counterVar.finishCount);
+        Assert.assertEquals(100.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(190.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
 
         // attempting to remove a handler already removed
-        multiplexer.remove(incrementation10Handler);
-        propagator.propagate(initDate, initDate.shiftedBy(90.0));
-        Assert.assertEquals(12,  incrementation60Handler.getValue());
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
+        multiplexer.remove(counter10);
+        propagator.propagate(initDate.shiftedBy(200.0), initDate.shiftedBy(290.0));
+        Assert.assertEquals( 3,    counter60.initCount);
+        Assert.assertEquals( 6,    counter60.handleCount);
+        Assert.assertEquals( 3,    counter60.finishCount);
+        Assert.assertEquals(200.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(290.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 3,    counterVar.initCount);
+        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.finishCount);
+        Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.finishCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
+        
+        // removing the handler with variable stepsize
+        multiplexer.remove(counterVar);
+        propagator.propagate(initDate.shiftedBy(300.0), initDate.shiftedBy(390.0));
+        Assert.assertEquals( 4,    counter60.initCount);
+        Assert.assertEquals( 8,    counter60.handleCount);
+        Assert.assertEquals( 4,    counter60.initCount);
+        Assert.assertEquals(300.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(390.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 3,    counterVar.initCount);
+        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.finishCount);
+        Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
+
+        // attempting to remove a handler already removed
+        multiplexer.remove(counterVar);
+        propagator.propagate(initDate.shiftedBy(400.0), initDate.shiftedBy(490.0));
+        Assert.assertEquals( 5,    counter60.initCount);
+        Assert.assertEquals(10,    counter60.handleCount);
+        Assert.assertEquals( 5,    counter60.finishCount);
+        Assert.assertEquals(400.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(490.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 3,    counterVar.initCount);
+        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.finishCount);
+        Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.finishCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
         
         // removing everything
         multiplexer.clear();
-        propagator.propagate(initDate, initDate.shiftedBy(90.0));
-        Assert.assertEquals(12,  incrementation60Handler.getValue());
-        Assert.assertEquals(12,  incrementation10Handler.getValue());
+        propagator.propagate(initDate.shiftedBy(500.0), initDate.shiftedBy(590.0));
+        Assert.assertEquals( 5,    counter60.initCount);
+        Assert.assertEquals(10,    counter60.handleCount);
+        Assert.assertEquals( 5,    counter60.finishCount);
+        Assert.assertEquals(400.0, counter60.start, 1.0e-15);
+        Assert.assertEquals(490.0, counter60.stop, 1.0e-15);
+        Assert.assertEquals( 3,    counterVar.initCount);
+        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.finishCount);
+        Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
+        Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,    counter10.initCount);
+        Assert.assertEquals(10,    counter10.handleCount);
+        Assert.assertEquals( 1,    counter10.finishCount);
+        Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
+        Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
         
+    }
+
+    @Test
+    public void testOnTheFlyChanges() {
+
+        final StepHandlerMultiplexer multiplexer = new StepHandlerMultiplexer();
+        propagator.setMasterMode(multiplexer);
+
+        double          add60      =  3.0;
+        double          rem60      = 78.0;
+        FixedCounter    counter60  = new FixedCounter();
+        propagator.addEventDetector(new DateDetector(initDate.shiftedBy(add60)).
+                                    withHandler((s, d, i) -> {
+                                        multiplexer.add(60.0, counter60);
+                                        return Action.CONTINUE;
+                                    }));
+        propagator.addEventDetector(new DateDetector(initDate.shiftedBy(rem60)).
+                                    withHandler((s, d, i) -> {
+                                        multiplexer.remove(counter60);
+                                        return Action.CONTINUE;
+                                    }));
+
+        double          addVar     =  5.0;
+        double          remVar     =  7.0;
+        VariableCounter counterVar = new VariableCounter();
+        propagator.addEventDetector(new DateDetector(initDate.shiftedBy(addVar)).
+                                    withHandler((s, d, i) -> {
+                                        multiplexer.add(counterVar);
+                                        return Action.CONTINUE;
+                                    }));
+        propagator.addEventDetector(new DateDetector(initDate.shiftedBy(remVar)).
+                                    withHandler((s, d, i) -> {
+                                        multiplexer.remove(counterVar);
+                                        return Action.CONTINUE;
+                                    }));
+
+        double          add10      =  6.0;
+        double          rem10      = 82.0;
+        FixedCounter    counter10  = new FixedCounter();
+        propagator.addEventDetector(new DateDetector(initDate.shiftedBy(add10)).
+                                    withHandler((s, d, i) -> {
+                                        multiplexer.add(10.0, counter10);
+                                        return Action.CONTINUE;
+                                    }));
+        propagator.addEventDetector(new DateDetector(initDate.shiftedBy(rem10)).
+                                    withHandler((s, d, i) -> {
+                                        multiplexer.clear();
+                                        return Action.CONTINUE;
+                                    }));
+
+        // full run, which will add and remove step handlers on the fly
+        propagator.propagate(initDate.shiftedBy(90.0));
+        Assert.assertEquals( 1,     counter60.initCount);
+        Assert.assertEquals( 2,     counter60.handleCount);
+        Assert.assertEquals( 1,     counter60.finishCount);
+        Assert.assertEquals(add60,  counter60.start, 1.0e-15);
+        Assert.assertEquals(rem60,  counter60.stop, 1.0e-15);
+        Assert.assertEquals( 1,     counterVar.initCount);
+        Assert.assertEquals( 2,     counterVar.handleCount); // event at add10 splits the variable step in two parts
+        Assert.assertEquals( 1,     counterVar.finishCount);
+        Assert.assertEquals(addVar, counterVar.start, 1.0e-15);
+        Assert.assertEquals(remVar, counterVar.stop, 1.0e-15);
+        Assert.assertEquals( 1,     counter10.initCount);
+        Assert.assertEquals( 8,     counter10.handleCount);
+        Assert.assertEquals( 1,     counter10.finishCount);
+        Assert.assertEquals(add10,  counter10.start, 1.0e-15);
+        Assert.assertEquals(rem10,  counter10.stop, 1.0e-15);
+
     }
 
     private class InitCheckerHandler implements OrekitFixedStepHandler {
@@ -147,31 +313,56 @@ public class StepHandlerMultiplexerTest {
 
     }
 
-    private class IncrementationHandler implements OrekitFixedStepHandler {
+    private class FixedCounter implements OrekitFixedStepHandler {
 
-        private int value;
-
-        public IncrementationHandler() {
-            this.value = 0;
-        }
+        private int    initCount;
+        private int    handleCount;
+        private int    finishCount;
+        private double start;
+        private double stop;
 
         @Override
         public void init(SpacecraftState s0, AbsoluteDate t, double step) {
-            this.value++;
+            ++initCount;
+            start = s0.getDate().durationFrom(initDate);
         }
 
         @Override
         public void handleStep(SpacecraftState currentState) {
-            this.value++;
+            ++handleCount;
         }
 
         @Override
         public void finish(SpacecraftState finalState) {
-            this.value++;
+            ++finishCount;
+            stop = finalState.getDate().durationFrom(initDate);
         }
 
-        int getValue() {
-            return value;
+    }
+
+    private class VariableCounter implements OrekitStepHandler {
+
+        private int    initCount;
+        private int    handleCount;
+        private int    finishCount;
+        private double start;
+        private double stop;
+
+        @Override
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            ++initCount;
+            start = s0.getDate().durationFrom(initDate);
+        }
+
+        @Override
+        public void handleStep(OrekitStepInterpolator interpolator) {
+            ++handleCount;
+        }
+
+        @Override
+        public void finish(SpacecraftState finalState) {
+            ++finishCount;
+            stop = finalState.getDate().durationFrom(initDate);
         }
 
     }
