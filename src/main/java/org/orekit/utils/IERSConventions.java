@@ -652,7 +652,7 @@ public enum IERSConventions {
 
             // constants from IERS 1996 page 47
             final double globalFactor = -1.348e-9 / Constants.ARC_SECONDS_TO_RADIANS;
-            final double coupling     =  0.00112;
+            final double coupling     =  0.0112;
 
             return new TimeVectorFunction() {
 
