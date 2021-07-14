@@ -652,7 +652,7 @@ public enum IERSConventions {
 
             // constants from IERS 1996 page 47
             final double globalFactor = -1.348e-9 / Constants.ARC_SECONDS_TO_RADIANS;
-            final double coupling     =  0.00112;
+            final double coupling     =  0.0112;
 
             return new TimeVectorFunction() {
 
@@ -1278,7 +1278,7 @@ public enum IERSConventions {
 
             // constants from IERS 2003, section 6.2
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
-            final double ratio        =  0.00115;
+            final double ratio        =  0.0115;
 
             return new TimeVectorFunction() {
 
@@ -1347,7 +1347,7 @@ public enum IERSConventions {
                         // identifying this with ∆C₂₁ cos λ + ∆S₂₁ sin λ we get:
                         // ∆C₂₁ = A Re(k₂) [m₁ + Im(k₂)/Re(k₂) m₂)]
                         // ∆S₂₁ = A Re(k₂) [m₂ - Im(k₂)/Re(k₂) m₁)]
-                        // and Im(k₂)/Re(k₂) is very close to +0.00115
+                        // and Im(k₂)/Re(k₂) is very close to +0.0115
                         // As the equation as written in the IERS 2003 conventions are used in
                         // legacy systems, we have reproduced this alleged error here (and fixed it in
                         // the IERS 2010 conventions below) for validation purposes. We don't recommend
@@ -1433,7 +1433,7 @@ public enum IERSConventions {
                     // identifying this with ∆C₂₁ cos λ + ∆S₂₁ sin λ we get:
                     // ∆C₂₁ = A Re(k₂) [m₁ + Im(k₂)/Re(k₂) m₂)]
                     // ∆S₂₁ = A Re(k₂) [m₂ - Im(k₂)/Re(k₂) m₁)]
-                    // and Im(k₂)/Re(k₂) is very close to +0.00115
+                    // and Im(k₂)/Re(k₂) is very close to +0.0115
                     // As the equation as written in the IERS 2003 conventions are used in
                     // legacy systems, we have reproduced this alleged error here (and fixed it in
                     // the IERS 2010 conventions below) for validation purposes. We don't recommend
@@ -1809,7 +1809,7 @@ public enum IERSConventions {
 
             // constants from IERS 2010, section 6.4
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
-            final double ratio        =  0.00115;
+            final double ratio        =  0.0115;
 
             return new TimeVectorFunction() {
 
