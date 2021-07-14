@@ -99,7 +99,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final RangeIonosphericDelayModifier modifier = new RangeIonosphericDelayModifier(model, frequency);
@@ -170,7 +170,7 @@ public class IonoModifierTest {
                                                                new PhaseMeasurementCreator(context, Frequency.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
@@ -241,7 +241,7 @@ public class IonoModifierTest {
                                                                new PhaseMeasurementCreator(context, Frequency.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final IonosphericModel mockModel = new MockIonosphericModel(12.0);
@@ -313,7 +313,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final TurnAroundRangeIonosphericDelayModifier modifier = new TurnAroundRangeIonosphericDelayModifier(model, frequency);
@@ -379,7 +379,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         final RangeRateIonosphericDelayModifier modifier = new RangeRateIonosphericDelayModifier(model, frequency, true);
 
@@ -426,7 +426,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final AngularIonosphericDelayModifier modifier = new AngularIonosphericDelayModifier(model, frequency);
@@ -473,7 +473,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             // parameter corresponding to station position offset

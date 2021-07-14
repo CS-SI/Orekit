@@ -151,7 +151,7 @@ public class AlongTrackAiming implements TileAiming {
         // sample the half track
         propagator.clearEventsDetectors();
         final HalfTrackSampler sampler = new HalfTrackSampler(ellipsoid);
-        propagator.setMasterMode(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
+        propagator.setStepHandler(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
         propagator.propagate(handler.getStart(), handler.getEnd());
 
         return sampler.getHalfTrack();

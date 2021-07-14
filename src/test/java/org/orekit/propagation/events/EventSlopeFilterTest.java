@@ -90,7 +90,7 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.setMasterMode(10.0, currentState -> {
+        propagator.setStepHandler(10.0, currentState -> {
             // we exceed the events history in the past,
             // and in this example get stuck with Transformer.MAX
             // transformer, hence the g function is always positive
@@ -124,7 +124,7 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.setMasterMode(10.0, currentState -> {
+        propagator.setStepHandler(10.0, currentState -> {
                 // we exceed the events history in the past,
                 // and in this example get stuck with Transformer.MIN
                 // transformer, hence the g function is always negative

@@ -85,9 +85,9 @@ import org.orekit.utils.ParameterObserver;
  * <li>the discrete events that should be triggered during propagation (
  * {@link #addEventDetector(org.orekit.propagation.events.FieldEventDetector)},
  * {@link #clearEventsDetectors()})</li>
- * <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- * {@link #setMasterMode(CalculusFieldElement, org.orekit.propagation.sampling.FieldOrekitFixedStepHandler)},
- * {@link #setMasterMode(org.orekit.propagation.sampling.FieldOrekitStepHandler)},
+ * <li>the binding logic with the rest of the application ({@link #clearStepHandlers()},
+ * {@link #addStepHandler(CalculusFieldElement, org.orekit.propagation.sampling.FieldOrekitFixedStepHandler)},
+ * {@link #addStepHandler(org.orekit.propagation.sampling.FieldOrekitStepHandler)},
  * {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
  * <p>

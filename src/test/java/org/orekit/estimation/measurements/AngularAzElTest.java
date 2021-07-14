@@ -59,7 +59,7 @@ public class AngularAzElTest {
                                                                new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Prepare statistics for right-ascension/declination values difference
         final StreamingStatistics azDiffStat = new StreamingStatistics();
@@ -107,7 +107,7 @@ public class AngularAzElTest {
                                                                new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Compute measurements.
         double[] AzerrorsP = new double[3 * measurements.size()];
@@ -216,7 +216,7 @@ public class AngularAzElTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
 

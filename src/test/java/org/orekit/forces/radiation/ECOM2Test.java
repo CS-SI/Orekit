@@ -487,7 +487,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         calc.addForceModel(SRP);
 
         // Step Handler
-        calc.setMasterMode(FastMath.floor(period), new SolarStepHandler());
+        calc.setStepHandler(FastMath.floor(period), new SolarStepHandler());
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);

@@ -71,7 +71,7 @@ public class ShapiroPhaseModifierTest {
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final ShapiroPhaseModifier modifier = new ShapiroPhaseModifier(context.initialOrbit.getMu());

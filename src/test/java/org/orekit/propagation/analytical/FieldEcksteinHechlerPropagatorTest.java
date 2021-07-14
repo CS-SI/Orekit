@@ -823,7 +823,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         final T step = zero.add(100.0);
-        propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
+        propagator.setStepHandler(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
             @Override
             public void handleStep(FieldSpacecraftState<T> currentState) {

@@ -127,7 +127,7 @@ public class TabulatedLofOffsetTest {
                 new YawCompensation(orbit.getFrame(), new NadirPointing(orbit.getFrame(), earth));
         final Propagator originalPropagator = new KeplerianPropagator(orbit);
         originalPropagator.setAttitudeProvider(yawCompensLaw);
-        originalPropagator.setMasterMode(1.0, currentState -> {
+        originalPropagator.setStepHandler(1.0, currentState -> {
                 Rotation  offsetAtt    = currentState.getAttitude().getRotation();
                 LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
                 Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
@@ -138,7 +138,7 @@ public class TabulatedLofOffsetTest {
             });
         final AbsoluteDate endDate = orbit.getDate().shiftedBy(2000);
         originalPropagator.propagate(endDate);
-        originalPropagator.setSlaveMode();
+        originalPropagator.clearStepHandlers();
 
         // use the sample and compare it to original
         final BoundedAttitudeProvider tabulated = new TabulatedLofOffset(orbit.getFrame(), type, sample,
@@ -147,7 +147,7 @@ public class TabulatedLofOffsetTest {
         Assert.assertEquals(0., endDate.durationFrom(tabulated.getMaxDate()), Double.MIN_VALUE);
         final Propagator rebuildingPropagator = new KeplerianPropagator(orbit);
         rebuildingPropagator.setAttitudeProvider(tabulated);
-        rebuildingPropagator.setMasterMode(0.3, currentState -> {
+        rebuildingPropagator.setStepHandler(0.3, currentState -> {
                 final SpacecraftState rebuilt = originalPropagator.propagate(currentState.getDate());
                 final Rotation r1 = currentState.getAttitude().getRotation();
                 final Rotation r2 = rebuilt.getAttitude().getRotation();
@@ -160,8 +160,8 @@ public class TabulatedLofOffsetTest {
     }
 
     private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
-                                                            final Orbit orbit, final AbsoluteDate date,
-                                                            final Frame frame)
+                                                                final Orbit orbit, final AbsoluteDate date,
+                                                                final Frame frame)
         {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();

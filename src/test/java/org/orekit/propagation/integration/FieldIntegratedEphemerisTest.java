@@ -20,8 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -42,6 +42,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -83,11 +84,11 @@ public class FieldIntegratedEphemerisTest {
 
         // Propagation
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(3600.0);
-        numericalPropagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator1 = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
-        FieldBoundedPropagator<T> ephemeris = numericalPropagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator1.getGeneratedEphemeris();
 
         // tests
         for (double dt = 1; dt <= 3600.0; dt += 1) {
@@ -105,9 +106,9 @@ public class FieldIntegratedEphemerisTest {
         FieldSpacecraftState<T> keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
         FieldSpacecraftState<T> state = keplerEx.propagate(finalDate);
         numericalPropagator.setInitialState(state);
-        numericalPropagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator2 = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.propagate(initialOrbit.getDate());
-        FieldBoundedPropagator<T> invEphemeris = numericalPropagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> invEphemeris = generator2.getGeneratedEphemeris();
         FieldSpacecraftState<T> numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
         FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
         FieldVector3D<T> numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
@@ -121,11 +122,11 @@ public class FieldIntegratedEphemerisTest {
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
         // setup
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
-        numericalPropagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
-        FieldBoundedPropagator<T> ephemeris = numericalPropagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
         //action
         Assert.assertNotNull(ephemeris.getFrame());
@@ -138,11 +139,11 @@ public class FieldIntegratedEphemerisTest {
 
         // setup
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
-        numericalPropagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
-        FieldBoundedPropagator<T> ephemeris = numericalPropagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         ephemeris.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
 
             @Override
@@ -196,10 +197,10 @@ public class FieldIntegratedEphemerisTest {
 
         // setup
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
-        numericalPropagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
-        FieldBoundedPropagator<T> ephemeris = numericalPropagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         ephemeris.addEventDetector(new FieldDateDetector<>(initialOrbit.getDate().shiftedBy(10)).
                                    withHandler((FieldSpacecraftState<T> s,
                                                 FieldDateDetector<T> detector,

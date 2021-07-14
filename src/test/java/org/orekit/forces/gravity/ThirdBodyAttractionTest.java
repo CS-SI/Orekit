@@ -154,7 +154,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
 
         // set up step handler to perform checks
-        calc.setMasterMode(FastMath.floor(period), new ReferenceChecker(date) {
+        calc.setStepHandler(FastMath.floor(period), new ReferenceChecker(date) {
             protected double hXRef(double t) {
                 return -1.06757e-3 + 0.221415e-11 * t + 18.9421e-5 *
                 FastMath.cos(3.9820426e-7*t) - 7.59983e-5 * FastMath.sin(3.9820426e-7*t);
@@ -376,7 +376,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
         // set up step handler to perform checks
-        calc.setMasterMode(FastMath.floor(period), new ReferenceChecker(date) {
+        calc.setStepHandler(FastMath.floor(period), new ReferenceChecker(date) {
             protected double hXRef(double t) {
                 return  -0.000906173 + 1.93933e-11 * t +
                          1.0856e-06  * FastMath.cos(5.30637e-05 * t) -

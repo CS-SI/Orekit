@@ -82,9 +82,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(FieldEventDetector)},
  *   {@link #clearEventsDetectors()})</li>
- *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- *   {@link #setMasterMode(CalculusFieldElement, org.orekit.propagation.sampling.FieldOrekitFixedStepHandler)},
- *   {@link #setMasterMode(org.orekit.propagation.sampling.FieldOrekitStepHandler)},
+ *   <li>the binding logic with the rest of the application ({@link #clearStepHandlers()},
+ *   {@link #addStepHandler(CalculusFieldElement, org.orekit.propagation.sampling.FieldOrekitFixedStepHandler)},
+ *   {@link #addStepHandler(org.orekit.propagation.sampling.FieldOrekitStepHandler)},
  *   {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
@@ -202,7 +202,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         initMapper(field);
         setAttitudeProvider(attitudeProvider);
         setMu(field.getZero().add(Double.NaN));
-        setSlaveMode();
+        clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }

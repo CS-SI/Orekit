@@ -204,7 +204,7 @@ public class TLEEstimationTestUtils {
                                                                   final double startPeriod, final double endPeriod,
                                                                   final double step) {
 
-        propagator.setMasterMode(step, creator);
+        propagator.setStepHandler(step, creator);
         final double       period = propagator.getInitialState().getKeplerianPeriod();
         final AbsoluteDate start  = propagator.getInitialState().getDate().shiftedBy(startPeriod * period);
         final AbsoluteDate end    = propagator.getInitialState().getDate().shiftedBy(endPeriod   * period);

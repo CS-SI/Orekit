@@ -4,6 +4,7 @@ import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,14 +38,19 @@ public class FieldStepHandlerMultiplexerTest {
         propagator = new FieldKeplerianPropagator<>(ic);
     }
 
+    @After
+    public void tearDown() {
+        initDate   = null;
+        propagator = null;
+    }
+
     @Test
     public void testMixedSteps() {
 
         Field<Decimal64> field = Decimal64Field.getInstance();
         Decimal64        zero  = field.getZero();
 
-        FieldStepHandlerMultiplexer<Decimal64> multiplexer = new FieldStepHandlerMultiplexer<>();
-        propagator.setMasterMode(multiplexer);
+        FieldStepHandlerMultiplexer<Decimal64> multiplexer = propagator.getMultiplexer();
 
         FieldInitCheckerHandler initHandler = new FieldInitCheckerHandler(1.0);
         FieldFixedCounter    counter60  = new FieldFixedCounter();
@@ -55,6 +61,7 @@ public class FieldStepHandlerMultiplexerTest {
         multiplexer.add(zero.newInstance(60.0), counter60);
         multiplexer.add(counterVar);
         multiplexer.add(zero.newInstance(10.0), counter10);
+        Assert.assertEquals(4, multiplexer.getHandlers().size());
 
         Assert.assertFalse(initHandler.isInitialized());
         Assert.assertEquals(1.0, initHandler.getExpected(), Double.MIN_VALUE);
@@ -82,8 +89,7 @@ public class FieldStepHandlerMultiplexerTest {
     @Test
     public void testRemove() {
 
-        FieldStepHandlerMultiplexer<Decimal64> multiplexer = new FieldStepHandlerMultiplexer<>();
-        propagator.setMasterMode(multiplexer);
+        FieldStepHandlerMultiplexer<Decimal64> multiplexer = propagator.getMultiplexer();
 
         Field<Decimal64> field = Decimal64Field.getInstance();
         Decimal64        zero  = field.getZero();
@@ -95,6 +101,11 @@ public class FieldStepHandlerMultiplexerTest {
         multiplexer.add(zero.newInstance(60.0), counter60);
         multiplexer.add(counterVar);
         multiplexer.add(zero.newInstance(10.0), counter10);
+        Assert.assertEquals(3, multiplexer.getHandlers().size());
+        Assert.assertTrue(((FieldOrekitStepNormalizer<Decimal64>) multiplexer.getHandlers().get(0)).getFixedStepHandler() instanceof FieldFixedCounter);
+        Assert.assertEquals(60.0, ((FieldOrekitStepNormalizer<Decimal64>) multiplexer.getHandlers().get(0)).getFixedTimeStep().getReal(), 1.0e-15);
+        Assert.assertTrue(((FieldOrekitStepNormalizer<Decimal64>) multiplexer.getHandlers().get(2)).getFixedStepHandler() instanceof FieldFixedCounter);
+        Assert.assertEquals(10.0, ((FieldOrekitStepNormalizer<Decimal64>) multiplexer.getHandlers().get(2)).getFixedTimeStep().getReal(), 1.0e-15);
 
         // first run with all handlers
         propagator.propagate(initDate.shiftedBy(90.0));
@@ -116,6 +127,7 @@ public class FieldStepHandlerMultiplexerTest {
 
         // removing the handler at 10 seconds
         multiplexer.remove(counter10);
+        Assert.assertEquals(2, multiplexer.getHandlers().size());
         propagator.propagate(initDate.shiftedBy(100.0), initDate.shiftedBy(190.0));
         Assert.assertEquals( 2,    counter60.initCount);
         Assert.assertEquals( 4,    counter60.handleCount);
@@ -135,6 +147,7 @@ public class FieldStepHandlerMultiplexerTest {
 
         // attempting to remove a handler already removed
         multiplexer.remove(counter10);
+        Assert.assertEquals(2, multiplexer.getHandlers().size());
         propagator.propagate(initDate.shiftedBy(200.0), initDate.shiftedBy(290.0));
         Assert.assertEquals( 3,    counter60.initCount);
         Assert.assertEquals( 6,    counter60.handleCount);
@@ -154,6 +167,7 @@ public class FieldStepHandlerMultiplexerTest {
         
         // removing the handler with variable stepsize
         multiplexer.remove(counterVar);
+        Assert.assertEquals(1, multiplexer.getHandlers().size());
         propagator.propagate(initDate.shiftedBy(300.0), initDate.shiftedBy(390.0));
         Assert.assertEquals( 4,    counter60.initCount);
         Assert.assertEquals( 8,    counter60.handleCount);
@@ -173,6 +187,7 @@ public class FieldStepHandlerMultiplexerTest {
 
         // attempting to remove a handler already removed
         multiplexer.remove(counterVar);
+        Assert.assertEquals(1, multiplexer.getHandlers().size());
         propagator.propagate(initDate.shiftedBy(400.0), initDate.shiftedBy(490.0));
         Assert.assertEquals( 5,    counter60.initCount);
         Assert.assertEquals(10,    counter60.handleCount);
@@ -192,6 +207,7 @@ public class FieldStepHandlerMultiplexerTest {
         
         // removing everything
         multiplexer.clear();
+        Assert.assertEquals(0, multiplexer.getHandlers().size());
         propagator.propagate(initDate.shiftedBy(500.0), initDate.shiftedBy(590.0));
         Assert.assertEquals( 5,    counter60.initCount);
         Assert.assertEquals(10,    counter60.handleCount);
@@ -214,8 +230,7 @@ public class FieldStepHandlerMultiplexerTest {
     @Test
     public void testOnTheFlyChanges() {
 
-        final FieldStepHandlerMultiplexer<Decimal64> multiplexer = new FieldStepHandlerMultiplexer<>();
-        propagator.setMasterMode(multiplexer);
+        final FieldStepHandlerMultiplexer<Decimal64> multiplexer = propagator.getMultiplexer();
 
         Field<Decimal64> field = Decimal64Field.getInstance();
         Decimal64        zero  = field.getZero();

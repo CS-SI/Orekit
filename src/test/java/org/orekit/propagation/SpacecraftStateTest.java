@@ -334,7 +334,7 @@ public class SpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(0.125, s -> {
+        propagator.setStepHandler(0.125, s -> {
             if (s.getDate().durationFrom(changeDate) < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0], 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate) > +0.001) {
@@ -384,7 +384,7 @@ public class SpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(0.125, s -> {
+        propagator.setStepHandler(0.125, s -> {
             if (s.getDate().durationFrom(changeDate) < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0], 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate) > +0.001) {

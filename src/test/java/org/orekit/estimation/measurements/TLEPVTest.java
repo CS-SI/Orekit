@@ -56,7 +56,7 @@ public class TLEPVTest {
                         TLEEstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] errorsP = new double[3 * 6 * measurements.size()];
         double[] errorsV = new double[3 * 6 * measurements.size()];

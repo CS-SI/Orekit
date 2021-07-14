@@ -238,7 +238,7 @@ public class TurnAroundRangeAnalyticTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] absoluteErrors = new double[measurements.size()];
         double[] relativeErrors = new double[measurements.size()];
@@ -335,7 +335,7 @@ public class TurnAroundRangeAnalyticTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] errorsP = new double[3 * measurements.size()];
         double[] errorsV = new double[3 * measurements.size()];
@@ -504,7 +504,7 @@ public class TurnAroundRangeAnalyticTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Print results on console ? Header
         if (printResults) {

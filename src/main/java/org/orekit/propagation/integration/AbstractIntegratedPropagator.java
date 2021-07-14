@@ -33,6 +33,7 @@ import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.SecondaryODE;
 import org.hipparchus.ode.events.Action;
+import org.hipparchus.ode.events.EventHandlerConfiguration;
 import org.hipparchus.ode.events.ODEEventHandler;
 import org.hipparchus.ode.sampling.AbstractODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStateInterpolator;
@@ -40,7 +41,6 @@ import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -48,6 +48,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -65,11 +66,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Event detectors not related to force models. */
     private final List<EventDetector> detectors;
 
+    /** Step handlers dedicated to ephemeris generation. */
+    private final List<StoringStepHandler> generators;
+
     /** Integrator selected by the user for the orbital extrapolation process. */
     private final ODEIntegrator integrator;
-
-    /** Mode handler. */
-    private ModeHandler modeHandler;
 
     /** Additional equations. */
     private List<AdditionalEquations> additionalEquations;
@@ -99,8 +100,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param propagationType type of orbit to output (mean or osculating).
      */
     protected AbstractIntegratedPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
-        detectors            = new ArrayList<EventDetector>();
-        additionalEquations  = new ArrayList<AdditionalEquations>();
+        detectors            = new ArrayList<>();
+        generators           = new ArrayList<>();
+        additionalEquations  = new ArrayList<>();
         this.integrator      = integrator;
         this.propagationType = propagationType;
         this.resetAtEnd      = true;
@@ -293,71 +295,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                               detector.getMaxIterationCount());
     }
 
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(ODEIntegrator, PropagationType) constructor}. So if a specific
-     * step handler is needed, it should be added after this method has been callled.</p>
-     */
-    public void setSlaveMode() {
-        super.setSlaveMode();
-        if (integrator != null) {
-            integrator.clearStepHandlers();
-        }
-        modeHandler = null;
-    }
-
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(ODEIntegrator, PropagationType) constructor}. So if a specific
-     * step handler is needed, it should be added after this method has been callled.</p>
-     */
-    public void setMasterMode(final OrekitStepHandler handler) {
-        super.setMasterMode(handler);
-        integrator.clearStepHandlers();
-        final AdaptedStepHandler wrapped = new AdaptedStepHandler(handler);
-        integrator.addStepHandler(wrapped);
-        modeHandler = wrapped;
-    }
-
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(ODEIntegrator, PropagationType) constructor}. So if a specific
-     * step handler is needed, it should be added after this method has been called.</p>
-     */
-    public void setEphemerisMode() {
-        super.setEphemerisMode();
-        integrator.clearStepHandlers();
-        final EphemerisModeHandler ephemeris = new EphemerisModeHandler();
-        modeHandler = ephemeris;
-        integrator.addStepHandler(ephemeris);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <p>Note that this method has the side effect of replacing the step handlers of the
-     * underlying integrator set up in the {@link #AbstractIntegratedPropagator(ODEIntegrator,
-     * PropagationType) constructor}.</p>
-     */
-    @Override
-    public void setEphemerisMode(final OrekitStepHandler handler) {
-        super.setEphemerisMode();
-        integrator.clearStepHandlers();
-        final EphemerisModeHandler ephemeris = new EphemerisModeHandler(handler);
-        modeHandler = ephemeris;
-        integrator.addStepHandler(ephemeris);
-    }
-
     /** {@inheritDoc} */
-    public BoundedPropagator getGeneratedEphemeris()
-        throws IllegalStateException {
-        if (getMode() != EPHEMERIS_GENERATION_MODE) {
-            throw new OrekitIllegalStateException(OrekitMessages.PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE);
-        }
-        return ((EphemerisModeHandler) modeHandler).getEphemeris();
+    @Override
+    public EphemerisGenerator getEphemerisGenerator() {
+        final StoringStepHandler storingHandler = new StoringStepHandler();
+        generators.add(storingHandler);
+        return storingHandler;
     }
 
     /** Create a mapper between raw double components and spacecraft state.
@@ -404,23 +347,39 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
         }
 
-        if (!tStart.equals(getInitialState().getDate())) {
-            // if propagation start date is not initial date,
-            // propagate from initial to start date without event detection
-            propagate(tStart, false);
-        }
+        // make sure the integrator will be reset properly even if we change its events handlers and step handlers
+        try (IntegratorResetter resetter = new IntegratorResetter(integrator)) {
 
-        // propagate from start date to end date with event detection
-        return propagate(tEnd, true);
+            if (!tStart.equals(getInitialState().getDate())) {
+                // if propagation start date is not initial date,
+                // propagate from initial to start date without event detection
+                integrateDynamics(tStart);
+            }
+
+            // set up events added by user
+            setUpUserEventDetectors();
+
+            // set up step handlers
+            for (final OrekitStepHandler handler : getMultiplexer().getHandlers()) {
+                integrator.addStepHandler(new AdaptedStepHandler(handler));
+            }
+            for (final StoringStepHandler generator : generators) {
+                generator.setEndDate(tEnd);
+                integrator.addStepHandler(generator);
+            }
+
+            // propagate from start date to end date with event detection
+            return integrateDynamics(tEnd);
+
+        }
 
     }
 
     /** Propagation with or without event detection.
      * @param tEnd target date to which orbit should be propagated
-     * @param activateHandlers if true, step and event handlers should be activated
      * @return state at end of propagation
      */
-    protected SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers) {
+    private SpacecraftState integrateDynamics(final AbsoluteDate tEnd) {
         try {
 
             initializePropagation();
@@ -445,23 +404,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                           getInitialState().getMass());
             }
 
-            integrator.clearEventHandlers();
-
-            // set up events added by user, only if handlers are activated
-            if (activateHandlers) {
-                setUpUserEventDetectors();
-            }
-
             // convert space flight dynamics API to math API
             final SpacecraftState initialIntegrationState = getInitialIntegrationState();
             final ODEState mathInitialState = createInitialState(initialIntegrationState);
             final ExpandableODE mathODE = createODE(integrator, mathInitialState);
             equationsMapper = mathODE.getMapper();
-
-            // initialize mode handler
-            if (modeHandler != null) {
-                modeHandler.initialize(activateHandlers, tEnd);
-            }
 
             // mathematical integration
             final ODEStateAndDerivative mathFinalState;
@@ -870,13 +817,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * to Hipparchus {@link ODEStepHandler} interface.
      * @author Luc Maisonobe
      */
-    private class AdaptedStepHandler implements ODEStepHandler, ModeHandler {
+    private class AdaptedStepHandler implements ODEStepHandler {
 
         /** Underlying handler. */
         private final OrekitStepHandler handler;
-
-        /** Flag for handler . */
-        private boolean activate;
 
         /** Build an instance.
          * @param handler underlying handler to wrap
@@ -886,33 +830,21 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void initialize(final boolean activateHandlers,
-                               final AbsoluteDate targetDate) {
-            this.activate = activateHandlers;
-        }
-
-        /** {@inheritDoc} */
         public void init(final ODEStateAndDerivative s0, final double t) {
-            if (activate) {
-                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                             stateMapper.mapDoubleToDate(t));
-            }
+            handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
+                         stateMapper.mapDoubleToDate(t));
         }
 
         /** {@inheritDoc} */
         @Override
         public void handleStep(final ODEStateInterpolator interpolator) {
-            if (activate) {
-                handler.handleStep(new AdaptedStepInterpolator(interpolator));
-            }
+            handler.handleStep(new AdaptedStepInterpolator(interpolator));
         }
 
         /** {@inheritDoc} */
         @Override
         public void finish(final ODEStateAndDerivative finalState) {
-            if (activate) {
-                handler.finish(convert(finalState));
-            }
+            handler.finish(convert(finalState));
         }
 
     }
@@ -985,122 +917,148 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     }
 
-    private class EphemerisModeHandler implements ModeHandler, ODEStepHandler {
+    /** Specialized step handler storing interpolators for ephemeris generation.
+     * @since 11.0
+     */
+    private class StoringStepHandler implements ODEStepHandler, EphemerisGenerator {
 
         /** Underlying raw mathematical model. */
         private DenseOutputModel model;
 
-        /** Generated ephemeris. */
-        private BoundedPropagator ephemeris;
-
-        /** Flag for handler . */
-        private boolean activate;
-
         /** the user supplied end date. Propagation may not end on this date. */
         private AbsoluteDate endDate;
 
-        /** User's integration step handler. May be null. */
-        private final AdaptedStepHandler handler;
+        /** Generated ephemeris. */
+        private BoundedPropagator ephemeris;
 
-        /** Creates a new instance of EphemerisModeHandler which must be
-         *  filled by the propagator.
+        /** Set the end date.
+         * @param endDate end date
          */
-        EphemerisModeHandler() {
-            this.handler = null;
-        }
-
-        /** Creates a new instance of EphemerisModeHandler which must be
-         *  filled by the propagator.
-         *  @param handler the handler to notify of every integrator step.
-         */
-        EphemerisModeHandler(final OrekitStepHandler handler) {
-            this.handler = new AdaptedStepHandler(handler);
+        public void setEndDate(final AbsoluteDate endDate) {
+            this.endDate = endDate;
         }
 
         /** {@inheritDoc} */
-        public void initialize(final boolean activateHandlers,
-                               final AbsoluteDate targetDate) {
-            this.activate = activateHandlers;
-            this.model    = new DenseOutputModel();
-            this.endDate  = targetDate;
+        @Override
+        public void init(final ODEStateAndDerivative s0, final double t) {
+
+            this.model = new DenseOutputModel();
+            model.init(s0, t);
 
             // ephemeris will be generated when last step is processed
             this.ephemeris = null;
-            if (this.handler != null) {
-                this.handler.initialize(activateHandlers, targetDate);
-            }
+
         }
 
-        /** Get the generated ephemeris.
-         * @return a new instance of the generated ephemeris
-         */
-        public BoundedPropagator getEphemeris() {
+        /** {@inheritDoc} */
+        @Override
+        public BoundedPropagator getGeneratedEphemeris() {
             return ephemeris;
         }
 
         /** {@inheritDoc} */
+        @Override
         public void handleStep(final ODEStateInterpolator interpolator) {
-            if (activate) {
-                if (this.handler != null) {
-                    this.handler.handleStep(interpolator);
-                }
-
-                model.handleStep(interpolator);
-            }
+            model.handleStep(interpolator);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void finish(final ODEStateAndDerivative finalState) {
-            if (activate) {
 
-                // set up the boundary dates
-                final double tI = model.getInitialTime();
-                final double tF = model.getFinalTime();
-                // tI is almost? always zero
-                final AbsoluteDate startDate =
-                                stateMapper.mapDoubleToDate(tI);
-                final AbsoluteDate finalDate =
-                                stateMapper.mapDoubleToDate(tF, this.endDate);
-                final AbsoluteDate minDate;
-                final AbsoluteDate maxDate;
-                if (tF < tI) {
-                    minDate = finalDate;
-                    maxDate = startDate;
-                } else {
-                    minDate = startDate;
-                    maxDate = finalDate;
-                }
-
-                // get the initial additional states that are not managed
-                final Map<String, double[]> unmanaged = new HashMap<String, double[]>();
-                for (final Map.Entry<String, double[]> initial : getInitialState().getAdditionalStates().entrySet()) {
-                    if (!isAdditionalStateManaged(initial.getKey())) {
-                        // this additional state was in the initial state, but is unknown to the propagator
-                        // we simply copy its initial value as is
-                        unmanaged.put(initial.getKey(), initial.getValue());
-                    }
-                }
-
-                // get the names of additional states managed by differential equations
-                final String[] names = new String[additionalEquations.size()];
-                for (int i = 0; i < names.length; ++i) {
-                    names[i] = additionalEquations.get(i).getName();
-                }
-
-                // create the ephemeris
-                ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                    stateMapper, propagationType, model, unmanaged,
-                                                    getAdditionalStateProviders(), names);
-
+            // set up the boundary dates
+            final double tI = model.getInitialTime();
+            final double tF = model.getFinalTime();
+            // tI is almost? always zero
+            final AbsoluteDate startDate =
+                            stateMapper.mapDoubleToDate(tI);
+            final AbsoluteDate finalDate =
+                            stateMapper.mapDoubleToDate(tF, this.endDate);
+            final AbsoluteDate minDate;
+            final AbsoluteDate maxDate;
+            if (tF < tI) {
+                minDate = finalDate;
+                maxDate = startDate;
+            } else {
+                minDate = startDate;
+                maxDate = finalDate;
             }
+
+            // get the initial additional states that are not managed
+            final Map<String, double[]> unmanaged = new HashMap<String, double[]>();
+            for (final Map.Entry<String, double[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+                if (!isAdditionalStateManaged(initial.getKey())) {
+                    // this additional state was in the initial state, but is unknown to the propagator
+                    // we simply copy its initial value as is
+                    unmanaged.put(initial.getKey(), initial.getValue());
+                }
+            }
+
+            // get the names of additional states managed by differential equations
+            final String[] names = new String[additionalEquations.size()];
+            for (int i = 0; i < names.length; ++i) {
+                names[i] = additionalEquations.get(i).getName();
+            }
+
+            // create the ephemeris
+            ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
+                                                stateMapper, propagationType, model, unmanaged,
+                                                getAdditionalStateProviders(), names);
+
         }
 
-        /** {@inheritDoc} */
-        public void init(final ODEStateAndDerivative s0, final double t) {
-            model.init(s0, t);
-            if (this.handler != null) {
-                this.handler.init(s0, t);
-            }
+    }
+
+    /** Wrapper for resetting an integrator handlers.
+     * <p>
+     * This class is intended to be used in a try-with-resource statement.
+     * If propagator-specific event handlers and step handlers are added to
+     * the integrator in the try block, they will be removed automatically
+     * when leaving the block, so the integrator only keep its own handlers
+     * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate).
+     * </p>
+     * @since 11.0
+     */
+    private static class IntegratorResetter implements AutoCloseable {
+
+        /** Wrapped integrator. */
+        private final ODEIntegrator integrator;
+
+        /** Initial event handlers list. */
+        private final List<EventHandlerConfiguration> eventHandlersConfigurations;
+
+        /** Initial step handlers list. */
+        private final List<ODEStepHandler> stepHandlers;
+
+        /** Simple constructor.
+         * @param integrator wrapped integrator
+         */
+        IntegratorResetter(final ODEIntegrator integrator) {
+            this.integrator                  = integrator;
+            this.eventHandlersConfigurations = new ArrayList<>(integrator.getEventHandlersConfigurations());
+            this.stepHandlers                = new ArrayList<>(integrator.getStepHandlers());
+        }
+
+        /** {@inheritDoc}
+         * <p>
+         * Reset event handlers and step handlers back to the initial list
+         * </p>
+         */
+        @Override
+        public void close() {
+
+            // reset event handlers
+            integrator.clearEventHandlers();
+            eventHandlersConfigurations.forEach(c -> integrator.addEventHandler(c.getEventHandler(),
+                                                                                c.getMaxCheckInterval(),
+                                                                                c.getConvergence(),
+                                                                                c.getMaxIterationCount(),
+                                                                                c.getSolver()));
+
+            // reset step handlers
+            integrator.clearStepHandlers();
+            stepHandlers.forEach(stepHandler -> integrator.addStepHandler(stepHandler));
+
         }
 
     }

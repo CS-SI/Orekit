@@ -109,7 +109,7 @@ public class EventDetectorTest {
         double stepSize = 60.0;
         OutOfOrderChecker checker = new OutOfOrderChecker(stepSize);
         propagator.addEventDetector(new DateDetector(date.shiftedBy(5.25 * stepSize)).withHandler(checker));
-        propagator.setMasterMode(stepSize, checker);
+        propagator.setStepHandler(stepSize, checker);
         propagator.propagate(date.shiftedBy(10 * stepSize));
         Assert.assertTrue(checker.outOfOrderCallDetected());
 
@@ -186,7 +186,7 @@ public class EventDetectorTest {
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<GCallsCounter>());
         propagator.addEventDetector(counter);
-        propagator.setMasterMode(step, currentState -> {});
+        propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(n * step));
         Assert.assertEquals(n + 1, counter.getCount());
     }
@@ -393,7 +393,7 @@ public class EventDetectorTest {
         // to check they are called in consistent order
         final ScheduleChecker checker = new ScheduleChecker(initialDate.shiftedBy(start),
                                                             initialDate.shiftedBy(stop));
-        propagator.setMasterMode((interpolator) -> {
+        propagator.setStepHandler((interpolator) -> {
             checker.callDate(interpolator.getCurrentState().getDate());
         });
 

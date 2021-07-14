@@ -116,9 +116,9 @@ public class PropagatorsParallelizerTest {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         Propagator mono = buildEcksteinHechler();
-        mono.setEphemerisMode();
+        final EphemerisGenerator generator = mono.getEphemerisGenerator();
         mono.propagate(startDate, endDate);
-        final BoundedPropagator ephemeris = mono.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
                                                      buildNumerical());
@@ -147,9 +147,9 @@ public class PropagatorsParallelizerTest {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         Propagator mono = buildNumerical();
-        mono.setEphemerisMode();
+        final EphemerisGenerator generator = mono.getEphemerisGenerator();
         mono.propagate(startDate, endDate);
-        final BoundedPropagator ephemeris = mono.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
                                                      buildNumerical());

@@ -393,7 +393,7 @@ public class SolarBodyTest {
         propag.addForceModel(new BodyAttraction(pluto));
 
         // checks are done within the step handler
-        propag.setMasterMode(1000.0, currentState -> {
+        propag.setStepHandler(1000.0, currentState -> {
                 // propagated position should remain within 1400m of ephemeris for one month
                 Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
                 Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();

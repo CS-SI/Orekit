@@ -54,6 +54,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
@@ -65,7 +66,6 @@ import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -119,12 +119,13 @@ public class KeplerianPropagatorTest {
 
         // action
         final List<SpacecraftState> states = new ArrayList<>();
-        propagator.setEphemerisMode(interpolator -> {
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        propagator.setStepHandler(interpolator -> {
             states.add(interpolator.getCurrentState());
             states.add(interpolator.getPreviousState());
         });
         propagator.propagate(end);
-        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         Assert.assertTrue(states.size() > 1); // got some data
@@ -416,9 +417,7 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        StepHandlerMultiplexer multiplexer = new StepHandlerMultiplexer();
-        propagator.setMasterMode(multiplexer);
-        multiplexer.add(new OrekitStepHandler() {
+        propagator.getMultiplexer().add(new OrekitStepHandler() {
             public void handleStep(OrekitStepInterpolator interpolator) {
             }
             public void finish(SpacecraftState finalState) {
@@ -562,7 +561,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = 100.0;
-        propagator.setMasterMode(step, new OrekitFixedStepHandler() {
+        propagator.setStepHandler(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
             public void handleStep(SpacecraftState currentState) {
                 if (previous != null) {
@@ -582,7 +581,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = orbit.getKeplerianPeriod() / 100;
-        propagator.setMasterMode(new OrekitStepHandler() {
+        propagator.setStepHandler(new OrekitStepHandler() {
             private AbsoluteDate previous;
             private AbsoluteDate target;
             @Override
@@ -608,11 +607,10 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        propagator.setEphemerisMode();
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(farTarget);
-        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Assert.assertEquals(0.0, ephemeris.getMinDate().durationFrom(orbit.getDate()), 1.0e10);
         Assert.assertEquals(0.0, ephemeris.getMaxDate().durationFrom(farTarget), 1.0e10);
     }
@@ -625,13 +623,13 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), initialDate, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
 
-        propagator.setEphemerisMode();
+        propagator.getEphemerisGenerator();
         propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
         PVCoordinates pv1 = propagator.getPVCoordinates(initialDate, FramesFactory.getEME2000());
 
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
-        PVCoordinates pv2 = propagator.getGeneratedEphemeris().getPVCoordinates(initialDate, FramesFactory.getEME2000());
+        PVCoordinates pv2 = generator.getGeneratedEphemeris().getPVCoordinates(initialDate, FramesFactory.getEME2000());
 
         Assert.assertEquals(0.0, pv1.getPosition().subtract(pv2.getPosition()).getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm(), 1.0e-15);
@@ -701,7 +699,7 @@ public class KeplerianPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, state -> {
+        propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isBefore(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
@@ -732,7 +730,7 @@ public class KeplerianPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, state -> {
+        propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isAfter(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
