@@ -46,8 +46,8 @@ public class TLEContext {
     public StationDisplacement[]                displacements;
     public List<GroundStation>                  stations;
     // Stations for turn-around range
-    // Map entry = master station
-    // Map value = slave station associated
+    // Map entry = primary station
+    // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
 
     public TLEPropagatorBuilder createBuilder(final double minStep, final double maxStep, final double dP) {
