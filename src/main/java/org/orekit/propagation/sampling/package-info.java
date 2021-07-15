@@ -18,13 +18,11 @@
  *
  * This package provides interfaces and classes dealing with step handling during propagation.
  * <p>
- * It is used when a {@link org.orekit.propagation.Propagator Propagator} is run in
- * {@link org.orekit.propagation.Propagator#MASTER_MODE master mode}. In this mode, the
- * (master) propagator integration loop calls (slave) application callback methods at each
- * finalized step. The callback methods must implement the {@link
- * org.orekit.propagation.sampling.OrekitFixedStepHandler} interface for fixed step sampling or
- * the {@link org.orekit.propagation.sampling.OrekitStepHandler} interface for variable step
- * sampling.
+ * It is used when a {@link org.orekit.propagation.Propagator Propagator} is run. The propagator
+ * takes care of the time loop and application callback methods are called at each finalized step.
+ * The callback methods must implement the {@link org.orekit.propagation.sampling.OrekitFixedStepHandler}
+ * interface for fixed step sampling or the {@link org.orekit.propagation.sampling.OrekitStepHandler}
+ * interface for variable step sampling.
  * </p>
  *
  * <p>

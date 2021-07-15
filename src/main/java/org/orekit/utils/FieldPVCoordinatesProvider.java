@@ -23,6 +23,7 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /**
 ** Interface for PV coordinates providers.
+ * @param <T> the type of the field elements
  * @author Veronique Pommier
  * <p>The PV coordinates provider interface can be used by any class used for position/velocity
  * computation, for example celestial bodies or spacecraft position/velocity propagators,

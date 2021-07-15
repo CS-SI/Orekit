@@ -154,7 +154,7 @@ public class EphemerisTest {
         // Propagate and build ephemeris
         final List<SpacecraftState> propagatedStates = new ArrayList<>();
 
-        propagator.setMasterMode(60, currentState -> propagatedStates.add(currentState));
+        propagator.setStepHandler(60, currentState -> propagatedStates.add(currentState));
         propagator.propagate(initialDate.shiftedBy(2*86400.0));
         final Ephemeris ephemeris = new Ephemeris(propagatedStates, 8);
 

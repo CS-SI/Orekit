@@ -54,6 +54,14 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
         this.forward   = true;
     }
 
+    /** Get the fixed time step.
+     * @return fixed time step
+     * @since 11.0
+     */
+    public double getFixedTimeStep() {
+        return h;
+    }
+
     /** Get the underlying fixed step handler.
      * @return underlying fixed step handler
      * @since 11.0

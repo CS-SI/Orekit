@@ -27,8 +27,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -76,6 +76,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -227,9 +228,9 @@ public class FieldDSSTPropagatorTest {
         prop.resetInitialState(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(orbit)));
 
         //action
-        prop.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = prop.getEphemerisGenerator();
         prop.propagate(startDate, endDate);
-        FieldBoundedPropagator<T> ephemeris = prop.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         TimeStampedFieldPVCoordinates<T> actualPV = ephemeris.getPVCoordinates(startDate, eci);
@@ -311,14 +312,14 @@ public class FieldDSSTPropagatorTest {
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
 
         // Set ephemeris mode
-        dsstPropagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = dsstPropagator.getEphemerisGenerator();
 
         // Propagation of the initial state at t + 10 days
         final double dt = 2. * Constants.JULIAN_DAY;
         dsstPropagator.propagate(state.getDate().shiftedBy(5. * dt));
 
         // Get ephemeris
-        FieldBoundedPropagator<T> ephem = dsstPropagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephem = generator.getGeneratedEphemeris();
 
         // Propagation of the initial state with ephemeris at t + 2 days
         final FieldSpacecraftState<T> s = ephem.propagate(state.getDate().shiftedBy(dt));
@@ -733,14 +734,14 @@ public class FieldDSSTPropagatorTest {
         // direct generation of states
         propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
         final List<FieldSpacecraftState<T>> states = new ArrayList<FieldSpacecraftState<T>>();
-        propagator.setMasterMode(zero.add(600), currentState -> states.add(currentState));
+        propagator.setStepHandler(zero.add(600), currentState -> states.add(currentState));
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
 
         // ephemeris generation
         propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
-        propagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
-        FieldBoundedPropagator<T> ephemeris = propagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
         T maxError = zero;
         for (final FieldSpacecraftState<T> state : states) {

@@ -77,7 +77,7 @@ public class ShapiroRangeModifierTest {
             }
             measurements = converted;
         }
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final ShapiroRangeModifier modifier = new ShapiroRangeModifier(context.initialOrbit.getMu());

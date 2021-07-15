@@ -26,6 +26,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * based on external data files and by continuous models built after numerical
  * integration has been completed and dense output data as been
  * gathered.</p>
+ * @param <T> the type of the field elements
  *
  * @author Luc Maisonobe
  *

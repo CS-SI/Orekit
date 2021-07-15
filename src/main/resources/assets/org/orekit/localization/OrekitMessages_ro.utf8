@@ -232,9 +232,6 @@ FRAMES_MISMATCH = sistemul de referință {0} nu corespunde sistemului de referi
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = stare inițială nespecificată pentru propagarea orbitală
 
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = propagatorul nu este în modul de generare al efemeridelor
-
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = data evenimentului {0}, mai mare decât {1} minus {3} secunde și mai mică decât {2} plus {3} secunde, nu poate fi adăugată
 

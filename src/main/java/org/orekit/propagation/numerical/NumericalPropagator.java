@@ -79,9 +79,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(EventDetector)},
  *   {@link #clearEventsDetectors()})</li>
- *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- *   {@link #setMasterMode(double, org.orekit.propagation.sampling.OrekitFixedStepHandler)},
- *   {@link #setMasterMode(org.orekit.propagation.sampling.OrekitStepHandler)},
+ *   <li>the binding logic with the rest of the application ({@link #clearStepHandlers()},
+ *   {@link #addStepHandler(double, org.orekit.propagation.sampling.OrekitFixedStepHandler)},
+ *   {@link #addStepHandler(org.orekit.propagation.sampling.OrekitStepHandler)},
  *   {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
@@ -192,7 +192,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         forceModels = new ArrayList<ForceModel>();
         initMapper();
         setAttitudeProvider(attitudeProvider);
-        setSlaveMode();
+        clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }

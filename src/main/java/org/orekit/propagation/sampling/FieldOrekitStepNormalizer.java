@@ -54,6 +54,14 @@ public class FieldOrekitStepNormalizer <T extends CalculusFieldElement<T>> imple
         forward   = true;
     }
 
+    /** Get the fixed time step.
+     * @return fixed time step
+     * @since 11.0
+     */
+    public T getFixedTimeStep() {
+        return h;
+    }
+
     /** Get the underlying fixed step handler.
      * @return underlying fixed step handler
      * @since 11.0

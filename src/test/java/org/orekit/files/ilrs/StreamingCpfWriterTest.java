@@ -74,7 +74,7 @@ public class StreamingCpfWriterTest {
             writer.writeHeader();
             Segment segment = writer.newSegment(frame);
             BoundedPropagator propagator = satellite.getPropagator();
-            propagator.setMasterMode(step, segment);
+            propagator.setStepHandler(step, segment);
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
 
             final byte[]    bytes1            = buffer.toString().getBytes(StandardCharsets.UTF_8);

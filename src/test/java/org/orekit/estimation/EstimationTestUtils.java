@@ -119,8 +119,8 @@ public class EstimationTestUtils {
                         );
 
         // Turn-around range stations
-        // Map entry = master station
-        // Map value = slave station associated
+        // Map entry = primary station
+        // Map value = secondary station associated
         context.TARstations = new HashMap<GroundStation, GroundStation>();
 
         context.TARstations.put(context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
@@ -218,8 +218,8 @@ public class EstimationTestUtils {
         context.stations = Collections.singletonList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
 
         // Turn-around range stations
-        // Map entry = master station
-        // Map value = slave station associated
+        // Map entry = primary station
+        // Map value = secondary station associated
         context.TARstations = new HashMap<GroundStation, GroundStation>();
 
         context.TARstations.put(context.createStation(  41.977, 13.600,  671.354, "Fucino"),
@@ -253,7 +253,7 @@ public class EstimationTestUtils {
                                                                   final double startPeriod, final double endPeriod,
                                                                   final double step) {
 
-        propagator.setMasterMode(step, creator);
+        propagator.setStepHandler(step, creator);
         final double       period = propagator.getInitialState().getKeplerianPeriod();
         final AbsoluteDate start  = propagator.getInitialState().getDate().shiftedBy(startPeriod * period);
         final AbsoluteDate end    = propagator.getInitialState().getDate().shiftedBy(endPeriod   * period);

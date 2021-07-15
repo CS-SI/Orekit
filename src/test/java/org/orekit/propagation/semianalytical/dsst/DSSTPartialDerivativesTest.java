@@ -128,7 +128,7 @@ public class DSSTPartialDerivativesTest {
             propagator.setInitialState(initialState, PropagationType.MEAN);
             final DSSTJacobiansMapper mapper = partials.getMapper();
             PickUpHandler pickUp = new PickUpHandler(mapper, null);
-            propagator.setMasterMode(pickUp);
+            propagator.setStepHandler(pickUp);
             propagator.propagate(initialState.getDate().shiftedBy(dt));
             double[][] dYdP = pickUp.getdYdP();
 
@@ -268,7 +268,7 @@ public class DSSTPartialDerivativesTest {
         propagator.setInitialState(initialState, type);
         final DSSTJacobiansMapper mapper = partials.getMapper();
         PickUpHandler pickUp = new PickUpHandler(mapper, null);
-        propagator.setMasterMode(pickUp);
+        propagator.setStepHandler(pickUp);
         propagator.propagate(target);
         double[][] dYdY0 = pickUp.getdYdY0();
 

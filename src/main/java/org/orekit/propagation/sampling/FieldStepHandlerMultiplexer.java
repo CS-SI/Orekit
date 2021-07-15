@@ -17,6 +17,7 @@
 package org.orekit.propagation.sampling;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -82,6 +83,19 @@ public class FieldStepHandlerMultiplexer<T extends CalculusFieldElement<T>> impl
             // propagation is ongoing, we need to call init now for this handler
             normalized.init(last, target);
         }
+    }
+
+    /** Get an unmodifiable view of all handlers.
+     * <p>
+     * Note that if {@link FieldOrekitFixedStepHandler fixed step handlers} have
+     * been {@link #add(CalculusFieldElement, FieldOrekitFixedStepHandler)}, then they will
+     * show up wrapped within {@link FieldOrekitStepNormalizer step normalizers}.
+     * </p>
+     * @return an unmodifiable view of all handlers
+     * @since 11.0
+     */
+    public List<FieldOrekitStepHandler<T>> getHandlers() {
+        return Collections.unmodifiableList(handlers);
     }
 
     /** Remove a handler.

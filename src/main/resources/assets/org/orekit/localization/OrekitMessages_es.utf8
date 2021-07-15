@@ -232,9 +232,6 @@ FRAMES_MISMATCH = el sistema de referencia ({0}) no corresponde al sistema de re
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estado inicial no especificado para la extrapolación de órbita
 
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = el extrapolador no está en modo de generación de efemérides
-
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = la fecha acontecimiento {0}, más grande que {1} menos {3} segundos y más pequeña que {2} más {3} segundos, no puede ser añadida
 
