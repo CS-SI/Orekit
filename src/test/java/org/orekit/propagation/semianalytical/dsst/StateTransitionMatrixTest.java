@@ -403,7 +403,7 @@ public class StateTransitionMatrixTest {
         final String name = "STM";
 
         // STM
-        final DSSTPartialDerivativesEquations pde = new DSSTPartialDerivativesEquations(name, propagator, propagationType);
+        final DSSTPartialDerivativesEquations pde = new DSSTPartialDerivativesEquations(name, propagator);
 
         // Get initial state
         final SpacecraftState rawState = propagator.getInitialState();
@@ -488,8 +488,9 @@ public class StateTransitionMatrixTest {
 
                 // Get state transition matrix
                 final double[][] dYdY0 = new double[6][6];
-                mapper.setShortPeriodJacobians(DSSTPropagator.computeMeanState(currentState, Propagator.DEFAULT_LAW, forceModels));
-
+                if (propagationType == PropagationType.OSCULATING) {
+                	mapper.setShortPeriodJacobians(DSSTPropagator.computeMeanState(currentState, Propagator.DEFAULT_LAW, forceModels));
+                }
 
                 if (this.B == 1) {
                     // B1 : dYdY0 of short period derivatives

@@ -1,31 +1,17 @@
-/* Copyright 2002-2021 CS GROUP
- * Licensed to CS GROUP (CS) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package org.orekit.estimation.leastsquares;
+package org.orekit.estimation.sequential;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,7 +23,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
-import org.orekit.estimation.common.ResultBatchLeastSquares;
+import org.orekit.estimation.common.ResultKalman;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
@@ -59,10 +45,11 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
-public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTPropagatorBuilder> {
+public class KalmanDSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTPropagatorBuilder> {
 
-    /** Gravity field. */
+	/** Gravity field. */
     private UnnormalizedSphericalHarmonicsProvider gravityField;
 
     /** Propagation type (mean or mean + osculating). */
@@ -208,134 +195,114 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
 
-    /**
-     * Lageos 2 orbit determination test using laser data.
-     *
-     * This test uses both mean and osculating elements to perform the orbit determination.
-     * It is possible to consider only mean elements by changing propagationType and
-     * stateType keys.
-     */
     @Test
-    public void testLageos2()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+    // Orbit determination for Lageos2 based on SLR (range) measurements
+    public void testLageos2() throws URISyntaxException, IOException {
 
+        // Print results on console
+        final boolean print = true;
+        
         // input in resources directory
-        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/dsst_od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/dsst_kalman_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
-        // configure Orekit data access
+        // configure Orekit data acces
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
-        // configure propagation and initial state types
-        propagationType = PropagationType.OSCULATING;
-        stateType = PropagationType.OSCULATING;
+        this.propagationType = PropagationType.MEAN;
+        this.stateType = PropagationType.OSCULATING;
 
-        //orbit determination run.
-        ResultBatchLeastSquares odLageos2 = runBLS(input, false);
+        // Choice of an orbit type to use
+        // Default for test is Cartesian
+        final OrbitType orbitType = OrbitType.CARTESIAN;
+        
+        // Initial orbital Cartesian covariance matrix
+        // These covariances are derived from the deltas between initial and reference orbits
+        // So in a way they are "perfect"...
+        // Cartesian covariance matrix initialization
+        final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1e4, 4e3, 1, 5e-3, 6e-5, 1e-4
+        });
+        
+        // Orbital Cartesian process noise matrix (Q)
+        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
+        });
 
-        //test
-        //definition of the accuracy for the test
-        final double distanceAccuracy = 76.40;
-        final double velocityAccuracy = 1.58e-1;
+        // Kalman orbit determination run.
+        ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
+                                               cartesianOrbitalP, cartesianOrbitalQ,
+                                               null, null,
+                                               null, null);
 
-        //test on the convergence
-        final int numberOfIte  = 7;
-        final int numberOfEval = 7;
+        // Definition of the accuracy for the test
+        final double distanceAccuracy = 0.86;
+        final double velocityAccuracy = 4.12e-3;
 
-        Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
-        Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
+        // Tests
+        // Note: The reference initial orbit is the same as in the batch LS tests
+        // -----
+        
+        // Number of measurements processed
+        final int numberOfMeas  = 258;
+        Assert.assertEquals(numberOfMeas, kalmanLageos2.getNumberOfMeasurements());
 
-        //test on the estimated position and velocity
-        final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
-        final Vector3D estimatedVel = odLageos2.getEstimatedPV().getVelocity();
+        // Estimated position and velocity
+        final Vector3D estimatedPos = kalmanLageos2.getEstimatedPV().getPosition();
+        final Vector3D estimatedVel = kalmanLageos2.getEstimatedPV().getVelocity();
 
-        // Ref position from "lageos2_cpf_160212_5441.jax"
-        final Vector3D refPos = new Vector3D(-2551060.861, 9748629.197, -6528045.767);
-        final Vector3D refVel = new Vector3D(-4595.833, 1029.893, 3382.441);
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
+        // Reference position and velocity at initial date (same as in batch LS test)
+        final Vector3D refPos0 = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
+        final Vector3D refVel0 = new Vector3D(-3871.275109, -607.880985, 4280.972530);
+        
+        // Run the reference until Kalman last date
+        final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, null,
+                                            kalmanLageos2.getEstimatedPV().getDate());
+        final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
+        
+        // Check distances
+        final double dP = Vector3D.distance(refPos, estimatedPos);
+        final double dV = Vector3D.distance(refVel, estimatedVel);
+        Assert.assertEquals(0.0, dP, distanceAccuracy);
+        Assert.assertEquals(0.0, dV, velocityAccuracy);
+        
+        // Print orbit deltas
+        if (print) {
+            System.out.println("Test performances:");
+            System.out.format("\t%-30s\n",
+                            "ΔEstimated / Reference");
+            System.out.format(Locale.US, "\t%-10s %20.6f\n",
+                              "ΔP [m]", dP);
+            System.out.format(Locale.US, "\t%-10s %20.6f\n",
+                              "ΔV [m/s]", dV);
+        }
 
-        //test on statistic for the range residuals
-        final long nbRange = 95;
-        final double[] RefStatRange = { -29.030, 59.098, 0.0, 14.968 };
-        Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
-        Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
-
-
-    }
-
-    /**
-     * GNSS orbit determination test.
-     *
-     * This test uses both mean and osculating elements to perform the orbit determination.
-     * It is possible to consider only mean elements by changing propagationType and
-     * stateType keys.
-     *
-     * Using only mean elements, results are:
-     *    ΔP = 59 meters
-     *    ΔV = 0.23 meters per second
-     *
-     *    nb iterations  = 2
-     *    nb evaluations = 3
-     *
-     *    min residual  = -83.945 meters
-     *    max residual  = 59.365 meters
-     *    mean residual = 0.23 meters
-     *    RMS = 20.857 meters 
-     */
-    @Test
-    public void testGNSS()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
-
-        // input in resources directory
-        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/dsst_od_test_GPS07.in").toURI().getPath();
-        final File input  = new File(inputPath);
-
-        // configure Orekit data access
-        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-
-        // configure propagation and initial state types
-        propagationType = PropagationType.OSCULATING;
-        stateType = PropagationType.OSCULATING;
-
-        //orbit determination run.
-        ResultBatchLeastSquares odGNSS = runBLS(input, false);
-
-        //test
-        //definition of the accuracy for the test
-        final double distanceAccuracy = 6.95;
-        final double velocityAccuracy = 2.46e-3;
-
-        //test on the convergence
-        final int numberOfIte  = 3;
-        final int numberOfEval = 4;
-
-        Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
-        Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
-
-        //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
-        final Vector3D estimatedPos = odGNSS.getEstimatedPV().getPosition();
-        final Vector3D estimatedVel = odGNSS.getEstimatedPV().getVelocity();
-        final Vector3D refPos = new Vector3D(-2747606.680868164, 22572091.30648564, 13522761.402325712);
-        final Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
+        // Test on measurements parameters
+        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
+        list.addAll(kalmanLageos2.getMeasurementsParameters().getDrivers());
+        sortParametersChanges(list);
+        // Batch LS values
+        //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
+        //final double rangeBias = -0.286275;
+        final double[] stationOffSet = { 0.298867,  -0.137456,  0.013315 };
+        final double rangeBias = 0.002390;
+        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
+        Assert.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
 
         //test on statistic for the range residuals
-        final long nbRange = 4009;
-        final double[] RefStatRange = { -3.497, 2.594, 0.0, 0.837 };
-        Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
-        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
+        final long nbRange = 258;
+        // Batch LS values
+        //final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
+        final double[] RefStatRange = { -23.561314, 20.436464, 0.964164, 5.687187 };
+        Assert.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
+        Assert.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
+        Assert.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);
+        Assert.assertEquals(RefStatRange[2], kalmanLageos2.getRangeStat().getMean(),              distanceAccuracy);
+        Assert.assertEquals(RefStatRange[3], kalmanLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
     }
 

@@ -77,26 +77,38 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
 	@Override
 	public void init(final SpacecraftState s0, final AbsoluteDate t) {
 		this.index = 0;
+		// Initialize short periodic terms.
+		model.initializeShortPeriodicTerms(s0);
+		model.updateShortPeriods(s0);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
 
-        final AbsoluteDate nextStateDate = interpolator.getCurrentState().getDate();
-        
-        while (index < observedMeasurements.size() && observedMeasurements.get(index).getDate().compareTo(nextStateDate) < 0) {
+		// Current date
+        final AbsoluteDate currentDate = interpolator.getCurrentState().getDate();
+
+        // Update the short period terms with the MEAN interpolated states
+        model.updateShortPeriods(interpolator.getCurrentState());
+
+        // Process the measurements between previous step and current step
+        while (index < observedMeasurements.size() && observedMeasurements.get(index).getDate().compareTo(currentDate) < 0) {
 
             try {
-//                ObservedMeasurement <?> pv = observedMeasurements.get(index);
-//                Vector3D positionMeasure = new Vector3D(pv.getObservedValue());
-//                SpacecraftState interpolated = interpolator.getInterpolatedState(observedMeasurements.get(index).getDate());
-//                TimeStampedPVCoordinates pvC = interpolated.getPVCoordinates(); 
-//                System.out.println(pv.getDate() + "   " + Vector3D.distance(positionMeasure, pvC.getPosition()));
 
+            	model.updateShortPeriods(interpolator.getInterpolatedState(observedMeasurements.get(index).getDate()));
+
+            	// Update the norminal state with the interpolated parameters
                 model.updateNominalSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(index).getDate()));
+
+                // Process the current observation
                 final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurements.get(index)));
+
+                // Finalize the estimation
                 model.finalizeEstimation(observedMeasurements.get(index), estimate);
+
+                // Call the observer if the user add one
                 if (observer != null) {
                     observer.evaluationPerformed(model);
                 }
@@ -104,7 +116,10 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
             } catch (MathRuntimeException mrte) {
                 throw new OrekitException(mrte);
             }
+
+            // Increment the measurement index
             index += 1;
+
         }
 
         // Reset the initial state of the propagator

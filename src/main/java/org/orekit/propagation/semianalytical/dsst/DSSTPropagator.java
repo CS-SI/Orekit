@@ -561,6 +561,24 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         return mapper.getSatelliteRevolution();
     }
 
+    /** Override the default value short periodic terms.
+    *  <p>
+    *  By default, short periodic terms are initialized before
+    *  the numerical integration of the mean orbital elements.
+    *  </p>
+    *  @param shortPeriodTerms short periodic terms
+    */
+   public void setShortPeriodTerms(final List<ShortPeriodTerms> shortPeriodTerms) {
+       mapper.setShortPeriodTerms(shortPeriodTerms);
+   }
+
+   /** Get the short periodic terms.
+    *  @return the short periodic terms
+    */
+   public List<ShortPeriodTerms> getShortPeriodTerms() {
+       return mapper.getShortPeriodTerms();
+   }
+
     /** {@inheritDoc} */
     @Override
     public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {

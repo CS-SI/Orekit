@@ -222,6 +222,15 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         }
     }
 
+    /** Reset the orbit in the propagator builder.
+     * @param newOrbit newOrbit New orbit to set in the propagator builder
+     * @param orbitType orbit type (MEAN or OSCULATING)
+     */
+    public void resetOrbit(final Orbit newOrbit, final PropagationType orbitType) {
+    	this.stateType = orbitType;
+    	super.resetOrbit(newOrbit);
+    }
+
     /** {@inheritDoc} */
     public DSSTPropagator buildPropagator(final double[] normalizedParameters) {
 

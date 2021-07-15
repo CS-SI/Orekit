@@ -23,7 +23,6 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -83,9 +82,6 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
     /** Flag for Jacobian matrices initialization. */
     private boolean initialized;
 
-    /** Type of the orbit used for the propagation.*/
-    private PropagationType propagationType;
-
     /** Simple constructor.
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
@@ -95,17 +91,14 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * </p>
      * @param name name of the partial derivatives equations
      * @param propagator the propagator that will handle the orbit propagation
-     * @param propagationType type of the orbit used for the propagation (mean or osculating)
      */
     public DSSTPartialDerivativesEquations(final String name,
-                                           final DSSTPropagator propagator,
-                                           final PropagationType propagationType) {
+                                           final DSSTPropagator propagator) {
         this.name                   = name;
         this.selected               = null;
         this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
-        this.propagationType        = propagationType;
         propagator.addAdditionalEquations(this);
     }
 
@@ -236,7 +229,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new DSSTJacobiansMapper(name, selected, propagator, map, propagationType);
+        return new DSSTJacobiansMapper(name, selected, propagator, map);
     }
 
     /** {@inheritDoc} */
@@ -256,8 +249,6 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             final Gradient[] parameters = converter.getParameters(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
-            // "field" initialization of the force model if it was not done before
-            forceModel.initializeShortPeriodTerms(auxiliaryElements, propagationType, parameters);
             final Gradient[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
             final double[] derivativesA  = meanElementRate[0].getGradient();
             final double[] derivativesEx = meanElementRate[1].getGradient();

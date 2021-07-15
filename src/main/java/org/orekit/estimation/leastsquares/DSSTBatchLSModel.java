@@ -77,7 +77,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
         final String equationName = DSSTBatchLSModel.class.getName() + "-derivatives";
 
-        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) propagator, propagationType);
+        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) propagator);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
@@ -98,8 +98,12 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
         final SpacecraftState initial = dsstPropagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(dsstPropagator.getInitialState(), dsstPropagator.getAttitudeProvider(), dsstPropagator.getAllForceModels()) :
                        dsstPropagator.getInitialState();
+        ((DSSTJacobiansMapper) mapper).initializeFieldShortPeriodTerms(initial);
         // Compute short period derivatives at the beginning of the iteration
-        ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(initial);
+        if (propagationType == PropagationType.OSCULATING) {
+        	((DSSTJacobiansMapper) mapper).updateFieldShortPeriodTerms(initial);
+            ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(initial);
+        }
         return initial.getOrbit();
     }
 

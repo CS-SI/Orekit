@@ -122,12 +122,13 @@ public class DSSTPartialDerivativesTest {
                 }
             }
 
-            DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, type);
+            DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
             final SpacecraftState initialState =
                     partials.setInitialJacobians(new SpacecraftState(initialOrbit));
             propagator.setInitialState(initialState, PropagationType.MEAN);
             final DSSTJacobiansMapper mapper = partials.getMapper();
-            PickUpHandler pickUp = new PickUpHandler(mapper, null);
+            mapper.initializeFieldShortPeriodTerms(initialState); // Initial state is MEAN
+            PickUpHandler pickUp = new PickUpHandler(mapper, propagator, null, type);
             propagator.setMasterMode(pickUp);
             propagator.propagate(initialState.getDate().shiftedBy(dt));
             double[][] dYdP = pickUp.getdYdP();
@@ -224,7 +225,7 @@ public class DSSTPartialDerivativesTest {
 
     @Test
     public void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
-        doTestPropagation(PropagationType.OSCULATING, 3.3e-4);
+        doTestPropagation(PropagationType.OSCULATING, 7.2e-4);
     }
     
     private void doTestPropagation(PropagationType type,
@@ -259,7 +260,7 @@ public class DSSTPartialDerivativesTest {
         // compute state Jacobian using PartialDerivatives
         DSSTPropagator propagator = setUpPropagator(type, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagator.setMu(provider.getMu());
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, type);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
         final SpacecraftState initialState =
                 partials.setInitialJacobians(new SpacecraftState(orbit));
         final double[] stateVector = new double[6];
@@ -267,7 +268,12 @@ public class DSSTPartialDerivativesTest {
         final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         propagator.setInitialState(initialState, type);
         final DSSTJacobiansMapper mapper = partials.getMapper();
-        PickUpHandler pickUp = new PickUpHandler(mapper, null);
+        // Mean orbit
+        final SpacecraftState initial = type == PropagationType.OSCULATING ?
+                       DSSTPropagator.computeMeanState(initialState, propagator.getAttitudeProvider(), propagator.getAllForceModels()) :
+                    	   initialState;
+        mapper.initializeFieldShortPeriodTerms(initial);
+        PickUpHandler pickUp = new PickUpHandler(mapper, propagator, null, type);
         propagator.setMasterMode(pickUp);
         propagator.propagate(target);
         double[][] dYdY0 = pickUp.getdYdY0();
@@ -319,7 +325,7 @@ public class DSSTPartialDerivativesTest {
         double dP = 0.001;
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN).getMapper();
+        new DSSTPartialDerivativesEquations("partials", propagator).getMapper();
      }
     
     @Test(expected=OrekitException.class)
@@ -333,7 +339,7 @@ public class DSSTPartialDerivativesTest {
         double dP = 0.001;
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[5][6], new double[6][2]);
      }
@@ -349,7 +355,7 @@ public class DSSTPartialDerivativesTest {
         double dP = 0.001;
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[8][6], new double[6][2]);
      }
@@ -365,7 +371,7 @@ public class DSSTPartialDerivativesTest {
         double dP = 0.001;
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[6][6], new double[7][2]);
      }
@@ -384,7 +390,7 @@ public class DSSTPartialDerivativesTest {
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL,
                                 sunAttraction, moonAttraction);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
         try {
             partials.setInitialJacobians(new SpacecraftState(orbit),
                                          new double[6][6], new double[6][3]);
@@ -462,13 +468,18 @@ public class DSSTPartialDerivativesTest {
     private static class PickUpHandler implements OrekitStepHandler {
 
         private final DSSTJacobiansMapper mapper;
+        private final PropagationType type;
         private final AbsoluteDate pickUpDate;
+        private final DSSTPropagator propagator;
         private final double[][] dYdY0;
         private final double[][] dYdP;
 
-        public PickUpHandler(DSSTJacobiansMapper mapper, AbsoluteDate pickUpDate) {
+        public PickUpHandler(DSSTJacobiansMapper mapper, DSSTPropagator propagator,
+        		AbsoluteDate pickUpDate, PropagationType type) {
             this.mapper = mapper;
             this.pickUpDate = pickUpDate;
+            this.type = type;
+            this.propagator = propagator;
             dYdY0 = new double[DSSTJacobiansMapper.STATE_DIMENSION][DSSTJacobiansMapper.STATE_DIMENSION];
             dYdP  = new double[DSSTJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
         }
@@ -507,7 +518,11 @@ public class DSSTPartialDerivativesTest {
 
             Assert.assertEquals(1, interpolated.getAdditionalStates().size());
             Assert.assertTrue(interpolated.getAdditionalStates().containsKey(mapper.getName()));
-            mapper.setShortPeriodJacobians(interpolated);
+            if (type == PropagationType.OSCULATING) {
+                final SpacecraftState meanState = DSSTPropagator.computeMeanState(interpolated, propagator.getAttitudeProvider(), propagator.getAllForceModels());
+            	mapper.updateFieldShortPeriodTerms(meanState);
+                mapper.setShortPeriodJacobians(meanState);
+            }
             mapper.getStateJacobian(interpolated, dYdY0);
             mapper.getParametersJacobian(interpolated, dYdP);
 
@@ -548,11 +563,10 @@ public class DSSTPartialDerivativesTest {
         // Test MEAN case
         DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagatorMEAN.setMu(provider.getMu());
-        DSSTPartialDerivativesEquations partialsMEAN = new DSSTPartialDerivativesEquations("partials", propagatorMEAN, PropagationType.MEAN);
+        DSSTPartialDerivativesEquations partialsMEAN = new DSSTPartialDerivativesEquations("partials", propagatorMEAN);
         final SpacecraftState initialStateMEAN =
                 partialsMEAN.setInitialJacobians(new SpacecraftState(orbit));
         final DSSTJacobiansMapper mapperMEAN = partialsMEAN.getMapper();
-        mapperMEAN.setShortPeriodJacobians(initialStateMEAN);
         double[][] dYdY0MEAN =  new double[DSSTJacobiansMapper.STATE_DIMENSION][DSSTJacobiansMapper.STATE_DIMENSION];
         mapperMEAN.getStateJacobian(initialStateMEAN, dYdY0MEAN);
         for (int i = 0; i < 6; ++i) {
@@ -569,7 +583,7 @@ public class DSSTPartialDerivativesTest {
         // Test OSCULATING case
         DSSTPropagator propagatorOSC = setUpPropagator(PropagationType.OSCULATING, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagatorOSC.setMu(provider.getMu());
-        DSSTPartialDerivativesEquations partialsOSC = new DSSTPartialDerivativesEquations("partials", propagatorOSC, PropagationType.OSCULATING);
+        DSSTPartialDerivativesEquations partialsOSC = new DSSTPartialDerivativesEquations("partials", propagatorOSC);
         final SpacecraftState initialStateOSC =
                 partialsOSC.setInitialJacobians(new SpacecraftState(orbit));
         final DSSTJacobiansMapper mapperOSC = partialsOSC.getMapper();

@@ -80,7 +80,7 @@ public class DSSTPartialDerivativesEquationsTest {
         propagator = new DSSTPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
         forceModel = new MockForceModel();
         propagator.addForceModel(forceModel);
-        pde = new DSSTPartialDerivativesEquations("pde", propagator, PropagationType.MEAN);
+        pde = new DSSTPartialDerivativesEquations("pde", propagator);
         final Orbit orbit = new EquinoctialOrbit(4.2163393E7,
                                                  -0.25925449177598586,
                                                  -0.06946703170551687,
