@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="813">
+        Fixed derivatives with respect to secondary station in turn-around modifiers.
+      </action>
       <action dev="luc" type="add" issue="811">
         Allow on-the-fly add/remove/clean for step handlers.
       </action>

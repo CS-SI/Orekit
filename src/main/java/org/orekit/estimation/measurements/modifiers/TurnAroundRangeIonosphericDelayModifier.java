@@ -180,7 +180,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
         final Gradient masterGDelay = rangeErrorIonosphericModel(masterStation, gState, gParameters);
         final Gradient slaveGDelay = rangeErrorIonosphericModel(slaveStation, gState, gParameters);
         final double[] masterDerivatives = masterGDelay.getGradient();
-        final double[] slaveDerivatives  = masterGDelay.getGradient();
+        final double[] slaveDerivatives  = slaveGDelay.getGradient();
 
         final double[][] masterDjac = rangeErrorJacobianState(masterDerivatives);
         final double[][] slaveDjac  = rangeErrorJacobianState(slaveDerivatives);
