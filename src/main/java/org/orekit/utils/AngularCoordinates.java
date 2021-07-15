@@ -94,7 +94,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     /** Builds a rotation/rotation rate/rotation acceleration triplet.
      * @param rotation rotation
      * @param rotationRate rotation rate Ω (rad/s)
-     * @param rotationAcceleration rotation acceleration dΩ/dt (rad²/s²)
+     * @param rotationAcceleration rotation acceleration dΩ/dt (rad/s²)
      */
     public AngularCoordinates(final Rotation rotation,
                               final Vector3D rotationRate, final Vector3D rotationAcceleration) {
@@ -598,7 +598,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     }
 
     /** Get the rotation acceleration.
-     * @return the rotation acceleration vector dΩ/dt (rad²/s²).
+     * @return the rotation acceleration vector dΩ/dt (rad/s²).
      */
     public Vector3D getRotationAcceleration() {
         return rotationAcceleration;
