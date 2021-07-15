@@ -48,6 +48,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 
 public class SemiAnalyticalKalmanEstimatorTest {
 
@@ -184,19 +185,23 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
 
-        // Equinictial covariance matrix initialization
-        final RealMatrix equinoctialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            0., 0., 0., 0., 0., 0.
-        });
+        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
+        aDriver.setValue(aDriver.getValue() + 1.2);
 
+        // Cartesian covariance matrix initialization
+        // 100m on position / 1e-2m/s on velocity 
+        final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            100., 100., 100., 1e-2, 1e-2, 1e-2
+        });
+        
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.MEAN, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-
-        // Equinoctial initial covariance matrix
-        final RealMatrix initialP = Jac.multiply(equinoctialP.multiply(Jac.transpose()));
+        
+        // Keplerian initial covariance matrix
+        final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
         // Process noise matrix is set to 0 here
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
@@ -209,9 +214,9 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.05e-7;
+        final double   posEps            = 4.6e-2;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 3.9e-11;
+        final double   velEps            = 1.8e-5;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -269,19 +274,23 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
 
-        // Equinictial covariance matrix initialization
-        final RealMatrix equinoctialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            0., 0., 0., 0., 0., 0.
-        });
+        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
+        aDriver.setValue(aDriver.getValue() + 1.2);
 
+        // Cartesian covariance matrix initialization
+        // 100m on position / 1e-2m/s on velocity 
+        final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            100., 100., 100., 1e-2, 1e-2, 1e-2
+        });
+        
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.MEAN, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-
-        // Equinoctial initial covariance matrix
-        final RealMatrix initialP = Jac.multiply(equinoctialP.multiply(Jac.transpose()));
+        
+        // Keplerian initial covariance matrix
+        final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
         // Process noise matrix is set to 0 here
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
@@ -294,9 +303,9 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.07e-7;
+        final double   posEps            = 4.1e-2;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 3.9e-11;
+        final double   velEps            = 1.8e-5;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,

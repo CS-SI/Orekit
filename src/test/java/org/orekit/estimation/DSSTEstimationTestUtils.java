@@ -399,7 +399,7 @@ public class DSSTEstimationTestUtils {
             // Check the final orbit estimation & PV sigmas
             final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
-            Assert.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), Double.MIN_VALUE);
+            Assert.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
             Assert.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
             Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
 

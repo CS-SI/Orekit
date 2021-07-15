@@ -86,18 +86,17 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
 	@Override
 	public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
 
+		System.out.println("HELLO !!!");
 		// Current date
         final AbsoluteDate currentDate = interpolator.getCurrentState().getDate();
 
-        // Update the short period terms with the MEAN interpolated states
+        // Update the short period terms with the current MEAN state
         model.updateShortPeriods(interpolator.getCurrentState());
 
         // Process the measurements between previous step and current step
         while (index < observedMeasurements.size() && observedMeasurements.get(index).getDate().compareTo(currentDate) < 0) {
 
             try {
-
-            	model.updateShortPeriods(interpolator.getInterpolatedState(observedMeasurements.get(index).getDate()));
 
             	// Update the norminal state with the interpolated parameters
                 model.updateNominalSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(index).getDate()));
