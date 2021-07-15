@@ -37,10 +37,14 @@
   end box
 
   participant Propagator
+  participant StepHandlerMultiplexer
 
   activate U
-  U                    ->           Propagator : setSlaveMode
+  U                    ->           Propagator : clearStepHandlers
     activate Propagator
+     Propagator         ->           StepHandlerMultiplexer : clear
+      activate StepHandlerMultiplexer
+      deactivate StepHandlerMultiplexer
     deactivate Propagator
   U                    ->           Propagator : propagate
     activate Propagator

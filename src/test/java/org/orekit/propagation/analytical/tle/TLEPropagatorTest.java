@@ -47,7 +47,7 @@ public class TLEPropagatorTest {
     private double period;
 
     @Test
-    public void testSlaveMode() {
+    public void testsecondaryMode() {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         AbsoluteDate initDate = tle.getDate();

@@ -112,14 +112,23 @@
         analyzes
     * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
-    * all propagators can be used in several different modes
-        * slave mode: propagator is driven by calling application
-        * master mode: propagator drives application callback functions
-        * ephemeris generation mode: all intermediate results are stored during
-          propagation and provided back to the application which can navigate at will
-          through them, effectively using the propagated orbit as if it was an
-          analytical model, even if it really is a numerically propagated one, which
+    * all propagators can manage the time loop by themselves and handle callback
+      functions (called step handlers) from the calling application at each time step.
+        * step handlers can be called at discrete time at regular time steps, which are
+          independent of propagator time steps
+        * step handlers can be called with interpolators valid throughout one propagator
+          time step, which can have varying sizes
+        * step handlers can be switched off completely, when only final state is desired
+        * special step handlers are provided for a posteriori ephemeris generation: all
+          intermediate results are stored during propagation and provided back to the application
+          which can navigate at will through them, effectively using the propagated orbit as if
+          it was analytical model, even if it really is a numerically propagated one, which
           is ideal for search and iterative algorithms
+        * several step handlers can be used simultaneously, so it is possible to have a fine
+          grained fixed time step to log state in a huge file, and have at the same time a
+          coarse grained time step to display progress for user at a more human-friendly rate,
+          this feature can also be used for debugging purpose, by setting up a temporary
+          step handler alongside the operational ones
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
     * predefined discrete events

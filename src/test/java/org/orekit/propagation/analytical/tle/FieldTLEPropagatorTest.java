@@ -53,8 +53,8 @@ public class FieldTLEPropagatorTest {
     private double period;
 
     @Test
-    public void testSlaveMode() {
-        doTestSlaveMode(Decimal64Field.getInstance());
+    public void testsecondaryMode() {
+        doTestsecondaryMode(Decimal64Field.getInstance());
     }
     
     @Test
@@ -72,7 +72,7 @@ public class FieldTLEPropagatorTest {
         doTestComparisonWithNonField(Decimal64Field.getInstance());
     }
 
-    public <T extends CalculusFieldElement<T>> void doTestSlaveMode(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestsecondaryMode(Field<T> field) {
         
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";

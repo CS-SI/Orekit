@@ -40,5 +40,5 @@ architecture.
 
 It is considered to be closer to a propagation model than to an orbit representation and
 has been moved within the `org.orekit.propagation` package since 6.0. This move allowed the
-rich features from the global propagation framework (master/slave/ephemeris mode, events
+rich features from the global propagation framework (multiple step handlers, events
 handling) to be used with TLE.
