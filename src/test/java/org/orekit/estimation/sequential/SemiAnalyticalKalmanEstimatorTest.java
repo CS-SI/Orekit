@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
@@ -46,22 +43,12 @@ import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 public class SemiAnalyticalKalmanEstimatorTest {
 
-    /** Space for residual file. */
-    private static final String SPACE = " ";
-
-    /** Format for residuals line. */
-    private static String fmt = "%s";
-
-    /** Carrier return. */
-    private static String cReturn = "\n";
-
-    @Test
+	@Test
     public void testMissingPropagatorBuilder() {
         try {
             new SemiAnalyticalKalmanEstimatorBuilder().build();
@@ -76,7 +63,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
      * Only the Newtonian Attraction is used.
      */
     @Test
-    public void testKeplerianRange() {
+    public void testKepleranRange() {
 
         // Create context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -131,7 +118,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final SemiAnalyticalKalmanEstimator kalman = new SemiAnalyticalKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
-        kalman.setObserver(new Observer(measurements.get(0).getDate(), measurements.size()));
+        final Observer observer = new Observer();
+        kalman.setObserver(observer);
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
@@ -142,6 +130,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
+
+        Assert.assertEquals(0.0, observer.getMeanResidual(), 4.98e-8);
     }
 
     /**
@@ -210,7 +200,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final SemiAnalyticalKalmanEstimator kalman = new SemiAnalyticalKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
-        kalman.setObserver(new Observer(measurements.get(0).getDate(), measurements.size()));
+        final Observer observer = new Observer();
+        kalman.setObserver(observer);
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
@@ -221,6 +212,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
+
+        Assert.assertEquals(0.0, observer.getMeanResidual(), 3.89e-3);
     }
 
     /**
@@ -299,7 +292,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final SemiAnalyticalKalmanEstimator kalman = new SemiAnalyticalKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
-        kalman.setObserver(new Observer(measurements.get(0).getDate(), measurements.size()));
+        final Observer observer = new Observer();
+        kalman.setObserver(observer);
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
@@ -310,38 +304,19 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
+
+        Assert.assertEquals(0.0, observer.getMeanResidual(), 3.95e-3);
     }
 
     /** Observer for Kalman estimation. */
     public static class Observer implements KalmanObserver {
 
-        /** Start epoch. */
-        private final AbsoluteDate startEpoch;
-
-        /** Number of measurements. */
-        private final int nbOfMeasurement;
-
-        /** Writer. */
-        private PrintWriter residuals;
-
         /** Residuals statistics. */
         private StreamingStatistics stats;
 
-        /**
-         * Constructor.
-         * @param startEpoch start epoch
-         * @param nbOfMeasurement expected number of measurements
-         */
-        public Observer(final AbsoluteDate startEpoch, final int nbOfMeasurement) {
-            this.startEpoch = startEpoch;
-            this.nbOfMeasurement = nbOfMeasurement;
+        /** Constructor. */
+        public Observer() {
             this.stats = new StreamingStatistics();
-            try {
-                this.residuals = new PrintWriter(new File("residuals.txt"));
-            } catch (FileNotFoundException e) {
-                System.out.println("Enable to create residual file");
-                this.residuals = null;
-            }
         }
 
         /** {@inheritDoc} */
@@ -353,35 +328,20 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
             // Check
             if (estimatedMeasurement.getObservedMeasurement() instanceof Range) {
-
             	final double[] estimated = estimatedMeasurement.getEstimatedValue();
                 final double[] observed  = estimatedMeasurement.getObservedValue();
-
                 // Calculate residual
                 final double res = observed[0] - estimated[0];
                 stats.addValue(res);
-
-                // Time difference in days
-                final double dt = estimatedMeasurement.getDate().durationFrom(startEpoch) / Constants.JULIAN_DAY;
-
-                // Add measurement line
-                final String line = String.format(fmt, dt + SPACE + res);
-                System.out.println(line);
-                if (residuals != null) {
-                    residuals.printf(fmt, dt + SPACE + res + cReturn);
-                }
-
             }
 
-            // Check if it's the last measurement
-            if (estimation.getCurrentMeasurementNumber() == nbOfMeasurement) {
-                // Close the file
-                residuals.close();
-                System.out.println("Max  res: " + stats.getMax());
-                System.out.println("Min  res: " + stats.getMin());
-                System.out.println("Mean res: " + stats.getMean());
-            }
+        }
 
+        /** Get the mean value of the residual.
+         * @return the mean value of the residual in meters
+         */
+        public double getMeanResidual() {
+        	return stats.getMean();
         }
 
     }

@@ -86,7 +86,6 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
 	@Override
 	public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
 
-		System.out.println("HELLO !!!");
 		// Current date
         final AbsoluteDate currentDate = interpolator.getCurrentState().getDate();
 

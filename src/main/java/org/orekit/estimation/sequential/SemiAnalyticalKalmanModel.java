@@ -352,6 +352,9 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Predict filter correction
         predictedFilterCorrection = predictFilterCorrection(stm);
 
+        // Short period term derivatives
+        analyticalDerivativeComputations(nominalMeanSpacecraftState);
+
         // Calculate the predicted osculating elements
         final double[] osculating = computeOsculatingElements();
         final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null, builder.getPositionAngle(),
@@ -688,7 +691,9 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
     }
 
-    /** Update the DSST short periodic terms. */
+    /** Update the DSST short periodic terms.
+     * @param state current mean state
+     */
     public void updateShortPeriods(final SpacecraftState state) {
     	// Loop on DSST force models
     	for (final DSSTForceModel model : builder.getAllForceModels()) {
@@ -910,9 +915,6 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
      * @return the predicted osculating element
      */
     private double[] computeOsculatingElements() {
-
-        // Short period term derivatives
-        analyticalDerivativeComputations(nominalMeanSpacecraftState);
 
     	// Number of estimated orbital parameters
     	final int nbOrb = getNumberSelectedOrbitalDrivers();
