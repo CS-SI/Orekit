@@ -465,6 +465,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
          */
         FieldBoundedPropagatorView(final FieldAbsoluteDate<T> startDate, final FieldAbsoluteDate<T> endDate) {
             super(startDate.durationFrom(endDate).getField(), FieldAbstractAnalyticalPropagator.this.getAttitudeProvider());
+            super.resetInitialState(FieldAbstractAnalyticalPropagator.this.getInitialState());
             if (startDate.compareTo(endDate) <= 0) {
                 minDate = startDate;
                 maxDate = endDate;
@@ -519,6 +520,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         @Override
         public void resetInitialState(final FieldSpacecraftState<T> state) {
+            super.resetInitialState(state);
             FieldAbstractAnalyticalPropagator.this.resetInitialState(state);
         }
 

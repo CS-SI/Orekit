@@ -431,6 +431,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
          */
         BoundedPropagatorView(final AbsoluteDate startDate, final AbsoluteDate endDate) {
             super(AbstractAnalyticalPropagator.this.getAttitudeProvider());
+            super.resetInitialState(AbstractAnalyticalPropagator.this.getInitialState());
             if (startDate.compareTo(endDate) <= 0) {
                 minDate = startDate;
                 maxDate = endDate;
@@ -479,6 +480,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public void resetInitialState(final SpacecraftState state) {
+            super.resetInitialState(state);
             AbstractAnalyticalPropagator.this.resetInitialState(state);
         }
 
