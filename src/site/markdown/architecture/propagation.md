@@ -98,7 +98,7 @@ The next sequence diagram shows a case where users want to control the time loop
 from within their application. In this case, the step handlers multiplexer is cleared and
 the propagator is called multiple time, and returns states at requested target times.
 
-[without step handlers sequence diagram](../images/design/withouut-step-handlers-sequence-diagram.png)
+[without step handlers sequence diagram](../images/design/without-step-handlers-sequence-diagram.png)
 
 Controlling the time loop at application level by ignoring step handlers and just getting
 states at specified times may seem appealing and more natural to most first time Orekit
