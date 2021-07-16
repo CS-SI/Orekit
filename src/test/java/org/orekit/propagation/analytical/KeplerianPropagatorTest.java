@@ -137,6 +137,24 @@ public class KeplerianPropagatorTest {
     }
 
     @Test
+    public void testAdditionalState() {
+        AbsoluteDate initDate = AbsoluteDate.GPS_EPOCH;
+        Orbit ic = new KeplerianOrbit(6378137 + 500e3, 1e-3, 0, 0, 0, 0, PositionAngle.TRUE, FramesFactory.getGCRF(), initDate, mu);
+        Propagator propagator = new KeplerianPropagator(ic);
+        SpacecraftState initialState = propagator.getInitialState().addAdditionalState("myState", 4.2);
+        propagator.resetInitialState(initialState);
+        AbsoluteDate end = initDate.shiftedBy(90 * 60);
+        EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        SpacecraftState finalStateKeplerianPropagator = propagator.propagate(end);
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        SpacecraftState ephemerisInitialState = ephemeris.getInitialState();
+        SpacecraftState finalStateBoundedPropagator = ephemeris.propagate(end);
+        Assert.assertEquals(4.2, finalStateKeplerianPropagator.getAdditionalState("myState")[0], 1.0e-15);
+        Assert.assertEquals(4.2, ephemerisInitialState.getAdditionalState("myState")[0], 1.0e-15);
+        Assert.assertEquals(4.2, finalStateBoundedPropagator.getAdditionalState("myState")[0], 1.0e-15);
+    }
+
+    @Test
     public void sameDateCartesian() {
 
         // Definition of initial conditions with position and velocity
