@@ -104,7 +104,6 @@ public class SemiAnalyticalKalmanEstimatorBuilder {
      * @param estimatedMeasurementsParams The estimated measurements' parameters list.
      * @param provider covariance matrix provider for the estimated measurement parameters
      * @return this object.
-     * @since 10.3
      */
     public SemiAnalyticalKalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams,
                                                                                 final CovarianceMatrixProvider provider) {
