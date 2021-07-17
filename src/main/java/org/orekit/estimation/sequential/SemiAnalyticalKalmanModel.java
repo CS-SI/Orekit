@@ -180,7 +180,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         
             // Verify if the driver is selected
             if (driver.isSelected()) {
-            	   estimatedOrbitalParameters.add(driver);
+            	estimatedPropagationParameters.add(driver);
                 final String driverName = driver.getName();
                 // Add the driver name if it has not been added yet
                 if (!estimatedPropagationParametersNames.contains(driverName)) {
