@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import org.hipparchus.linear.MatrixDecomposer;
+import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
@@ -24,18 +26,68 @@ import org.orekit.propagation.conversion.PropagatorBuilder;
 /**
  * Sequential least squares estimator for orbit determination.
  * <p>
- * This class extends {@link BatchLSEstimator}. It uses the result of a previous
- * optimization with its {@link Evaluation} and re-estimate the orbit with new measures
- * and the previous Evaluation.
- * </p>
- * <p>
- * When an orbit has already been estimated and measures are given, it is not efficient
+ * When an orbit has already been estimated and new measurements are given, it is not efficient
  * to re-optimize the whole problem. Only considering the new measures while optimizing
- * will neither give good results as the old measures will not be taken into account.
+ * will neither give good results as the old measurements will not be taken into account.
  * Thus, a sequential estimator is used to estimate the orbit, which uses the old results
- * of the estimation (with the old evaluation) and the new measures.
- * </p>
- *
+ * of the estimation and the new measurements.
+ * <p>
+ * In order to perform a sequential optimization, the user must configure a
+ * {@link SequentialGaussNewtonOptimizer}. Depending if its input data are
+ * an empty {@link Evaluation}, a complete <code>Evaluation</code> or an a priori
+ * state and covariance, different configuration are possible.
+ * <p>
+ * <b>1. No input data from a previous estimation</b>
+ * <p>
+ * Then, the {@link SequentialBatchLSEstimator} can be used like a {@link BatchLSEstimator}
+ * to perform the estimation. The user can initialize the <code>SequentialGaussNewtonOptimizer</code>
+ * using the default constructor.
+ * <p>
+ * <code>final SequentialGaussNewtonOptimizer optimizer = new SequentialGaussNewtonOptimizer();</code>
+ * <p>
+ * By default, a {@link QRDecomposer} is used as decomposition algorithm. In addition, normal
+ * equations are not form. It is possible to update these two default configurations by using:
+ * <ul>
+ *   <li>{@link SequentialGaussNewtonOptimizer#withDecomposer(MatrixDecomposer) withDecomposer} method:
+ *       <code>optimizer.withDecomposer(newDecomposer);</code>
+ *   </li>
+ *   <li>{@link SequentialGaussNewtonOptimizer#withFormNormalEquations(boolean) withFormNormalEquations} method:
+ *       <code>optimizer.withFormNormalEquations(newFormNormalEquations);</code>
+ *   </li>
+ * </ul>
+ * <p>
+ * <b>2. Initialization using a previous <code>Evalutation</code></b>
+ * <p>
+ * In this situation, it is recommended to use the second constructor of the optimizer class.
+ * <p>
+ * <code>final SequentialGaussNewtonOptimizer optimizer = new SequentialGaussNewtonOptimizer(decomposer,
+ *                                                                                           formNormalEquations,
+ *                                                                                           evaluation);
+ * </code>
+ * <p>
+ * Using this constructor, the user can directly configure the MatrixDecomposer and set the flag for normal equations
+ * without calling the two previous presented methods.
+ * <p>
+ * <i>Note:</i> This constructor can also be used to perform the initialization of <b>1.</b>
+ * In this case, the <code>Evaluation evaluation</code> is <code>null</code>.
+ * <p>
+ * <b>3. Initialization using an a priori estimated state and covariance</b>
+ * <p>
+ * These situation is a classical satellite operation need. Indeed, a classical action is to use
+ * the results of a previous orbit determination (estimated state and covariance) performed a day before,
+ * to improve the initialization and the results of an orbit determination performed the current day.
+ * In this situation, the user can initialize the <code>SequentialGaussNewtonOptimizer</code>
+ * using the default constructor.
+ * <p>
+ * <code>final SequentialGaussNewtonOptimizer optimizer = new SequentialGaussNewtonOptimizer();</code>
+ * <p>
+ * The MatrixDecomposer and the flag about normal equations can again be updated using the two previous
+ * presented methods. The a priori state and covariance matrix can be set using:
+ * <ul>
+ *   <li>{@link SequentialGaussNewtonOptimizer#withAPrioriData(org.hipparchus.linear.RealVector, org.hipparchus.linear.RealMatrix) withAPrioriData} method:
+ *       <code>optimizer.withAPrioriData(aPrioriState, aPrioriCovariance);</code>
+ *   </li>
+ * </ul>
  * @author Julie Bayard
  * @since 11.0
  */
@@ -60,6 +112,7 @@ public class SequentialBatchLSEstimator extends BatchLSEstimator {
      * <p>
      * The solver used for sequential least squares problem is a
      * {@link SequentialGaussNewtonOptimizer sequential Gauss Newton optimizer}.
+     * Details about how initialize it are given in the class JavaDoc.
      * </p>
      *
      * @param sequentialOptimizer solver for sequential least squares problem
