@@ -168,6 +168,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @param <T> type of the propagator builder
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
+ * @author Julie Bayard
  */
 public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPropagatorBuilder> {
 
@@ -182,6 +183,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
     /** Suffix for elevation bias. */
     private final String ELEVATION_BIAS_SUFFIX = "/el bias";
+
+    /** CPF file mandatory key. */
+    private final String CPF_MANDATORY_KEY = "cpf";
 
     /** Flag for range measurement use. */
     private boolean useRangeMeasurements;
@@ -399,6 +403,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 // the measurements come from a CRD file
                 independentMeasurements.addAll(readCrd(nd, stations, parser, satellite, satRangeBias,
                                                        weights, rangeOutliersManager, shapiroRangeModifier));
+            } else if (fileName.contains(CPF_MANDATORY_KEY)) {
+                // Position measurements in a CPF file
+                independentMeasurements.addAll(readCpf(nd, satellite, initialGuess));
             } else {
                 // the measurements come from an Orekit custom file
                 independentMeasurements.addAll(readMeasurements(nd,
@@ -464,12 +471,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         // gravity field
         createGravityField(parser);
 
-        // read first measurements file to build the batch least squares
-        CPFEphemeris ephemerisBLS = readCpf(parser, inputModel, 0);
-
-        // frame related to the ephemeris
-        final Frame frameBLS = ephemerisBLS.getFrame();
-        
         // Orbit initial guess
         final Orbit initialGuess = createOrbit(parser, getMu());
 
@@ -488,67 +489,102 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         final T propagatorBuilder = configurePropagatorBuilder(parser, conventions, body, initialGuess);
 
         // estimator
-        BatchLSEstimator estimatorBLS = createEstimator(parser, propagatorBuilder);
-        
+        BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
+
         final ObservableSatellite satellite = createObservableSatellite(parser);
 
         // measurements
-        for (CPFCoordinate coordinates : ephemerisBLS.getCoordinates()) {
-            AbsoluteDate date = coordinates.getDate();
-            final PVCoordinates pvInertial = frameBLS.getTransformTo(initialGuess.getFrame(), date).transformPVCoordinates(coordinates);
-            estimatorBLS.addMeasurement(new Position(date, pvInertial.getPosition(), 1, 1, satellite));
+        List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<>();
+        for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
+
+            // set up filtering for measurements files
+            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(inputModel.getParentFile(), fileName)));
+            for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                         new UnixCompressFilter(),
+                                                         new HatanakaCompressFilter())) {
+                nd = filter.filter(nd);
+            }
+
+            if (fileName.contains(CPF_MANDATORY_KEY)) {
+                // Position measurements in a CPF file
+                independentMeasurements.addAll(readCpf(nd, satellite, initialGuess));
+            }
+
+        }
+
+        // add measurements to the estimator
+        List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 1.0e-9);
+        for (ObservedMeasurement<?> measurement : multiplexed) {
+            estimator.addMeasurement(measurement);
         }
 
         if (print) {
             final String headerBLS = "\nBatch Least Square Estimator :\n"
                             + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
-            estimatorBLS.setObserver(new BatchLeastSquaresObserver(initialGuess, estimatorBLS, headerBLS, print));
+            estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerBLS, print));
         }
 
         // perform first estimation
-        final Orbit estimatedBLS = estimatorBLS.estimate()[0].getInitialState().getOrbit();
-        final int iterationCount = estimatorBLS.getIterationsCount();
-        final int evalutionCount = estimatorBLS.getEvaluationsCount();
-        final RealMatrix covariance = estimatorBLS.getPhysicalCovariances(1.0e-10);
+        final Orbit estimatedBLS = estimator.estimate()[0].getInitialState().getOrbit();
+        final int iterationCount = estimator.getIterationsCount();
+        final int evalutionCount = estimator.getEvaluationsCount();
+        final RealMatrix covariance = estimator.getPhysicalCovariances(1.0e-10);
 
-        Optimum BLSEvaluation = estimatorBLS.getOptimum();
+        Optimum BLSEvaluation = estimator.getOptimum();
 
         // read second measurements file to build the sequential batch least squares
-        CPFEphemeris ephemerisSBLS = readCpf(parser, inputModel, 1);
-        estimatorBLS = createSequentialEstimator(BLSEvaluation, parser, propagatorBuilder);
+        estimator = createSequentialEstimator(BLSEvaluation, parser, propagatorBuilder);
 
         // measurements
-        for (CPFCoordinate coordinates : ephemerisSBLS.getCoordinates()) {
-            AbsoluteDate date = coordinates.getDate();
-            final PVCoordinates pvInertial = frameBLS.getTransformTo(initialGuess.getFrame(), date).transformPVCoordinates(coordinates);
-            estimatorBLS.addMeasurement(new Position(date, pvInertial.getPosition(), 1, 1, satellite));
+        independentMeasurements = new ArrayList<>();
+        for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES_SEQUENTIAL, ',')) {
+
+            // set up filtering for measurements files
+            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(inputModel.getParentFile(), fileName)));
+            for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                         new UnixCompressFilter(),
+                                                         new HatanakaCompressFilter())) {
+                nd = filter.filter(nd);
+            }
+
+            if (fileName.contains(CPF_MANDATORY_KEY)) {
+                // Position measurements in a CPF file
+                independentMeasurements.addAll(readCpf(nd, satellite, initialGuess));
+            }
+
+        }
+
+        // add measurements to the estimator
+        multiplexed = multiplexMeasurements(independentMeasurements, 1.0e-9);
+        for (ObservedMeasurement<?> measurement : multiplexed) {
+            estimator.addMeasurement(measurement);
         }
 
         if (print) {
             final String headerSBLS = "\nSequentiel Batch Least Square Estimator :\n"
                             + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
             
-            estimatorBLS.setObserver(new BatchLeastSquaresObserver(initialGuess, estimatorBLS, headerSBLS, print));
+            estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerSBLS, print));
         }
         
-        final Orbit estimatedSequentialBLS = estimatorBLS.estimate()[0].getInitialState().getOrbit();
+        final Orbit estimatedSequentialBLS = estimator.estimate()[0].getInitialState().getOrbit();
         
         // compute some statistics
-        for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimatorBLS.getLastEstimations().entrySet()) {
+        for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
             logEvaluation(entry.getValue(),
                           rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
         }
 
-        final ParameterDriversList propagatorParameters   = estimatorBLS.getPropagatorParametersDrivers(true);
-        final ParameterDriversList measurementsParameters = estimatorBLS.getMeasurementsParametersDrivers(true);
+        final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
+        final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
         
         return new ResultSequentialBatchLeastSquares(propagatorParameters, measurementsParameters,
                                            iterationCount, evalutionCount, estimatedBLS.getPVCoordinates(),
                                            positionLog.createStatisticsSummary(),
                                            covariance, 
-                                           estimatorBLS.getIterationsCount(), estimatorBLS.getEvaluationsCount(),
+                                           estimator.getIterationsCount(), estimator.getEvaluationsCount(),
                                            estimatedSequentialBLS.getPVCoordinates(), positionLog.createStatisticsSummary(),
-                                           estimatorBLS.getPhysicalCovariances(1.0e-10));
+                                           estimator.getPhysicalCovariances(1.0e-10));
 
     }
 
@@ -2196,29 +2232,34 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
     /**
      * Read a position CPF file
-     * @param parser key/value parser
-     * @param input input data
-     * @param fileIndex index of the file to use (0 for BLS, 1 for Sequential-BLS)
-     * @return the ephemeris contained in the file
+     * @param source data source containing measurements
+     * @param satellite observable satellite
+     * @param initialGuess initial guess (used for the frame)
+     * @return list of observable measurements
      * @throws IOException if file cannot be read
      */
-     private CPFEphemeris readCpf(final KeyValueFileParser<ParameterKey> parser,
-                                  final File input,
-                                  final int fileIndex) throws IOException {
-         final String fileName = parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',').get(fileIndex);
+     private List<ObservedMeasurement<?>> readCpf(final DataSource source,
+                                                  final ObservableSatellite satellite,
+                                                  final Orbit initialGuess) throws IOException {
 
-         // set up filtering for measurements files
-         DataSource nd = new DataSource(fileName,
-                                      () -> new FileInputStream(new File(input.getParentFile(), fileName)));
-         for (final DataFilter filter : Arrays.asList(new GzipFilter(),
-                                                      new UnixCompressFilter(),
-                                                      new HatanakaCompressFilter())) {
-             nd = filter.filter(nd);
+         // Initialize parser and read file
+         final CPFParser parserCpf = new CPFParser();
+         final CPFFile file = (CPFFile) parserCpf.parse(source);
+
+         // Satellite ephemeris
+         final CPFEphemeris ephemeris = file.getSatellites().get(file.getHeader().getIlrsSatelliteId());
+         final Frame        ephFrame  = ephemeris.getFrame();
+
+         // Measurements
+         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
+         for (final CPFCoordinate coordinates : ephemeris.getCoordinates()) {
+             AbsoluteDate date = coordinates.getDate();
+             final PVCoordinates pvInertial = ephFrame.getTransformTo(initialGuess.getFrame(), date).transformPVCoordinates(coordinates);
+             measurements.add(new Position(date, pvInertial.getPosition(), 1, 1, satellite));
          }
 
-         final CPFParser parserCpf = new CPFParser();
-         final CPFFile file = (CPFFile) parserCpf.parse(nd);
-         return file.getSatellites().get(file.getHeader().getIlrsSatelliteId());
+         // Return
+         return measurements;
     }
 
     /** Read a Consolidated Ranging Data measurements file.

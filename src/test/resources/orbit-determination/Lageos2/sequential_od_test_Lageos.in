@@ -139,4 +139,5 @@ estimator.max.iterations                                = 30
 estimator.max.evaluations                               = 35
 
 # comma-separated list of measurements files (in the same directory as this file)
-measurements.files = least_squares_lageos2_cpf_160213_5441.sgf, sequential_least_squares_lageos2_cpf_160213_5441.sgf
+measurements.files = lageos2LS_cpf_160213_5441.sgf
+measurements.files.sequential = lageos2SeqLS_cpf_160213_5441.sgf
