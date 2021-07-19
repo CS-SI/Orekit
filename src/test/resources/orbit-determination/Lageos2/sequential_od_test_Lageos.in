@@ -28,12 +28,12 @@ orbit.date = 2016-02-13T11:10:00.000
 
 
 ## Position & velocity along X, y, z in ITRF frame (m) 
-orbit.cartesian.px =  -4978280.0
-orbit.cartesian.py = -6901330.0
-orbit.cartesian.pz = 8669900.0
-orbit.cartesian.vx = 4686.0
-orbit.cartesian.vy = -927.0
-orbit.cartesian.vz = 2061.0
+orbit.cartesian.px =  -8470598.0
+orbit.cartesian.py = -656365.0
+orbit.cartesian.pz = 8683142.0
+orbit.cartesian.vx = 2370.0
+orbit.cartesian.vy = -4795.0
+orbit.cartesian.vz = 2057.0
 
 ## Spacecraft mass (kg) [1000.]
 mass = 405.380

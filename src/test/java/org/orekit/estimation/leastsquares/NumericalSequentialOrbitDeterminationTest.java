@@ -33,7 +33,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.common.AbstractSequentialOrbitDetermination;
+import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
 import org.orekit.estimation.common.ResultSequentialBatchLeastSquares;
 import org.orekit.forces.ForceModel;
@@ -62,7 +62,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
-public class NumericalSequentialOrbitDeterminationTest extends AbstractSequentialOrbitDetermination<NumericalPropagatorBuilder> {
+public class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
