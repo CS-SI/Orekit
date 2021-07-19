@@ -33,9 +33,9 @@ import org.orekit.propagation.conversion.PropagatorBuilder;
  * of the estimation and the new measurements.
  * <p>
  * In order to perform a sequential optimization, the user must configure a
- * {@link SequentialGaussNewtonOptimizer}. Depending if its input data are
- * an empty {@link Evaluation}, a complete <code>Evaluation</code> or an a priori
- * state and covariance, different configuration are possible.
+ * {@link org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer SequentialGaussNewtonOptimizer}.
+ * Depending if its input data are an empty {@link Evaluation}, a complete <code>Evaluation</code>
+ * or an a priori state and covariance, different configuration are possible.
  * <p>
  * <b>1. No input data from a previous estimation</b>
  * <p>
@@ -48,10 +48,10 @@ import org.orekit.propagation.conversion.PropagatorBuilder;
  * By default, a {@link QRDecomposer} is used as decomposition algorithm. In addition, normal
  * equations are not form. It is possible to update these two default configurations by using:
  * <ul>
- *   <li>{@link SequentialGaussNewtonOptimizer#withDecomposer(MatrixDecomposer) withDecomposer} method:
+ *   <li>{@link org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer#withDecomposer(MatrixDecomposer) withDecomposer} method:
  *       <code>optimizer.withDecomposer(newDecomposer);</code>
  *   </li>
- *   <li>{@link SequentialGaussNewtonOptimizer#withFormNormalEquations(boolean) withFormNormalEquations} method:
+ *   <li>{@link org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer#withFormNormalEquations(boolean) withFormNormalEquations} method:
  *       <code>optimizer.withFormNormalEquations(newFormNormalEquations);</code>
  *   </li>
  * </ul>
@@ -84,7 +84,7 @@ import org.orekit.propagation.conversion.PropagatorBuilder;
  * The MatrixDecomposer and the flag about normal equations can again be updated using the two previous
  * presented methods. The a priori state and covariance matrix can be set using:
  * <ul>
- *   <li>{@link SequentialGaussNewtonOptimizer#withAPrioriData(org.hipparchus.linear.RealVector, org.hipparchus.linear.RealMatrix) withAPrioriData} method:
+ *   <li>{@link org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer#withAPrioriData(org.hipparchus.linear.RealVector, org.hipparchus.linear.RealMatrix) withAPrioriData} method:
  *       <code>optimizer.withAPrioriData(aPrioriState, aPrioriCovariance);</code>
  *   </li>
  * </ul>
@@ -111,7 +111,8 @@ public class SequentialBatchLSEstimator extends BatchLSEstimator {
      * </p>
      * <p>
      * The solver used for sequential least squares problem is a
-     * {@link SequentialGaussNewtonOptimizer sequential Gauss Newton optimizer}.
+     * {@link org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer
+     * sequential Gauss Newton optimizer}.
      * Details about how initialize it are given in the class JavaDoc.
      * </p>
      *
