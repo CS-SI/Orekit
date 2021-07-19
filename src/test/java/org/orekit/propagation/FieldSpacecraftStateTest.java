@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -151,7 +151,7 @@ public class FieldSpacecraftStateTest {
         doTestIssue775(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
         T zero = field.getZero();
 
         double mu = 3.9860047e14;
@@ -216,7 +216,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>>  void doTestShiftVsEcksteinHechlerError(final Field<T> field)
+    private <T extends CalculusFieldElement<T>>  void doTestShiftVsEcksteinHechlerError(final Field<T> field)
         {
 
         T zero = field.getZero();
@@ -308,7 +308,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestDatesConsistency(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDatesConsistency(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -336,7 +336,7 @@ public class FieldSpacecraftStateTest {
      * Check orbit and attitude dates can be off by a few ulps. I see this when using
      * FixedRate attitude provider.
      */
-    private <T extends RealFieldElement<T>> void doTestDateConsistencyClose(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDateConsistencyClose(final Field<T> field) {
 
 
         //setup
@@ -377,7 +377,7 @@ public class FieldSpacecraftStateTest {
     }
 
     // (expected=IllegalArgumentException.class)
-    private <T extends RealFieldElement<T>> void doTestFramesConsistency(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFramesConsistency(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -402,7 +402,7 @@ public class FieldSpacecraftStateTest {
                                                 field));
     }
 
-    private <T extends RealFieldElement<T>> void doTestTransform(final Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestTransform(final Field<T> field)
         {
 
         T zero = field.getZero();
@@ -446,7 +446,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalStates(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalStates(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -536,14 +536,14 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field)
         throws ParseException, OrekitException {
         checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, field);
         checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0, field);
         checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0, field);
     }
 
-    private <T extends RealFieldElement<T>> void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
+    private <T extends CalculusFieldElement<T>> void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
                                          double expectedErrorA, double expectedErrorM, double expectedErrorQ, Field<T> field)
         {
 
@@ -608,7 +608,7 @@ public class FieldSpacecraftStateTest {
         Assert.assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldVsRealAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldVsRealAbsPV(final Field<T> field) {
         T zero = field.getZero();
 
         T x_f     = zero.add(0.8);
@@ -671,7 +671,7 @@ public class FieldSpacecraftStateTest {
      * Check orbit and attitude dates can be off by a few ulps. I see this when using
      * FixedRate attitude provider.
      */
-    private <T extends RealFieldElement<T>> void doTestDateConsistencyCloseAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDateConsistencyCloseAbsPV(final Field<T> field) {
 
 
         //setup
@@ -713,7 +713,7 @@ public class FieldSpacecraftStateTest {
 
 
     // (expected=IllegalArgumentException.class)
-    private <T extends RealFieldElement<T>> void doTestFramesConsistencyAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFramesConsistencyAbsPV(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -741,7 +741,7 @@ public class FieldSpacecraftStateTest {
                                         FieldVector3D.getZero(field)));
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalStatesAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalStatesAbsPV(final Field<T> field) {
 
         T zero = field.getZero();
         T x_f     = zero.add(0.8);
@@ -831,7 +831,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalTestResetOnEventAnalytical(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalTestResetOnEventAnalytical(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -869,7 +869,7 @@ public class FieldSpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(zero.add(0.125), (s, isFinal) -> {
+        propagator.setStepHandler(zero.add(0.125), s -> {
             if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {
@@ -881,7 +881,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalTestResetOnEventNumerical(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalTestResetOnEventNumerical(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -920,7 +920,7 @@ public class FieldSpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(zero.add(0.125), (s, isFinal) -> {
+        propagator.setStepHandler(zero.add(0.125), s -> {
             if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {
@@ -932,7 +932,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue775(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue775(final Field<T> field) {
         final T zero = field.getZero();
         // Conversion from double to Field
          FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new AbsoluteDate(new DateComponents(2004, 01, 01), TimeComponents.H00, TimeScalesFactory.getUTC()));

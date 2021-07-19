@@ -61,8 +61,8 @@ public class SpacecraftParameters extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNaN(i11, SpacecraftParametersKey.I11);
         checkNotNaN(i22, SpacecraftParametersKey.I22);
         checkNotNaN(i33, SpacecraftParametersKey.I33);

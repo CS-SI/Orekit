@@ -154,7 +154,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
 
         // set up step handler to perform checks
-        calc.setMasterMode(FastMath.floor(period), new ReferenceChecker(date) {
+        calc.setStepHandler(FastMath.floor(period), new ReferenceChecker(date) {
             protected double hXRef(double t) {
                 return -1.06757e-3 + 0.221415e-11 * t + 18.9421e-5 *
                 FastMath.cos(3.9820426e-7*t) - 7.59983e-5 * FastMath.sin(3.9820426e-7*t);
@@ -187,7 +187,6 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         DerivativeStructure mu  = factory.constant(Constants.EIGEN5C_EARTH_MU);
 
         Field<DerivativeStructure> field = a_0.getField();
-        DerivativeStructure zero = field.getZero();
 
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
@@ -208,7 +207,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -249,7 +248,6 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         Gradient mu  = Gradient.constant(freeParameters, Constants.EIGEN5C_EARTH_MU);
 
         Field<Gradient> field = a_0.getField();
-        Gradient zero = field.getZero();
 
         FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
 
@@ -270,7 +268,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -330,7 +328,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -378,7 +376,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
         // set up step handler to perform checks
-        calc.setMasterMode(FastMath.floor(period), new ReferenceChecker(date) {
+        calc.setStepHandler(FastMath.floor(period), new ReferenceChecker(date) {
             protected double hXRef(double t) {
                 return  -0.000906173 + 1.93933e-11 * t +
                          1.0856e-06  * FastMath.cos(5.30637e-05 * t) -
@@ -404,7 +402,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
             this.reference = reference;
         }
 
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             double t = currentState.getDate().durationFrom(reference);
             Assert.assertEquals(hXRef(t), currentState.getHx(), 1e-4);
             Assert.assertEquals(hYRef(t), currentState.getHy(), 1e-4);

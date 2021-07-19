@@ -28,7 +28,6 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -41,7 +40,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Luc Maisonobe
  * @since 11.0
  */
-class XmlLexicalAnalyzer implements LexicalAnalyzer {
+public class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
     /** Source providing the data to analyze. */
     private final DataSource source;
@@ -49,13 +48,13 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
     /** Simple constructor.
      * @param source source providing the data to parse
      */
-    XmlLexicalAnalyzer(final DataSource source) {
+    public XmlLexicalAnalyzer(final DataSource source) {
         this.source = source;
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends NdmFile<?, ?>> T accept(final MessageParser<T> messageParser) {
+    public <T> T accept(final MessageParser<T> messageParser) {
         try {
             // Create the handler
             final DefaultHandler handler = new XMLHandler(messageParser);
@@ -68,24 +67,17 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
             // Read the xml file
             messageParser.reset(FileFormat.XML);
-            final InputStream is = source.getStreamOpener().openOnce();
-            if (is == null) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+            try (InputStream is = source.getStreamOpener().openOnce()) {
+                if (is == null) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+                }
+                saxParser.parse(is, handler);
             }
-            saxParser.parse(is, handler);
 
             // Get the content of the file
             return messageParser.build();
 
-        } catch (SAXException se) {
-            final OrekitException oe;
-            if (se.getException() != null && se.getException() instanceof OrekitException) {
-                oe = (OrekitException) se.getException();
-            } else {
-                oe = new OrekitException(se, new DummyLocalizable(se.getMessage()));
-            }
-            throw oe;
-        } catch (ParserConfigurationException | IOException e) {
+        } catch (SAXException | ParserConfigurationException | IOException e) {
             // throw caught exception as an OrekitException
             throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
         }
@@ -174,9 +166,11 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
             currentLineNumber  = locator.getLineNumber();
             currentContent     = null;
 
-            messageParser.process(getBuilder(qName).
-                                  buildToken(true, qName, currentContent, currentAttributes,
-                                             currentLineNumber, source.getName()));
+            for (final ParseToken token : getBuilder(qName).
+                                          buildTokens(true, qName, currentContent, currentAttributes,
+                                          currentLineNumber, source.getName())) {
+                messageParser.process(token);
+            }
 
         }
 
@@ -188,9 +182,12 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
                 // for an end tag without content, we keep the line number of the end tag itself
                 currentLineNumber = locator.getLineNumber();
             }
-            messageParser.process(getBuilder(qName).
-                                  buildToken(false, qName, currentContent, currentAttributes,
-                                             currentLineNumber, source.getName()));
+
+            for (final ParseToken token : getBuilder(qName).
+                                          buildTokens(false, qName, currentContent, currentAttributes,
+                                                      currentLineNumber, source.getName())) {
+                messageParser.process(token);
+            }
 
             currentElementName = null;
             currentLineNumber  = -1;

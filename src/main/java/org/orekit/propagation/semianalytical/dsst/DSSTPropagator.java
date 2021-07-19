@@ -80,9 +80,9 @@ import org.orekit.utils.ParameterObserver;
  * <li>the discrete events that should be triggered during propagation (
  * {@link #addEventDetector(org.orekit.propagation.events.EventDetector)},
  * {@link #clearEventsDetectors()})</li>
- * <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- * {@link #setMasterMode(double, org.orekit.propagation.sampling.OrekitFixedStepHandler)},
- * {@link #setMasterMode(org.orekit.propagation.sampling.OrekitStepHandler)},
+ * <li>the binding logic with the rest of the application ({@link #clearStepHandlers()},
+ * {@link #addStepHandler(double, org.orekit.propagation.sampling.OrekitFixedStepHandler)},
+ * {@link #addStepHandler(org.orekit.propagation.sampling.OrekitStepHandler)},
  * {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
  * <p>
@@ -1081,7 +1081,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
+        public void handleStep(final ODEStateInterpolator interpolator) {
 
             // Get the grid points to compute
             final double[] interpolationPoints =

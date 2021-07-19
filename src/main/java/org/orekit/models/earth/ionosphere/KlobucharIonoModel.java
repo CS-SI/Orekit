@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -230,7 +230,7 @@ public class KlobucharIonoModel implements IonosphericModel {
      * @param parameters ionospheric model parameters
      * @return the path delay due to the ionosphere in m
      */
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final FieldGeodeticPoint<T> geo,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final FieldGeodeticPoint<T> geo,
                                                        final T elevation, final T azimuth, final double frequency,
                                                        final T[] parameters) {
 
@@ -298,7 +298,7 @@ public class KlobucharIonoModel implements IonosphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
 
         // Elevation and azimuth in radians

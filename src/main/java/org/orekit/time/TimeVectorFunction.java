@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** This interface represents a multi-valued function of time.
  * @author Luc Maisonobe
@@ -34,6 +34,6 @@ public interface TimeVectorFunction {
      * @param <T> type of the field elements
      * @return value of the function
      */
-    <T extends RealFieldElement<T>> T[] value(FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> T[] value(FieldAbsoluteDate<T> date);
 
 }

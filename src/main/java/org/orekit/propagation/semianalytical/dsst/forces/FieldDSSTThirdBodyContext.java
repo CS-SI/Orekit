@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
@@ -36,7 +36,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
+public class FieldDSSTThirdBodyContext<T extends CalculusFieldElement <T>> extends FieldForceModelContext<T> {
 
     /** Max power for summation. */
     private static final int    MAX_POWER = 22;

@@ -176,7 +176,7 @@ public class OcmMetadata extends OdmMetadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
+    public void validate(final double version) {
         // we don't call super.checkMandatoryEntries() because
         // all of the parameters considered mandatory at ODM level
         // for OPM, OMM and OEM are in fact optional in OCM
@@ -634,15 +634,15 @@ public class OcmMetadata extends OdmMetadata {
         this.ocmDataElements = ocmDataElements;
     }
 
-    /** Get the spacecraft clock count at {@link #EPOCH_TZERO}.
-     * @return spacecraft clock count at {@link #EPOCH_TZERO}
+    /** Get the spacecraft clock count at {@link #getEpochT0()}.
+     * @return spacecraft clock count at {@link #getEpochT0()}
      */
     public double getSclkOffsetAtEpoch() {
         return sclkOffsetAtEpoch;
     }
 
-    /** Set the spacecraft clock count at {@link #EPOCH_TZERO}.
-     * @param sclkOffsetAtEpoch spacecraft clock count at {@link #EPOCH_TZERO}
+    /** Set the spacecraft clock count at {@link #getEpochT0()}.
+     * @param sclkOffsetAtEpoch spacecraft clock count at {@link #getEpochT0()}
      */
     public void setSclkOffsetAtEpoch(final double sclkOffsetAtEpoch) {
         refuseFurtherComments();

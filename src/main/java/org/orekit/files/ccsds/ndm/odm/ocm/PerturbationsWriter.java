@@ -58,7 +58,7 @@ class PerturbationsWriter extends AbstractWriter {
         generator.writeComments(perturbations.getComments());
 
         // atmosphere
-        generator.writeEntry(PerturbationsKey.ATMOSPHERIC_MODEL.name(), perturbations.getAtmosphericModel(), false);
+        generator.writeEntry(PerturbationsKey.ATMOSPHERIC_MODEL.name(), perturbations.getAtmosphericModel(), null, false);
 
         // gravity
         if (perturbations.getGravityModel() != null) {
@@ -71,7 +71,7 @@ class PerturbationsWriter extends AbstractWriter {
                             append(perturbations.getGravityOrder()).
                             append('O').
                             toString();
-            generator.writeEntry(PerturbationsKey.GRAVITY_MODEL.name(), model, false);
+            generator.writeEntry(PerturbationsKey.GRAVITY_MODEL.name(), model, null, false);
         }
         generator.writeEntry(PerturbationsKey.EQUATORIAL_RADIUS.name(),    perturbations.getEquatorialRadius(), Unit.KILOMETRE, false);
         generator.writeEntry(PerturbationsKey.GM.name(),                   perturbations.getGm(), Units.KM3_PER_S2,             false);
@@ -82,16 +82,16 @@ class PerturbationsWriter extends AbstractWriter {
             }
             generator.writeEntry(PerturbationsKey.N_BODY_PERTURBATIONS.name(), names, false);
         }
-        generator.writeEntry(PerturbationsKey.CENTRAL_BODY_ROTATION.name(), perturbations.getCentralBodyRotation(), Units.DEG_PER_S, false);
-        generator.writeEntry(PerturbationsKey.OBLATE_FLATTENING.name(),     perturbations.getOblateFlattening(), Unit.ONE,           false);
-        generator.writeEntry(PerturbationsKey.OCEAN_TIDES_MODEL.name(),     perturbations.getOceanTidesModel(),                      false);
-        generator.writeEntry(PerturbationsKey.SOLID_TIDES_MODEL.name(),     perturbations.getSolidTidesModel(),                      false);
-        generator.writeEntry(PerturbationsKey.REDUCTION_THEORY.name(),      perturbations.getReductionTheory(),                      false);
+        generator.writeEntry(PerturbationsKey.CENTRAL_BODY_ROTATION.name(), perturbations.getCentralBodyRotation(), Units.DEG_PER_S,       false);
+        generator.writeEntry(PerturbationsKey.OBLATE_FLATTENING.name(),     perturbations.getOblateFlattening(), Unit.ONE,                 false);
+        generator.writeEntry(PerturbationsKey.OCEAN_TIDES_MODEL.name(),     perturbations.getOceanTidesModel(),                      null, false);
+        generator.writeEntry(PerturbationsKey.SOLID_TIDES_MODEL.name(),     perturbations.getSolidTidesModel(),                      null, false);
+        generator.writeEntry(PerturbationsKey.REDUCTION_THEORY.name(),      perturbations.getReductionTheory(),                      null, false);
 
         // radiation
-        generator.writeEntry(PerturbationsKey.ALBEDO_MODEL.name(),      perturbations.getAlbedoModel(),    false);
-        generator.writeEntry(PerturbationsKey.ALBEDO_GRID_SIZE.name(),  perturbations.getAlbedoGridSize(), false);
-        generator.writeEntry(PerturbationsKey.SHADOW_MODEL.name(),      perturbations.getShadowModel(),    false);
+        generator.writeEntry(PerturbationsKey.ALBEDO_MODEL.name(),      perturbations.getAlbedoModel(),    null, false);
+        generator.writeEntry(PerturbationsKey.ALBEDO_GRID_SIZE.name(),  perturbations.getAlbedoGridSize(),       false);
+        generator.writeEntry(PerturbationsKey.SHADOW_MODEL.name(),      perturbations.getShadowModel(),          false);
         if (perturbations.getShadowBodies() != null && !perturbations.getShadowBodies().isEmpty()) {
             final List<String> names = new ArrayList<>();
             for (BodyFacade bf : perturbations.getShadowBodies()) {
@@ -99,23 +99,23 @@ class PerturbationsWriter extends AbstractWriter {
             }
             generator.writeEntry(PerturbationsKey.SHADOW_BODIES.name(), names, false);
         }
-        generator.writeEntry(PerturbationsKey.SRP_MODEL.name(),          perturbations.getSrpModel(), false);
+        generator.writeEntry(PerturbationsKey.SRP_MODEL.name(),          perturbations.getSrpModel(), null, false);
 
         // data source
-        generator.writeEntry(PerturbationsKey.SW_DATA_SOURCE.name(),    perturbations.getSpaceWeatherSource(),                    false);
-        generator.writeEntry(PerturbationsKey.SW_DATA_EPOCH.name(),     timeConverter, perturbations.getSpaceWeatherEpoch(),      false);
-        generator.writeEntry(PerturbationsKey.SW_INTERP_METHOD.name(),  perturbations.getInterpMethodSW(),                        false);
-        generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_KP.name(),   perturbations.getFixedGeomagneticKp(), Units.NANO_TESLA,  false);
-        generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_AP.name(),   perturbations.getFixedGeomagneticAp(), Units.NANO_TESLA,  false);
-        generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_DST.name(),  perturbations.getFixedGeomagneticDst(), Units.NANO_TESLA, false);
-        generator.writeEntry(PerturbationsKey.FIXED_F10P7.name(),       perturbations.getFixedF10P7(), Unit.SOLAR_FLUX_UNIT,      false);
-        generator.writeEntry(PerturbationsKey.FIXED_F10P7_MEAN.name(),  perturbations.getFixedF10P7Mean(), Unit.SOLAR_FLUX_UNIT,  false);
-        generator.writeEntry(PerturbationsKey.FIXED_M10P7.name(),       perturbations.getFixedM10P7(), Unit.SOLAR_FLUX_UNIT,      false);
-        generator.writeEntry(PerturbationsKey.FIXED_M10P7_MEAN.name(),  perturbations.getFixedM10P7Mean(), Unit.SOLAR_FLUX_UNIT,  false);
-        generator.writeEntry(PerturbationsKey.FIXED_S10P7.name(),       perturbations.getFixedS10P7(), Unit.SOLAR_FLUX_UNIT,      false);
-        generator.writeEntry(PerturbationsKey.FIXED_S10P7_MEAN.name(),  perturbations.getFixedS10P7Mean(), Unit.SOLAR_FLUX_UNIT,  false);
-        generator.writeEntry(PerturbationsKey.FIXED_Y10P7.name(),       perturbations.getFixedY10P7(), Unit.SOLAR_FLUX_UNIT,      false);
-        generator.writeEntry(PerturbationsKey.FIXED_Y10P7_MEAN.name(),  perturbations.getFixedY10P7Mean(), Unit.SOLAR_FLUX_UNIT,  false);
+        generator.writeEntry(PerturbationsKey.SW_DATA_SOURCE.name(),    perturbations.getSpaceWeatherSource(),                    null, false);
+        generator.writeEntry(PerturbationsKey.SW_DATA_EPOCH.name(),     timeConverter, perturbations.getSpaceWeatherEpoch(),            false);
+        generator.writeEntry(PerturbationsKey.SW_INTERP_METHOD.name(),  perturbations.getInterpMethodSW(),                        null, false);
+        generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_KP.name(),   perturbations.getFixedGeomagneticKp(), Units.NANO_TESLA,        false);
+        generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_AP.name(),   perturbations.getFixedGeomagneticAp(), Units.NANO_TESLA,        false);
+        generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_DST.name(),  perturbations.getFixedGeomagneticDst(), Units.NANO_TESLA,       false);
+        generator.writeEntry(PerturbationsKey.FIXED_F10P7.name(),       perturbations.getFixedF10P7(), Unit.SOLAR_FLUX_UNIT,            false);
+        generator.writeEntry(PerturbationsKey.FIXED_F10P7_MEAN.name(),  perturbations.getFixedF10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
+        generator.writeEntry(PerturbationsKey.FIXED_M10P7.name(),       perturbations.getFixedM10P7(), Unit.SOLAR_FLUX_UNIT,            false);
+        generator.writeEntry(PerturbationsKey.FIXED_M10P7_MEAN.name(),  perturbations.getFixedM10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
+        generator.writeEntry(PerturbationsKey.FIXED_S10P7.name(),       perturbations.getFixedS10P7(), Unit.SOLAR_FLUX_UNIT,            false);
+        generator.writeEntry(PerturbationsKey.FIXED_S10P7_MEAN.name(),  perturbations.getFixedS10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
+        generator.writeEntry(PerturbationsKey.FIXED_Y10P7.name(),       perturbations.getFixedY10P7(), Unit.SOLAR_FLUX_UNIT,            false);
+        generator.writeEntry(PerturbationsKey.FIXED_Y10P7_MEAN.name(),  perturbations.getFixedY10P7Mean(), Unit.SOLAR_FLUX_UNIT,        false);
 
     }
 

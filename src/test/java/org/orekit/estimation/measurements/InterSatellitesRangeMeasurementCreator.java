@@ -73,7 +73,7 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState) {
         try {
             final double           remoteClk = remote.getClockOffsetDriver().getValue();
             final double           localClk  = local.getClockOffsetDriver().getValue();

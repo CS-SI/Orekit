@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 
 /** Interface summing up the contribution of several forces into orbit and mass derivatives.
@@ -35,7 +35,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface FieldTimeDerivativesEquations<T extends RealFieldElement<T>> {
+public interface FieldTimeDerivativesEquations<T extends CalculusFieldElement<T>> {
 
     /** Add the contribution of the Kepler evolution.
      * <p>Since the Kepler evolution is the most important, it should

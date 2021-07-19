@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -142,8 +142,8 @@ public class AttitudesSequenceTest {
         // Register the switching events to the propagator
         attitudesSequence.registerSwitchEvents(propagator);
 
-        propagator.setMasterMode(60.0, new OrekitFixedStepHandler() {
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
+        propagator.setStepHandler(60.0, new OrekitFixedStepHandler() {
+            public void handleStep(SpacecraftState currentState) {
                 // the Earth position in spacecraft frame should be along spacecraft Z axis
                 // during night time and away from it during day time due to roll and pitch offsets
                 final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
@@ -188,7 +188,7 @@ public class AttitudesSequenceTest {
         doTestDayNightSwitchField(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)
         {
 
         //  Initial state definition : date, orbit
@@ -265,8 +265,8 @@ public class AttitudesSequenceTest {
         // Register the switching events to the propagator
         attitudesSequence.registerSwitchEvents(field, propagator);
 
-        propagator.setMasterMode(field.getZero().add(60.0), new FieldOrekitFixedStepHandler<T>() {
-            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
+        propagator.setStepHandler(field.getZero().add(60.0), new FieldOrekitFixedStepHandler<T>() {
+            public void handleStep(FieldSpacecraftState<T> currentState) {
                 // the Earth position in spacecraft frame should be along spacecraft Z axis
                 // during night time and away from it during day time due to roll and pitch offsets
                 final FieldVector3D<T> earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
@@ -416,7 +416,7 @@ public class AttitudesSequenceTest {
                                                                                  initialOrbit.getFrame())));
         propagator.setAttitudeProvider(attitudesSequence);
         attitudesSequence.registerSwitchEvents(propagator);
-        propagator.setMasterMode(10, (state, isLast) -> {
+        propagator.setStepHandler(10, state -> {
 
             Attitude nadirAttitude  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame());
             Attitude targetAttitude = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame());

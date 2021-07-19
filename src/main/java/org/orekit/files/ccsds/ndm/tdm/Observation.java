@@ -44,7 +44,7 @@ import org.orekit.time.AbsoluteDate;
 public class Observation {
 
     /** Type of the observation. */
-    private final Observationtype type;
+    private final ObservationType type;
 
     /** Epoch: the timetag of the observation. */
     private final AbsoluteDate epoch;
@@ -57,7 +57,7 @@ public class Observation {
      * @param epoch the timetag
      * @param measurement the measurement (in SI units, converted from TDM)
      */
-    public Observation(final Observationtype type, final AbsoluteDate epoch, final double measurement) {
+    public Observation(final ObservationType type, final AbsoluteDate epoch, final double measurement) {
         this.type        = type;
         this.epoch       = epoch;
         this.measurement = measurement;
@@ -66,7 +66,7 @@ public class Observation {
     /** Get the type of observation.
      * @return type of observation
      */
-    public Observationtype getType() {
+    public ObservationType getType() {
         return type;
     }
 

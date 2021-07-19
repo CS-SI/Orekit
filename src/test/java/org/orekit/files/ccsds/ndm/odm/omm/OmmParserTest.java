@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -161,7 +162,7 @@ public class OmmParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        final Generator generator = new KvnGenerator(caw, OmmWriter.KVN_PADDING_WIDTH, "dummy");
+        final Generator generator = new KvnGenerator(caw, OmmWriter.KVN_PADDING_WIDTH, "dummy", 60);
         new WriterBuilder().buildOmmWriter().writeMessage(generator, original);
 
         // reparse the written file
@@ -269,13 +270,13 @@ public class OmmParserTest {
         Assert.assertEquals(userDefinedParameters, ud.getParameters());
         Assert.assertEquals(Arrays.asList("this is a comment", "here is another one"),
                             file.getHeader().getComments());
-        Assert.assertEquals(Arrays.asList("this comment doesn't say much"),
+        Assert.assertEquals(Collections.singletonList("this comment doesn't say much"),
                             file.getMetadata().getComments());
-        Assert.assertEquals(Arrays.asList("the following data is what we're looking for"),
+        Assert.assertEquals(Collections.singletonList("the following data is what we're looking for"),
                             file.getData().getKeplerianElementsBlock().getComments());
-        Assert.assertEquals(Arrays.asList("spacecraft data"),
+        Assert.assertEquals(Collections.singletonList("spacecraft data"),
                             file.getData().getSpacecraftParametersBlock().getComments());
-        Assert.assertEquals(Arrays.asList("Covariance matrix"),
+        Assert.assertEquals(Collections.singletonList("Covariance matrix"),
                             file.getData().getCovarianceBlock().getComments());
         Assert.assertEquals(1995, file.getMetadata().getLaunchYear());
         Assert.assertEquals(25, file.getMetadata().getLaunchNumber());

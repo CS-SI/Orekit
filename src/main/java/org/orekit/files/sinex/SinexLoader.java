@@ -69,7 +69,7 @@ public class SinexLoader {
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      * @param supportedNames regular expression for supported files names
-     * @see #SINEXLoader(String, DataProvidersManager, TimeScale)
+     * @see #SinexLoader(String, DataProvidersManager, TimeScale)
      */
     @DefaultDataContext
     public SinexLoader(final String supportedNames) {
@@ -95,7 +95,7 @@ public class SinexLoader {
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      * @param source source for the RINEX data
-     * @see #SINEXLoader(InputStream, String, TimeScale)
+     * @see #SinexLoader(String, DataProvidersManager, TimeScale)
      */
     @DefaultDataContext
     public SinexLoader(final DataSource source) {

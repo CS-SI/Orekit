@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
@@ -28,7 +28,7 @@ import org.orekit.time.FieldAbsoluteDate;
 /** This class maps between raw double elements and {@link FieldSpacecraftState} instances.
  * @author Luc Maisonobe
  */
-public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
+public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
 
     /** Reference date. */
     private final FieldAbsoluteDate<T> referenceDate;

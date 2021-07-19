@@ -19,7 +19,7 @@ package org.orekit.models.earth.ionosphere;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -81,7 +81,7 @@ public class EstimatedIonosphericModelTest {
         doTestFieldL1GPS(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldL1GPS(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldL1GPS(final Field<T> field) {
         // Zero
         final T zero = field.getZero();
         // Model
@@ -115,7 +115,7 @@ public class EstimatedIonosphericModelTest {
         doTestFieldDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
         final double elevation = 70.;
 
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
@@ -166,7 +166,7 @@ public class EstimatedIonosphericModelTest {
         doTestFieldZeroDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
         final T zero = field.getZero();
         // Frequency
         final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
@@ -203,7 +203,7 @@ public class EstimatedIonosphericModelTest {
         doTestEquality(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestEquality(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEquality(final Field<T> field) {
         final double elevation = 70.;
 
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();

@@ -19,7 +19,7 @@ package org.orekit.forces.maneuvers.trigger;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -172,7 +172,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         // not implemented, it depends on the input detectors
         throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED,
                 "EventBasedManeuverTriggers.getFieldEventsDetectors");
@@ -205,7 +205,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // Firing state does not depend on a parameter driver here
         return isFiring(date.toAbsoluteDate());
     }

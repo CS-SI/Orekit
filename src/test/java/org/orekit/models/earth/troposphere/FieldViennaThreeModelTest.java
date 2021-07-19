@@ -17,7 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -72,7 +72,7 @@ public class FieldViennaThreeModelTest {
         doTestMappingFactors(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
         
         final T zero = field.getZero();
 
@@ -125,7 +125,7 @@ public class FieldViennaThreeModelTest {
         doTestLowElevation(Decimal64Field.getInstance());        
     }
 
-    private <T extends RealFieldElement<T>> void doTestLowElevation(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestLowElevation(final Field<T> field) {
         
         final T zero = field.getZero();
 
@@ -178,7 +178,7 @@ public class FieldViennaThreeModelTest {
         doTestHightElevation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestHightElevation(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestHightElevation(final Field<T> field) {
 
         final T zero = field.getZero();
 
@@ -231,7 +231,7 @@ public class FieldViennaThreeModelTest {
         doTestDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDelay(final Field<T> field) {
         final T zero = field.getZero();
         final double elevation = 10d;
         final double height = 100d;
@@ -251,7 +251,7 @@ public class FieldViennaThreeModelTest {
         doTestFixedHeight(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final double[] a = { 0.00123462, 0.00047101};

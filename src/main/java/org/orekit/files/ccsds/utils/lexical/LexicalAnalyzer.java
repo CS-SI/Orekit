@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
-import org.orekit.files.ccsds.ndm.NdmFile;
-
 /** Interface for CCSDS messages lexical analysis.
  * <p>
  * Lexical analyzer implementations split raw streams
@@ -40,6 +38,6 @@ public interface LexicalAnalyzer {
      * @param <T> type of the file
      * @return parsed fileO
      */
-    <T extends NdmFile<?, ?>> T accept(MessageParser<T> messageParser);
+    <T> T accept(MessageParser<T> messageParser);
 
 }

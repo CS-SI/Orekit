@@ -171,9 +171,9 @@ public class SP3File
      * @param interpolationSamples number of samples to use in interpolation.
      * @param frameBuilder         for constructing a reference frame from the identifier
      */
-    SP3File(final double mu,
-            final int interpolationSamples,
-            final Function<? super String, ? extends Frame> frameBuilder) {
+    public SP3File(final double mu,
+                   final int interpolationSamples,
+                   final Function<? super String, ? extends Frame> frameBuilder) {
         this.mu = mu;
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder = frameBuilder;
@@ -186,7 +186,7 @@ public class SP3File
      *
      * @param filter that indicates which derivatives of position are available.
      */
-    void setFilter(final CartesianDerivativesFilter filter) {
+    public void setFilter(final CartesianDerivativesFilter filter) {
         this.filter = filter;
     }
 
@@ -200,7 +200,7 @@ public class SP3File
     /** Set the file type for this SP3 file.
      * @param fileType the file type to be set
      */
-    void setType(final SP3FileType fileType) {
+    public void setType(final SP3FileType fileType) {
         this.type = fileType;
     }
 
@@ -214,7 +214,7 @@ public class SP3File
     /** Set the time system used in this SP3 file.
      * @param system the time system to be set
      */
-    void setTimeSystem(final TimeSystem system) {
+    public void setTimeSystem(final TimeSystem system) {
         this.timeSystem = system;
     }
 
@@ -228,7 +228,7 @@ public class SP3File
     /** Set the data used indicator for this SP3 file.
      * @param data the data used indicator to be set
      */
-    void setDataUsed(final String data) {
+    public void setDataUsed(final String data) {
         this.dataUsed = data;
     }
 
@@ -242,7 +242,7 @@ public class SP3File
     /** Set the epoch of the SP3 file.
      * @param time the epoch to be set
      */
-    void setEpoch(final AbsoluteDate time) {
+    public void setEpoch(final AbsoluteDate time) {
         this.epoch = time;
     }
 
@@ -256,7 +256,7 @@ public class SP3File
     /** Set the GPS week of the SP3 file.
      * @param week the GPS week to be set
      */
-    void setGpsWeek(final int week) {
+    public void setGpsWeek(final int week) {
         this.gpsWeek = week;
     }
 
@@ -270,7 +270,7 @@ public class SP3File
     /** Set the seconds of the GPS week for this SP3 file.
      * @param seconds the seconds to be set
      */
-    void setSecondsOfWeek(final double seconds) {
+    public void setSecondsOfWeek(final double seconds) {
         this.secondsOfWeek = seconds;
     }
 
@@ -284,7 +284,7 @@ public class SP3File
     /** Set the julian day for this SP3 file.
      * @param day the julian day to be set
      */
-    void setJulianDay(final int day) {
+    public void setJulianDay(final int day) {
         this.julianDay = day;
     }
 
@@ -298,7 +298,7 @@ public class SP3File
     /** Set the day fraction for this SP3 file.
      * @param fraction the day fraction to be set
      */
-    void setDayFraction(final double fraction) {
+    public void setDayFraction(final double fraction) {
         this.dayFraction = fraction;
     }
 
@@ -312,7 +312,7 @@ public class SP3File
     /** Set the epoch interval for this SP3 file.
      * @param interval the interval between orbit entries
      */
-    void setEpochInterval(final double interval) {
+    public void setEpochInterval(final double interval) {
         this.epochInterval = interval;
     }
 
@@ -326,7 +326,7 @@ public class SP3File
     /** Set the number of epochs as contained in the SP3 file.
      * @param epochCount the number of epochs to be set
      */
-    void setNumberOfEpochs(final int epochCount) {
+    public void setNumberOfEpochs(final int epochCount) {
         this.numberOfEpochs = epochCount;
     }
 
@@ -340,7 +340,7 @@ public class SP3File
     /** Set the coordinate system used for the orbit entries.
      * @param system the coordinate system to be set
      */
-    void setCoordinateSystem(final String system) {
+    public void setCoordinateSystem(final String system) {
         this.coordinateSystem = system;
     }
 
@@ -363,7 +363,7 @@ public class SP3File
      * @param oTypeKey the orbit type key to be set
      * @since 9.3
      */
-    void setOrbitTypeKey(final String oTypeKey) {
+    public void setOrbitTypeKey(final String oTypeKey) {
         this.orbitTypeKey = oTypeKey;
         this.orbitType    = SP3OrbitType.parseType(oTypeKey);
     }
@@ -378,7 +378,7 @@ public class SP3File
     /** Set the agency string for this SP3 file.
      * @param agencyStr the agency string to be set
      */
-    void setAgency(final String agencyStr) {
+    public void setAgency(final String agencyStr) {
         this.agency = agencyStr;
     }
 
@@ -409,7 +409,7 @@ public class SP3File
      * @param index    is the index of the satellite.
      * @param accuracy of the satellite, in m.
      */
-    void setAccuracy(final int index, final double accuracy) {
+    public void setAccuracy(final int index, final double accuracy) {
         int n = index;
         for (final SP3Ephemeris ephemeris : satellites.values()) {
             if (n == 0) {
@@ -426,7 +426,7 @@ public class SP3File
      * @param index    is the index of the satellite.
      * @return accuracy of the satellite, in m.
      */
-    double getAccuracy(final int index) {
+    public double getAccuracy(final int index) {
         int n = index;
         for (final SP3Ephemeris ephemeris : satellites.values()) {
             if (n == 0) {
@@ -453,7 +453,7 @@ public class SP3File
      * @param satId the satellite identifier
      * @param coord the P/V coordinate of the satellite
      */
-    void addSatelliteCoordinate(final String satId, final SP3Coordinate coord) {
+    public void addSatelliteCoordinate(final String satId, final SP3Coordinate coord) {
         satellites.get(satId).coordinates.add(coord);
     }
 
@@ -474,7 +474,7 @@ public class SP3File
          *
          * @param id of the satellite.
          */
-        SP3Ephemeris(final String id) {
+        public SP3Ephemeris(final String id) {
             this.id = id;
             this.coordinates = new ArrayList<>();
         }
@@ -535,7 +535,7 @@ public class SP3File
          *
          * @param accuracy in m.
          */
-        void setAccuracy(final double accuracy) {
+        public void setAccuracy(final double accuracy) {
             this.accuracy = accuracy;
         }
 
@@ -570,9 +570,9 @@ public class SP3File
          * @param position of the satellite.
          * @param clock    correction in s.
          */
-        SP3Coordinate(final AbsoluteDate date,
-                      final Vector3D position,
-                      final double clock) {
+        public SP3Coordinate(final AbsoluteDate date,
+                             final Vector3D position,
+                             final double clock) {
             this(date, position, Vector3D.ZERO, clock, 0);
         }
 
@@ -585,11 +585,11 @@ public class SP3File
          * @param clock     correction in s.
          * @param clockRate in s / s.
          */
-        SP3Coordinate(final AbsoluteDate date,
-                      final Vector3D position,
-                      final Vector3D velocity,
-                      final double clock,
-                      final double clockRate) {
+        public SP3Coordinate(final AbsoluteDate date,
+                             final Vector3D position,
+                             final Vector3D velocity,
+                             final double clock,
+                             final double clockRate) {
             super(date, position, velocity, Vector3D.ZERO);
             this.clock = clock;
             this.clockRate = clockRate;

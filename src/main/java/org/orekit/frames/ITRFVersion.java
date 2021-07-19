@@ -19,7 +19,7 @@ package org.orekit.frames;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -271,7 +271,7 @@ public enum ITRFVersion {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return provider.getTransform(date);
         }
 

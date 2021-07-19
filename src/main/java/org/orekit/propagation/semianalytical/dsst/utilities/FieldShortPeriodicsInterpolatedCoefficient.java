@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import java.util.ArrayList;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.FieldAbsoluteDate;
@@ -36,7 +36,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Nicolas Bernard
  *
  */
-public class FieldShortPeriodicsInterpolatedCoefficient <T extends RealFieldElement<T>> {
+public class FieldShortPeriodicsInterpolatedCoefficient <T extends CalculusFieldElement<T>> {
 
     /**Values of the already computed coefficients.*/
     private ArrayList<T[]> values;

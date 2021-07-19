@@ -24,6 +24,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.section.Header;
@@ -95,11 +96,13 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
      * @param defaultInterpolationDegree default interpolation degree
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public AemParser(final IERSConventions conventions, final boolean simpleEOP,
-                     final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate, final int defaultInterpolationDegree) {
-        super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+                     final DataContext dataContext, final AbsoluteDate missionReferenceDate,
+                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+              missionReferenceDate, parsedUnitsBehavior);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -118,7 +121,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header   = new Header();
+        header   = new Header(2.0);
         segments = new ArrayList<>();
         metadata = null;
         context  = null;
@@ -127,28 +130,28 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -160,23 +163,24 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         }
         metadata  = new AemMetadata(defaultInterpolationDegree);
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, this::getMissionReferenceDate,
+                                       this::getDataContext, this::getParsedUnitsBehavior,
+                                       this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
-        setFallback(this::processMetadataToken);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean finalizeMetadata() {
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         return true;
     }
 
@@ -184,14 +188,14 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     @Override
     public boolean prepareData() {
         currentBlock = new AemData();
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inData() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -199,7 +203,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     @Override
     public boolean finalizeData() {
         if (metadata != null) {
-            currentBlock.checkMandatoryEntries();
+            currentBlock.validate(header.getFormatVersion());
             segments.add(new AemSegment(metadata, currentBlock));
         }
         metadata = null;
@@ -223,12 +227,21 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     boolean manageXmlAttitudeStateSection(final boolean starting) {
         if (starting) {
             currentEntry = new AttitudeEntry(metadata);
-            setFallback(this::processXmlDataToken);
+            anticipateNext(this::processXmlDataToken);
         } else {
             currentBlock.addData(currentEntry.getCoordinates());
             currentEntry = null;
-            setFallback(structureProcessor);
+            anticipateNext(structureProcessor);
         }
+        return true;
+    }
+
+    /** Add a comment to the data section.
+     * @param comment comment to add
+     * @return always return true
+     */
+    boolean addDataComment(final String comment) {
+        currentBlock.addComment(comment);
         return true;
     }
 
@@ -287,8 +300,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
                                                                              metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                              metadata.getEulerRotSeq(),
                                                                              metadata.isSpacecraftBodyRate(),
-                                                                             context,
-                                                                             SPLIT_AT_BLANKS.split(token.getRawContent().trim())));
+                                                                             context, SPLIT_AT_BLANKS.split(token.getRawContent().trim())));
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           token.getLineNumber(), token.getFileName(), token.getRawContent());
@@ -304,7 +316,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
      * @return true if token was processed, false otherwise
      */
     private boolean processXmlDataToken(final ParseToken token) {
-        setFallback(this::processXmlSubStructureToken);
+        anticipateNext(this::processXmlSubStructureToken);
         try {
             return token.getName() != null &&
                    AttitudeEntryKey.valueOf(token.getName()).process(token, context, currentEntry);

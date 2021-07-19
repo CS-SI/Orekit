@@ -20,7 +20,7 @@ package org.orekit.forces.maneuvers.propulsion;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -57,10 +57,10 @@ public interface PropulsionModel {
      * @param s current spacecraft state
      * @param maneuverAttitude current attitude in maneuver
      * @param parameters propulsion model parameters
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return acceleration
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
                                                                      FieldAttitude<T> maneuverAttitude,
                                                                      T[] parameters);
 
@@ -74,10 +74,10 @@ public interface PropulsionModel {
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
      *@param s current spacecraft state
      * @param parameters propulsion model parameters
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return mass derivative in kg/s
      */
-    <T extends RealFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s,
+    <T extends CalculusFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s,
                                                          T[] parameters);
 
     /** Get the propulsion model parameter drivers.

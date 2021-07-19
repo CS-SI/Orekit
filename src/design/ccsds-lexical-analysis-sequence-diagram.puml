@@ -40,7 +40,7 @@
   participant BufferedInputStream
   participant XyzLexicalAnalyzer
   participant ParseToken
-  participant NDMFile
+  participant NdmConstituent
 
   activate Main
     create DataSource
@@ -85,9 +85,9 @@
         deactivate MessageParser
         end
       deactivate XyzLexicalAnalyzer
-      create NDMFile
-      MessageParser -> NDMFile : new
-      MessageParser --> Main : NDMFile
+      create NdmConstituent
+      MessageParser -> NdmConstituent : build
+      MessageParser --> Main : NdmConstituent
     deactivate MessageParser
   deactivate Main
 

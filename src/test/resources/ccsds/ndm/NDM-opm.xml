@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ndm>
+  <COMMENT>NDM with only one constituent: an OPM</COMMENT>
+  <opm id="CCSDS_OPM_VERS" version="3.0">
+    <header>
+      <COMMENT>THIS IS AN XML VERSION OF THE OPM</COMMENT>
+      <CREATION_DATE>2001-11-06T09:23:57</CREATION_DATE>
+      <ORIGINATOR>JAXA</ORIGINATOR>
+      <MESSAGE_ID>OPM 201113719185</MESSAGE_ID>
+    </header>
+    <body>
+      <segment>
+        <metadata>
+          <COMMENT>GEOCENTRIC, CARTESIAN, EARTH FIXED</COMMENT>
+          <OBJECT_NAME>OSPREY 5</OBJECT_NAME>
+          <OBJECT_ID>1998-999A</OBJECT_ID>
+          <CENTER_NAME>EARTH</CENTER_NAME>
+          <REF_FRAME>TOD</REF_FRAME>
+          <REF_FRAME_EPOCH>1998-12-18T14:28:15.1172</REF_FRAME_EPOCH>
+          <TIME_SYSTEM>UTC</TIME_SYSTEM>
+        </metadata>
+        <data>
+          <stateVector>
+            <EPOCH>1996-12-18T14:28:15.1172</EPOCH>
+            <X>6503.514000</X>
+            <Y>1239.647000</Y>
+            <Z>-717.490000</Z>
+            <X_DOT>-0.873160</X_DOT>
+            <Y_DOT>8.740420</Y_DOT>
+            <Z_DOT>-4.191076</Z_DOT>
+          </stateVector>
+          <spacecraftParameters>
+            <MASS>3000.000000</MASS>
+            <SOLAR_RAD_AREA>18.770000</SOLAR_RAD_AREA>
+            <SOLAR_RAD_COEFF>1.000000</SOLAR_RAD_COEFF>
+            <DRAG_AREA>18.770000</DRAG_AREA>
+            <DRAG_COEFF>2.500000</DRAG_COEFF>
+          </spacecraftParameters>
+          <covarianceMatrix>
+            <COV_REF_FRAME>ITRF1997</COV_REF_FRAME>
+            <CX_X>0.316</CX_X>
+            <CY_X>0.722</CY_X>
+            <CY_Y>0.518</CY_Y>
+            <CZ_X>0.202</CZ_X>
+            <CZ_Y>0.715</CZ_Y>
+            <CZ_Z>0.002</CZ_Z>
+            <CX_DOT_X>0.912</CX_DOT_X>
+            <CX_DOT_Y>0.306</CX_DOT_Y>
+            <CX_DOT_Z>0.276</CX_DOT_Z>
+            <CX_DOT_X_DOT>0.797</CX_DOT_X_DOT>
+            <CY_DOT_X>0.562</CY_DOT_X>
+            <CY_DOT_Y>0.899</CY_DOT_Y>
+            <CY_DOT_Z>0.022</CY_DOT_Z>
+            <CY_DOT_X_DOT>0.079</CY_DOT_X_DOT>
+            <CY_DOT_Y_DOT>0.415</CY_DOT_Y_DOT>
+            <CZ_DOT_X>0.245</CZ_DOT_X>
+            <CZ_DOT_Y>0.965</CZ_DOT_Y>
+            <CZ_DOT_Z>0.950</CZ_DOT_Z>
+            <CZ_DOT_X_DOT>0.435</CZ_DOT_X_DOT>
+            <CZ_DOT_Y_DOT>0.621</CZ_DOT_Y_DOT>
+            <CZ_DOT_Z_DOT>0.991</CZ_DOT_Z_DOT>
+          </covarianceMatrix>
+        </data>
+      </segment>
+    </body>
+  </opm>
+</ndm>

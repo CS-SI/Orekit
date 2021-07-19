@@ -17,7 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -72,7 +72,7 @@ public class FieldMendesPavlisModelTest {
         doTestZenithDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestZenithDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestZenithDelay(final Field<T> field) {
         final T zero = field.getZero();
         // Site:   McDonald Observatory
         //         latitude:  30.67166667 °
@@ -123,7 +123,7 @@ public class FieldMendesPavlisModelTest {
         doTestMappingFactors(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
         final T zero = field.getZero();
 
         // Site:   McDonald Observatory
@@ -169,7 +169,7 @@ public class FieldMendesPavlisModelTest {
         doTestDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDelay(final Field<T> field) {
         final T zero = field.getZero();
         final double elevation = 10d;
         final double height = 100d;
@@ -186,7 +186,7 @@ public class FieldMendesPavlisModelTest {
         doTestFixedHeight(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(350.0));

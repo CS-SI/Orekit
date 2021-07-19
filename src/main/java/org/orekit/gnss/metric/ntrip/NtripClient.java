@@ -217,6 +217,13 @@ public class NtripClient {
         }
     }
 
+    /** Get proxy.
+     * @return proxy to use
+     */
+    public Proxy getProxy() {
+        return proxy;
+    }
+
     /** Set GPS fix data to send as NMEA sentence to Ntrip caster if required.
      * @param hour hour of the fix (UTC time)
      * @param minute minute of the fix (UTC time)

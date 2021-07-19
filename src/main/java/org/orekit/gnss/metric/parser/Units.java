@@ -16,7 +16,7 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import org.orekit.propagation.analytical.gnss.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.utils.units.Unit;
 
 /**
@@ -28,7 +28,7 @@ import org.orekit.utils.units.Unit;
 public class Units {
 
     /** Semi-circles units. */
-    public static final Unit SEMI_CIRCLE = Unit.RADIAN.scale("sc", GNSSOrbitalElements.GNSS_PI);
+    public static final Unit SEMI_CIRCLE = Unit.RADIAN.scale("sc", GNSSConstants.GNSS_PI);
 
     /** Nanoseconds units. */
     public static final Unit NS = Unit.parse("ns");

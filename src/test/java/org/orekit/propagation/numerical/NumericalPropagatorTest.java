@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -77,6 +77,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
@@ -146,10 +147,10 @@ public class NumericalPropagatorTest {
 
         // action
         final List<SpacecraftState> states = new ArrayList<>();
-        propagator.setEphemerisMode(
-                (interpolator, isLast) -> states.add(interpolator.getCurrentState()));
+        EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        propagator.setStepHandler(interpolator -> states.add(interpolator.getCurrentState()));
         propagator.propagate(end);
-        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         Assert.assertTrue(states.size() > 10); // got some data
@@ -167,9 +168,9 @@ public class NumericalPropagatorTest {
         // choose duration that will round up when expressed as a double
         AbsoluteDate end = initDate.shiftedBy(100)
                 .shiftedBy(3 * FastMath.ulp(100.0) / 4);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
-        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         CountingHandler handler = new CountingHandler();
         DateDetector detector = new DateDetector(10, 1e-9, end)
                 .withHandler(handler);
@@ -192,9 +193,9 @@ public class NumericalPropagatorTest {
         // choose duration that will round up when expressed as a double
         AbsoluteDate end = initDate.shiftedBy(100)
                 .shiftedBy(3 * FastMath.ulp(100.0) / 4);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
-        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         CountingHandler handler = new CountingHandler();
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
@@ -278,9 +279,9 @@ public class NumericalPropagatorTest {
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
-        prop.setEphemerisMode();
+        final EphemerisGenerator generator = prop.getEphemerisGenerator();
         prop.propagate(startDate, endDate);
-        BoundedPropagator ephemeris = prop.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         TimeStampedPVCoordinates actualPV = ephemeris.getPVCoordinates(startDate, eci);
@@ -318,9 +319,9 @@ public class NumericalPropagatorTest {
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
-        prop.setEphemerisMode();
+        final EphemerisGenerator generator = prop.getEphemerisGenerator();
         prop.propagate(endDate, startDate);
-        BoundedPropagator ephemeris = prop.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         TimeStampedPVCoordinates actualPV = ephemeris.getPVCoordinates(startDate, eci);
@@ -414,12 +415,6 @@ public class NumericalPropagatorTest {
         Assert.assertEquals(0, pRef.subtract(pFin).getNorm(), 2e-4);
         Assert.assertEquals(0, vRef.subtract(vFin).getNorm(), 7e-8);
 
-        try {
-            propagator.getGeneratedEphemeris();
-            Assert.fail("an exception should have been thrown");
-        } catch (IllegalStateException ise) {
-            // expected
-        }
     }
 
     @Test
@@ -564,13 +559,12 @@ public class NumericalPropagatorTest {
 
     @Test(expected=OrekitException.class)
     public void testException() {
-        propagator.setMasterMode(new OrekitStepHandler() {
+        propagator.setStepHandler(new OrekitStepHandler() {
             private int countDown = 3;
             private AbsoluteDate previousCall = null;
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
-            public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) {
+            public void handleStep(OrekitStepInterpolator interpolator) {
                 if (previousCall != null) {
                     Assert.assertTrue(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
                 }
@@ -836,7 +830,7 @@ public class NumericalPropagatorTest {
         propagator.addEventDetector(event1);
 
         // Set the propagation mode
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Propagate
         SpacecraftState finalState = propagator.propagate(endDate);
@@ -853,9 +847,9 @@ public class NumericalPropagatorTest {
         propagator.getInitialState();
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
-        final BoundedPropagator ephemeris1 = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris1 = generator.getGeneratedEphemeris();
         Assert.assertEquals(initDate, ephemeris1.getMinDate());
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
@@ -866,7 +860,7 @@ public class NumericalPropagatorTest {
         Assert.assertEquals(initDate, ephemeris1.getMinDate());
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
-        final BoundedPropagator ephemeris2 = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris2 = generator.getGeneratedEphemeris();
         Assert.assertEquals(initDate.shiftedBy(-2 * dt), ephemeris2.getMinDate());
         Assert.assertEquals(initDate.shiftedBy( 2 * dt), ephemeris2.getMaxDate());
 
@@ -903,9 +897,9 @@ public class NumericalPropagatorTest {
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", 1.5));
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
-        final BoundedPropagator ephemeris1 = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris1 = generator.getGeneratedEphemeris();
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMinDate());
         Assert.assertEquals(initDate, ephemeris1.getMaxDate());
         try {
@@ -1029,7 +1023,7 @@ public class NumericalPropagatorTest {
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
         final NumericalPropagator propagator = createPropagator(initialState, OrbitType.CARTESIAN, PositionAngle.TRUE);
         final double samplingStep = 10000.0;
-        propagator.setMasterMode(samplingStep, (state, isLast) -> states.add(state));
+        propagator.setStepHandler(samplingStep, state -> states.add(state));
         propagator.propagate(initialDate.shiftedBy(5 * samplingStep));
 
         // compute reference errors, using serial computation in a for loop
@@ -1404,7 +1398,7 @@ public class NumericalPropagatorTest {
         final AbsoluteDate finalDate = initDate.shiftedBy(40.);
         
         final DateRecorderHandler dateRecorderHandler = new DateRecorderHandler(startDate, finalDate);
-        propagator.setMasterMode(1.0, dateRecorderHandler);
+        propagator.setStepHandler(1.0, dateRecorderHandler);
 
         // Action
         propagator.propagate(startDate, finalDate);
@@ -1438,7 +1432,7 @@ public class NumericalPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isBefore(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
@@ -1472,7 +1466,7 @@ public class NumericalPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isAfter(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
@@ -1506,7 +1500,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public void handleStep(SpacecraftState currentState, boolean isLast)
+        public void handleStep(SpacecraftState currentState)
                 {
           final AbsoluteDate date = currentState.getDate();
           if (date.compareTo(startDate) < 0 || date.compareTo(finalDate) > 0) {
@@ -1651,7 +1645,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> void
+        public <T extends CalculusFieldElement<T>> void
         addContribution(FieldSpacecraftState<T> s,
                         FieldTimeDerivativesEquations<T> adder) {
         }
@@ -1665,7 +1659,7 @@ public class NumericalPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
             return FieldVector3D.getZero(s.getDate().getField());
@@ -1677,7 +1671,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

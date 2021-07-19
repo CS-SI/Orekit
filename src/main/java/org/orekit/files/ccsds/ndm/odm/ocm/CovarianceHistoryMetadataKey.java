@@ -34,46 +34,45 @@ public enum CovarianceHistoryMetadataKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Covariance identification number. */
-    COV_ID((token, context, container) -> token.processAsUppercaseString(container::setCovID)),
+    COV_ID((token, context, container) -> token.processAsNormalizedString(container::setCovID)),
 
     /** Identification number of previous covariance. */
-    COV_PREV_ID((token, context, container) -> token.processAsUppercaseString(container::setCovPrevID)),
+    COV_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setCovPrevID)),
 
     /** Identification number of next covariance. */
-    COV_NEXT_ID((token, context, container) -> token.processAsUppercaseString(container::setCovNextID)),
+    COV_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setCovNextID)),
 
     /** Basis of this covariance time history data. */
-    COV_BASIS((token, context, container) -> token.processAsUppercaseString(container::setCovBasis)),
+    COV_BASIS((token, context, container) -> token.processAsNormalizedString(container::setCovBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this covariance is based.*/
-    COV_BASIS_ID((token, context, container) -> token.processAsUppercaseString(container::setCovBasisID)),
+    COV_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setCovBasisID)),
 
     /** Reference frame of the covariance. */
-    COV_REF_FRAME((token, context, container) -> token.processAsFrame(container::setCovReferenceFrame, context, true, false, false)),
+    COV_REF_FRAME((token, context, container) -> token.processAsFrame(container::setCovReferenceFrame, context, true, true, false)),
 
     /** Epoch of the {@link #COV_REF_FRAME covariance reference frame}. */
     COV_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setCovFrameEpoch, context)),
 
     /** Minimum scale factor to apply to achieve realism. */
-    COV_SCALE_MIN((token, context, container) -> token.processAsDouble(Unit.ONE, container::setCovScaleMin)),
+    COV_SCALE_MIN((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                       container::setCovScaleMin)),
 
     /** Maximum scale factor to apply to achieve realism. */
-    COV_SCALE_MAX((token, context, container) -> token.processAsDouble(Unit.ONE, container::setCovScaleMax)),
+    COV_SCALE_MAX((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                       container::setCovScaleMax)),
 
     /** Masure of confidence in covariance error matching reality. */
-    COV_CONFIDENCE((token, context, container) -> token.processAsDouble(Unit.PERCENT, container::setCovConfidence)),
+    COV_CONFIDENCE((token, context, container) -> token.processAsDouble(Unit.PERCENT, context.getParsedUnitsBehavior(),
+                                                                        container::setCovConfidence)),
 
     /** Covariance element set type.
      * @see ElementsType
      */
-    COV_TYPE((token, context, container) -> {
-        try {
-            container.setCovType(ElementsType.valueOf(token.getContentAsUppercaseString()));
-        } catch (IllegalArgumentException iae) {
-            throw token.generateException(iae);
-        }
-        return true;
-    }),
+    COV_TYPE((token, context, container) -> token.processAsEnum(ElementsType.class, container::setCovType)),
+
+    /** Covariance ordering. */
+    COV_ORDERING((token, context, container) -> token.processAsEnum(Ordering.class, container::setCovOrdering)),
 
     /** SI units for each elements of the covariance. */
     COV_UNITS((token, context, container) -> token.processAsUnitList(container::setCovUnits));

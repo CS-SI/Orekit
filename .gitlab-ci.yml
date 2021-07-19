@@ -1,5 +1,6 @@
 stages:
 - verify
+- visualize
 - deploy
 
 default:
@@ -38,6 +39,25 @@ verify:
     reports:
       junit:
         - target/surefire-reports/*.xml
+
+# Convert and import in GitLab coverage data.
+# The information is then available directly in merge-request view.
+# Cf. https://docs.gitlab.com/ee/user/project/merge_requests/test_coverage_visualization.html
+coverage-import:
+  stage: visualize
+  image: haynes/jacoco2cobertura:1.0.4
+  script:
+    # convert report from jacoco to cobertura
+    - 'python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java > target/site/cobertura.xml'
+    # read the <source></source> tag and prepend the path to every filename attribute
+    - 'python /opt/source2filename.py target/site/cobertura.xml'
+  needs:
+    - verify
+  dependencies:
+    - verify
+  artifacts:
+    reports:
+      cobertura: target/site/cobertura.xml
 
 # On main branches (develop, release-*, master)
 # the produced artifacts are deployed on the Nexus of the project

@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 import java.util.List;
 
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.section.Header;
@@ -37,7 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class OpmFile extends NdmFile<Header, Segment<CommonMetadata, OpmData>> implements TimeStamped {
+public class OpmFile extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>> implements TimeStamped {
 
     /** Root element for XML files. */
     public static final String ROOT = "opm";

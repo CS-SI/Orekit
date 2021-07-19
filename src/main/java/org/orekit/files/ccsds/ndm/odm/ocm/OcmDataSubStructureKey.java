@@ -25,11 +25,11 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
  */
 public enum OcmDataSubStructureKey {
 
-    /** Orbit state time history section. */
-    ORB((token, parser) -> parser.manageOrbitStateSection(token.getType() == TokenType.START)),
+    /** Trajectory state time history section. */
+    TRAJ((token, parser) -> parser.manageTrajectoryStateSection(token.getType() == TokenType.START)),
 
-    /** Orbit state time history section. */
-    orb((token, parser) -> parser.manageOrbitStateSection(token.getType() == TokenType.START)),
+    /** Trajectory state time history section. */
+    traj((token, parser) -> parser.manageTrajectoryStateSection(token.getType() == TokenType.START)),
 
     /** Physical properties section. */
     PHYS((token, parser) -> parser.managePhysicalPropertiesSection(token.getType() == TokenType.START)),

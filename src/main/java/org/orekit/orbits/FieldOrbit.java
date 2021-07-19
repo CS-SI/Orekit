@@ -18,7 +18,7 @@ package org.orekit.orbits;
 
 
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
@@ -64,7 +64,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
  */
-public abstract class FieldOrbit<T extends RealFieldElement<T>>
+public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T>, FieldTimeInterpolable<FieldOrbit<T>, T> {
 
     /** Frame in which are defined the orbital parameters. */
@@ -126,7 +126,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param FieldPVCoordinates the position and velocity in the inertial frame
      * @param frame the frame in which the {@link TimeStampedPVCoordinates} are defined
@@ -161,7 +161,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * @param <T> type of the field elements
      * @return true if Cartesian coordinates include non-Keplerian acceleration
      */
-    protected static <T extends RealFieldElement<T>> boolean hasNonKeplerianAcceleration(final FieldPVCoordinates<T> pva, final T mu) {
+    protected static <T extends CalculusFieldElement<T>> boolean hasNonKeplerianAcceleration(final FieldPVCoordinates<T> pva, final T mu) {
 
         final FieldVector3D<T> a = pva.getAcceleration();
         if (a == null) {

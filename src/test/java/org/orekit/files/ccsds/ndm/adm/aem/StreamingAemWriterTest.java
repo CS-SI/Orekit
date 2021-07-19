@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -64,7 +64,7 @@ public class StreamingAemWriterTest {
     public void testWriteAemStepHandler() throws Exception {
 
         // Create a list of files
-        List<String> files = Arrays.asList("/ccsds/adm/aem/AEMExample07.txt");
+        List<String> files = Collections.singletonList("/ccsds/adm/aem/AEMExample07.txt");
         for (final String ex : files) {
 
             // Reference AEM file
@@ -88,7 +88,7 @@ public class StreamingAemWriterTest {
 
             // Initialize the header and metadata
             // Here, we use only one data segment.
-            Header header = new Header();
+            Header header = new Header(3.0);
             header.setOriginator(originator);
             header.addComment(headerCmt);
 
@@ -106,7 +106,7 @@ public class StreamingAemWriterTest {
 
             StringBuilder buffer = new StringBuilder();
             StreamingAemWriter writer =
-                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new"),
+                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new", 60),
                                                    new WriterBuilder(). buildAemWriter(),
                                                    header, metadata);
 
@@ -121,7 +121,7 @@ public class StreamingAemWriterTest {
             // We propagate 60 seconds after the start date with a step equals to 10.0 seconds
             // It is expected to have an attitude data block containing 7 data lines
             double step = 10.0;
-            propagator.setMasterMode(step, segment);
+            propagator.setStepHandler(step, segment);
             propagator.propagate(ephemerisBlock.getStart().shiftedBy(60.0));
 
             // Generated AEM file

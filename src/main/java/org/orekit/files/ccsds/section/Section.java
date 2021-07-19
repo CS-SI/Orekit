@@ -25,10 +25,12 @@ public interface Section {
 
     /** Check is all mandatory entries have been initialized.
      * <p>
-     * This method should throw an exception if some mandatory entry is missing
+     * This method should throw an exception if some mandatory entries are missing
+     * or not compatible with version number.
      * </p>
+     * @param version format version
      */
-    void checkMandatoryEntries();
+    void validate(double version);
 
 }
 

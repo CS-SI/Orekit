@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -35,6 +35,7 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -52,8 +53,8 @@ public class FieldTLEPropagatorTest {
     private double period;
 
     @Test
-    public void testSlaveMode() {
-        doTestSlaveMode(Decimal64Field.getInstance());
+    public void testsecondaryMode() {
+        doTestsecondaryMode(Decimal64Field.getInstance());
     }
     
     @Test
@@ -71,7 +72,7 @@ public class FieldTLEPropagatorTest {
         doTestComparisonWithNonField(Decimal64Field.getInstance());
     }
 
-    public <T extends RealFieldElement<T>> void doTestSlaveMode(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestsecondaryMode(Field<T> field) {
         
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
@@ -97,7 +98,7 @@ public class FieldTLEPropagatorTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void doTestEphemerisMode(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestEphemerisMode(Field<T> field) {
         
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
@@ -106,7 +107,7 @@ public class FieldTLEPropagatorTest {
         
         final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
-        propagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
 
         FieldAbsoluteDate<T> initDate = tle.getDate();
         FieldSpacecraftState<T> initialState = propagator.getInitialState();
@@ -117,7 +118,7 @@ public class FieldTLEPropagatorTest {
         propagator.propagate(endDate);
 
         // get the ephemeris
-        FieldBoundedPropagator<T> boundedProp = propagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> boundedProp = generator.getGeneratedEphemeris();
 
         // get the initial state from the ephemeris and check if it is the same as
         // the initial state from the TLE
@@ -145,7 +146,7 @@ public class FieldTLEPropagatorTest {
 
     /** Test if body center belongs to the direction pointed by the satellite
      */
-    public <T extends RealFieldElement<T>> void doTestBodyCenterInPointingDirection(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestBodyCenterInPointingDirection(Field<T> field) {
 
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
@@ -167,20 +168,20 @@ public class FieldTLEPropagatorTest {
                 FieldTLEPropagator.selectExtrapolator(tle,
                                                  new BodyCenterPointing(FramesFactory.getTEME(), earth),
                                                  T_zero.add(Propagator.DEFAULT_MASS), parameters);
-        propagator.setMasterMode(T_zero.add(900.0), checker);
+        propagator.setStepHandler(T_zero.add(900.0), checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
         Assert.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
 
         // with default attitude mode, distance should be large
         propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
-        propagator.setMasterMode(T_zero.add(900.0), checker);
+        propagator.setStepHandler(T_zero.add(900.0), checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
         Assert.assertEquals(1.5219e7, checker.getMinDistance(), 1000.0);
         Assert.assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
 
     }
 
-    private static class FieldDistanceChecker<T extends RealFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
+    private static class FieldDistanceChecker<T extends CalculusFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
 
         private final Frame itrf;
         private double minDistance;
@@ -205,8 +206,7 @@ public class FieldTLEPropagatorTest {
         }
 
         @Override
-        public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
-            {
+        public void handleStep(FieldSpacecraftState<T> currentState) {
             // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
             FieldRotation<T> rotSat = currentState.getAttitude().getRotation();
 
@@ -233,7 +233,7 @@ public class FieldTLEPropagatorTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void doTestComparisonWithNonField(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestComparisonWithNonField(Field<T> field) {
         
         // propagation time.
         final double propagtime = 10 * 60;

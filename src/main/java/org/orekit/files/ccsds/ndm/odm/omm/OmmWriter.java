@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceWriter;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersWriter;
 import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
@@ -63,16 +64,15 @@ public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata
         super(OmmFile.ROOT, OmmFile.FORMAT_VERSION_KEY, CCSDS_OMM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
+                  () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
     }
 
-    /** Write one segment.
-     * @param generator generator to use for producing output
-     * @param segment segment to write
-     * @throws IOException if any buffer writing operations fails
-     */
-    public void writeSegmentContent(final Generator generator, final Segment<OmmMetadata, OmmData> segment)
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final Segment<OmmMetadata, OmmData> segment)
         throws IOException {
 
         // write the metadata
@@ -81,6 +81,7 @@ public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,

@@ -47,7 +47,7 @@ public enum OrekitMessages implements Localizable {
 
     // CHECKSTYLE: stop JavadocVariable check
 
-    INTERNAL_ERROR("internal error, please notify development team by creating an issue at {0}"),
+    INTERNAL_ERROR("internal error, please notify development team by creating a new topic at {0}"),
     ALTITUDE_BELOW_ALLOWED_THRESHOLD("altitude ({0} m) is below the {1} m allowed threshold"),
     POINT_INSIDE_ELLIPSOID("point is inside ellipsoid"),
     TRAJECTORY_INSIDE_BRILLOUIN_SPHERE("trajectory inside the Brillouin sphere (r = {0})"),
@@ -130,7 +130,6 @@ public enum OrekitMessages implements Localizable {
     ORBIT_AND_ATTITUDE_DATES_MISMATCH("orbit date ({0}) does not match attitude date ({1})"),
     FRAMES_MISMATCH("frame {0} does not match frame {1}"),
     INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION("initial state not specified for orbit propagation"),
-    PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE("propagator is not in ephemeris generation mode"),
     EVENT_DATE_TOO_CLOSE(
             "event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added"),
     UNABLE_TO_READ_JPL_HEADER("unable to read header record from JPL ephemerides binary file {0}"),
@@ -165,6 +164,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_DATE_INVALID_LENGTH_TIME_FIELD("invalid time field length in CCSDS date: {0}, expected {1}"),
     CCSDS_DATE_MISSING_AGENCY_EPOCH("missing agency epoch in CCSDS date"),
     CCSDS_MISSING_KEYWORD("missing mandatory key {0} in CCSDS file {1}"),
+    CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION("key {0} is not allowed in format version {1}"),
     CCSDS_UNEXPECTED_KEYWORD("unexpected keyword in CCSDS line number {0} of file {1}:\n{2}"),
     CCSDS_UNKNOWN_GM("the central body gravitational coefficient cannot be retrieved from the ODM"),
     CCSDS_UNKNOWN_SPACECRAFT_MASS("there is no spacecraft mass associated with this ODM file"),
@@ -180,6 +180,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED("attitude type {0} in CCSDS AEM files is not implemented in Orekit"),
     CCSDS_INVALID_ROTATION_SEQUENCE("invalid rotation sequence {0} at line {1} of file {2}"),
     CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE("element set type {0} ({1}) is not supported yet"),
+    CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL("retrograde factor not supported in element set {0}"),
     CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS("element set type {0} ({1}) expects {2} elements"),
     CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS("wrong number of units for maneuver {0}"),
     CCSDS_MANEUVER_MISSING_TIME("missing time field for maneuver {0}"),
@@ -320,7 +321,8 @@ public enum OrekitMessages implements Localizable {
     UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized"),
     UNKNOWN_UNIT("unknown unit {0}"),
     INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
-    MISSING_VELOCITY("missing velocity data");
+    MISSING_VELOCITY("missing velocity data"),
+    ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error");
 
     // CHECKSTYLE: resume JavadocVariable check
 

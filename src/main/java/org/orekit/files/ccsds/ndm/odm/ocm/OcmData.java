@@ -28,8 +28,8 @@ import org.orekit.files.ccsds.section.Data;
  */
 public class OcmData implements Data {
 
-    /** Orbit state histories logical blocks. */
-    private final List<OrbitStateHistory> orbitBlocks;
+    /** Trajectory state histories logical blocks. */
+    private final List<TrajectoryStateHistory> trajectoryBlocks;
 
     /** Physical properties logical block. */
     private final PhysicalProperties physicBlock;
@@ -50,7 +50,7 @@ public class OcmData implements Data {
     private final UserDefined userDefinedBlock;
 
     /** Simple constructor.
-     * @param orbitBlocks orbital state histories logical blocks (may be empty)
+     * @param trajectoryBlocks trajectory state histories logical blocks (may be empty)
      * @param physicBlock physical properties logical block (may be null)
      * @param covarianceBlocks covariance logical blocks (may be empty)
      * @param maneuverBlocks maneuvers logical blocks (may be empty)
@@ -58,14 +58,14 @@ public class OcmData implements Data {
      * @param orbitDeterminationBlock orbit determination logical block (may be null)
      * @param userDefinedBlock user defined parameters logical block (may be null)
      */
-    public OcmData(final List<OrbitStateHistory> orbitBlocks,
-                   final PhysicalProperties      physicBlock,
-                   final List<CovarianceHistory> covarianceBlocks,
-                   final List<ManeuverHistory>   maneuverBlocks,
-                   final Perturbations           perturbationsBlock,
-                   final OrbitDetermination      orbitDeterminationBlock,
-                   final UserDefined          userDefinedBlock) {
-        this.orbitBlocks              = orbitBlocks;
+    public OcmData(final List<TrajectoryStateHistory> trajectoryBlocks,
+                   final PhysicalProperties           physicBlock,
+                   final List<CovarianceHistory>      covarianceBlocks,
+                   final List<ManeuverHistory>        maneuverBlocks,
+                   final Perturbations                perturbationsBlock,
+                   final OrbitDetermination           orbitDeterminationBlock,
+                   final UserDefined                  userDefinedBlock) {
+        this.trajectoryBlocks         = trajectoryBlocks;
         this.physicBlock              = physicBlock;
         this.covarianceBlocks         = covarianceBlocks;
         this.maneuverBlocks           = maneuverBlocks;
@@ -76,41 +76,41 @@ public class OcmData implements Data {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        if (orbitBlocks != null) {
-            for (final OrbitStateHistory osh : orbitBlocks) {
-                osh.getMetadata().checkMandatoryEntries();
+    public void validate(final double version) {
+        if (trajectoryBlocks != null) {
+            for (final TrajectoryStateHistory osh : trajectoryBlocks) {
+                osh.getMetadata().validate(version);
             }
         }
         if (physicBlock != null) {
-            physicBlock.checkMandatoryEntries();
+            physicBlock.validate(version);
         }
         if (covarianceBlocks != null) {
             for (final CovarianceHistory ch : covarianceBlocks) {
-                ch.getMetadata().checkMandatoryEntries();
+                ch.getMetadata().validate(version);
             }
         }
         if (maneuverBlocks != null) {
             for (final ManeuverHistory mh : maneuverBlocks) {
-                mh.getMetadata().checkMandatoryEntries();
+                mh.getMetadata().validate(version);
             }
         }
         if (perturbationsBlock != null) {
-            perturbationsBlock.checkMandatoryEntries();
+            perturbationsBlock.validate(version);
         }
         if (orbitDeterminationBlock != null) {
-            orbitDeterminationBlock.checkMandatoryEntries();
+            orbitDeterminationBlock.validate(version);
         }
         if (userDefinedBlock != null) {
-            userDefinedBlock.checkMandatoryEntries();
+            userDefinedBlock.validate(version);
         }
     }
 
-    /** Get orbit state histories logical blocks.
-     * @return orbita state histories logical blocks (may be null)
+    /** Get trajectory state histories logical blocks.
+     * @return trajectory state histories logical blocks (may be null)
      */
-    public List<OrbitStateHistory> getOrbitBlocks() {
-        return orbitBlocks;
+    public List<TrajectoryStateHistory> getOTrajectoryBlocks() {
+        return trajectoryBlocks;
     }
 
     /** Get physical properties logical block.

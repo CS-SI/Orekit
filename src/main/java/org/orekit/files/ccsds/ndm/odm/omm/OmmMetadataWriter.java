@@ -49,7 +49,7 @@ class OmmMetadataWriter extends CommonMetadataWriter {
         super.writeContent(generator);
 
         // mean elements theory
-        generator.writeEntry(OmmMetadataKey.MEAN_ELEMENT_THEORY.name(), metadata.getMeanElementTheory(), true);
+        generator.writeEntry(OmmMetadataKey.MEAN_ELEMENT_THEORY.name(), metadata.getMeanElementTheory(), null, true);
 
     }
 

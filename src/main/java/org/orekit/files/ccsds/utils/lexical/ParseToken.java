@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
@@ -37,6 +36,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
@@ -75,8 +75,8 @@ public class ParseToken {
     /** Entry content. */
     private final String content;
 
-    /** Units of the entry (may be null). */
-    private final String units;
+    /** Units of the entry. */
+    private final Unit units;
 
     /** Number of the line from which pair is extracted. */
     private final int lineNumber;
@@ -88,11 +88,11 @@ public class ParseToken {
      * @param type type of the token
      * @param name name of the block or entry
      * @param content entry content
-     * @param units units of the entry (may be null)
+     * @param units units of the entry
      * @param lineNumber number of the line in the CCSDS data message
      * @param fileName name of the file
      */
-    public ParseToken(final TokenType type, final String name, final String content, final String units,
+    public ParseToken(final TokenType type, final String name, final String content, final Unit units,
                       final int lineNumber, final String fileName) {
         this.type       = type;
         this.name       = name;
@@ -159,6 +159,29 @@ public class ParseToken {
         return Arrays.asList(SPLIT_AT_COMMAS.split(getContentAsUppercaseString()));
     }
 
+    /** Get the content of the entry as an enum.
+     * @param cls enum class
+     * @param <T> type of the enum
+     * @return entry content
+     */
+    public <T extends Enum<T>> T getContentAsEnum(final Class<T> cls) {
+        return toEnum(cls, getRawContent());
+    }
+
+    /** Get the content of the entry as a list of enum.
+     * @param cls enum class
+     * @param <T> type of the enum
+     * @return entry content
+     */
+    public <T extends Enum<T>> List<T> getContentAsEnumList(final Class<T> cls) {
+        final String[] elements = SPLIT_AT_COMMAS.split(getRawContent());
+        final List<T> list = new ArrayList<>(elements.length);
+        for (int i = 0; i < elements.length; ++i) {
+            list.add(toEnum(cls, elements[i]));
+        }
+        return list;
+    }
+
     /** Get the content of the entry as a double.
      * @return content as a double
      */
@@ -168,13 +191,6 @@ public class ParseToken {
         } catch (NumberFormatException nfe) {
             throw generateException(nfe);
         }
-    }
-
-    /** Get the content of the entry as an angle.
-     * @return content as an angle
-     */
-    public double getContentAsAngle() {
-        return FastMath.toRadians(getContentAsDouble());
     }
 
     /** Get the content of the entry as a vector.
@@ -219,7 +235,7 @@ public class ParseToken {
     /** Get the units.
      * @return units of the entry (may be null)
      */
-    public String getUnits() {
+    public Unit getUnits() {
         return units;
     }
 
@@ -307,6 +323,32 @@ public class ParseToken {
         return true;
     }
 
+    /** Process the content as an enum.
+     * @param cls enum class
+     * @param consumer consumer of the enum
+     * @param <T> type of the enum
+     * @return always returns {@code true}
+     */
+    public <T extends Enum<T>> boolean processAsEnum(final Class<T> cls, final EnumConsumer<T> consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsEnum(cls));
+        }
+        return true;
+    }
+
+    /** Process the content as a list of enums.
+     * @param cls enum class
+     * @param consumer consumer of the enums list
+     * @param <T> type of the enum
+     * @return always returns {@code true}
+     */
+    public <T extends Enum<T>> boolean processAsEnumsList(final Class<T> cls, final EnumListConsumer<T> consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsEnumList(cls));
+        }
+        return true;
+    }
+
     /** Process the content as an integer.
      * @param consumer consumer of the integer
      * @return always returns {@code true}
@@ -350,27 +392,47 @@ public class ParseToken {
     }
 
     /** Process the content as a double.
-     * @param unit units of parsed content
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
      * @param consumer consumer of the double
      * @return always returns {@code true}
      */
-    public boolean processAsDouble(final Unit unit, final DoubleConsumer consumer) {
+    public boolean processAsDouble(final Unit standard, final ParsedUnitsBehavior behavior,
+                                   final DoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(unit.toSI(getContentAsDouble()));
+            consumer.accept(behavior.select(getUnits(), standard).toSI(getContentAsDouble()));
+        }
+        return true;
+    }
+
+    /** Process the content as an labeled double.
+     * @param label label
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
+     * @param consumer consumer of the indexed double
+     * @return always returns {@code true}
+     */
+    public boolean processAsLabeledDouble(final char label,
+                                          final Unit standard, final ParsedUnitsBehavior behavior,
+                                          final LabeledDoubleConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(label, behavior.select(getUnits(), standard).toSI(getContentAsDouble()));
         }
         return true;
     }
 
     /** Process the content as an indexed double.
      * @param i index
-     * @param unit units of parsed content
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
      * @param consumer consumer of the indexed double
      * @return always returns {@code true}
      */
-    public boolean processAsIndexedDouble(final int i, final Unit unit,
+    public boolean processAsIndexedDouble(final int i,
+                                          final Unit standard, final ParsedUnitsBehavior behavior,
                                           final IndexedDoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(i, unit.toSI(getContentAsDouble()));
+            consumer.accept(i, behavior.select(getUnits(), standard).toSI(getContentAsDouble()));
         }
         return true;
     }
@@ -378,37 +440,16 @@ public class ParseToken {
     /** Process the content as a doubly-indexed double.
      * @param i first index
      * @param j second index
-     * @param unit units of parsed content
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
      * @param consumer consumer of the doubly-indexed double
      * @return always returns {@code true}
      */
-    public boolean processAsDoublyIndexedDouble(final int i, final int j, final Unit unit,
+    public boolean processAsDoublyIndexedDouble(final int i, final int j,
+                                                final Unit standard, final ParsedUnitsBehavior behavior,
                                                 final DoublyIndexedDoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(i, j, unit.toSI(getContentAsDouble()));
-        }
-        return true;
-    }
-
-    /** Process the content as an angle (i.e. converting from degrees to radians upon reading).
-     * @param consumer consumer of the angle in radians
-     * @return always returns {@code true}
-     */
-    public boolean processAsAngle(final DoubleConsumer consumer) {
-        if (type == TokenType.ENTRY) {
-            consumer.accept(getContentAsAngle());
-        }
-        return true;
-    }
-
-    /** Process the content as an indexed angle.
-     * @param index index
-     * @param consumer consumer of the indexed angle
-     * @return always returns {@code true}
-     */
-    public boolean processAsIndexedAngle(final int index, final IndexedDoubleConsumer consumer) {
-        if (type == TokenType.ENTRY) {
-            consumer.accept(index, FastMath.toRadians(getContentAsDouble()));
+            consumer.accept(i, j, behavior.select(getUnits(), standard).toSI(getContentAsDouble()));
         }
         return true;
     }
@@ -566,6 +607,29 @@ public class ParseToken {
 
     }
 
+    /** Convert a value to an enum.
+     * @param cls enum class
+     * @param value value to convert to an enum
+     * @param <T> type of the enum
+     * @return enumerate corresponding to the value
+     */
+    private <T extends Enum<T>> T toEnum(final Class<T> cls, final String value) {
+        // first replace space characters
+        final String noSpace = value.replace(' ', '_');
+        try {
+            // first try without changing case, as some CCSDS enums are mixed case (like RangeUnits for TDM)
+            return Enum.valueOf(cls, noSpace);
+        } catch (IllegalArgumentException iae1) {
+            try {
+                // second try, using more standard uppercase
+                return Enum.valueOf(cls, noSpace.toUpperCase(Locale.US));
+            } catch (IllegalArgumentException iae2) {
+                // use the first exception for the message
+                throw generateException(iae1);
+            }
+        }
+    }
+
     /** Interface representing instance methods that consume string values. */
     public interface StringConsumer {
         /** Consume a string.
@@ -589,6 +653,26 @@ public class ParseToken {
          * @param value value to consume
          */
         void accept(List<String> value);
+    }
+
+    /** Interface representing instance methods that consume enum values.
+     * <T> type of the enum
+     */
+    public interface EnumConsumer<T extends Enum<T>> {
+        /** Consume an enum.
+         * @param value value to consume
+         */
+        void accept(T value);
+    }
+
+    /** Interface representing instance methods that consume lists of enum values.
+     * <T> type of the enum
+     */
+    public interface EnumListConsumer<T extends Enum<T>> {
+        /** Consume an enum.
+         * @param value value to consume
+         */
+        void accept(List<T> value);
     }
 
     /** Interface representing instance methods that consume integer values. */
@@ -621,6 +705,15 @@ public class ParseToken {
          * @param value value to consume
          */
         void accept(double value);
+    }
+
+    /** Interface representing instance methods that consume labeled double values. */
+    public interface LabeledDoubleConsumer {
+        /** Consume an indexed double.
+         * @param label label
+         * @param value value to consume
+         */
+        void accept(char label, double value);
     }
 
     /** Interface representing instance methods that consume indexed double values. */

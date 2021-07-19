@@ -34,7 +34,7 @@ public class OrekitInternalError extends IllegalStateException implements Locali
 
     /** Parts to insert in the format (no translation). */
     private final String[] parts        = new String[] {
-        "https://gitlab.orekit.org/orekit/orekit/issues"
+        "https://forum.orekit.org"
     };
 
     /** Create an exception with localized message.

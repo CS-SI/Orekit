@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -824,7 +824,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
     
     /** Get drag parameters as field[]. */
-    private <T extends RealFieldElement<T>> T[] getDragParameters(final BoxAndSolarArraySpacecraft basa,
+    private <T extends CalculusFieldElement<T>> T[] getDragParameters(final BoxAndSolarArraySpacecraft basa,
                                                                   final Field<T> field) {
         final List<ParameterDriver> drivers = basa.getDragParametersDrivers();
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
@@ -835,7 +835,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
     
     /** Get radiation parameters as field[]. */
-    private <T extends RealFieldElement<T>> T[] getRadiationParameters(final BoxAndSolarArraySpacecraft basa,
+    private <T extends CalculusFieldElement<T>> T[] getRadiationParameters(final BoxAndSolarArraySpacecraft basa,
                                                                   final Field<T> field) {
         final List<ParameterDriver> drivers = basa.getRadiationParametersDrivers();
         final T[] parameters = MathArrays.buildArray(field, drivers.size());

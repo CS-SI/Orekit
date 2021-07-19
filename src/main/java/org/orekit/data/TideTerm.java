@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Class for tide terms.
  * <p>
@@ -87,7 +87,7 @@ class TideTerm extends SeriesTerm {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
+    protected <T extends CalculusFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
         return elements.getGamma().multiply(cGamma).
                add(elements.getL().multiply(cL)).
                add(elements.getLPrime().multiply(cLPrime)).
@@ -97,7 +97,7 @@ class TideTerm extends SeriesTerm {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T argumentDerivative(final FieldBodiesElements<T> elements) {
+    protected <T extends CalculusFieldElement<T>> T argumentDerivative(final FieldBodiesElements<T> elements) {
         return elements.getGammaDot().multiply(cGamma).
                add(elements.getLDot().multiply(cL)).
                add(elements.getLPrimeDot().multiply(cLPrime)).

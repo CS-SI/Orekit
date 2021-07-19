@@ -169,6 +169,8 @@ public class CPFWriterTest {
         Assert.assertEquals(header1.getName(), header2.getName());
         Assert.assertEquals(header1.getIlrsSatelliteId(), header2.getIlrsSatelliteId());
         Assert.assertEquals(header1.getSic(), header2.getSic());
+        Assert.assertEquals(0.0, header1.getStartEpoch().durationFrom(header2.getStartEpoch()), 1.0e-15);
+        Assert.assertEquals(0.0, header1.getEndEpoch().durationFrom(header2.getEndEpoch()), 1.0e-15);
     }
 
     public static void verifyEphemerisLine(CPFCoordinate coord1, CPFCoordinate coord2) {

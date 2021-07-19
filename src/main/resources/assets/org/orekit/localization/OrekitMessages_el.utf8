@@ -1,4 +1,4 @@
-# internal error, please notify development team by creating an issue at {0}
+# internal error, please notify development team by creating a new topic at {0}
 INTERNAL_ERROR = <MISSING TRANSLATION>
 
 # altitude ({0} m) is below the {1} m allowed threshold
@@ -232,9 +232,6 @@ FRAMES_MISMATCH =  Το πλαίσιο ({0}) δεν αντιστοιχεί στ�
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = H αρχική κατάσταση δεν προσδιορίζεται για την τροχιά διάδοσης 
 
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = Ο αλγόριθμος προσομοίωσης κίνησης του δορυφόρου (propagator) δεν είναι σε εφήμερη φάση παραγωγής
-
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = ημερομηνία γεγονότος {0}, μεγαλύτερη από {1} μείον {3} δευτερόλεπτα και μικρότερη από {2} συν {3} δευτερόλεπτα, δεν μπορεί να προστεθεί
 
@@ -315,6 +312,9 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = ελλιπής ημερομηνία της υ�
 
 # missing mandatory key {0} in CCSDS file {1}
 CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
+
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = μη αναμενόμενη λέξη-κλειδί στη γραμμή {0} του CCSDS αρχείου {1}: \ n {2}
@@ -465,6 +465,9 @@ CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
 
 # element set type {0} ({1}) is not supported yet
 CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = <MISSING TRANSLATION>
+
+# retrograde factor not supported in element set {0}
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
 
 # element set type {0} ({1}) expects {2} elements
 CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
@@ -722,3 +725,6 @@ INCOMPATIBLE_UNITS = <MISSING TRANSLATION>
 
 # missing velocity data
 MISSING_VELOCITY = <MISSING TRANSLATION>
+
+# attempt to generate file {0} with a formatting error
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>

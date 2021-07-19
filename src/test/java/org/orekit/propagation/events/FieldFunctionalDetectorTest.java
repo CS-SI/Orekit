@@ -21,7 +21,7 @@ import java.util.function.Function;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
@@ -50,7 +50,7 @@ public class FieldFunctionalDetectorTest {
         doTestFunctionalDetector(Decimal64Field.getInstance());
     }
 
-    public <T extends RealFieldElement<T>> void doTestFunctionalDetector(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestFunctionalDetector(Field<T> field) {
         // setup
         T zero = field.getZero();
         T one = field.getOne();

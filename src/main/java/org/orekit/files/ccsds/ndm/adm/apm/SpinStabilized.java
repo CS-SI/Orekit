@@ -67,8 +67,8 @@ public class SpinStabilized extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         endpoints.checkMandatoryEntriesExceptExternalFrame(SpinStabilizedKey.SPIN_FRAME_A,
                                                            SpinStabilizedKey.SPIN_FRAME_B,
                                                            SpinStabilizedKey.SPIN_DIR);

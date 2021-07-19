@@ -65,7 +65,7 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState) {
         try {
             final double           localClk  = local.getClockOffsetDriver().getValue();
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);

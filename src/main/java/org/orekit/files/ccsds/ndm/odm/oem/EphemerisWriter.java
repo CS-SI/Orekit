@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 import java.io.IOException;
 import java.util.List;
 
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -33,7 +32,6 @@ import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** An {@link EphemerisFileWriter} generating {@link OemFile OEM} files.
@@ -63,6 +61,9 @@ public class EphemerisWriter implements EphemerisFileWriter {
     /** Output name for error messages. */
     private final String outputName;
 
+    /** Column number for aligning units. */
+    private final int unitsColumn;
+
     /**
      * Constructor used to create a new OEM writer configured with the necessary parameters
      * to successfully fill in all required fields that aren't part of a standard object.
@@ -82,24 +83,19 @@ public class EphemerisWriter implements EphemerisFileWriter {
      * @param template template for metadata
      * @param fileFormat file format to use
      * @param outputName output name for error messages
+     * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
      * @since 11.0
-     * @see #DEFAULT_FILE_NAME
      */
     public EphemerisWriter(final OemWriter writer,
                            final Header header, final OemMetadata template,
-                           final FileFormat fileFormat, final String outputName) {
-        this.writer     = writer;
-        this.header     = header;
-        this.metadata   = template.copy();
-        this.fileFormat = fileFormat;
-        this.outputName = outputName;
-    }
-
-    /** Get current metadata.
-     * @return current metadata
-     */
-    OemMetadata getMetadata() {
-        return metadata;
+                           final FileFormat fileFormat, final String outputName,
+                           final int unitsColumn) {
+        this.writer      = writer;
+        this.header      = header;
+        this.metadata    = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.fileFormat  = fileFormat;
+        this.outputName  = outputName;
+        this.unitsColumn = unitsColumn;
     }
 
     /** {@inheritDoc}
@@ -109,7 +105,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame...) will be inherited from the template  metadata set at writer
-     * {@link #OEMWriter(IERSConventions, DataContext, Header, OemMetadata, String, String) construction}.
+     * {@link #EphemerisWriter(OemWriter, Header, OemMetadata, FileFormat, String, int) construction}.
      * </p>
      */
     @Override
@@ -139,8 +135,8 @@ public class EphemerisWriter implements EphemerisFileWriter {
         }
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
-                                   new KvnGenerator(appendable, OemWriter.KVN_PADDING_WIDTH, outputName) :
-                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName)) {
+                                   new KvnGenerator(appendable, OemWriter.KVN_PADDING_WIDTH, outputName, unitsColumn) :
+                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName, unitsColumn > 0)) {
 
             writer.writeHeader(generator, header);
 

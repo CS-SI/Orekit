@@ -75,14 +75,14 @@ public class OmmData implements Data {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
+    public void validate(final double version) {
         if (keplerianElementsBlock == null) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
                                       KeplerianElementsKey.EPOCH);
         }
-        keplerianElementsBlock.checkMandatoryEntries();
+        keplerianElementsBlock.validate(version);
         if (spacecraftParameters != null) {
-            spacecraftParameters.checkMandatoryEntries();
+            spacecraftParameters.validate(version);
         }
         if (tleBlock == null) {
             // semi-major axis was not checked above, we do it now
@@ -92,14 +92,14 @@ public class OmmData implements Data {
             // in OMM with TLE block, only mean motion is allowed, not semi-major axis
             keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getMeanMotion(),
                                                KeplerianElementsKey.MEAN_MOTION);
-            tleBlock.checkMandatoryEntries();
+            tleBlock.validate(version);
         }
         if (covarianceBlock != null) {
             covarianceBlock.setEpoch(keplerianElementsBlock.getEpoch());
-            covarianceBlock.checkMandatoryEntries();
+            covarianceBlock.validate(version);
         }
         if (userDefinedBlock != null) {
-            userDefinedBlock.checkMandatoryEntries();
+            userDefinedBlock.validate(version);
         }
     }
 

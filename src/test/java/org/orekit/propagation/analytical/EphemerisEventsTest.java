@@ -150,7 +150,7 @@ public class EphemerisEventsTest {
 
         AbsoluteDate computeEnd = new AbsoluteDate(finalDate, -1000.0);
 
-        ephem.setSlaveMode();
+        ephem.clearStepHandlers();
         SpacecraftState state = ephem.propagate(computeEnd);
         Assert.assertEquals(computeEnd, state.getDate());
         Assert.assertEquals(14, inEclipsecounter);

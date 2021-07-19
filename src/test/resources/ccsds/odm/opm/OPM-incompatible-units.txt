@@ -1,0 +1,23 @@
+CCSDS_OPM_VERS = 3.0
+CREATION_DATE  = 1998-11-06T09:23:57
+ORIGINATOR     = JAXA
+
+COMMENT          GEOCENTRIC, CARTESIAN, EARTH FIXED
+OBJECT_NAME    = GODZILLA 5
+OBJECT_ID      = 1998-999A
+CENTER_NAME    = EARTH
+REF_FRAME      = ITRF2000
+TIME_SYSTEM    = UTC
+
+EPOCH =          1998-12-18T14:28:15.1172
+X =              6503.514000 [km]
+Y =              1239.647000 [km]
+Z =              -717.490000 [km]
+X_DOT =            -0.873160 [km/s]
+Y_DOT =             8.740420 [km/s]
+Z_DOT =            -4.191076 [km/s]
+MASS =           3000.000000 [kg]
+SOLAR_RAD_AREA =   18.770000 [s]
+SOLAR_RAD_COEFF =   1.000000
+DRAG_AREA =        18.770000 [m**2]
+DRAG_COEFF =        2.500000

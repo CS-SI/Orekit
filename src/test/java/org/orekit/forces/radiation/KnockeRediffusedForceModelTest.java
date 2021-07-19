@@ -381,7 +381,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         propagator.setInitialState(initState);
         propagator.addForceModel(knockeModel);
-        propagator.setMasterMode(handlerStep, new KnockeStepHandler(knockeModel));
+        propagator.setStepHandler(handlerStep, new KnockeStepHandler(knockeModel));
         
         final SpacecraftState finalState = propagator.propagate(date0.shiftedBy(duration));
         
@@ -402,7 +402,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         }
         
         @Override
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             
             // Get Knocke model acceleration
             final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters());

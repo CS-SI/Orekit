@@ -1,5 +1,5 @@
-# internal error, please notify development team by creating an issue at {0}
-INTERNAL_ERROR = erreur interne, merci de signaler le problème en ouvrant une fiche d''anomalie sur {0}
+# internal error, please notify development team by creating a new topic at {0}
+INTERNAL_ERROR = erreur interne, merci de signaler le problème en ouvrant une nouvelle discussion sur {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitude ({0} m) au dessous de la limite autorisée de {1} m
@@ -232,9 +232,6 @@ FRAMES_MISMATCH = le repère ({0}) ne correspond pas au repère ({1})
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = état initial non spécifié pour l''extrapolation d''orbite
 
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = l''extrapolateur n''est pas en mode de génération d''éphéméride
-
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = la date évènement {0}, plus grande que {1} moins {3} secondes et plus petite que {2} plus {3} secondes, ne peut pas être ajoutée
 
@@ -315,6 +312,9 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = époque de référence spécifique agence manq
 
 # missing mandatory key {0} in CCSDS file {1}
 CCSDS_MISSING_KEYWORD = mot-clef {0} manquant dans le fichier CCDSD {1}
+
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = le mot-clef {0} n''est pas autorisé dans la version {1} du format
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = mot-clef inattendu à la ligne {0} du fichier CCSDS {1} :\n{2}
@@ -465,6 +465,9 @@ CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
 
 # element set type {0} ({1}) is not supported yet
 CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = le type d''éléments {0} ({1}) n''est pas encore supporté
+
+# retrograde factor not supported in element set {0}
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = facteur rétrograde non supporté pour le type d''éléments {0}
 
 # element set type {0} ({1}) expects {2} elements
 CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = le type d''éléments {0} ({1}) nécessite {2} éléments
@@ -722,3 +725,6 @@ INCOMPATIBLE_UNITS = les unités {0} et {1} sont incompatibles
 
 # missing velocity data
 MISSING_VELOCITY = données de vitesse manquantes
+
+# attempt to generate file {0} with a formatting error
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentative de génération du fichier {0} avec une erreur de format

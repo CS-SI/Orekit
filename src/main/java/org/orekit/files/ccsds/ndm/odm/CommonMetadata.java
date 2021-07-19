@@ -60,11 +60,12 @@ public class CommonMetadata extends OdmMetadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
-        checkNotNull(objectID,       CommonMetadataKey.OBJECT_ID);
-        checkNotNull(center,         CommonMetadataKey.CENTER_NAME);
-        checkNotNull(referenceFrame, CommonMetadataKey.REF_FRAME);
+    public void validate(final double version) {
+        super.validate(version);
+        checkNotNull(getObjectName(), OdmMetadataKey.OBJECT_NAME);
+        checkNotNull(objectID,        CommonMetadataKey.OBJECT_ID);
+        checkNotNull(center,          CommonMetadataKey.CENTER_NAME);
+        checkNotNull(referenceFrame,  CommonMetadataKey.REF_FRAME);
     }
 
     /** Finalize the metadata.
@@ -180,14 +181,6 @@ public class CommonMetadata extends OdmMetadata {
     public void setReferenceFrame(final FrameFacade referenceFrame) {
         refuseFurtherComments();
         this.referenceFrame = referenceFrame;
-    }
-
-    /** Get epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame.
-     * @return epoch of reference frame
-     */
-    String getFrameEpochString() {
-        return frameEpochString;
     }
 
     /** Set epoch of reference frame, if not intrinsic to the definition of the

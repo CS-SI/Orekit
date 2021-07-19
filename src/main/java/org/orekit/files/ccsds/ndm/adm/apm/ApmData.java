@@ -70,19 +70,19 @@ public class ApmData implements Data {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        quaternionBlock.checkMandatoryEntries();
+    public void validate(final double version) {
+        quaternionBlock.validate(version);
         if (eulerBlock != null) {
-            eulerBlock.checkMandatoryEntries();
+            eulerBlock.validate(version);
         }
         if (spinStabilizedBlock != null) {
-            spinStabilizedBlock.checkMandatoryEntries();
+            spinStabilizedBlock.validate(version);
         }
         if (spacecraftParameters != null) {
-            spacecraftParameters.checkMandatoryEntries();
+            spacecraftParameters.validate(version);
         }
         for (final Maneuver maneuver : maneuvers) {
-            maneuver.checkMandatoryEntries();
+            maneuver.validate(version);
         }
     }
 

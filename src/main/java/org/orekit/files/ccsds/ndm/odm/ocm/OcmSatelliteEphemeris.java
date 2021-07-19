@@ -29,27 +29,27 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 11.0
  */
 public class OcmSatelliteEphemeris
-    implements EphemerisFile.SatelliteEphemeris<TimeStampedPVCoordinates, OrbitStateHistory> {
+    implements EphemerisFile.SatelliteEphemeris<TimeStampedPVCoordinates, TrajectoryStateHistory> {
 
-    /** ID of the satellite. */
-    private final String id;
+    /** Name of the object. */
+    private final String name;
 
     /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
     private final double mu;
 
     /** The ephemeris data for the satellite. */
-    private final List<OrbitStateHistory> blocks;
+    private final List<TrajectoryStateHistory> blocks;
 
     /**
      * Create a container for the set of ephemeris blocks in the file that pertain to
      * a single satellite.
      *
-     * @param id id of the satellite.
+     * @param name name of the object.
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      * @param blocks containing ephemeris data for the satellite.
      */
-    public OcmSatelliteEphemeris(final String id, final double mu, final List<OrbitStateHistory> blocks) {
-        this.id     = id;
+    public OcmSatelliteEphemeris(final String name, final double mu, final List<TrajectoryStateHistory> blocks) {
+        this.name   = name;
         this.mu     = mu;
         this.blocks = blocks;
     }
@@ -57,7 +57,7 @@ public class OcmSatelliteEphemeris
     /** {@inheritDoc} */
     @Override
     public String getId() {
-        return id;
+        return name;
     }
 
     /** {@inheritDoc} */
@@ -68,7 +68,7 @@ public class OcmSatelliteEphemeris
 
     /** {@inheritDoc} */
     @Override
-    public List<OrbitStateHistory> getSegments() {
+    public List<TrajectoryStateHistory> getSegments() {
         return Collections.unmodifiableList(blocks);
     }
 

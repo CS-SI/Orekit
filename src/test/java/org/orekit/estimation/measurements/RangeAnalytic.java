@@ -406,7 +406,7 @@ public class RangeAnalytic extends Range {
         // td derivatives / state
         // -----------------------
 
-        // Qt = Master station position at tmeas = t = signal arrival at master station
+        // Qt = Primary station position at tmeas = t = signal arrival at primary station
         final Vector3D vel     = state.getPVCoordinates().getVelocity();
         final Vector3D Qt_V    = QDownlink.getVelocity();
         final Vector3D Ptr     = transit.getPVCoordinates().getPosition();

@@ -20,6 +20,9 @@ import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.utils.Constants;
 
 /**
  * Unit tests for {@link Lexer}.
@@ -50,6 +53,19 @@ public class UnitTest {
         Assert.assertEquals("m³.s⁻²", Unit.parse("km**3/s**2").sameDimensionSI().getName());
         Assert.assertEquals("m⁻³.s⁻⁶.rad^(2/5)", Unit.parse("µas^(2/5)/(h**(2)×m)³").sameDimensionSI().getName());
         
+    }
+
+    @Test
+    public void testEquals() {
+        final Unit u1 = Unit.parse("kg/m³");
+        final Unit u2 = Unit.parse("kg/m^3");
+        Assert.assertNotSame(u1, u2);
+        Assert.assertEquals(u1, u2);
+        Assert.assertNotEquals(u1.getName(), u2.getName());
+        Assert.assertNotEquals(u1, Unit.parse("A").alias(u1.getName()));
+        Assert.assertNotEquals(u1, null);
+        Assert.assertNotEquals(u1, u1.getName());
+        Assert.assertEquals(19160943, u1.hashCode());
     }
 
     @Test
@@ -97,6 +113,179 @@ public class UnitTest {
         Assert.assertEquals(new Fraction(time),     unit.getTime());
         Assert.assertEquals(new Fraction(current),  unit.getCurrent());
         Assert.assertEquals(new Fraction(angle),    unit.getAngle());
+    }
+
+    @Test
+    public void testNotAUnit() {
+        Assert.assertSame(Unit.NONE, Unit.parse("n/a"));
+    }
+
+    @Test
+    public void testOneUnit() {
+        checkReference("1",
+                       1.0,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
+    }
+
+    @Test
+    public void testND() {
+        // nd does not mean "not defined", but nano-day…
+        checkReference("nd",
+                       Prefix.NANO.getFactor() * Constants.JULIAN_DAY,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+    }
+
+    @Test
+    public void testPredefinedUnit() {
+        checkReference("MHz",
+                       1.0e6,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+    }
+
+    @Test
+    public void testSquareRoot() {
+        checkReference("km/√d",
+                       1000.0 / FastMath.sqrt(Constants.JULIAN_DAY),
+                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+    }
+
+    @Test
+    public void testChain() {
+        checkReference("kg.m^(3/4).s⁻¹",
+                       1.0,
+                       Fraction.ONE, new Fraction(3, 4), Fraction.MINUS_ONE, Fraction.ZERO);
+    }
+
+    @Test
+    public void testExponents() {
+        checkReference("µas^⅖/(h**(2)×m)³",
+                       FastMath.pow(FastMath.toRadians(1.0 / 3.6e9), 0.4) / FastMath.pow(3600, 6),
+                       Fraction.ZERO, new Fraction(-3, 1), new Fraction(-6, 1), new Fraction(2, 5));
+    }
+
+    @Test
+    public void testCompoundInSquareRoot() {
+        checkReference("km/√(kg.s)",
+                       1000.0,
+                       new Fraction(-1, 2), Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+    }
+
+    @Test
+    public void testLeftAssociativity() {
+        checkReference("(kg/m)/s²",
+                       1.0,
+                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
+        checkReference("kg/(m/s²)",
+                       1.0,
+                       Fraction.ONE, Fraction.MINUS_ONE, Fraction.TWO, Fraction.ZERO);
+        checkReference("kg/m/s²",
+                       1.0,
+                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
+    }
+
+    @Test
+    public void testCcsdsRoot() {
+        checkReference("km**0.5/s",
+                       FastMath.sqrt(1000.0),
+                       Fraction.ZERO, Fraction.ONE_HALF, Fraction.MINUS_ONE, Fraction.ZERO);
+        checkReference("km/s**0.5",
+                       1000.0,
+                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+    }
+
+    @Test
+    public void testNumber() {
+        checkReference("#/yr",
+                       1.0 / Constants.JULIAN_YEAR,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+    }
+
+    @Test
+    public void testReciprocal() {
+        checkReference("1/s",
+                       1.0,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+    }
+
+    @Test
+    public void testSeveralMicro() {
+        checkReference("µs", // here we use U+00B5, MICRO SIGN
+                       1.0e-6,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+        checkReference("μs", // here we use U+03BC, GREEK SMALL LETTER MU
+                       1.0e-6,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+    }
+
+    @Test
+    public void testEmpty() {
+        expectFailure("");
+    }
+
+    @Test
+    public void testIncompleteExponent1() {
+        expectFailure("m.g^(2/)");
+    }
+
+    @Test
+    public void testIncompleteExponent2() {
+        expectFailure("m.g^(2m)");
+    }
+
+    @Test
+    public void testMissingClosingParenthesis() {
+        expectFailure("m.(W");
+    }
+
+    @Test
+    public void testGarbageOnInput() {
+        expectFailure("kg+s");
+    }
+
+    @Test
+    public void testFactor() {
+        checkReference("kg/3s",
+                       1.0 / 3.0,
+                       Fraction.ONE, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+    }
+
+    @Test
+    public void testMissingUnit() {
+        expectFailure("km/√");
+    }
+
+    @Test
+    public void testRootAndPower() {
+        expectFailure("km/√d³");
+    }
+
+    @Test
+    public void testRootAndParenthesisedPower() {
+        checkReference("km/√(d³)",
+                       1000.0 / (Constants.JULIAN_DAY * FastMath.sqrt(Constants.JULIAN_DAY)),
+                       Fraction.ZERO, Fraction.ONE, new Fraction(-3, 2), Fraction.ZERO);
+    }
+
+    private void checkReference(final String unitSpecification, final double scale,
+                                final Fraction mass, final Fraction length,
+                                final Fraction time, final Fraction angle) {
+        final Unit unit = Unit.parse(unitSpecification);
+        Assert.assertEquals(unitSpecification, unit.toString());
+        Assert.assertEquals(scale,  unit.getScale(), 1.0e-10 * scale);
+        Assert.assertEquals(mass,   unit.getMass());
+        Assert.assertEquals(length, unit.getLength());
+        Assert.assertEquals(time,   unit.getTime());
+        Assert.assertEquals(angle,  unit.getAngle());
+    }
+
+    private void expectFailure(final String unitSpecification) {
+        try {
+            Unit.parse(unitSpecification);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNKNOWN_UNIT, oe.getSpecifier());
+            Assert.assertEquals(unitSpecification, oe.getParts()[0]);
+        }
     }
 
 }

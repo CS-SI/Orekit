@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /**  Interface for interpolation grids.
  * <p>
@@ -28,7 +28,7 @@ import org.hipparchus.RealFieldElement;
  * <p>
  * @author Nicolas Bernard
  */
-public interface FieldInterpolationGrid<T extends RealFieldElement<T>> {
+public interface FieldInterpolationGrid<T extends CalculusFieldElement<T>> {
 
     /** Get grid points that are within the current step.
      * <p>The step is defined by its start and its end time.

@@ -44,13 +44,16 @@ public enum OmmTleKey {
     REV_AT_EPOCH((token, context, container) -> token.processAsInteger(container::setRevAtEpoch)),
 
     /** SGP/SGP4 drag-like coefficient. */
-    BSTAR((token, context, container) -> token.processAsDouble(Unit.ONE, container::setBStar)),
+    BSTAR((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                               container::setBStar)),
 
     /** First time derivative of mean motion. */
-    MEAN_MOTION_DOT((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY2_SCALED, container::setMeanMotionDot)),
+    MEAN_MOTION_DOT((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY2_SCALED, context.getParsedUnitsBehavior(),
+                                                                         container::setMeanMotionDot)),
 
     /** Second time derivative of mean motion. */
-    MEAN_MOTION_DDOT((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY3_SCALED, container::setMeanMotionDotDot));
+    MEAN_MOTION_DDOT((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY3_SCALED, context.getParsedUnitsBehavior(),
+                                                                          container::setMeanMotionDotDot));
 
     /** Processing method. */
     private final TokenProcessor processor;
