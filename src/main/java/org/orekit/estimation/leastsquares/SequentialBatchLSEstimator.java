@@ -16,11 +16,10 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 
 /**
  * Sequential least squares estimator for orbit determination.
@@ -38,9 +37,9 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonO
  * </p>
  *
  * @author Julie Bayard
+ * @since 11.0
  */
-public class SequentialBatchLSEstimator
-    extends BatchLSEstimator {
+public class SequentialBatchLSEstimator extends BatchLSEstimator {
 
     /**
      * Simple constructor.
@@ -58,55 +57,17 @@ public class SequentialBatchLSEstimator
      * navigation bulletins are not considered accurate enough and the
      * navigation constellation must be propagated numerically.
      * </p>
-     * It is highly recommended to use the previous {@link PropagatorBuilder
-     * propagator builders} used during the previous orbit estimation.
      * <p>
-     * The optimizer solver used for least squares problem is a
-     * {@link SequentialGaussNewtonOptimizer sequential Gauss Newton optimizer}
-     * and the normal equation used is always J<sup>T</sup>Jx=J<sup>T</sup>r.
+     * The solver used for sequential least squares problem is a
+     * {@link SequentialGaussNewtonOptimizer sequential Gauss Newton optimizer}.
      * </p>
      *
-     * @param evaluation old evaluation previously computed.
+     * @param sequentialOptimizer solver for sequential least squares problem
      * @param propagatorBuilder builders to use for propagation.
      */
-    public SequentialBatchLSEstimator(final Evaluation evaluation,
-                               final OrbitDeterminationPropagatorBuilder... propagatorBuilder) {
-        super(new SequentialGaussNewtonOptimizer(evaluation),
-              propagatorBuilder);
+    public SequentialBatchLSEstimator(final SequentialGaussNewtonOptimizer sequentialOptimizer,
+                                      final OrbitDeterminationPropagatorBuilder... propagatorBuilder) {
+        super(sequentialOptimizer, propagatorBuilder);
     }
 
-    /**
-     * Simple constructor.
-     * <p>
-     * If multiple {@link PropagatorBuilder propagator builders} are set up, the
-     * orbits of several spacecrafts will be used simultaneously. This is useful
-     * if the propagators share some model or measurements parameters (typically
-     * pole motion, prime meridian correction or ground stations positions).
-     * </p>
-     * <p>
-     * Setting up multiple {@link PropagatorBuilder propagator builders} is also
-     * useful when inter-satellite measurements are used, even if only one of
-     * the orbit is estimated and the other ones are fixed. This is typically
-     * used when very high accuracy GNSS measurements are needed and the
-     * navigation bulletins are not considered accurate enough and the
-     * navigation constellation must be propagated numerically.
-     * </p>
-     * It is highly recommended to use the previous {@link PropagatorBuilder
-     * propagator builders} used during the previous orbit estimation.
-     * <p>
-     * The optimizer solver used for least squares problem is a
-     * {@link SequentialGaussNewtonOptimizer sequential Gauss Newton optimizer}
-     * and the normal equation used is always J<sup>T</sup>Jx=J<sup>T</sup>r.
-     * </p>
-     *
-     * @param decomposer to use in the sequential Gauss Newton optimizer.
-     * @param evaluation old evaluation previously computed.
-     * @param propagatorBuilder builders to use for propagation.
-     */
-    public SequentialBatchLSEstimator(final MatrixDecomposer decomposer,
-                               final Evaluation evaluation,
-                               final OrbitDeterminationPropagatorBuilder... propagatorBuilder) {
-        super(new SequentialGaussNewtonOptimizer(decomposer, evaluation),
-              propagatorBuilder);
-    }
 }
