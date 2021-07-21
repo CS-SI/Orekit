@@ -79,7 +79,6 @@
       </action>
       <action dev="luc" type="fix" issue="776">
         Fixed associativity in units parsing.
->>>>>>> refs/heads/develop
       </action>
       <action dev="bryan" type="update" issue="773">
         TimeStampedFieldAngularCoordinates now implements FieldTimeStamped.
