@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -35,6 +35,8 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -765,11 +767,10 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      */
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
-                                                                         final double epsilon, final int maxIterations) {
+                                                                             final double epsilon, final int maxIterations) {
 
-        // get keplerian parameters from state
-        final FieldOrbit<T> orbit = state.getOrbit();
-        final FieldEquinoctialOrbit<T> equiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
+        // Gets equinoctial parameters in TEME frame from state
+        final FieldEquinoctialOrbit<T> equiOrbit = convert(state.getOrbit());
         T sma = equiOrbit.getA();
         T ex  = equiOrbit.getEquinoctialEx();
         T ey  = equiOrbit.getEquinoctialEy();
@@ -778,7 +779,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         T lv  = equiOrbit.getLv();
 
         // Rough initialization of the TLE
-        final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
+        final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equiOrbit);
         FieldTLE<T> current = newTLE(keplerianOrbit, templateTLE);
 
         // Field
@@ -826,7 +827,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
             lv  = lv.add(deltaLv);
             final FieldEquinoctialOrbit<T> newEquiOrbit =
                                     new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    orbit.getFrame(), orbit.getDate(), orbit.getMu() );
+                                    equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
             final FieldKeplerianOrbit<T> newKeplOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE
@@ -834,6 +835,19 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         }
 
         throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
+    }
+
+    /**
+     * Converts an orbit into an equinoctial orbit expressed in TEME frame.
+     *
+     * @param orbitIn the orbit to convert
+     * @param <T> type of the element
+     * @return the converted orbit, i.e. equinoctial in TEME frame
+     */
+    @DefaultDataContext
+    private static <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn) {
+        final Frame teme = FramesFactory.getTEME();
+        return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
     }
 
     /**
