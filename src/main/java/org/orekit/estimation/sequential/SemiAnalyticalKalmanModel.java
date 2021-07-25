@@ -93,6 +93,12 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
     /** Scaling factors. */
     private final double[] scale;
 
+    /** Provider for covariance matrix. */
+    private final CovarianceMatrixProvider covarianceMatrixProvider;
+
+    /** Process noise matrix provider for measurement parameters. */
+    private final CovarianceMatrixProvider measurementProcessNoiseMatrix;
+
     /** Mappers for extracting Jacobians from integrated states. */
     private DSSTJacobiansMapper mapper;
 
@@ -119,6 +125,9 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
     /** Nominal mean spacecraft state. */
     private SpacecraftState nominalMeanSpacecraftState;
+
+    /** Previous nominal mean spacecraft state. */
+    private SpacecraftState previousNominalMeanSpacecraftState;
 
     /** Current corrected estimate. */
     private ProcessEstimate correctedEstimate;
@@ -147,6 +156,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         this.observer                        = null;
         this.currentMeasurementNumber        = 0;
         this.currentDate                     = propagatorBuilder.getInitialOrbitDate();
+        this.covarianceMatrixProvider        = covarianceMatrixProvider;
+        this.measurementProcessNoiseMatrix   = measurementProcessNoiseMatrix;
 
         // Number of estimated parameters
         int columns = 0;
@@ -224,6 +235,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Build the reference propagator and add its partial derivatives equations implementation
         updateReferenceTrajectory(getEstimatedPropagator());
         this.nominalMeanSpacecraftState = dsstPropagator.getInitialState();
+        this.previousNominalMeanSpacecraftState = nominalMeanSpacecraftState;
 
         // Initialize "field" short periodic terms
         mapper.initializeFieldShortPeriodTerms(nominalMeanSpacecraftState);
@@ -374,13 +386,35 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Normalized measurement matrix
         final RealMatrix measurementMatrix = getMeasurementMatrix();
 
-        // compute process noise matrix (Only contains 0.0 according to Ref [1])
-        final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(previousState.getDimension(),
-                                                                             previousState.getDimension());
+        // Number of estimated measurement parameters
+        final int nbMeas = getNumberSelectedMeasurementDrivers();
+
+        // Number of estimated dynamic parameters (orbital + propagation)
+        final int nbDyn  = getNumberSelectedOrbitalDrivers() + getNumberSelectedPropagationDrivers();
+
+        // Covariance matrix
+        final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
+        final RealMatrix noiseP = covarianceMatrixProvider.
+                                  getProcessNoiseMatrix(previousNominalMeanSpacecraftState,
+                                		                nominalMeanSpacecraftState);
+        noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+        if (measurementProcessNoiseMatrix != null) {
+            final RealMatrix noiseM = measurementProcessNoiseMatrix.getProcessNoiseMatrix(previousNominalMeanSpacecraftState,
+            		                                                                      nominalMeanSpacecraftState);
+            noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
+        }
+
+        // Verify dimension
+        checkDimension(noiseK.getRowDimension(),
+                       builder.getOrbitalParametersDrivers(),
+                       builder.getPropagationParametersDrivers(),
+                       estimatedMeasurementsParameters);
+
+        final RealMatrix normalizedProcessNoise = normalizeCovarianceMatrix(noiseK);
 
         // Return
 		return new NonLinearEvolution(measurement.getTime(), predictedFilterCorrection, stm,
-			                          physicalProcessNoise, measurementMatrix);
+				                      normalizedProcessNoise, measurementMatrix);
 	}
 
 	/** {@inheritDoc} */
@@ -418,6 +452,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         correctedEstimate = estimate;
         // Corrected filter correction
         correctedFilterCorrection = estimate.getState();
+        // Update the previous nominal mean spacecraft state
+        previousNominalMeanSpacecraftState = nominalMeanSpacecraftState;
     }
 
     /** Finalize estimation operations on the observation grid. */
