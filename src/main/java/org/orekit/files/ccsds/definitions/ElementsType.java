@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.ocm.OcmFile;
@@ -102,6 +103,7 @@ public enum ElementsType {
                 "km", "n/a", "n/a", "°", "n/a", "n/a", "n/a") {
         /** {@inheritDoc} */
         @Override
+        @DefaultDataContext
         public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
             if (elements[6] < 0) {
                 // retrograde
@@ -121,6 +123,7 @@ public enum ElementsType {
                    "km", "n/a", "n/a", "°", "n/a", "n/a", "n/a") {
         /** {@inheritDoc} */
         @Override
+        @DefaultDataContext
         public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
             if (elements[6] < 0) {
                 // retrograde
@@ -145,6 +148,7 @@ public enum ElementsType {
               "km", "n/a", "°", "°", "°", "°") {
         /** {@inheritDoc} */
         @Override
+        @DefaultDataContext
         public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
             return new KeplerianOrbit(elements[0], elements[1], elements[2],
                                       elements[4], elements[3], // BEWARE! the inversion here is intentional
@@ -159,6 +163,7 @@ public enum ElementsType {
                   "km", "n/a", "°", "°", "°", "°") {
         /** {@inheritDoc} */
         @Override
+        @DefaultDataContext
         public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
             return new KeplerianOrbit(elements[0], elements[1], elements[2],
                                       elements[4], elements[3], // BEWARE! the inversion here is intentional
