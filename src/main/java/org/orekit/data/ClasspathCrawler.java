@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -106,13 +105,6 @@ public class ClasspathCrawler implements DataProvider {
             }
         }
 
-    }
-
-    @Override
-    @Deprecated
-    @DefaultDataContext
-    public boolean feed(final Pattern supported, final DataLoader visitor) {
-        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
     }
 
     /** {@inheritDoc} */
