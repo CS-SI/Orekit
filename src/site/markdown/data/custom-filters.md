@@ -38,9 +38,14 @@ a way that it should check the `DataSource` passed to it and return its paramete
 it should not filter it, or return a new `DataSource` if it considers is should filter it.
 
 Checking is typically done using only the name and looking for files extensions, but it could as
-well be made by opening temporarily the stream to read just the first few bytes to look for some
-magic number and closing it afterwards, as the `DataSource` passed as a parameter has an `openStream`
-method that can be called as many times as one wants.
+well be made by opening the stream, wrap it into a `BufferedInputStream`, and read just the first
+few bytes to look for some magic number in the buffered stream. If the magic number is found, the
+buffered stream is reset to beginninf and a new data source is set p with its `openOnce` method
+implemented as just returning the already open (and reset) buffered stream. This ensures that
+the stream is really open only once, despite the first few bytes are read twice, once when looking
+for the magic number and then by the parsert itself. An example of this process is available in
+the `LexicalAnalyzerSelector` class in the `org.orekit.files.ccsds.utils.lexical` package where it
+is used to detect XML files and select either the KV or XML parser for CCSDS files.
 
 As `applyAllFilters` restarts its loop from the beginning each time a filter is added to the stack,
 some care must be taken to avoid stacking an infinite number of instances of the same filter on top

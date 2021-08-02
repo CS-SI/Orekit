@@ -37,7 +37,7 @@ import java.nio.file.Paths;
  *   with resources} clause so closing is done properly even in case of exception</li>
  *   <li>if some pre-reading of the first few bytes are needed to decide how to
  *   load data (as in {@link org.orekit.files.ccsds.utils.lexical.LexicalAnalyzerSelector}),
- *   the the stream can be opened, buffer and rewound and a fake open method used
+ *   then the stream can be opened, buffered and rewound and a fake open method used
  *   to return the already open stream so a {@code try with resources} clause
  *   elsewhere works properly for closing the stream</li>
  * </ul>
@@ -65,9 +65,6 @@ public class DataSource {
     private final StreamOpener streamOpener;
 
     /** Complete constructor.
-     * <p>
-     * WARNING! The {@code StreamOpener}
-     * </p>
      * @param name data name
      * @param streamOpener opener for the data stream
      */

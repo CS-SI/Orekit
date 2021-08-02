@@ -65,7 +65,7 @@ filters are checked (only one filter shown in the diagram), and all of them decl
 on the file, so they all return the same `DataSource` that was created for the raw file.
 At the end of the filters loop, the name (which is still `tai-utc.dat`) is checked against the
 expected pattern. As it does not match, the stack composed of only one `DataSource` is discarded.
-During all checks, the file as not been opened at all, only its name has been considered.
+During all checks, the file has not been opened at all, only its name has been considered.
 
 The `DirectoryCrawler` then considers the next directory, and in this directory the next
 file which is `may2019f10_prd.txt.gz`. A new `DataSource` is created for it and the filters are

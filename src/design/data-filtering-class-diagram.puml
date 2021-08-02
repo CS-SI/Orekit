@@ -51,10 +51,12 @@
       }
 
       interface DataSource.StreamOpener {
-        +InputStream openStream()
+        +InputStream openOnce()
       }
       note right
         allows lazy opening of stream
+        beware it may fail if called more than once
+        especially with network-based streams
       end note
 
       DataProvider "*" -- "1" DataProvidersManager
