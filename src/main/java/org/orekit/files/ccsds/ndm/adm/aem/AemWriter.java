@@ -58,7 +58,7 @@ import org.orekit.utils.units.Unit;
  * or in the metadata section at the start of an AEM attitude segment.
  * </p>
  *
- * <p> The AEM header for the whole AEM file is set when calling {@link #writeMessageHeader(Generator, Header)},
+ * <p> The AEM header for the whole AEM file is set when calling {@link #writeHeader(Generator, Header)},
  * the entries are defined in table 4-2 of the ADM standard.
  *
  * <table>
@@ -95,7 +95,7 @@ import org.orekit.utils.units.Unit;
  *    </table>
  * </p>
  *
- * <p> The AEM metadata for the AEM file is set when calling {@link #writeSegment(Generator, AemSegment)},
+ * <p> The AEM metadata for the AEM file is set when calling {@link #writeSegmentContent(Generator, double, AemSegment)},
  * the entries are defined in tables 4-3, 4-4 and annex A of the ADM standard.
  *
  * <table>

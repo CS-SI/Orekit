@@ -62,9 +62,6 @@ public interface DataProvider {
      * {@link DataLoader data loader}.
      * </p>
      *
-     * <p> The default implementation will be removed in 11.0. It calls {@link
-     * #feed(Pattern, DataLoader)}.
-     *
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @param manager with the filters to apply to the resources.

@@ -30,7 +30,6 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
@@ -131,8 +130,8 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * </p>
      * <p>
      * The returned ephemeris generator will be initially empty, it will be filled
-     * with propagation data when a subsequent call to either {@link #propagate(AbsoluteDate)
-     * propagate(target)} or {@link #propagate(AbsoluteDate, AbsoluteDate)
+     * with propagation data when a subsequent call to either {@link #propagate(FieldAbsoluteDate)
+     * propagate(target)} or {@link #propagate(FieldAbsoluteDate, FieldAbsoluteDate)
      * propagate(start, target)} is called. The proper way to use this method is
      * therefore to do:
      * </p>

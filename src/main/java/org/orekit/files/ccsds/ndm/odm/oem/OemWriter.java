@@ -19,13 +19,11 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
@@ -43,7 +41,6 @@ import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -114,13 +111,13 @@ import org.orekit.utils.units.Unit;
  *            <td>{@link CommonMetadataKey#CENTER_NAME}</td>
  *            <td>Segment</td>
  *            <td>Yes</td>
- *            <td>Guessed from the {@link #newSegment(Frame, Map) segment}'s {@code frame}</td>
+ *            <td></td>
  *            <td>Table 5-3</td>
  *        <tr>
  *            <td>{@link CommonMetadataKey#REF_FRAME}</td>
  *            <td>Segment</td>
  *            <td>Yes</td>
- *            <td>Guessed from the {@link #newSegment(Frame, Map) segment}'s {@code frame}</td>
+ *            <td></td>
  *            <td>Table 5-3, Annex A</td>
  *        <tr>
  *            <td>{@link CommonMetadataKey#REF_FRAME_EPOCH}</td>
@@ -174,7 +171,7 @@ import org.orekit.utils.units.Unit;
  *
  * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
  * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
- * TimeConverter#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
+ * TimeSystem#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
  * to provide values for {@link CommonMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
  * to avoid any bugs associated with incorrect guesses.
  *

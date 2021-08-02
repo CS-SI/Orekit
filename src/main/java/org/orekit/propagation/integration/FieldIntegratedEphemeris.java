@@ -40,11 +40,11 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * later retrieval.
  *
  * <p>
- * Instances of this class are built and then must be fed with the results
- * provided by {@link org.orekit.propagation.Propagator Propagator} objects
- * configured in {@link org.orekit.propagation.Propagator#setEphemerisMode()
- * ephemeris generation mode}. Once propagation is o, random access to any
- * intermediate state of the orbit throughout the propagation range is possible.
+ * Instances of this class are built automatically when the {@link
+ * org.orekit.propagation.FieldPropagator#getEphemerisGenerator()
+ * getEphemerisGenerator} method has been called. They are created when propagation is over.
+ * Random access to any intermediate state of the orbit throughout the propagation range is
+ * possible afterwards through this object.
  * </p>
  * <p>
  * A typical use case is for numerically integrated orbits, which can be used by

@@ -100,7 +100,7 @@ public class StreamingAemWriter {
          * {@inheritDoc}
          *
          * <p> Sets the {@link AemMetadataKey#START_TIME} and {@link AemMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link AemWriter#writeMessageHeader(Generator, Header)
+         * segment's metadata if not already set by the user. Then calls {@link AemWriter#writeHeader(Generator, Header)
          * writeHeader} if it is the first segment) and {@link AemWriter#writeMetadata(Generator, AemMetadata)} to start the segment.
          */
         @Override
