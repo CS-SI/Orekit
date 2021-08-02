@@ -75,14 +75,15 @@ in the library itself.
 ## Data formats
 
 In order to simplify data updates for users and to avoid transformations errors, Orekit
-uses each supported data set in the native format in which it is publicly available. So
-if a user wants to take into account the Earth Orientation Parameters for a given year,
-for example, he or she will simply download the corresponding file from IERS server at
+uses each [supported data](./supported-data-types.html) set in the native format in which
+it is publicly available. So if a user wants to take into account the Earth Orientation
+Parameters for a given year, for example, he or she will simply download the corresponding
+file from IERS server at
 [http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html](http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html)
 and drop it in the data storage system Orekit is configured to use, without any change
 to the data file itself.
 
-Custom data formats can be used, see the [Custom data formats](./custom-formats.html) page.
+Custom data formats can be used, see the [Application data](./application-data.html) page.
 
 ## Low level data handling in Orekit
 
@@ -230,46 +231,3 @@ and IAU-2000), UTC-TAI history from 1972,
 Marshall Solar Activity Futur Estimation from 1999,
 the Eigen 06S gravity field and the FES 2004 ocean tides model and space weather data with
 observed data from 1957 with predicted data up to 22 years in the future.
-
-## Supported data types
-
-The data types supported by Orekit are described in the following table, where the `#`
-character represents any digit, `(m/p)` represents either the m character or the p
-character and `*` represents any character sequence. The `[.gz|.Z]` part at the end of all
-naming patterns means that optional `.gz` (resp. `.Z`) suffixes can be appended, in which
-case the data are considered to be compressed with gzip (resp. Unix compress). Decompression
-is performed on the fly in memory by the library upon data loading.
-
-Earth Orientation Parameters are provided by observatories in many different formats
-(Bulletin A, several different formats of Bulletin B, EOP C04, finals file combining
-both Bulletin A and Bulletin B information ...). They are also provided for different
-precession-nutation models (IAU-1980 and IAU-2006/2000A). Orekit supports all of these
-formats and supports both precession-nutation models. Two different
-naming patterns for Bulletin B are supported by default. Both the old Bulletin B format
-used up to 2009 and the new format used since 2010 are supported. The supported formats
-for `finals2000A` files for IAU-2006/2000A and the finals files for IAU-1980 are both
-the XML format and the columns format.
-
-|          default naming pattern                  |       format       |                          data type                                                       |                                                                    source                                                                          |
-|--------------------------------------------------|--------------------|------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| tai-utc.dat[.gz|.Z]                              |  USNO tai-utc      | leap seconds introduction history                                                        | [http://maia.usno.navy.mil/ser7/tai-utc.dat](http://maia.usno.navy.mil/ser7/tai-utc.dat) offline as of 2021                                        |
-| UTC-TAI.history[.gz|.Z]                          |  IERS history      | leap seconds introduction history                                                        | [http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history](http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history)                                     |
-| bulletina-xxxx-\#\#\#.txt[.gz|.Z]                |  IERS Bulletin A   | weekly Earth Orientation Parameters, IAU-1980 and IAU-2000, rapid service and prediction | [https://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html](https://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html) |
-| bulletinb.\#\#\#[.gz|.Z]                         |  IERS Bulletin B   | monthly Earth Orientation Parameters model IAU 2006/2000A, final values                  | [ftp://ftp.iers.org/products/eop/bulletinb/format_2009/](ftp://ftp.iers.org/products/eop/bulletinb/format_2009/)                                   |
-| eopc04\_\#\#\_IAU2000.\#\#[.gz|.Z]               |  IERS EOP xx C04   | yearly Earth Orientation Parameters model IAU 2006/2000A for ITRF 20xx                   | [https://hpiers.obspm.fr/eoppc/eop/](https://hpiers.obspm.fr/eoppc/eop/)                                                                           |
-| eopc04\_\#\#.\#\#[.gz|.Z]                        |  IERS EOP xx C04   | yearly Earth Orientation Parameters model IAU 1980 for ITRF 20xx                         | [https://hpiers.obspm.fr/eoppc/eop/](https://hpiers.obspm.fr/eoppc/eop/)                                                                           |
-| finals2000A.\*.[.gz|.Z]                          |  IERS standard EOP | Earth Orientation Parameters model IAU 2006/2000A                                        | [https://datacenter.iers.org/data/9/finals2000A.all](https://datacenter.iers.org/data/9/finals2000A.all)                                           |
-| finals.\*.[.gz|.Z]                               |  IERS standard EOP | Earth Orientation Parameters  model IAU 1980                                             | [https://datacenter.iers.org/data/7/finals.all](https://datacenter.iers.org/data/7/finals.all)                                                     |
-| finals2000A.\*.xml[.gz|.Z]                       |  IERS standard EOP | Earth Orientation Parameters model IAU 2006/2000A                                        | [ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals2000A.all.xml](ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals2000A.all.xml)   |
-| finals.\*.xml[.gz|.Z]                            |  IERS standard EOP | Earth Orientation Parameters model IAU 1980                                              | [ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals.all.xml](ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals.all.xml)             |
-| (l/u)nx(m/p)\#\#\#\#.4\#\#[.gz|.Z]               |  DE 4xx binary     | JPL DE 4xx planets ephemerides                                                           | [ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux/](ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux/)                                                     |
-| inpop\*_m\#\#\#\#_p\#\#\#\#*.dat[.gz|.Z]         |  DE 4xx binary     | IMCCE inpop planets ephemerides                                                          | [ftp://ftp.imcce.fr/pub/ephem/planets/](ftp://ftp.imcce.fr/pub/ephem/planets/)                                                                     |
-| eigen\_\*\_coef[.gz|.Z]                          |  SHM format        | Eigen gravity field (old format)                                                         | [http://op.gfz-potsdam.de/grace/results/main\_RESULTS.html#gravity](http://op.gfz-potsdam.de/grace/results/main_RESULTS.html#gravity)              |
-| \*.gfc, g\#\#\#\_eigen\_\*\_coef[.gz|.Z]         |  ICGEM format      | gravity fields from International Centre for Global Earth Models                         | [http://icgem.gfz-potsdam.de/ICGEM/modelstab.html](http://icgem.gfz-potsdam.de/ICGEM/modelstab.html)                                               |
-| egm\#\#\_to\#\*[.gz|.Z]                          |  EGM format        | EGM gravity field                                                                        | [ftp://cddis.gsfc.nasa.gov/pub/egm96/general\_info](ftp://cddis.gsfc.nasa.gov/pub/egm96/general_info)                                              |
-| jan\#\#\#\#f10.txt to dec\#\#\#\#f10[_prd].txt[.gz|.Z] |  MSAFE format                  | Marshall Solar Activity Future Estimation                              | [https://www.nasa.gov/msfcsolar/archivedforecast](https://www.nasa.gov/msfcsolar/archivedforecast)                                                 |
-| CGIM\#\#\#0.\#\#N [.gz|.Z]                       |  Bern Astronomical Institute format  | Klobuchar coefficients                                                 | [ftp://ftp.aiub.unibe.ch/aiub/CODE/](ftp://ftp.aiub.unibe.ch/aiub/CODE/)                                                                           |
-| \*.blq[.gz|.Z]                                   |  Onsala Space Observatory BLQ format | ocean loading coefficients                                             | [http://holt.oso.chalmers.se/loading/](http://holt.oso.chalmers.se/loading/)                                                                       |
-|SpaceWeather-All-v1.2.tx                          |  CSSI format                         | space weather                                                          | [ftp://ftp.agi.com/pub/DynamicEarthData/SpaceWeather-All-v1.2.txt](ftp://ftp.agi.com/pub/DynamicEarthData/SpaceWeather-All-v1.2.txt)               |
-| itrf-versions.conf                               |  Orekit itrf-versions.conf           | Maps EOP files to ITRF versions                                        | [Orekit Physical Data Archive](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)                               |
-Supported data types
