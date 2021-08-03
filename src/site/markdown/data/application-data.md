@@ -100,7 +100,8 @@ In this case, it may still be advantageous to rely on the lower level mechanisms
 like [filtering](./filtering.html). In this case, rather than implementing a
 `DataLoader`, users may create their own parser from scratch (or use one of the
 ephemeris loaders for standard formats supported by Orekit) in such a way they
-use a `DataSource` to specify where the bytes to be parsed come from, rather than
-using a `File` or an `InputStream`. As there are no `DataProvidersManager` involved
-and therefore no predefined list of filers and no `DataProvidersManager.applyAllFilters`
-method, users would have to apply the filters by themselves, though.
+use a `DataSource` to specify where the bytes or characters to be parsed come from,
+rather than using directl a `File`, an `InputStream` or a `Reader`. As there are no
+`DataProvidersManager` involved and therefore no predefined list of filers and no
+`DataProvidersManager.applyAllFilters` method, users would have to apply the filters
+by themselves, though.

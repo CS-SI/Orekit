@@ -123,7 +123,7 @@ public class DirectoryCrawler implements DataProvider {
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file
-                            try (InputStream input = data.getStreamOpener().openOnce()) {
+                            try (InputStream input = data.getOpener().openStreamOnce()) {
                                 visitor.loadData(input, file.getPath());
                                 loaded = true;
                             }

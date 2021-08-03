@@ -82,9 +82,9 @@
       activate MSAFEPattern
         MSAFEPattern --> DirectoryCrawler : match found
       deactivate MSAFEPattern
-      DirectoryCrawler -> DataSource3 : openOnce
+      DirectoryCrawler -> DataSource3 : openStreamOnce
       activate DataSource3
-        DataSource3 -> DataSource2 : openOnce
+        DataSource3 -> DataSource2 : openStreamOnce
         activate DataSource2
           DataSource2 --> DataSource3 : compressed stream
         deactivate DataSource2

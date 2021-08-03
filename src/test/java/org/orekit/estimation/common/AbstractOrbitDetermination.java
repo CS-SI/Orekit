@@ -20,10 +20,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -2042,9 +2040,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         throws IOException {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
-        try (InputStream is = source.getStreamOpener().openOnce();
-             InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-             BufferedReader br = new BufferedReader(isr)) {
+        try (Reader         reader = source.getOpener().openReaderOnce();
+             BufferedReader br     = new BufferedReader(reader)) {
             int lineNumber = 0;
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
@@ -2289,7 +2286,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         // Initialise parser and read file
         final CRDParser parser =  new CRDParser();
-        final CRD   file   = parser.parse(source.getStreamOpener().openOnce());
+        final CRD   file   = parser.parse(source);
 
         // Loop on data block
         for (final CRDDataBlock block : file.getDataBlocks()) {

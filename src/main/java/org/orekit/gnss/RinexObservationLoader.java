@@ -172,12 +172,11 @@ public class RinexObservationLoader {
      * @param timeScales the set of time scales to use when parsing dates.
      * @since 10.1
      */
-    public RinexObservationLoader(final DataSource source,
-                       final TimeScales timeScales) {
+    public RinexObservationLoader(final DataSource source, final TimeScales timeScales) {
         try {
             this.timeScales = timeScales;
             observationDataSets = new ArrayList<>();
-            try (InputStream         is  = source.getStreamOpener().openOnce();
+            try (InputStream         is  = source.getOpener().openStreamOnce();
                  BufferedInputStream bis = new BufferedInputStream(is)) {
                 new Parser().loadData(bis, source.getName());
             }

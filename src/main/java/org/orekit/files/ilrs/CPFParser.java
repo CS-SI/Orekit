@@ -18,9 +18,7 @@ package org.orekit.files.ilrs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.Reader;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -123,11 +121,10 @@ public class CPFParser implements EphemerisFileParser<CPF> {
     @Override
     public CPF parse(final DataSource source) {
 
-        try (InputStream       is     = source.getStreamOpener().openOnce();
-             InputStreamReader isr    = (is  == null) ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
-             BufferedReader    reader = (isr == null) ? null : new BufferedReader(isr)) {
+        try (Reader reader = source.getOpener().openReaderOnce();
+             BufferedReader br = (reader == null) ? null : new BufferedReader(reader)) {
 
-            if (reader == null) {
+            if (br == null) {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
             }
 
@@ -136,7 +133,7 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             int lineNumber = 0;
             Stream<LineParser> parsers = Stream.of(LineParser.H1);
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
                 final String l = line;
                 final Optional<LineParser> selected = parsers.filter(p -> p.canHandle(l)).findFirst();

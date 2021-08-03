@@ -19,11 +19,10 @@ package org.orekit.gnss;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,8 +31,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.GzipFilter;
 import org.orekit.data.DataSource;
+import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -98,9 +97,8 @@ public class HatanakaCompressFilterTest {
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         try {
-            try (InputStream       is  = new HatanakaCompressFilter().filter(raw).getStreamOpener().openOnce();
-                 InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-                 BufferedReader    br  = new BufferedReader(isr)) {
+            try (Reader            r   = new HatanakaCompressFilter().filter(raw).getOpener().openReaderOnce();
+                 BufferedReader    br  = new BufferedReader(r)) {
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
                     // nothing to do here
                 }
@@ -398,7 +396,7 @@ public class HatanakaCompressFilterTest {
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-        try (InputStream is = filtered.getStreamOpener().openOnce()) {
+        try (InputStream is = filtered.getOpener().openStreamOnce()) {
             int count = 0;
             while (is.read() >= 0) {
                 ++count;
@@ -617,7 +615,7 @@ public class HatanakaCompressFilterTest {
 
         DataSource getDigestedSource() {
             return new DataSource(source.getName(),
-                                  () -> new DigestInputStream(source.getStreamOpener().openOnce(), md));
+                                  () -> new DigestInputStream(source.getOpener().openStreamOnce(), md));
         }
 
         void checkDigest() {
