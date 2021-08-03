@@ -29,6 +29,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
@@ -77,13 +78,13 @@ public class FieldNodeDetectorTest {
         propagator.addEventDetector(node2);
 
         // First propagation
-        propagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(finalDate);
         Assert.assertEquals(2, logger1.getLoggedEvents().size());
         Assert.assertEquals(2, logger2.getLoggedEvents().size());
         logger1.clearLoggedEvents();
         logger2.clearLoggedEvents();
-        FieldBoundedPropagator<T> postpro = propagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> postpro = generator.getGeneratedEphemeris();
 
         // Post-processing
         postpro.addEventDetector(node1);

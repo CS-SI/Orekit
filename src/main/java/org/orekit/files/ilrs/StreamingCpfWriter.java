@@ -1,4 +1,4 @@
-/* Contributed in the public domain.
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,7 +110,7 @@ public class StreamingCpfWriter {
     private final CPFHeader header;
 
     /**
-     * Create an OEM writer than streams data to the given output stream.
+     * Create a CPF writer than streams data to the given output stream.
      *
      * @param writer     the output stream for the CPF file.
      * @param timeScale  for all times in the CPF
@@ -158,9 +158,7 @@ public class StreamingCpfWriter {
      * <p>
      * The returned writer can only write a single ephemeris segment in a CPF.
      * </p>
-     * @param frame the reference frame to use for the segment. If this value is
-     *              {@code null} then {@link Segment#handleStep(SpacecraftState,
-     *              boolean)} will throw a {@link NullPointerException}.
+     * @param frame the reference frame to use for the segment.
      * @return a new CPF segment, ready for writing.
      */
     public Segment newSegment(final Frame frame) {
@@ -235,16 +233,28 @@ public class StreamingCpfWriter {
 
         /** {@inheritDoc}. */
         @Override
-        public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+        public void handleStep(final SpacecraftState currentState) {
             try {
 
                 // Write ephemeris line
                 writeEphemerisLine(currentState.getPVCoordinates(frame));
 
+            } catch (IOException e) {
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                          e.getLocalizedMessage());
+            }
+
+        }
+
+        /** {@inheritDoc}. */
+        @Override
+        public void finish(final SpacecraftState finalState) {
+            try {
+                // Write ephemeris line
+                writeEphemerisLine(finalState.getPVCoordinates(frame));
+
                 // Write end of file
-                if (isLast) {
-                    writeEndOfFile();
-                }
+                writeEndOfFile();
 
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -348,7 +358,7 @@ public class StreamingCpfWriter {
                 writeValue(cpfWriter, I2, (int) dtcStart.getTime().getSecond());
 
                 // write ending epoch
-                final AbsoluteDate ending = cpfHeader.getStartEpoch();
+                final AbsoluteDate ending = cpfHeader.getEndEpoch();
                 final DateTimeComponents dtcEnd = ending.getComponents(timescale);
                 writeValue(cpfWriter, I4, dtcEnd.getDate().getYear());
                 writeValue(cpfWriter, I2, dtcEnd.getDate().getMonth());

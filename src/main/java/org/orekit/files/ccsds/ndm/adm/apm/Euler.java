@@ -140,7 +140,7 @@ public class Euler extends CommentsContainer {
 
     /** Check if rates are specified in spacecraft body frame.
      * <p>
-     * {@link #validate() Mandatory entries} must have been
+     * {@link #validate(double) Mandatory entries} must have been
      * initialized properly to non-null values before this method is called,
      * otherwise {@code NullPointerException} will be thrown.
      * </p>

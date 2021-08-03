@@ -42,8 +42,9 @@ import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
-import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.KeyValueFileParser;
@@ -55,21 +56,21 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.data.GzipFilter;
 import org.orekit.data.DataSource;
+import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
-import org.orekit.estimation.leastsquares.BatchLSObserver;
+import org.orekit.estimation.leastsquares.SequentialBatchLSEstimator;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
@@ -86,6 +87,10 @@ import org.orekit.estimation.sequential.KalmanEstimation;
 import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
 import org.orekit.estimation.sequential.KalmanObserver;
+import org.orekit.files.ilrs.CPFFile;
+import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
+import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
+import org.orekit.files.ilrs.CPFParser;
 import org.orekit.files.ilrs.CRDFile;
 import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
 import org.orekit.files.ilrs.CRDFile.Meteo;
@@ -163,6 +168,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @param <T> type of the propagator builder
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
+ * @author Julie Bayard
  */
 public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPropagatorBuilder> {
 
@@ -177,6 +183,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
     /** Suffix for elevation bias. */
     private final String ELEVATION_BIAS_SUFFIX = "/el bias";
+
+    /** CPF file mandatory key. */
+    private final String CPF_MANDATORY_KEY = "cpf";
 
     /** Flag for range measurement use. */
     private boolean useRangeMeasurements;
@@ -318,12 +327,13 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             parser.parseInput(input.getAbsolutePath(), fis);
         }
 
-        final RangeLog     rangeLog     = new RangeLog();
-        final RangeRateLog rangeRateLog = new RangeRateLog();
-        final AzimuthLog   azimuthLog   = new AzimuthLog();
-        final ElevationLog elevationLog = new ElevationLog();
-        final PositionLog  positionLog  = new PositionLog();
-        final VelocityLog  velocityLog  = new VelocityLog();
+        final RangeLog        rangeLog           = new RangeLog();
+        final RangeRateLog    rangeRateLog       = new RangeRateLog();
+        final AzimuthLog      azimuthLog         = new AzimuthLog();
+        final ElevationLog    elevationLog       = new ElevationLog();
+        final PositionOnlyLog positionOnlyLog    = new PositionOnlyLog();
+        final PositionLog     positionLog        = new PositionLog();
+        final VelocityLog     velocityLog        = new VelocityLog();
 
         // gravity field
         createGravityField(parser);
@@ -393,6 +403,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 // the measurements come from a CRD file
                 independentMeasurements.addAll(readCrd(nd, stations, parser, satellite, satRangeBias,
                                                        weights, rangeOutliersManager, shapiroRangeModifier));
+            } else if (fileName.contains(CPF_MANDATORY_KEY)) {
+                // Position measurements in a CPF file
+                independentMeasurements.addAll(readCpf(nd, satellite, initialGuess));
             } else {
                 // the measurements come from an Orekit custom file
                 independentMeasurements.addAll(readMeasurements(nd,
@@ -412,60 +425,15 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         // estimate orbit
         if (print) {
-            estimator.setObserver(new BatchLSObserver() {
-
-                private PVCoordinates previousPV;
-                {
-                    previousPV = initialGuess.getPVCoordinates();
-                    final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate  nb Angular     nb PV%n";
-                    System.out.format(Locale.US, header);
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public void evaluationPerformed(final int iterationsCount, final int evaluationsCount,
-                                                final Orbit[] orbits,
-                                                final ParameterDriversList estimatedOrbitalParameters,
-                                                final ParameterDriversList estimatedPropagatorParameters,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final EstimationsProvider  evaluationsProvider,
-                                                final LeastSquaresProblem.Evaluation lspEvaluation) {
-                    final PVCoordinates currentPV = orbits[0].getPVCoordinates();
-                    final String format0 = "    %2d         %2d                                 %16.12f     %s       %s     %s     %s%n";
-                    final String format  = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s%n";
-                    final EvaluationCounter<Range>       rangeCounter     = new EvaluationCounter<Range>();
-                    final EvaluationCounter<RangeRate>   rangeRateCounter = new EvaluationCounter<RangeRate>();
-                    final EvaluationCounter<AngularAzEl> angularCounter   = new EvaluationCounter<AngularAzEl>();
-                    final EvaluationCounter<PV>          pvCounter        = new EvaluationCounter<PV>();
-                    for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
-                        logEvaluation(entry.getValue(),
-                                      rangeCounter, rangeRateCounter, angularCounter, null, pvCounter, null);
-                    }
-                    if (evaluationsCount == 1) {
-                        System.out.format(Locale.US, format0,
-                                          iterationsCount, evaluationsCount,
-                                          lspEvaluation.getRMS(),
-                                          rangeCounter.format(8), rangeRateCounter.format(8),
-                                          angularCounter.format(8), pvCounter.format(8));
-                    } else {
-                        System.out.format(Locale.US, format,
-                                          iterationsCount, evaluationsCount,
-                                          Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
-                                          Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
-                                          lspEvaluation.getRMS(),
-                                          rangeCounter.format(8), rangeRateCounter.format(8),
-                                          angularCounter.format(8), pvCounter.format(8));
-                    }
-                    previousPV = currentPV;
-                }
-            });
+            final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
+            estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, header, print));
         }
         final Orbit estimated = estimator.estimate()[0].getInitialState().getOrbit();
 
         // compute some statistics
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
             logEvaluation(entry.getValue(),
-                          rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
+                          rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
         }
 
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
@@ -475,6 +443,147 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                            rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
                                            azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
                                            positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
+                                           estimator.getPhysicalCovariances(1.0e-10));
+
+    }
+
+    /** Run the sequential batch least squares.
+     * @param input input file
+     * @param print if true, print logs
+     * @throws IOException if input files cannot be read
+     */
+    protected ResultSequentialBatchLeastSquares runSequentialBLS(final File inputModel, final boolean print) throws IOException {
+
+        // read input parameters
+        final KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
+        try (FileInputStream fis = new FileInputStream(inputModel)) {
+            parser.parseInput(inputModel.getAbsolutePath(), fis);
+        }
+
+        final RangeLog        rangeLog           = new RangeLog();
+        final RangeRateLog    rangeRateLog       = new RangeRateLog();
+        final AzimuthLog      azimuthLog         = new AzimuthLog();
+        final ElevationLog    elevationLog       = new ElevationLog();
+        final PositionOnlyLog positionOnlyLog    = new PositionOnlyLog();
+        final PositionLog     positionLog        = new PositionLog();
+        final VelocityLog     velocityLog        = new VelocityLog();
+        
+        // gravity field
+        createGravityField(parser);
+
+        // Orbit initial guess
+        final Orbit initialGuess = createOrbit(parser, getMu());
+
+        // IERS conventions
+        final IERSConventions conventions;
+        if (!parser.containsKey(ParameterKey.IERS_CONVENTIONS)) {
+            conventions = IERSConventions.IERS_2010;
+        } else {
+            conventions = IERSConventions.valueOf("IERS_" + parser.getInt(ParameterKey.IERS_CONVENTIONS));
+        }
+
+        // central body
+        final OneAxisEllipsoid body = createBody(parser);
+
+        // propagator builder
+        final T propagatorBuilder = configurePropagatorBuilder(parser, conventions, body, initialGuess);
+
+        // estimator
+        BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
+
+        final ObservableSatellite satellite = createObservableSatellite(parser);
+
+        // measurements
+        List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<>();
+        for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
+
+            // set up filtering for measurements files
+            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(inputModel.getParentFile(), fileName)));
+            for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                         new UnixCompressFilter(),
+                                                         new HatanakaCompressFilter())) {
+                nd = filter.filter(nd);
+            }
+
+            if (fileName.contains(CPF_MANDATORY_KEY)) {
+                // Position measurements in a CPF file
+                independentMeasurements.addAll(readCpf(nd, satellite, initialGuess));
+            }
+
+        }
+
+        // add measurements to the estimator
+        List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 1.0e-9);
+        for (ObservedMeasurement<?> measurement : multiplexed) {
+            estimator.addMeasurement(measurement);
+        }
+
+        if (print) {
+            final String headerBLS = "\nBatch Least Square Estimator :\n"
+                            + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
+            estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerBLS, print));
+        }
+
+        // perform first estimation
+        final Orbit estimatedBLS = estimator.estimate()[0].getInitialState().getOrbit();
+        final int iterationCount = estimator.getIterationsCount();
+        final int evalutionCount = estimator.getEvaluationsCount();
+        final RealMatrix covariance = estimator.getPhysicalCovariances(1.0e-10);
+
+        Optimum BLSEvaluation = estimator.getOptimum();
+
+        // read second measurements file to build the sequential batch least squares
+        estimator = createSequentialEstimator(BLSEvaluation, parser, propagatorBuilder);
+
+        // measurements
+        independentMeasurements = new ArrayList<>();
+        for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES_SEQUENTIAL, ',')) {
+
+            // set up filtering for measurements files
+            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(inputModel.getParentFile(), fileName)));
+            for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                         new UnixCompressFilter(),
+                                                         new HatanakaCompressFilter())) {
+                nd = filter.filter(nd);
+            }
+
+            if (fileName.contains(CPF_MANDATORY_KEY)) {
+                // Position measurements in a CPF file
+                independentMeasurements.addAll(readCpf(nd, satellite, initialGuess));
+            }
+
+        }
+
+        // add measurements to the estimator
+        multiplexed = multiplexMeasurements(independentMeasurements, 1.0e-9);
+        for (ObservedMeasurement<?> measurement : multiplexed) {
+            estimator.addMeasurement(measurement);
+        }
+
+        if (print) {
+            final String headerSBLS = "\nSequentiel Batch Least Square Estimator :\n"
+                            + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
+            
+            estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerSBLS, print));
+        }
+        
+        final Orbit estimatedSequentialBLS = estimator.estimate()[0].getInitialState().getOrbit();
+        
+        // compute some statistics
+        for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
+            logEvaluation(entry.getValue(),
+                          rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
+        }
+
+        final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
+        final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
+        
+        return new ResultSequentialBatchLeastSquares(propagatorParameters, measurementsParameters,
+                                           iterationCount, evalutionCount, estimatedBLS.getPVCoordinates(),
+                                           positionLog.createStatisticsSummary(),
+                                           covariance, 
+                                           estimator.getIterationsCount(), estimator.getEvaluationsCount(),
+                                           estimatedSequentialBLS.getPVCoordinates(), positionLog.createStatisticsSummary(),
                                            estimator.getPhysicalCovariances(1.0e-10));
 
     }
@@ -502,12 +611,13 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
 
         // Log files
-        final RangeLog     rangeLog     = new RangeLog();
-        final RangeRateLog rangeRateLog = new RangeRateLog();
-        final AzimuthLog   azimuthLog   = new AzimuthLog();
-        final ElevationLog elevationLog = new ElevationLog();
-        final PositionLog  positionLog  = new PositionLog();
-        final VelocityLog  velocityLog  = new VelocityLog();
+        final RangeLog        rangeLog        = new RangeLog();
+        final RangeRateLog    rangeRateLog    = new RangeRateLog();
+        final AzimuthLog      azimuthLog      = new AzimuthLog();
+        final ElevationLog    elevationLog    = new ElevationLog();
+        final PositionOnlyLog positionOnlyLog = new PositionOnlyLog();
+        final PositionLog     positionLog     = new PositionLog();
+        final VelocityLog     velocityLog     = new VelocityLog();
 
         // Gravity field
         createGravityField(parser);
@@ -674,7 +784,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
                 // Register the measurement in the proper measurement logger
                 logEvaluation(estimatedMeasurement,
-                              rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
+                              rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
                 if (observedMeasurement instanceof Range) {
                     measType    = "RANGE";
                     stationName =  ((EstimatedMeasurement<Range>) estimatedMeasurement).getObservedMeasurement().
@@ -689,7 +799,10 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                     getStation().getBaseFrame().getName();
                 } else if (observedMeasurement instanceof PV) {
                     measType    = "PV";
+                } else if (observedMeasurement instanceof Position) {
+                    measType    = "POSITION";
                 }
+                
 
                 // Print data on terminal
                 // ----------------------
@@ -810,6 +923,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             rangeRateLog.displaySummary(System.out);
             azimuthLog.displaySummary(System.out);
             elevationLog.displaySummary(System.out);
+            positionOnlyLog.displaySummary(System.out);
             positionLog.displaySummary(System.out);
             velocityLog.displaySummary(System.out);
             
@@ -1821,6 +1935,46 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
     }
 
+    /** Set up sequential estimator.
+     * @param parser input file parser
+     * @param propagatorBuilder propagator builder
+     * @return estimator
+     * @throws NoSuchElementException if input parameters are missing
+     */
+    private BatchLSEstimator createSequentialEstimator(final Optimum optimum, final KeyValueFileParser<ParameterKey> parser,
+                                                       final OrbitDeterminationPropagatorBuilder propagatorBuilder)
+        throws NoSuchElementException {
+
+        
+        final double convergenceThreshold;
+        if (!parser.containsKey(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD)) {
+            convergenceThreshold = 1.0e-3;
+        } else {
+            convergenceThreshold = parser.getDouble(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD);
+        }
+        final int maxIterations;
+        if (!parser.containsKey(ParameterKey.ESTIMATOR_MAX_ITERATIONS)) {
+            maxIterations = 10;
+        } else {
+            maxIterations = parser.getInt(ParameterKey.ESTIMATOR_MAX_ITERATIONS);
+        }
+        final int maxEvaluations;
+        if (!parser.containsKey(ParameterKey.ESTIMATOR_MAX_EVALUATIONS)) {
+            maxEvaluations = 20;
+        } else {
+            maxEvaluations = parser.getInt(ParameterKey.ESTIMATOR_MAX_EVALUATIONS);
+        }
+
+        final SequentialGaussNewtonOptimizer optimizer = new SequentialGaussNewtonOptimizer().withEvaluation(optimum);
+        final SequentialBatchLSEstimator estimator = new SequentialBatchLSEstimator(optimizer, propagatorBuilder);
+        estimator.setParametersConvergenceThreshold(convergenceThreshold);
+        estimator.setMaxIterations(maxIterations);
+        estimator.setMaxEvaluations(maxEvaluations);
+
+        return estimator;
+
+    }
+
     /** Read a sinex file corresponding to the given key.
      * @param input input file
      * @param parser input file parser
@@ -2074,6 +2228,38 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         return measurements;
 
+    }
+
+    /**
+     * Read a position CPF file
+     * @param source data source containing measurements
+     * @param satellite observable satellite
+     * @param initialGuess initial guess (used for the frame)
+     * @return list of observable measurements
+     * @throws IOException if file cannot be read
+     */
+     private List<ObservedMeasurement<?>> readCpf(final DataSource source,
+                                                  final ObservableSatellite satellite,
+                                                  final Orbit initialGuess) throws IOException {
+
+         // Initialize parser and read file
+         final CPFParser parserCpf = new CPFParser();
+         final CPFFile file = (CPFFile) parserCpf.parse(source);
+
+         // Satellite ephemeris
+         final CPFEphemeris ephemeris = file.getSatellites().get(file.getHeader().getIlrsSatelliteId());
+         final Frame        ephFrame  = ephemeris.getFrame();
+
+         // Measurements
+         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
+         for (final CPFCoordinate coordinates : ephemeris.getCoordinates()) {
+             AbsoluteDate date = coordinates.getDate();
+             final PVCoordinates pvInertial = ephFrame.getTransformTo(initialGuess.getFrame(), date).transformPVCoordinates(coordinates);
+             measurements.add(new Position(date, pvInertial.getPosition(), 1, 1, satellite));
+         }
+
+         // Return
+         return measurements;
     }
 
     /** Read a Consolidated Ranging Data measurements file.
@@ -2429,6 +2615,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                EvaluationLogger<RangeRate> rangeRateLog,
                                EvaluationLogger<AngularAzEl> azimuthLog,
                                EvaluationLogger<AngularAzEl> elevationLog,
+                               EvaluationLogger<Position> positionOnlyLog,
                                EvaluationLogger<PV> positionLog,
                                EvaluationLogger<PV> velocityLog) {
         if (evaluation.getObservedMeasurement() instanceof Range) {
@@ -2452,6 +2639,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             if (elevationLog != null) {
                 elevationLog.log(ev);
             }
+        }  else if (evaluation.getObservedMeasurement() instanceof Position) {
+            @SuppressWarnings("unchecked")
+            final EstimatedMeasurement<Position> ev = (EstimatedMeasurement<Position>) evaluation;
+            if (positionOnlyLog != null) {
+                positionOnlyLog.log(ev);
+            }
         } else if (evaluation.getObservedMeasurement() instanceof PV) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<PV> ev = (EstimatedMeasurement<PV>) evaluation;
@@ -2463,7 +2656,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             }
         } else if (evaluation.getObservedMeasurement() instanceof MultiplexedMeasurement) {
             for (final EstimatedMeasurement<?> em : ((MultiplexedMeasurement) evaluation.getObservedMeasurement()).getEstimatedMeasurements()) {
-                logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
+                logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
             }
         }
     }

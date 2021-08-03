@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.exception.DummyLocalizable;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 
 
@@ -96,13 +95,6 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
      * @throws IOException if the input cannot be opened for reading
      */
     protected abstract InputStream getStream(T input) throws IOException;
-
-    @Override
-    @Deprecated
-    @DefaultDataContext
-    public boolean feed(final Pattern supported, final DataLoader visitor) {
-        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
-    }
 
     /** {@inheritDoc} */
     @Override

@@ -33,7 +33,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -91,7 +90,7 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.setMasterMode(10.0, (currentState, isLast) -> {
+        propagator.setStepHandler(10.0, currentState -> {
             // we exceed the events history in the past,
             // and in this example get stuck with Transformer.MAX
             // transformer, hence the g function is always positive
@@ -125,18 +124,13 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
-
-            @Override
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-                {
+        propagator.setStepHandler(10.0, currentState -> {
                 // we exceed the events history in the past,
                 // and in this example get stuck with Transformer.MIN
                 // transformer, hence the g function is always negative
                 // in the test range
                 Assert.assertTrue(filter.g(currentState) < 0);
-            }
-        });
+            });
         propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY + 3600),
                              iniDate.shiftedBy(6 * Constants.JULIAN_DAY + 3600));
     }

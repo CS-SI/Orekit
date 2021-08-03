@@ -36,35 +36,52 @@
   end box
 
   participant Propagator
+  participant StepHandlerMultiplexer
+  participant EphemerisGenerator
   participant Ephemeris
 
   activate U
-  U                    ->           Propagator : setEphemerisMode()
+  U                    ->           Propagator : getEphemerisGenerator()
     activate Propagator
-    Propagator           ->         Ephemeris : create
-      activate Ephemeris
-      deactivate Ephemeris
+    Propagator           ->         EphemerisGenerator : create
+      activate EphemerisGenerator
+      deactivate EphemerisGenerator
+    Propagator           ->         StepHandlerMultiplexer : addStepHandler(generator)
+      activate StepHandlerMultiplexer
+      deactivate StepHandlerMultiplexer
+    return generator
     deactivate Propagator
   U                    ->           Propagator : propagate
     activate Propagator
-    Propagator           ->         Ephemeris : add sample
-      activate Ephemeris
-      deactivate Ephemeris
-    Propagator           ->         Ephemeris : add sample
-      activate Ephemeris
-      deactivate Ephemeris
-    Propagator           ->         Ephemeris : add sample
-      activate Ephemeris
-      deactivate Ephemeris
-    Propagator          -->         U : final state 
+    Propagator           ->         StepHandlerMultiplexer : provide step
+      activate StepHandlerMultiplexer
+        StepHandlerMultiplexer  -> EphemerisGenerator : add sample
+        activate EphemerisGenerator
+        deactivate EphemerisGenerator
+      deactivate StepHandlerMultiplexer
+    Propagator           ->         StepHandlerMultiplexer : provide step
+      activate StepHandlerMultiplexer
+        StepHandlerMultiplexer  -> EphemerisGenerator : add sample
+        activate EphemerisGenerator
+        deactivate EphemerisGenerator
+      deactivate StepHandlerMultiplexer
+    Propagator           ->         StepHandlerMultiplexer : provide step
+      activate StepHandlerMultiplexer
+        StepHandlerMultiplexer  -> EphemerisGenerator : add sample
+        activate EphemerisGenerator
+        deactivate EphemerisGenerator
+      deactivate StepHandlerMultiplexer
+    return final state 
     deactivate Propagator
-  U                    ->           Propagator : getGeneratedEphemeris
-    activate Propagator
-    Propagator         -->          U : generated ephemeris
-    deactivate Propagator
-  U                    ->           Ephemeris : propagate
-    activate Ephemeris
-    deactivate Ephemeris
+  U                    ->           EphemerisGenerator : getGeneratedEphemeris
+    activate EphemerisGenerator
+        activate EphemerisGenerator
+        EphemerisGenerator -> Ephemeris : create
+         activate Ephemeris
+         deactivate Ephemeris
+        return generated ephemeris
+        deactivate EphemerisGenerator
+    deactivate EphemerisGenerator
   deactivate U
 
 @enduml

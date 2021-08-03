@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -56,6 +56,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
@@ -175,7 +176,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator1.setAttitudeProvider(accelerationLaw);
         propagator1.addForceModel(parametricAcceleration);
 
-        MultiSatStepHandler handler = (interpolators, isLast) -> {
+        MultiSatStepHandler handler = interpolators -> {
             Vector3D p0 = interpolators.get(0).getCurrentState().getPVCoordinates().getPosition();
             Vector3D p1 = interpolators.get(1).getCurrentState().getPVCoordinates().getPosition();
             Assert.assertEquals(0.0, Vector3D.distance(p0, p1), positionTolerance);
@@ -280,9 +281,9 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator0.setInitialState(initialState);
         propagator0.setAttitudeProvider(maneuverLaw);
         propagator0.addForceModel(maneuver);
-        propagator0.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator1 = propagator0.getEphemerisGenerator();
         propagator0.propagate(initialState.getDate(), initialState.getDate().shiftedBy(1000.0));
-        FieldBoundedPropagator<T> ephemeris0 = propagator0.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris0 = generator1.getGeneratedEphemeris();
 
         // propagator 1 uses a constant acceleration
         AdaptiveStepsizeFieldIntegrator<T> integrator1 =
@@ -292,9 +293,9 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator1.setInitialState(initialState);
         propagator1.setAttitudeProvider(accelerationLaw);
         propagator1.addForceModel(parametricAcceleration);
-        propagator1.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator2 = propagator1.getEphemerisGenerator();
         propagator1.propagate(initialState.getDate(), initialState.getDate().shiftedBy(1000.0));
-        FieldBoundedPropagator<T> ephemeris1 = propagator1.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris1 = generator2.getGeneratedEphemeris();
 
         for (double dt = 1; dt < 999; dt += 10) {
             FieldAbsoluteDate<T> t = initialState.getDate().shiftedBy(dt);
@@ -392,11 +393,11 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator0.addForceModel(hpaRefZ2);
         ObservableSatellite sat0 = new ObservableSatellite(0);
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
-        propagator0.setMasterMode(10.0,
-                                  (state, isLast) ->
-                                  measurements.add(new PV(state.getDate(),
-                                                          state.getPVCoordinates().getPosition(), state.getPVCoordinates().getVelocity(),
-                                                          1.0e-3, 1.0e-6, 1.0, sat0)));
+        propagator0.setStepHandler(10.0,
+                                   state ->
+                                   measurements.add(new PV(state.getDate(),
+                                                           state.getPVCoordinates().getPosition(), state.getPVCoordinates().getVelocity(),
+                                                           1.0e-3, 1.0e-6, 1.0, sat0)));
         propagator0.propagate(orbit.getDate().shiftedBy(900));
 
         // set up an estimator to retrieve the maneuver as several harmonic accelerations in inertial frame

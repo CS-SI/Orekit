@@ -158,7 +158,7 @@ public class StreamingOemWriterTest {
                                                                new WriterBuilder().buildOemWriter(),
                                                                header, metadata);
             BoundedPropagator propagator = satellite.getPropagator();
-            propagator.setMasterMode(step, writer.newSegment());
+            propagator.setStepHandler(step, writer.newSegment());
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
 
             // verify

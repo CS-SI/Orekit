@@ -44,9 +44,6 @@ import org.orekit.utils.ParameterDriver;
 public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
 
-    /** Initial state. */
-    private FieldSpacecraftState<T> initialState;
-
     /** All states. */
     private transient FieldTimeSpanMap<FieldSpacecraftState<T>, T> states;
 
@@ -119,13 +116,13 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
         super(initialOrbit.getA().getField(), attitudeProv);
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        initialState = fixState(initialOrbit,
-                                getAttitudeProvider().getAttitude(initialOrbit,
-                                                                  initialOrbit.getDate(),
-                                                                  initialOrbit.getFrame()),
-                                mass, mu, Collections.emptyMap());
-        states = new FieldTimeSpanMap<>(initialState, initialOrbit.getA().getField());
-        super.resetInitialState(initialState);
+        final FieldSpacecraftState<T> initial = fixState(initialOrbit,
+                                                         getAttitudeProvider().getAttitude(initialOrbit,
+                                                                                           initialOrbit.getDate(),
+                                                                                           initialOrbit.getFrame()),
+                                                         mass, mu, Collections.emptyMap());
+        states = new FieldTimeSpanMap<>(initial, initialOrbit.getA().getField());
+        super.resetInitialState(initial);
     }
 
     /** Fix state to use a specified mu and remove derivatives.
@@ -141,7 +138,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      * @return fixed orbit
      */
     private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass,
-                                     final T mu, final Map<String, T[]> additionalStates) {
+                                             final T mu, final Map<String, T[]> additionalStates) {
         final OrbitType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
         type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
@@ -158,15 +155,15 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     public void resetInitialState(final FieldSpacecraftState<T> state) {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        final T mu = initialState == null ? state.getMu() : initialState.getMu();
+        final FieldSpacecraftState<T> formerInitial = getInitialState();
+        final T mu = formerInitial == null ? state.getMu() : formerInitial.getMu();
         final FieldSpacecraftState<T> fixedState = fixState(state.getOrbit(),
                                                             state.getAttitude(),
                                                             state.getMass(),
                                                             mu,
                                                             state.getAdditionalStates());
 
-        initialState = fixedState;
-        states       = new FieldTimeSpanMap<>(initialState, state.getDate().getField());
+        states = new FieldTimeSpanMap<>(fixedState, state.getDate().getField());
         super.resetInitialState(fixedState);
 
     }

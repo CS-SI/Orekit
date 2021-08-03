@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+Ntrip-Version: Ntrip/2.0
+Server: NTRIP BKG Caster 2.0.36/2.0
+Date: Tue, 26 Nov 2019 12:12:11 GMT
+Connection: close
+Content-Type: gnss/sourcetable
+Content-Length: 120
+
+CAS;products.igs-ip.net;2101;PRODUCTS;BKG;0;DEU;50.12;8.69;0.0.0.0;0;http://products.igs-ip.net/home
+ENDSOURCETABLE

@@ -18,7 +18,7 @@ package org.orekit.utils;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -259,7 +259,7 @@ public class GenericTimeStampedCacheTest {
                 new TimeStampedGenerator<AbsoluteDate>() {
                     public List<AbsoluteDate> generate(AbsoluteDate existingDate,
                                                        AbsoluteDate date) {
-                        return Arrays.asList(AbsoluteDate.J2000_EPOCH);
+                        return Collections.singletonList(AbsoluteDate.J2000_EPOCH);
                     }
                 };
         AbsoluteDate central = AbsoluteDate.J2000_EPOCH.shiftedBy(-10);
@@ -280,7 +280,7 @@ public class GenericTimeStampedCacheTest {
                 new TimeStampedGenerator<AbsoluteDate>() {
             public List<AbsoluteDate> generate(AbsoluteDate existingDate,
                                                AbsoluteDate date) {
-                return Arrays.asList(AbsoluteDate.J2000_EPOCH);
+                return Collections.singletonList(AbsoluteDate.J2000_EPOCH);
             }
         };
         AbsoluteDate central = AbsoluteDate.J2000_EPOCH.shiftedBy(+10);

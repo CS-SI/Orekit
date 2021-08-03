@@ -34,7 +34,7 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class ResidualFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter<T> {
 
-    /** Threshold under which the measurement will be rejected. */
+    /** Threshold over which the measurement will be rejected. */
     private final double threshold;
 
     /**

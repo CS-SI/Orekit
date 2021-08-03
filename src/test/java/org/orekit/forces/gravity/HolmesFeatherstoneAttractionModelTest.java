@@ -66,6 +66,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -833,7 +834,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                                                                                                                  c, s)));
 
         // let the step handler perform the test
-        propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
+        propagator.setStepHandler(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.propagate(date.shiftedBy(7 * Constants.JULIAN_DAY));
         Assert.assertTrue(propagator.getCalls() < 9200);
@@ -849,8 +850,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         private PVCoordinatesProvider sun;
         private double previous;
-        public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+        public void handleStep(SpacecraftState currentState) {
 
 
             AbsoluteDate current = currentState.getDate();
@@ -867,8 +867,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     // test the difference with the analytical extrapolator Eckstein Hechler
     @Test
-    public void testEcksteinHechlerReference()
-        {
+    public void testEcksteinHechlerReference() {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -898,9 +897,9 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         // let the step handler perform the test
         propagator.setInitialState(new SpacecraftState(initialOrbit));
-        propagator.setMasterMode(20, new EckStepHandler(initialOrbit, ae,
-                                                        unnormalizedC20, unnormalizedC30, unnormalizedC40,
-                                                        unnormalizedC50, unnormalizedC60));
+        propagator.setStepHandler(20, new EckStepHandler(initialOrbit, ae,
+                                                         unnormalizedC20, unnormalizedC30, unnormalizedC40,
+                                                         unnormalizedC50, unnormalizedC60));
         propagator.propagate(date.shiftedBy(50000));
         Assert.assertTrue(propagator.getCalls() < 1100);
 
@@ -920,7 +919,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         }
 
         private EcksteinHechlerPropagator referencePropagator;
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
 
             SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
             Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
@@ -1043,12 +1042,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         AbstractIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 120.0, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.setOrbitType(OrbitType.CARTESIAN);
         propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider));
         propagator.setInitialState(initialState);
         propagator.propagate(initialState.getDate().shiftedBy(duration));
-        return propagator.getGeneratedEphemeris();
+        return generator.getGeneratedEphemeris();
     }
 
     @Test

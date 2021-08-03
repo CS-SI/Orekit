@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -31,6 +32,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CRDConfiguration.TransponderConfiguration;
 import org.orekit.files.ilrs.CRDFile.AnglesMeasurement;
 import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
+import org.orekit.files.ilrs.CRDFile.Meteo;
 import org.orekit.files.ilrs.CRDFile.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
 import org.orekit.time.AbsoluteDate;
@@ -519,6 +521,31 @@ public class CRDParserTest {
         Assert.assertEquals(274.0,                       data2.getTemperature(), 1.0e-15);
         Assert.assertEquals(60.0,                        data2.getHumidity(),    1.0e-15);
 
+    }
+
+    @Test
+    public void testIssue801() throws URISyntaxException, IOException {
+
+        final String ex = "/ilrs/crd_all_fields.frd";
+
+        final CRDParser parser = new CRDParser();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final CRDFile file = (CRDFile) parser.parse(fileName);
+
+        final CRDDataBlock block = file.getDataBlocks().get(0);
+        Assert.assertEquals(0, file.getComments().size());
+        Assert.assertEquals(4, block.getRangeData().size());
+        Assert.assertEquals(4, block.getAnglesData().size());
+
+        final Meteo meteo = block.getMeteoData();
+        final List<MeteorologicalMeasurement> data = meteo.getData();
+        Assert.assertEquals(1, data.size());
+
+        final MeteorologicalMeasurement measurement = data.get(0);
+        Assert.assertEquals(0.92374, measurement.getPressure(),    0.00001);
+        Assert.assertEquals(289.42,  measurement.getTemperature(), 0.01);
+        Assert.assertEquals(28.1,    measurement.getHumidity(),    0.01);
+        
     }
 
     @Before

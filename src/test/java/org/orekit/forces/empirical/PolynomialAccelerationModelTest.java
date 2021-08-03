@@ -48,6 +48,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
@@ -158,7 +159,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         propagator1.setAttitudeProvider(accelerationLaw);
         propagator1.addForceModel(parametricAcceleration);
 
-        MultiSatStepHandler handler = (interpolators, isLast) -> {
+        MultiSatStepHandler handler = interpolators -> {
             Vector3D p0 = interpolators.get(0).getCurrentState().getPVCoordinates().getPosition();
             Vector3D p1 = interpolators.get(1).getCurrentState().getPVCoordinates().getPosition();
             Assert.assertEquals(0.0, Vector3D.distance(p0, p1), positionTolerance);
@@ -257,9 +258,9 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         propagator0.setInitialState(initialState);
         propagator0.setAttitudeProvider(maneuverLaw);
         propagator0.addForceModel(maneuver);
-        propagator0.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator0 = propagator0.getEphemerisGenerator();
         propagator0.propagate(initialState.getDate(), initialState.getDate().shiftedBy(1000.0));
-        FieldBoundedPropagator<T> ephemeris0 = propagator0.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris0 = generator0.getGeneratedEphemeris();
 
         // propagator 1 uses a constant acceleration
         AdaptiveStepsizeFieldIntegrator<T> integrator1 =
@@ -269,9 +270,9 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         propagator1.setInitialState(initialState);
         propagator1.setAttitudeProvider(accelerationLaw);
         propagator1.addForceModel(parametricAcceleration);
-        propagator1.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator1 = propagator1.getEphemerisGenerator();
         propagator1.propagate(initialState.getDate(), initialState.getDate().shiftedBy(1000.0));
-        FieldBoundedPropagator<T> ephemeris1 = propagator1.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris1 = generator1.getGeneratedEphemeris();
 
         for (double dt = 1; dt < 999; dt += 10) {
             FieldAbsoluteDate<T> t = initialState.getDate().shiftedBy(dt);

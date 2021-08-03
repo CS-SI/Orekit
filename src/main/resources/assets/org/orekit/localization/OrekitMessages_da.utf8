@@ -1,5 +1,5 @@
 # internal error, please notify development team by creating a new topic at {0}
-INTERNAL_ERROR = <MISSING TRANSLATION>
+INTERNAL_ERROR = intern fejl, underret venligst udviklerholdet ved at oprette et nyt emne på {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = højde ({0} m) er under den tilladte tærskel på {1} m
@@ -74,13 +74,13 @@ NO_EARTH_ORIENTATION_PARAMETERS = ingen jordorienteringsparametre
 NOT_A_SUPPORTED_IERS_DATA_FILE = filen {0} er ikke en understøttet IERS datafil
 
 # inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
-INCONSISTENT_DATES_IN_IERS_FILE = ikke konsekvente datoer i IERS filen {0}: {1}-{2}-{3} og MJD {4}
+INCONSISTENT_DATES_IN_IERS_FILE = ikke-konsistente datoer i IERS filen {0}: {1}-{2}-{3} og MJD {4}
 
 # unexpected data after line {0} in file {1}: {2}
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = uventet data efter linje {0} i filen {1}: {2}
 
 # unexpected data at line {0} in file {1}
-UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
+UNEXPECTED_DATA_AT_LINE_IN_FILE = uventet data i linje {0} i filen {1}
 
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = ikke-kronologiske datoer i filen {0}, linje {1}
@@ -104,7 +104,7 @@ UNEXPECTED_END_OF_FILE_AFTER_LINE = uventet ende på fil {0} (efter linje {1})
 UNABLE_TO_PARSE_LINE_IN_FILE = kunne ikke analysere linje {0} i filen {1}:\n{2}
 
 # unable to parse element {0} at line {1}, file {2}
-UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
+UNABLE_TO_PARSE_ELEMENT_IN_FILE = kunne ikke analysere elementet {0} på linje {1}, filen {2}
 
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = kunne ikke finde filen {0}
@@ -206,10 +206,10 @@ NON_EXISTENT_HMS_TIME = klokkeslettet {0}:{1}:{2} eksisterer ikke
 NON_EXISTENT_TIME = klokkeslettet {0} eksisterer ikke
 
 # out of range seconds number: {0}
-OUT_OF_RANGE_SECONDS_NUMBER = sekundnummer {0} overskrider området
+OUT_OF_RANGE_SECONDS_NUMBER = sekundnummer {0} udenfor intervallet
 
 # out of range seconds number: {0} is not in [{1}, {2})
-OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = sekundnummer {0} udenfor intervallet: er ikke i [{1}, {2})
 
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = vinkeltypen er ikke understøttet, understøttede vinkler: {0}, {1} og {2}
@@ -231,9 +231,6 @@ FRAMES_MISMATCH = ramme ({0}) passer ikke med ramme ({1})
 
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = initialstatus er ikke præciseret for banepropagation
-
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = propagatøren er ikke sat til indstillingen efemeridegeneration
 
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = hændelsesdatoen {0}, større end {1} minus {3} sekunder og mindre end {2} plus {3} sekunder, kan ikke lægges til
@@ -314,10 +311,10 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = ugyldig datofeltlængde for CCSDS dato: {
 CCSDS_DATE_MISSING_AGENCY_EPOCH = manglende bureauepoke i CCSDS dato
 
 # missing mandatory key {0} in CCSDS file {1}
-CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
+CCSDS_MISSING_KEYWORD = manglende påkrævet nøgle {0} i CCSDS-fil {1}
 
 # key {0} is not allowed in format version {1}
-CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = nøglen {0} er ikke tilladt i formatversion {1}
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = uventet nøgleord på linje nummer {0} i CCSDS-filen {1}:\n{2}
@@ -335,7 +332,7 @@ CCSDS_UNKNOWN_CONVENTIONS = ingen IERS-konventioner er angivet før indlæsninge
 CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne CCSDS fils kontekst
 
 # inconsistent time systems: {0} ≠ {1}
-CCSDS_INCONSISTENT_TIME_SYSTEMS = Ikke konsistente tidssystemer: {0} ≠ {1}
+CCSDS_INCONSISTENT_TIME_SYSTEMS = Ikke-konsistente tidssystemer: {0} ≠ {1}
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = Intet CCSDS TDM nøgleord blev fundet i linje {0} af fil {1}:\n{2}
@@ -359,7 +356,7 @@ DSST_NEWCOMB_OPERATORS_COMPUTATION = kan ikke beregne Newcomb operatorer for sig
 DSST_VMNS_COEFFICIENT_ERROR_MS = kan ikke beregne Vmns-koefficienten for m > n ({0} > {1})
 
 # inconsistent shadow computation: entry = {0} whereas exit = {1}
-DSST_SPR_SHADOW_INCONSISTENT = ukonsekvent skyggeberegning: indgang = {0} og udgang = {1}
+DSST_SPR_SHADOW_INCONSISTENT = ikke-konsistent skyggeberegning: indgang = {0} og udgang = {1}
 
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
 DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle bane har en excentricitet ({0} > 0.5). DSST kræver en ikke implementeret tidsafhængig numerisk metode til at beregne de gennemsnitlige hastigheder
@@ -521,7 +518,7 @@ UNKNOWN_CLOCK_DATA_TYPE = ukendt ur datatype {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = ukendt satellitantennekode {0}
 
 # frequency {0} is not supported by antenna {1}
-UNSUPPORTED_FREQUENCY_FOR_ANTENNA = <MISSING TRANSLATION>
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frekvensen {0} er ikke understøttet af antennen {1}
 
 # cannot find satellite {0} in satellite system {1}
 CANNOT_FIND_SATELLITE_IN_SYSTEM = kunne ikke finde satellitten {0} i satellitsystemet {1}

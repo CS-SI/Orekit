@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -64,13 +63,6 @@ public class DirectoryCrawler implements DataProvider {
             throw new OrekitException(OrekitMessages.NOT_A_DIRECTORY, root.getAbsolutePath());
         }
         this.root = root;
-    }
-
-    @Override
-    @Deprecated
-    @DefaultDataContext
-    public boolean feed(final Pattern supported, final DataLoader visitor) {
-        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
     }
 
     /** {@inheritDoc} */

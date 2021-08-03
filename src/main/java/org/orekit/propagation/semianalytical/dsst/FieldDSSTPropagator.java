@@ -85,10 +85,7 @@ import org.orekit.utils.ParameterObserver;
  * <li>the discrete events that should be triggered during propagation (
  * {@link #addEventDetector(org.orekit.propagation.events.FieldEventDetector)},
  * {@link #clearEventsDetectors()})</li>
- * <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- * {@link #setMasterMode(CalculusFieldElement, org.orekit.propagation.sampling.FieldOrekitFixedStepHandler)},
- * {@link #setMasterMode(org.orekit.propagation.sampling.FieldOrekitStepHandler)},
- * {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
+ * <li>the binding logic with the rest of the application ({@link #getMultiplexer()})</li>
  * </ul>
  * <p>
  * From these configuration parameters, only the initial state is mandatory.
@@ -1139,7 +1136,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         /** {@inheritDoc} */
         @SuppressWarnings("unchecked")
         @Override
-        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
+        public void handleStep(final FieldODEStateInterpolator<T> interpolator) {
 
             // Get the grid points to compute
             final T[] interpolationPoints =
