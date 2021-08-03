@@ -42,7 +42,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Evan Ward
  * @since 6.1
  */
-public class OemFile extends NdmConstituent<Header, OemSegment>
+public class Oem extends NdmConstituent<Header, OemSegment>
     implements EphemerisFile<TimeStampedPVCoordinates, OemSegment> {
 
     /** Root element for XML files. */
@@ -61,7 +61,7 @@ public class OemFile extends NdmConstituent<Header, OemSegment>
      * @param dataContext used for creating frames, time scales, etc.
      * @param mu gravitational coefficient
      */
-    public OemFile(final Header header, final List<OemSegment> segments,
+    public Oem(final Header header, final List<OemSegment> segments,
                    final IERSConventions conventions, final DataContext dataContext,
                    final double mu) {
         super(header, segments, conventions, dataContext);

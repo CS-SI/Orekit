@@ -38,7 +38,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AemFile extends NdmConstituent<Header, AemSegment>
+public class Aem extends NdmConstituent<Header, AemSegment>
     implements AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> {
 
     /** Root element for XML files. */
@@ -53,7 +53,7 @@ public class AemFile extends NdmConstituent<Header, AemSegment>
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public AemFile(final Header header, final List<AemSegment> segments,
+    public Aem(final Header header, final List<AemSegment> segments,
                    final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }

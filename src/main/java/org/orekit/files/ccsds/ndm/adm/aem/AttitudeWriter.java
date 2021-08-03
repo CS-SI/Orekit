@@ -32,7 +32,7 @@ import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
-/** An {@link AttitudeEphemerisFileWriter} generating {@link AemFile AEM} files.
+/** An {@link AttitudeEphemerisFileWriter} generating {@link Aem AEM} files.
  * @author Bryan Cazabonne
  * @since 11.0
  */

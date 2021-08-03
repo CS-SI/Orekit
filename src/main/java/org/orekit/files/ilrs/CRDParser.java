@@ -39,10 +39,10 @@ import org.orekit.files.ilrs.CRDConfiguration.SoftwareConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.SystemConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.TimingSystemConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.TransponderConfiguration;
-import org.orekit.files.ilrs.CRDFile.AnglesMeasurement;
-import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
-import org.orekit.files.ilrs.CRDFile.MeteorologicalMeasurement;
-import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
+import org.orekit.files.ilrs.CRD.AnglesMeasurement;
+import org.orekit.files.ilrs.CRD.CRDDataBlock;
+import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
+import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -130,7 +130,7 @@ public class CRDParser {
      * @see #parse(String)
      * @see #parse(BufferedReader, String)
      */
-    public CRDFile parse(final InputStream stream) throws IOException {
+    public CRD parse(final InputStream stream) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, stream.toString());
         }
@@ -142,7 +142,7 @@ public class CRDParser {
      * @return parsed CRD file.
      * @throws IOException if one is thrown while opening or reading from {@code fileName}
      */
-    public CRDFile parse(final String fileName) throws IOException {
+    public CRD parse(final String fileName) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
                                                              StandardCharsets.UTF_8)) {
             return parse(reader, fileName);
@@ -156,7 +156,7 @@ public class CRDParser {
      * @return a parsed CRD file.
      * @throws IOException if {@code reader} throws one.
      */
-    public CRDFile parse(final BufferedReader reader,
+    public CRD parse(final BufferedReader reader,
                          final String fileName) throws IOException {
 
         // Initialize internal data structures
@@ -197,7 +197,7 @@ public class CRDParser {
     private class ParseInfo {
 
         /** The corresponding CDR file. */
-        private CRDFile file;
+        private CRD file;
 
         /** Version. */
         private int version;
@@ -231,7 +231,7 @@ public class CRDParser {
             this.startEpoch = DateComponents.J2000_EPOCH;
 
             // Initialise empty object
-            this.file                 = new CRDFile();
+            this.file                 = new CRD();
             this.header               = new CRDHeader();
             this.configurationRecords = new CRDConfiguration();
             this.dataBlock            = new CRDDataBlock();

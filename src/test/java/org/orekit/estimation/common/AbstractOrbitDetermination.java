@@ -87,15 +87,15 @@ import org.orekit.estimation.sequential.KalmanEstimation;
 import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
 import org.orekit.estimation.sequential.KalmanObserver;
-import org.orekit.files.ilrs.CPFFile;
-import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
-import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
+import org.orekit.files.ilrs.CPF;
+import org.orekit.files.ilrs.CPF.CPFCoordinate;
+import org.orekit.files.ilrs.CPF.CPFEphemeris;
 import org.orekit.files.ilrs.CPFParser;
-import org.orekit.files.ilrs.CRDFile;
-import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
-import org.orekit.files.ilrs.CRDFile.Meteo;
-import org.orekit.files.ilrs.CRDFile.MeteorologicalMeasurement;
-import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
+import org.orekit.files.ilrs.CRD;
+import org.orekit.files.ilrs.CRD.CRDDataBlock;
+import org.orekit.files.ilrs.CRD.Meteo;
+import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
+import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRDHeader;
 import org.orekit.files.ilrs.CRDHeader.RangeType;
 import org.orekit.files.ilrs.CRDParser;
@@ -113,7 +113,7 @@ import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexLoader;
+import org.orekit.gnss.RinexObservationLoader;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
@@ -392,8 +392,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
-                Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -676,8 +676,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
-                Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -2159,7 +2159,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             default:
                 prnNumber = -1;
         }
-        final RinexLoader loader = new RinexLoader(source);
+        final RinexObservationLoader loader = new RinexObservationLoader(source);
         for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {
@@ -2244,7 +2244,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
          // Initialize parser and read file
          final CPFParser parserCpf = new CPFParser();
-         final CPFFile file = (CPFFile) parserCpf.parse(source);
+         final CPF file = (CPF) parserCpf.parse(source);
 
          // Satellite ephemeris
          final CPFEphemeris ephemeris = file.getSatellites().get(file.getHeader().getIlrsSatelliteId());
@@ -2289,7 +2289,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         // Initialise parser and read file
         final CRDParser parser =  new CRDParser();
-        final CRDFile   file   = parser.parse(source.getStreamOpener().openOnce());
+        final CRD   file   = parser.parse(source.getStreamOpener().openOnce());
 
         // Loop on data block
         for (final CRDDataBlock block : file.getDataBlocks()) {

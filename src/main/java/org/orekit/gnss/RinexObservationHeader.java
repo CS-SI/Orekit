@@ -20,13 +20,13 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
-import org.orekit.gnss.RinexLoader.Parser.PhaseShiftCorrection;
+import org.orekit.gnss.RinexObservationLoader.Parser.PhaseShiftCorrection;
 import org.orekit.time.AbsoluteDate;
 
-/** Container for Rinex file header.
+/** Container for Rinex observation file header.
  * @since 9.2
  */
-public class RinexHeader {
+public class RinexObservationHeader {
 
     /** Rinex Version. */
     private final double rinexVersion;
@@ -160,7 +160,7 @@ public class RinexHeader {
      * @param clkOffset Realtime-derived receiver clock offset
      * @param leapSeconds Number of leap seconds since 6-Jan-1980
      */
-    public RinexHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
+    public RinexObservationHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
                        final String markerName, final String markerNumber, final String markerType,
                        final String observerName, final String agencyName, final String receiverNumber,
                        final String receiverType, final String receiverVersion, final String antennaNumber,
@@ -230,7 +230,7 @@ public class RinexHeader {
     * @param leapSecondsWeekNum Respective leap second week number
     * @param leapSecondsDayNum Respective leap second day number
     */
-    public RinexHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
+    public RinexObservationHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
                        final String markerName, final String markerNumber, final String markerType,
                        final String observerName, final String agencyName, final String receiverNumber,
                        final String receiverType, final String receiverVersion, final String antennaNumber,

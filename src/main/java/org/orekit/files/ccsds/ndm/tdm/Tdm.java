@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.IERSConventions;
 
-/** This class stores all the information of the CCSDS Tracking Data Message file parsed by TDMParser or TDMXMLParser. <p>
+/** This class stores all the information of the CCSDS Tracking Data Message parsed by TDMParser or TDMXMLParser. <p>
  * It contains the header and a list of Observations Blocks each containing
  * TDM metadata and a list of observation data lines. <p>
  * At this level the observations are not Orekit objects but custom object containing a keyword (type of observation),
@@ -36,7 +36,7 @@ import org.orekit.utils.IERSConventions;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TdmFile extends NdmConstituent<Header, Segment<TdmMetadata, ObservationsBlock>> {
+public class Tdm extends NdmConstituent<Header, Segment<TdmMetadata, ObservationsBlock>> {
 
     /** Root element for XML files. */
     public static final String ROOT = "tdm";
@@ -50,7 +50,7 @@ public class TdmFile extends NdmConstituent<Header, Segment<TdmMetadata, Observa
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public TdmFile(final Header header, final List<Segment<TdmMetadata, ObservationsBlock>> segments,
+    public Tdm(final Header header, final List<Segment<TdmMetadata, ObservationsBlock>> segments,
                    final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }

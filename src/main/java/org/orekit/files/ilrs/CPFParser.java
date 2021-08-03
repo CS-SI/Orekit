@@ -56,7 +56,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class CPFParser implements EphemerisFileParser<CPFFile> {
+public class CPFParser implements EphemerisFileParser<CPF> {
 
     /** File format. */
     private static final String FILE_FORMAT = "CPF";
@@ -121,7 +121,7 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
 
     /** {@inheritDoc} */
     @Override
-    public CPFFile parse(final DataSource source) {
+    public CPF parse(final DataSource source) {
 
         try (InputStream       is     = source.getStreamOpener().openOnce();
              InputStreamReader isr    = (is  == null) ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
@@ -176,7 +176,7 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
     private class ParseInfo {
 
         /** The corresponding CPF file. */
-        private CPFFile file;
+        private CPF file;
 
         /** IERS convention. */
         private IERSConventions convention;
@@ -202,7 +202,7 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
         protected ParseInfo() {
 
             // Initialise file
-            file = new CPFFile();
+            file = new CPF();
 
             // Time scale
             this.timeScale = CPFParser.this.timeScale;
@@ -480,7 +480,7 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
                 final Vector3D position = new Vector3D(x, y, z);
 
                 // CPF coordinate
-                final CPFFile.CPFCoordinate coordinate = new CPFFile.CPFCoordinate(date, position, leap);
+                final CPF.CPFCoordinate coordinate = new CPF.CPFCoordinate(date, position, leap);
                 pi.file.addSatelliteCoordinate(coordinate);
 
             }

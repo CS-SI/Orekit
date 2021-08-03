@@ -119,7 +119,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
                                          "7b1556a1f582b4e037b6bae7e31672370fbea23ebb9289ceebcefefa898afe9c");
-        RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(135, ods.size());
@@ -152,7 +152,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
                                          "2ec64a396f19c09e70d0748e01ebb0f96d4961fdfd3ba8f023011de40b52c2b4");
-        RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2001, 1, 9, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -211,7 +211,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
                                          "680cf9145f416d92458afc82aabd9cef3460c27f33837686fa0535195df379fe");
-        RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2015, 7, 8, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -269,7 +269,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(raw),
                                          "b54f4ec3fb860a032f93f569199224e247b35ceba309bc96478779ff7120455a");
-        RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(23, ods.size());
@@ -299,7 +299,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
                                          "6ac7c9160d2131581156b2ea88c0c5844b88e1369c3a03956cb77f919c5cca3e");
-        RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(349, ods.size());
@@ -323,7 +323,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
                                          "b2bc4c32c144f8e6fdda15c9a041c17cbd6b48653c0866dd121f9ad5663f3895");
-        RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -347,7 +347,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
                                          "8eee596cd333bb784ece5a7afd94ab1674f27af58ede842873d952414a39998f");
-        RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 10, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -373,7 +373,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
                                          "4e5d77c4f4b21f9c995da88b4e1efd75d0e808e3e531ec815f95c4a8652fba8f");
-        RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -533,7 +533,7 @@ public class HatanakaCompressFilterTest {
                                               () -> Utils.class.getClassLoader().getResourceAsStream(name));
           Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
                                            "f07c83dcd4dfa02e517ebb8bed6ac7caa0a8ba6f5809cb9d367d7e757741afab");
-          RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+          RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -559,7 +559,7 @@ public class HatanakaCompressFilterTest {
                                               () -> Utils.class.getClassLoader().getResourceAsStream(name));
           Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
                                            "79b524e36869055b41238ee5919b13f0ca2923b95f8516fe0e09a7ac968a62d6");
-          RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+          RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -585,7 +585,7 @@ public class HatanakaCompressFilterTest {
                                               () -> Utils.class.getClassLoader().getResourceAsStream(name));
           Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
                                            "a7f7136b71923d1fbd44638843300298872bb35a732325782ebe13cc299c0d46");
-          RinexLoader loader = new RinexLoader(digester.getDigestedSource());
+          RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();

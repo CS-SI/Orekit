@@ -39,7 +39,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class NavigationFile {
+public class RinexNavigation {
 
     /** Format version. */
     private double formatVersion;
@@ -111,7 +111,7 @@ public class NavigationFile {
     private Map<String, List<SBASNavigationMessage>> sbasData;
 
     /** Constructor. */
-    public NavigationFile() {
+    public RinexNavigation() {
         this.comments              = "";
         this.timeSystemCorrections = new ArrayList<>();
         this.gpsData               = new HashMap<>();

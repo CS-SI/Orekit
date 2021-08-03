@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.Constants;
 
-public class OcmWriterTest extends AbstractWriterTest<Header, Segment<OcmMetadata, OcmData>, OcmFile> {
+public class OcmWriterTest extends AbstractWriterTest<Header, Segment<OcmMetadata, OcmData>, Ocm> {
 
     protected OcmParser getParser() {
         return new ParserBuilder().

@@ -28,7 +28,7 @@ import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
-/** Common metadata for Orbit Parameter/Ephemeris/Mean Message files.
+/** Common metadata for Orbit Parameter/Ephemeris/Mean Messages.
  * @author Luc Maisonobe
  * @since 11.0
  */

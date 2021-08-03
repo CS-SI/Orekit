@@ -38,7 +38,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OmmFile extends NdmConstituent<Header, Segment<OmmMetadata, OmmData>> implements TimeStamped {
+public class Omm extends NdmConstituent<Header, Segment<OmmMetadata, OmmData>> implements TimeStamped {
 
     /** Root element for XML files. */
     public static final String ROOT = "omm";
@@ -52,7 +52,7 @@ public class OmmFile extends NdmConstituent<Header, Segment<OmmMetadata, OmmData
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public OmmFile(final Header header, final List<Segment<OmmMetadata, OmmData>> segments,
+    public Omm(final Header header, final List<Segment<OmmMetadata, OmmData>> segments,
                    final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }

@@ -54,7 +54,7 @@ public class NdmWriterTest {
     public void testOpm() throws IOException {
         final String name = "/ccsds/ndm/NDM-opm.xml";
         final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
-        final NdmFile ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
+        final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw = new CharArrayWriter();
         try (Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
@@ -69,7 +69,7 @@ public class NdmWriterTest {
     public void testOpmApm() throws IOException {
         final String name = "/ccsds/ndm/NDM-ocm-apm.xml";
         final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
-        final NdmFile ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
+        final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw  = new CharArrayWriter();
         try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
@@ -84,7 +84,7 @@ public class NdmWriterTest {
     public void testMisplacedComments() throws IOException {
         final String name = "/ccsds/ndm/NDM-opm.xml";
         final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
-        final NdmFile ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
+        final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw  = new CharArrayWriter();
         try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
@@ -132,7 +132,7 @@ public class NdmWriterTest {
             }
 
             // create randomized NDM
-            final NdmFile original = new NdmFile(Arrays.asList(comments), Arrays.asList(constituents));
+            final Ndm original = new Ndm(Arrays.asList(comments), Arrays.asList(constituents));
 
             // write it
             final CharArrayWriter caw  = new CharArrayWriter();
@@ -143,7 +143,7 @@ public class NdmWriterTest {
             // parse the written message back
             final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
             final DataSource source2 = new DataSource("dummy.xml", () -> new ByteArrayInputStream(bytes));
-            final NdmFile rebuilt = pb.buildNdmParser().parseMessage(source2);
+            final Ndm rebuilt = pb.buildNdmParser().parseMessage(source2);
 
             // check we recovered the message properly
             NdmTestUtils.checkContainer(original, rebuilt);

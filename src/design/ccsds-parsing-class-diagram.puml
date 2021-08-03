@@ -103,7 +103,7 @@
             of ProcessingState for
             different logical blocks
           end note
-          class OpmFile
+          class Opm
         }
 
         class ParserBuilder {
@@ -141,7 +141,7 @@
   AbstractMessageParser ..|> MessageParser
   ProcessingState <--o AbstractMessageParser : "current"
   ProcessingState <--o AbstractMessageParser : "fallback"
-  OpmParser --> OpmFile : "build"
+  OpmParser --> Opm : "build"
   HeaderProcessingState       ..|> ProcessingState
   KvnStructureProcessingState ..|> ProcessingState
   XmlStructureProcessingState ..|> ProcessingState

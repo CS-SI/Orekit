@@ -33,7 +33,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmFile extends NdmConstituent<Header, Segment<OcmMetadata, OcmData>>
+public class Ocm extends NdmConstituent<Header, Segment<OcmMetadata, OcmData>>
     implements EphemerisFile<TimeStampedPVCoordinates, TrajectoryStateHistory> {
 
     /** Root element for XML messages. */
@@ -64,7 +64,7 @@ public class OcmFile extends NdmConstituent<Header, Segment<OcmMetadata, OcmData
      * @param dataContext used for creating frames, time scales, etc.
      * @param mu Gravitational coefficient to use for building Cartesian/Keplerian orbits.
      */
-    public OcmFile(final Header header, final List<Segment<OcmMetadata, OcmData>> segments,
+    public Ocm(final Header header, final List<Segment<OcmMetadata, OcmData>> segments,
                    final IERSConventions conventions, final DataContext dataContext,
                    final double mu) {
         super(header, segments, conventions, dataContext);

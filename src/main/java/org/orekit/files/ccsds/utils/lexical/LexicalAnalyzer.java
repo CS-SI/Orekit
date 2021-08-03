@@ -33,7 +33,7 @@ package org.orekit.files.ccsds.utils.lexical;
  */
 public interface LexicalAnalyzer {
 
-    /** Parse a CCSDS Message file.
+    /** Parse a CCSDS Message.
      * @param messageParser CCSDS Message parser to use
      * @param <T> type of the file
      * @return parsed fileO

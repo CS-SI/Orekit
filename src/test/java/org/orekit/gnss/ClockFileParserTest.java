@@ -34,12 +34,12 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.clock.ClockFile;
-import org.orekit.gnss.clock.ClockFile.ClockDataLine;
-import org.orekit.gnss.clock.ClockFile.ClockDataType;
-import org.orekit.gnss.clock.ClockFile.Receiver;
-import org.orekit.gnss.clock.ClockFile.ReferenceClock;
-import org.orekit.gnss.clock.ClockFileParser;
+import org.orekit.gnss.clock.RinexClock;
+import org.orekit.gnss.clock.RinexClock.ClockDataLine;
+import org.orekit.gnss.clock.RinexClock.ClockDataType;
+import org.orekit.gnss.clock.RinexClock.Receiver;
+import org.orekit.gnss.clock.RinexClock.ReferenceClock;
+import org.orekit.gnss.clock.RinexClockParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -61,9 +61,9 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
     
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 3.04;
@@ -129,9 +129,9 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_2_304.clk";
     
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         
         
@@ -199,9 +199,9 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/Exple_calibration_304.clk";
     
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 3.04;
@@ -262,9 +262,9 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/mit19044_truncated_300.clk";
     
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 3.00;
@@ -324,9 +324,9 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/igr21101_truncated_300.clk";
     
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 3.00;
@@ -390,9 +390,9 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/emr10491_truncated_200.clk";
     
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 2.00;
@@ -450,9 +450,9 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/jpl11456_truncated_200.clk";
     
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 2.00;
@@ -514,9 +514,9 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/cod17381_truncated_200.clk";
     
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 2.00;
@@ -576,9 +576,9 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304_more_obs_types.clk";
     
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Theorical values
         final int numberOfObservationTypesGPS = 16;
@@ -600,9 +600,9 @@ public class ClockFileParserTest {
         
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_2_304.clk";
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Get theorical values
         final int index = 3;
@@ -633,17 +633,17 @@ public class ClockFileParserTest {
         final Frame itrf2010 = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
         
         // Get default clock file parser
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         
         // Parse file with expected frame ITRF96
         final String ex1 = "/gnss/clock/Exple_analysis_1_304.clk";
         final String fileName1 = Paths.get(getClass().getResource(ex1).toURI()).toString();
-        final ClockFile file1 = parser.parse(fileName1);
+        final RinexClock file1 = parser.parse(fileName1);
         
         // Parse file with default expected frame ITRF 2010
         final String ex2 = "/gnss/clock/Exple_analysis_2_304.clk";
         final String fileName2 = Paths.get(getClass().getResource(ex2).toURI()).toString();
-        final ClockFile file2 = parser.parse(fileName2);
+        final RinexClock file2 = parser.parse(fileName2);
         
         // Check frames
         Assert.assertTrue(itrf1996.equals(file1.getFrame()));
@@ -656,9 +656,9 @@ public class ClockFileParserTest {
         
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Get reference clocks
         final TimeSpanMap<List<ReferenceClock>> referenceClocksMap = file.getReferenceClocks();
@@ -704,9 +704,9 @@ public class ClockFileParserTest {
         
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Get satellite list
         final List<String> satellites = file.getSatellites();
@@ -727,9 +727,9 @@ public class ClockFileParserTest {
         
         // Parse file
         final String ex = "/gnss/clock/two_same_receivers_and_satellites.clk";
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         Assert.assertEquals(1, file.getNumberOfReceivers());
         Assert.assertEquals(1, file.getNumberOfSatellites());
@@ -741,9 +741,9 @@ public class ClockFileParserTest {
         
         // Parse file
         final String ex = "/gnss/clock/Exple_calibration_304.clk";
-        final ClockFileParser parser = new ClockFileParser();
+        final RinexClockParser parser = new RinexClockParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = parser.parse(fileName);
+        final RinexClock file = parser.parse(fileName);
         
         // Get satellite list
         final List<ClockDataType> dataTypes = file.getClockDataTypes();
@@ -763,7 +763,7 @@ public class ClockFileParserTest {
     public void testParsingErrorException() throws IOException {
         try {
             final String ex = "/gnss/clock/error_in_line_4.clk";
-            final ClockFileParser parser = new ClockFileParser();
+            final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
             parser.parse(inEntry);
             Assert.fail("an exception should have been thrown");
@@ -779,7 +779,7 @@ public class ClockFileParserTest {
     public void testMissingBlockException() throws IOException {
         try {
             final String ex = "/gnss/clock/missing_block_end_of_header.clk";
-            final ClockFileParser parser = new ClockFileParser();
+            final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
             parser.parse(inEntry);
             Assert.fail("an exception should have been thrown");
@@ -795,7 +795,7 @@ public class ClockFileParserTest {
     public void testUnsupportedVersion() throws IOException {
         try {
             final String ex = "/gnss/clock/unsupported_clock_file_version.clk";
-            final ClockFileParser parser = new ClockFileParser();
+            final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
             parser.parse(inEntry);
             Assert.fail("an exception should have been thrown");
@@ -811,7 +811,7 @@ public class ClockFileParserTest {
     public void testWrongClockDataType() throws IOException {
         try {
             final String ex = "/gnss/clock/wrong_clock_data_type.clk";
-            final ClockFileParser parser = new ClockFileParser();
+            final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
             parser.parse(inEntry);
             Assert.fail("an exception should have been thrown");
@@ -827,7 +827,7 @@ public class ClockFileParserTest {
     public void testUnknownTimeSystem() throws IOException {
         try {
             final String ex = "/gnss/clock/unknown_time_system.clk";
-            final ClockFileParser parser = new ClockFileParser();
+            final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
             parser.parse(inEntry);
             Assert.fail("an exception should have been thrown");
@@ -852,7 +852,7 @@ public class ClockFileParserTest {
     }
     
     /** Check the content of a clock file. */
-    private void checkClockFileContent(final ClockFile file,
+    private void checkClockFileContent(final RinexClock file,
                                        final double version, final SatelliteSystem satelliteSystem, final TimeSystem timeSystem,
                                        final String programName, final String agencyName, final String comments,
                                        final String stationName, final String stationIdentifier,

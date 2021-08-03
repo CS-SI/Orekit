@@ -30,11 +30,11 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CRDConfiguration.TransponderConfiguration;
-import org.orekit.files.ilrs.CRDFile.AnglesMeasurement;
-import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
-import org.orekit.files.ilrs.CRDFile.Meteo;
-import org.orekit.files.ilrs.CRDFile.MeteorologicalMeasurement;
-import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
+import org.orekit.files.ilrs.CRD.AnglesMeasurement;
+import org.orekit.files.ilrs.CRD.CRDDataBlock;
+import org.orekit.files.ilrs.CRD.Meteo;
+import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
+import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -112,7 +112,7 @@ public class CRDParserTest {
 
         final CRDParser parser = new CRDParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CRDFile file = (CRDFile) parser.parse(fileName);
+        final CRD file = (CRD) parser.parse(fileName);
 
         // Verify first data block
         final CRDDataBlock first = file.getDataBlocks().get(0);
@@ -352,7 +352,7 @@ public class CRDParserTest {
 
         final CRDParser parser = new CRDParser();
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final CRDFile file = (CRDFile) parser.parse(inEntry);
+        final CRD file = (CRD) parser.parse(inEntry);
 
         // Data block
         final CRDDataBlock block = file.getDataBlocks().get(0);
@@ -455,7 +455,7 @@ public class CRDParserTest {
 
         final CRDParser parser = new CRDParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CRDFile file = (CRDFile) parser.parse(fileName);
+        final CRD file = (CRD) parser.parse(fileName);
 
         final CRDDataBlock block = file.getDataBlocks().get(0);
         Assert.assertEquals(0, file.getComments().size());
@@ -530,7 +530,7 @@ public class CRDParserTest {
 
         final CRDParser parser = new CRDParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CRDFile file = (CRDFile) parser.parse(fileName);
+        final CRD file = (CRD) parser.parse(fileName);
 
         final CRDDataBlock block = file.getDataBlocks().get(0);
         Assert.assertEquals(0, file.getComments().size());

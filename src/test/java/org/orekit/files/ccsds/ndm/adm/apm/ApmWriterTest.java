@@ -35,7 +35,7 @@ import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 
-public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadata, ApmData>, ApmFile> {
+public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadata, ApmData>, Apm> {
 
     protected ApmParser getParser() {
         return new ParserBuilder().
@@ -85,7 +85,7 @@ public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadat
     @Test
     public void testWrongVersion() throws IOException {
         final String  name = "/ccsds/adm/apm/APMExample1.txt";
-        final ApmFile file = new ParserBuilder().
+        final Apm file = new ParserBuilder().
                              buildApmParser().
                              parseMessage(new DataSource(name, () -> getClass().getResourceAsStream(name)));
         file.getHeader().setFormatVersion(1.0);

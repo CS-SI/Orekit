@@ -73,7 +73,7 @@ public class AEMParserTest {
     public void testParseAEM01() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final Segment<AemMetadata, AemData> segment1 = file.getSegments().get(1);
         final AbsoluteDate start = new AbsoluteDate("1996-11-28T22:08:02.5555", TimeScalesFactory.getUTC());
@@ -189,7 +189,7 @@ public class AEMParserTest {
                                                                      TimeScalesFactory.getUTC())).
                            buildAemParser();
 
-        final AemFile file = parser.parse(source); // using generic API here
+        final Aem file = parser.parse(source); // using generic API here
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
@@ -230,7 +230,7 @@ public class AEMParserTest {
         validateAEM03(parser.parse(source));
     }
 
-    private void validateAEM03(final AemFile file) {
+    private void validateAEM03(final Aem file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-15);
@@ -280,7 +280,7 @@ public class AEMParserTest {
         final String ex = "/ccsds/adm/aem/AEMExample04.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
-        final AemFile file = parser.parseMessage(source);
+        final Aem file = parser.parseMessage(source);
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-15);
         Assert.assertEquals(0,
                             file.getHeader().getCreationDate().durationFrom(new AbsoluteDate("2021-04-13T08:41:42", utc)),
@@ -331,7 +331,7 @@ public class AEMParserTest {
         final String ex = "/ccsds/adm/aem/AEMExample05.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
-        final AemFile file = parser.parseMessage(source);
+        final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
@@ -392,7 +392,7 @@ public class AEMParserTest {
         final String ex = "/ccsds/adm/aem/AEMExample07.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
-        final AemFile file = parser.parseMessage(source);
+        final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
@@ -457,7 +457,7 @@ public class AEMParserTest {
         final String ex = "/ccsds/adm/aem/AEMExample11.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
-        final AemFile file = parser.parseMessage(source);
+        final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("This example shows an AEM with a rotation");
@@ -510,7 +510,7 @@ public class AEMParserTest {
         final String ex = "/ccsds/adm/aem/AEMExample13.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
-        final AemFile file = parser.parseMessage(source);
+        final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         Assert.assertEquals(TimeSystem.TAI,          segment0.getMetadata().getTimeSystem());
         Assert.assertEquals("OREKIT SAT",            segment0.getMetadata().getObjectName());
@@ -631,7 +631,7 @@ public class AEMParserTest {
         final DataSource source = new DataSource(file, () -> getClass().getResourceAsStream(file));
 
         //action
-        AemFile actual = new ParserBuilder().buildAemParser().parseMessage(source);
+        Aem actual = new ParserBuilder().buildAemParser().parseMessage(source);
 
         //verify
         Assert.assertEquals(
@@ -719,7 +719,7 @@ public class AEMParserTest {
     public void testMissingConvention() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
         try {
             file.getConventions();
         } catch (OrekitException oe) {
@@ -754,12 +754,12 @@ public class AEMParserTest {
         ParserBuilder builder = new ParserBuilder();
 
         final DataSource source1 = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final AemFile file = builder.buildAemParser().parseMessage(source1);
+        final Aem file = builder.buildAemParser().parseMessage(source1);
         Assert.assertEquals(7, file.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(1, file.getSegments().get(1).getMetadata().getInterpolationDegree());
 
         final DataSource source2 = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final AemFile file2 = builder.withDefaultInterpolationDegree(5).buildAemParser().parseMessage(source2);
+        final Aem file2 = builder.withDefaultInterpolationDegree(5).buildAemParser().parseMessage(source2);
         Assert.assertEquals(7, file2.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(5, file2.getSegments().get(1).getMetadata().getInterpolationDegree());
     }
@@ -768,7 +768,7 @@ public class AEMParserTest {
     public void testIssue739() {
         final String ex = "/ccsds/adm/aem/AEMExample08.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
         final AemSegment segment0 = file.getSegments().get(0);
         Assert.assertEquals(CelestialBodyFrame.GTOD, segment0.getMetadata().getEndpoints().getFrameB().asCelestialBodyFrame());
 
@@ -788,7 +788,7 @@ public class AEMParserTest {
     public void testIssue739_2() {
         final String ex = "/ccsds/adm/aem/AEMExample09.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
         final AemSegment segment0 = file.getSegments().get(0);
         Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_1993, IERSConventions.IERS_2010, true),
                             segment0.getMetadata().getEndpoints().getFrameA().asFrame());

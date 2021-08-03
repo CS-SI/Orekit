@@ -94,56 +94,56 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
         return new WriterBuilder(newConventions, newDataContext, newMissionReferenceDate, newRangeUnitsConverter);
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.NdmFile Navigation Data Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.Ndm Navigation Data Messages}.
      * @return a new writer
      */
     public NdmWriter buildNdmWriter() {
         return new NdmWriter(this);
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.OpmFile Orbit Parameters Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.Opm Orbit Parameters Messages}.
      * @return a new writer
      */
     public OpmWriter buildOpmWriter() {
         return new OpmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.omm.OmmFile Orbit Mean elements Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.omm.Omm Orbit Mean elements Messages}.
      * @return a new writer
      */
     public OmmWriter buildOmmWriter() {
         return new OmmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.oem.Oem Orbit Ephemeris Messages}.
      * @return a new writer
      */
     public OemWriter buildOemWriter() {
         return new OemWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.ocm.OcmFile Orbit Comprehensive Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.ocm.Ocm Orbit Comprehensive Messages}.
      * @return a new writer
      */
     public OcmWriter buildOcmWriter() {
         return new OcmWriter(getConventions(), getDataContext());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.apm.ApmFile Attitude Parameters Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.apm.Apm Attitude Parameters Messages}.
      * @return a new writer
      */
     public ApmWriter buildApmWriter() {
         return new ApmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.aem.AemFile Attitude Ephemeris Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.aem.Aem Attitude Ephemeris Messages}.
      * @return a new writer
      */
     public AemWriter buildAemWriter() {
         return new AemWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.Tdm Tracking Data Messages}.
      * @return a new writer
      */
     public TdmWriter buildTdmWriter() {

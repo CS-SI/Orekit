@@ -29,8 +29,8 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
-import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
+import org.orekit.files.ilrs.CPF.CPFCoordinate;
+import org.orekit.files.ilrs.CPF.CPFEphemeris;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -49,7 +49,7 @@ public class CPFParserTest {
 
         final CPFParser parser = new CPFParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CPFFile file = (CPFFile) parser.parse(new DataSource(fileName));
+        final CPF file = (CPF) parser.parse(new DataSource(fileName));
 
         // Start date
         final AbsoluteDate start = new AbsoluteDate("2018-06-13T00:00:00.000", file.getTimeScale());
@@ -133,7 +133,7 @@ public class CPFParserTest {
         // Simple test for version 2.0, only contains position entries
         final String    ex     = "/ilrs/lageos1_cpf_180613_16401.hts";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final CPFFile   file   = new CPFParser().parse(source);
+        final CPF   file   = new CPFParser().parse(source);
 
         // Start date
         final AbsoluteDate start = new AbsoluteDate("2018-06-13T00:00:00.000", file.getTimeScale());
@@ -214,7 +214,7 @@ public class CPFParserTest {
         // Simple test for version 1.0, only contains position entries
         final String    ex     = "/ilrs/galileo212_cpf_180613_6641.esa";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final CPFFile   file   = new CPFParser().parse(source);
+        final CPF   file   = new CPFParser().parse(source);
 
         // Start date
         final AbsoluteDate start = new AbsoluteDate("2018-06-12T23:59:42.000", file.getTimeScale());
@@ -292,7 +292,7 @@ public class CPFParserTest {
         // Simple test for version 2.0, only contains position entries
         final String    ex     = "/ilrs/cpf_all_fields.csg";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final CPFFile   file   = new CPFParser().parse(source);
+        final CPF   file   = new CPFParser().parse(source);
 
         // Verify comments
         final List<String> comments = file.getComments();

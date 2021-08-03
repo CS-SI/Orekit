@@ -40,7 +40,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata, ApmData>, ApmFile> {
+public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata, ApmData>, Apm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_APM_VERS = 1.0;
@@ -60,7 +60,7 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
      */
     public ApmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, CCSDS_APM_VERS,
+        super(Apm.ROOT, Apm.FORMAT_VERSION_KEY, CCSDS_APM_VERS,
               new ContextBinding(
                   () -> conventions,
                   () -> false, () -> dataContext, () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,

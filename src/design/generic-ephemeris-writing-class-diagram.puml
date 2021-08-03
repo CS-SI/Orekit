@@ -108,16 +108,16 @@
         package oem #CCCCC7 {
           class OemWriter
           class StreamingOemWriter
-          class OemFile
-          EphemerisFile <|.. OemFile
+          class Oem
+          EphemerisFile <|.. Oem
           OemWriter <--o StreamingOemWriter
           EphemerisFileWriter <|.. OemWriter
         }
         package ocm #CCCCC7 {
           class OcmWriter
           class StreamingOcmWriter
-          class OcmFile
-          EphemerisFile <|.. OcmFile
+          class Ocm
+          EphemerisFile <|.. Ocm
           OcmWriter <--o StreamingOcmWriter
           EphemerisFileWriter <|.. OcmWriter
         }

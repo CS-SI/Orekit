@@ -80,17 +80,17 @@ public class EphemerisWriterTest {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
-        final OemFile oemFile = parser.parseMessage(source);
+        final Oem oem = parser.parseMessage(source);
 
         OemWriter writer = new WriterBuilder().
                         withConventions(IERSConventions.IERS_2010).
                         withDataContext(DataContext.getDefault()).
                         buildOemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oem);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
-        final OemFile generatedOemFile = new ParserBuilder().
+        final Oem generatedOem = new ParserBuilder().
                                          withConventions(IERSConventions.IERS_2010).
                                          withSimpleEOP(true).
                                          withDataContext(DataContext.getDefault()).
@@ -98,7 +98,7 @@ public class EphemerisWriterTest {
                                          withDefaultInterpolationDegree(1).
                                          buildOemParser().
                                          parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        compareOemFiles(oemFile, generatedOemFile);
+        compareOems(oem, generatedOem);
     }
 
     @Test
@@ -106,12 +106,12 @@ public class EphemerisWriterTest {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
-        final OemFile oemFile = parser.parseMessage(source);
+        final Oem oem = parser.parseMessage(source);
 
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     oemFile.getHeader(), dummyMetadata(), FileFormat.KVN, "", 0);
+                                                     oem.getHeader(), dummyMetadata(), FileFormat.KVN, "", 0);
         try {
-            writer.write(new CharArrayWriter(), oemFile);
+            writer.write(new CharArrayWriter(), oem);
             fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
@@ -125,13 +125,13 @@ public class EphemerisWriterTest {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
-        final OemFile oemFile = parser.parseMessage(source);
+        final Oem oem = parser.parseMessage(source);
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     oemFile.getHeader(),
-                                                     oemFile.getSegments().get(0).getMetadata(),
+                                                     oem.getHeader(),
+                                                     oem.getSegments().get(0).getMetadata(),
                                                      FileFormat.KVN, "dummy", 0);
         try {
-            writer.write((BufferedWriter) null, oemFile);
+            writer.write((BufferedWriter) null, oem);
             fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
@@ -153,19 +153,19 @@ public class EphemerisWriterTest {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
-        final OemFile oemFile = parser.parseMessage(source);
+        final Oem oem = parser.parseMessage(source);
 
         OemWriter writer = new WriterBuilder().buildOemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oem);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
-        final OemFile generatedOemFile = new ParserBuilder().
+        final Oem generatedOem = new ParserBuilder().
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
                                          parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        assertEquals(oemFile.getSegments().get(0).getMetadata().getObjectID(),
-                generatedOemFile.getSegments().get(0).getMetadata().getObjectID());
+        assertEquals(oem.getSegments().get(0).getMetadata().getObjectID(),
+                generatedOem.getSegments().get(0).getMetadata().getObjectID());
     }
 
     @Test
@@ -173,21 +173,21 @@ public class EphemerisWriterTest {
         final String ex = "/ccsds/odm/oem/OEMExampleWithHeaderComment.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
-        final OemFile oemFile = parser.parseMessage(source);
+        final Oem oem = parser.parseMessage(source);
 
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     oemFile.getHeader(),
-                                                     oemFile.getSegments().get(0).getMetadata(), 
+                                                     oem.getHeader(),
+                                                     oem.getSegments().get(0).getMetadata(), 
                                                      FileFormat.KVN, "TestOEMIssue723.aem", 0);
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.write(caw, oemFile);
+        writer.write(caw, oem);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
-        final OemFile generatedOemFile = new ParserBuilder().
+        final Oem generatedOem = new ParserBuilder().
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
                                          parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        assertEquals(oemFile.getHeader().getComments().get(0), generatedOemFile.getHeader().getComments().get(0));
+        assertEquals(oem.getHeader().getComments().get(0), generatedOem.getHeader().getComments().get(0));
     }
 
     /**
@@ -201,11 +201,11 @@ public class EphemerisWriterTest {
         String exampleFile = "/ccsds/odm/oem/OEMExample4.txt";
         final DataSource source =  new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
-        OemFile oemFile = parser.parseMessage(source);
+        Oem oem = parser.parseMessage(source);
 
         OemWriter writer = new WriterBuilder().buildOemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oem);
 
         String[] lines2 = caw.toString().split("\n");
         assertEquals("2002-12-18T12:00:00.331 2789.619 -280.045 -1746.755 4.73372 -2.49586 -1.0419499999999997", lines2[21]);
@@ -293,7 +293,7 @@ public class EphemerisWriterTest {
         assertEquals(meta1.getTimeSystem().name(),    meta2.getTimeSystem().name());
     }
 
-    static void compareOemFiles(OemFile file1, OemFile file2) {
+    static void compareOems(Oem file1, Oem file2) {
         assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
         assertEquals(file1.getSegments().size(), file2.getSegments().size());
         for (int i = 0; i < file1.getSegments().size(); i++) {

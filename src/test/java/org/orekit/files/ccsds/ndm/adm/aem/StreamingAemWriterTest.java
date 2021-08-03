@@ -70,16 +70,16 @@ public class StreamingAemWriterTest {
             // Reference AEM file
             final DataSource source0 = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             AemParser parser = new ParserBuilder().buildAemParser();
-            AemFile aemFile  = parser.parseMessage(source0);
+            Aem aem  = parser.parseMessage(source0);
 
             // Satellite attitude ephemeris as read from the reference file
-            AemSegment ephemerisBlock = aemFile.getSegments().get(0);
+            AemSegment ephemerisBlock = aem.getSegments().get(0);
 
             // Meta data are extracted from the reference file
-            String            originator   = aemFile.getHeader().getOriginator();
+            String            originator   = aem.getHeader().getOriginator();
             String            objectName   = ephemerisBlock.getMetadata().getObjectName();
             String            objectID     = ephemerisBlock.getMetadata().getObjectID();
-            String            headerCmt    = aemFile.getHeader().getComments().get(0);
+            String            headerCmt    = aem.getHeader().getComments().get(0);
             FrameFacade       frameA       = ephemerisBlock.getMetadata().getEndpoints().getFrameA();
             FrameFacade       frameB       = ephemerisBlock.getMetadata().getEndpoints().getFrameB();
             boolean           a2b          = ephemerisBlock.getMetadata().getEndpoints().isA2b();
@@ -127,11 +127,11 @@ public class StreamingAemWriterTest {
             // Generated AEM file
             final DataSource source1 = new DataSource("buffer",
                                                    () -> new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8)));
-            AemFile generatedAemFile = parser.parseMessage(source1);
+            Aem generatedAem = parser.parseMessage(source1);
 
             // There is only one attitude ephemeris block
-            Assert.assertEquals(1, generatedAemFile.getSegments().size());
-            AemSegment attitudeBlocks = generatedAemFile.getSegments().get(0);
+            Assert.assertEquals(1, generatedAem.getSegments().size());
+            AemSegment attitudeBlocks = generatedAem.getSegments().get(0);
             // There are 7 data lines in the attitude ephemeris block
             List<? extends TimeStampedAngularCoordinates> ac  = attitudeBlocks.getAngularCoordinates();
             Assert.assertEquals(7, ac.size());

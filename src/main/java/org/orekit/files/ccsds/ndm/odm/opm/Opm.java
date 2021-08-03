@@ -37,7 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class OpmFile extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>> implements TimeStamped {
+public class Opm extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>> implements TimeStamped {
 
     /** Root element for XML files. */
     public static final String ROOT = "opm";
@@ -55,7 +55,7 @@ public class OpmFile extends NdmConstituent<Header, Segment<CommonMetadata, OpmD
      * @param dataContext used for creating frames, time scales, etc.
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      */
-    public OpmFile(final Header header, final List<Segment<CommonMetadata, OpmData>> segments,
+    public Opm(final Header header, final List<Segment<CommonMetadata, OpmData>> segments,
                    final IERSConventions conventions, final DataContext dataContext,
                    final double mu) {
         super(header, segments, conventions, dataContext);

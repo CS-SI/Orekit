@@ -36,8 +36,8 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
-import org.orekit.files.sp3.SP3File.SP3Coordinate;
-import org.orekit.files.sp3.SP3File.SP3FileType;
+import org.orekit.files.sp3.SP3.SP3Coordinate;
+import org.orekit.files.sp3.SP3.SP3FileType;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -59,7 +59,7 @@ import org.orekit.utils.IERSConventions;
  * @author Thomas Neidhart
  * @author Luc Maisonobe
  */
-public class SP3Parser implements EphemerisFileParser<SP3File> {
+public class SP3Parser implements EphemerisFileParser<SP3> {
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -150,7 +150,7 @@ public class SP3Parser implements EphemerisFileParser<SP3File> {
     }
 
     @Override
-    public SP3File parse(final DataSource source) {
+    public SP3 parse(final DataSource source) {
 
         try (InputStream       is     = source.getStreamOpener().openOnce();
              InputStreamReader isr    = (is  == null) ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
@@ -235,7 +235,7 @@ public class SP3Parser implements EphemerisFileParser<SP3File> {
         private final TimeScales timeScales;
 
         /** The corresponding SP3File object. */
-        private SP3File file;
+        private SP3 file;
 
         /** The latest epoch as read from the SP3 file. */
         private AbsoluteDate latestEpoch;
@@ -273,7 +273,7 @@ public class SP3Parser implements EphemerisFileParser<SP3File> {
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
             this.timeScales = SP3Parser.this.timeScales;
-            file               = new SP3File(mu, interpolationSamples, frameBuilder);
+            file               = new SP3(mu, interpolationSamples, frameBuilder);
             latestEpoch        = null;
             latestPosition     = null;
             latestClock        = 0.0;
