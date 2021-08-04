@@ -14,10 +14,14 @@
 
 # Filtering
 
-Orekit provides an automatic filtering feature for data loaded through a
-`DataProvidersManager` instance. All filters implement the `DataFilter`
-interface and can be registered to a `DataProvidersManager`
-instance. In the default configuration, three filters are registered:
+Orekit provides an automatic filtering feature for data. This feature is activated
+automatically with an initial set of predefined filters for data loaded through a
+`DataProvidersManager` instance when using the [default configuration](./default-configuration.html),
+and can be used for [explicit loading](./application-data#Explicit_loading) of application data.
+
+All filters implement the `DataFilter` interface and can be registered to a `FiltersManager`
+instance. In the [default configuration](./default-configuration.html), three filters are
+registered to the `FiltersManager` contained in the `DataProvidersManager`:
 
   - `GzipFilter` which uncompresses files compressed with the gzip algorithm
   - `UnixCompressFilter` which uncompresses files compressed with the Unix compress algorithm
@@ -34,21 +38,29 @@ in this feature.
 
 ![data filtering class diagram](../images/design/data-filtering-class-diagram.png)
 
-## Filtering stack
+## Filters stack
 
-The filtering architecture is based on a stack of `DataSource` instances, with at the bottom
-an instance created by a `DataProvider` that will read bytes directly from storage, then some
-instances added  by the `DataProvidersManager.applyAllFilters` method, each one reading
-bytes from the underlying stack element and providing filtered bytes to the next element
-upward. If at the end the name part of the `DataSource` matches the name that the
-`DataLoader` instance expects, then the byte stream of the top of the stack is opened. This is
-were the lazy opening occurs, and it generally ends up with all the intermediate bytes streams
-being opened as well. The opened stream is then passed to the `DataLoader` to be parsed. If
-on the other hand the name part of the `DataSource` does not match the name that the
-`DataLoader` instance expects, then the full stack is discarded and the next resource/file
-from the `DataProvider` is considered for filtering and loading.
+The filtering principle is based on a stack of `DataSource` instances, with at the bottom
+an instance (created by a `DataProvider` when using `DataProvidersManager`, or created
+manually when loading data explicitly). The instance at the bottom of the stack will read
+bytes or characters directly from storage. Upwards in the stack, one will find instances added
+by the `FiltersManager.applyRelevantFilters` method, each one reading data from the underlying
+stack element and providing filtered data to the next element upward.
 
-## Example
+In the `DataProvidersManager` case, if at the end the name part of the `DataSource` matches the
+name that the`DataLoader` instance expects, then the data stream of the top of the stack is opened.
+This is were the lazy opening occurs, and it generally ends up with all the intermediate bytes or
+characters streams being opened as well. The opened stream is then passed to the `DataLoader` to be
+parsed. If on the other hand the name part of the `DataSource` does not match the name that the
+`DataLoader` instance expects, then the full stack is discarded and the next resource/file from the
+`DataProvider` is considered for filtering and loading.
+
+In the explicit loading case, application can decide on its own to open or discard the top
+level `DataSource`, or select the appropriate parser based on the source name without having
+to bother about extensions like '.gz' as they would already have been handled by lower level
+filters.
+
+## Example with default configuration
 
 One example will explain this method more clearly. Consider a `DirectoryCrawler`
 configured to look into a directories tree containing files `tai-utc.dat` and
@@ -82,3 +94,40 @@ top level of the stack. This method then asks the underlying `DataSource` to ope
 (which it the raw file data), feeds the gzip uncompression algorithm with this data and provides
 the output uncompressed data as a newly opened bytes stream. The data loader then parses the data,
 without knowing that is is uncompressed on the fly.
+
+## Example with explicit loading
+
+When loading data explicitly, the application is responsible to set up the `FiltersManager`
+and call it. The following example shows for example how to load CCSDS Orbit Ephemeris Messages
+from files selected by users in a graphical interface, where some files may have been
+compressed using either gzip or with Unix compress, and may have been ciphered on disk as
+they contain sensitive information (and they may be both compressed and ciphered, in any
+order): 
+
+    // set up filters manager, this may be done only once at application startup if needed
+    FiltersManager manager = new FiltersManager();
+    filtersManager.addFilter(new GzipFilter());
+    filtersManager.addFilter(new UnixCompressFilter());
+    filtersManager.addFilter(new MyOwnDecipheringFilter(secretKey));
+
+    // set up builder for CCSDS files parsers
+    ParserBuilder parserBuilder = new ParserBuilder(dataContext);
+
+    // parse files
+    for (final File file : userInterface.getFilesToProcess()) {
+
+        // set up raw data source, which may be compressed and/or ciphered
+        DataSource rawSource = new DataSource(file.getName(), () -> new FileInputStream(file));
+
+        // apply relevant filters
+        DataSource filteredSource = manager.applyRelevantFilters(rawSource);
+
+        // parse the file, which is now known to be uncompressed and deciphered
+        OEM oem = parserBuidler.buildOemParser().parse(filteredSource);
+
+        // process the ephemeris
+        ...
+
+    }
+
+In this example, the l

@@ -45,9 +45,8 @@
         +DataProvider removeProvider(Class<? extends DataProvider> providerClass)
         +DataProvider removeProvider(DataProvider provider)
         +void clearProviders()
-        +addFilter(final DataFilter filter)
-        +void clearFilters()
-        +DataSource applyAllFilters(final DataSource original)
+        +FiltersManager getFiltersManager()
+        +void resetFiltersToDefault()
         +boolean isSupported(Class<? extends DataProvider> providerClass)
         +boolean isSupported(DataProvider provider)
         +List<DataProvider> getProviders()
@@ -55,11 +54,17 @@
         +void clearLoadedDataNames()
         +boolean feed(String supportedNames, DataLoader loader)
       }
-      note right
-        manages providers and filters
+      note bottom
+        manages providers
         (i.e. knows how to retrieve
         data from storage)
       end note
+
+      class FiltersManager {
+        +addFilter(final DataFilter filter)
+        +void clearFilters()
+        +DataSource applyRelevantFilters(final DataSource original)
+      }
 
       interface DataLoader {
         +boolean stillAcceptsData()
@@ -75,7 +80,8 @@
       }
 
       DataProvider "*" <--o "1" DataProvidersManager : manages, feeds
-      DataProvidersManager "1" o--> "*" DataFilter: applies
+      DataProvidersManager "1" o--> "1" FiltersManager
+      FiltersManager "1" o--> "*" DataFilter: applies
       DirectoryCrawler --|> DataProvider
       ClassPathCrawler --|> DataProvider
       NetworkCrawler   --|> DataProvider
