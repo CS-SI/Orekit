@@ -447,7 +447,7 @@ public class HatanakaCompressFilterTest {
 
             for (int i = 0; i < compressed.length; ++i) {
                 acceptMethod.invoke(differential, Long.toString(compressed[i]));
-                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differential));
+                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differential).toString());
             }
 
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
@@ -514,7 +514,7 @@ public class HatanakaCompressFilterTest {
                 acceptMethod.invoke(differentialClass,
                                     compressed[i].subSequence(compressed[i].indexOf('@') + 1,
                                                               compressed[i].lastIndexOf('@')));
-                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differentialClass));
+                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differentialClass).toString());
             }
 
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
