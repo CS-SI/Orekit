@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.utils.lexical;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -67,11 +68,21 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
             // Read the xml file
             messageParser.reset(FileFormat.XML);
-            try (InputStream is = source.getOpener().openStreamOnce()) {
-                if (is == null) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+            final DataSource.Opener opener = source.getOpener();
+            if (opener.rawDataIsBinary()) {
+                try (InputStream is = opener.openStreamOnce()) {
+                    if (is == null) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+                    }
+                    saxParser.parse(new InputSource(is), handler);
                 }
-                saxParser.parse(is, handler);
+            } else {
+                try (Reader reader = opener.openReaderOnce()) {
+                    if (reader == null) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+                    }
+                    saxParser.parse(new InputSource(reader), handler);
+                }
             }
 
             // Get the content of the file

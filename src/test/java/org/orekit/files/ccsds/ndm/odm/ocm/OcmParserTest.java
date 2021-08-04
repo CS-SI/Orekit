@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -476,9 +477,19 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testParseOCM2XML() {
+    public void testParseOCM2XMLBinary() {
         final String  name = "/ccsds/odm/ocm/OCMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        validateOCM2XML(new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        buildOcmParser().
+                        parseMessage(source));
+    }
+
+    @Test
+    public void testParseOCM2XMLCharacter() {
+        final String  name = "/ccsds/odm/ocm/OCMExample2.xml";
+        final DataSource source = new DataSource(name, () -> new InputStreamReader(getClass().getResourceAsStream(name), StandardCharsets.UTF_8));
         validateOCM2XML(new ParserBuilder().
                         withMu(Constants.EIGEN5C_EARTH_MU).
                         buildOcmParser().

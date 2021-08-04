@@ -17,8 +17,10 @@
 package org.orekit.files.ccsds.utils.lexical;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -84,6 +86,11 @@ public class LexicalAnalyzerSelector {
         0x3c, 0x3f, 0x78, 0x6d, 0x6c
     };
 
+    /** First characters in XML document, with Byte Order Mark. */
+    private static final String CHARS_BOM = "\ufeff<?xml";
+
+    /** First characters in XML document, without Byte Order Mark. */
+    private static final String CHARS = "<?xml";
 
     /** Private constructor for a utility class.
      */
@@ -97,12 +104,26 @@ public class LexicalAnalyzerSelector {
      * @throws IOException if first bytes of source cannot be read
      */
     public static LexicalAnalyzer select(final DataSource source) throws IOException {
-
-        final InputStream is = source.getOpener().openStreamOnce();
-        if (is == null) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+        final DataSource.Opener opener = source.getOpener();
+        if (opener.rawDataIsBinary()) {
+            return select(source.getName(), opener.openStreamOnce());
+        } else {
+            return select(source.getName(), opener.openReaderOnce());
         }
-        final BufferedInputStream bis = new BufferedInputStream(is, BUFFER);
+    }
+
+    /** Select a {@link LexicalAnalyzer} based on content.
+     * @param name message name
+     * @param stream binary stream with message content
+     * @return lexical analyzer suited for the data source format
+     * @throws IOException if first bytes of source cannot be read
+     */
+    private static LexicalAnalyzer select(final String name, final InputStream stream) throws IOException {
+
+        if (stream == null) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
+        }
+        final BufferedInputStream bis = new BufferedInputStream(stream, BUFFER);
 
         // read the first bytes
         final int size = UCS_4_BE_BOM.length; // UCS-4 with BOM is the longest reference sequence
@@ -116,7 +137,7 @@ public class LexicalAnalyzerSelector {
                 // we return arbitrarily a KVN lexical analyzer,
                 // anyway, it will fail shortly during parsing
                 bis.reset();
-                return new KvnLexicalAnalyzer(new DataSource(source.getName(), () -> bis));
+                return new KvnLexicalAnalyzer(new DataSource(name, () -> bis));
             }
             read += n;
         }
@@ -132,11 +153,55 @@ public class LexicalAnalyzerSelector {
             checkSequence(first, UCS_4_BE)  || checkSequence(first, UCS_4_BE_BOM)) {
             // we recognized the "<?xml" sequence at start of an XML file
             bis.reset();
-            return new XmlLexicalAnalyzer(new DataSource(source.getName(), () -> bis));
+            return new XmlLexicalAnalyzer(new DataSource(name, () -> bis));
         } else {
             // it was not XML, the only other option is KVN
             bis.reset();
-            return new KvnLexicalAnalyzer(new DataSource(source.getName(), () -> bis));
+            return new KvnLexicalAnalyzer(new DataSource(name, () -> bis));
+        }
+
+    }
+
+    /** Select a {@link LexicalAnalyzer} based on content.
+     * @param name message name
+     * @param reader character stream with message content
+     * @return lexical analyzer suited for the data source format
+     * @throws IOException if first bytes of source cannot be read
+     */
+    private static LexicalAnalyzer select(final String name, final Reader reader) throws IOException {
+
+        if (reader == null) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
+        }
+        final BufferedReader br = new BufferedReader(reader, BUFFER);
+
+        // read the first characters
+        final int size = CHARS_BOM.length();
+        br.mark(size);
+        final char[] first = new char[size];
+        int read = 0;
+        while (read < first.length) {
+            final int n = br.read(first, read, size - read);
+            if (n < 0) {
+                // the file is too short for a proper CCSDS message,
+                // we return arbitrarily a KVN lexical analyzer,
+                // anyway, it will fail shortly during parsing
+                br.reset();
+                return new KvnLexicalAnalyzer(new DataSource(name, () -> br));
+            }
+            read += n;
+        }
+        final String firstString = new String(first);
+
+        // attempt to recognize an XML prolog
+        if (firstString.startsWith(CHARS) || CHARS_BOM.equals(firstString)) {
+            // we recognized the "<?xml" sequence at start of an XML file
+            br.reset();
+            return new XmlLexicalAnalyzer(new DataSource(name, () -> br));
+        } else {
+            // it was not XML, the only other option is KVN
+            br.reset();
+            return new KvnLexicalAnalyzer(new DataSource(name, () -> br));
         }
 
     }
