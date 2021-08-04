@@ -31,14 +31,10 @@
 
     package data #DDEBD8 {
 
-      interface DataLoader
-
-      interface DataProvider
-
-      class DataProvidersManager {
+      class FiltersManager {
         +addFilter(final DataFilter filter)
         +void clearFilters()
-        +DataSource applyAllFilters(final DataSource original)
+        +DataSource applyRelevantFilters(final DataSource original)
       }
 
       class DataSource {
@@ -55,16 +51,13 @@
         +InputStream openStreamOnce()
         +Reader      openReaderOnce()
       }
-      note right
+      note left
         allows lazy opening of stream or reader
         beware it may fail if called more than once
         especially with network-based streams
       end note
 
-      DataProvider "*" -- "1" DataProvidersManager
-      DataProvider --> DataSource : create
-      DataLoader <-left- DataProvider : feeds
-      DataProvidersManager "1" o--> "*" DataFilter: applies
+      FiltersManager "1" o--> "*" DataFilter: applies
       DataSource <-down- DataFilter : filters
       DataSource --> DataSource.Opener
       DataFilter <|-- GzipFilter
@@ -77,8 +70,8 @@
 
     package gnss #DDEBD8 {
       class HatanakaCompressFilter
-      HatanakaCompressFilter -right-|> DataFilter
-      HatanakaCompressFilter --> DataSource.Opener : creates
+      DataFilter <|-- HatanakaCompressFilter
+      DataSource.Opener <-left- HatanakaCompressFilter : creates
    }
 
   }

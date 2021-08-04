@@ -38,7 +38,7 @@ public class DataProvidersManagerTest {
     @After
     public void tearDown() {
         // clear the filters so they don't change other tests
-        DataContext.getDefault().getDataProvidersManager().clearFilters();
+        DataContext.getDefault().getDataProvidersManager().resetFiltersToDefault();
     }
 
     @Test
@@ -199,7 +199,7 @@ public class DataProvidersManagerTest {
     public void testSimpleFilter() {
         Utils.setDataRoot("regular-data");
         CountingFilter filter = new CountingFilter();
-        DataContext.getDefault().getDataProvidersManager().addFilter(filter);
+        DataContext.getDefault().getDataProvidersManager().getFiltersManager().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assert.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
         Assert.assertEquals(18, crawler.getCount());
@@ -212,7 +212,7 @@ public class DataProvidersManagerTest {
         Utils.setDataRoot("regular-data");
         final int layers = 10;
         MultiLayerFilter filter = new MultiLayerFilter(layers);
-        DataContext.getDefault().getDataProvidersManager().addFilter(filter);
+        DataContext.getDefault().getDataProvidersManager().getFiltersManager().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assert.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
         Assert.assertEquals(18, crawler.getCount());

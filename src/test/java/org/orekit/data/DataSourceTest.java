@@ -75,7 +75,7 @@ public class DataSourceTest {
     }
 
     @Test
-    public void testDirectInputStream()throws IOException {
+    public void testDirectInputStream() throws IOException {
         DataSource ds = new DataSource("UTC-TAI.history",
                                        () -> DataSourceTest.class.
                                              getClassLoader().

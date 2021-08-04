@@ -121,7 +121,7 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
 
                             // apply all registered filters
                             DataSource data = new DataSource(fileName, () -> getStream(input));
-                            data = manager.applyAllFilters(data);
+                            data = manager.getFiltersManager().applyRelevantFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file
