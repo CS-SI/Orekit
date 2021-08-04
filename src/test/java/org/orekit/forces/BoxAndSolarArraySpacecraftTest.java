@@ -20,10 +20,8 @@ package org.orekit.forces;
 import java.util.List;
 
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -619,25 +617,6 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    @Deprecated
-    public void testNormalOptimalRotationDS() {
-        AbsoluteDate initialDate = propagator.getInitialState().getDate();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        DSFactory factory = new DSFactory(1, 2);
-        for (double dt = 0; dt < 4000; dt += 60) {
-            AbsoluteDate date = initialDate.shiftedBy(dt);
-            SpacecraftState state = propagator.propagate(date);
-            FieldVector3D<DerivativeStructure> normal = s.getNormal(state.getDate(),
-                                                                    state.getFrame(),
-                                                                    new FieldVector3D<>(factory.getDerivativeField(), state.getPVCoordinates().getPosition()),
-                                                                    new FieldRotation<>(factory.getDerivativeField(), state.getAttitude().getRotation()));
-            Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
-        }
-    }
-
-    @Test
     public void testNormalFixedRateDouble() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -676,27 +655,6 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    @Deprecated
-    public void testNormalFixedRateDS() {
-        AbsoluteDate initialDate = propagator.getInitialState().getDate();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J,
-                                           initialDate, Vector3D.PLUS_K, 1.0e-3,
-                                           0.0, 1.0, 0.0);
-        DSFactory factory = new DSFactory(1, 2);
-        for (double dt = 0; dt < 4000; dt += 60) {
-            AbsoluteDate date = initialDate.shiftedBy(dt);
-            SpacecraftState state = propagator.propagate(date);
-            FieldVector3D<DerivativeStructure> normal = s.getNormal(state.getDate(),
-                                                                    state.getFrame(),
-                                                                    new FieldVector3D<>(factory.getDerivativeField(), state.getPVCoordinates().getPosition()),
-                                                                    new FieldRotation<>(factory.getDerivativeField(), state.getAttitude().getRotation()));
-            Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
-        }
-    }
-
-    @Test
     public void testNormalSunAlignedDouble() {
         BoxAndSolarArraySpacecraft s =
             new BoxAndSolarArraySpacecraft(0, 0, 0,
@@ -721,21 +679,6 @@ public class BoxAndSolarArraySpacecraftTest {
         Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
     }
 
-    @Test
-    @Deprecated
-    public void testNormalSunAlignedDS() {
-        BoxAndSolarArraySpacecraft s =
-                        new BoxAndSolarArraySpacecraft(0, 0, 0,
-                                                       (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),
-                                                       20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        DSFactory factory = new DSFactory(1, 2);
-        FieldVector3D<DerivativeStructure> normal = s.getNormal(AbsoluteDate.J2000_EPOCH,
-                                                                FramesFactory.getEME2000(),
-                                                                FieldVector3D.getZero(factory.getDerivativeField()),
-                                                                FieldRotation.getIdentity(factory.getDerivativeField()));
-        Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
-    }
-    
     /** Test the functions computing drag and SRP acceleration and giving FieldVector3D outputs.
      *  By comparing the "double" value with a "Decimal64" implementation. 
      */

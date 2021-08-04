@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.HatanakaCompressFilter;
@@ -94,22 +93,6 @@ public class DataProvidersManager {
         filtersManager = new FiltersManager();
         loaded         = new LinkedHashSet<>();
         resetFiltersToDefault();
-    }
-
-    /**
-     * Get the default instance.
-     *
-     * @return default instance of the manager.
-     * @see DataContext
-     * @deprecated This class is no longer a singleton. In order to support loading
-     * multiple data sets code should be updated to accept an instance of this class. If
-     * you need to maintain compatibility with Orekit 10.0's behavior use the default data
-     * context: {@code DataContext.getDefault().getDataProvidersManager()}.
-     */
-    @Deprecated
-    @DefaultDataContext
-    public static DataProvidersManager getInstance() {
-        return DataContext.getDefault().getDataProvidersManager();
     }
 
     /** Get the manager for filters.

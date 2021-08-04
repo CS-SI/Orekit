@@ -19,9 +19,8 @@ package org.orekit.forces;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -686,47 +685,6 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                    s.multiply(d).negate(), new FieldVector3D<>(date.getField(), saZ));
 
     }
-
-    /** Get solar array normal in spacecraft frame.
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @return solar array normal in spacecraft frame
-     * @deprecated Method not used anymore, should have been deleted in 9.0 but was left over. To be deleted in the next major version.
-     */
-    @Deprecated
-    public synchronized FieldVector3D<DerivativeStructure> getNormal(final AbsoluteDate date, final Frame frame,
-                                                                     final FieldVector3D<DerivativeStructure> position,
-                                                                     final FieldRotation<DerivativeStructure> rotation) {
-
-        final DerivativeStructure zero = position.getX().getField().getZero();
-
-        if (referenceDate != null) {
-            // use a simple rotation at fixed rate
-            final DerivativeStructure alpha = zero.add(rotationRate * date.durationFrom(referenceDate));
-            return new FieldVector3D<>(alpha.cos(), saX, alpha.sin(), saY);
-        }
-
-        // compute orientation for best lighting
-        final FieldVector3D<DerivativeStructure> sunInert =
-                position.subtract(sun.getPVCoordinates(date, frame).getPosition()).negate().normalize();
-        final FieldVector3D<DerivativeStructure> sunSpacecraft = rotation.applyTo(sunInert);
-        final DerivativeStructure d = FieldVector3D.dotProduct(sunSpacecraft, saZ);
-        final DerivativeStructure f = d.multiply(d).subtract(1).negate();
-        if (f.getValue() < Precision.EPSILON) {
-            // extremely rare case: the sun is along solar array rotation axis
-            // (there will not be much output power ...)
-            // we set up an arbitrary normal
-            return new FieldVector3D<>(position.getX().getField(), saZ.orthogonal());
-        }
-
-        final DerivativeStructure s = f.sqrt().reciprocal();
-        return new FieldVector3D<>(s, sunSpacecraft,
-                                   s.multiply(d).negate(), new FieldVector3D<>(zero.getField(), saZ));
-
-    }
-
 
     /** {@inheritDoc} */
     @Override
