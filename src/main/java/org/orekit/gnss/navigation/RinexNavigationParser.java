@@ -39,7 +39,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
-import org.orekit.gnss.navigation.NavigationFile.TimeSystemCorrection;
+import org.orekit.gnss.navigation.RinexNavigation.TimeSystemCorrection;
 import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
@@ -70,7 +70,7 @@ import org.orekit.utils.Constants;
  * @since 11.0
  *
  */
-public class NavigationFileParser {
+public class RinexNavigationParser {
 
     /** Handled clock file format versions. */
     private static final List<Double> HANDLED_VERSIONS = Arrays.asList(3.01, 3.02, 3.03, 3.04, 3.05);
@@ -94,7 +94,7 @@ public class NavigationFileParser {
      *
      */
     @DefaultDataContext
-    public NavigationFileParser() {
+    public RinexNavigationParser() {
         this(DataContext.getDefault().getTimeScales());
     }
 
@@ -102,7 +102,7 @@ public class NavigationFileParser {
      * Constructor.
      * @param timeScales the set of time scales used for parsing dates.
      */
-    public NavigationFileParser(final TimeScales timeScales) {
+    public RinexNavigationParser(final TimeScales timeScales) {
         this.timeScales = timeScales;
     }
 
@@ -119,7 +119,7 @@ public class NavigationFileParser {
      * @see #parse(String)
      * @see #parse(BufferedReader, String)
      */
-    public NavigationFile parse(final InputStream stream) throws IOException {
+    public RinexNavigation parse(final InputStream stream) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, stream.toString());
         }
@@ -133,7 +133,7 @@ public class NavigationFileParser {
      * @see #parse(InputStream)
      * @see #parse(BufferedReader, String)
      */
-    public NavigationFile parse(final String fileName) throws IOException {
+    public RinexNavigation parse(final String fileName) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
                                                              StandardCharsets.UTF_8)) {
             return parse(reader, fileName);
@@ -149,7 +149,7 @@ public class NavigationFileParser {
      * @see #parse(InputStream)
      * @see #parse(String)
      */
-    public NavigationFile parse(final BufferedReader reader,
+    public RinexNavigation parse(final BufferedReader reader,
                                 final String fileName) throws IOException {
 
         // initialize internal data structures
@@ -220,7 +220,7 @@ public class NavigationFileParser {
         private final TimeScales timeScales;
 
         /** The corresponding navigation messages file object. */
-        private NavigationFile file;
+        private RinexNavigation file;
 
         /** The version of the navigation file. */
         private double version;
@@ -258,10 +258,10 @@ public class NavigationFileParser {
         /** Constructor, build the ParseInfo object. */
         ParseInfo() {
             // Initialize default values for fields
-            this.timeScales                   = NavigationFileParser.this.timeScales;
+            this.timeScales                   = RinexNavigationParser.this.timeScales;
             this.version                      = 1.0;
             this.isIonosphereAlphaInitialized = false;
-            this.file                         = new NavigationFile();
+            this.file                         = new RinexNavigation();
             this.systemLineParser             = SatelliteSystemLineParser.GPS;
             this.lineNumber                   = 0;
             this.gpsNav                       = new GPSNavigationMessage();

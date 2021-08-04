@@ -34,6 +34,14 @@ public interface DataFilter {
      * corresponding uncompressed file will have a filtered name base.ext.
      * </p>
      * <p>
+     * A filter must <em>never</em> {@link DataSource.Opener#openStreamOnce() open}
+     * the {@link DataSource} by itself, regardless of the fact it will return
+     * the original instance or a filtered instance. The rationale is that it
+     * is the upper layer that will decide to open (or not) the returned
+     * value and that a {@link DataSource} can be opened only once; this is the
+     * core principle of lazy-opening provided by {@link DataSource}.
+     * </p>
+     * <p>
      * Beware that as the {@link DataProvidersManager data providers manager}
      * will attempt to pile all filters in a stack as long as their implementation
      * of this method returns a value different from the {@code original} parameter.

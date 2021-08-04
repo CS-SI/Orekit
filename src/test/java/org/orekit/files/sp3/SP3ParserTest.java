@@ -29,9 +29,9 @@ import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.sp3.SP3File.SP3Coordinate;
-import org.orekit.files.sp3.SP3File.SP3Ephemeris;
-import org.orekit.files.sp3.SP3File.SP3OrbitType;
+import org.orekit.files.sp3.SP3.SP3Coordinate;
+import org.orekit.files.sp3.SP3.SP3Ephemeris;
+import org.orekit.files.sp3.SP3.SP3OrbitType;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -52,7 +52,7 @@ public class SP3ParserTest {
         // simple test for version sp3-a, only contains position entries
         final String    ex     = "/sp3/example-a-1.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -86,7 +86,7 @@ public class SP3ParserTest {
         Assert.assertEquals(779, file.getGpsWeek());
         Assert.assertEquals(518400.0, file.getSecondsOfWeek(), 1.0e-10);
         Assert.assertEquals(25, file.getSatellites().size());
-        Assert.assertEquals(SP3File.SP3FileType.UNDEFINED, file.getType());
+        Assert.assertEquals(SP3.SP3FileType.UNDEFINED, file.getType());
         Assert.assertNull(file.getSatellites().get(null));
     }
 
@@ -95,7 +95,7 @@ public class SP3ParserTest {
         // simple test for version sp3-a, contains p/v entries
         final String    ex     = "/sp3/example-a-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -125,7 +125,7 @@ public class SP3ParserTest {
         // simple test for version sp3-c, contains p entries
         final String    ex     = "/sp3/example-c-1.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -153,7 +153,7 @@ public class SP3ParserTest {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String    ex     = "/sp3/example-c-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -183,7 +183,7 @@ public class SP3ParserTest {
         // simple test for version sp3-d, contains p entries
         final String    ex     = "/sp3/example-d-1.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.BCT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -211,7 +211,7 @@ public class SP3ParserTest {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String    ex     = "/sp3/example-d-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -241,7 +241,7 @@ public class SP3ParserTest {
         // simple test for version sp3-c, contains more than 85 satellites
         final String    ex     = "/sp3/gbm19500_truncated.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -273,7 +273,7 @@ public class SP3ParserTest {
         final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
 
         // action
-        final SP3File file = parser.parse(source);
+        final SP3 file = parser.parse(source);
 
         // verify
         TimeScale gps = TimeScalesFactory.getGPS();
@@ -314,7 +314,7 @@ public class SP3ParserTest {
 
         final SP3Parser parser = new SP3Parser();
         final DataSource compressed = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File file = parser.parse(new UnixCompressFilter().filter(compressed));
+        final SP3 file = parser.parse(new UnixCompressFilter().filter(compressed));
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals("FIT",file.getOrbitTypeKey());
@@ -417,7 +417,7 @@ public class SP3ParserTest {
         final String      ex           = "/sp3/esaBHN.sp3.Z";
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
-        final SP3File     file         = parser.parse(uncompressed);
+        final SP3     file         = parser.parse(uncompressed);
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals("BHN",file.getOrbitTypeKey());
     }
@@ -429,7 +429,7 @@ public class SP3ParserTest {
         final String      ex           = "/sp3/esaPRO.sp3.Z";
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
-        final SP3File     file         = parser.parse(uncompressed);
+        final SP3     file         = parser.parse(uncompressed);
         Assert.assertEquals(SP3OrbitType.EXT, file.getOrbitType());
         Assert.assertEquals("PRO",file.getOrbitTypeKey());
     }
@@ -441,7 +441,7 @@ public class SP3ParserTest {
         final String      ex           = "/sp3/unknownType.sp3.Z";
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
-        final SP3File     file         = parser.parse(uncompressed);
+        final SP3     file         = parser.parse(uncompressed);
         Assert.assertEquals(SP3OrbitType.OTHER, file.getOrbitType());
         Assert.assertEquals("UKN",file.getOrbitTypeKey());
     }

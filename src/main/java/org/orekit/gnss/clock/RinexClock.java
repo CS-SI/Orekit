@@ -51,7 +51,7 @@ import org.orekit.utils.TimeSpanMap;
  * @author Thomas Paulet
  * @since 11.0
  */
-public class ClockFile {
+public class RinexClock {
 
     /** Format version. */
     private double formatVersion;
@@ -140,7 +140,7 @@ public class ClockFile {
     /** Constructor.
      * @param frameBuilder for constructing a reference frame from the identifier
      */
-    public ClockFile(final Function<? super String, ? extends Frame> frameBuilder) {
+    public RinexClock(final Function<? super String, ? extends Frame> frameBuilder) {
         // Initialize fields with default data
         this.systemObservationTypes  = new HashMap<SatelliteSystem, List<ObservationType>>();
         this.listAppliedDCBS         = new ArrayList<AppliedDCBS>();

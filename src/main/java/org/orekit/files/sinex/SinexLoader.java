@@ -111,7 +111,7 @@ public class SinexLoader {
         try {
             this.utc = utc;
             stations = new HashMap<>();
-            try (InputStream         is  = source.getStreamOpener().openOnce();
+            try (InputStream         is  = source.getOpener().openStreamOnce();
                  BufferedInputStream bis = new BufferedInputStream(is)) {
                 new Parser().loadData(bis, source.getName());
             }

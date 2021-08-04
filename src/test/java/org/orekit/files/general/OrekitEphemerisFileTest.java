@@ -136,7 +136,7 @@ public class OrekitEphemerisFileTest {
         assertEquals(body.getGM(),
                      satellite.getSegments().get(0).getMu(), muTolerance);
 
-        String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
+        String tempOem = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
         OemMetadata template = new OemMetadata(2);
         template.setTimeSystem(TimeSystem.UTC);
         template.setObjectID(satId);
@@ -145,13 +145,13 @@ public class OrekitEphemerisFileTest {
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
                                                      null, template, FileFormat.KVN, "dummy", 60);
-        writer.write(tempOemFile, ephemerisFile);
+        writer.write(tempOem, ephemerisFile);
 
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
-        EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFromFile = parser.parse(new DataSource(tempOemFile));
-        Files.delete(Paths.get(tempOemFile));
+        EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFrom = parser.parse(new DataSource(tempOem));
+        Files.delete(Paths.get(tempOem));
         
-        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
+        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getCoordinates().size());

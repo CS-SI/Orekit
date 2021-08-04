@@ -70,7 +70,7 @@ public class OmmParserTest {
 
         // initialize parser
         final OmmParser parser = new ParserBuilder().withMu(398600e9).withDefaultMass(1000.0).buildOmmParser();
-        final OmmFile   file   = parser.parseMessage(source);
+        final Omm   file   = parser.parseMessage(source);
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -158,7 +158,7 @@ public class OmmParserTest {
         final String name = "/ccsds/odm/omm/OMMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
-        final OmmFile original = parser.parseMessage(source);
+        final Omm original = parser.parseMessage(source);
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
@@ -168,12 +168,12 @@ public class OmmParserTest {
         // reparse the written file
         final byte[]     bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
-        final OmmFile    rebuilt = new ParserBuilder().buildOmmParser().parseMessage(source2);
+        final Omm    rebuilt = new ParserBuilder().buildOmmParser().parseMessage(source2);
         validateOMM2(rebuilt);
 
     }
 
-    private void validateOMM2(final OmmFile file) throws URISyntaxException {
+    private void validateOMM2(final Omm file) throws URISyntaxException {
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assert.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
@@ -248,7 +248,7 @@ public class OmmParserTest {
                                  withDefaultMass(1000.0).
                                  buildOmmParser();
 
-        final OmmFile file = parser.parseMessage(source);
+        final Omm file = parser.parseMessage(source);
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assert.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assert.assertEquals(missionReferenceDate.shiftedBy(210840), file.getMetadata().getFrameEpoch());
@@ -320,7 +320,7 @@ public class OmmParserTest {
                         withDefaultMass(1000.0).
                         buildOmmParser();
 
-        final OmmFile file = parser.parseMessage(source);
+        final Omm file = parser.parseMessage(source);
 
         final String satId = "1995-025A";
         Assert.assertEquals(satId, file.getMetadata().getObjectID());

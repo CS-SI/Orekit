@@ -31,52 +31,47 @@
 
     package data #DDEBD8 {
 
-      interface DataLoader
-
-      interface DataProvider
-
-      class DataProvidersManager {
+      class FiltersManager {
         +addFilter(final DataFilter filter)
         +void clearFilters()
-        +DataSource applyAllFilters(final DataSource original)
+        +DataSource applyRelevantFilters(final DataSource original)
       }
 
       class DataSource {
       	+String getName()
-      	+DataSource.StreamOpener getStreamOpener()
+      	+DataSource.Opener getOpener()
       }
 
       interface DataFilter {
          DataSource filter(DataSource original)
       }
 
-      interface DataSource.StreamOpener {
-        +InputStream openOnce()
+      interface DataSource.Opener {
+        +boolean rawDataIsBinary()
+        +InputStream openStreamOnce()
+        +Reader      openReaderOnce()
       }
-      note right
-        allows lazy opening of stream
+      note left
+        allows lazy opening of stream or reader
         beware it may fail if called more than once
         especially with network-based streams
       end note
 
-      DataProvider "*" -- "1" DataProvidersManager
-      DataProvider --> DataSource : create
-      DataLoader <-left- DataProvider : feeds
-      DataProvidersManager "1" o--> "*" DataFilter: applies
+      FiltersManager "1" o--> "*" DataFilter: applies
       DataSource <-down- DataFilter : filters
-      DataSource --> DataSource.StreamOpener
+      DataSource --> DataSource.Opener
       DataFilter <|-- GzipFilter
       DataFilter <|-- UnixFilter
 
-      UnixFilter --> DataSource.StreamOpener : creates
-      GzipFilter --> DataSource.StreamOpener : creates
+      UnixFilter --> DataSource.Opener : creates
+      GzipFilter --> DataSource.Opener : creates
  
     }
 
     package gnss #DDEBD8 {
       class HatanakaCompressFilter
-      HatanakaCompressFilter -right-|> DataFilter
-      HatanakaCompressFilter --> DataSource.StreamOpener : creates
+      DataFilter <|-- HatanakaCompressFilter
+      DataSource.Opener <-left- HatanakaCompressFilter : creates
    }
 
   }

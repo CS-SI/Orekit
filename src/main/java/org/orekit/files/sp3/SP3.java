@@ -38,8 +38,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Thomas Neidhart
  * @author Evan Ward
  */
-public class SP3File
-    implements EphemerisFile<SP3File.SP3Coordinate, SP3File.SP3Ephemeris> {
+public class SP3
+    implements EphemerisFile<SP3.SP3Coordinate, SP3.SP3Ephemeris> {
     /** String representation of the center of ephemeris coordinate system. **/
     public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
@@ -171,7 +171,7 @@ public class SP3File
      * @param interpolationSamples number of samples to use in interpolation.
      * @param frameBuilder         for constructing a reference frame from the identifier
      */
-    public SP3File(final double mu,
+    public SP3(final double mu,
                    final int interpolationSamples,
                    final Function<? super String, ? extends Frame> frameBuilder) {
         this.mu = mu;

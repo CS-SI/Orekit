@@ -65,7 +65,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OmmParser extends OdmParser<OmmFile, OmmParser> {
+public class OmmParser extends OdmParser<Omm, OmmParser> {
 
     /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
     private final double defaultMass;
@@ -117,7 +117,7 @@ public class OmmParser extends OdmParser<OmmFile, OmmParser> {
     public OmmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
                      final double mu, final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(OmmFile.ROOT, OmmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+        super(Omm.ROOT, Omm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
               missionReferenceDate, mu, parsedUnitsBehavior);
         this.defaultMass = defaultMass;
     }
@@ -154,7 +154,7 @@ public class OmmParser extends OdmParser<OmmFile, OmmParser> {
         covarianceBlock           = null;
         userDefinedBlock          = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(OmmFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Omm.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
@@ -265,11 +265,11 @@ public class OmmParser extends OdmParser<OmmFile, OmmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public OmmFile build() {
+    public Omm build() {
         // OMM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
-        return new OmmFile(header, segments, getConventions(), getDataContext());
+        return new Omm(header, segments, getConventions(), getDataContext());
     }
 
     /** Manage Keplerian elements section.

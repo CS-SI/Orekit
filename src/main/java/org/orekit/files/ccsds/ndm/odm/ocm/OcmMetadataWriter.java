@@ -28,7 +28,7 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.units.Unit;
 
 /**
- * Writer for Common metadata for CCSDS Orbit Comprehensive Message files.
+ * Writer for Common metadata for CCSDS Orbit Comprehensive Messages.
  *
  * @author Luc Maisonobe
  * @since 11.0

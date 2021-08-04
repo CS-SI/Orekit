@@ -39,7 +39,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ApmFile extends NdmConstituent<Header, Segment<AdmMetadata, ApmData>> {
+public class Apm extends NdmConstituent<Header, Segment<AdmMetadata, ApmData>> {
 
     /** Root element for XML files. */
     public static final String ROOT = "apm";
@@ -53,7 +53,7 @@ public class ApmFile extends NdmConstituent<Header, Segment<AdmMetadata, ApmData
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public ApmFile(final Header header, final List<Segment<AdmMetadata, ApmData>> segments,
+    public Apm(final Header header, final List<Segment<AdmMetadata, ApmData>> segments,
                    final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }

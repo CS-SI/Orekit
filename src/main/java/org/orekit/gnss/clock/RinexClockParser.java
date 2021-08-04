@@ -44,9 +44,9 @@ import org.orekit.gnss.AppliedPCVS;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
-import org.orekit.gnss.clock.ClockFile.ClockDataType;
-import org.orekit.gnss.clock.ClockFile.Receiver;
-import org.orekit.gnss.clock.ClockFile.ReferenceClock;
+import org.orekit.gnss.clock.RinexClock.ClockDataType;
+import org.orekit.gnss.clock.RinexClock.Receiver;
+import org.orekit.gnss.clock.RinexClock.ReferenceClock;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -69,7 +69,7 @@ import org.orekit.utils.IERSConventions;
  * @author Thomas Paulet
  * @since 11.0
  */
-public class ClockFileParser {
+public class RinexClockParser {
 
     /** Handled clock file format versions. */
     private static final List<Double> HANDLED_VERSIONS = Arrays.asList(2.00, 3.00, 3.01, 3.02, 3.04);
@@ -112,8 +112,8 @@ public class ClockFileParser {
      * @see #ClockFileParser(Function)
      */
     @DefaultDataContext
-    public ClockFileParser() {
-        this(ClockFileParser::guessFrame);
+    public RinexClockParser() {
+        this(RinexClockParser::guessFrame);
     }
 
     /**
@@ -127,7 +127,7 @@ public class ClockFileParser {
      * @see #ClockFileParser(Function, TimeScales)
      */
     @DefaultDataContext
-    public ClockFileParser(final Function<? super String, ? extends Frame> frameBuilder) {
+    public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder) {
         this(frameBuilder, DataContext.getDefault().getTimeScales());
     }
 
@@ -137,7 +137,7 @@ public class ClockFileParser {
      *                     any 5 character string e.g. ITR92, IGb08.
      * @param timeScales   the set of time scales used for parsing dates.
      */
-    public ClockFileParser(final Function<? super String, ? extends Frame> frameBuilder,
+    public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder,
                            final TimeScales timeScales) {
 
         this.frameBuilder = frameBuilder;
@@ -180,7 +180,7 @@ public class ClockFileParser {
      * @see #parse(String)
      * @see #parse(BufferedReader, String)
      */
-    public ClockFile parse(final InputStream stream) throws IOException {
+    public RinexClock parse(final InputStream stream) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, stream.toString());
         }
@@ -194,7 +194,7 @@ public class ClockFileParser {
      * @see #parse(InputStream)
      * @see #parse(BufferedReader, String)
      */
-    public ClockFile parse(final String fileName) throws IOException {
+    public RinexClock parse(final String fileName) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
                                                              StandardCharsets.UTF_8)) {
             return parse(reader, fileName);
@@ -210,7 +210,7 @@ public class ClockFileParser {
      * @see #parse(InputStream)
      * @see #parse(String)
      */
-    public ClockFile parse(final BufferedReader reader,
+    public RinexClock parse(final BufferedReader reader,
                            final String fileName) throws IOException {
 
         // initialize internal data structures
@@ -248,7 +248,7 @@ public class ClockFileParser {
         private final TimeScales timeScales;
 
         /** The corresponding clock file object. */
-        private ClockFile file;
+        private RinexClock file;
 
         /** Current satellite system for observation type parsing. */
         private SatelliteSystem currentSatelliteSystem;
@@ -282,8 +282,8 @@ public class ClockFileParser {
 
         /** Constructor, build the ParseInfo object. */
         protected ParseInfo () {
-            this.timeScales = ClockFileParser.this.timeScales;
-            this.file = new ClockFile(frameBuilder);
+            this.timeScales = RinexClockParser.this.timeScales;
+            this.file = new RinexClock(frameBuilder);
         }
     }
 

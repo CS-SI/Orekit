@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-/** Basis of maneuver used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
+/** Basis of maneuver used in CCSDS {@link Ocm Orbit Comprehensive Messages}.
  * @author Luc Maisonobe
  * @since 11.0
  */

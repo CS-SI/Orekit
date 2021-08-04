@@ -25,7 +25,7 @@ import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.ocm.OcmFile;
+import org.orekit.files.ccsds.ndm.odm.ocm.Ocm;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -34,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
 
-/** Orbit element set type used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
+/** Orbit element set type used in CCSDS {@link Ocm Orbit Comprehensive Messages}.
  * @see <a href="https://sanaregistry.org/r/orbital_elements">SANA registry for orbital elements</a>
  * @author Luc Maisonobe
  * @since 11.0

@@ -34,7 +34,7 @@ import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** An {@link EphemerisFileWriter} generating {@link OemFile OEM} files.
+/** An {@link EphemerisFileWriter} generating {@link Oem OEM} files.
  * @author Hank Grabowski
  * @author Evan Ward
  * @since 9.0

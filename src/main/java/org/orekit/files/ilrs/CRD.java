@@ -34,7 +34,7 @@ import org.orekit.utils.ImmutableTimeStampedCache;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class CRDFile {
+public class CRD {
 
     /** List of comments contained in the file. */
     private List<String> comments;
@@ -45,7 +45,7 @@ public class CRDFile {
     /**
      * Constructor.
      */
-    public CRDFile() {
+    public CRD() {
         // Initialise empty lists
         this.comments   = new ArrayList<>();
         this.dataBlocks = new ArrayList<>();

@@ -24,7 +24,7 @@ import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 
-public class TdmWriterTest extends AbstractWriterTest<Header, Segment<TdmMetadata, ObservationsBlock>, TdmFile> {
+public class TdmWriterTest extends AbstractWriterTest<Header, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
 
     protected TdmParser getParser() {
         return new ParserBuilder().

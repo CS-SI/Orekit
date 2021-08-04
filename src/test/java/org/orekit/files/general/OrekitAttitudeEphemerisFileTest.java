@@ -141,17 +141,17 @@ public class OrekitAttitudeEphemerisFileTest {
         Assert.assertEquals(refRot.getQ2(), attitude.getRotation().getQ2(), quaternionTolerance);
         Assert.assertEquals(refRot.getQ3(), attitude.getRotation().getQ3(), quaternionTolerance);
 
-        String tempAemFile = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAemFile), StandardCharsets.UTF_8)) {
+        String tempAem = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAem), StandardCharsets.UTF_8)) {
             new AttitudeWriter(new WriterBuilder().buildAemWriter(),
                                null, dummyMetadata(), FileFormat.KVN, "", 60).write(writer, ephemerisFile);
         }
 
-        AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFromFile =
-                        new ParserBuilder().buildAemParser().parseMessage(new DataSource(tempAemFile));
-        Files.delete(Paths.get(tempAemFile));
+        AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFrom =
+                        new ParserBuilder().buildAemParser().parseMessage(new DataSource(tempAem));
+        Files.delete(Paths.get(tempAem));
         
-        segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
+        segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getAngularCoordinates().size());

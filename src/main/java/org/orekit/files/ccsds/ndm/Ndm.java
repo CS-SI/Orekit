@@ -24,7 +24,7 @@ import java.util.List;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class NdmFile {
+public class Ndm {
 
     /** File comments. */
     private final List<String> comments;
@@ -36,7 +36,7 @@ public class NdmFile {
      * @param comments file comments
      * @param constituents constituents of the message
      */
-    public NdmFile(final List<String> comments, final List<NdmConstituent<?, ?>> constituents) {
+    public Ndm(final List<String> comments, final List<NdmConstituent<?, ?>> constituents) {
         this.comments     = comments;
         this.constituents = constituents;
     }

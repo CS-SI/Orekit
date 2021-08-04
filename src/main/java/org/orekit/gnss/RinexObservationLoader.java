@@ -59,7 +59,7 @@ import org.orekit.time.TimeScales;
  * @see <a href="ftp://igs.org/pub/data/format/rinex304.pdf">rinex 3.04</a>
  * @since 9.2
  */
-public class RinexLoader {
+public class RinexObservationLoader {
 
     /** Default supported files name pattern for rinex 2 observation files. */
     public static final String DEFAULT_RINEX_2_SUPPORTED_NAMES = "^\\w{4}\\d{3}[0a-x](?:\\d{2})?\\.\\d{2}[oO]$";
@@ -129,7 +129,7 @@ public class RinexLoader {
      * @see #RinexLoader(String, DataProvidersManager, TimeScales)
      */
     @DefaultDataContext
-    public RinexLoader(final String supportedNames) {
+    public RinexObservationLoader(final String supportedNames) {
         this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
                 DataContext.getDefault().getTimeScales());
     }
@@ -146,7 +146,7 @@ public class RinexLoader {
      * @param timeScales the set of time scales to use when parsing dates.
      * @since 10.1
      */
-    public RinexLoader(final String supportedNames,
+    public RinexObservationLoader(final String supportedNames,
                        final DataProvidersManager dataProvidersManager,
                        final TimeScales timeScales) {
         observationDataSets = new ArrayList<>();
@@ -161,7 +161,7 @@ public class RinexLoader {
      * @see #RinexLoader(DataSource, TimeScales)
      */
     @DefaultDataContext
-    public RinexLoader(final DataSource source) {
+    public RinexObservationLoader(final DataSource source) {
         this(source, DataContext.getDefault().getTimeScales());
     }
 
@@ -172,12 +172,11 @@ public class RinexLoader {
      * @param timeScales the set of time scales to use when parsing dates.
      * @since 10.1
      */
-    public RinexLoader(final DataSource source,
-                       final TimeScales timeScales) {
+    public RinexObservationLoader(final DataSource source, final TimeScales timeScales) {
         try {
             this.timeScales = timeScales;
             observationDataSets = new ArrayList<>();
-            try (InputStream         is  = source.getStreamOpener().openOnce();
+            try (InputStream         is  = source.getOpener().openStreamOnce();
                  BufferedInputStream bis = new BufferedInputStream(is)) {
                 new Parser().loadData(bis, source.getName());
             }
@@ -283,7 +282,7 @@ public class RinexLoader {
                 boolean                          inPhaseShift           = false;
                 boolean                          inGlonassSlot          = false;
                 boolean                          inGlonassCOD           = false;
-                RinexHeader                      rinexHeader            = null;
+                RinexObservationHeader                      rinexHeader            = null;
                 int                               scaleFactor            = 1;
                 int                               nbObsScaleFactor       = 0;
                 final List<ScaleFactorCorrection> scaleFactorCorrections = new ArrayList<>();
@@ -492,7 +491,7 @@ public class RinexLoader {
                                         }
 
                                         //Header information gathered
-                                        rinexHeader = new RinexHeader(formatVersion, satelliteSystem,
+                                        rinexHeader = new RinexObservationHeader(formatVersion, satelliteSystem,
                                                                       markerName, markerNumber, markerType, observerName,
                                                                       agencyName, receiverNumber, receiverType,
                                                                       receiverVersion, antennaNumber, antennaType,
@@ -955,7 +954,7 @@ public class RinexLoader {
                                         }
 
                                         //Header information gathered
-                                        rinexHeader = new RinexHeader(formatVersion, satelliteSystem,
+                                        rinexHeader = new RinexObservationHeader(formatVersion, satelliteSystem,
                                                                       markerName, markerNumber, markerType,
                                                                       observerName, agencyName, receiverNumber,
                                                                       receiverType, receiverVersion, antennaNumber,

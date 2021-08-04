@@ -66,7 +66,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public class OpmParser extends OdmParser<OpmFile, OpmParser> {
+public class OpmParser extends OdmParser<Opm, OpmParser> {
 
     /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
     private final double defaultMass;
@@ -125,7 +125,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
                      final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(OpmFile.ROOT, OpmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+        super(Opm.ROOT, Opm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
               missionReferenceDate, mu, parsedUnitsBehavior);
         this.defaultMass = defaultMass;
     }
@@ -164,7 +164,7 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
         maneuverBlocks            = new ArrayList<>();
         userDefinedBlock          = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(OpmFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Opm.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
@@ -277,11 +277,11 @@ public class OpmParser extends OdmParser<OpmFile, OpmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public OpmFile build() {
+    public Opm build() {
         // OPM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
-        return new OpmFile(header, segments, getConventions(), getDataContext(), getSelectedMu());
+        return new Opm(header, segments, getConventions(), getDataContext(), getSelectedMu());
     }
 
     /** Manage state vector section.

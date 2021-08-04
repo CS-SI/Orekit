@@ -129,11 +129,11 @@ public class ClasspathCrawler implements DataProvider {
 
                             // apply all registered filters
                             DataSource data = new DataSource(name, () -> classLoader.getResourceAsStream(name));
-                            data = manager.applyAllFilters(data);
+                            data = manager.getFiltersManager().applyRelevantFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file
-                                try (InputStream input = data.getStreamOpener().openOnce()) {
+                                try (InputStream input = data.getOpener().openStreamOnce()) {
                                     final URI uri = classLoader.getResource(name).toURI();
                                     visitor.loadData(input, uri.toString());
                                     loaded = true;

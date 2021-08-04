@@ -37,7 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class CPFFile implements EphemerisFile<CPFFile.CPFCoordinate, CPFFile.CPFEphemeris> {
+public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
     /** Gravitational coefficient. */
     private double mu;
@@ -63,7 +63,7 @@ public class CPFFile implements EphemerisFile<CPFFile.CPFCoordinate, CPFFile.CPF
     /**
      * Constructor.
      */
-    public CPFFile() {
+    public CPF() {
         this.mu        = Double.NaN;
         this.ephemeris = new CPFEphemeris();
         this.header    = new CPFHeader();

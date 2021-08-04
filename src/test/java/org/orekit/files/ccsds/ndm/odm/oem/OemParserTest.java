@@ -76,7 +76,7 @@ public class OemParserTest {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
-        final OemFile file = parser.parseMessage(source);
+        final Oem file = parser.parseMessage(source);
         Assert.assertEquals(3, file.getSegments().size());
         Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
@@ -169,7 +169,7 @@ public class OemParserTest {
                            withDefaultInterpolationDegree(1).
                            buildOemParser();
 
-        final OemFile file = parser.parseMessage(source);
+        final Oem file = parser.parseMessage(source);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
         Assert.assertEquals(headerComment, file.getHeader().getComments());
@@ -202,7 +202,7 @@ public class OemParserTest {
         final String ex = "/ccsds/odm/oem/OEMExample3.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
-        final OemFile file = parser.parse(source); // using the generic API here
+        final Oem file = parser.parse(source); // using the generic API here
         Assert.assertEquals("Copy of OEMExample.txt with changes so that interpolation will work.",
                             file.getHeader().getComments().get(0));
         Assert.assertEquals(new AbsoluteDate("1996-11-04T17:22:31", TimeScalesFactory.getUTC()),
@@ -339,7 +339,7 @@ public class OemParserTest {
         final String ex = "/ccsds/odm/oem/OEMExample3.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
-        final OemFile file = parser.parseMessage(source);
+        final Oem file = parser.parseMessage(source);
         Assert.assertEquals("OEM 201113719185", file.getHeader().getMessageId());
         Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
@@ -469,7 +469,7 @@ public class OemParserTest {
         final String ex = "/ccsds/odm/oem/OEMExample6.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
-        final OemFile file = parser.parseMessage(source);
+        final Oem file = parser.parseMessage(source);
         Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
@@ -626,7 +626,7 @@ public class OemParserTest {
         final DataSource source =  new DataSource(file, () -> getClass().getResourceAsStream(file));
 
         //action
-        final OemFile actual = new ParserBuilder().
+        final Oem actual = new ParserBuilder().
                                withMu(CelestialBodyFactory.getMars().getGM()).
                                buildOemParser().
                                parseMessage(source);
@@ -783,12 +783,12 @@ public class OemParserTest {
         final ParserBuilder builder = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM());
 
         final DataSource source1 =  new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OemFile file1 = builder.buildOemParser().parseMessage(source1);
+        final Oem file1 = builder.buildOemParser().parseMessage(source1);
         Assert.assertEquals(1, file1.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(7, file1.getSegments().get(1).getMetadata().getInterpolationDegree());
 
         final DataSource source2 =  new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OemFile file2 = builder.withDefaultInterpolationDegree(5).buildOemParser().parseMessage(source2);
+        final Oem file2 = builder.withDefaultInterpolationDegree(5).buildOemParser().parseMessage(source2);
         Assert.assertEquals(5, file2.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(7, file2.getSegments().get(1).getMetadata().getInterpolationDegree());
     }
@@ -824,7 +824,7 @@ public class OemParserTest {
             DataSource   source = new DataSource("<patched>", () -> new SequenceInputStream(pre, new SequenceInputStream(middle, post)));
 
             // action
-            OemFile actual = parser.parseMessage(source);
+            Oem actual = parser.parseMessage(source);
 
             // verify
             OemSegment segment = actual.getSegments().get(0);

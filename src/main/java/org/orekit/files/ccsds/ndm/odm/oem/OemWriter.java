@@ -75,7 +75,7 @@ import org.orekit.utils.units.Unit;
  *            <td>{@code CCSDS_OEM_VERS}</td>
  *            <td>Header</td>
  *            <td>Yes</td>
- *            <td>{@link OemFile#FORMAT_VERSION_KEY}</td>
+ *            <td>{@link Oem#FORMAT_VERSION_KEY}</td>
  *            <td>Table 5-2</td>
  *        <tr>
  *            <td>{@code COMMENT}</td>
@@ -189,7 +189,7 @@ import org.orekit.utils.units.Unit;
  *      Data Definitions and Conventions</a>
  * @see StreamingOemWriter
  */
-public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile> {
+public class OemWriter extends AbstractMessageWriter<Header, OemSegment, Oem> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OEM_VERS = 3.0;
@@ -227,7 +227,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
      */
     public OemWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(OemFile.ROOT, OemFile.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
+        super(Oem.ROOT, Oem.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,

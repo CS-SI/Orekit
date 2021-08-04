@@ -26,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-public class OemWriterTest extends AbstractWriterTest<Header, OemSegment, OemFile> {
+public class OemWriterTest extends AbstractWriterTest<Header, OemSegment, Oem> {
 
     protected OemParser getParser() {
         return new ParserBuilder().

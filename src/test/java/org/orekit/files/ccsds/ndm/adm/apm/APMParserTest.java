@@ -81,7 +81,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+        final Apm file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -166,7 +166,7 @@ public class APMParserTest {
                         buildApmParser();
         final String name = "/ccsds/adm/apm/APMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final ApmFile original = parser.parseMessage(source);
+        final Apm original = parser.parseMessage(source);
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
@@ -176,11 +176,11 @@ public class APMParserTest {
         // reparse the written file
         final byte[]     bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
-        final ApmFile    rebuilt = new ParserBuilder().buildApmParser().parseMessage(source2);
+        final Apm    rebuilt = new ParserBuilder().buildApmParser().parseMessage(source2);
         validateAPM2(rebuilt);
     }
 
-    private void validateAPM2(final ApmFile file) {
+    private void validateAPM2(final Apm file) {
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -298,7 +298,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+        final Apm file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -375,7 +375,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+        final Apm file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -445,7 +445,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+        final Apm file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -517,7 +517,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+        final Apm file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -592,7 +592,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+        final Apm file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -657,7 +657,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+        final Apm file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -722,7 +722,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+        final Apm file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -786,7 +786,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+        final Apm file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -1043,7 +1043,7 @@ public class APMParserTest {
     public void testIncompatibleframes() throws URISyntaxException {
         final String name = "/ccsds/adm/apm/APM-incompatible-frames.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final ApmFile apm = new ParserBuilder().buildApmParser().parseMessage(source);
+        final Apm apm = new ParserBuilder().buildApmParser().parseMessage(source);
         Assert.assertNotNull(apm);
         try {
             apm.getAttitude(FramesFactory.getGCRF(), 
