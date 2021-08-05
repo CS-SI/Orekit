@@ -160,6 +160,7 @@ public class StreamingOemWriterTest {
             BoundedPropagator propagator = satellite.getPropagator();
             propagator.setStepHandler(step, writer.newSegment());
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
+            writer.close();
 
             // verify
             final DataSource source1 = new DataSource("buffer",

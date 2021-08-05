@@ -39,10 +39,21 @@ import org.orekit.time.AbsoluteDate;
  *
  * <pre>{@code
  * Propagator propagator = ...; // pre-configured propagator
- * OEMWriter  oemWriter  = ...; // pre-configured writer with header and metadata
- *   try (Generator out = ...;) { // set-up output stream
- *     propagator.setMasterMode(step, new StreamingOemWriter(out, oemWriter).newSegment());
- *     propagator.propagate(startDate, stopDate);
+ * OEMWriter  aemWriter  = ...; // pre-configured writer
+ *   try (Generator out = ...;  // set-up output stream
+ *        StreamingOemWriter sw = new StreamingOemWriter(out, oemWriter)) { // set-up streaming writer
+ *
+ *     // write segment 1
+ *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     propagator.propagate(startDate1, stopDate1);
+ *
+ *     ...
+ *
+ *     // write segment n
+ *     propagator.getMultiplexer().clear();
+ *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     propagator.propagate(startDateN, stopDateN);
+ *
  *   }
  * }</pre>
  *
@@ -54,7 +65,7 @@ import org.orekit.time.AbsoluteDate;
  *      Data Definitions and Conventions</a>
  * @see OemWriter
  */
-public class StreamingOemWriter {
+public class StreamingOemWriter implements AutoCloseable {
 
     /** Generator for OEM output. */
     private final Generator generator;
@@ -95,6 +106,12 @@ public class StreamingOemWriter {
      */
     public SegmentWriter newSegment() {
         return new SegmentWriter();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void close() throws IOException {
+        writer.writeFooter(generator);
     }
 
     /** A writer for a segment of an OEM. */

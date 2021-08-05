@@ -39,9 +39,20 @@ import org.orekit.time.AbsoluteDate;
  * <pre>{@code
  * Propagator propagator = ...; // pre-configured propagator
  * AEMWriter  aemWriter  = ...; // pre-configured writer
- *   try (Generator out = ...;) { // set-up output stream
- *     propagator.setMasterMode(step, new StreamingAemWriter(out, aemWriter).newSegment());
- *     propagator.propagate(startDate, stopDate);
+ *   try (Generator out = ...;  // set-up output stream
+ *        StreamingAemWriter sw = new StreamingAemWriter(out, aemWriter)) { // set-up streaming writer
+ *
+ *     // write segment 1
+ *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     propagator.propagate(startDate1, stopDate1);
+ *
+ *     ...
+ *
+ *     // write segment n
+ *     propagator.getMultiplexer().clear();
+ *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     propagator.propagate(startDateN, stopDateN);
+ *
  *   }
  * }</pre>
  * @author Bryan Cazabonne
@@ -50,7 +61,7 @@ import org.orekit.time.AbsoluteDate;
  * @see AemWriter
  * @since 10.2
  */
-public class StreamingAemWriter {
+public class StreamingAemWriter implements AutoCloseable {
 
     /** Generator for AEM output. */
     private final Generator generator;
@@ -91,6 +102,12 @@ public class StreamingAemWriter {
      */
     public SegmentWriter newSegment() {
         return new SegmentWriter();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void close() throws IOException {
+        writer.writeFooter(generator);
     }
 
     /** A writer for a segment of an AEM. */

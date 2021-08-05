@@ -123,6 +123,7 @@ public class StreamingAemWriterTest {
             double step = 10.0;
             propagator.setStepHandler(step, segment);
             propagator.propagate(ephemerisBlock.getStart().shiftedBy(60.0));
+            writer.close();
 
             // Generated AEM file
             final DataSource source1 = new DataSource("buffer",
