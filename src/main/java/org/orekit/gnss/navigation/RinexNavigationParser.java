@@ -19,10 +19,7 @@ package org.orekit.gnss.navigation;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -35,6 +32,7 @@ import java.util.stream.Stream;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -107,72 +105,39 @@ public class RinexNavigationParser {
     }
 
     /**
-     * Parse a RINEX navigation messages file from an input stream using the UTF-8 charset.
-     *
-     * <p> This method creates a {@link BufferedReader} from the stream and as such this
-     * method may read more data than necessary from {@code stream} and the additional
-     * data will be lost. The other parse methods do not have this issue.
-     *
-     * @param stream to read the RINEX navigation messages file from
-     * @return a parsed RINEX navigation messages file
-     * @throws IOException if {@code stream} throws one
-     * @see #parse(String)
-     * @see #parse(BufferedReader, String)
-     */
-    public RinexNavigation parse(final InputStream stream) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            return parse(reader, stream.toString());
-        }
-    }
-
-    /**
-     * Parse a RINEX navigation messages file from a file on the local file system.
-     * @param fileName file name
-     * @return a parsed RINEX navigation messages file
-     * @throws IOException if one is thrown while opening or reading from {@code fileName}
-     * @see #parse(InputStream)
-     * @see #parse(BufferedReader, String)
-     */
-    public RinexNavigation parse(final String fileName) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
-                                                             StandardCharsets.UTF_8)) {
-            return parse(reader, fileName);
-        }
-    }
-
-    /**
-     * Parse a RINEX navigation messages file from a stream.
-     * @param reader containing the RINEX navigation messages file
-     * @param fileName file name
+     * Parse RINEX navigation messages.
+     * @param source source providing the data to parse
      * @return a parsed  RINEX navigation messages file
      * @throws IOException if {@code reader} throws one
      * @see #parse(InputStream)
      * @see #parse(String)
      */
-    public RinexNavigation parse(final BufferedReader reader,
-                                final String fileName) throws IOException {
+    public RinexNavigation parse(final DataSource source) throws IOException {
 
         // initialize internal data structures
         final ParseInfo pi = new ParseInfo();
 
         int lineNumber = 0;
         Stream<LineParser> candidateParsers = Stream.of(LineParser.HEADER_VERSION);
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++lineNumber;
-            final String l = line;
-            final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
-            if (selected.isPresent()) {
-                try {
-                    selected.get().parse(line, pi);
-                } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
-                    throw new OrekitException(e,
-                                              OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, fileName, line);
+        try (Reader reader = source.getOpener().openReaderOnce();
+             BufferedReader br = new BufferedReader(reader)) {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                ++lineNumber;
+                final String l = line;
+                final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
+                if (selected.isPresent()) {
+                    try {
+                        selected.get().parse(line, pi);
+                    } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
+                        throw new OrekitException(e,
+                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, source.getName(), line);
+                    }
+                    candidateParsers = selected.get().allowedNext();
+                } else {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, source.getName(), line);
                 }
-                candidateParsers = selected.get().allowedNext();
-            } else {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, fileName, line);
             }
         }
 

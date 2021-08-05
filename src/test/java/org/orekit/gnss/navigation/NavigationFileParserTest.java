@@ -17,15 +17,14 @@
 package org.orekit.gnss.navigation;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -51,10 +50,8 @@ public class NavigationFileParserTest {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_GPS_Rinex301.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.01,                file.getFormatVersion(), Double.MIN_VALUE);
@@ -126,10 +123,8 @@ public class NavigationFileParserTest {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_SBAS_Rinex301.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.01,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -174,10 +169,8 @@ public class NavigationFileParserTest {
     public void testBeidouRinex302() throws URISyntaxException, IOException {
 
         final String ex = "/gnss/navigation/Example_Beidou_Rinex302.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.02,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -232,10 +225,8 @@ public class NavigationFileParserTest {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Galileo_Rinex302.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.02,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -302,10 +293,8 @@ public class NavigationFileParserTest {
     public void testQZSSRinex302() throws URISyntaxException, IOException {
 
         final String ex = "/gnss/navigation/Example_QZSS_Rinex302.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.02,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -376,10 +365,8 @@ public class NavigationFileParserTest {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Glonass_Rinex303.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.03,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -430,10 +417,8 @@ public class NavigationFileParserTest {
     public void testIRNSSRinex303() throws URISyntaxException, IOException {
 
         final String ex = "/gnss/navigation/Example_IRNSS_Rinex303.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.03,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -488,10 +473,8 @@ public class NavigationFileParserTest {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Mixed_Rinex304.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -551,10 +534,8 @@ public class NavigationFileParserTest {
     public void testQZSSRinex304() throws URISyntaxException, IOException {
 
         final String ex = "/gnss/navigation/Example_QZSS_Rinex304.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -610,10 +591,8 @@ public class NavigationFileParserTest {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_GPS_Rinex304.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final RinexNavigation file = parser.parse(inEntry);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.04,                file.getFormatVersion(), Double.MIN_VALUE);
@@ -684,10 +663,8 @@ public class NavigationFileParserTest {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Galileo_Rinex304.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -748,10 +725,8 @@ public class NavigationFileParserTest {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_SBAS_Rinex304.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -798,10 +773,8 @@ public class NavigationFileParserTest {
     public void testIRNSSRinex304() throws URISyntaxException, IOException {
 
         final String ex = "/gnss/navigation/Example_IRNSS_Rinex304.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -855,10 +828,8 @@ public class NavigationFileParserTest {
     public void testBeidouRinex304() throws URISyntaxException, IOException {
 
         final String ex = "/gnss/navigation/Example_Beidou_Rinex304.n";
-
-        final RinexNavigationParser parser = new RinexNavigationParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexNavigation file = parser.parse(fileName);
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
         Assert.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
@@ -913,9 +884,8 @@ public class NavigationFileParserTest {
     public void testUnknownHeaderKey() throws IOException {
         try {
             final String ex = "/gnss/navigation/unknown-key-header.n";
-            final RinexNavigationParser parser = new RinexNavigationParser();
-            final InputStream inEntry = getClass().getResourceAsStream(ex);
-            parser.parse(inEntry);
+            new RinexNavigationParser().
+                            parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
@@ -928,9 +898,8 @@ public class NavigationFileParserTest {
     public void testUnknownRinexVersion() throws IOException {
         try {
             final String ex = "/gnss/navigation/unknown-rinex-version.n";
-            final RinexNavigationParser parser = new RinexNavigationParser();
-            final InputStream inEntry = getClass().getResourceAsStream(ex);
-            parser.parse(inEntry);
+            new RinexNavigationParser().
+                            parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NAVIGATION_FILE_UNSUPPORTED_VERSION,
@@ -943,9 +912,8 @@ public class NavigationFileParserTest {
     public void testWrongFormat() throws IOException {
         try {
             final String ex = "/gnss/navigation/wrong-format.n";
-            final RinexNavigationParser parser = new RinexNavigationParser();
-            final InputStream inEntry = getClass().getResourceAsStream(ex);
-            parser.parse(inEntry);
+            new RinexNavigationParser().
+                            parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
