@@ -291,6 +291,7 @@ public class PositionAngleDetectorTest {
             SpacecraftState state = e.getState();
             orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array, null);
             Assert.assertEquals(angle, MathUtils.normalizeAngle(array[5], angle), 1.0e-10);
+            Assert.assertEquals(state.getDate(), e.getDate());
         }
         Assert.assertEquals(expectedCrossings, logger.getLoggedEvents().size());
 
