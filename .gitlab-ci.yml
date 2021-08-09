@@ -86,7 +86,7 @@ deploy:site:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - echo "$SSH_SECRET_KEY" > ~/.ssh/id_website
-    - chmod 700 ~/.ssh/id_website
+    - chmod 600 ~/.ssh/id_website
 
     # Add known hosts
     - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
