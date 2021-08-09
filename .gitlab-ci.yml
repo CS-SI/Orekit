@@ -13,7 +13,7 @@ default:
       - .m2/repository
 
 variables:
-  # This will supress any download for dependencies and plugins or upload
+  # This will suppress any download for dependencies and plugins or upload
   # messages which would clutter the console log. `showDateTime` will show the
   # passed time in milliseconds. You need to specify `--batch-mode` to make
   # this work.
@@ -51,9 +51,9 @@ coverage-import:
   stage: visualize
   image: haynes/jacoco2cobertura:1.0.4
   script:
-    # convert report from jacoco to cobertura
+    # Convert report from jacoco to cobertura
     - 'python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java > target/site/cobertura.xml'
-    # read the <source></source> tag and prepend the path to every filename
+    # Read the <source></source> tag and prepend the path to every filename
     # attribute
     - 'python /opt/source2filename.py target/site/cobertura.xml'
   needs:
@@ -85,10 +85,6 @@ deploy:site:
     # Create the SSH directory and give it the right permissions
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-
-    # We're using tr to fix line endings which makes ed25519 keys work without
-    # extra base64 encoding.
-    # https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
     - echo "$SSH_SECRET_KEY" > ~/.ssh/id_website
     - chmod 700 ~/.ssh/id_website
 
