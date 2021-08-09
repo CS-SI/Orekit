@@ -33,7 +33,7 @@ import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class NdmParser extends AbstractMessageParser<NdmFile> {
+public class NdmParser extends AbstractMessageParser<Ndm> {
 
     /** Builder for the constituents parsers. */
     private final ParserBuilder builder;
@@ -89,9 +89,9 @@ public class NdmParser extends AbstractMessageParser<NdmFile> {
 
     /** {@inheritDoc} */
     @Override
-    public NdmFile build() {
+    public Ndm build() {
         // build the file from parsed comments and constituents
-        return new NdmFile(comments.getComments(), constituents);
+        return new Ndm(comments.getComments(), constituents);
     }
 
     /**

@@ -60,7 +60,7 @@ public class TLERangeRateTest {
         for (final ObservedMeasurement<?> m : measurements) {
             Assert.assertFalse(((RangeRate) m).isTwoWay());
         }
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -94,7 +94,7 @@ public class TLERangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 4.5e-09);
+        Assert.assertEquals(0, maxRelativeError, 6.9e-09);
 
     }
 
@@ -118,7 +118,7 @@ public class TLERangeRateTest {
         for (final ObservedMeasurement<?> m : measurements) {
             Assert.assertTrue(((RangeRate) m).isTwoWay());
         }
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -179,7 +179,7 @@ public class TLERangeRateTest {
                         TLEEstimationTestUtils.createMeasurements(propagator,
                                                                new TLERangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -245,7 +245,7 @@ public class TLERangeRateTest {
                         TLEEstimationTestUtils.createMeasurements(propagator,
                                                                new TLERangeRateMeasurementCreator(context, true),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -306,7 +306,7 @@ public class TLERangeRateTest {
                         TLEEstimationTestUtils.createMeasurements(propagator,
                                                                new TLERangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -369,7 +369,7 @@ public class TLERangeRateTest {
                         TLEEstimationTestUtils.createMeasurements(propagator,
                                                                new TLERangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {

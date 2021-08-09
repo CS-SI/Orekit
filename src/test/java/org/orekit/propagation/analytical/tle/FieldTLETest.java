@@ -25,8 +25,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -41,6 +41,9 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.DateComponents;
@@ -49,6 +52,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldTLETest {
 
@@ -678,7 +682,7 @@ public class FieldTLETest {
 
     private <T extends CalculusFieldElement<T>> void doTestStateToTLEGeo(final Field<T> field) {
     	final FieldTLE<T> geoTLE = new FieldTLE<>(field, "1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
-                                                  "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
+                                                         "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
         checkConversion(geoTLE, field);
     }
 
@@ -716,8 +720,8 @@ public class FieldTLETest {
     private <T extends CalculusFieldElement<T>> void doTestStateToTleISS(final Field<T> field) {
 
         // Initialize TLE
-        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0 9998",
-                                                  "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                                         "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
 
         // TLE propagator
         final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
@@ -745,6 +749,36 @@ public class FieldTLETest {
         Assert.assertEquals(tleISS.getMeanAnomaly().getReal(),     rebuilt.getMeanAnomaly().getReal(),     eps * tleISS.getMeanAnomaly().getReal());
         Assert.assertEquals(tleISS.getMeanAnomaly().getReal(),     rebuilt.getMeanAnomaly().getReal(),     eps * tleISS.getMeanAnomaly().getReal());
         Assert.assertEquals(tleISS.getBStar(),                     rebuilt.getBStar(),                     eps * tleISS.getBStar());
+    }
+
+    @Test
+    public void testIssue802() {
+        doTestIssue802(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue802(final Field<T> field) {
+
+        // Initialize TLE
+        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                                         "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+
+        // State at TLE epoch
+        final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
+
+        // Changes frame
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final TimeStampedFieldPVCoordinates<T> pv = state.getPVCoordinates(eme2000);
+        final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(pv, eme2000, state.getMu());
+
+        // Convert to TLE
+        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(new FieldSpacecraftState<T>(orbit), tleISS);
+
+        // Verify
+        Assert.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
+        Assert.assertEquals(tleISS.getLine2(), rebuilt.getLine2());
     }
 
     @Test

@@ -93,7 +93,7 @@ public class Utils {
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.clearOceanTidesReaders();
         DataContext.getDefault().getDataProvidersManager().clearProviders();
-        DataContext.getDefault().getDataProvidersManager().clearFilters();
+        DataContext.getDefault().getDataProvidersManager().resetFiltersToDefault();
         DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
         
     }

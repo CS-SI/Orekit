@@ -32,6 +32,8 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -745,9 +747,8 @@ public class TLE implements TimeStamped, Serializable {
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
                                  final double epsilon, final int maxIterations) {
 
-        // Gets equinoctial parameters from state
-        final Orbit orbit = state.getOrbit();
-        final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        // Gets equinoctial parameters in TEME frame from state
+        final EquinoctialOrbit equiOrbit = convert(state.getOrbit());
         double sma = equiOrbit.getA();
         double ex  = equiOrbit.getEquinoctialEx();
         double ey  = equiOrbit.getEquinoctialEy();
@@ -756,7 +757,7 @@ public class TLE implements TimeStamped, Serializable {
         double lv  = equiOrbit.getLv();
 
         // Rough initialization of the TLE
-        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(equiOrbit);
         TLE current = newTLE(keplerianOrbit, templateTLE);
 
         // threshold for each parameter
@@ -801,7 +802,7 @@ public class TLE implements TimeStamped, Serializable {
             lv  += deltaLv;
             final EquinoctialOrbit newEquiOrbit =
                                     new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    orbit.getFrame(), orbit.getDate(), orbit.getMu() );
+                                    equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
             final KeplerianOrbit newKeplOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE
@@ -809,6 +810,18 @@ public class TLE implements TimeStamped, Serializable {
         }
 
         throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
+    }
+
+    /**
+     * Converts an orbit into an equinoctial orbit expressed in TEME frame.
+     *
+     * @param orbitIn the orbit to convert
+     * @return the converted orbit, i.e. equinoctial in TEME frame
+     */
+    @DefaultDataContext
+    private static EquinoctialOrbit convert(final Orbit orbitIn) {
+        final Frame teme = FramesFactory.getTEME();
+        return new EquinoctialOrbit(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
     }
 
     /**

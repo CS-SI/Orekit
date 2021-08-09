@@ -227,14 +227,14 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
         return parsedUnitsBehavior;
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.NdmFile Navigation Data Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.Ndm Navigation Data Messages}.
      * @return a new parser
      */
     public NdmParser buildNdmParser() {
         return new NdmParser(this);
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.OpmFile Orbit Parameters Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.Opm Orbit Parameters Messages}.
      * @return a new parser
      */
     public OpmParser buildOpmParser() {
@@ -242,7 +242,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
                              getMu(), getDefaultMass(), getParsedUnitsBehavior());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.omm.OmmFile Orbit Mean elements Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.omm.Omm Orbit Mean elements Messages}.
      * @return a new parser
      */
     public OmmParser buildOmmParser() {
@@ -250,7 +250,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
                              getMu(), getDefaultMass(), getParsedUnitsBehavior());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.oem.Oem Orbit Ephemeris Messages}.
      * @return a new parser
      */
     public OemParser buildOemParser() {
@@ -258,14 +258,14 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
                              getMu(), getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.ocm.OcmFile Orbit Comprehensive Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.ocm.Ocm Orbit Comprehensive Messages}.
      * @return a new parser
      */
     public OcmParser buildOcmParser() {
         return new OcmParser(getConventions(), isSimpleEOP(), getDataContext(), getMu(), getParsedUnitsBehavior());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.apm.ApmFile Attitude Parameters Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.apm.Apm Attitude Parameters Messages}.
      * @return a new parser
      */
     public ApmParser buildApmParser() {
@@ -273,7 +273,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
                              getMissionReferenceDate(), getParsedUnitsBehavior());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.aem.AemFile Attitude Ephemeris Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.aem.Aem Attitude Ephemeris Messages}.
      * @return a new parser
      */
     public AemParser buildAemParser() {
@@ -281,7 +281,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
                              getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.tdm.Tdm Tracking Data Messages}.
      * @return a new parser
      */
     public TdmParser buildTdmParser() {

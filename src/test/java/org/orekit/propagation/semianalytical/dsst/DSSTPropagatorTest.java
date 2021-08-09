@@ -77,6 +77,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -209,9 +210,9 @@ public class DSSTPropagatorTest {
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
-        prop.setEphemerisMode();
+        EphemerisGenerator generator = prop.getEphemerisGenerator();
         prop.propagate(startDate, endDate);
-        BoundedPropagator ephemeris = prop.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         TimeStampedPVCoordinates actualPV = ephemeris.getPVCoordinates(startDate, eci);
@@ -281,14 +282,14 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         // Set ephemeris mode
-        dsstProp.setEphemerisMode();
+        EphemerisGenerator generator = dsstProp.getEphemerisGenerator();
 
         // Propagation of the initial state at t + 10 days
         final double dt = 2. * Constants.JULIAN_DAY;
         dsstProp.propagate(state.getDate().shiftedBy(5. * dt));
 
         // Get ephemeris
-        BoundedPropagator ephem = dsstProp.getGeneratedEphemeris();
+        BoundedPropagator ephem = generator.getGeneratedEphemeris();
 
         // Propagation of the initial state with ephemeris at t + 2 days
         final SpacecraftState s = ephem.propagate(state.getDate().shiftedBy(dt));
@@ -684,16 +685,14 @@ public class DSSTPropagatorTest {
         // direct generation of states
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
-        propagator.setMasterMode(
-                600,
-                (currentState, isLast) -> states.add(currentState));
+        propagator.setStepHandler(600, currentState -> states.add(currentState));
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
 
         // ephemeris generation
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
-        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         double maxError = 0;
         for (final SpacecraftState state : states) {

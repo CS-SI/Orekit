@@ -21,13 +21,13 @@ import java.io.IOException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.aem.AemFile;
-import org.orekit.files.ccsds.ndm.adm.apm.ApmFile;
-import org.orekit.files.ccsds.ndm.odm.ocm.OcmFile;
-import org.orekit.files.ccsds.ndm.odm.oem.OemFile;
-import org.orekit.files.ccsds.ndm.odm.omm.OmmFile;
-import org.orekit.files.ccsds.ndm.odm.opm.OpmFile;
-import org.orekit.files.ccsds.ndm.tdm.TdmFile;
+import org.orekit.files.ccsds.ndm.adm.aem.Aem;
+import org.orekit.files.ccsds.ndm.adm.apm.Apm;
+import org.orekit.files.ccsds.ndm.odm.ocm.Ocm;
+import org.orekit.files.ccsds.ndm.odm.oem.Oem;
+import org.orekit.files.ccsds.ndm.odm.omm.Omm;
+import org.orekit.files.ccsds.ndm.odm.opm.Opm;
+import org.orekit.files.ccsds.ndm.tdm.Tdm;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -69,7 +69,7 @@ public class NdmWriter {
      * @param message message to write
      * @throws IOException if the stream cannot write to stream
      */
-    public void writeMessage(final Generator generator, final NdmFile message)
+    public void writeMessage(final Generator generator, final Ndm message)
         throws IOException {
 
         // write the global comments
@@ -152,19 +152,19 @@ public class NdmWriter {
     @SuppressWarnings("unchecked")
     private <H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>>
         MessageWriter<H, S, F> buildWriter(final F constituent) throws IOException {
-        if (constituent instanceof TdmFile) {
+        if (constituent instanceof Tdm) {
             return (MessageWriter<H, S, F>) builder.buildTdmWriter();
-        } else if (constituent instanceof OpmFile) {
+        } else if (constituent instanceof Opm) {
             return (MessageWriter<H, S, F>) builder.buildOpmWriter();
-        } else if (constituent instanceof OmmFile) {
+        } else if (constituent instanceof Omm) {
             return (MessageWriter<H, S, F>) builder.buildOmmWriter();
-        } else if (constituent instanceof OemFile) {
+        } else if (constituent instanceof Oem) {
             return (MessageWriter<H, S, F>) builder.buildOemWriter();
-        } else if (constituent instanceof OcmFile) {
+        } else if (constituent instanceof Ocm) {
             return (MessageWriter<H, S, F>) builder.buildOcmWriter();
-        } else if (constituent instanceof ApmFile) {
+        } else if (constituent instanceof Apm) {
             return (MessageWriter<H, S, F>) builder.buildApmWriter();
-        } else if (constituent instanceof AemFile) {
+        } else if (constituent instanceof Aem) {
             return (MessageWriter<H, S, F>) builder.buildAemWriter();
         } else {
             // this should never happen

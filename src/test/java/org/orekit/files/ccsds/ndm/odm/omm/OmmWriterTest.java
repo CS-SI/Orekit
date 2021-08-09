@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.time.AbsoluteDate;
 
-public class OmmWriterTest extends AbstractWriterTest<Header, Segment<OmmMetadata, OmmData>, OmmFile> {
+public class OmmWriterTest extends AbstractWriterTest<Header, Segment<OmmMetadata, OmmData>, Omm> {
 
     protected OmmParser getParser() {
         return new ParserBuilder().

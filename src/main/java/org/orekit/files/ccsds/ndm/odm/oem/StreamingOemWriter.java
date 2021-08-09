@@ -39,10 +39,21 @@ import org.orekit.time.AbsoluteDate;
  *
  * <pre>{@code
  * Propagator propagator = ...; // pre-configured propagator
- * OEMWriter  oemWriter  = ...; // pre-configured writer with header and metadata
- *   try (Generator out = ...;) { // set-up output stream
- *     propagator.setMasterMode(step, new StreamingOemWriter(out, oemWriter).newSegment());
- *     propagator.propagate(startDate, stopDate);
+ * OEMWriter  aemWriter  = ...; // pre-configured writer
+ *   try (Generator out = ...;  // set-up output stream
+ *        StreamingOemWriter sw = new StreamingOemWriter(out, oemWriter)) { // set-up streaming writer
+ *
+ *     // write segment 1
+ *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     propagator.propagate(startDate1, stopDate1);
+ *
+ *     ...
+ *
+ *     // write segment n
+ *     propagator.getMultiplexer().clear();
+ *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     propagator.propagate(startDateN, stopDateN);
+ *
  *   }
  * }</pre>
  *
@@ -54,7 +65,7 @@ import org.orekit.time.AbsoluteDate;
  *      Data Definitions and Conventions</a>
  * @see OemWriter
  */
-public class StreamingOemWriter {
+public class StreamingOemWriter implements AutoCloseable {
 
     /** Generator for OEM output. */
     private final Generator generator;
@@ -97,6 +108,12 @@ public class StreamingOemWriter {
         return new SegmentWriter();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void close() throws IOException {
+        writer.writeFooter(generator);
+    }
+
     /** A writer for a segment of an OEM. */
     public class SegmentWriter implements OrekitFixedStepHandler {
 
@@ -104,8 +121,8 @@ public class StreamingOemWriter {
          * {@inheritDoc}
          *
          * <p> Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeMessageHeader(Generator,
-         * Header) writeHeader} if it is the first segment) and {@link OemWriter#writeMetadata(Generator, OemMetadata)}
+         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeHeader(Generator, Header)
+         * writeHeader} if it is the first segment) and {@link OemWriter#writeMetadata(Generator, OemMetadata)}
          * to start the segment.
          */
         @Override
@@ -135,12 +152,19 @@ public class StreamingOemWriter {
 
         /** {@inheritDoc}. */
         @Override
-        public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+        public void handleStep(final SpacecraftState currentState) {
             try {
                 writer.writeOrbitEphemerisLine(generator, metadata, currentState.getPVCoordinates(), true);
-                if (isLast) {
-                    writer.endData(generator);
-                }
+            } catch (IOException e) {
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
+            }
+        }
+
+        /** {@inheritDoc}. */
+        @Override
+        public void finish(final SpacecraftState finalState) {
+            try {
+                writer.endData(generator);
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }

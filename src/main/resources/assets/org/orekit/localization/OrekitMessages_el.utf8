@@ -232,9 +232,6 @@ FRAMES_MISMATCH =  Το πλαίσιο ({0}) δεν αντιστοιχεί στ�
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = H αρχική κατάσταση δεν προσδιορίζεται για την τροχιά διάδοσης 
 
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = Ο αλγόριθμος προσομοίωσης κίνησης του δορυφόρου (propagator) δεν είναι σε εφήμερη φάση παραγωγής
-
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = ημερομηνία γεγονότος {0}, μεγαλύτερη από {1} μείον {3} δευτερόλεπτα και μικρότερη από {2} συν {3} δευτερόλεπτα, δεν μπορεί να προστεθεί
 

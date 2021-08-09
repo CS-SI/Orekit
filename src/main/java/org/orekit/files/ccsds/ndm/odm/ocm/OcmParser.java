@@ -62,7 +62,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmParser extends OdmParser<OcmFile, OcmParser> implements EphemerisFileParser<OcmFile> {
+public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFileParser<Ocm> {
 
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
@@ -133,7 +133,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
      */
     public OcmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final double mu, final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(OcmFile.ROOT, OcmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu, parsedUnitsBehavior);
+        super(Ocm.ROOT, Ocm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu, parsedUnitsBehavior);
     }
 
     /** {@inheritDoc} */
@@ -151,7 +151,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
 
     /** {@inheritDoc} */
     @Override
-    public OcmFile parse(final DataSource source) {
+    public Ocm parse(final DataSource source) {
         return parseMessage(source);
     }
 
@@ -175,7 +175,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
         orbitDeterminationBlock = null;
         userDefinedBlock        = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(OcmFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Ocm.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
@@ -411,7 +411,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
 
     /** {@inheritDoc} */
     @Override
-    public OcmFile build() {
+    public Ocm build() {
         // OCM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
@@ -426,7 +426,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
                                          maneuverBlocks, perturbationsBlock,
                                          orbitDeterminationBlock, userDefinedBlock);
         data.validate(header.getFormatVersion());
-        return new OcmFile(header, Collections.singletonList(new Segment<>(metadata, data)),
+        return new Ocm(header, Collections.singletonList(new Segment<>(metadata, data)),
                            getConventions(), getDataContext(), getSelectedMu());
     }
 
@@ -472,7 +472,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
      * @return true if token was processed, false otherwise
      */
     private boolean processTrajectoryStateToken(final ParseToken token) {
-        if (token.getName() != null && !token.getName().equals(OcmFile.TRAJ_LINE)) {
+        if (token.getName() != null && !token.getName().equals(Ocm.TRAJ_LINE)) {
             // we are in the section metadata part
             try {
                 return TrajectoryStateHistoryMetadataKey.valueOf(token.getName()).
@@ -532,7 +532,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
      * @return true if token was processed, false otherwise
      */
     private boolean processCovarianceToken(final ParseToken token) {
-        if (token.getName() != null && !token.getName().equals(OcmFile.COV_LINE)) {
+        if (token.getName() != null && !token.getName().equals(Ocm.COV_LINE)) {
             // we are in the section metadata part
             try {
                 return CovarianceHistoryMetadataKey.valueOf(token.getName()).
@@ -575,7 +575,7 @@ public class OcmParser extends OdmParser<OcmFile, OcmParser> implements Ephemeri
      * @return true if token was processed, false otherwise
      */
     private boolean processManeuverToken(final ParseToken token) {
-        if (token.getName() != null && !token.getName().equals(OcmFile.MAN_LINE)) {
+        if (token.getName() != null && !token.getName().equals(Ocm.MAN_LINE)) {
             // we are in the section metadata part
             try {
                 return ManeuverHistoryMetadataKey.valueOf(token.getName()).

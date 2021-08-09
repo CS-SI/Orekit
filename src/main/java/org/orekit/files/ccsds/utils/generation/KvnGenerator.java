@@ -51,6 +51,7 @@ public class KvnGenerator extends AbstractGenerator {
     /** Simple constructor.
      * @param output destination of generated output
      * @param paddingWidth padding width for aligning the '=' sign
+     * (not counting the extra blank added before the '=' sign)
      * @param outputName output name for error messages
      * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
      * @see org.orekit.files.ccsds.ndm.tdm.TdmWriter#KVN_PADDING_WIDTH     TdmWriter.KVN_PADDING_WIDTH
@@ -64,7 +65,7 @@ public class KvnGenerator extends AbstractGenerator {
     public KvnGenerator(final Appendable output, final int paddingWidth,
                         final String outputName, final int unitsColumn) {
         super(output, outputName, unitsColumn > 0);
-        kvFormat = "%-" + FastMath.max(1, paddingWidth - 1) + "s = %s";
+        kvFormat = "%-" + FastMath.max(1, paddingWidth) + "s = %s";
         final StringBuilder builder = new StringBuilder(COMMENT);
         builder.append(' ');
         while (builder.length() < paddingWidth + 3) {

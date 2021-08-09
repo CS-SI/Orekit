@@ -232,9 +232,6 @@ FRAMES_MISMATCH = ramme ({0}) passer ikke med ramme ({1})
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = initialstatusen er ikke presisert for banepropagasjon
 
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = propagtøren er ikke satt i stillingen efemeridegenerasjon
-
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = hendelsedatoen {0}, større enn {1} minus {3} sekunder og mindre enn {2} pluss {3} sekunder, kan ikke bli legget til
 

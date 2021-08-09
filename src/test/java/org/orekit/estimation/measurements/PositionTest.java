@@ -61,7 +61,7 @@ public class PositionTest {
                                                                new PositionMeasurementCreator(),
                                                                1.0, 3.0, 300.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Prepare statistics for position values difference
         final StreamingStatistics[] pvDiffStat = new StreamingStatistics[3];
@@ -111,7 +111,7 @@ public class PositionTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PositionMeasurementCreator(),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] errorsP = new double[3 * 6 * measurements.size()];
         int indexP = 0;

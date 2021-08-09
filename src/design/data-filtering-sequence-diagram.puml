@@ -32,6 +32,7 @@
   hide footbox
 
   participant DataProvidersManager
+  participant FiltersManager
   participant GzipFilter
   participant "DataProvider\nDirectoryCrawler" as DirectoryCrawler
   participant MSAFEPattern
@@ -44,47 +45,49 @@
     DataProvidersManager -> DirectoryCrawler : feed
     activate DirectoryCrawler
       create DataSource1
-      DirectoryCrawler                    ->           DataSource1 : create
-      DirectoryCrawler                    ->         DataProvidersManager : applyFilters
-      activate DataProvidersManager
-        DataProvidersManager  -> GzipFilter : filter
+      DirectoryCrawler                    ->         DataSource1 : create
+      DirectoryCrawler                    ->         DataProvidersManager : getFiltersManager
+      DirectoryCrawler                    ->         FiltersManager : applyRelevantFilters
+      activate FiltersManager
+        FiltersManager  -> GzipFilter : filter
         activate GzipFilter
           GzipFilter -> DataSource1 : getName
           return no filtering
         deactivate GzipFilter
-        DataProvidersManager                    -->         DirectoryCrawler
-      deactivate DataProvidersManager
+        FiltersManager                    -->         DirectoryCrawler
+      deactivate FiltersManager
       DirectoryCrawler -> MSAFEPattern : check name
       activate MSAFEPattern
         MSAFEPattern --> DirectoryCrawler : no match
       deactivate MSAFEPattern
       DirectoryCrawler -> DirectoryCrawler : drop utc-tai.dat
       create DataSource2
-      DirectoryCrawler                    ->           DataSource2 : create
-      DirectoryCrawler                    ->         DataProvidersManager : applyFilters
-      activate DataProvidersManager
-        DataProvidersManager  -> GzipFilter : filter
+      DirectoryCrawler                    ->         DataSource2 : create
+      DirectoryCrawler                    ->         DataProvidersManager : getFiltersManager
+      DirectoryCrawler                    ->         FiltersManager : applyRelevantFilters
+      activate FiltersManager
+        FiltersManager  -> GzipFilter : filter
         activate GzipFilter
           GzipFilter -> DataSource2 : getName
           create DataSource3
            GzipFilter -> DataSource3 : create
           return filtered DataSource
         deactivate GzipFilter
-        DataProvidersManager -> DataProvidersManager : restart loop on filters
-        DataProvidersManager  -> GzipFilter : filter
+        FiltersManager -> FiltersManager : restart loop on filters
+        FiltersManager  -> GzipFilter : filter
         activate GzipFilter
           GzipFilter -> DataSource3 : getName
           return no filtering
         deactivate GzipFilter
-        DataProvidersManager                    -->         DirectoryCrawler
-      deactivate DataProvidersManager
+        FiltersManager                    -->         DirectoryCrawler
+      deactivate FiltersManager
       DirectoryCrawler -> MSAFEPattern : check name
       activate MSAFEPattern
         MSAFEPattern --> DirectoryCrawler : match found
       deactivate MSAFEPattern
-      DirectoryCrawler -> DataSource3 : openStream
+      DirectoryCrawler -> DataSource3 : openStreamOnce
       activate DataSource3
-        DataSource3 -> DataSource2 : openStream
+        DataSource3 -> DataSource2 : openStreamOnce
         activate DataSource2
           DataSource2 --> DataSource3 : compressed stream
         deactivate DataSource2

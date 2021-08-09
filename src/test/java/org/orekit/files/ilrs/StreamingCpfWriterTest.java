@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
-import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
+import org.orekit.files.ilrs.CPF.CPFEphemeris;
 import org.orekit.files.ilrs.StreamingCpfWriter.Segment;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
@@ -59,7 +59,7 @@ public class StreamingCpfWriterTest {
                               "/ilrs/galileo212_cpf_180613_6641.esa");
         for (final String ex : files) {
             DataSource source0 = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            CPFFile cpfFile = new CPFParser().parse(source0);
+            CPF cpfFile = new CPFParser().parse(source0);
 
             CPFEphemeris satellite =
                             cpfFile.getSatellites().values().iterator().next();
@@ -74,12 +74,12 @@ public class StreamingCpfWriterTest {
             writer.writeHeader();
             Segment segment = writer.newSegment(frame);
             BoundedPropagator propagator = satellite.getPropagator();
-            propagator.setMasterMode(step, segment);
+            propagator.setStepHandler(step, segment);
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
 
             final byte[]    bytes1            = buffer.toString().getBytes(StandardCharsets.UTF_8);
             final DataSource source1           = new DataSource("buffer", () -> new ByteArrayInputStream(bytes1));
-            final CPFFile   generatedCpfFile1 = new CPFParser().parse(source1);
+            final CPF   generatedCpfFile1 = new CPFParser().parse(source1);
             CPFWriterTest.compareCpfFiles(cpfFile, generatedCpfFile1);
 
             // check calling the methods directly
@@ -95,7 +95,7 @@ public class StreamingCpfWriterTest {
             // verify
             final byte[]    bytes2            = buffer.toString().getBytes(StandardCharsets.UTF_8);
             final DataSource source2           = new DataSource("buffer", () -> new ByteArrayInputStream(bytes2));
-            final CPFFile   generatedCpfFile2 = new CPFParser().parse(source2);
+            final CPF   generatedCpfFile2 = new CPFParser().parse(source2);
             CPFWriterTest.compareCpfFiles(cpfFile, generatedCpfFile2);
 
         }

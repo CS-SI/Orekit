@@ -67,7 +67,7 @@
             -covarianceMatrices
           }
           class OemMetadata
-          class OemFile
+          class Oem
           Data <|.. OemData
           OdmMetadata <|-- OemMetadata
         }
@@ -82,7 +82,7 @@
             - maneuvers
             - userDefinedParameters
           }
-          class OpmFile
+          class Opm
           OdmMetadata <|-- OpmMetadata
           Data <|.. OpmData
          }
@@ -95,13 +95,13 @@
       end note
 
       abstract class NdmConstituent
-      class NdmFile
+      class Ndm
 
-      NdmConstituent <|-- OemFile
-      NdmConstituent <|-- OpmFile
+      NdmConstituent <|-- Oem
+      NdmConstituent <|-- Opm
       Header  "1" <--o NdmConstituent
       Segment "*" <--o NdmConstituent
-      NdmConstituent "*" <--o NdmFile
+      NdmConstituent "*" <--o Ndm
 
     }
   }

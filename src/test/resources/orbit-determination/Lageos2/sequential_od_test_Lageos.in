@@ -1,0 +1,143 @@
+#######################################
+#             LAGEOS-2
+#######################################
+##
+## Input file for SequentialOrbitDetermination
+
+## The input file syntax is a set of key=value lines.
+## Blank lines and lines starting with '#' (after whitespace trimming) are
+## silently ignored.
+## The equal sign may be surrounded by space characters.
+## Keys must correspond to the ParameterKey enumerate constants, given that
+## matching is not case sensitive and that '_' characters may appear as '.'
+## characters in the file.
+
+## This file must contain one orbit defined as keplerian, equinoctial, circular
+## or cartesian.
+
+## Some parameters are optional, default values are shown below between [].
+
+## All dates are treated in UTC timescale.
+## The inertial frame for orbit definition and propagation is EME2000.
+## Physical data are read from the src/tutorial/resources/tutorial-orekit-data
+## directory.
+
+### Orbit definition
+## date of the orbital parameters (UTC)
+orbit.date = 2016-02-13T11:10:00.000
+
+
+## Position & velocity along X, y, z in ITRF frame (m) 
+orbit.cartesian.px =  -8470598.0
+orbit.cartesian.py = -656365.0
+orbit.cartesian.pz = 8683142.0
+orbit.cartesian.vx = 2370.0
+orbit.cartesian.vy = -4795.0
+orbit.cartesian.vz = 2057.0
+
+## Spacecraft mass (kg) [1000.]
+mass = 405.380
+
+# IERS conventions [2010]
+iers.conventions = 2010
+
+# Inertial frame [EME2000]
+inertial.frame = EME2000
+
+# Propagator min step (s), max step (s), position error (m) and normalization scale (m) [0.001, 300, 10.0, 1000.0]
+propagator.min.step                  = 0.001
+propagator.max.step                  = 300
+propagator.position.error            = 10.0
+
+# body (default is a WGS-84 ellipsoid with IERS-2010 conventions and simple EOP frame)
+body.frame              = CIO/2010-based ITRF simple EOP
+body.equatorial.radius  = 6378137.0
+body.inverse.flattening =     298.257223563
+
+### Force models
+
+## Central body gravity potential degree
+central.body.degree = 20
+## Central body gravity potential order
+central.body.order  =  20
+
+## 3rd body Sun (true/false) [false]
+third.body.sun  = true
+## 3rd body Moon (true/false) [false]
+third.body.moon = true
+
+## ocean tides (negative degree and order by default to disable ocean tides)
+ocean.tides.degree = -1
+ocean.tides.order  = -1
+
+## solid tides (true/false) [false]
+solid.tides.sun    = false;
+solid.tides.moon   = false
+
+## Atmospheric drag (true/false) [false]
+drag = false
+## Drag coefficient
+drag.cd =  2.0
+## Estimation flag for drag coefficient (true/false) [false]
+drag.cd.estimated = true
+## Drag area (m^2)
+drag.area = 0.28270
+
+## Solar Radiation Pressure (true/false) [true]
+solar.radiation.pressure = false
+## SRP coefficient
+solar.radiation.pressure.cr =  1.134
+## Estimation flag for SRP coefficient (true/false) [false]
+solar.radiation.pressure.cr.estimated = true
+## SRP area (m^2)
+solar.radiation.pressure.area = 0.28270
+
+## Earth's Albedo and Infrared (true/false) [false]
+## It reuses the configuration of the solar radiation pressure for the reflection coefficient
+earth.albedo.infrared = false
+## Angular resolution
+albedo.infrared.angular.resolution = 15.0
+
+# Post-Newtonian correction force due to general relativity (true/false) [false]
+general.relativity = true
+
+## Estimator
+
+# normalized parameters p are computed from physical parameters x
+# as p = (x - x0) / sx where x0 is the reference value for physical
+# parameter x and sx is the associated scale factor
+# scaling factor for orbital parameters normalization (m)
+# if not specified, the value set for propagator.position.error will be copied
+estimator.orbital.parameters.position.scale     = 10.0
+
+# we can use either a Levenberg-Marquardt or a Gauss-Newton
+# optimization engine. Default is Levenberg-Marquardt
+estimator.optimization.engine = Gauss-Newton
+
+# the default initial step bound factor is 100 for Levenberg-Marquardt
+# this is too small for normalized parameters when initial guess is very
+# far. An order of magnitude is 100 times the distance error of the initial guess
+# divided by estimator.orbital.parameters.position.scale. So if the initial guess
+# is about 100km wrong and estimator.orbital.parameters.position.scale is set to 10.0,
+# the initial step bound factor should be of the order of magnitude of 1.0e6
+estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
+
+# convergence is reached when max|p(k+1) - p(k)| < ε for each
+# normalized estimated parameters p and iterations k and k+1
+# so the ε threshold (which corresponds to the key
+# estimator.normalized.parameters.convergence.threshold)
+# Normalized values are computed as (x - x0) / sx,
+# so convergence is reached when the following condition holds for
+# all estimated parameters: |x[i+1] - x[i]| <= ε * sx
+# So the convergence threshold specified here can be considered as
+# a multiplication factor applied to scale. Since for all parameters
+# the scale is often small (typically about 1 m for orbital positions
+# for example), then the threshold should not be too small. A value
+# of 10⁻³ is often quite accurate.
+estimator.normalized.parameters.convergence.threshold   = 1.0e-3
+estimator.max.iterations                                = 30
+estimator.max.evaluations                               = 35
+
+# comma-separated list of measurements files (in the same directory as this file)
+measurements.files = lageos2LS_cpf_160213_5441.sgf
+measurements.files.sequential = lageos2SeqLS_cpf_160213_5441.sgf

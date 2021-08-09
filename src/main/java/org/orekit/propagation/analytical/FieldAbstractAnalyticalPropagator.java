@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -40,11 +40,14 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventState;
 import org.orekit.propagation.events.FieldEventState.EventOccurrence;
+import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
+import org.orekit.propagation.sampling.FieldOrekitStepNormalizer;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
@@ -93,19 +96,24 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         lastPropagationStart = FieldAbsoluteDate.getPastInfinity(field);
         lastPropagationEnd   = FieldAbsoluteDate.getFutureInfinity(field);
         statesInitialized    = false;
-        eventsStates         = new ArrayList<FieldEventState<?, T>>();
+        eventsStates         = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldBoundedPropagator<T> getGeneratedEphemeris() {
-        return new FieldBoundedPropagatorView(lastPropagationStart, lastPropagationEnd);
+    public FieldEphemerisGenerator<T> getEphemerisGenerator() {
+        return () -> new FieldBoundedPropagatorView(lastPropagationStart, lastPropagationEnd);
+    }
+
+    /** {@inheritDoc} */
+    public <D extends FieldEventDetector<T>> void addEventDetector(final D detector) {
+        eventsStates.add(new FieldEventState<>(detector));
     }
 
     /** {@inheritDoc} */
     @Override
     public Collection<FieldEventDetector<T>> getEventsDetectors() {
-        final List<FieldEventDetector<T>> list = new ArrayList<FieldEventDetector<T>>();
+        final List<FieldEventDetector<T>> list = new ArrayList<>();
         for (final FieldEventState<?, T> state : eventsStates) {
             list.add(state.getEventDetector());
         }
@@ -126,22 +134,22 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
             lastPropagationStart = start;
 
-            final T dt       = target.durationFrom(start);
-
-            final double epsilon  = FastMath.ulp(dt.getReal());
-
-            FieldSpacecraftState<T> state = updateAdditionalStates(basicPropagate(start));
+            final T                 dt      = target.durationFrom(start);
+            final double            epsilon = FastMath.ulp(dt.getReal());
+            FieldSpacecraftState<T> state   = updateAdditionalStates(basicPropagate(start));
 
             // evaluate step size
             final T stepSize;
-            if (getMode() == MASTER_MODE) {
-                if (Double.isNaN(getFixedStepSize().getReal())) {
-                    stepSize = state.getKeplerianPeriod().divide(100).copySign(dt);
-                } else {
-                    stepSize = getFixedStepSize().copySign(dt);
-                }
-            } else {
+            if (getMultiplexer().getHandlers().isEmpty()) {
                 stepSize = dt;
+            } else {
+                // we look only at the first handler
+                final FieldOrekitStepHandler<T> handler = getMultiplexer().getHandlers().get(0);
+                if (handler instanceof FieldOrekitStepNormalizer) {
+                    stepSize = FastMath.copySign(((FieldOrekitStepNormalizer<T>) handler).getFixedTimeStep(), dt);
+                } else {
+                    stepSize = FastMath.copySign(state.getKeplerianPeriod().divide(100), dt);
+                }
             }
 
             // initialize event detectors
@@ -149,10 +157,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                 es.init(state, target);
             }
 
-            // initialize step handler
-            if (getStepHandler() != null) {
-                getStepHandler().init(state, target);
-            }
+            // initialize step handlers
+            getMultiplexer().init(state, target);
 
             // iterate over the propagation range
             statesInitialized = false;
@@ -173,7 +179,13 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
                 // accept the step, trigger events and step handlers
                 state = acceptStep(interpolator, target, epsilon);
+
+                // Update the potential changes in the spacecraft state due to the events
+                // especially the potential attitude transition
+                state = updateAdditionalStates(basicPropagate(state.getDate()));
+
             } while (!isLastStep);
+
             // return the last computed state
             lastPropagationEnd = state.getDate();
             setStartDate(state.getDate());
@@ -195,9 +207,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                                          final FieldAbsoluteDate<T> target, final double epsilon)
         throws MathRuntimeException {
 
-        FieldSpacecraftState<T>       previous = interpolator.getPreviousState();
-        final FieldSpacecraftState<T> current  = interpolator.getCurrentState();
-        FieldBasicStepInterpolator restricted = interpolator;
+        FieldSpacecraftState<T>       previous   = interpolator.getPreviousState();
+        final FieldSpacecraftState<T> current    = interpolator.getCurrentState();
+        FieldBasicStepInterpolator    restricted = interpolator;
 
         // initialize the events states if needed
         if (!statesInitialized) {
@@ -212,6 +224,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             statesInitialized = true;
 
         }
+
         // search for next events that may occur during the step
         final int orderingSign = interpolator.isForward() ? +1 : -1;
         final Queue<FieldEventState<?, T>> occurringEvents = new PriorityQueue<>(new Comparator<FieldEventState<?, T>>() {
@@ -237,13 +250,19 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
 
             do {
+
                 eventLoop:
                 while (!occurringEvents.isEmpty()) {
+
                     // handle the chronologically first event
                     final FieldEventState<?, T> currentEvent = occurringEvents.poll();
 
                     // get state at event time
                     FieldSpacecraftState<T> eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
+
+                    // restrict the interpolator to the first part of the step, up to the event
+                    restricted = restricted.restrictStep(previous, eventState);
+
                     // try to advance all event states to current time
                     for (final FieldEventState<?, T> state : eventsStates) {
                         if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
@@ -258,19 +277,27 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                         }
                     }
                     // all event detectors agree we can advance to the current event time
+
+                    // handle the first part of the step, up to the event
+                    getMultiplexer().handleStep(restricted);
+
+                    // acknowledge event occurrence
                     final EventOccurrence<T> occurrence = currentEvent.doEvent(eventState);
                     final Action action = occurrence.getAction();
                     isLastStep = action == Action.STOP;
                     if (isLastStep) {
+
                         // ensure the event is after the root if it is returned STOP
                         // this lets the user integrate to a STOP event and then restart
                         // integration from the same time.
+                        final FieldSpacecraftState<T> savedState = eventState;
                         eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
-                        restricted = new FieldBasicStepInterpolator(restricted.isForward(), previous, eventState);
-                    }
-                    // handle the first part of the step, up to the event
-                    if (getStepHandler() != null) {
-                        getStepHandler().handleStep(restricted, isLastStep);
+                        restricted = restricted.restrictStep(savedState, eventState);
+
+                        // handle the almost zero size last part of the final step, at event time
+                        getMultiplexer().handleStep(restricted);
+                        getMultiplexer().finish(restricted.getCurrentState());
+
                     }
 
                     if (isLastStep) {
@@ -306,9 +333,12 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
                 }
 
-                // last part of the step, after the last event
-                // may be a new event here if the last event modified the g function of
-                // another event detector.
+                // last part of the step, after the last event. Advance all detectors to
+                // the end of the step. Should only detect a new event here if an event
+                // modified the g function of another detector. Detecting such events here
+                // is unreliable and RESET_EVENTS should be used instead. Might as well
+                // re-check here because we have to loop through all the detectors anyway
+                // and the alternative is to throw an exception.
                 for (final FieldEventState<?, T> state : eventsStates) {
                     if (state.tryAdvance(current, interpolator)) {
                         occurringEvents.add(state);
@@ -328,9 +358,11 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         }
 
         // handle the remaining part of the step, after all events if any
-        if (getStepHandler() != null) {
-            getStepHandler().handleStep(interpolator, isLastStep);
+        getMultiplexer().handleStep(interpolator);
+        if (isLastStep) {
+            getMultiplexer().finish(restricted.getCurrentState());
         }
+
         return current;
 
     }
@@ -346,12 +378,6 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      */
     public FieldPVCoordinatesProvider<T> getPvProvider() {
         return pvProvider;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <D extends FieldEventDetector<T>> void addEventDetector(final D detector) {
-        eventsStates.add(new FieldEventState<D, T>(detector));
     }
 
     /** Reset an intermediate state.
@@ -439,6 +465,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
          */
         FieldBoundedPropagatorView(final FieldAbsoluteDate<T> startDate, final FieldAbsoluteDate<T> endDate) {
             super(startDate.durationFrom(endDate).getField(), FieldAbstractAnalyticalPropagator.this.getAttitudeProvider());
+            super.resetInitialState(FieldAbstractAnalyticalPropagator.this.getInitialState());
             if (startDate.compareTo(endDate) <= 0) {
                 minDate = startDate;
                 maxDate = endDate;
@@ -493,6 +520,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         @Override
         public void resetInitialState(final FieldSpacecraftState<T> state) {
+            super.resetInitialState(state);
             FieldAbstractAnalyticalPropagator.this.resetInitialState(state);
         }
 
@@ -574,6 +602,13 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         @Override
         public boolean isForward() {
             return forward;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public FieldBasicStepInterpolator restrictStep(final FieldSpacecraftState<T> newPreviousState,
+                                                       final FieldSpacecraftState<T> newCurrentState) {
+            return new FieldBasicStepInterpolator(forward, newPreviousState, newCurrentState);
         }
 
     }

@@ -26,7 +26,7 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
 
-/** Maneuver field type used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
+/** Maneuver field type used in CCSDS {@link Ocm Orbit Comprehensive Messages}.
  * @author Luc Maisonobe
  * @since 11.0
  */

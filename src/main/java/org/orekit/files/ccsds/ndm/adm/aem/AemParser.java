@@ -55,7 +55,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AemParser extends AdmParser<AemFile, AemParser> implements AttitudeEphemerisFileParser<AemFile> {
+public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphemerisFileParser<Aem> {
 
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
@@ -101,14 +101,14 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     public AemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
                      final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+        super(Aem.ROOT, Aem.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
               missionReferenceDate, parsedUnitsBehavior);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AemFile parse(final DataSource source) {
+    public Aem parse(final DataSource source) {
         return parseMessage(source);
     }
 
@@ -126,7 +126,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         metadata = null;
         context  = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(AemFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Aem.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
@@ -213,8 +213,8 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
 
     /** {@inheritDoc} */
     @Override
-    public AemFile build() {
-        final AemFile file = new AemFile(header, segments, getConventions(), getDataContext());
+    public Aem build() {
+        final Aem file = new Aem(header, segments, getConventions(), getDataContext());
         file.checkTimeSystems();
         return file;
     }

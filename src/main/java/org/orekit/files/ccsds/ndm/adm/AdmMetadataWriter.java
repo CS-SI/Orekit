@@ -24,7 +24,7 @@ import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.generation.Generator;
 
 /**
- * Writer for Common metadata for CCSDS Attitude Parameter/Ephemeris Message files.
+ * Writer for Common metadata for CCSDS Attitude Parameter/Ephemeris Messages.
  *
  * @author Luc Maisonobe
  * @since 11.0

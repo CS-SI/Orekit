@@ -29,7 +29,7 @@
 
   package org.orekit.gnss #ECEBD8 {
 
-    class RinexLoader {
+    class RinexObservationLoader {
       +List<ObservationDataSet> getObservationDataSets()
     }
 
@@ -89,14 +89,14 @@
       +List<ObservationData> getObservationData()
     }
 
-    ObservationDataSet *-left-> "1" SatelliteSystem
-    RinexHeader        *--> "1" SatelliteSystem
-    RinexHeader        "*" <--* ObservationDataSet
-    RinexLoader        *--> "*" ObservationDataSet
-    ObservationDataSet *--> "*" ObservationData
-    ObservationType  "1" <-left-* ObservationData
-    ObservationType    *--> "1" MeasurementType
-    ObservationType    *--> "*" Frequency
+    ObservationDataSet         *-left-> "1" SatelliteSystem
+    RinexObservationHeader     *-->     "1" SatelliteSystem
+    RinexObservationHeader "*" <--*         ObservationDataSet
+    RinexObservationLoader     *-->     "*" ObservationDataSet
+    ObservationDataSet         *-->     "*" ObservationData
+    ObservationType        "1" <-left-*     ObservationData
+    ObservationType            *-->     "1" MeasurementType
+    ObservationType            *-->     "*" Frequency
   }
 
 @enduml

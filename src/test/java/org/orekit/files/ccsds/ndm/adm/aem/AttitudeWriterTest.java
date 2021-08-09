@@ -86,14 +86,14 @@ public class AttitudeWriterTest {
     public void testWriteAEM1() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
         Header header = new Header(2.0);
-        header.setFormatVersion(aemFile.getHeader().getFormatVersion());
-        header.setCreationDate(aemFile.getHeader().getCreationDate());
-        header.setOriginator(aemFile.getHeader().getOriginator());
+        header.setFormatVersion(aem.getHeader().getFormatVersion());
+        header.setCreationDate(aem.getHeader().getCreationDate());
+        header.setOriginator(aem.getHeader().getOriginator());
 
-        final AemSegment s0 = aemFile.getSegments().get(0);
+        final AemSegment s0 = aem.getSegments().get(0);
         AemMetadata metadata = new AemMetadata(s0.getInterpolationSamples() - 1);
         metadata.setObjectName(s0.getMetadata().getObjectName());
         metadata.setObjectID(s0.getMetadata().getObjectID());
@@ -112,26 +112,26 @@ public class AttitudeWriterTest {
                            withDataContext(DataContext.getDefault()).
                            buildAemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), aemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), aem);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
-        final AemFile generatedOemFile = new ParserBuilder().buildAemParser().
+        final Aem generatedOem = new ParserBuilder().buildAemParser().
                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        compareAemFiles(aemFile, generatedOemFile);
+        compareAems(aem, generatedOem);
     }
 
     @Test
     public void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("12345");
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(), null, metadata,
                                                    FileFormat.KVN, "", 60);
         try {
-            writer.write(new CharArrayWriter(), aemFile);
+            writer.write(new CharArrayWriter(), aem);
             fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
@@ -143,17 +143,17 @@ public class AttitudeWriterTest {
     public void testNullFile() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().
-                                                   withConventions(aemFile.getConventions()).
-                                                   withDataContext(aemFile.getDataContext()).
+                                                   withConventions(aem.getConventions()).
+                                                   withDataContext(aem.getDataContext()).
                                                    buildAemWriter(),
-                                                   aemFile.getHeader(),
-                                                   aemFile.getSegments().get(0).getMetadata(),
+                                                   aem.getHeader(),
+                                                   aem.getSegments().get(0).getMetadata(),
                                                    FileFormat.KVN,
                                                    "dummy", 0);
         try {
-            writer.write((BufferedWriter) null, aemFile);
+            writer.write((BufferedWriter) null, aem);
             fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
@@ -179,16 +179,16 @@ public class AttitudeWriterTest {
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
         final File temp = tempFolder.newFile("writeAEMExample01.xml");
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata(),
+                                                   aem.getHeader(), aem.getSegments().get(0).getMetadata(),
                                                    FileFormat.XML, temp.getName(), 1);
-        writer.write(temp.getAbsolutePath(), aemFile);
-        final AemFile generatedAemFile = new ParserBuilder().buildAemParser().parseMessage(new DataSource(temp));
-        assertEquals(aemFile.getSegments().get(0).getMetadata().getObjectID(),
-                     generatedAemFile.getSegments().get(0).getMetadata().getObjectID());
+        writer.write(temp.getAbsolutePath(), aem);
+        final Aem generatedAem = new ParserBuilder().buildAemParser().parseMessage(new DataSource(temp));
+        assertEquals(aem.getSegments().get(0).getMetadata().getObjectID(),
+                     generatedAem.getSegments().get(0).getMetadata().getObjectID());
     }
 
     @Test
@@ -237,18 +237,18 @@ public class AttitudeWriterTest {
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample02.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata(),
+                                                   aem.getHeader(), aem.getSegments().get(0).getMetadata(),
                                                    FileFormat.KVN, "TestAEMIssue723.aem", 0);
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.write(caw, aemFile);
+        writer.write(caw, aem);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
-        final AemFile generatedAemFile = new ParserBuilder().buildAemParser().
+        final Aem generatedAem = new ParserBuilder().buildAemParser().
                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        assertEquals(aemFile.getHeader().getComments().get(0), generatedAemFile.getHeader().getComments().get(0));
+        assertEquals(aem.getHeader().getComments().get(0), generatedAem.getHeader().getComments().get(0));
     }
 
     @Test
@@ -256,11 +256,11 @@ public class AttitudeWriterTest {
         // setup
         String exampleFile = "/ccsds/adm/aem/AEMExample07.txt";
         final DataSource source = new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
-        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
         AemWriter writer = new WriterBuilder().buildAemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), aemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), aem);
 
         String[] lines2 = caw.toString().split("\n");
 
@@ -302,7 +302,7 @@ public class AttitudeWriterTest {
         }
     }
 
-    static void compareAemFiles(AemFile file1, AemFile file2) {
+    static void compareAems(Aem file1, Aem file2) {
         assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
         assertEquals(file1.getSegments().size(), file2.getSegments().size());
         for (int i = 0; i < file1.getSegments().size(); i++) {

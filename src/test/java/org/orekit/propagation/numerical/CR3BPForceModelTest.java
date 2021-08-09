@@ -111,7 +111,7 @@ public class CR3BPForceModelTest {
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(syst));
         propagator.setInitialState(initialState);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
         final SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(integrationTime));
         
         Assert.assertNotEquals(initialState.getPVCoordinates().getPosition().getX(), finalState.getPVCoordinates().getPosition().getX(), 1E-2);  

@@ -106,7 +106,7 @@ class CovarianceHistoryWriter extends AbstractWriter {
                 ordering.update(indexer);
             }
             if (generator.getFormat() == FileFormat.XML) {
-                generator.writeEntry(OcmFile.COV_LINE, line.toString(), null, true);
+                generator.writeEntry(Ocm.COV_LINE, line.toString(), null, true);
             } else {
                 generator.writeRawData(line);
                 generator.newLine();

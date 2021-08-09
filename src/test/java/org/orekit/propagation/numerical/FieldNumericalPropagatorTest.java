@@ -64,6 +64,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldApsideDetector;
@@ -131,9 +132,9 @@ public class FieldNumericalPropagatorTest {
         // choose duration that will round up when expressed as a double
         FieldAbsoluteDate<T> end = initDate.shiftedBy(100)
                 .shiftedBy(3 * FastMath.ulp(100.0) / 4);
-        propagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
-        FieldBoundedPropagator<T> ephemeris = propagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         CountingHandler<D, T> handler = new CountingHandler<D, T>();
         FieldDateDetector<T> detector = new FieldDateDetector<>(zero.add(10), zero.add(1e-9), toArray(end)).withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
@@ -164,9 +165,9 @@ public class FieldNumericalPropagatorTest {
         // choose duration that will round up when expressed as a double
         FieldAbsoluteDate<T> end = initDate.shiftedBy(100)
                 .shiftedBy(3 * FastMath.ulp(100.0) / 4);
-        propagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
-        FieldBoundedPropagator<T> ephemeris = propagator.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         CountingHandler<D, T> handler = new CountingHandler<D, T>();
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
@@ -263,9 +264,9 @@ public class FieldNumericalPropagatorTest {
         prop.resetInitialState(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(orbit)));
 
         //action
-        prop.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = prop.getEphemerisGenerator();
         prop.propagate(startDate, endDate);
-        FieldBoundedPropagator<T> ephemeris = prop.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         TimeStampedFieldPVCoordinates<T> actualPV = ephemeris.getPVCoordinates(startDate, eci);
@@ -308,9 +309,9 @@ public class FieldNumericalPropagatorTest {
         prop.resetInitialState(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(orbit)));
 
         //action
-        prop.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = prop.getEphemerisGenerator();
         prop.propagate(endDate, startDate);
-        FieldBoundedPropagator<T> ephemeris = prop.getGeneratedEphemeris();
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         TimeStampedFieldPVCoordinates<T> actualPV = ephemeris.getPVCoordinates(startDate, eci);
@@ -463,12 +464,6 @@ public class FieldNumericalPropagatorTest {
         Assert.assertEquals(0, pRef.subtract(pFin).getNorm().getReal(), 2e-4);
         Assert.assertEquals(0, vRef.subtract(vFin).getNorm().getReal(), 7e-8);
 
-        try {
-            propagator.getGeneratedEphemeris();
-            Assert.fail("an exception should have been thrown");
-        } catch (IllegalStateException ise) {
-            // expected
-        }
     }
 
     @Test
@@ -662,13 +657,12 @@ public class FieldNumericalPropagatorTest {
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
-        propagator.setMasterMode(new FieldOrekitStepHandler<T>() {
+        propagator.setStepHandler(new FieldOrekitStepHandler<T>() {
             private int countDown = 3;
             private FieldAbsoluteDate<T> previousCall = null;
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
             }
-            public void handleStep(FieldOrekitStepInterpolator<T> interpolator,
-                                   boolean isLast) {
+            public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
                 if (previousCall != null) {
                     System.out.println(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
                 }
@@ -1077,7 +1071,7 @@ public class FieldNumericalPropagatorTest {
         propagator.addEventDetector(event1);
 
         // Set the propagation mode
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Propagate
         FieldSpacecraftState<T> finalState = propagator.propagate(endDate);
@@ -1100,9 +1094,9 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
-        final FieldBoundedPropagator<T> ephemeris1 = propagator.getGeneratedEphemeris();
+        final FieldBoundedPropagator<T> ephemeris1 = generator.getGeneratedEphemeris();
         Assert.assertEquals(initDate, ephemeris1.getMinDate());
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
@@ -1113,7 +1107,7 @@ public class FieldNumericalPropagatorTest {
         Assert.assertEquals(initDate, ephemeris1.getMinDate());
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
-        final FieldBoundedPropagator<T> ephemeris2 = propagator.getGeneratedEphemeris();
+        final FieldBoundedPropagator<T> ephemeris2 = generator.getGeneratedEphemeris();
         Assert.assertEquals(initDate.shiftedBy(-2 * dt), ephemeris2.getMinDate());
         Assert.assertEquals(initDate.shiftedBy( 2 * dt), ephemeris2.getMaxDate());
 
@@ -1159,9 +1153,9 @@ public class FieldNumericalPropagatorTest {
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", field.getZero().add(1.5)));
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setEphemerisMode();
+        final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
-        final FieldBoundedPropagator<T> ephemeris1 = propagator.getGeneratedEphemeris();
+        final FieldBoundedPropagator<T> ephemeris1 = generator.getGeneratedEphemeris();
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMinDate());
         Assert.assertEquals(initDate, ephemeris1.getMaxDate());
         try {

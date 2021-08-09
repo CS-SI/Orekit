@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -107,7 +107,7 @@ public class Position extends AbstractMeasurement<Position> {
               }, extractSigmas(covarianceMatrix),
               new double[] {
                   baseWeight, baseWeight, baseWeight
-              }, Arrays.asList(satellite));
+              }, Collections.singletonList(satellite));
         this.covarianceMatrix = covarianceMatrix.clone();
     }
 

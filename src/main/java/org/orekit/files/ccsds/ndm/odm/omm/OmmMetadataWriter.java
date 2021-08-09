@@ -23,7 +23,7 @@ import org.orekit.files.ccsds.ndm.odm.CommonMetadataWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 
 /**
- * Writer for Common metadata for CCSDS Orbit Mean-Elements Message files.
+ * Writer for Common metadata for CCSDS Orbit Mean-Elements Messages.
  *
  * @author Luc Maisonobe
  * @since 11.0

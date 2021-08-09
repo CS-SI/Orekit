@@ -24,7 +24,7 @@ import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Header;
 
-public class AemWriterTest extends AbstractWriterTest<Header, AemSegment, AemFile> {
+public class AemWriterTest extends AbstractWriterTest<Header, AemSegment, Aem> {
 
     protected AemParser getParser() {
         return new ParserBuilder().

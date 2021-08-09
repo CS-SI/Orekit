@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.generation.Generator;
 
 /**
- * Writer for Common metadata for CCSDS Orbit Parameter/Ephemeris/Mean Message files.
+ * Writer for Common metadata for CCSDS Orbit Parameter/Ephemeris/Mean Messages.
  *
  * @author Luc Maisonobe
  * @since 11.0

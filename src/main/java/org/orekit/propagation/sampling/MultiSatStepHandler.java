@@ -56,8 +56,16 @@ public interface MultiSatStepHandler {
      * @param interpolators interpolators set up for the current step in the same order
      * used to {@link org.orekit.propagation.PropagatorsParallelizer#PropagatorsParallelizer(List, MultiSatStepHandler)
      * build} the {@link org.orekit.propagation.PropagatorsParallelizer multi-sat propagator}
-     * @param isLast if true, this is the last integration step
      */
-    void handleStep(List<OrekitStepInterpolator> interpolators, boolean isLast);
+    void handleStep(List<OrekitStepInterpolator> interpolators);
+
+    /**
+     * Finalize propagation.
+     * @param finalStates states at propagation end
+     * @since 11.0
+     */
+    default void finish(final List<SpacecraftState> finalStates) {
+        // nothing by default
+    }
 
 }

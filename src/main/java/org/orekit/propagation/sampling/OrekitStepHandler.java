@@ -46,8 +46,16 @@ public interface OrekitStepHandler {
 
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
-     * @param isLast if true, this is the last integration step
      */
-    void handleStep(OrekitStepInterpolator interpolator, boolean isLast);
+    void handleStep(OrekitStepInterpolator interpolator);
+
+    /**
+     * Finalize propagation.
+     * @param finalState state at propagation end
+     * @since 11.0
+     */
+    default void finish(SpacecraftState finalState) {
+        // nothing by default
+    }
 
 }

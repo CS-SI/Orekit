@@ -20,8 +20,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -266,36 +264,6 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** Get the transform with derivatives.
      * @param date date of the transform
-     * @param factory factory for the derivatives
-     * @param indices indices of the estimated parameters in derivatives computations
-     * @return computed transform with derivatives
-     * @deprecated as of 10.2, replaced by {@link #getTransform(FieldAbsoluteDate, int, Map)}
-     */
-    @Deprecated
-    public FieldTransform<DerivativeStructure> getTransform(final FieldAbsoluteDate<DerivativeStructure> date,
-                                                            final DSFactory factory,
-                                                            final Map<String, Integer> indices) {
-
-        // prime meridian shift parameters
-        final DerivativeStructure theta    = linearModel(factory, date,
-                                                         primeMeridianOffsetDriver, primeMeridianDriftDriver,
-                                                         indices);
-        final DerivativeStructure thetaDot = primeMeridianDriftDriver.getValue(factory, indices);
-
-        // pole shift parameters
-        final DerivativeStructure xpNeg    = linearModel(factory, date,
-                                                         polarOffsetXDriver, polarDriftXDriver, indices).negate();
-        final DerivativeStructure ypNeg    = linearModel(factory, date,
-                                                         polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final DerivativeStructure xpNegDot = polarDriftXDriver.getValue(factory, indices).negate();
-        final DerivativeStructure ypNegDot = polarDriftYDriver.getValue(factory, indices).negate();
-
-        return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
-
-    }
-
-    /** Get the transform with derivatives.
-     * @param date date of the transform
      * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the estimated parameters in derivatives computations
      * @return computed transform with derivatives
@@ -399,29 +367,6 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final T dt          = date.durationFrom(offsetDriver.getReferenceDate());
         final double offset = offsetDriver.getValue();
         final double drift  = driftDriver.getValue();
-        return dt.multiply(drift).add(offset);
-    }
-
-    /** Evaluate a parametric linear model.
-     * @param factory factory for the derivatives
-     * @param date current date
-     * @param offsetDriver driver for the offset parameter
-     * @param driftDriver driver for the drift parameter
-     * @param indices indices of the estimated parameters in derivatives computations
-     * @return current value of the linear model
-     * @deprecated as of 10.2, replaced by {@link #linearModel(int, FieldAbsoluteDate, ParameterDriver, ParameterDriver, Map)}
-     */
-    @Deprecated
-    private DerivativeStructure linearModel(final DSFactory factory, final FieldAbsoluteDate<DerivativeStructure> date,
-                                            final ParameterDriver offsetDriver, final ParameterDriver driftDriver,
-                                            final Map<String, Integer> indices) {
-        if (offsetDriver.getReferenceDate() == null) {
-            throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
-                                      offsetDriver.getName());
-        }
-        final DerivativeStructure dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final DerivativeStructure offset = offsetDriver.getValue(factory, indices);
-        final DerivativeStructure drift  = driftDriver.getValue(factory, indices);
         return dt.multiply(drift).add(offset);
     }
 

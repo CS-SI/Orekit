@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.definitions;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -157,7 +158,7 @@ public class ElementsTypeTest {
     @Test
     public void checkWrongNumber() {
         try {
-            ElementsType.CARTP.checkUnits(Arrays.asList(Unit.KILOMETRE));
+            ElementsType.CARTP.checkUnits(Collections.singletonList(Unit.KILOMETRE));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS,

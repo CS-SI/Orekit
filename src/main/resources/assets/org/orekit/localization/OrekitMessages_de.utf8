@@ -232,9 +232,6 @@ FRAMES_MISMATCH = Koordinatennetz ({0}) stimmt nicht mit Koordinatennetz ({1}) �
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = Anfangs Status nicht spezifiziert für Orbit-propagation
 
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = Propagator ist nicht in den Modus der Ephemeris-generation
-
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = Ereignisdatum {0}, grösser als {1} minus {3} Sekunden and kleiner als {2} plus {3} Sekunden, kann nicht addiert werden
 
