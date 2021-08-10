@@ -16,9 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
+import java.util.stream.Collectors;
+
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.utils.units.Unit;
 
 
@@ -27,6 +30,21 @@ import org.orekit.utils.units.Unit;
  * @since 11.0
  */
 public enum TdmMetadataKey {
+
+    /** Identifier for the tracking data. */
+    TRACK_ID((token, context, container) -> token.processAsNormalizedString(container::setTrackId)),
+
+    /** Lit of data types in the data section. */
+    DATA_TYPES((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            container.setDataTypes(token.
+                                   getContentAsNormalizedList().
+                                   stream().
+                                   map(s -> s.replace(' ', '_')).
+                                   collect(Collectors.toList()));
+        }
+        return true;
+    }),
 
     /** Start time entry. */
     START_TIME((token, context, container) -> token.processAsDate(container::setStartTime, context)),
@@ -60,6 +78,21 @@ public enum TdmMetadataKey {
 
     /** Path 2 entry. */
     PATH_2((token, context, container) -> token.processAsIntegerArray(container::setPath2)),
+
+    /** External ephemeris file for the participant 1. */
+    EPHEMERIS_NAME_1((token, context, container) -> token.processAsIndexedNormalizedString(1, container::addEphemerisName)),
+
+    /** External ephemeris file for the participant 2. */
+    EPHEMERIS_NAME_2((token, context, container) -> token.processAsIndexedNormalizedString(2, container::addEphemerisName)),
+
+    /** External ephemeris file for the participant 3. */
+    EPHEMERIS_NAME_3((token, context, container) -> token.processAsIndexedNormalizedString(3, container::addEphemerisName)),
+
+    /** External ephemeris file for the participant 4. */
+    EPHEMERIS_NAME_4((token, context, container) -> token.processAsIndexedNormalizedString(4, container::addEphemerisName)),
+
+    /** External ephemeris file for the participant 5. */
+    EPHEMERIS_NAME_5((token, context, container) -> token.processAsIndexedNormalizedString(5, container::addEphemerisName)),
 
     /** Transmit band entry. */
     TRANSMIT_BAND((token, context, container) -> token.processAsUppercaseString(container::setTransmitBand)),
@@ -102,6 +135,23 @@ public enum TdmMetadataKey {
 
     /** reference frame entry. */
     REFERENCE_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, false, false)),
+
+    /** Interpolation method for transmit phase count. */
+    INTERPOLATION((token, context, container) -> token.processAsUppercaseString(container::setInterpolationMethod)),
+
+    /** Interpolation degree for transmit phase count. */
+    INTERPOLATION_DEGREE((token, context, container) -> token.processAsInteger(container::setInterpolationDegree)),
+
+    /** Bias that was added to Doppler count in the data section. */
+    DOPPLER_COUNT_BIAS((token, context, container) -> token.processAsDouble(Unit.HERTZ, context.getParsedUnitsBehavior(),
+                                                                            container::setDopplerCountBias)),
+
+    /** Scaled by which Doppler count was multiplied in the data section. */
+    DOPPLER_COUNT_SCALE((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                            container::setDopplerCountScale)),
+
+    /** Indicator for occurred rollover in Doppler count. */
+    DOPPLER_COUNT_ROLLOVER((token, context, container) -> token.processAsBoolean(container::setDopplerCountRollover)),
 
     /** First transmit delay entry. */
     TRANSMIT_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, Unit.SECOND, context.getParsedUnitsBehavior(),
@@ -158,9 +208,17 @@ public enum TdmMetadataKey {
     CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(Units.KM_PER_S, context.getParsedUnitsBehavior(),
                                                                             container::setCorrectionDoppler)),
 
+    /** Magnitude correction entry. */
+    CORRECTION_MAG((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                        container::setCorrectionMagnitude)),
+
     /** Range correction entry (beware the unit is Range Units here). */
     CORRECTION_RANGE((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
                                                                           container::setRawCorrectionRange)),
+
+    /** Radar Cross Section correction entry. */
+    CORRECTION_RCS((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
+                                                                        container::setCorrectionRcs)),
 
     /** Receive correction entry. */
     CORRECTION_RECEIVE((token, context, container) -> token.processAsDouble(Unit.HERTZ, context.getParsedUnitsBehavior(),
@@ -169,6 +227,14 @@ public enum TdmMetadataKey {
     /** Transmit correction entry. */
     CORRECTION_TRANSMIT((token, context, container) -> token.processAsDouble(Unit.HERTZ, context.getParsedUnitsBehavior(),
                                                                              container::setCorrectionTransmit)),
+
+    /** Yearly aberration correction entry. */
+    CORRECTION_ABERRATION_YEARLY((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                                      container::setCorrectionAberrationYearly)),
+
+    /** Diurnal aberration correction entry. */
+    CORRECTION_ABERRATION_DIURNAL((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                                       container::setCorrectionAberrationDiurnal)),
 
     /** Applied correction entry. */
     CORRECTIONS_APPLIED((token, context, container) -> token.processAsEnum(CorrectionApplied.class, container::setCorrectionsApplied));
