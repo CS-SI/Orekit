@@ -17,6 +17,8 @@
 
 package org.orekit.files.ccsds.ndm.tdm;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -36,6 +38,12 @@ import org.orekit.utils.Constants;
  * @since 9.0
  */
 public class TdmMetadata extends Metadata {
+
+    /** Identifier for the tracking data. */
+    private String trackId;
+
+    /** List of data types in the data section. */
+    private List<String> dataTypes;
 
     /** Start epoch of total time span covered by observations block. */
     private AbsoluteDate startTime;
@@ -67,6 +75,9 @@ public class TdmMetadata extends Metadata {
 
     /** Path 2 (see above). */
     private int[] path2;
+
+    /** Map of external ephemeris names for participants (minimum 1 and up to 5). */
+    private Map<Integer, String> ephemerisNames;
 
     /** Frequency band for transmitted frequencies. */
     private String transmitBand;
@@ -120,6 +131,21 @@ public class TdmMetadata extends Metadata {
     /** Reference frame in which data are given: used in combination with ANGLE_TYPE=RADEC. */
     private FrameFacade referenceFrame;
 
+    /** The interpolation method to be used. */
+    private String interpolationMethod;
+
+    /** The interpolation degree. */
+    private int interpolationDegree;
+
+    /** Bias that was added to Doppler count in the data section. */
+    private double doppplerCountBias;
+
+    /** Scaled by which Doppler count was multiplied in the data section. */
+    private double dopplerCountScale;
+
+    /** Indicator for occurred rollover in Doppler count. */
+    private boolean doppplerCountRollover;
+
     /** Transmit delays map.<p>
      *  Specifies a fixed interval of time, in seconds, for the signal to travel from the transmitting
      *  electronics to the transmit point. Each item in the list corresponds to the each participants.
@@ -150,10 +176,20 @@ public class TdmMetadata extends Metadata {
      */
     private double correctionDoppler;
 
+    /** Correction magnitude.<p>
+     *  Magnitude correction that has been added or should be added to the MAGNITUDE data.
+     */
+    private double correctionMagnitude;
+
     /** Raw correction Range in {@link #getRangeUnits()}.<p>
      *  Range correction that has been added or should be added to the RANGE data.
      */
     private double rawCorrectionRange;
+
+    /** Correction radar cross section.<p>
+     *  Radar cross section correction that has been added or should be added to the RCS data.
+     */
+    private double correctionRcs;
 
     /** Correction receive.<p>
      *  Receive correction that has been added or should be added to the RECEIVE data.
@@ -165,6 +201,16 @@ public class TdmMetadata extends Metadata {
      */
     private double correctionTransmit;
 
+    /** Yearly aberration correction.<p>
+     *  Yearly correction that has been added or should be added to the ANGLE data.
+     */
+    private double correctionAberrationYearly;
+
+    /** Diurnal aberration correction.<p>
+     *  Diurnl correction that has been added or should be added to the ANGLE data.
+     */
+    private double correctionAberrationDiurnal;
+
     /** Correction applied ? YES/NO<p>
      *  Indicate whethers or not the values associated with the CORRECTION_* keywords have been
      *  applied to the tracking data.
@@ -175,9 +221,13 @@ public class TdmMetadata extends Metadata {
      */
     public TdmMetadata() {
         super(null);
-        participants   = new TreeMap<>();
-        transmitDelays = new TreeMap<>();
-        receiveDelays  = new TreeMap<>();
+        participants          = new TreeMap<>();
+        ephemerisNames        = new TreeMap<>();
+        doppplerCountBias     = Double.NaN;
+        dopplerCountScale     = 1;
+        doppplerCountRollover = false;
+        transmitDelays        = new TreeMap<>();
+        receiveDelays         = new TreeMap<>();
     }
 
     /** {@inheritDoc} */
@@ -187,6 +237,37 @@ public class TdmMetadata extends Metadata {
         if (participants.isEmpty()) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, TdmMetadataKey.PARTICIPANT_1);
         }
+    }
+
+    /** Getter for the tracking data identifier.
+     * @return tracking data identifier
+     */
+    public String getTrackId() {
+        return trackId;
+    }
+
+    /** Setter for the tracking data identifier.
+     * @param trackId tracking data identifier
+     */
+    public void setTrackId(final String trackId) {
+        refuseFurtherComments();
+        this.trackId = trackId;
+    }
+
+    /** Getter for the data types in the data section.
+     * @return data types in the data section
+     */
+    public List<String> getDataTypes() {
+        return dataTypes;
+    }
+
+    /** Setter for the data types in the data section.
+     * @param dataTypes data types in the data section
+     */
+    public void setDataTypes(final List<String> dataTypes) {
+        refuseFurtherComments();
+        this.dataTypes = new ArrayList<>();
+        this.dataTypes.addAll(dataTypes);
     }
 
     /** Getter for the startTime.
@@ -302,6 +383,31 @@ public class TdmMetadata extends Metadata {
     public void setPath2(final int[] path2) {
         refuseFurtherComments();
         this.path2 = safeCopy(path2);
+    }
+
+    /** Getter for external ephemeris names for participants.
+     * @return external ephemeris names for participants
+     */
+    public Map<Integer, String> getEphemerisNames() {
+        return ephemerisNames;
+    }
+
+    /** Setter for the external ephemeris names for participants.
+     * @param ephemerisNames external ephemeris names for participants
+     */
+    public void setEphemerisNames(final Map<Integer, String> ephemerisNames) {
+        refuseFurtherComments();
+        this.ephemerisNames = new TreeMap<Integer, String>();
+        this.ephemerisNames.putAll(ephemerisNames);
+    }
+
+    /** Adds an ephemeris name to the list.
+     * @param participantNumber the number of the participant
+     * @param ephemerisName name of the ephemeris for the participant
+     */
+    public void addEphemerisName(final int participantNumber, final String ephemerisName) {
+        refuseFurtherComments();
+        this.ephemerisNames.put(participantNumber, ephemerisName);
     }
 
     /** Getter for the transmitBand.
@@ -514,6 +620,92 @@ public class TdmMetadata extends Metadata {
         this.referenceFrame = referenceFrame;
     }
 
+    /**
+     * Get the interpolation method to be used.
+     *
+     * @return the interpolation method
+     */
+    public String getInterpolationMethod() {
+        return interpolationMethod;
+    }
+
+    /**
+     * Set the interpolation method to be used.
+     * @param interpolationMethod the interpolation method to be set
+     */
+    public void setInterpolationMethod(final String interpolationMethod) {
+        refuseFurtherComments();
+        this.interpolationMethod = interpolationMethod;
+    }
+
+    /**
+     * Get the interpolation degree.
+     * @return the interpolation degree
+     */
+    public int getInterpolationDegree() {
+        return interpolationDegree;
+    }
+
+    /**
+     * Set the interpolation degree.
+     * @param interpolationDegree the interpolation degree to be set
+     */
+    public void setInterpolationDegree(final int interpolationDegree) {
+        refuseFurtherComments();
+        this.interpolationDegree = interpolationDegree;
+    }
+
+    /**
+     * Get the Doppler count bias.
+     * @return the Doppler count bias in Hz
+     */
+    public double getDopplerCountBias() {
+        return doppplerCountBias;
+    }
+
+    /**
+     * Set the Doppler count bias.
+     * @param dopplerCountBias Doppler count bias in Hz to set
+     */
+    public void setDopplerCountBias(final double dopplerCountBias) {
+        refuseFurtherComments();
+        this.doppplerCountBias = dopplerCountBias;
+    }
+
+    /**
+     * Get the Doppler count scale.
+     * @return the Doppler count scale
+     */
+    public double getDopplerCountScale() {
+        return dopplerCountScale;
+    }
+
+    /**
+     * Set the Doppler count Scale.
+     * @param dopplerCountScale Doppler count scale to set
+     */
+    public void setDopplerCountScale(final double dopplerCountScale) {
+        refuseFurtherComments();
+        this.dopplerCountScale = dopplerCountScale;
+    }
+
+    /**
+     * Check if there is a Doppler count rollover.
+     * @return true if there is a Doppler count rollover
+     */
+    public boolean hasDopplerCountRollover() {
+        return doppplerCountRollover;
+    }
+
+    /**
+     * Set the indicator for Doppler count rollover.
+     * @param dopplerCountRollover indicator for Doppler count rollover
+     */
+    public void setDopplerCountRollover(final boolean dopplerCountRollover) {
+        refuseFurtherComments();
+        this.doppplerCountRollover = dopplerCountRollover;
+    }
+
     /** Getter for the transmitDelays.
      * @return the transmitDelays
      */
@@ -623,6 +815,21 @@ public class TdmMetadata extends Metadata {
         this.correctionDoppler = correctionDoppler;
     }
 
+    /** Getter for the magnitude correction.
+     * @return the magnitude correction
+     */
+    public double getCorrectionMagnitude() {
+        return correctionMagnitude;
+    }
+
+    /** Setter for the magnitude correction.
+     * @param correctionMagnitude the magnitude correction to set
+     */
+    public void setCorrectionMagnitude(final double correctionMagnitude) {
+        refuseFurtherComments();
+        this.correctionMagnitude = correctionMagnitude;
+    }
+
     /** Getter for the raw correction for range in meters.
      * @param converter converter to use if {@link #getRangeUnits() range units}
      * are set to {@link RangeUnits#RU}
@@ -651,6 +858,51 @@ public class TdmMetadata extends Metadata {
     public void setRawCorrectionRange(final double rawCorrectionRange) {
         refuseFurtherComments();
         this.rawCorrectionRange = rawCorrectionRange;
+    }
+
+    /** Getter for the radar cross section correction.
+     * @return the radar cross section correction in m²
+     */
+    public double getCorrectionRcs() {
+        return correctionRcs;
+    }
+
+    /** Setter for the radar cross section correction.
+     * @param correctionRcs the radar cross section correction in m² to set
+     */
+    public void setCorrectionRcs(final double correctionRcs) {
+        refuseFurtherComments();
+        this.correctionRcs = correctionRcs;
+    }
+
+    /** Getter for the yearly aberration correction.
+     * @return the yearly aberration correction in radians
+     */
+    public double getCorrectionAberrationYearly() {
+        return correctionAberrationYearly;
+    }
+
+    /** Setter for the yearly aberration correction.
+     * @param correctionAberrationYearly the yearly aberration correction in radians to set
+     */
+    public void setCorrectionAberrationYearly(final double correctionAberrationYearly) {
+        refuseFurtherComments();
+        this.correctionAberrationYearly = correctionAberrationYearly;
+    }
+
+    /** Getter for the diurnal aberration correction.
+     * @return the diurnal aberration correction in radians
+     */
+    public double getCorrectionAberrationDiurnal() {
+        return correctionAberrationDiurnal;
+    }
+
+    /** Setter for the diurnal aberration correction.
+     * @param correctionAberrationDiurnal the diurnal aberration correction in radians to set
+     */
+    public void setCorrectionAberrationDiurnal(final double correctionAberrationDiurnal) {
+        refuseFurtherComments();
+        this.correctionAberrationDiurnal = correctionAberrationDiurnal;
     }
 
     /** Getter for the correctionReceive.
