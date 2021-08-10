@@ -1835,7 +1835,7 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculates for lower stratosphere and troposphere (below ZN3[0])
             // Temperature at nodes and gradients at end nodes
             // Inverse temperature a linear function of spherical harmonics
-            if (alt < ZN3[0]) {
+            if (alt <= ZN3[0]) {
                 final double q = PMA[6][0] * PAVGM[6];
                 meso_tgn3[0] = meso_tgn2[1];
                 meso_tn3[1]  = PMA[3][0] * PAVGM[3] / (1.0 - sw[22] * glob7s(PMA[3]));
@@ -3241,7 +3241,7 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculates for lower stratosphere and troposphere (below ZN3[0])
             // Temperature at nodes and gradients at end nodes
             // Inverse temperature a linear function of spherical harmonics
-            if (alt.getReal() < ZN3[0]) {
+            if (alt.getReal() <= ZN3[0]) {
                 final double q = PMA[6][0] * PAVGM[6];
                 meso_tgn3[0] = meso_tgn2[1];
                 meso_tn3[1]  = glob7s(PMA[3]).multiply(sw[22]).negate().add(1).reciprocal().multiply(PMA[3][0] * PAVGM[3]);
