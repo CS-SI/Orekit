@@ -518,6 +518,7 @@ public class JB2008 implements Atmosphere {
         }
 
         final Field<T> field  = satAlt.getField();
+        final T pi    = field.getOne().getPi();
         final T altKm = satAlt.divide(1000.0);
 
         // Equation (14)
@@ -533,7 +534,7 @@ public class JB2008 implements Atmosphere {
         // Equation (16)
         final T h   = satLon.subtract(sunRA);
         final T tau = h.subtract(0.64577182).add(h.add(0.75049158).sin().multiply(0.10471976));
-        T solarTime = h.add(FastMath.PI).multiply(12.0 / FastMath.PI);
+        T solarTime = FastMath.toDegrees(h.add(pi)).divide(15.0);
         while (solarTime.getReal() >= 24) {
             solarTime = solarTime.subtract(24);
         }
@@ -571,7 +572,7 @@ public class JB2008 implements Atmosphere {
         tc[0] = tsubx;
         tc[1] = gsubx;
         // A of Equation (13)
-        tc[2] = tinf.subtract(tsubx).multiply(2. / FastMath.PI);
+        tc[2] = tinf.subtract(tsubx).multiply(pi.reciprocal().multiply(2.0));
         tc[3] = gsubx.divide(tc[2]);
 
         // Equation (5)

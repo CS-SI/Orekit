@@ -217,7 +217,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef    = zero.add(2 * FastMath.PI * ((dofyear - t0) / 365.25));
+        final T coef    = zero.getPi().multiply(2.0).multiply((dofyear - t0) / 365.25);
         final T cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5

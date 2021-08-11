@@ -71,17 +71,17 @@ public class FieldGeodeticPoint<T extends CalculusFieldElement<T>> {
      */
     public FieldGeodeticPoint(final T latitude, final T longitude,
                               final T altitude) {
-        double lat = MathUtils.normalizeAngle(latitude.getReal(), FastMath.PI / 2);
-        double lon = MathUtils.normalizeAngle(longitude.getReal(), 0);
-        if (lat > FastMath.PI / 2.0) {
+        final T zero = latitude.getField().getZero();
+        final T pi   = zero.getPi();
+        T lat = MathUtils.normalizeAngle(latitude,  pi.multiply(0.5));
+        T lon = MathUtils.normalizeAngle(longitude, zero);
+        if (lat.getReal() > pi.multiply(0.5).getReal()) {
             // latitude is beyond the pole -> add 180 to longitude
-            lat = FastMath.PI - lat;
-            lon = MathUtils.normalizeAngle(longitude.getReal() + FastMath.PI, 0);
+            lat = pi.subtract(lat);
+            lon = MathUtils.normalizeAngle(longitude.add(pi), zero);
         }
-        final double deltaLat = lat - latitude.getReal();
-        final double deltaLon = lon - longitude.getReal();
-        this.latitude  = latitude.add(deltaLat);
-        this.longitude = longitude.add(deltaLon);
+        this.latitude  = lat;
+        this.longitude = lon;
         this.altitude  = altitude;
     }
 

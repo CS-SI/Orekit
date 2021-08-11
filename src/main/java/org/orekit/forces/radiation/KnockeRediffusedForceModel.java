@@ -30,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -70,14 +71,8 @@ import org.orekit.utils.ParameterDriver;
  */
 public class KnockeRediffusedForceModel extends AbstractForceModel {
 
-    /** Two PI. */
-    private static final double TWO_PI = 2.0 * FastMath.PI;
-
-    /** PI over 2. */
-    private static final double PI_OVER_2 = 0.5 * FastMath.PI;
-
     /** Earth rotation around Sun pulsation in rad/sec. */
-    private static final double EARTH_AROUND_SUN_PULSATION = TWO_PI / Constants.JULIAN_YEAR;
+    private static final double EARTH_AROUND_SUN_PULSATION = MathUtils.TWO_PI / Constants.JULIAN_YEAR;
 
     /** Coefficient for solar irradiance computation. */
     private static final double ES_COEFF = 4.5606E-6;
@@ -209,7 +204,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final Vector3D east = earth.transform(satellitePosition, frame, date).getEast();
 
         // Initialize rediffused flux with elementary flux coming from the circular area around the projected satellite
-        final double centerArea = TWO_PI * equatorialRadius * equatorialRadius *
+        final double centerArea = MathUtils.TWO_PI * equatorialRadius * equatorialRadius *
                                  (1.0 - FastMath.cos(angularResolution));
         Vector3D rediffusedFlux = computeElementaryFlux(s, projectedToGround, sunPosition, earth, centerArea);
 
@@ -227,7 +222,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
             // Browse the entire crown
             for (double radialAxisOffset = 0.5 * angularResolution;
-                 radialAxisOffset < TWO_PI;
+                 radialAxisOffset < MathUtils.TWO_PI;
                  radialAxisOffset = radialAxisOffset + angularResolution) {
 
                 // Build rotation transformations to get elementary area center
@@ -280,8 +275,8 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final FieldVector3D<T> east = earth.transform(satellitePosition, frame, date).getEast();
 
         // Initialize rediffused flux with elementary flux coming from the circular area around the projected satellite
-        final T centerArea = zero.add(TWO_PI * equatorialRadius * equatorialRadius *
-                                      (1.0 - FastMath.cos(angularResolution)));
+        final T centerArea = zero.getPi().multiply(2.0).multiply(equatorialRadius).multiply(equatorialRadius).
+                        multiply(1.0 - FastMath.cos(angularResolution));
         FieldVector3D<T> rediffusedFlux = computeElementaryFlux(s, projectedToGround, sunPosition, earth, centerArea);
 
         // Sectorize the part of Earth which is seen by the satellite into crown sectors with constant angular resolution
@@ -300,7 +295,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
             // Browse the entire crown
             for (double radialAxisOffset = 0.5 * angularResolution;
-                 radialAxisOffset < TWO_PI;
+                 radialAxisOffset < MathUtils.TWO_PI;
                  radialAxisOffset = radialAxisOffset + angularResolution) {
 
                 // Build rotation transformations to get elementary area center
@@ -519,7 +514,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final double alpha = Vector3D.angle(elementCenter, satellitePosition);
 
         // Check that satellite sees the current area
-        if (FastMath.abs(alpha) < PI_OVER_2) {
+        if (FastMath.abs(alpha) < MathUtils.SEMI_PI) {
 
             // Get current elementary area center latitude
             final double currentLatitude = earth.transform(elementCenter, frame, date).getLatitude();
@@ -533,7 +528,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
             // Check if elementary area is in day light
             final double sunAngle = Vector3D.angle(elementCenter, sunPosition);
 
-            if (FastMath.abs(sunAngle) < PI_OVER_2) {
+            if (FastMath.abs(sunAngle) < MathUtils.SEMI_PI) {
                 // Elementary area is in day light, compute albedo value
                 a = computeAlbedo(date, currentLatitude);
             }
@@ -596,7 +591,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final T alpha = FieldVector3D.angle(elementCenter, satellitePosition);
 
         // Check that satellite sees the current area
-        if (FastMath.abs(alpha).getReal() < PI_OVER_2) {
+        if (FastMath.abs(alpha).getReal() < MathUtils.SEMI_PI) {
 
             // Get current elementary area center latitude
             final T currentLatitude = earth.transform(elementCenter, frame, date).getLatitude();
@@ -610,7 +605,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
             // Check if elementary area is in day light
             final T sunAngle = FieldVector3D.angle(elementCenter, sunPosition);
 
-            if (FastMath.abs(sunAngle).getReal() < PI_OVER_2) {
+            if (FastMath.abs(sunAngle).getReal() < MathUtils.SEMI_PI) {
                 // Elementary area is in day light, compute albedo value
                 a = computeAlbedo(date, currentLatitude);
             }
@@ -625,7 +620,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
             // Compute attenuated projected elemetary area vector
             final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(FastMath.cos(alpha)).divide(
-                                                                          rNorm.multiply(rNorm).multiply(rNorm).multiply(FastMath.PI)));
+                                                                          rNorm.multiply(rNorm).multiply(rNorm).multiply(zero.getPi())));
 
             // Compute elementary radiation flux from current elementary area
             return projectedAreaVector.scalarMultiply(albedoAndIR.divide(Constants.SPEED_OF_LIGHT));

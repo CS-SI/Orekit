@@ -718,7 +718,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final T thresholdA = epsilonT.multiply(FastMath.abs(meanOrbit.getA()).add(1.));
         final T thresholdE = epsilonT.multiply(meanOrbit.getE().add(1.));
         final T thresholdI = epsilonT.multiply(meanOrbit.getI().add(1.));
-        final T thresholdL = epsilonT.multiply(FastMath.PI);
+        final T thresholdL = epsilonT.multiply(zero.getPi());
 
         // ensure all Gaussian force models can rely on attitude
         for (final DSSTForceModel force : forceModel) {

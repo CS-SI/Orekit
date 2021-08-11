@@ -24,7 +24,6 @@ import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -377,7 +376,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public T getKeplerianPeriod() {
         final T a = getA();
-        return (a.getReal() < 0) ? getA().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
+        return (a.getReal() < 0) ? getA().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(a.getPi().multiply(2.0)).multiply(a.divide(mu).sqrt());
     }
 
     /** Get the Keplerian mean motion.

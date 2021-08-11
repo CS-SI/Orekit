@@ -203,7 +203,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         } else {
             c10h = zero.add(0.002);
             c11h = zero.add(0.007);
-            psi  = zero.add(FastMath.PI);
+            psi  = zero.getPi();
         }
 
         double t0 = 28;
@@ -211,7 +211,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef = psi.add(((dofyear + 1 - t0) / 365.25) * 2 * FastMath.PI);
+        final T coef = psi.add(zero.getPi().multiply(2.0).multiply((dofyear + 1 - t0) / 365.25));
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(FastMath.cos(latitude).negate().add(1.0)).add(c0h);
 
         // bw and cw constants (Boehm, J et al, 2006) | WET PART
