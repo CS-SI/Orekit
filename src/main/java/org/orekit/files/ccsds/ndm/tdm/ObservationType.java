@@ -40,6 +40,10 @@ public enum ObservationType {
      *  Strength of the radio signal transmitted by the spacecraft as received at the ground station or at another spacecraft.
      */
     CARRIER_POWER(Unit.ONE),
+    /** Data: Doppler counts [n/a].<p>
+     *  Count of signal cycles.
+     */
+    DOPPLER_COUNT(Unit.ONE),
     /** Data: Doppler instantaneous [km/s].<p>
      *  Instantaneous range rate of the spacecraft.
      */
@@ -52,6 +56,26 @@ public enum ObservationType {
     PC_N0(Unit.ONE),
     /** Data: Ranging power to noise spectral density ratio (Pr/No) [dBHz]. */
     PR_N0(Unit.ONE),
+    /** Data: phase cycle count at receiver. */
+    RECEIVE_PHASE_CT_1(Unit.ONE),
+    /** Data: phase cycle count at receiver. */
+    RECEIVE_PHASE_CT_2(Unit.ONE),
+    /** Data: phase cycle count at receiver. */
+    RECEIVE_PHASE_CT_3(Unit.ONE),
+    /** Data: phase cycle count at receiver. */
+    RECEIVE_PHASE_CT_4(Unit.ONE),
+    /** Data: phase cycle count at receiver. */
+    RECEIVE_PHASE_CT_5(Unit.ONE),
+    /** Data: phase cycle count at transmitter. */
+    TRANSMIT_PHASE_CT_1(Unit.ONE),
+    /** Data: phase cycle count at transmitter. */
+    TRANSMIT_PHASE_CT_2(Unit.ONE),
+    /** Data: phase cycle count at transmitter. */
+    TRANSMIT_PHASE_CT_3(Unit.ONE),
+    /** Data: phase cycle count at transmitter. */
+    TRANSMIT_PHASE_CT_4(Unit.ONE),
+    /** Data: phase cycle count at transmitter. */
+    TRANSMIT_PHASE_CT_5(Unit.ONE),
     /** Data: Range value [km, s or RU].
      * @see RangeUnits
      */
@@ -91,7 +115,7 @@ public enum ObservationType {
 
     },
 
-/** Data: Received frequencies [Hz].<p>
+    /** Data: Received frequencies [Hz].<p>
      * The RECEIVE_FREQ keyword shall be used to indicate that the values represent measurements of the received frequency.<p>
      * The keyword is indexed to accommodate a scenario in which multiple downlinks are used.<p>
      * RECEIVE_FREQ_n (n = 1, 2, 3, 4, 5)
@@ -167,6 +191,12 @@ public enum ObservationType {
      * See meta-data keyword ANGLE_TYPE for the definition of the angles.
      */
     ANGLE_2(Unit.DEGREE),
+
+    // Optical/Radar Related keywords
+    /** Data: visual magnitude. */
+    MAG(Unit.ONE),
+    /** Data: Radar Cross section [m²]. */
+    RCS(Units.M2),
 
     // Time Related Keywords
     /** Data: Clock bias [s].<p>

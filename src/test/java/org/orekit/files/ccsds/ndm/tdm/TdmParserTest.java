@@ -1005,9 +1005,10 @@ public class TdmParserTest {
         final TimeScale utc = TimeScalesFactory.getUTC();
 
         // Header
-        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
+        Assert.assertEquals(2.0, file.getHeader().getFormatVersion(), 0.0);
         Assert.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
         Assert.assertEquals("CS GROUP",file.getHeader().getOriginator());
+        Assert.assertEquals("04655f62-1ba0-4ca6-92e9-eb3411db3d44", file.getHeader().getMessageId().toLowerCase());
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("TDM example created by CS GROUP");
         headerComment.add("Testing all TDM known meta-data and data keywords");
@@ -1015,7 +1016,56 @@ public class TdmParserTest {
 
         // Meta-Data
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
-
+        Assert.assertEquals(1, metadata.getComments().size());
+        Assert.assertEquals("All known meta-data keywords displayed", metadata.getComments().get(0));
+        Assert.assertEquals(47, metadata.getDataTypes().size());
+        Assert.assertEquals("CARRIER_POWER"        , metadata.getDataTypes().get( 0));
+        Assert.assertEquals("DOPPLER_COUNT"        , metadata.getDataTypes().get( 1));
+        Assert.assertEquals("DOPPLER_INSTANTANEOUS", metadata.getDataTypes().get( 2));
+        Assert.assertEquals("DOPPLER_INTEGRATED"   , metadata.getDataTypes().get( 3));
+        Assert.assertEquals("PC_N0"                , metadata.getDataTypes().get( 4));
+        Assert.assertEquals("RECEIVE_PHASE_CT_1"   , metadata.getDataTypes().get( 5));
+        Assert.assertEquals("RECEIVE_PHASE_CT_2"   , metadata.getDataTypes().get( 6));
+        Assert.assertEquals("RECEIVE_PHASE_CT_3"   , metadata.getDataTypes().get( 7));
+        Assert.assertEquals("RECEIVE_PHASE_CT_4"   , metadata.getDataTypes().get( 8));
+        Assert.assertEquals("RECEIVE_PHASE_CT_5"   , metadata.getDataTypes().get( 9));
+        Assert.assertEquals("TRANSMIT_PHASE_CT_1"  , metadata.getDataTypes().get(10));
+        Assert.assertEquals("TRANSMIT_PHASE_CT_2"  , metadata.getDataTypes().get(11));
+        Assert.assertEquals("TRANSMIT_PHASE_CT_3"  , metadata.getDataTypes().get(12));
+        Assert.assertEquals("TRANSMIT_PHASE_CT_4"  , metadata.getDataTypes().get(13));
+        Assert.assertEquals("TRANSMIT_PHASE_CT_5"  , metadata.getDataTypes().get(14));
+        Assert.assertEquals("PR_N0"                , metadata.getDataTypes().get(15));
+        Assert.assertEquals("RANGE"                , metadata.getDataTypes().get(16));
+        Assert.assertEquals("RECEIVE_FREQ_1"       , metadata.getDataTypes().get(17));
+        Assert.assertEquals("RECEIVE_FREQ_2"       , metadata.getDataTypes().get(18));
+        Assert.assertEquals("RECEIVE_FREQ_3"       , metadata.getDataTypes().get(19));
+        Assert.assertEquals("RECEIVE_FREQ_4"       , metadata.getDataTypes().get(20));
+        Assert.assertEquals("RECEIVE_FREQ_5"       , metadata.getDataTypes().get(21));
+        Assert.assertEquals("RECEIVE_FREQ"         , metadata.getDataTypes().get(22));
+        Assert.assertEquals("TRANSMIT_FREQ_1"      , metadata.getDataTypes().get(23));
+        Assert.assertEquals("TRANSMIT_FREQ_2"      , metadata.getDataTypes().get(24));
+        Assert.assertEquals("TRANSMIT_FREQ_3"      , metadata.getDataTypes().get(25));
+        Assert.assertEquals("TRANSMIT_FREQ_4"      , metadata.getDataTypes().get(26));
+        Assert.assertEquals("TRANSMIT_FREQ_5"      , metadata.getDataTypes().get(27));
+        Assert.assertEquals("TRANSMIT_FREQ_RATE_1" , metadata.getDataTypes().get(28));
+        Assert.assertEquals("TRANSMIT_FREQ_RATE_2" , metadata.getDataTypes().get(29));
+        Assert.assertEquals("TRANSMIT_FREQ_RATE_3" , metadata.getDataTypes().get(30));
+        Assert.assertEquals("TRANSMIT_FREQ_RATE_4" , metadata.getDataTypes().get(31));
+        Assert.assertEquals("TRANSMIT_FREQ_RATE_5" , metadata.getDataTypes().get(32));
+        Assert.assertEquals("DOR"                  , metadata.getDataTypes().get(33));
+        Assert.assertEquals("VLBI_DELAY"           , metadata.getDataTypes().get(34));
+        Assert.assertEquals("ANGLE_1"              , metadata.getDataTypes().get(35));
+        Assert.assertEquals("ANGLE_2"              , metadata.getDataTypes().get(36));
+        Assert.assertEquals("MAG"                  , metadata.getDataTypes().get(37));
+        Assert.assertEquals("RCS"                  , metadata.getDataTypes().get(38));
+        Assert.assertEquals("CLOCK_BIAS"           , metadata.getDataTypes().get(39));
+        Assert.assertEquals("CLOCK_DRIFT"          , metadata.getDataTypes().get(40));
+        Assert.assertEquals("STEC"                 , metadata.getDataTypes().get(41));
+        Assert.assertEquals("TROPO_DRY"            , metadata.getDataTypes().get(42));
+        Assert.assertEquals("TROPO_WET"            , metadata.getDataTypes().get(43));
+        Assert.assertEquals("PRESSURE"             , metadata.getDataTypes().get(44));
+        Assert.assertEquals("RHUMIDITY"            , metadata.getDataTypes().get(45));
+        Assert.assertEquals("TEMPERATURE"          , metadata.getDataTypes().get(46));
         Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2017-06-15T10:53:00.000", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
@@ -1039,6 +1089,11 @@ public class TdmParserTest {
         Assert.assertEquals("EME2000", metadata.getReferenceFrame().getName());
         Assert.assertEquals(CelestialBodyFrame.EME2000, metadata.getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(FramesFactory.getEME2000(), metadata.getReferenceFrame().asFrame());
+        Assert.assertEquals("HERMITE", metadata.getInterpolationMethod());
+        Assert.assertEquals(5, metadata.getInterpolationDegree());
+        Assert.assertEquals(120000.0, metadata.getDopplerCountBias(), 1.0e-5);
+        Assert.assertEquals(1000.0, metadata.getDopplerCountScale(), 1.0e-10);
+        Assert.assertFalse(metadata.hasDopplerCountRollover());
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(1), 0.0);
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(2), 0.0);
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(3), 0.0);
@@ -1053,9 +1108,13 @@ public class TdmParserTest {
         Assert.assertEquals(FastMath.toRadians(1.0), metadata.getCorrectionAngle1(), 0.0);
         Assert.assertEquals(FastMath.toRadians(2.0), metadata.getCorrectionAngle2(), 0.0);
         Assert.assertEquals(3000.0, metadata.getCorrectionDoppler(), 0.0);
-        Assert.assertEquals(4.0, metadata.getRawCorrectionRange(), 0.0);
-        Assert.assertEquals(5.0, metadata.getCorrectionReceive(), 0.0);
-        Assert.assertEquals(6.0, metadata.getCorrectionTransmit(), 0.0);
+        Assert.assertEquals(4.0, metadata.getCorrectionMagnitude(), 0.0);
+        Assert.assertEquals(5.0, metadata.getRawCorrectionRange(), 0.0);
+        Assert.assertEquals(6.0, metadata.getCorrectionRcs(), 0.0);
+        Assert.assertEquals(7.0, metadata.getCorrectionReceive(), 0.0);
+        Assert.assertEquals(8.0, metadata.getCorrectionTransmit(), 0.0);
+        Assert.assertEquals(FastMath.toRadians(9.0), metadata.getCorrectionAberrationYearly(), 0.0);
+        Assert.assertEquals(FastMath.toRadians(10.0), metadata.getCorrectionAberrationDiurnal(), 0.0);
         Assert.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied());
 
         final List<String> metaDataComment = new ArrayList<String>();
@@ -1066,20 +1125,10 @@ public class TdmParserTest {
         final List<Observation> observations = file.getSegments().get(0).getData().getObservations();
 
         // Reference data
-        final String[] keywords = {"CARRIER_POWER", "DOPPLER_INSTANTANEOUS", "DOPPLER_INTEGRATED", "PC_N0", "PR_N0", "RANGE",
-                                   "RECEIVE_FREQ_1", "RECEIVE_FREQ_2", "RECEIVE_FREQ_3", "RECEIVE_FREQ_4", "RECEIVE_FREQ_5", "RECEIVE_FREQ",
-                                   "TRANSMIT_FREQ_1", "TRANSMIT_FREQ_2", "TRANSMIT_FREQ_3", "TRANSMIT_FREQ_4","TRANSMIT_FREQ_5",
-                                   "TRANSMIT_FREQ_RATE_1", "TRANSMIT_FREQ_RATE_2", "TRANSMIT_FREQ_RATE_3", "TRANSMIT_FREQ_RATE_4", "TRANSMIT_FREQ_RATE_5",
-                                   "DOR", "VLBI_DELAY",
-                                   "ANGLE_1", "ANGLE_2",
-                                   "CLOCK_BIAS", "CLOCK_DRIFT",
-                                   "STEC", "TROPO_DRY", "TROPO_WET",
-                                   "PRESSURE", "RHUMIDITY", "TEMPERATURE"};
-
         final AbsoluteDate epoch = new AbsoluteDate("2017-06-14T10:53:00.000", utc);
         // Check consistency
-        for (int i = 0; i < keywords.length; i++) {
-            Assert.assertEquals(keywords[i], observations.get(i).getType().name());
+        for (int i = 0; i < metadata.getDataTypes().size(); i++) {
+            Assert.assertEquals(metadata.getDataTypes().get(i), observations.get(i).getType().name());
             Assert.assertEquals(epoch.shiftedBy((double) (i+1)).durationFrom(observations.get(i).getEpoch()), 0.0, 0.0);
             Assert.assertEquals((double) (i+1), observations.get(i).getMeasurement(), 1.0e-12);
         }
