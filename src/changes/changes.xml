@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="795" due-to="guylaine">
+        Fixed output of NRLMSISE00 for altitude at 32.5 km.
+      </action>
       <action dev="luc" type="add" issue="821">
         Added support for CCSDS TDM V2.0.
       </action>
