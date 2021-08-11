@@ -190,7 +190,7 @@ public class CssiSpaceWeatherLoaderTest {
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
         final double dailyFlux = cswl.getDailyFlux(date);
         // The daily flux is supposed to be the one from 1999-12-31
-        assertThat(dailyFlux, closeTo(125.8, 1e-10));
+        assertThat(dailyFlux, closeTo(130.1, 1e-10));
     }
 
     @Test
@@ -198,7 +198,23 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2034, 6, 17, 0, 0, 0.0, utc);
         final double dailyFlux = cswl.getDailyFlux(date);
-        assertThat(dailyFlux, closeTo((136.4 + 141.9) / 2, 1e-3));
+        assertThat(dailyFlux, closeTo((132.7 + 137.3) / 2, 1e-3));
+    }
+
+    @Test
+    public void testMeanFlux() {
+        CssiSpaceWeatherData cswl = loadCswl();
+        AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
+        final double meanFlux = cswl.getMeanFlux(date);
+        assertThat(meanFlux, closeTo(158.6, 1e-10));
+    }
+
+    @Test
+    public void testMeanFluxMonthlyPredicted() {
+        CssiSpaceWeatherData cswl = loadCswl();
+        AbsoluteDate date = new AbsoluteDate(2034, 6, 16, 0, 0, 0.0, utc);
+        final double meanFlux = cswl.getMeanFlux(date);
+        assertThat(meanFlux, closeTo((134.8 + 138.8) / 2, 1e-3));
     }
 
     @Test
@@ -206,7 +222,7 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
         final double averageFlux = cswl.getAverageFlux(date);
-        assertThat(averageFlux, closeTo(158.6, 1e-10));
+        assertThat(averageFlux, closeTo(165.6, 1e-10));
     }
 
     @Test
@@ -214,7 +230,7 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2034, 6, 16, 0, 0, 0.0, utc);
         final double averageFlux = cswl.getAverageFlux(date);
-        assertThat(averageFlux, closeTo((134.8 + 138.8) / 2, 1e-3));
+        assertThat(averageFlux, closeTo((132.1 + 134.9) / 2, 1e-3));
     }
 
     @Test
