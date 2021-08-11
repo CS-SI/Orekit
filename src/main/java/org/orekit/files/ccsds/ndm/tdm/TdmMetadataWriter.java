@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.ndm.tdm;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
@@ -58,8 +59,18 @@ class TdmMetadataWriter extends AbstractWriter {
 
         generator.writeComments(metadata.getComments());
 
-        generator.writeEntry(TdmMetadataKey.TRACK_ID.name(),                  metadata.getTrackId(), null, false);
-        generator.writeEntry(TdmMetadataKey.DATA_TYPES.name(),                metadata.getDataTypes(),     false);
+        generator.writeEntry(TdmMetadataKey.TRACK_ID.name(), metadata.getTrackId(), null, false);
+        final List<ObservationType> dataTypes = metadata.getDataTypes();
+        if (dataTypes != null && !dataTypes.isEmpty()) {
+            final StringBuilder dataTypesNames = new StringBuilder();
+            for (int i = 0; i < dataTypes.size(); ++i) {
+                if (i > 0) {
+                    dataTypesNames.append(',');
+                }
+                dataTypesNames.append(dataTypes.get(i).name());
+            }
+            generator.writeEntry(TdmMetadataKey.DATA_TYPES.name(), dataTypesNames.toString(), null, false);
+        }
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),                  metadata.getTimeSystem(), true);

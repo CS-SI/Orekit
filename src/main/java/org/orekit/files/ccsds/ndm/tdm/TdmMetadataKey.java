@@ -16,12 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
-import java.util.stream.Collectors;
-
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.utils.units.Unit;
 
 
@@ -35,16 +32,7 @@ public enum TdmMetadataKey {
     TRACK_ID((token, context, container) -> token.processAsNormalizedString(container::setTrackId)),
 
     /** Lit of data types in the data section. */
-    DATA_TYPES((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            container.setDataTypes(token.
-                                   getContentAsNormalizedList().
-                                   stream().
-                                   map(s -> s.replace(' ', '_')).
-                                   collect(Collectors.toList()));
-        }
-        return true;
-    }),
+    DATA_TYPES((token, context, container) -> token.processAsEnumsList(ObservationType.class, container::setDataTypes)),
 
     /** Start time entry. */
     START_TIME((token, context, container) -> token.processAsDate(container::setStartTime, context)),

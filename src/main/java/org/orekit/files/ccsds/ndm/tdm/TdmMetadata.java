@@ -43,7 +43,7 @@ public class TdmMetadata extends Metadata {
     private String trackId;
 
     /** List of data types in the data section. */
-    private List<String> dataTypes;
+    private List<ObservationType> dataTypes;
 
     /** Start epoch of total time span covered by observations block. */
     private AbsoluteDate startTime;
@@ -257,14 +257,14 @@ public class TdmMetadata extends Metadata {
     /** Getter for the data types in the data section.
      * @return data types in the data section
      */
-    public List<String> getDataTypes() {
+    public List<ObservationType> getDataTypes() {
         return dataTypes;
     }
 
     /** Setter for the data types in the data section.
      * @param dataTypes data types in the data section
      */
-    public void setDataTypes(final List<String> dataTypes) {
+    public void setDataTypes(final List<ObservationType> dataTypes) {
         refuseFurtherComments();
         this.dataTypes = new ArrayList<>();
         this.dataTypes.addAll(dataTypes);
