@@ -194,7 +194,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
         final int degree = 12;
         final int order  = 12;
-        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, FastMath.cos(point.getLatitude().negate().add(0.5 * FastMath.PI)));
+        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, FastMath.cos(point.getLatitude().negate().add(zero.getPi().multiply(0.5))));
 
         // Compute coefficients bh, bw, ch and cw with spherical harmonics
         T a0Bh = zero;
@@ -370,9 +370,9 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
      */
     private <T extends CalculusFieldElement<T>> T computeSeasonalFit(final int doy, final T A0, final T A1,
                                                                  final T A2, final T B1, final T B2) {
-        final double coef = (doy / 365.25) * 2 * FastMath.PI;
-        final SinCos sc1  = FastMath.sinCos(coef);
-        final SinCos sc2  = FastMath.sinCos(2.0 * coef);
+        final T coef = A0.getPi().multiply(2.0).multiply(doy / 365.25);
+        final FieldSinCos<T> sc1  = FastMath.sinCos(coef);
+        final FieldSinCos<T> sc2  = FastMath.sinCos(coef.multiply(2.0));
 
         return A0.add(
                A1.multiply(sc1.cos())).add(B1.multiply(sc1.sin())).add(

@@ -19,8 +19,8 @@ package org.orekit.models.earth.ionosphere;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -64,9 +64,6 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
 
     /** Multiplication factor for path delay computation. */
     private static final double FACTOR = 40.3e16;
-
-    /** pi / 2. */
-    private static final double SEMI_PI = 0.5 * FastMath.PI;
 
     /** SSR Ionosphere VTEC Spherical Harmonics Message.. */
     private final transient SsrIm201 vtecMessage;
@@ -276,7 +273,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
     private static double calculatePsi(final double hR, final double hI,
                                        final double elevation) {
         final double ratio = (EARTH_RADIUS + hR) / (EARTH_RADIUS + hI);
-        return SEMI_PI - elevation - FastMath.asin(ratio * FastMath.cos(elevation));
+        return MathUtils.SEMI_PI - elevation - FastMath.asin(ratio * FastMath.cos(elevation));
     }
 
     /**
@@ -291,7 +288,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
     private static <T extends CalculusFieldElement<T>> T calculatePsi(final T hR, final double hI,
                                                                   final T elevation) {
         final T ratio = hR.add(EARTH_RADIUS).divide(EARTH_RADIUS + hI);
-        return elevation.add(FastMath.asin(ratio.multiply(FastMath.cos(elevation)))).negate().add(SEMI_PI);
+        return hR.getPi().multiply(0.5).subtract(elevation).subtract(FastMath.asin(ratio.multiply(FastMath.cos(elevation))));
     }
 
     /**
@@ -359,7 +356,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
 
         // Return
         return verifyCondition(scA.cos().getReal(), psiPP.getReal(), phiR.getReal()) ?
-                                               lambdaR.add(FastMath.PI).subtract(arcSin) : lambdaR.add(arcSin);
+                                               lambdaR.add(arcSin.getPi()).subtract(arcSin) : lambdaR.add(arcSin);
 
     }
 
@@ -383,7 +380,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
      */
     private static <T extends CalculusFieldElement<T>> T calculateSunLongitude(final SsrIm201Header im201Header, final T lambdaPP) {
         final double t = getTime(im201Header);
-        return MathUtils.normalizeAngle(lambdaPP.add((t - 50400.0) * FastMath.PI / 43200.0), lambdaPP.getField().getZero().add(FastMath.PI));
+        return MathUtils.normalizeAngle(lambdaPP.add(lambdaPP.getPi().multiply(t - 50400.0).divide(43200.0)), lambdaPP.getPi());
     }
 
     /**
@@ -495,8 +492,8 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
         final double tanPsiCosA = FastMath.tan(psiPP) * scACos;
 
         // Verify condition
-        return (phiR >= 0 && tanPsiCosA > FastMath.tan(SEMI_PI - phiR)) ||
-                        (phiR < 0 && -tanPsiCosA > FastMath.tan(SEMI_PI + phiR));
+        return phiR >= 0 && tanPsiCosA > FastMath.tan(MathUtils.SEMI_PI - phiR) ||
+                        phiR < 0 && -tanPsiCosA > FastMath.tan(MathUtils.SEMI_PI + phiR);
 
     }
 

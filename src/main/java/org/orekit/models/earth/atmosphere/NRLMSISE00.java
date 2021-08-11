@@ -1202,8 +1202,8 @@ public class NRLMSISE00 implements Atmosphere {
         // compute geodetic position (km and °)
         final FieldGeodeticPoint<T> inBody = earth.transform(position, frame, date);
         final T alt = inBody.getAltitude().divide(1000.);
-        final T lon = inBody.getLongitude().multiply(180.0 / FastMath.PI);
-        final T lat = inBody.getLatitude().multiply(180.0 / FastMath.PI);
+        final T lon = FastMath.toDegrees(inBody.getLongitude());
+        final T lat = FastMath.toDegrees(inBody.getLatitude());
 
         // compute local solar time
         final T lst = localSolarTime(dateD, position, frame);
@@ -1248,9 +1248,9 @@ public class NRLMSISE00 implements Atmosphere {
         final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
         final T y  = position.getY().multiply(sunPos.getX()).subtract(position.getX().multiply(sunPos.getY()));
         final T x  = position.getX().multiply(sunPos.getX()).add(position.getY().multiply(sunPos.getY()));
-        final T hl = y.atan2(x).add(FastMath.PI);
+        final T hl = y.atan2(x).add(y.getPi());
 
-        return hl.multiply(12. / FastMath.PI);
+        return hl.divide(y.getPi()).multiply(12.);
 
     }
 

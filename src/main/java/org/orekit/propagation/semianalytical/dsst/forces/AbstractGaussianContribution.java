@@ -414,7 +414,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         final T[] meanElementRate = gauss.integrate(new FieldIntegrableFunction<>(state, true, 0, parameters, field),
                 low, high, field);
         // Constant multiplier for integral
-        final T coef = auxiliaryElements.getB().multiply(FastMath.PI).multiply(2.).reciprocal();
+        final T coef = auxiliaryElements.getB().multiply(low.getPi()).multiply(2.).reciprocal();
         // Corrects mean element rates
         for (int i = 0; i < 6; i++) {
             meanElementRate[i] = meanElementRate[i].multiply(coef);
@@ -1730,7 +1730,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Computes integrated mean element rates if Llow < Lhigh
             if (ll[0].getReal() < ll[1].getReal()) {
                 // Compute 1 / PI
-                final T ooPI = zero.add(FastMath.PI).reciprocal();
+                final T ooPI = zero.getPi().reciprocal();
 
                 // loop through all values of j
                 for (int j = 0; j <= jMax; j++) {
