@@ -188,7 +188,9 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         return previousValue * previousWeight + nextValue * nextWeight;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * For the DTM2000 model, we are using the adjusted flux
+     */
     public double getInstantFlux(final AbsoluteDate date) {
         // Interpolating two neighboring daily fluxes
         // get the neighboring dates
@@ -197,11 +199,18 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     }
 
     /** {@inheritDoc}
-     * FIXME not sure if the mean flux for DTM2000 should be computed differently
-     * than the average flux for NRLMSISE00
+     * For the DTM2000 model, we are using the adjusted flux
      */
     public double getMeanFlux(final AbsoluteDate date) {
-        return getAverageFlux(date);
+        if (date.compareTo(lastDailyPredictedDate) <= 0) {
+            bracketDate(date);
+            return previousParam.getCtr81Adj();
+        } else {
+            // Only monthly data is available, better interpolate between two months
+            // get the neighboring dates
+            bracketDate(date);
+            return getLinearInterpolation(date, previousParam.getCtr81Adj(), nextParam.getCtr81Adj());
+        }
     }
 
     /** {@inheritDoc} */
@@ -252,6 +261,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
 
     /**
      * Gets the daily flux on the current day.
+     * For the NRLMSISE00 model, we are using the observed flux
      *
      * @param date the current date
      * @return the daily F10.7 flux (adjusted)
@@ -260,25 +270,27 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         if (date.compareTo(lastDailyPredictedDate) <= 0) {
             // Getting the value for the previous day
             bracketDate(date);
-            return previousParam.getF107Adj();
+            return previousParam.getF107Obs();
         } else {
             // Only monthly data is available, better interpolate between two months
             // get the neighboring dates
             bracketDate(date);
-            return getLinearInterpolation(date, previousParam.getF107Adj(), nextParam.getF107Adj());
+            return getLinearInterpolation(date, previousParam.getF107Obs(), nextParam.getF107Obs());
         }
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * For the NRLMSISE00 model, we are using the observed flux
+     */
     public double getAverageFlux(final AbsoluteDate date) {
         if (date.compareTo(lastDailyPredictedDate) <= 0) {
             bracketDate(date);
-            return previousParam.getCtr81Adj();
+            return previousParam.getCtr81Obs();
         } else {
             // Only monthly data is available, better interpolate between two months
             // get the neighboring dates
             bracketDate(date);
-            return getLinearInterpolation(date, previousParam.getCtr81Adj(), nextParam.getCtr81Adj());
+            return getLinearInterpolation(date, previousParam.getCtr81Obs(), nextParam.getCtr81Obs());
         }
     }
 
