@@ -1191,6 +1191,7 @@ public class NeQuickModel implements IonosphericModel {
             final T r2 = satP.getAltitude().add(RE);
 
             // Useful parameters
+            final T pi   = r1.getPi();
             final T lat1 = recP.getLatitude();
             final T lat2 = satP.getLatitude();
             final T lon1 = recP.getLongitude();
@@ -1208,7 +1209,7 @@ public class NeQuickModel implements IonosphericModel {
             this.rp = r1.multiply(FastMath.sin(z));
 
             // Ray-perigee latitude and longitude
-            if (FastMath.abs(FastMath.abs(lat1).getReal() - 0.5 * FastMath.PI) < THRESHOLD) {
+            if (FastMath.abs(FastMath.abs(lat1).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD) {
 
                 // Ray-perigee latitude (Eq. 157)
                 if (lat1.getReal() < 0) {
@@ -1221,13 +1222,13 @@ public class NeQuickModel implements IonosphericModel {
                 if (z.getReal() < 0) {
                     this.lonP = lon2;
                 } else {
-                    this.lonP = lon2.add(FastMath.PI);
+                    this.lonP = lon2.add(pi);
                 }
 
             } else {
 
                 // Ray-perigee latitude (Eq. 158 to 163)
-                final T deltaP = z.negate().add(0.5 * FastMath.PI);
+                final T deltaP = z.negate().add(pi.multiply(0.5));
                 final FieldSinCos<T> scDeltaP = FastMath.sinCos(deltaP);
                 final T sinAz    = FastMath.sin(lon2.subtract(lon1)).multiply(scLatSat.cos()).divide(sinD);
                 final T cosAz    = scLatSat.sin().subtract(cosD.multiply(scLatRec.sin())).divide(sinD.multiply(scLatRec.cos()));
@@ -1249,7 +1250,7 @@ public class NeQuickModel implements IonosphericModel {
             // Sine and cosie of azimuth of satellite as seen from ray-perigee
             final T psi = greatCircleAngle(scLatSat, scLon);
             final FieldSinCos<T> scPsi = FastMath.sinCos(psi);
-            if (FastMath.abs(FastMath.abs(latP).getReal() - 0.5 * FastMath.PI) < THRESHOLD) {
+            if (FastMath.abs(FastMath.abs(latP).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD) {
                 // Eq. 172 and 173
                 this.sinAzP = field.getZero();
                 if (latP.getReal() < 0.0) {

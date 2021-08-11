@@ -646,16 +646,19 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
+        // Field value of pi
+        final T pi = ecc.getPi();
+
         // Initial guess
         T H;
         if (ecc.getReal() < 1.6) {
-            if (-FastMath.PI < M.getReal() && M.getReal() < 0. || M.getReal() > FastMath.PI) {
+            if (-pi.getReal() < M.getReal() && M.getReal() < 0. || M.getReal() > pi.getReal()) {
                 H = M.subtract(ecc);
             } else {
                 H = M.add(ecc);
             }
         } else {
-            if (ecc.getReal() < 3.6 && FastMath.abs(M.getReal()) > FastMath.PI) {
+            if (ecc.getReal() < 3.6 && FastMath.abs(M.getReal()) > pi.getReal()) {
                 H = M.subtract(ecc.copySign(M));
             } else {
                 H = M.divide(ecc.subtract(1.));

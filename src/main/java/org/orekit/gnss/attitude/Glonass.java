@@ -162,7 +162,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
                                        multiply(0.5));
             };
             final T[] bracket = UnivariateSolverUtils.bracket(f, field.getZero().add(YAW_END_ZERO),
-                                                              field.getZero(), field.getZero().add(FastMath.PI));
+                                                              field.getZero(), field.getZero().getPi());
             final T yawEnd = new FieldBracketingNthOrderBrentSolver<>(field.getZero().add(1.0e-14),
                                                                       field.getZero().add(1.0e-8),
                                                                       field.getZero().add(1.0e-15),
@@ -178,7 +178,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
             context.setHalfSpan(context.inSunSide() ?
                                 aNoon :
-                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),
+                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(aNight.getPi())),
                                 END_MARGIN);
             if (context.inTurnTimeRange()) {
 

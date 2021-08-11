@@ -213,8 +213,9 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      */
     public FieldTLE(final Field<T> field, final String line1, final String line2, final TimeScale utc) {
 
-        // zero for fields
+        // zero and pi for fields
         final T zero = field.getZero();
+        final T pi   = zero.getPi();
 
         // identification
         satelliteNumber = ParseUtils.parseSatelliteNumber(line1, 2, 5);
@@ -242,12 +243,11 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
-        meanMotion                 = zero.add(ParseUtils.parseDouble(line2, 52, 11) * FastMath.PI / 43200.0);
-        meanMotionFirstDerivative  = zero.add(ParseUtils.parseDouble(line1, 33, 10) * FastMath.PI / 1.86624e9);
-        meanMotionSecondDerivative = zero.add(Double.parseDouble((line1.substring(44, 45) + '.' +
-                                                         line1.substring(45, 50) + 'e' +
-                                                         line1.substring(50, 52)).replace(' ', '0')) *
-                                     FastMath.PI / 5.3747712e13);
+        meanMotion                 = pi.multiply(ParseUtils.parseDouble(line2, 52, 11)).divide(43200.0);
+        meanMotionFirstDerivative  = pi.multiply(ParseUtils.parseDouble(line1, 33, 10)).divide(1.86624e9);
+        meanMotionSecondDerivative = pi.multiply(Double.parseDouble((line1.substring(44, 45) + '.' +
+                                                                     line1.substring(45, 50) + 'e' +
+                                                                     line1.substring(50, 52)).replace(' ', '0'))).divide(5.3747712e13);
 
         eccentricity = zero.add(Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0')));
         inclination  = zero.add(FastMath.toRadians(ParseUtils.parseDouble(line2, 8, 8)));
@@ -377,6 +377,9 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
                final int revolutionNumberAtEpoch, final double bStar,
                final TimeScale utc) {
 
+        // pi for fields
+        final T pi = e.getPi();
+
         // identification
         this.satelliteNumber = satelliteNumber;
         this.classification  = classification;
@@ -397,16 +400,16 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         this.inclination = i;
 
         // Normalizing RAAN in [0,2pi] interval
-        this.raan = MathUtils.normalizeAngle(raan, raan.getField().getZero().add(FastMath.PI));
+        this.raan = MathUtils.normalizeAngle(raan, pi);
 
         // Checking eccentricity range
         this.eccentricity = e;
 
         // Normalizing PA in [0,2pi] interval
-        this.pa = MathUtils.normalizeAngle(pa, pa.getField().getZero().add(FastMath.PI));
+        this.pa = MathUtils.normalizeAngle(pa, pi);
 
         // Normalizing mean anomaly in [0,2pi] interval
-        this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, meanAnomaly.getField().getZero().add(FastMath.PI));
+        this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, pi);
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
         this.bStarParameterDriver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
@@ -476,14 +479,14 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         buffer.append(ParseUtils.addPadding("fraction", fraction,  '0', 8, true, satelliteNumber));
 
         buffer.append(' ');
-        final double n1 = meanMotionFirstDerivative.getReal() * 1.86624e9 / FastMath.PI;
+        final double n1 = meanMotionFirstDerivative.divide(pa.getPi()).multiply(1.86624e9).getReal();
         final String sn1 = ParseUtils.addPadding("meanMotionFirstDerivative",
                                                  new DecimalFormat(".00000000", SYMBOLS).format(n1),
                                                  ' ', 10, true, satelliteNumber);
         buffer.append(sn1);
 
         buffer.append(' ');
-        final double n2 = meanMotionSecondDerivative.getReal() * 5.3747712e13 / FastMath.PI;
+        final double n2 = meanMotionSecondDerivative.divide(pa.getPi()).multiply(5.3747712e13).getReal();
         buffer.append(formatExponentMarkerFree("meanMotionSecondDerivative", n2, 5, ' ', 8, true));
 
         buffer.append(' ');
@@ -559,7 +562,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         buffer.append(ParseUtils.addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly).getReal()), ' ', 8, true, satelliteNumber));
 
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding(MEAN_MOTION, f211.format(meanMotion.getReal() * 43200.0 / FastMath.PI), ' ', 11, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding(MEAN_MOTION, f211.format(meanMotion.divide(pa.getPi()).multiply(43200.0).getReal()), ' ', 11, true, satelliteNumber));
         buffer.append(ParseUtils.addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch,
                                             ' ', 5, true, satelliteNumber));
 
@@ -789,7 +792,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         final T thrA = sma.add(1).multiply(epsilon);
         final T thrE = FastMath.hypot(ex, ey).add(1).multiply(epsilon);
         final T thrH = FastMath.hypot(hx, hy).add(1).multiply(epsilon);
-        final double thrV = epsilon * FastMath.PI;
+        final T thrV = sma.getPi().multiply(epsilon);
 
         int k = 0;
         while (k++ < maxIterations) {
@@ -813,7 +816,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
                 FastMath.abs(deltaEy.getReal())  < thrE.getReal() &&
                 FastMath.abs(deltaHx.getReal())  < thrH.getReal() &&
                 FastMath.abs(deltaHy.getReal())  < thrH.getReal() &&
-                FastMath.abs(deltaLv.getReal())  < thrV) {
+                FastMath.abs(deltaLv.getReal())  < thrV.getReal()) {
 
                 return current;
             }
@@ -879,7 +882,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         // Updates revolutionNumberAtEpoch
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         final T dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly.getReal(), FastMath.PI) + dt.getReal() * meanMotion.getReal()) / (2 * FastMath.PI)));
+        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor(MathUtils.normalizeAngle(meanAnomaly, e.getPi()).add(dt.multiply(meanMotion)).divide(e.getPi().multiply(2.0))).getReal());
         // Gets B*
         final double bStar = templateTLE.getBStar();
         // Gets Mean Motion derivatives

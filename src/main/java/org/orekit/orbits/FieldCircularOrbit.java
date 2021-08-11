@@ -508,7 +508,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     public T getHx() {
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return zero.add(Double.NaN);
         }
         return raan.cos().multiply(i.divide(2).tan());
@@ -522,7 +522,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         }
 
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return zero.add(Double.NaN);
         }
 
@@ -536,7 +536,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     public T getHy() {
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return zero.add(Double.NaN);
         }
         return raan.sin().multiply(i.divide(2).tan());
@@ -550,7 +550,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         }
 
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return zero.add(Double.NaN);
         }
 

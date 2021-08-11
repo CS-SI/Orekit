@@ -101,7 +101,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
                                                                   multiply(FastMath.copySign(1.0, -context.getSVBcos() * context.getDeltaDS().getPartialDerivative(1)));
                 final DerivativeStructure              c        = sd.multiply(cosBeta);
                 final DerivativeStructure              shy      = sinBeta.negate().subtract(sinY).
-                                                                  add(sinBeta.subtract(sinY).multiply(c.abs().multiply(FastMath.PI / FastMath.sin(BETA_X)).cos())).
+                                                                  add(sinBeta.subtract(sinY).multiply(c.abs().multiply(c.getPi().divide(FastMath.sin(BETA_X))).cos())).
                                                                   multiply(0.5);
                 final DerivativeStructure              phi      = FastMath.atan2(shy, c);
 
@@ -144,7 +144,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
                                                                          multiply(FastMath.copySign(1.0, -context.getSVBcos().getReal() * context.getDeltaDS().getPartialDerivative(1).getReal()));
                 final FieldDerivativeStructure<T>              c       = sd.multiply(cosBeta);
                 final FieldDerivativeStructure<T>              shy     = sinBeta.negate().subtract(sinY).
-                                                                         add(sinBeta.subtract(sinY).multiply(c.abs().multiply(FastMath.PI / FastMath.sin(BETA_X)).cos())).
+                                                                         add(sinBeta.subtract(sinY).multiply(c.abs().multiply(c.getPi().divide(FastMath.sin(BETA_X))).cos())).
                                                                          multiply(0.5);
                 final FieldDerivativeStructure<T>              phi     = FastMath.atan2(shy, c);
 
