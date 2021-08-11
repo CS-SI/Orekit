@@ -152,8 +152,8 @@ public class EventState<T extends EventDetector> {
      */
     private double g(final SpacecraftState s) {
         if (!s.getDate().equals(lastT)) {
-            lastT = s.getDate();
             lastG = detector.g(s);
+            lastT = s.getDate();
         }
         return lastG;
     }
