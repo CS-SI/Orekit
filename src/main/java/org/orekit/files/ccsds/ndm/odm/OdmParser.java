@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Common parser for Orbit Parameter/Ephemeris/Mean/Comprehensive Message files.
+/** Common parser for Orbit Parameter/Ephemeris/Mean/Comprehensive Messages.
  * <p>
  * Note than starting with Orekit 11.0, CCSDS message parsers are
  * mutable objects that gather the data being parsed, until the

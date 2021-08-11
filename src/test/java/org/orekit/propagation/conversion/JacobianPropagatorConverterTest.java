@@ -157,7 +157,7 @@ public class JacobianPropagatorConverterTest {
         // the 10 minutes offset implies even the first point is influenced by model parameters
         final List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
         Propagator propagator = builder.buildPropagator(normalized);
-        propagator.setMasterMode(60.0, currentState -> sample.add(currentState));
+        propagator.setStepHandler(60.0, currentState -> sample.add(currentState));
         propagator.propagate(orbit.getDate().shiftedBy(600.0), orbit.getDate().shiftedBy(4200.0));
 
         JacobianPropagatorConverter  fitter = new JacobianPropagatorConverter(builder, 1.0e-3, 5000);

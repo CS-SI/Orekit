@@ -62,26 +62,6 @@ public class GTODProvider implements EOPBasedTransformProvider {
     private final transient TimeScalarFunction gastFunction;
 
     /** Simple constructor.
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context} if
-     * {@code eopHistory == null}.
-     *
-     * @param conventions IERS conventions to use
-     * @param eopHistory EOP history (may be null)
-     * @deprecated use {@link #GTODProvider(IERSConventions, EOPHistory, TimeScales)}
-     * instead.
-     */
-    @Deprecated
-    @DefaultDataContext
-    protected GTODProvider(final IERSConventions conventions,
-                           final EOPHistory eopHistory) {
-        this(conventions, eopHistory,
-                eopHistory == null ?
-                        DataContext.getDefault().getTimeScales() :
-                        eopHistory.getTimeScales());
-    }
-
-    /** Simple constructor.
      * @param conventions IERS conventions to use
      * @param eopHistory EOP history (may be null)
      * @param timeScales  set of time scales to use.

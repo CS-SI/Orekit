@@ -126,7 +126,7 @@ class ManeuverHistoryWriter extends AbstractWriter {
                 line.append(types.get(i).outputField(timeConverter, maneuver));
             }
             if (generator.getFormat() == FileFormat.XML) {
-                generator.writeEntry(OcmFile.MAN_LINE, line.toString(), null, true);
+                generator.writeEntry(Ocm.MAN_LINE, line.toString(), null, true);
             } else {
                 generator.writeRawData(line);
                 generator.newLine();

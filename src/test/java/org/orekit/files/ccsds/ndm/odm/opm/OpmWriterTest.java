@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 
-public class OpmWriterTest extends AbstractWriterTest<Header, Segment<CommonMetadata, OpmData>, OpmFile> {
+public class OpmWriterTest extends AbstractWriterTest<Header, Segment<CommonMetadata, OpmData>, Opm> {
 
     protected OpmParser getParser() {
         return new ParserBuilder().

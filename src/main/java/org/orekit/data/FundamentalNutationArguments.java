@@ -407,7 +407,7 @@ public class FundamentalNutationArguments implements Serializable {
 
         final T tc       = conventions.evaluateTC(date, timeScales);
         final T gamma    = gmstFunction == null ?
-                           tc.getField().getZero().add(Double.NaN) : gmstFunction.value(date).add(FastMath.PI);
+                           tc.getField().getZero().add(Double.NaN) : gmstFunction.value(date).add(tc.getPi());
         final T gammaDot = gmstRateFunction == null ?
                            tc.getField().getZero().add(Double.NaN) : gmstRateFunction.value(date);
 

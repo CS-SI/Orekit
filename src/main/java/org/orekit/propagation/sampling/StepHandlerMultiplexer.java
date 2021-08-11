@@ -17,6 +17,7 @@
 package org.orekit.propagation.sampling;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -81,6 +82,19 @@ public class StepHandlerMultiplexer implements OrekitStepHandler {
             // propagation is ongoing, we need to call init now for this handler
             normalized.init(last, target);
         }
+    }
+
+    /** Get an unmodifiable view of all handlers.
+     * <p>
+     * Note that if {@link OrekitFixedStepHandler fixed step handlers} have
+     * been {@link #add(double, OrekitFixedStepHandler)}, then they will
+     * show up wrapped within {@link OrekitStepNormalizer step normalizers}.
+     * </p>
+     * @return an unmodifiable view of all handlers
+     * @since 11.0
+     */
+    public List<OrekitStepHandler> getHandlers() {
+        return Collections.unmodifiableList(handlers);
     }
 
     /** Remove a handler.

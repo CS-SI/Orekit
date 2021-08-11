@@ -594,7 +594,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         calc.addForceModel(SRP);
 
         // Step Handler
-        calc.setMasterMode(FastMath.floor(period), new SolarStepHandler());
+        calc.setStepHandler(FastMath.floor(period), new SolarStepHandler());
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
@@ -829,7 +829,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         propagator.setInitialState(initialState);
         propagator.addForceModel(srp);
         MoonEclipseStepHandler handler = new MoonEclipseStepHandler(moon, sun, srp);
-        propagator.setMasterMode(step, handler);
+        propagator.setStepHandler(step, handler);
         propagator.propagate(orbit.getDate().shiftedBy(duration));
         Assert.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
         Assert.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);
@@ -998,7 +998,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         propagator.setInitialState(initialState);
         propagator.addForceModel(srp);
         FieldMoonEclipseStepHandler<T> handler = new FieldMoonEclipseStepHandler<>(moon, sun, srp);
-        propagator.setMasterMode(step, handler);
+        propagator.setStepHandler(step, handler);
         propagator.propagate(orbit.getDate().shiftedBy(duration));
         Assert.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
         Assert.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);

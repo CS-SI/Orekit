@@ -54,7 +54,7 @@ import org.orekit.utils.IERSConventions;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TdmParser extends AbstractConstituentParser<TdmFile, TdmParser> {
+public class TdmParser extends AbstractConstituentParser<Tdm, TdmParser> {
 
     /** Converter for {@link RangeUnits#RU Range Units} (may be null). */
     private final RangeUnitsConverter converter;
@@ -92,7 +92,7 @@ public class TdmParser extends AbstractConstituentParser<TdmFile, TdmParser> {
      */
     public TdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final ParsedUnitsBehavior parsedUnitsBehavior, final RangeUnitsConverter converter) {
-        super(TdmFile.ROOT, TdmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
+        super(Tdm.ROOT, Tdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
         this.converter = converter;
     }
 
@@ -111,7 +111,7 @@ public class TdmParser extends AbstractConstituentParser<TdmFile, TdmParser> {
         context            = null;
         observationsBlock  = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(TdmFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Tdm.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
@@ -121,8 +121,8 @@ public class TdmParser extends AbstractConstituentParser<TdmFile, TdmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public TdmFile build() {
-        return new TdmFile(header, segments, getConventions(), getDataContext());
+    public Tdm build() {
+        return new Tdm(header, segments, getConventions(), getDataContext());
     }
 
     /** {@inheritDoc} */

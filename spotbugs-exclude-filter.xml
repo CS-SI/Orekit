@@ -139,8 +139,8 @@
     <Class name="~.*\.TurnAroundRangeTroposphericDelayModifier$"/>
     <Method name="modify" />
     <Or>
-      <Local name="masterDjac" />
-      <Local name="slaveDjac" />
+      <Local name="primaryDjac" />
+      <Local name="secondaryDjac" />
     </Or>
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>

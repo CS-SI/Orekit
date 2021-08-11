@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.orekit.files.ccsds.ndm.odm.ocm.OcmFile;
+import org.orekit.files.ccsds.ndm.odm.ocm.Ocm;
 
-/** Type of duty cycle used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
+/** Type of duty cycle used in CCSDS {@link Ocm Orbit Comprehensive Messages}.
  * @author Luc Maisonobe
  * @since 11.0
  */

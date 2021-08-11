@@ -135,7 +135,7 @@ public class FieldEventDetectorTest {
         T stepSize = zero.add(60.0);
         OutOfOrderChecker<T> checker = new OutOfOrderChecker<>(stepSize);
         propagator.addEventDetector(new FieldDateDetector<>(date.shiftedBy(stepSize.multiply(5.25))).withHandler(checker));
-        propagator.setMasterMode(stepSize, checker);
+        propagator.setStepHandler(stepSize, checker);
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
         Assert.assertTrue(checker.outOfOrderCallDetected());
 
@@ -230,7 +230,7 @@ public class FieldEventDetectorTest {
         GCallsCounter<T> counter = new GCallsCounter<>(zero.add(100000.0), zero.add(1.0e-6), 20,
                                                        new FieldStopOnEvent<GCallsCounter<T>, T>());
         propagator.addEventDetector(counter);
-        propagator.setMasterMode(step, currentState -> {});
+        propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(step.multiply(n)));
         Assert.assertEquals(n + 1, counter.getCount());
     }
@@ -481,7 +481,7 @@ public class FieldEventDetectorTest {
         // to check they are called in consistent order
         final ScheduleChecker<T> checker = new ScheduleChecker<>(initialDate.shiftedBy(start),
                                                                  initialDate.shiftedBy(stop));
-        propagator.setMasterMode((interpolator) -> {
+        propagator.setStepHandler((interpolator) -> {
             checker.callDate(interpolator.getCurrentState().getDate());
         });
 

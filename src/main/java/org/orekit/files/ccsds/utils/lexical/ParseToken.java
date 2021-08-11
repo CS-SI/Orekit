@@ -66,6 +66,14 @@ public class ParseToken {
     /** Pattern for splitting comma-separated lists. */
     private static final Pattern SPLIT_AT_COMMAS = Pattern.compile("\\p{Space}*,\\p{Space}*");
 
+    /** Pattern for true boolean value. */
+    private static final Pattern BOOLEAN_TRUE = Pattern.compile("(?:yes)|(?:true)",
+                                                                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
+    /** Pattern for false boolean value. */
+    private static final Pattern BOOLEAN_FALSE = Pattern.compile("(?:no)|(?:false)",
+                                                                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
     /** Type of the token. */
     private TokenType type;
 
@@ -210,6 +218,19 @@ public class ParseToken {
         throw generateException(null);
     }
 
+    /** Get the content of the entry as a boolean.
+     * @return content as a boolean
+     */
+    public boolean getContentAsBoolean() {
+        if (BOOLEAN_TRUE.matcher(content).matches()) {
+            return true;
+        } else if (BOOLEAN_FALSE.matcher(content).matches()) {
+            return false;
+        } else {
+            throw generateException(null);
+        }
+    }
+
     /** Get the content of the entry as an integer.
      * @return content as an integer
      */
@@ -345,6 +366,17 @@ public class ParseToken {
     public <T extends Enum<T>> boolean processAsEnumsList(final Class<T> cls, final EnumListConsumer<T> consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(getContentAsEnumList(cls));
+        }
+        return true;
+    }
+
+    /** Process the content as a boolean.
+     * @param consumer consumer of the boolean
+     * @return always returns {@code true}
+     */
+    public boolean processAsBoolean(final BooleanConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsBoolean());
         }
         return true;
     }
@@ -673,6 +705,14 @@ public class ParseToken {
          * @param value value to consume
          */
         void accept(List<T> value);
+    }
+
+    /** Interface representing instance methods that consume boolean values. */
+    public interface BooleanConsumer {
+        /** Consume a boolean.
+         * @param value value to consume
+         */
+        void accept(boolean value);
     }
 
     /** Interface representing instance methods that consume integer values. */

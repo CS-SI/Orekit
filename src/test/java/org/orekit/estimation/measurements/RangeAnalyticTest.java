@@ -227,7 +227,7 @@ public class RangeAnalyticTest {
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode(interpolator -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -347,7 +347,7 @@ public class RangeAnalyticTest {
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode(interpolator -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -520,7 +520,7 @@ public class RangeAnalyticTest {
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode(interpolator -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 

@@ -36,7 +36,7 @@ public abstract class AbstractListCrawlerTest<T> {
     @Before
     public void setUp() {
         // Clear any filters that another test may have left
-        DataContext.getDefault().getDataProvidersManager().clearFilters();
+        DataContext.getDefault().getDataProvidersManager().resetFiltersToDefault();
     }
 
     @Test

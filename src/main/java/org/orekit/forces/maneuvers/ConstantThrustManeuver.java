@@ -40,18 +40,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class ConstantThrustManeuver extends Maneuver {
 
-    /** Parameter name for thrust.
-     * @deprecated as of 10.2,
-     *             replace by {@link BasicConstantThrustPropulsionModel#THRUST}*/
-    @Deprecated
-    public static final String THRUST = "thrust";
-
-    /** Parameter name for flow rate.
-     * @deprecated as of 10.2,
-     *             replace by {@link BasicConstantThrustPropulsionModel#FLOW_RATE}*/
-    @Deprecated
-    public static final String FLOW_RATE = "flow rate";
-
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
      * It uses the propulsion model {@link BasicConstantThrustPropulsionModel} and

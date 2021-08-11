@@ -153,32 +153,32 @@ public class MarshallSolarActivityFutureEstimationTest {
 
         // propagate with state rest to take slightly different path
         NumericalPropagator propagator = getNumericalPropagatorWithDTM(sun, earth, ic);
-        propagator.setMasterMode(stepSaver);
+        propagator.setStepHandler(stepSaver);
         propagator.propagate(resetDate);
         propagator.resetInitialState(lastState[0]);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
         SpacecraftState actual = propagator.propagate(end);
 
         // propagate straight through
         propagator = getNumericalPropagatorWithDTM(sun, earth, ic);
         propagator.resetInitialState(ic);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
         SpacecraftState expected = propagator.propagate(end);
 
         assertThat(actual.getPVCoordinates(), pvCloseTo(expected.getPVCoordinates(), 1.0));
 
         // propagate with state rest to take slightly different path
         propagator = getNumericalPropagatorWithMSIS(sun, earth, ic);
-        propagator.setMasterMode(stepSaver);
+        propagator.setStepHandler(stepSaver);
         propagator.propagate(resetDate);
         propagator.resetInitialState(lastState[0]);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
         actual = propagator.propagate(end);
 
         // propagate straight through
         propagator = getNumericalPropagatorWithMSIS(sun, earth, ic);
         propagator.resetInitialState(ic);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
         expected = propagator.propagate(end);
 
         assertThat(actual.getPVCoordinates(), pvCloseTo(expected.getPVCoordinates(), 1.0));

@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-/** Operational status used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
+/** Operational status used in CCSDS {@link Ocm Orbit Comprehensive Messages}.
  * @author Luc Maisonobe
  * @since 11.0
  */

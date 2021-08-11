@@ -869,7 +869,7 @@ public class FieldSpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(zero.add(0.125), s -> {
+        propagator.setStepHandler(zero.add(0.125), s -> {
             if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {
@@ -920,7 +920,7 @@ public class FieldSpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(zero.add(0.125), s -> {
+        propagator.setStepHandler(zero.add(0.125), s -> {
             if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {

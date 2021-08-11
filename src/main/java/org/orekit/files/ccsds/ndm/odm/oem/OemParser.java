@@ -63,7 +63,7 @@ import org.orekit.utils.units.Unit;
  * @author sports
  * @since 6.1
  */
-public class OemParser extends OdmParser<OemFile, OemParser> implements EphemerisFileParser<OemFile> {
+public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFileParser<Oem> {
 
     /** Comment marker. */
     private static final String COMMENT = "COMMENT";
@@ -124,14 +124,14 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
                      final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(OemFile.ROOT, OemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+        super(Oem.ROOT, Oem.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
               missionReferenceDate, mu, parsedUnitsBehavior);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
     /** {@inheritDoc} */
     @Override
-    public OemFile parse(final DataSource source) {
+    public Oem parse(final DataSource source) {
         return parseMessage(source);
     }
 
@@ -153,7 +153,7 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
         currentCovariance = null;
         currentRow        = -1;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(OemFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Oem.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
@@ -247,11 +247,11 @@ public class OemParser extends OdmParser<OemFile, OemParser> implements Ephemeri
 
     /** {@inheritDoc} */
     @Override
-    public OemFile build() {
+    public Oem build() {
         // OEM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
-        final OemFile file = new OemFile(header, segments, getConventions(), getDataContext(), getSelectedMu());
+        final Oem file = new Oem(header, segments, getConventions(), getDataContext(), getSelectedMu());
         file.checkTimeSystems();
         return file;
     }

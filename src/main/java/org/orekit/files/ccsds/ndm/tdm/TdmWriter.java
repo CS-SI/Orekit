@@ -34,13 +34,13 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>, TdmFile> {
+public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
 
     /** Version number implemented. **/
-    public static final double CCSDS_TDM_VERS = 1.0;
+    public static final double CCSDS_TDM_VERS = 2.0;
 
     /** Padding width for aligning the '=' sign. */
-    public static final int KVN_PADDING_WIDTH = 25;
+    public static final int KVN_PADDING_WIDTH = 29;
 
     /** Converter for {@link RangeUnits#RU Range Units}. */
     private final RangeUnitsConverter converter;
@@ -48,8 +48,8 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildTdmWriter(RangeUnitsConverter)
-     * writerBuilder.buildTdmWriter(converter)}.
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildTdmWriter()
+     * writerBuilder.buildTdmWriter()}.
      * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
@@ -58,7 +58,7 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
      */
     public TdmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final RangeUnitsConverter converter) {
-        super(TdmFile.ROOT, TdmFile.FORMAT_VERSION_KEY, CCSDS_TDM_VERS,
+        super(Tdm.ROOT, Tdm.FORMAT_VERSION_KEY, CCSDS_TDM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,

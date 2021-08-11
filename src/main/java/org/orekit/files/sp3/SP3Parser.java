@@ -18,9 +18,7 @@ package org.orekit.files.sp3;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.Reader;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Scanner;
@@ -36,8 +34,8 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
-import org.orekit.files.sp3.SP3File.SP3Coordinate;
-import org.orekit.files.sp3.SP3File.SP3FileType;
+import org.orekit.files.sp3.SP3.SP3Coordinate;
+import org.orekit.files.sp3.SP3.SP3FileType;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -59,7 +57,7 @@ import org.orekit.utils.IERSConventions;
  * @author Thomas Neidhart
  * @author Luc Maisonobe
  */
-public class SP3Parser implements EphemerisFileParser<SP3File> {
+public class SP3Parser implements EphemerisFileParser<SP3> {
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -150,13 +148,12 @@ public class SP3Parser implements EphemerisFileParser<SP3File> {
     }
 
     @Override
-    public SP3File parse(final DataSource source) {
+    public SP3 parse(final DataSource source) {
 
-        try (InputStream       is     = source.getStreamOpener().openOnce();
-             InputStreamReader isr    = (is  == null) ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
-             BufferedReader    reader = (isr == null) ? null : new BufferedReader(isr)) {
+        try (Reader reader = source.getOpener().openReaderOnce();
+             BufferedReader br = (reader == null) ? null : new BufferedReader(reader)) {
 
-            if (reader == null) {
+            if (br == null) {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
             }
 
@@ -165,7 +162,7 @@ public class SP3Parser implements EphemerisFileParser<SP3File> {
 
             int lineNumber = 0;
             Stream<LineParser> candidateParsers = Stream.of(LineParser.HEADER_VERSION);
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
                 final String l = line;
                 final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
@@ -235,7 +232,7 @@ public class SP3Parser implements EphemerisFileParser<SP3File> {
         private final TimeScales timeScales;
 
         /** The corresponding SP3File object. */
-        private SP3File file;
+        private SP3 file;
 
         /** The latest epoch as read from the SP3 file. */
         private AbsoluteDate latestEpoch;
@@ -273,7 +270,7 @@ public class SP3Parser implements EphemerisFileParser<SP3File> {
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
             this.timeScales = SP3Parser.this.timeScales;
-            file               = new SP3File(mu, interpolationSamples, frameBuilder);
+            file               = new SP3(mu, interpolationSamples, frameBuilder);
             latestEpoch        = null;
             latestPosition     = null;
             latestClock        = 0.0;

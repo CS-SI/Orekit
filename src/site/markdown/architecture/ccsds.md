@@ -33,10 +33,10 @@ Orekit-specific `Section` interface that is used for checks at the end of parsin
 `Metadata` and `Data` are gathered together in a `Segment` structure.
 
 The `org.orekit.files.ccsds.ndm` sub-package defines a single top-level abstract
-class `NdmFile`, which stands for Navigation Data Message. All CCDSD messages extend
-this top-level abstract class. `NdmFile` is a container for one `Header` and one or
-more `Segment` objects, depending on the file type (for example `OpmFile` only contains
-one segment whereas `OemFile` may contain several segments).
+class `Ndm`, which stands for Navigation Data Message. All CCDSD messages extend
+this top-level abstract class. `Ndm` is a container for one `Header` and one or
+more `Segment` objects, depending on the message type (for example `Opm` only contains
+one segment whereas `Oem` may contain several segments).
 
 There are as many sub-packages as there are CCSDS message types, with
 intermediate sub-packages for each officially published recommendation:
@@ -44,18 +44,18 @@ intermediate sub-packages for each officially published recommendation:
 `org.orekit.files.ccsds.ndm.odm.opm`, `org.orekit.files.ccsds.ndm.odm.oem`,
 `org.orekit.files.ccsds.ndm.odm.omm`, `org.orekit.files.ccsds.ndm.odm.ocm`,
 and `org.orekit.files.ccsds.ndm.tdm`. Each contain the logical structures
-that correspond to the message type, among which at least one `##mFile`
-class that represents a complete message/file. As some data are common to
+that correspond to the message type, among which at least one `##m`
+class that represents a complete message. As some data are common to
 several types, there may be some intermediate classes in order to avoid
 code duplication. These classes are implementation details and not displayed
 in the previous class diagram. If the message type has logical blocks (like state
 vector block, Keplerian elements block, maneuvers block in OPM), then
 there is one dedicated class for each logical block.
 
-The top-level file also contains some Orekit-specific data that are mandatory
+The top-level message also contains some Orekit-specific data that are mandatory
 for building some objects but is not present in the CCSDS messages. This
 includes for example IERS conventions, data context, and gravitational
-coefficient for ODM files as it is sometimes optional in these messages.
+coefficient for ODM as it is sometimes optional in these messages.
 
 This organization has been introduced with Orekit 11.0. Before that, the CCSDS
 hierarchy with header, segment, metadata and data was not reproduced in the API
@@ -63,35 +63,35 @@ but a flat structure was used.
 
 This organization implies that users wishing to access raw internal entries must
 walk through the hierarchy. For message types that allow only one segment, there
-are shortcuts to use `file.getMetadata()` and `file.getData()` instead of
-`file.getSegments().get(0).getMetadata()` and `file.getSegments().get(0).getData()`
+are shortcuts to use `message.getMetadata()` and `message.getData()` instead of
+`message.getSegments().get(0).getMetadata()` and `message.getSegments().get(0).getData()`
 respectively. Where it is relevant, other shortcuts are provided to access
 Orekit-compatible objects as shown in the following code snippet:
 
-    OpmFile         opm       = ...;
-    AbsoluteDate    fileDate  = opm.getHeader().getCreationDate();
-    Vector3D        dV        = opm.getManeuver(0).getdV();
-    SpacecraftState state     = opm.generateSpacecraftState();
+    Opm             opm          = ...;
+    AbsoluteDate    creationDate = opm.getHeader().getCreationDate();
+    Vector3D        dV           = opm.getManeuver(0).getdV();
+    SpacecraftState state        = opm.generateSpacecraftState();
     // getting orbit date the hard way:
-    AbsoluteDate    orbitDate = opm.getSegments().get(0).get(Data).getStateVectorBlock().getEpoch();
+    AbsoluteDate    orbitDate    = opm.getSegments().get(0).get(Data).getStateVectorBlock().getEpoch();
 
-Message files can be obtained by parsing an existing file or by using
+Messages can be obtained by parsing an existing message or by using
 the setters to create it from scratch, bottom up starting from the
 raw elements and building up through logical blocks, data, metadata,
-segments, header and finally file.
+segments, header and finally message.
 
 ### Parsing
 
-Parsing a text message to build some kind of `NdmFile` object is performed
+Parsing a text message to build some kind of `Ndm` object is performed
 by setting up a parser. Each message type has its own parser, but a single
 `ParserBuilder` can build all of them. Once created, the parser `parseMessage`
-method is called with a data source. It will return the parsed file as a
+method is called with a data source. It will return the parsed message as a
 hierarchical container as depicted in the previous section.
 
 The Orekit-specific data that are mandatory for building some objects but are
 not present in the CCSDS messages are set up when building the `ParserBuilder`.
 This includes for example IERS conventions, data context, and gravitational
-coefficient for ODM files as it is sometimes optional in these messages.
+coefficient for ODM as it is sometimes optional in these messages.
 
 The `ParsedUnitsBehavior` setting in `ParseBuilder` is used to select how
 units found in the messages at parse time should be handled with respect
@@ -112,16 +112,16 @@ places, they state that units are "for information purpose only" or
 even that "listing of units via the [insert keyword here] keyword does
 not override the mandatory units specified in the selected [insert type here]".
 This would mean that `IGNORE_PARSE` should be used for compliance with the
-standard and files specifying wrong units should be accepted silently. Other
+standard and messages specifying wrong units should be accepted silently. Other
 places set that the tables specify "the units to be used" and that "If units
 are displayed, they must exactly match the units  (including lower/upper case)
 as specified in tables". This would mean that `STRICT_COMPLIANCE` should be used
-for compliance with the standard and files specifying wrong units should be
+for compliance with the standard and messages specifying wrong units should be
 rejected with an error message. Best practices in general file parsing are
 to be lenient while parsing and strict when writing. As it seems logical to
-consider that when a file explicitly states units, these are the units that
-were really used for producing the file, we consider that `CONVERT_COMPATIBLE` is
-a good trade-off for leniency. The default setting is therefore to set the
+consider that when a message explicitly states units, these are the units that
+were really used for producing the message, we consider that `CONVERT_COMPATIBLE`
+is a good trade-off for leniency. The default setting is therefore to set the
 `ParseBuilder` behavior to `CONVERT_COMPATIBLE`, but users can configure
 their builder differently to suit their needs. The units parser used in
 Orekit is also feature-rich and known how to handle units written with
@@ -139,15 +139,15 @@ afterwards. In single-threaded cases, parsers used from within a loop can be reu
 safely after the `parseMethod` has returned, but building a new parser from the
 builder is simple.
 
-Parsers automatically recognize if the file is in Key-Value Notation (KVN) or in
+Parsers automatically recognize if the message is in Key-Value Notation (KVN) or in
 eXtended Markup Language (XML) format and adapt accordingly. This is
 transparent for users and works with all CCSDS message types.
 
 The data to be parsed is provided using a `DataSource` object, which combines
 a name and a stream opener and can be built directly from these elements, from
-a file name, or from a `File` instance. The `DataSource` object delays the real
-opening of the file until the `parseMessage` method is called and takes care to
-close it properly after parsing, even if parsing is interrupted due to some parse
+a file name, or from a standard Java `File` instance. The `DataSource` object delays
+the real opening of the file until the `parseMessage` method is called and takes care
+to close it properly after parsing, even if parsing is interrupted due to some parse
 error.
 
 The `OemParser` and `OcmParser` have an additional feature: they also implement
@@ -156,19 +156,19 @@ general way when ephemerides can be read from various formats (CCSDS, CPF, SP3).
 The `EphemerisFileParser` interface defines a `parse(dataSource)` method that
 is similar to the CCSDS-specific `parseMessage(dataSource)` method.
 
-As the parsers are parameterized with the type of the parsed file, the `parseMessage`
+As the parsers are parameterized with the type of the parsed message, the `parseMessage`
 and `parse` methods in all parsers already have the specific type. There is no need
 to cast the returned value as in pre-11.0 versions of Orekit.
 
-The following code snippet shows how to parse an OEM file, in this case using a
-file name to create the data source, and using the default values for the parser builder:
+The following code snippet shows how to parse an OEM, in this case using a file
+name to create the data source, and using the default values for the parser builder:
 
-    OemFile oem = new ParserBuilder().buildOemParser().parseMessage(new DataSource(fileName));
+    Oem oem = new ParserBuilder().buildOemParser().parseMessage(new DataSource(fileName));
 
 ### Writing
 
 Writing a CCSDS message is done by using a specific writer class for the message
-type and using a low level generator corresponding to the desired file format,
+type and using a low level generator corresponding to the desired message format,
 `KvnGenerator` for Key-Value Notation or `XmlGenerator` for eXtended Markup Language.
 
 All CCSDS messages have a corresponding writer that implements the CCSDS-specific
@@ -199,12 +199,12 @@ returns a fixed step handler to register to the propagator. If ephemerides must 
 into different segments, in order to prevent interpolation between two time ranges
 separated by a discrete event like a maneuver, then a new step handler must be retrieved
 using the `newSegment()` method at discrete event time and a new propagator must be used.
-All segments will be gathered properly in the generated CCSDS file. Using the same
+All segments will be gathered properly in the generated CCSDS message. Using the same
 propagator and same event handler would not work as expected. The propagator would run
 just fine through the discrete event that would reset the state, but the ephemeris would
 not be aware of the change and would just continue the same segment. Upon reading the
-file produced this way, the reader would not be aware that interpolation should not be
-used around this maneuver as the event would not appear in the file.
+message produced this way, the reader would not be aware that interpolation should not be
+used around this maneuver as the event would not appear in the message.
 
 In accordance with file handling best practices, when writing CCSDS messages, Orekit
 complies strictly to the units specified in the standard. If the low level generator
@@ -254,14 +254,14 @@ The second level of parsing is message parsing is semantic analysis. Its aim is
 to read the stream of `ParseToken` objects and to progressively build the CCSDS message
 from them. Semantic analysis of primitive entries like `EPOCH_TZERO = 1998-12-18T14:28:15.1172`
 in KVN or `<EPOCH_TZERO>1998-12-18T14:28:15.1172</EPOCH_TZERO>` in XML is independent
-of the file format: both lexical analyzers will generate a `ParseToken` with type set
+of the message format: both lexical analyzers will generate a `ParseToken` with type set
 to `TokenType.ENTRY`, name set to `EPOCH_TZERO` and content set to `1998-12-18T14:28:15.1172`.
 This token will be passed to the message parser for processing and the parser may ignore
-that the token was extracted from a KVN or a XML file. This simplifies a lot parsing of both
+that the token was extracted from a KVN or a XML message. This simplifies a lot parsing of both
 formats and avoids code duplication. This is unfortunately not true anymore for higher level
 structures like header, segments, metadata, data or logical blocks. For all these cases, the
-parser must know if the file is in Key-Value Notation or in eXtended Markup Language. The lexical
-analyzer therefore starts parsing by calling the parser `reset` method with the file format as
+parser must know if the message is in Key-Value Notation or in eXtended Markup Language. The lexical
+analyzer therefore starts parsing by calling the parser `reset` method with the message format as
 an argument, so the parser is aware of the format and knows how to handle the higher level structures.
 
 CCSDS messages are complex, with a lot of sub-structures and we want to parse several types
@@ -287,13 +287,13 @@ All parsers set up the initial processing state when their `reset` method is cal
 by the lexical analyzer at the beginning of the message, and they manage the fallback
 processing state by anticipating what the next state could be when one state is
 activated. This is highly specific for each message type, and unfortunately also
-depends on file format (KVN vs. XML). As an example, in KVN files, the initial
-processing state is `HeaderProcessingState`, but in XML file it is rather
+depends on message format (KVN vs. XML). As an example, in KVN messages, the initial
+processing state is `HeaderProcessingState`, but in XML messages it is rather
 `XmlStructureProcessingState` and `HeaderProcessingState` is triggered only
 when the XML `<header>` start element is processed. CCSDS messages type are also not
-very consistent, which makes implementation more complex. As an example, APM files
+very consistent, which makes implementation more complex. As an example, APM
 don't have `META_START`, `META_STOP`, `DATA_START` or `DATA_STOP` keys in the
-KVN version, whereas AEM file have both, and OEM have `META_START`, `META_STOP`
+KVN version, whereas AEM have both, and OEM have `META_START`, `META_STOP`
 but have neither `DATA_START` nor `DATA_STOP`. All parsers extend the `AbstractMessageParser`
 abstract class from which declares several hooks (`prepareHeader`, `inHeader`,
 `finalizeHeader`, `prepareMetadata`...) which can be called by various states
@@ -302,7 +302,7 @@ state accordingly. The `prepareMetadata` hook for example is called by
 `KvnStructureProcessingState` when it sees a `META_START` key, and by
 `XmlStructureProcessingState` when it sees a `metadata` start element. The parser
 then knows that metadata parsing is going to start an set up the fallback state for it.
-Unfortunately, as APM files in KVN format don't have a `META_START` key,
+Unfortunately, as APM in KVN format don't have a `META_START` key,
 `prepareMetadata` will not be called automatically so the parse itself must take
 care of it by itself (it does it when the first metadata token is detected).
 
@@ -317,8 +317,8 @@ implemented as a single private method within the parser. Method references
 are used to point directly to these methods. This allows one parser class to
 provide simultaneously several implementations of the `ProcessingState` interface.
 The following example is extracted from the `TdmParser`, it shows that when a
-`DATA_START` key is seen in a KVN file or when a `<data>` start element is
-seen in an XML file, then `prepareData` is called and an `ObservationsBlock`
+`DATA_START` key is seen in a KVN message or when a `<data>` start element is
+seen in an XML message, then `prepareData` is called and an `ObservationsBlock`
 is allocated to hold the upcoming observations, and the fallback processing
 state is set to the private method `processDataToken` so that the next token,
 which at this stage is expected to be a data token representing an observation,
@@ -345,7 +345,7 @@ section.
 
 Adding a new message type (lets name it XYZ message) involves:
 
-* creating  the `XyzFile` class that extends `NdmFile`,
+* creating  the `Xyz` class that extends `Ndm`,
 * creating the `XyzData` container for the data part,
 * creating one or more `XyzSection1Key`, `XyzSection2Key`... enumerates for each
   logical blocks that are allowed in the message format
@@ -375,8 +375,8 @@ exist for the remaining formats, with similar structures.
 
 When the top level writers are built, they are configured with references to
 header and metadata containers. This is what allows `OemWriter` to implement
-`EphemerisFileWriter` and thus to be able to write any ephemeris as an OEM
-file, even if the ephemeris itself has none of the CCSDS specific metadata and
+`EphemerisFileWriter` and thus to be able to write any ephemeris as an OEM,
+even if the ephemeris itself has none of the CCSDS specific metadata and
 header. The ephemeris can be created from scratch using a propagator (and it
 can even be written on the fly as it is computed, if one embeds an `OemWriter`
 in a `StreamingOemWriter`.

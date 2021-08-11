@@ -416,7 +416,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      */
     private <T extends CalculusFieldElement<T>> T mappingFunction(final T elevation) {
         // Calculate the zenith angle from the elevation
-        final T z = FastMath.abs(elevation.negate().add(0.5 * FastMath.PI));
+        final T z = FastMath.abs(elevation.getPi().multiply(0.5).subtract(elevation));
         // Distance ratio
         final double ratio = r0 / (r0 + h);
         // Mapping function

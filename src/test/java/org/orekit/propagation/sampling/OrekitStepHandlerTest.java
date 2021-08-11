@@ -85,7 +85,7 @@ public class OrekitStepHandlerTest {
 
         final Propagator kepler = new KeplerianPropagator(initialOrbit);
 
-        kepler.setMasterMode(fixedStepSize, currentState -> {});
+        kepler.setStepHandler(fixedStepSize, currentState -> {});
 
         kepler.propagate(initialDate.shiftedBy(propagationTime));
 
@@ -131,7 +131,7 @@ public class OrekitStepHandlerTest {
         // action and verify
         Queue<Boolean> expected =
                 new ArrayDeque<>(Arrays.asList(false, false, false, true, true, false));
-        propagator.setMasterMode(interpolator -> {
+        propagator.setStepHandler(interpolator -> {
             assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
             assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
         });

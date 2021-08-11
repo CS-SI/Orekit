@@ -31,7 +31,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.adm.aem.AemFile;
+import org.orekit.files.ccsds.ndm.adm.aem.Aem;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -58,7 +58,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -88,7 +88,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -114,7 +114,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile file = new ParserBuilder().withSimpleEOP(true).buildAemParser().parseMessage(source);
+        final Aem file = new ParserBuilder().withSimpleEOP(true).buildAemParser().parseMessage(source);
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -144,7 +144,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AemFile file = new ParserBuilder().withSimpleEOP(true).buildAemParser().parseMessage(source);
+        final Aem file = new ParserBuilder().withSimpleEOP(true).buildAemParser().parseMessage(source);
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();

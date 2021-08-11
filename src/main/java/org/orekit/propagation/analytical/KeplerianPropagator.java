@@ -37,9 +37,6 @@ import org.orekit.utils.TimeSpanMap;
  */
 public class KeplerianPropagator extends AbstractAnalyticalPropagator {
 
-    /** Initial state. */
-    private SpacecraftState initialState;
-
     /** All states. */
     private TimeSpanMap<SpacecraftState> states;
 
@@ -112,13 +109,13 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         super(attitudeProv);
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        initialState = fixState(initialOrbit,
-                                getAttitudeProvider().getAttitude(initialOrbit,
-                                                                  initialOrbit.getDate(),
-                                                                  initialOrbit.getFrame()),
-                                mass, mu, Collections.emptyMap());
-        states = new TimeSpanMap<SpacecraftState>(initialState);
-        super.resetInitialState(initialState);
+        final SpacecraftState initial = fixState(initialOrbit,
+                                                 getAttitudeProvider().getAttitude(initialOrbit,
+                                                                                   initialOrbit.getDate(),
+                                                                                   initialOrbit.getFrame()),
+                                                 mass, mu, Collections.emptyMap());
+        states = new TimeSpanMap<SpacecraftState>(initial);
+        super.resetInitialState(initial);
 
     }
 
@@ -152,15 +149,15 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     public void resetInitialState(final SpacecraftState state) {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        final double mu = initialState == null ? state.getMu() : initialState.getMu();
+        final SpacecraftState formerInitial = getInitialState();
+        final double mu = formerInitial == null ? state.getMu() : formerInitial.getMu();
         final SpacecraftState fixedState = fixState(state.getOrbit(),
                                                     state.getAttitude(),
                                                     state.getMass(),
                                                     mu,
                                                     state.getAdditionalStates());
 
-        initialState = fixedState;
-        states       = new TimeSpanMap<SpacecraftState>(initialState);
+        states = new TimeSpanMap<SpacecraftState>(fixedState);
         super.resetInitialState(fixedState);
 
     }

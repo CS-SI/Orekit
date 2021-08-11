@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-/** Orbit category used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
+/** Orbit category used in CCSDS {@link Ocm Orbit Comprehensive Messages}.
  * @author Luc Maisonobe
  * @since 11.0
  */

@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.exception.DummyLocalizable;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 
 
@@ -97,13 +96,6 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
      */
     protected abstract InputStream getStream(T input) throws IOException;
 
-    @Override
-    @Deprecated
-    @DefaultDataContext
-    public boolean feed(final Pattern supported, final DataLoader visitor) {
-        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
-    }
-
     /** {@inheritDoc} */
     @Override
     public boolean feed(final Pattern supported,
@@ -129,11 +121,11 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
 
                             // apply all registered filters
                             DataSource data = new DataSource(fileName, () -> getStream(input));
-                            data = manager.applyAllFilters(data);
+                            data = manager.getFiltersManager().applyRelevantFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file
-                                try (InputStream is = data.getStreamOpener().openOnce()) {
+                                try (InputStream is = data.getOpener().openStreamOnce()) {
                                     visitor.loadData(is, name);
                                     loaded = true;
                                 }

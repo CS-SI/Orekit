@@ -183,9 +183,8 @@ public class TLERangeTest {
         final List<Double> absoluteErrors = new ArrayList<Double>();
         final List<Double> relativeErrors = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode(interpolator -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -310,9 +309,8 @@ public class TLERangeTest {
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode(interpolator -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -458,9 +456,8 @@ public class TLERangeTest {
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode(interpolator -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 

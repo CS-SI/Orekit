@@ -41,7 +41,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata, OmmData>, OmmFile> {
+public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata, OmmData>, Omm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OMM_VERS = 3.0;
@@ -61,7 +61,7 @@ public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata
      */
     public OmmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(OmmFile.ROOT, OmmFile.FORMAT_VERSION_KEY, CCSDS_OMM_VERS,
+        super(Omm.ROOT, Omm.FORMAT_VERSION_KEY, CCSDS_OMM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,

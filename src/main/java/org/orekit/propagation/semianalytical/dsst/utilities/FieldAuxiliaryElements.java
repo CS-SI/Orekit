@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -31,9 +30,6 @@ import org.orekit.time.FieldAbsoluteDate;
  *  </p>
  */
 public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
-
-    /** \(2\pi\) . */
-    public static final double TWO_PI = 2 * FastMath.PI;
 
     /** Orbit date. */
     private final FieldAbsoluteDate<T> date;
@@ -119,9 +115,7 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
      */
     public FieldAuxiliaryElements(final FieldOrbit<T> orbit, final int retrogradeFactor) {
 
-        final Field<T> field = orbit.getDate().getField();
-        final T zero = field.getZero();
-        final T pi = zero.add(FastMath.PI);
+        final T pi = orbit.getDate().getField().getZero().getPi();
 
         // Date of the orbit
         date = orbit.getDate();
@@ -173,30 +167,6 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
         alpha = (T) f.getZ();
         beta  = (T) g.getZ();
         gamma = (T) w.getZ();
-    }
-
-    /**
-     * Normalize an angle in a 2&pi; wide interval around a center value.
-     * <p>This method has three main uses:</p>
-     * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br>
-     *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br>
-     *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
-     *   <li>compute the angle between two defining angular positions:<br>
-     *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
-     * </ul>
-     * <p>Note that due to numerical accuracy and since &pi; cannot be represented
-     * exactly, the result interval is <em>closed</em>, it cannot be half-closed
-     * as would be more satisfactory in a purely mathematical view.</p>
-     * @param a angle to normalize
-     * @param center center of the desired 2&pi; interval for the result
-     * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(CalculusFieldElement, CalculusFieldElement)}
-     */
-    @Deprecated
-    public T normalizeAngle(final T a, final T center) {
-        return a.subtract(FastMath.floor((a.add(FastMath.PI).subtract(center)).divide(TWO_PI)).multiply(TWO_PI));
     }
 
     /** Get the date of the orbit.

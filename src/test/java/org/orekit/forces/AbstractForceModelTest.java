@@ -451,7 +451,7 @@ public abstract class AbstractForceModelTest {
         propagator.setInitialState(pde.setInitialJacobians(state0));
         final JacobiansMapper mapper = pde.getMapper();
         final double[][] dYdY0 = new double[6][6];
-        propagator.setMasterMode(new OrekitStepHandler() {
+        propagator.setStepHandler(new OrekitStepHandler() {
             public void handleStep(OrekitStepInterpolator interpolator) {
             }
             public void finish(SpacecraftState finalState) {

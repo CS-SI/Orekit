@@ -158,9 +158,7 @@ public class StreamingCpfWriter {
      * <p>
      * The returned writer can only write a single ephemeris segment in a CPF.
      * </p>
-     * @param frame the reference frame to use for the segment. If this value is
-     *              {@code null} then {@link Segment#handleStep(SpacecraftState,
-     *              boolean)} will throw a {@link NullPointerException}.
+     * @param frame the reference frame to use for the segment.
      * @return a new CPF segment, ready for writing.
      */
     public Segment newSegment(final Frame frame) {

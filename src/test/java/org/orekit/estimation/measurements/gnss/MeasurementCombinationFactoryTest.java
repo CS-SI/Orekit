@@ -35,8 +35,8 @@ import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.RinexHeader;
-import org.orekit.gnss.RinexLoader;
+import org.orekit.gnss.RinexObservationHeader;
+import org.orekit.gnss.RinexObservationLoader;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.utils.Constants;
 
@@ -65,11 +65,11 @@ public class MeasurementCombinationFactoryTest {
         obs1 = new ObservationData(ObservationType.L1, 2.25E7, 0, 0);
 
         // RINEX 2 Observation data set
-        RinexLoader loader2 = load("rinex/truncate-sbch0440.16o");
+        RinexObservationLoader loader2 = load("rinex/truncate-sbch0440.16o");
         dataSetRinex2 = loader2.getObservationDataSets().get(0);
 
         // RINEX 3 Observation data set
-        RinexLoader loader3 = load("rinex/aaaa0000.00o");
+        RinexObservationLoader loader3 = load("rinex/aaaa0000.00o");
         dataSetRinex3 = loader3.getObservationDataSets().get(1);
 
         // Satellite system
@@ -374,7 +374,7 @@ public class MeasurementCombinationFactoryTest {
         // Verify the number of combined data set
         Assert.assertEquals(expectedSize, combinedDataSet.getObservationData().size());
         // Verify RINEX Header
-        final RinexHeader header = combinedDataSet.getHeader();
+        final RinexObservationHeader header = combinedDataSet.getHeader();
         Assert.assertEquals(2.11, header.getRinexVersion(), eps);
         // Verify satellite data
         Assert.assertEquals(30, combinedDataSet.getPrnNumber());
@@ -385,8 +385,8 @@ public class MeasurementCombinationFactoryTest {
         Assert.assertEquals("2016-02-13T00:49:43.000", combinedDataSet.getDate().toString());
     }
 
-    private RinexLoader load(final String name) {
-        return new RinexLoader(new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name)));
+    private RinexObservationLoader load(final String name) {
+        return new RinexObservationLoader(new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name)));
     }
 
     @Test

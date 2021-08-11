@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -234,7 +235,7 @@ public class OcmParserTest {
     public void testUnknownFrame() throws URISyntaxException {
         final String name = "/ccsds/odm/ocm/OCM-unknown-frame.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OcmFile    ocm    = new ParserBuilder().
+        final Ocm    ocm    = new ParserBuilder().
                                   withMu(Constants.EIGEN5C_EARTH_MU).
                                   buildOcmParser().
                                   parseMessage(source);
@@ -262,7 +263,7 @@ public class OcmParserTest {
     public void testUserDefined() throws URISyntaxException {
         final String name = "/ccsds/odm/ocm/OCM-user-defined.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OcmFile    ocm    = new ParserBuilder().
+        final Ocm    ocm    = new ParserBuilder().
                                   withMu(Constants.EIGEN5C_EARTH_MU).
                                   buildOcmParser().
                                   parseMessage(source);
@@ -279,7 +280,7 @@ public class OcmParserTest {
     public void testParseOCM1() {
         final String   name  = "/ccsds/odm/ocm/OCMExample1.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OcmFile file = new ParserBuilder().
+        final Ocm file = new ParserBuilder().
                              withMu(Constants.EIGEN5C_EARTH_MU).
                              buildOcmParser().
                              parseMessage(source);
@@ -361,7 +362,7 @@ public class OcmParserTest {
     public void testParseOCM2KVN() {
         final String  name = "/ccsds/odm/ocm/OCMExample2.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OcmFile file = new ParserBuilder().
+        final Ocm file = new ParserBuilder().
                              withMu(Constants.EIGEN5C_EARTH_MU).
                              buildOcmParser().
                              parseMessage(source);
@@ -476,9 +477,19 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testParseOCM2XML() {
+    public void testParseOCM2XMLBinary() {
         final String  name = "/ccsds/odm/ocm/OCMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        validateOCM2XML(new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        buildOcmParser().
+                        parseMessage(source));
+    }
+
+    @Test
+    public void testParseOCM2XMLCharacter() {
+        final String  name = "/ccsds/odm/ocm/OCMExample2.xml";
+        final DataSource source = new DataSource(name, () -> new InputStreamReader(getClass().getResourceAsStream(name), StandardCharsets.UTF_8));
         validateOCM2XML(new ParserBuilder().
                         withMu(Constants.EIGEN5C_EARTH_MU).
                         buildOcmParser().
@@ -490,7 +501,7 @@ public class OcmParserTest {
         final String name = "/ccsds/odm/ocm/OCMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OcmParser parser = new ParserBuilder(). withMu(Constants.EIGEN5C_EARTH_MU).buildOcmParser();
-        final OcmFile original = parser.parseMessage(source);
+        final Ocm original = parser.parseMessage(source);
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
@@ -500,12 +511,12 @@ public class OcmParserTest {
         // reparse the written file
         final byte[]     bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
-        final OcmFile    rebuilt = new ParserBuilder().buildOcmParser().parseMessage(source2);
+        final Ocm    rebuilt = new ParserBuilder().buildOcmParser().parseMessage(source2);
         validateOCM2XML(rebuilt);
 
     }
 
-    private void validateOCM2XML(final OcmFile file) {
+    private void validateOCM2XML(final Ocm file) {
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -622,7 +633,7 @@ public class OcmParserTest {
     public void testParseOCM3() throws IOException {
         final String   name  = "/ccsds/odm/ocm/OCMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OcmFile file = new ParserBuilder().
+        final Ocm file = new ParserBuilder().
                              withMu(Constants.EIGEN5C_EARTH_MU).
                              buildOcmParser().
                              parse(source); // using EphemerisFileParser API here
@@ -845,7 +856,7 @@ public class OcmParserTest {
     public void testParseOCM4() {
         final String   name  = "/ccsds/odm/ocm/OCMExample4.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OcmFile file = new ParserBuilder().
+        final Ocm file = new ParserBuilder().
                              withMu(Constants.IERS2003_EARTH_MU).
                              buildOcmParser().
                              parseMessage(source);

@@ -122,7 +122,7 @@ public class PartialDerivativesTest {
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
-                propagator.setMasterMode(pickUp);
+                propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 double[][] dYdP = pickUp.getdYdP();
 
@@ -238,7 +238,7 @@ public class PartialDerivativesTest {
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
-                propagator.setMasterMode(pickUp);
+                propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 double[][] dYdY0 = pickUp.getdYdY0();
 
@@ -306,7 +306,7 @@ public class PartialDerivativesTest {
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
-                propagator.setMasterMode(pickUp);
+                propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 double[][] dYdY0 = pickUp.getdYdY0();
 

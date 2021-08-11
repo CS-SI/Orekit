@@ -90,7 +90,7 @@ public class TdmParserTest {
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/kvn/TDMExample2.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
         validateTDMExample2(file);
     }
 
@@ -102,7 +102,7 @@ public class TdmParserTest {
         // Data lines number was cut down to 20
         final String name = "/ccsds/tdm/kvn/TDMExample4.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().buildTdmParser().parseMessage(source);
         validateTDMExample4(file);
     }
 
@@ -114,7 +114,7 @@ public class TdmParserTest {
         // Data lines number was cut down to 16
         final String name = "/ccsds/tdm/kvn/TDMExample6.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
         validateTDMExample6(file);
     }
 
@@ -126,7 +126,7 @@ public class TdmParserTest {
         // Data lines number was cut down to 18
         final String name = "/ccsds/tdm/kvn/TDMExample8.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().buildTdmParser().parseMessage(source);
         validateTDMExample8(file);
     }
 
@@ -137,7 +137,7 @@ public class TdmParserTest {
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
         final String name = "/ccsds/tdm/kvn/TDMExample15.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
         validateTDMExample15(file);
     }
 
@@ -147,7 +147,7 @@ public class TdmParserTest {
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywordsSequential.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().buildTdmParser().parseMessage(source);
         validateTDMExampleAllKeywordsSequential(file);
     }
 
@@ -157,7 +157,7 @@ public class TdmParserTest {
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywordsSingleDiff.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().buildTdmParser().parseMessage(source);
         validateTDMExampleAllKeywordsSingleDiff(file);
     }
 
@@ -169,7 +169,7 @@ public class TdmParserTest {
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/xml/TDMExample2.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
         validateTDMExample2(file);
     }
 
@@ -181,7 +181,7 @@ public class TdmParserTest {
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/xml/TDMExample2.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile original = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
+        final Tdm original = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
@@ -191,7 +191,7 @@ public class TdmParserTest {
         // reparse the written file
         final byte[]     bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
-        final TdmFile    rebuilt = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source2);
+        final Tdm    rebuilt = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source2);
         validateTDMExample2(rebuilt);
 
     }
@@ -204,7 +204,7 @@ public class TdmParserTest {
         // Data lines number was cut down to 20
         final String name = "/ccsds/tdm/xml/TDMExample4.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().buildTdmParser().parseMessage(source);
         validateTDMExample4(file);
     }
 
@@ -216,7 +216,7 @@ public class TdmParserTest {
         // Data lines number was cut down to 16
         final String name = "/ccsds/tdm/xml/TDMExample6.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
         validateTDMExample6(file);
     }
 
@@ -228,7 +228,7 @@ public class TdmParserTest {
         // Data lines number was cut down to 18
         final String name = "/ccsds/tdm/xml/TDMExample8.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().buildTdmParser().parseMessage(source);
         validateTDMExample8(file);
     }
 
@@ -239,7 +239,7 @@ public class TdmParserTest {
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
         final String name = "/ccsds/tdm/xml/TDMExample15.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
         validateTDMExample15(file);
     }
 
@@ -249,7 +249,7 @@ public class TdmParserTest {
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/xml/TDMExampleAllKeywordsSequential.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().buildTdmParser().parseMessage(source);
         validateTDMExampleAllKeywordsSequential(file);
     }
 
@@ -259,7 +259,7 @@ public class TdmParserTest {
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/xml/TDMExampleAllKeywordsSingleDiff.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        final TdmFile file = new ParserBuilder().buildTdmParser().parseMessage(source);
+        final Tdm file = new ParserBuilder().buildTdmParser().parseMessage(source);
         validateTDMExampleAllKeywordsSingleDiff(file);
     }
 
@@ -347,7 +347,7 @@ public class TdmParserTest {
         // Inconsistent time systems between two sets of data
         final String name = "/ccsds/tdm/kvn/TDM-inconsistent-time-systems.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        TdmFile file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
+        Tdm file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
         Assert.assertEquals(3, file.getSegments().size());
         Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
         Assert.assertEquals(TimeSystem.TCG, file.getSegments().get(1).getMetadata().getTimeSystem());
@@ -359,7 +359,7 @@ public class TdmParserTest {
         // Inconsistent time systems between two sets of data
         final String name = "/ccsds/tdm/xml/TDM-inconsistent-time-systems.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
-        TdmFile file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
+        Tdm file = new ParserBuilder().withRangeUnitsConverter(null).buildTdmParser().parseMessage(source);
         Assert.assertEquals(3, file.getSegments().size());
         Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
         Assert.assertEquals(TimeSystem.TCG, file.getSegments().get(1).getMetadata().getTimeSystem());
@@ -519,9 +519,9 @@ public class TdmParserTest {
 
     /**
      * Validation function for example 2.
-     * @param file Parsed TDMFile to validate
+     * @param file Parsed TDM to validate
      */
-    private void validateTDMExample2(TdmFile file) {
+    private void validateTDMExample2(Tdm file) {
         final TimeScale utc = TimeScalesFactory.getUTC();
 
         // Header
@@ -593,9 +593,9 @@ public class TdmParserTest {
 
     /**
      * Validation function for example 4.
-     * @param file Parsed TDMFile to validate
+     * @param file Parsed TDM to validate
      */
-    private void validateTDMExample4(TdmFile file) {
+    private void validateTDMExample4(Tdm file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -668,9 +668,9 @@ public class TdmParserTest {
 
     /**
      * Validation function for example 6.
-     * @param file Parsed TDMFile to validate
+     * @param file Parsed TDM to validate
      */
-    private void validateTDMExample6(TdmFile file) {
+    private void validateTDMExample6(Tdm file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -736,9 +736,9 @@ public class TdmParserTest {
 
     /**
      * Validation function for example 8.
-     * @param file Parsed TDMFile to validate
+     * @param file Parsed TDM to validate
      */
-    private void validateTDMExample8(TdmFile file) {
+    private void validateTDMExample8(Tdm file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -847,9 +847,9 @@ public class TdmParserTest {
 
     /**
      * Validation function for example 15.
-     * @param file Parsed TDMFile to validate
+     * @param file Parsed TDM to validate
      */
-    private void validateTDMExample15(TdmFile file) {
+    private void validateTDMExample15(Tdm file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -975,9 +975,9 @@ public class TdmParserTest {
 
     /**
      * Validation function for example displaying all keywords.
-     * @param file Parsed TDMFile to validate
+     * @param file Parsed TDM to validate
      */
-    private void validateTDMExampleAllKeywordsSequential(TdmFile file) {
+    private void validateTDMExampleAllKeywordsSequential(Tdm file) {
         validateTDMExampleAllKeywordsCommon(file);
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
         Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
@@ -986,9 +986,9 @@ public class TdmParserTest {
 
     /**
      * Validation function for example displaying all keywords.
-     * @param file Parsed TDMFile to validate
+     * @param file Parsed TDM to validate
      */
-    private void validateTDMExampleAllKeywordsSingleDiff(TdmFile file) {
+    private void validateTDMExampleAllKeywordsSingleDiff(Tdm file) {
         validateTDMExampleAllKeywordsCommon(file);
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
         Assert.assertEquals(TrackingMode.SINGLE_DIFF, metadata.getMode());
@@ -998,16 +998,17 @@ public class TdmParserTest {
 
     /**
      * Validation function for example displaying all keywords.
-     * @param file Parsed TDMFile to validate
+     * @param file Parsed TDM to validate
      */
-    private void validateTDMExampleAllKeywordsCommon(TdmFile file) {
+    private void validateTDMExampleAllKeywordsCommon(Tdm file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
         // Header
-        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
+        Assert.assertEquals(2.0, file.getHeader().getFormatVersion(), 0.0);
         Assert.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
         Assert.assertEquals("CS GROUP",file.getHeader().getOriginator());
+        Assert.assertEquals("04655f62-1ba0-4ca6-92e9-eb3411db3d44", file.getHeader().getMessageId().toLowerCase());
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("TDM example created by CS GROUP");
         headerComment.add("Testing all TDM known meta-data and data keywords");
@@ -1015,7 +1016,56 @@ public class TdmParserTest {
 
         // Meta-Data
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
-
+        Assert.assertEquals(1, metadata.getComments().size());
+        Assert.assertEquals("All known meta-data keywords displayed", metadata.getComments().get(0));
+        Assert.assertEquals(47, metadata.getDataTypes().size());
+        Assert.assertEquals(ObservationType.CARRIER_POWER        , metadata.getDataTypes().get( 0));
+        Assert.assertEquals(ObservationType.DOPPLER_COUNT        , metadata.getDataTypes().get( 1));
+        Assert.assertEquals(ObservationType.DOPPLER_INSTANTANEOUS, metadata.getDataTypes().get( 2));
+        Assert.assertEquals(ObservationType.DOPPLER_INTEGRATED   , metadata.getDataTypes().get( 3));
+        Assert.assertEquals(ObservationType.PC_N0                , metadata.getDataTypes().get( 4));
+        Assert.assertEquals(ObservationType.RECEIVE_PHASE_CT_1   , metadata.getDataTypes().get( 5));
+        Assert.assertEquals(ObservationType.RECEIVE_PHASE_CT_2   , metadata.getDataTypes().get( 6));
+        Assert.assertEquals(ObservationType.RECEIVE_PHASE_CT_3   , metadata.getDataTypes().get( 7));
+        Assert.assertEquals(ObservationType.RECEIVE_PHASE_CT_4   , metadata.getDataTypes().get( 8));
+        Assert.assertEquals(ObservationType.RECEIVE_PHASE_CT_5   , metadata.getDataTypes().get( 9));
+        Assert.assertEquals(ObservationType.TRANSMIT_PHASE_CT_1  , metadata.getDataTypes().get(10));
+        Assert.assertEquals(ObservationType.TRANSMIT_PHASE_CT_2  , metadata.getDataTypes().get(11));
+        Assert.assertEquals(ObservationType.TRANSMIT_PHASE_CT_3  , metadata.getDataTypes().get(12));
+        Assert.assertEquals(ObservationType.TRANSMIT_PHASE_CT_4  , metadata.getDataTypes().get(13));
+        Assert.assertEquals(ObservationType.TRANSMIT_PHASE_CT_5  , metadata.getDataTypes().get(14));
+        Assert.assertEquals(ObservationType.PR_N0                , metadata.getDataTypes().get(15));
+        Assert.assertEquals(ObservationType.RANGE                , metadata.getDataTypes().get(16));
+        Assert.assertEquals(ObservationType.RECEIVE_FREQ_1       , metadata.getDataTypes().get(17));
+        Assert.assertEquals(ObservationType.RECEIVE_FREQ_2       , metadata.getDataTypes().get(18));
+        Assert.assertEquals(ObservationType.RECEIVE_FREQ_3       , metadata.getDataTypes().get(19));
+        Assert.assertEquals(ObservationType.RECEIVE_FREQ_4       , metadata.getDataTypes().get(20));
+        Assert.assertEquals(ObservationType.RECEIVE_FREQ_5       , metadata.getDataTypes().get(21));
+        Assert.assertEquals(ObservationType.RECEIVE_FREQ         , metadata.getDataTypes().get(22));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_1      , metadata.getDataTypes().get(23));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_2      , metadata.getDataTypes().get(24));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_3      , metadata.getDataTypes().get(25));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_4      , metadata.getDataTypes().get(26));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_5      , metadata.getDataTypes().get(27));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_RATE_1 , metadata.getDataTypes().get(28));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_RATE_2 , metadata.getDataTypes().get(29));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_RATE_3 , metadata.getDataTypes().get(30));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_RATE_4 , metadata.getDataTypes().get(31));
+        Assert.assertEquals(ObservationType.TRANSMIT_FREQ_RATE_5 , metadata.getDataTypes().get(32));
+        Assert.assertEquals(ObservationType.DOR                  , metadata.getDataTypes().get(33));
+        Assert.assertEquals(ObservationType.VLBI_DELAY           , metadata.getDataTypes().get(34));
+        Assert.assertEquals(ObservationType.ANGLE_1              , metadata.getDataTypes().get(35));
+        Assert.assertEquals(ObservationType.ANGLE_2              , metadata.getDataTypes().get(36));
+        Assert.assertEquals(ObservationType.MAG                  , metadata.getDataTypes().get(37));
+        Assert.assertEquals(ObservationType.RCS                  , metadata.getDataTypes().get(38));
+        Assert.assertEquals(ObservationType.CLOCK_BIAS           , metadata.getDataTypes().get(39));
+        Assert.assertEquals(ObservationType.CLOCK_DRIFT          , metadata.getDataTypes().get(40));
+        Assert.assertEquals(ObservationType.STEC                 , metadata.getDataTypes().get(41));
+        Assert.assertEquals(ObservationType.TROPO_DRY            , metadata.getDataTypes().get(42));
+        Assert.assertEquals(ObservationType.TROPO_WET            , metadata.getDataTypes().get(43));
+        Assert.assertEquals(ObservationType.PRESSURE             , metadata.getDataTypes().get(44));
+        Assert.assertEquals(ObservationType.RHUMIDITY            , metadata.getDataTypes().get(45));
+        Assert.assertEquals(ObservationType.TEMPERATURE          , metadata.getDataTypes().get(46));
         Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2017-06-15T10:53:00.000", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
@@ -1039,6 +1089,11 @@ public class TdmParserTest {
         Assert.assertEquals("EME2000", metadata.getReferenceFrame().getName());
         Assert.assertEquals(CelestialBodyFrame.EME2000, metadata.getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(FramesFactory.getEME2000(), metadata.getReferenceFrame().asFrame());
+        Assert.assertEquals("HERMITE", metadata.getInterpolationMethod());
+        Assert.assertEquals(5, metadata.getInterpolationDegree());
+        Assert.assertEquals(120000.0, metadata.getDopplerCountBias(), 1.0e-5);
+        Assert.assertEquals(1000.0, metadata.getDopplerCountScale(), 1.0e-10);
+        Assert.assertFalse(metadata.hasDopplerCountRollover());
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(1), 0.0);
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(2), 0.0);
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(3), 0.0);
@@ -1053,9 +1108,13 @@ public class TdmParserTest {
         Assert.assertEquals(FastMath.toRadians(1.0), metadata.getCorrectionAngle1(), 0.0);
         Assert.assertEquals(FastMath.toRadians(2.0), metadata.getCorrectionAngle2(), 0.0);
         Assert.assertEquals(3000.0, metadata.getCorrectionDoppler(), 0.0);
-        Assert.assertEquals(4.0, metadata.getRawCorrectionRange(), 0.0);
-        Assert.assertEquals(5.0, metadata.getCorrectionReceive(), 0.0);
-        Assert.assertEquals(6.0, metadata.getCorrectionTransmit(), 0.0);
+        Assert.assertEquals(4.0, metadata.getCorrectionMagnitude(), 0.0);
+        Assert.assertEquals(5.0, metadata.getRawCorrectionRange(), 0.0);
+        Assert.assertEquals(6.0, metadata.getCorrectionRcs(), 0.0);
+        Assert.assertEquals(7.0, metadata.getCorrectionReceive(), 0.0);
+        Assert.assertEquals(8.0, metadata.getCorrectionTransmit(), 0.0);
+        Assert.assertEquals(FastMath.toRadians(9.0), metadata.getCorrectionAberrationYearly(), 0.0);
+        Assert.assertEquals(FastMath.toRadians(10.0), metadata.getCorrectionAberrationDiurnal(), 0.0);
         Assert.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied());
 
         final List<String> metaDataComment = new ArrayList<String>();
@@ -1066,20 +1125,10 @@ public class TdmParserTest {
         final List<Observation> observations = file.getSegments().get(0).getData().getObservations();
 
         // Reference data
-        final String[] keywords = {"CARRIER_POWER", "DOPPLER_INSTANTANEOUS", "DOPPLER_INTEGRATED", "PC_N0", "PR_N0", "RANGE",
-                                   "RECEIVE_FREQ_1", "RECEIVE_FREQ_2", "RECEIVE_FREQ_3", "RECEIVE_FREQ_4", "RECEIVE_FREQ_5", "RECEIVE_FREQ",
-                                   "TRANSMIT_FREQ_1", "TRANSMIT_FREQ_2", "TRANSMIT_FREQ_3", "TRANSMIT_FREQ_4","TRANSMIT_FREQ_5",
-                                   "TRANSMIT_FREQ_RATE_1", "TRANSMIT_FREQ_RATE_2", "TRANSMIT_FREQ_RATE_3", "TRANSMIT_FREQ_RATE_4", "TRANSMIT_FREQ_RATE_5",
-                                   "DOR", "VLBI_DELAY",
-                                   "ANGLE_1", "ANGLE_2",
-                                   "CLOCK_BIAS", "CLOCK_DRIFT",
-                                   "STEC", "TROPO_DRY", "TROPO_WET",
-                                   "PRESSURE", "RHUMIDITY", "TEMPERATURE"};
-
         final AbsoluteDate epoch = new AbsoluteDate("2017-06-14T10:53:00.000", utc);
         // Check consistency
-        for (int i = 0; i < keywords.length; i++) {
-            Assert.assertEquals(keywords[i], observations.get(i).getType().name());
+        for (int i = 0; i < metadata.getDataTypes().size(); i++) {
+            Assert.assertEquals(metadata.getDataTypes().get(i), observations.get(i).getType());
             Assert.assertEquals(epoch.shiftedBy((double) (i+1)).durationFrom(observations.get(i).getEpoch()), 0.0, 0.0);
             Assert.assertEquals((double) (i+1), observations.get(i).getMeasurement(), 1.0e-12);
         }

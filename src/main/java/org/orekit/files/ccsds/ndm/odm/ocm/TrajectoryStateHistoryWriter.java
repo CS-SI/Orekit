@@ -98,7 +98,7 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
                 line.append(AccurateFormatter.format(units.get(i).fromSI(elements[i])));
             }
             if (generator.getFormat() == FileFormat.XML) {
-                generator.writeEntry(OcmFile.TRAJ_LINE, line.toString(), null, true);
+                generator.writeEntry(Ocm.TRAJ_LINE, line.toString(), null, true);
             } else {
                 generator.writeRawData(line);
                 generator.newLine();

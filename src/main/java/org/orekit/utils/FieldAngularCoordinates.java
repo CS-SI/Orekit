@@ -83,7 +83,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
     /** Builds a rotation / rotation rate / rotation acceleration triplet.
      * @param rotation i.e. the orientation of the vehicle
      * @param rotationRate rotation rate rate Ω, i.e. the spin vector (rad/s)
-     * @param rotationAcceleration angular acceleration vector dΩ/dt (rad²/s²)
+     * @param rotationAcceleration angular acceleration vector dΩ/dt (rad/s²)
      */
     public FieldAngularCoordinates(final FieldRotation<T> rotation,
                                    final FieldVector3D<T> rotationRate,
@@ -651,7 +651,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
     }
 
     /** Get the rotation acceleration.
-     * @return the rotation acceleration vector dΩ/dt (rad²/s²).
+     * @return the rotation acceleration vector dΩ/dt (rad/s²).
      */
     public FieldVector3D<T> getRotationAcceleration() {
         return rotationAcceleration;

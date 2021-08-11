@@ -420,7 +420,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
             final T P1 = aS2.multiply(a1oaS.acos()).subtract(alpha1.multiply(aS2ma12.sqrt()));
             final T P2 = aE2.multiply(a2oaE.acos()).subtract(alpha2.multiply(aE2ma22.sqrt()));
 
-            result = one.subtract(P1.add(P2).divide(aS2.multiply(FastMath.PI)));
+            result = one.subtract(P1.add(P2).divide(aS2.multiply(one.getPi())));
         }
 
         return result;
@@ -484,7 +484,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
             final T P1 = aS2.multiply(a1oaS.acos()).subtract(alpha1.multiply(aS2ma12.sqrt()));
             final T P2 = aE2.multiply(a2oaE.acos()).subtract(alpha2.multiply(aE2ma22.sqrt()));
 
-            result = one.subtract(P1.add(P2).divide(aS2.multiply(FastMath.PI)));
+            result = one.subtract(P1.add(P2).divide(aS2.multiply(one.getPi())));
         }
 
         return result;

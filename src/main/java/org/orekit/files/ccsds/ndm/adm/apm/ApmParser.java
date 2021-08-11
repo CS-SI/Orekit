@@ -53,7 +53,7 @@ import org.orekit.utils.IERSConventions;
 
  * @since 10.2
  */
-public class ApmParser extends AdmParser<ApmFile, ApmParser> {
+public class ApmParser extends AdmParser<Apm, ApmParser> {
 
     /** File header. */
     private Header header;
@@ -106,7 +106,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      */
     public ApmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+        super(Apm.ROOT, Apm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
               missionReferenceDate, parsedUnitsBehavior);
     }
 
@@ -130,7 +130,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         currentManeuver           = null;
         maneuvers                 = new ArrayList<>();
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ApmFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Apm.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
@@ -226,11 +226,11 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public ApmFile build() {
+    public Apm build() {
         // APM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
-        final ApmFile file = new ApmFile(header, segments, getConventions(), getDataContext());
+        final Apm file = new Apm(header, segments, getConventions(), getDataContext());
         return file;
     }
 

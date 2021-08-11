@@ -716,12 +716,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                 E = reducedM.add(e.multiply( (reducedM.multiply(6).cbrt()).subtract(reducedM)));
             }
         } else {
+            final T pi = e.getPi();
             if (reducedM.getReal() < 0) {
-                final T w = reducedM.add(FastMath.PI);
-                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).subtract(FastMath.PI).subtract(reducedM)));
+                final T w = reducedM.add(pi);
+                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).subtract(pi).subtract(reducedM)));
             } else {
-                final T w = reducedM.negate().add(FastMath.PI);
-                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).negate().subtract(reducedM).add(FastMath.PI)));
+                final T w = reducedM.negate().add(pi);
+                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).negate().subtract(reducedM).add(pi)));
             }
         }
 
@@ -802,16 +803,19 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
+        // Field value of pi
+        final T pi = e.getPi();
+
         // Initial guess
         T H;
         if (e.getReal() < 1.6) {
-            if (-FastMath.PI < M.getReal() && M.getReal() < 0. || M.getReal() > FastMath.PI) {
+            if (-pi.getReal() < M.getReal() && M.getReal() < 0. || M.getReal() > pi.getReal()) {
                 H = M.subtract(e);
             } else {
                 H = M.add(e);
             }
         } else {
-            if (e.getReal() < 3.6 && M.abs().getReal() > FastMath.PI) {
+            if (e.getReal() < 3.6 && M.abs().getReal() > pi.getReal()) {
                 H = M.subtract(e.copySign(M));
             } else {
                 H = M.divide(e.subtract(1));
@@ -895,7 +899,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     public T getHx() {
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return this.zero.add(Double.NaN);
         }
         return  raan.cos().multiply(i.divide(2).tan());
@@ -909,7 +913,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         }
 
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return this.zero.add(Double.NaN);
         }
 
@@ -922,7 +926,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     public T getHy() {
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return this.zero.add(Double.NaN);
         }
         return  raan.sin().multiply(i.divide(2).tan());
@@ -936,7 +940,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         }
 
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return this.zero.add(Double.NaN);
         }
 
@@ -1734,31 +1738,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         }
     }
 
-    /**
-     * Normalize an angle in a 2&pi; wide interval around a center value.
-     * <p>This method has three main uses:</p>
-     * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br>
-     *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br>
-     *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
-     *   <li>compute the angle between two defining angular positions:<br>
-     *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
-     * </ul>
-     * <p>Note that due to numerical accuracy and since &pi; cannot be represented
-     * exactly, the result interval is <em>closed</em>, it cannot be half-closed
-     * as would be more satisfactory in a purely mathematical view.</p>
-     * @param a angle to normalize
-     * @param center center of the desired 2&pi; interval for the result
-     * @param <T> the type of the field elements
-     * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(CalculusFieldElement, CalculusFieldElement)}
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T normalizeAngle(final T a, final T center) {
-        return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
-    }
-
+    /** {@inheritDoc} */
     @Override
     public KeplerianOrbit toOrbit() {
         if (hasDerivatives()) {

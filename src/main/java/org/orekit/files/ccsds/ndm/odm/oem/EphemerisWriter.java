@@ -34,7 +34,7 @@ import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** An {@link EphemerisFileWriter} generating {@link OemFile OEM} files.
+/** An {@link EphemerisFileWriter} generating {@link Oem OEM} files.
  * @author Hank Grabowski
  * @author Evan Ward
  * @since 9.0
@@ -100,7 +100,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
 
     /** {@inheritDoc}
      * <p>
-     * As {@link EphemerisFile.SatelliteEphemeris} does not have all the entries
+     * As {@code EphemerisFile.SatelliteEphemeris} does not have all the entries
      * from {@link OemMetadata}, the only values that will be extracted from the
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft

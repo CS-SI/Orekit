@@ -492,10 +492,10 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         // rough initialization of the mean parameters
         FieldEHModel<T> current = new FieldEHModel<>(osculating, mass, referenceRadius, mu, ck0);
         // threshold for each parameter
-        final T epsilon         = one .multiply(1.0e-13);
+        final T epsilon         = one.multiply(1.0e-13);
         final T thresholdA      = epsilon.multiply(current.mean.getA().abs().add(1.0));
         final T thresholdE      = epsilon.multiply(current.mean.getE().add(1.0));
-        final T thresholdAngles = epsilon.multiply(FastMath.PI);
+        final T thresholdAngles = epsilon.multiply(one.getPi());
 
 
         int i = 0;
@@ -781,13 +781,13 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
             // right ascension of ascending node
             final FieldUnivariateDerivative2<T> omm =
                            new FieldUnivariateDerivative2<>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getValue())),
-                                                                                     zero.add(FastMath.PI)),
+                                                                                     one.getPi()),
                                                             ommD.multiply(xnotDot),
                                                             zero);
             // latitude argument
             final FieldUnivariateDerivative2<T> xlm =
                             new FieldUnivariateDerivative2<>(MathUtils.normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getValue())),
-                                                                                    zero.add(FastMath.PI)),
+                                                                                      one.getPi()),
                                                            aMD.multiply(xnotDot),
                                                            zero);
 
@@ -971,31 +971,6 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
     @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return models.get(date).mass;
-    }
-    /**
-     * Normalize an angle in a 2&pi; wide interval around a center value.
-     * <p>This method has three main uses:</p>
-     * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br>
-     *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br>
-     *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
-     *   <li>compute the angle between two defining angular positions:<br>
-     *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
-     * </ul>
-     * <p>Note that due to numerical accuracy and since &pi; cannot be represented
-     * exactly, the result interval is <em>closed</em>, it cannot be half-closed
-     * as would be more satisfactory in a purely mathematical view.</p>
-     * @param a angle to normalize
-     * @param center center of the desired 2&pi; interval for the result
-     * @param <T> the type of the field elements
-     * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @since 1.2
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(CalculusFieldElement, CalculusFieldElement)}
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T normalizeAngle(final T a, final T center) {
-        return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
     }
 
     /** {@inheritDoc} */

@@ -32,7 +32,7 @@ import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
-/** An {@link AttitudeEphemerisFileWriter} generating {@link AemFile AEM} files.
+/** An {@link AttitudeEphemerisFileWriter} generating {@link Aem AEM} files.
  * @author Bryan Cazabonne
  * @since 11.0
  */
@@ -96,7 +96,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
 
     /** {@inheritDoc}
      * <p>
-     * As {@link AttitudeEphemerisFile.SatelliteAttitudeEphemeris} does not have all the entries
+     * As {@code AttitudeEphemerisFile.SatelliteAttitudeEphemeris} does not have all the entries
      * from {@link AemMetadata}, the only values that will be extracted from the
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft

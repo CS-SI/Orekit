@@ -78,7 +78,7 @@ public class TDBScale implements TimeScale {
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
         final T dtDays = date.durationFrom(j2000Epoch).divide(Constants.JULIAN_DAY);
-        final T g = dtDays.multiply(G1).add(G0).multiply(FastMath.PI / 180);
+        final T g = dtDays.multiply(G1).add(G0).multiply(dtDays.getPi().divide(180));
         return tt.offsetFromTAI(date).
                         add(g.sin().multiply(SIN_G_FACTOR).add(g.multiply(2).sin().multiply(SIN_2G_FACTOR)));
     }

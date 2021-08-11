@@ -660,7 +660,7 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         final double step = 100.0;
-        propagator.setMasterMode(step, new OrekitFixedStepHandler() {
+        propagator.setStepHandler(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
             public void handleStep(SpacecraftState currentState) {
                 if (previous != null) {

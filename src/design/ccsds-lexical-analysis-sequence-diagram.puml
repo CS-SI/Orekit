@@ -51,7 +51,7 @@
     activate MessageParser
       MessageParser -> LexicalAnalyzerSelector : select
       activate LexicalAnalyzerSelector
-        LexicalAnalyzerSelector -> DataSource : openOnce
+        LexicalAnalyzerSelector -> DataSource : openStreamOnce
         activate DataSource
           return stream
         deactivate DataSource
