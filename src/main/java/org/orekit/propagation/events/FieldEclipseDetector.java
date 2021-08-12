@@ -219,6 +219,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @return value of the switching function
      */
     public T g(final FieldSpacecraftState<T> s) {
+        final T        zero = s.getOrbit().getA().getField().getZero();
         final Vector3D pted = occulted.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition();
         final Vector3D ping = occulting.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition();
         final Vector3D psat = s.toSpacecraftState().getPVCoordinates().getPosition();
@@ -227,14 +228,13 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
         final double angle  = Vector3D.angle(ps, po);
         final double rs     = FastMath.asin(occultedRadius / ps.getNorm());
         if (Double.isNaN(rs)) {
-            return s.getOrbit().getA().getField().getZero().add(FastMath.PI);
+            return zero.getPi();
         }
         final double ro     = FastMath.asin(occultingRadius / po.getNorm());
         if (Double.isNaN(ro)) {
-            return s.getOrbit().getA().getField().getZero().add(-FastMath.PI);
+            return zero.getPi().negate();
         }
-        return totalEclipse ? (s.getOrbit().getA().getField().getZero().add(angle - ro + rs)) :
-                              (s.getOrbit().getA().getField().getZero().add(angle - ro - rs));
+        return totalEclipse ? (zero.add(angle - ro + rs)) : (zero.add(angle - ro - rs));
     }
 
 }

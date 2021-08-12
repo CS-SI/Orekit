@@ -492,10 +492,10 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         // rough initialization of the mean parameters
         FieldEHModel<T> current = new FieldEHModel<>(osculating, mass, referenceRadius, mu, ck0);
         // threshold for each parameter
-        final T epsilon         = one .multiply(1.0e-13);
+        final T epsilon         = one.multiply(1.0e-13);
         final T thresholdA      = epsilon.multiply(current.mean.getA().abs().add(1.0));
         final T thresholdE      = epsilon.multiply(current.mean.getE().add(1.0));
-        final T thresholdAngles = epsilon.multiply(FastMath.PI);
+        final T thresholdAngles = epsilon.multiply(one.getPi());
 
 
         int i = 0;
@@ -781,13 +781,13 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
             // right ascension of ascending node
             final FieldUnivariateDerivative2<T> omm =
                            new FieldUnivariateDerivative2<>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getValue())),
-                                                                                     zero.add(FastMath.PI)),
+                                                                                     one.getPi()),
                                                             ommD.multiply(xnotDot),
                                                             zero);
             // latitude argument
             final FieldUnivariateDerivative2<T> xlm =
                             new FieldUnivariateDerivative2<>(MathUtils.normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getValue())),
-                                                                                    zero.add(FastMath.PI)),
+                                                                                      one.getPi()),
                                                            aMD.multiply(xnotDot),
                                                            zero);
 

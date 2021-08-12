@@ -16,39 +16,36 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-/** Class holding a solution to an Integer Least Square problem.
- * @author Luc Maisonobe
- * @since 10.0
+import java.util.Comparator;
+
+/** Comparator for {@link IntegerLeastSquareSolution} instance.
+ * @see IntegerLeastSquareSolution
+ * @author Bryan Cazabonne
+ * @since 11.0
  */
-public class IntegerLeastSquareSolution {
-
-    /** Solution array. */
-    private final long[] solution;
-
-    /** Squared distance to the corresponding float solution. */
-    private final double d2;
+public class IntegerLeastSquareComparator implements Comparator<IntegerLeastSquareSolution> {
 
     /** Simple constructor.
-     * @param solution solution array
-     * @param d2 squared distance to the corresponding float solution
      */
-    public IntegerLeastSquareSolution(final long[] solution, final double d2) {
-        this.solution = solution.clone();
-        this.d2       = d2;
+    public IntegerLeastSquareComparator() {
+        // nothing to do
     }
 
-    /** Get the solution array.
-     * @return solution array
+    /** {@inheritDoc}
+     * The comparison is based on the squared
+     * distance to the float solution.
      */
-    public long[] getSolution() {
-        return solution.clone();
-    }
+    @Override
+    public int compare(final IntegerLeastSquareSolution ilss1,
+                       final IntegerLeastSquareSolution ilss2) {
 
-    /** Get the squared distance to the corresponding float solution.
-     * @return squared distance to the corresponding float solution
-     */
-    public double getSquaredDistance() {
-        return d2;
+        if (ilss1 == null) {
+            return ilss2 == null ? 0 : -1;
+        } else if (ilss2 == null) {
+            return 1;
+        }
+
+        return Double.compare(ilss1.getSquaredDistance(), ilss2.getSquaredDistance());
     }
 
 }

@@ -405,7 +405,7 @@ public class DTM2000 implements Atmosphere {
         final Vector3D sunPos = sun.getPVCoordinates(dateD, ecef).getPosition();
         final T y  = pEcef.getY().multiply(sunPos.getX()).subtract(pEcef.getX().multiply(sunPos.getY()));
         final T x  = pEcef.getX().multiply(sunPos.getX()).add(pEcef.getY().multiply(sunPos.getY()));
-        final T hl = y.atan2(x).add(FastMath.PI);
+        final T hl = y.atan2(x).add(y.getPi());
 
         // get current solar activity data and compute
         return getDensity(day, alti, lon, lat, hl, inputParams.getInstantFlux(dateD),

@@ -37,10 +37,10 @@ import org.orekit.utils.IERSConventions;
 public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
 
     /** Version number implemented. **/
-    public static final double CCSDS_TDM_VERS = 1.0;
+    public static final double CCSDS_TDM_VERS = 2.0;
 
     /** Padding width for aligning the '=' sign. */
-    public static final int KVN_PADDING_WIDTH = 25;
+    public static final int KVN_PADDING_WIDTH = 29;
 
     /** Converter for {@link RangeUnits#RU Range Units}. */
     private final RangeUnitsConverter converter;

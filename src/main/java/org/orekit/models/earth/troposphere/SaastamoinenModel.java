@@ -285,7 +285,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         final T e = R.multiply(FastMath.exp(eFunction.value(T)));
 
         // calculate the zenith angle from the elevation
-        final T z = FastMath.abs(FastMath.max(elevation, zero.add(lowElevationThreshold)).negate().add(0.5 * FastMath.PI));
+        final T z = FastMath.abs(FastMath.max(elevation, zero.add(lowElevationThreshold)).negate().add(zero.getPi().multiply(0.5)));
 
         // get correction factor
         final T deltaR = getDeltaR(fixedHeight, z, field);
@@ -326,7 +326,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         final T h = FastMath.min(FastMath.max(zero, height), zero.add(5000));
         // limit the zenith angle to 90 degree
         // Note: the function is symmetric for negative zenith angles
-        final T z = FastMath.min(zenith.abs(), zero.add(0.5 * FastMath.PI));
+        final T z = FastMath.min(zenith.abs(), zero.getPi().multiply(0.5));
         return deltaRFunction.value(h, z);
     }
 

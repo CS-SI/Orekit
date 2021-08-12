@@ -147,7 +147,6 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
                                                              final FieldAuxiliaryElements<T> auxiliaryElements) {
 
         final Field<T> field = state.getDate().getField();
-        final T zero = field.getZero();
 
         final T[] tab = MathArrays.buildArray(field, 2);
 
@@ -159,8 +158,10 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final T apogee  = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().add(1.));
         // Trajectory entirely within of the atmosphere
         if (apogee.getReal() < rbar) {
-            tab[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
-            tab[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+            final T zero = field.getZero();
+            final T pi   = zero.getPi();
+            tab[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(pi);
+            tab[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(pi);
             return tab;
         }
         // Else, trajectory partialy within of the atmosphere

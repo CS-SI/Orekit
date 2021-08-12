@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.ndm.tdm;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
@@ -58,6 +59,19 @@ class TdmMetadataWriter extends AbstractWriter {
 
         generator.writeComments(metadata.getComments());
 
+        generator.writeEntry(TdmMetadataKey.TRACK_ID.name(), metadata.getTrackId(), null, false);
+        final List<ObservationType> dataTypes = metadata.getDataTypes();
+        if (dataTypes != null && !dataTypes.isEmpty()) {
+            final StringBuilder dataTypesNames = new StringBuilder();
+            for (int i = 0; i < dataTypes.size(); ++i) {
+                if (i > 0) {
+                    dataTypesNames.append(',');
+                }
+                dataTypesNames.append(dataTypes.get(i).name());
+            }
+            generator.writeEntry(TdmMetadataKey.DATA_TYPES.name(), dataTypesNames.toString(), null, false);
+        }
+
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),                  metadata.getTimeSystem(), true);
         generator.writeEntry(TdmMetadataKey.START_TIME.name(), timeConverter, metadata.getStartTime(),  false);
@@ -79,6 +93,12 @@ class TdmMetadataWriter extends AbstractWriter {
             generator.writeEntry(TdmMetadataKey.PATH_2.name(), intArrayToString(metadata.getPath2()), null, true);
         }
 
+        generator.writeEntry(TdmMetadataKey.EPHEMERIS_NAME_1.name(),       metadata.getEphemerisNames().get(1), null, false);
+        generator.writeEntry(TdmMetadataKey.EPHEMERIS_NAME_2.name(),       metadata.getEphemerisNames().get(2), null, false);
+        generator.writeEntry(TdmMetadataKey.EPHEMERIS_NAME_3.name(),       metadata.getEphemerisNames().get(3), null, false);
+        generator.writeEntry(TdmMetadataKey.EPHEMERIS_NAME_4.name(),       metadata.getEphemerisNames().get(4), null, false);
+        generator.writeEntry(TdmMetadataKey.EPHEMERIS_NAME_5.name(),       metadata.getEphemerisNames().get(5), null, false);
+
         generator.writeEntry(TdmMetadataKey.TRANSMIT_BAND.name(),          metadata.getTransmitBand(), null, false);
         generator.writeEntry(TdmMetadataKey.RECEIVE_BAND.name(),           metadata.getReceiveBand(),  null, false);
         if (metadata.getTurnaroundNumerator() != 0 || metadata.getTurnaroundDenominator() != 0) {
@@ -98,6 +118,28 @@ class TdmMetadataWriter extends AbstractWriter {
         if (metadata.getReferenceFrame() != null) {
             generator.writeEntry(TdmMetadataKey.REFERENCE_FRAME.name(),    metadata.getReferenceFrame().getName(), null, false);
         }
+
+        // interpolation
+        if (metadata.getInterpolationMethod() != null) {
+            generator.writeEntry(TdmMetadataKey.INTERPOLATION.name(),
+                                 metadata.getInterpolationMethod(),
+                                 null, true);
+            generator.writeEntry(TdmMetadataKey.INTERPOLATION_DEGREE.name(),
+                                 Integer.toString(metadata.getInterpolationDegree()),
+                                 null, true);
+        }
+
+        // Doppler
+        if (metadata.getDopplerCountBias() != 0) {
+            generator.writeEntry(TdmMetadataKey.DOPPLER_COUNT_BIAS.name(),  metadata.getDopplerCountBias(),  Unit.HERTZ, false);
+        }
+        if (metadata.getDopplerCountScale() != 1) {
+            generator.writeEntry(TdmMetadataKey.DOPPLER_COUNT_SCALE.name(), metadata.getDopplerCountScale(), Unit.ONE,   false);
+        }
+        if (metadata.hasDopplerCountRollover()) {
+            generator.writeEntry(TdmMetadataKey.DOPPLER_COUNT_BIAS.name(),  metadata.hasDopplerCountRollover() ? "YES" : "NO", null, false);
+        }
+
         generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_1.name(),       metadata.getTransmitDelays().get(1), Unit.SECOND, false);
         generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_2.name(),       metadata.getTransmitDelays().get(2), Unit.SECOND, false);
         generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_3.name(),       metadata.getTransmitDelays().get(3), Unit.SECOND, false);
@@ -118,14 +160,26 @@ class TdmMetadataWriter extends AbstractWriter {
         if (metadata.getCorrectionDoppler() != 0) {
             generator.writeEntry(TdmMetadataKey.CORRECTION_DOPPLER.name(),  metadata.getCorrectionDoppler(), Units.KM_PER_S, false);
         }
+        if (metadata.getCorrectionMagnitude() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_MAG.name(),      metadata.getCorrectionMagnitude(), Unit.ONE,     false);
+        }
         if (metadata.getRawCorrectionRange() != 0) {
             generator.writeEntry(TdmMetadataKey.CORRECTION_RANGE.name(),    metadata.getRawCorrectionRange(), Unit.ONE,      false);
+        }
+        if (metadata.getCorrectionRcs() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_RCS.name(),      metadata.getCorrectionRcs(),      Units.M2,      false);
         }
         if (metadata.getCorrectionReceive() != 0) {
             generator.writeEntry(TdmMetadataKey.CORRECTION_RECEIVE.name(),  metadata.getCorrectionReceive(), Unit.HERTZ,     false);
         }
         if (metadata.getCorrectionTransmit() != 0) {
             generator.writeEntry(TdmMetadataKey.CORRECTION_TRANSMIT.name(), metadata.getCorrectionTransmit(), Unit.HERTZ,    false);
+        }
+        if (metadata.getCorrectionAberrationYearly() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_ABERRATION_YEARLY.name(), metadata.getCorrectionAberrationYearly(), Unit.DEGREE,    false);
+        }
+        if (metadata.getCorrectionAberrationDiurnal() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_ABERRATION_DIURNAL.name(), metadata.getCorrectionAberrationDiurnal(), Unit.DEGREE,    false);
         }
         generator.writeEntry(TdmMetadataKey.CORRECTIONS_APPLIED.name(),     metadata.getCorrectionsApplied(),                false);
 

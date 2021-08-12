@@ -76,13 +76,11 @@ public class IntegerBootstrappingTest {
 
     @Test
     public void testEquals() {
-        Assert.assertEquals(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0),
-                            new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 4.0));
-        Assert.assertNotEquals(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0),
-                               new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 9.0));
-        Assert.assertNotEquals(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0),
-                               new long[] { 9l, 9l, 9l});
-        Assert.assertEquals(1074816947, new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0).hashCode());
+        // Initialize comparator
+        final IntegerLeastSquareComparator comparator = new IntegerLeastSquareComparator();
+        // Verify
+        Assert.assertEquals(0,  comparator.compare(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0), new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 4.0)));
+        Assert.assertEquals(-1, comparator.compare(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0), new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 9.0)));
     }
 
     private int doTestILS(final RandomGenerator random,

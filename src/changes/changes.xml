@@ -25,6 +25,18 @@
         Fix DateTimeComponents.toString(): correct ISO 8601, leap second, rounding issues.
         Backwards incompatible.
       </action>
+      <action dev="bryan" type="update" issue="626">
+        Used a separate Comparator for sorting integer least square solutions.
+      </action>
+      <action dev="bryan" type="update" issue="799">
+        Used the field-specific value of π.
+      </action>
+      <action dev="bryan" type="fix" issue="795" due-to="guylaine">
+        Fixed output of NRLMSISE00 for altitude at 32.5 km.
+      </action>
+      <action dev="luc" type="add" issue="821">
+        Added support for CCSDS TDM V2.0.
+      </action>
       <action dev="luc" type="add" issue="819">
         Allow data filtering upon loading to be used for explicit loading by applications.
       </action>
