@@ -31,7 +31,7 @@ verify:
   stage: verify
   script:
     - mvn $MAVEN_CLI_OPTS verify site
-    - test -n "$SONAR_TOKEN" && mvn $MAVEN_CLI_OPTS sonar:sonar
+    - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
           -Dsonar.login=${SONAR_TOKEN}
           -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
           -Dsonar.projectKey="$SONAR_PROJECT_KEY"
