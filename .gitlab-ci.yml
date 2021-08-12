@@ -51,6 +51,8 @@ coverage-import:
   stage: visualize
   image: haynes/jacoco2cobertura:1.0.4
   script:
+    # Display total coverage
+    - "grep -o '<tfoot.*tfoot>' target/site/jacoco/index.html | sed 's:<[^>]*>: :g'"
     # Convert report from jacoco to cobertura
     - 'python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java > target/site/cobertura.xml'
     # Read the <source></source> tag and prepend the path to every filename
@@ -63,6 +65,7 @@ coverage-import:
   artifacts:
     reports:
       cobertura: target/site/cobertura.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 # On main branches (develop, release-*, master) the produced artifacts are
 # deployed on the Nexus of the project (https://packages.orekit.org/)
