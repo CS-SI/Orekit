@@ -31,7 +31,7 @@ verify:
   stage: verify
   script:
     - mvn $MAVEN_CLI_OPTS verify site
-    - test -n "$SONAR_TOKEN" -a -n "$SONAR_PROJECT_KEY" -a "$SONAR_PROJECT_NAME" && mvn $MAVEN_CLI_OPTS sonar:sonar
+    - test -n "$SONAR_TOKEN" && mvn $MAVEN_CLI_OPTS sonar:sonar
           -Dsonar.login=${SONAR_TOKEN}
           -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
           -Dsonar.projectKey="$SONAR_PROJECT_KEY"
@@ -52,8 +52,6 @@ verify:warning:
   allow_failure: true
   rules:
     - if: $SONAR_TOKEN == null
-    - if: $SONAR_PROJECT_KEY == null
-    - if: $SONAR_PROJECT_NAME == null
 
 # Convert and import in GitLab coverage data.
 # The information is then available directly in merge-request view.
