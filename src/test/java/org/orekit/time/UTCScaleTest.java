@@ -130,7 +130,8 @@ public class UTCScaleTest {
     @Test
     public void testWrapBeforeLeap() {
         AbsoluteDate t = new AbsoluteDate("2015-06-30T23:59:59.999999", utc);
-        Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
+        Assert.assertEquals("2015-06-30T23:59:60.000+00:00",
+                t.getComponents(utc).toString(utc.minuteDuration(t)));
     }
 
     @Test
