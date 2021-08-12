@@ -1174,6 +1174,8 @@ public class AbsoluteDateTest {
                 CoreMatchers.is(s));
         MatcherAssert.assertThat(d.getComponents(utc).toStringRfc3339(),
                 CoreMatchers.is(s));
+        MatcherAssert.assertThat(d.getComponents(utc).toString(),
+                CoreMatchers.is(s));
     }
 
 
@@ -1281,12 +1283,6 @@ public class AbsoluteDateTest {
 
     private void checkToString(final AbsoluteDate d, final String s) {
         MatcherAssert.assertThat(d.toString(), CoreMatchers.is(s));
-        // there is no way for the second form here to know whether it is in a leap second
-        // or not so it makes poor choices regarding rounding during a leap second.
-        // Only check it when not during a leap second.
-        if (s.charAt(s.length() - 6) != '6') {
-            MatcherAssert.assertThat(d.getComponents(utc).toString(), CoreMatchers.is(s));
-        }
     }
 
     @Before
