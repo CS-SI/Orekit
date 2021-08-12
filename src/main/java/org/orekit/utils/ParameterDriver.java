@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -323,19 +321,6 @@ public class ParameterDriver {
      */
     public double getValue() {
         return value;
-    }
-
-    /** Get the value as a derivative structure.
-     * @param factory factory for the derivatives
-     * @param indices indices of the differentiation parameters in derivatives computations
-     * @return value with derivatives
-     * @since 9.3
-     * @deprecated as of 10.2, replaced by {@link #getValue(int, Map)}
-     */
-    @Deprecated
-    public DerivativeStructure getValue(final DSFactory factory, final Map<String, Integer> indices) {
-        final Integer index = indices.get(name);
-        return (index == null) ? factory.constant(value) : factory.variable(index, value);
     }
 
     /** Get the value as a gradient.

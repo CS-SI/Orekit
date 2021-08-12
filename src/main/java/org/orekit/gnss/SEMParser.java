@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,8 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
@@ -222,55 +223,60 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
         // Skips the empty line
         reader.readLine();
 
+        // Create an empty GPS almanac and set the source
+        final GPSAlmanac almanac = new GPSAlmanac();
+        almanac.setSource(SOURCE);
+
         try {
             // Reads the PRN number from the first line
             String[] token = getTokens(reader);
-            final int prn = Integer.parseInt(token[0].trim());
+            almanac.setPRN(Integer.parseInt(token[0].trim()));
 
             // Reads the SV number from the second line
             token = getTokens(reader);
-            final int svn = Integer.parseInt(token[0].trim());
+            almanac.setSVN(Integer.parseInt(token[0].trim()));
 
             // Reads the average URA number from the third line
             token = getTokens(reader);
-            final int ura = Integer.parseInt(token[0].trim());
+            almanac.setURA(Integer.parseInt(token[0].trim()));
 
             // Reads the fourth line to get ecc, inc and dom
             token = getTokens(reader);
-            final double ecc = Double.parseDouble(token[0].trim());
-            final double inc = getInclination(Double.parseDouble(token[1].trim()));
-            final double dom = toRadians(Double.parseDouble(token[2].trim()));
+            almanac.setE(Double.parseDouble(token[0].trim()));
+            almanac.setI0(getInclination(Double.parseDouble(token[1].trim())));
+            almanac.setOmegaDot(toRadians(Double.parseDouble(token[2].trim())));
 
             // Reads the fifth line to get sqa, raan and aop
             token = getTokens(reader);
-            final double sqa  = Double.parseDouble(token[0].trim());
-            final double om0 = toRadians(Double.parseDouble(token[1].trim()));
-            final double aop  = toRadians(Double.parseDouble(token[2].trim()));
+            almanac.setSqrtA(Double.parseDouble(token[0].trim()));
+            almanac.setOmega0(toRadians(Double.parseDouble(token[1].trim())));
+            almanac.setPa(toRadians(Double.parseDouble(token[2].trim())));
 
             // Reads the sixth line to get anom, af0 and af1
             token = getTokens(reader);
-            final double anom = toRadians(Double.parseDouble(token[0].trim()));
-            final double af0 = Double.parseDouble(token[1].trim());
-            final double af1 = Double.parseDouble(token[2].trim());
+            almanac.setM0(toRadians(Double.parseDouble(token[0].trim())));
+            almanac.setAf0(Double.parseDouble(token[1].trim()));
+            almanac.setAf1(Double.parseDouble(token[2].trim()));
 
             // Reads the seventh line to get health
             token = getTokens(reader);
-            final int health = Integer.parseInt(token[0].trim());
+            almanac.setHealth(Integer.parseInt(token[0].trim()));
 
             // Reads the eighth line to get Satellite Configuration
             token = getTokens(reader);
-            final int conf = Integer.parseInt(token[0].trim());
+            almanac.setSatConfiguration(Integer.parseInt(token[0].trim()));
 
             // Adds the almanac to the list
             final AbsoluteDate date =
                     new GNSSDate(week, toa * 1000, SatelliteSystem.GPS, timeScales)
                             .getDate();
-            almanacs.add(new GPSAlmanac(SOURCE, prn, svn, week, toa, sqa, ecc, inc, om0,
-                                        dom, aop, anom, af0, af1, health, ura, conf,
-                                        date));
+            almanac.setDate(date);
+            almanac.setTime(toa);
+            almanac.setWeek(week);
+            almanacs.add(almanac);
 
             // Adds the PRN to the list
-            prnList.add(prn);
+            prnList.add(almanac.getPRN());
         } catch (IndexOutOfBoundsException aioobe) {
             throw new IOException(aioobe);
         }
@@ -307,7 +313,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
      * @return the angular value in radians
      */
     private double toRadians(final double semicircles) {
-        return GPSOrbitalElements.GPS_PI * semicircles;
+        return GNSSConstants.GNSS_PI * semicircles;
     }
 
 }

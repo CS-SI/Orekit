@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,32 @@ import org.hipparchus.util.FastMath;
 public class NewcombOperators {
 
     /** Storage map. */
-    private static final Map<NewKey, Double> MAP = new TreeMap<NewKey, Double>();
+    private static final Map<NewKey, Double> MAP = new TreeMap<>((k1, k2) -> {
+        if (k1.n == k2.n) {
+            if (k1.s == k2.s) {
+                if (k1.rho == k2.rho) {
+                    if (k1.sigma < k2.sigma) {
+                        return  -1;
+                    } else if (k1.sigma == k2.sigma) {
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+                } else if (k1.rho < k2.rho) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            } else if (k1.s < k2.s) {
+                return -1;
+            } else {
+                return 1;
+            }
+        } else if (k1.n < k2.n) {
+            return -1;
+        }
+        return 1;
+    });
 
     /** Private constructor as class is a utility.
      */
@@ -104,7 +129,18 @@ public class NewcombOperators {
 
         /** Polynomials storage. */
         private static final SortedMap<Couple, List<PolynomialFunction>> POLYNOMIALS =
-                new TreeMap<Couple, List<PolynomialFunction>>();
+                new TreeMap<>((c1, c2) -> {
+                    if (c1.rho == c2.rho) {
+                        if (c1.sigma < c2.sigma) {
+                            return -1;
+                        } else if (c1.sigma == c2.sigma) {
+                            return 0;
+                        }
+                    } else if (c1.rho < c2.rho) {
+                        return -1;
+                    }
+                    return 1;
+                });
 
         /** Private constructor as class is a utility.
          */
@@ -430,7 +466,7 @@ public class NewcombOperators {
     }
 
     /** Private class to define a couple of value. */
-    private static class Couple implements Comparable<Couple> {
+    private static class Couple {
 
         /** first couple value. */
         private final int rho;
@@ -447,46 +483,10 @@ public class NewcombOperators {
             this.sigma = sigma;
         }
 
-        /** {@inheritDoc} */
-        public int compareTo(final Couple c) {
-            int result = 1;
-            if (rho == c.rho) {
-                if (sigma < c.sigma) {
-                    result = -1;
-                } else if (sigma == c.sigma) {
-                    result = 0;
-                }
-            } else if (rho < c.rho) {
-                result = -1;
-            }
-            return result;
-        }
-
-        /** {@inheritDoc} */
-        public boolean equals(final Object couple) {
-
-            if (couple == this) {
-                // first fast check
-                return true;
-            }
-
-            if ((couple != null) && (couple instanceof Couple)) {
-                return (rho == ((Couple) couple).rho) && (sigma == ((Couple) couple).sigma);
-            }
-
-            return false;
-
-        }
-
-        /** {@inheritDoc} */
-        public int hashCode() {
-            return 0x7ab17c0c ^ (rho << 8) ^ sigma;
-        }
-
     }
 
     /** Newcomb operator's key. */
-    private static class NewKey implements Comparable<NewKey> {
+    private static class NewKey {
 
         /** n value. */
         private final int n;
@@ -511,59 +511,6 @@ public class NewcombOperators {
             this.s = s;
             this.rho = rho;
             this.sigma = sigma;
-        }
-
-        /** {@inheritDoc} */
-        public int compareTo(final NewKey key) {
-            int result = 1;
-            if (n == key.n) {
-                if (s == key.s) {
-                    if (rho == key.rho) {
-                        if (sigma < key.sigma) {
-                            result = -1;
-                        } else if (sigma == key.sigma) {
-                            result = 0;
-                        } else {
-                            result = 1;
-                        }
-                    } else if (rho < key.rho) {
-                        result = -1;
-                    } else {
-                        result = 1;
-                    }
-                } else if (s < key.s) {
-                    result = -1;
-                } else {
-                    result = 1;
-                }
-            } else if (n < key.n) {
-                result = -1;
-            }
-            return result;
-        }
-
-        /** {@inheritDoc} */
-        public boolean equals(final Object key) {
-
-            if (key == this) {
-                // first fast check
-                return true;
-            }
-
-            if ((key != null) && (key instanceof NewKey)) {
-                return (n     == ((NewKey) key).n) &&
-                       (s     == ((NewKey) key).s) &&
-                       (rho   == ((NewKey) key).rho) &&
-                       (sigma == ((NewKey) key).sigma);
-            }
-
-            return false;
-
-        }
-
-        /** {@inheritDoc} */
-        public int hashCode() {
-            return 0x25baa451 ^ (n << 24) ^ (s << 16) ^ (rho << 8) ^ sigma;
         }
 
     }

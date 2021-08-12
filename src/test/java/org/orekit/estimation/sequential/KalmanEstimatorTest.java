@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,6 +50,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -122,77 +123,6 @@ public class KalmanEstimatorTest {
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        build();
-        
-        // Filter the measurements and check the results
-        final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 5.80e-8;
-        final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.28e-11;
-        final double[] expectedsigmasPos = {0.998872, 0.933655, 0.997516};
-        final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {9.478853e-4, 9.910788e-4, 5.0438709e-4};
-        final double   sigmaVelEps       = 1e-10;
-        EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps,
-                                           expectedsigmasPos, sigmaPosEps,
-                                           expectedSigmasVel, sigmaVelEps);
-    }
-
-    /**
-     * Perfect PV measurements with a perfect start Keplerian formalism
-     * It uses the deprecated API of Kalman filter
-     */
-    @Test
-    @Deprecated
-    public void testKeplerianPVDeprecated() {
-
-        // Create context
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-
-        // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
-        final boolean       perfectStart  = true;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
-        final double        dP            = 1.;
-        final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
-                                              minStep, maxStep, dP);
-
-        // Create perfect PV measurements
-        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-        final List<ObservedMeasurement<?>> measurements =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new PVMeasurementCreator(),
-                                                               0.0, 3.0, 300.0);
-        // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
-        // Reference position/velocity at last measurement date
-        final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
-        // Covariance matrix initialization
-        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
-        });        
-
-        // Process noise matrix
-        RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
-        });
-  
-
-        // Build the Kalman filter
-        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
         
         // Filter the measurements and check the results
@@ -843,9 +773,9 @@ public class KalmanEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         final double localClockOffset  = 0.137e-6;
@@ -1073,9 +1003,9 @@ public class KalmanEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         final double localClockOffset  = 0.137e-6;

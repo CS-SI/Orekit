@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsInstanceOf;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
@@ -122,7 +123,7 @@ public class EclipticProviderTest {
         Frame frame = FramesFactory.getEcliptic(IERSConventions.IERS_2003);
 
         //action + verify
-        Assert.assertThat(frame.getParent().getTransformProvider(),
+        MatcherAssert.assertThat(frame.getParent().getTransformProvider(),
                           IsInstanceOf.instanceOf(MODProvider.class));
     }
 

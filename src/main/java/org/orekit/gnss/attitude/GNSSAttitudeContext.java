@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -480,7 +480,7 @@ class GNSSAttitudeContext implements TimeStamped {
      * @return Orbit Normal yaw, using inertial frame as reference
      */
     public TimeStampedAngularCoordinates orbitNormalYaw() {
-        final Transform t = LOFType.VVLH.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
+        final Transform t = LOFType.LVLH_CCSDS.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
         return new TimeStampedAngularCoordinates(date,
                                                  t.getRotation(),
                                                  t.getRotationRate(),

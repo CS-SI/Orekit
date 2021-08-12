@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -145,7 +145,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
+    protected <T extends CalculusFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
         final Field<T> field = context.getDate().getField();
 
@@ -155,14 +155,14 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         final T aNight   = field.getZero().add(NIGHT_TURN_LIMIT);
         T       aNoon    = FastMath.atan(muRate.divide(yawRate));
         if (FastMath.abs(realBeta).getReal() < aNoon.getReal()) {
-            final RealFieldUnivariateFunction<T> f = yawEnd -> {
+            final CalculusFieldUnivariateFunction<T> f = yawEnd -> {
                 final T delta = muRate.multiply(yawEnd).divide(yawRate);
                 return yawEnd.subtract(FastMath.abs(context.computePhi(realBeta, delta).
                                                     subtract(context.computePhi(realBeta, delta.negate()))).
                                        multiply(0.5));
             };
             final T[] bracket = UnivariateSolverUtils.bracket(f, field.getZero().add(YAW_END_ZERO),
-                                                              field.getZero(), field.getZero().add(FastMath.PI));
+                                                              field.getZero(), field.getZero().getPi());
             final T yawEnd = new FieldBracketingNthOrderBrentSolver<>(field.getZero().add(1.0e-14),
                                                                       field.getZero().add(1.0e-8),
                                                                       field.getZero().add(1.0e-15),
@@ -178,7 +178,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
             context.setHalfSpan(context.inSunSide() ?
                                 aNoon :
-                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),
+                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(aNight.getPi())),
                                 END_MARGIN);
             if (context.inTurnTimeRange()) {
 

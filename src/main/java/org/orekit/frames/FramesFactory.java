@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
@@ -684,7 +684,7 @@ public class FramesFactory {
      * @return transform between the two frames, avoiding interpolation
      * @since 9.0
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
                                                                                                  final FieldAbsoluteDate<T> date) {
 
         // common ancestor to both frames in the frames tree
@@ -720,8 +720,8 @@ public class FramesFactory {
     /** Retrieve EOP from a frame hierarchy.
      * <p>
      * The frame hierarchy tree is walked from specified frame up to root
-     * goind though parent frames, and the providers are checked to see if they
-     * reference EOP history.the first EOP history found is returned.
+     * traversing parent frames, and the providers are checked to see if they
+     * reference EOP history. The first EOP history found is returned.
      * </p>
      * @param start frame from which to start search, will typically be some
      * Earth related frame, like a topocentric frame or an ITRF frame

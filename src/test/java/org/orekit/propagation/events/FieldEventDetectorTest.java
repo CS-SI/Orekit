@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,16 @@
 package org.orekit.propagation.events;
 
 import java.lang.reflect.Array;
+import java.util.function.Function;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -64,7 +67,7 @@ public class FieldEventDetectorTest {
         doTestEventHandlerInit(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestEventHandlerInit(Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field)
             {
 
         final T zero = field.getZero();
@@ -114,7 +117,7 @@ public class FieldEventDetectorTest {
         doTestBasicScheduling(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestBasicScheduling(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestBasicScheduling(Field<T> field) {
 
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -132,13 +135,13 @@ public class FieldEventDetectorTest {
         T stepSize = zero.add(60.0);
         OutOfOrderChecker<T> checker = new OutOfOrderChecker<>(stepSize);
         propagator.addEventDetector(new FieldDateDetector<>(date.shiftedBy(stepSize.multiply(5.25))).withHandler(checker));
-        propagator.setMasterMode(stepSize, checker);
+        propagator.setStepHandler(stepSize, checker);
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
         Assert.assertTrue(checker.outOfOrderCallDetected());
 
     }
 
-    private static class OutOfOrderChecker<T extends RealFieldElement<T>>
+    private static class OutOfOrderChecker<T extends CalculusFieldElement<T>>
         implements FieldEventHandler<FieldDateDetector<T>, T>, FieldOrekitFixedStepHandler<T> {
 
         private FieldAbsoluteDate<T> triggerDate;
@@ -156,7 +159,7 @@ public class FieldEventDetectorTest {
             return Action.CONTINUE;
         }
 
-        public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
+        public void handleStep(FieldSpacecraftState<T> currentState) {
             // step handling and event occurrences may be out of order up to one step
             // with variable steps, and two steps with fixed steps (due to the delay
             // induced by StepNormalizer)
@@ -180,7 +183,7 @@ public class FieldEventDetectorTest {
         doTestIssue108Numerical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue108Numerical(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue108Numerical(Field<T> field) {
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668),
@@ -209,7 +212,7 @@ public class FieldEventDetectorTest {
         doTestIssue108Analytical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue108Analytical(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue108Analytical(Field<T> field) {
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668),
@@ -227,15 +230,12 @@ public class FieldEventDetectorTest {
         GCallsCounter<T> counter = new GCallsCounter<>(zero.add(100000.0), zero.add(1.0e-6), 20,
                                                        new FieldStopOnEvent<GCallsCounter<T>, T>());
         propagator.addEventDetector(counter);
-        propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
-            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
-            }
-        });
+        propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(step.multiply(n)));
         Assert.assertEquals(n + 1, counter.getCount());
     }
 
-    private static class GCallsCounter<T extends RealFieldElement<T>> extends FieldAbstractDetector<GCallsCounter<T>, T> {
+    private static class GCallsCounter<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<GCallsCounter<T>, T> {
 
         private int count;
 
@@ -267,7 +267,7 @@ public class FieldEventDetectorTest {
         doTestNoisyGFunction(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNoisyGFunction(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNoisyGFunction(Field<T> field) {
 
         final T zero = field.getZero();
 
@@ -305,7 +305,7 @@ public class FieldEventDetectorTest {
         Assert.assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
     }
 
-    private static class FieldCloseApproachDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldCloseApproachDetector<T>, T> {
+    private static class FieldCloseApproachDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldCloseApproachDetector<T>, T> {
 
         private final FieldPVCoordinatesProvider<T> provider;
 
@@ -339,7 +339,7 @@ public class FieldEventDetectorTest {
         doTestWrappedException(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestWrappedException(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestWrappedException(Field<T> field) {
         final T zero = field.getZero();
         final Throwable dummyCause = new RuntimeException();
         try {
@@ -378,7 +378,7 @@ public class FieldEventDetectorTest {
         doTestDefaultMethods(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDefaultMethods(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDefaultMethods(final Field<T> field) {
         FieldEventDetector<T> dummyDetector = new FieldEventDetector<T>() {
 
             @Override
@@ -421,6 +421,117 @@ public class FieldEventDetectorTest {
                                                                                         FieldAbsoluteDate.getJ2000Epoch(field),
                                                                                         field.getZero().add(Constants.EIGEN5C_EARTH_MU)));
        Assert.assertSame(s, dummyDetector.resetState(s));
+
+    }
+
+    @Test
+    public void testForwardAnalytical() {
+        doTestScheduling(Decimal64Field.getInstance(), 0.0, 1.0, 21, this::buildAnalytical);
+    }
+
+    @Test
+    public void testBackwardAnalytical() {
+        doTestScheduling(Decimal64Field.getInstance(), 1.0, 0.0, 21, this::buildAnalytical);
+    }
+
+    @Test
+    public void testForwardNumerical() {
+        doTestScheduling(Decimal64Field.getInstance(), 0.0, 1.0, 23, this::buildNumerical);
+    }
+
+    @Test
+    public void testBackwardNumerical() {
+        doTestScheduling(Decimal64Field.getInstance(), 1.0, 0.0, 23, this::buildNumerical);
+    }
+
+    private <T extends CalculusFieldElement<T>> FieldPropagator<T> buildAnalytical(final FieldOrbit<T> orbit) {
+        return  new FieldKeplerianPropagator<>(orbit);
+    }
+
+    private <T extends CalculusFieldElement<T>> FieldPropagator<T> buildNumerical(final FieldOrbit<T> orbit) {
+        Field<T>            field      = orbit.getDate().getField();
+        OrbitType           type       = OrbitType.CARTESIAN;
+        double[][]          tol        = FieldNumericalPropagator.tolerances(field.getZero().newInstance(0.0001),
+                                                                             orbit, type);
+        FieldODEIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.0001, 10.0, tol[0], tol[1]);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(type);
+        propagator.setInitialState(new FieldSpacecraftState<>(orbit));
+        return propagator;
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestScheduling(final Field<T> field,
+                                                                      final double start, final double stop, final int expectedCalls,
+                                                                      final Function<FieldOrbit<T>, FieldPropagator<T>> propagatorBuilder) {
+
+        // initial conditions
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        final FieldAbsoluteDate<T> initialDate   = new FieldAbsoluteDate<>(field, 2011, 5, 11, utc);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(field.getZero().newInstance(4008462.4706055815),
+                                                                                                             field.getZero().newInstance(-3155502.5373837613),
+                                                                                                             field.getZero().newInstance(-5044275.9880020910)),
+                                                                                         new FieldVector3D<>(field.getZero().newInstance(-5012.9298276860990),
+                                                                                                             field.getZero().newInstance(1920.3567095973078),
+                                                                                                             field.getZero().newInstance(-5172.7403501801580))),
+                                                 eme2000, initialDate, field.getZero().newInstance(Constants.WGS84_EARTH_MU));
+        FieldPropagator<T> propagator = propagatorBuilder.apply(orbit.shiftedBy(start));
+
+        // checker that will be used in both step handler and events handlers
+        // to check they are called in consistent order
+        final ScheduleChecker<T> checker = new ScheduleChecker<>(initialDate.shiftedBy(start),
+                                                                 initialDate.shiftedBy(stop));
+        propagator.setStepHandler((interpolator) -> {
+            checker.callDate(interpolator.getCurrentState().getDate());
+        });
+
+        for (int i = 0; i < 10; ++i) {
+            propagator.addEventDetector(new FieldDateDetector<>(initialDate.shiftedBy(0.0625 * (i + 1))).
+                               withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> detector, boolean increasing) -> {
+                                   checker.callDate(state.getDate());
+                                   return Action.CONTINUE;
+                               }));
+        }
+
+        propagator.propagate(initialDate.shiftedBy(start), initialDate.shiftedBy(stop));
+
+        Assert.assertEquals(expectedCalls, checker.calls);
+
+    }
+
+    /** Checker for method calls scheduling. */
+    private static class ScheduleChecker<T extends CalculusFieldElement<T>> {
+
+        private final FieldAbsoluteDate<T> start;
+        private final FieldAbsoluteDate<T> stop;
+        private FieldAbsoluteDate<T>       last;
+        private int                        calls;
+
+        ScheduleChecker(final FieldAbsoluteDate<T> start, final FieldAbsoluteDate<T> stop) {
+            this.start = start;
+            this.stop  = stop;
+            this.last  = null;
+            this.calls = 0;
+        }
+
+        void callDate(final FieldAbsoluteDate<T> date) {
+            if (last != null) {
+                // check scheduling is always consistent with integration direction
+                if (start.isBefore(stop)) {
+                    // forward direction
+                    Assert.assertTrue(date.isAfterOrEqualTo(start));
+                    Assert.assertTrue(date.isBeforeOrEqualTo(stop));
+                    Assert.assertTrue(date.isAfterOrEqualTo(last));
+               } else {
+                    // backward direction
+                   Assert.assertTrue(date.isBeforeOrEqualTo(start));
+                   Assert.assertTrue(date.isAfterOrEqualTo(stop));
+                   Assert.assertTrue(date.isBeforeOrEqualTo(last));
+                }
+            }
+            last = date;
+            ++calls;
+        }
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -49,7 +49,7 @@ public class FieldDSSTNewtonianAttractionTest {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
         
         final T zero = field.getZero();
         

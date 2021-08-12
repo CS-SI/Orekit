@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,7 +77,7 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
                            final double range, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(date, range, sigma, baseWeight, Arrays.asList(local));
+        super(date, range, sigma, baseWeight, Collections.singletonList(local));
         // The local satellite clock offset affects the measurement
         addParameterDriver(local.getClockOffsetDriver());
         // Initialise fields

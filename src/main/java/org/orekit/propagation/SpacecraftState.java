@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -109,7 +109,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, null);
     }
 
@@ -132,7 +132,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final double mass) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
     }
 
@@ -155,7 +155,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, additional);
     }
 
@@ -180,7 +180,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final double mass, final Map<String, double[]> additional) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
     }
 
@@ -218,7 +218,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, null);
     }
 
@@ -241,7 +241,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, null);
     }
 
@@ -264,7 +264,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Map<String, double[]> additional) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, additional);
     }
 
@@ -289,7 +289,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final Map<String, double[]> additional) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
     }
 

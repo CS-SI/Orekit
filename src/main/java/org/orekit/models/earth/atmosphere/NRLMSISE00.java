@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.models.earth.atmosphere;
 import java.util.Arrays;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -1153,8 +1153,7 @@ public class NRLMSISE00 implements Atmosphere {
                              final Frame frame) {
 
         // check if data are available :
-        if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
-            (date.compareTo(inputParams.getMinDate()) < 0)) {
+        if (!date.isBetweenOrEqualTo(inputParams.getMinDate(), inputParams.getMaxDate())) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       date, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -1185,13 +1184,12 @@ public class NRLMSISE00 implements Atmosphere {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
                                                         final Frame frame) {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
-        if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
-            (dateD.compareTo(inputParams.getMinDate()) < 0)) {
+        if (!dateD.isBetweenOrEqualTo(inputParams.getMinDate(), inputParams.getMaxDate())) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       dateD, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -1204,8 +1202,8 @@ public class NRLMSISE00 implements Atmosphere {
         // compute geodetic position (km and °)
         final FieldGeodeticPoint<T> inBody = earth.transform(position, frame, date);
         final T alt = inBody.getAltitude().divide(1000.);
-        final T lon = inBody.getLongitude().multiply(180.0 / FastMath.PI);
-        final T lat = inBody.getLatitude().multiply(180.0 / FastMath.PI);
+        final T lon = FastMath.toDegrees(inBody.getLongitude());
+        final T lat = FastMath.toDegrees(inBody.getLatitude());
 
         // compute local solar time
         final T lst = localSolarTime(dateD, position, frame);
@@ -1244,15 +1242,15 @@ public class NRLMSISE00 implements Atmosphere {
      * @param <T> type of the filed elements
      * @return the local solar time (hour in [0, 24[)
      */
-    private <T extends RealFieldElement<T>> T localSolarTime(final AbsoluteDate date,
+    private <T extends CalculusFieldElement<T>> T localSolarTime(final AbsoluteDate date,
                                                              final FieldVector3D<T> position,
                                                              final Frame frame) {
         final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
         final T y  = position.getY().multiply(sunPos.getX()).subtract(position.getX().multiply(sunPos.getY()));
         final T x  = position.getX().multiply(sunPos.getX()).add(position.getY().multiply(sunPos.getY()));
-        final T hl = y.atan2(x).add(FastMath.PI);
+        final T hl = y.atan2(x).add(y.getPi());
 
-        return hl.multiply(12. / FastMath.PI);
+        return hl.divide(y.getPi()).multiply(12.);
 
     }
 
@@ -1837,7 +1835,7 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculates for lower stratosphere and troposphere (below ZN3[0])
             // Temperature at nodes and gradients at end nodes
             // Inverse temperature a linear function of spherical harmonics
-            if (alt < ZN3[0]) {
+            if (alt <= ZN3[0]) {
                 final double q = PMA[6][0] * PAVGM[6];
                 meso_tgn3[0] = meso_tgn2[1];
                 meso_tn3[1]  = PMA[3][0] * PAVGM[3] / (1.0 - sw[22] * glob7s(PMA[3]));
@@ -2282,9 +2280,9 @@ public class NRLMSISE00 implements Atmosphere {
                              final double h1, final double zh, final double h2) {
             final double e1 = (alt - zh) / h1;
             final double e2 = (alt - zh) / h2;
-            if ((e1 > 70.) || (e2 > 70.)) {
+            if (e1 > 70. || e2 > 70.) {
                 return 1.;
-            } else if ((e1 < -70.) && (e2 < -70.)) {
+            } else if (e1 < -70. && e2 < -70.) {
                 return FastMath.exp(r);
             } else {
                 final double ex1 = FastMath.exp(e1);
@@ -2683,7 +2681,7 @@ public class NRLMSISE00 implements Atmosphere {
      * @param <T> type of the field elements
      * @since 9.0
      */
-    public class FieldOutput<T extends RealFieldElement<T>> {
+    public class FieldOutput<T extends CalculusFieldElement<T>> {
 
         /** Type of the field elements. */
         private final Field<T> field;
@@ -3243,7 +3241,7 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculates for lower stratosphere and troposphere (below ZN3[0])
             // Temperature at nodes and gradients at end nodes
             // Inverse temperature a linear function of spherical harmonics
-            if (alt.getReal() < ZN3[0]) {
+            if (alt.getReal() <= ZN3[0]) {
                 final double q = PMA[6][0] * PAVGM[6];
                 meso_tgn3[0] = meso_tgn2[1];
                 meso_tn3[1]  = glob7s(PMA[3]).multiply(sw[22]).negate().add(1).reciprocal().multiply(PMA[3][0] * PAVGM[3]);
@@ -3714,9 +3712,9 @@ public class NRLMSISE00 implements Atmosphere {
         private T ccor2(final T alt, final double r, final double h1, final double zh, final double h2) {
             final T e1 = alt.subtract(zh).divide(h1);
             final T e2 = alt.subtract(zh).divide(h2);
-            if ((e1.getReal() > 70.) || (e2.getReal() > 70.)) {
+            if (e1.getReal() > 70. || e2.getReal() > 70.) {
                 return field.getOne();
-            } else if ((e1.getReal() < -70.) && (e2.getReal() < -70.)) {
+            } else if (e1.getReal() < -70. && e2.getReal() < -70.) {
                 return zero.add(FastMath.exp(r));
             } else {
                 final T ex1 = e1.exp();

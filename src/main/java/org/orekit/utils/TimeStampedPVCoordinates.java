@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -175,16 +175,16 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         this.date = date;
     }
 
-    /** Builds a TimeStampedPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a TimeStampedPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link Derivative}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.
      * </p>
      * @param date date of the built coordinates
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public TimeStampedPVCoordinates(final AbsoluteDate date,
-                                    final FieldVector3D<DerivativeStructure> p) {
+    public <U extends Derivative<U>> TimeStampedPVCoordinates(final AbsoluteDate date, final FieldVector3D<U> p) {
         super(p);
         this.date = date;
     }
@@ -251,7 +251,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public static TimeStampedPVCoordinates interpolate(final AbsoluteDate date,
                                                        final CartesianDerivativesFilter filter,
-                                                       final Collection<TimeStampedPVCoordinates> sample) {
+                                                       final Collection<? extends TimeStampedPVCoordinates> sample) {
         return interpolate(date, filter, sample.stream());
     }
 
@@ -277,7 +277,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public static TimeStampedPVCoordinates interpolate(final AbsoluteDate date,
                                                        final CartesianDerivativesFilter filter,
-                                                       final Stream<TimeStampedPVCoordinates> sample) {
+                                                       final Stream<? extends TimeStampedPVCoordinates> sample) {
 
         // set up an interpolator taking derivatives into account
         final HermiteInterpolator interpolator = new HermiteInterpolator();

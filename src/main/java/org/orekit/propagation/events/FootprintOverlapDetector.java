@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -88,26 +88,6 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
 
     /** Sine of the radius of the spherical cap surrounding the zone. */
     private final double capSin;
-
-    /** Build a new instance.
-     * <p>The maximal interval between distance to FOV boundary checks should
-     * be smaller than the half duration of the minimal pass to handle,
-     * otherwise some short passes could be missed.</p>
-     * @param fov sensor field of view
-     * @param body body on which the geographic zone is defined
-     * @param zone geographic zone to consider
-     * @param samplingStep linear step used for sampling the geographic zone (in meters)
-     * @deprecated as of 10.1, replaced by {@link #FootprintOverlapDetector(FieldOfView, OneAxisEllipsoid, SphericalPolygonsSet, double)}
-     */
-    @Deprecated
-    public FootprintOverlapDetector(final org.orekit.propagation.events.FieldOfView fov,
-                                    final OneAxisEllipsoid body,
-                                    final SphericalPolygonsSet zone,
-                                    final double samplingStep) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<FootprintOverlapDetector>(),
-             fov, body, zone, samplingStep, sample(body, zone, samplingStep));
-    }
 
     /** Build a new instance.
      * <p>The maximal interval between distance to FOV boundary checks should
@@ -235,19 +215,6 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      */
     public FieldOfView getFOV() {
         return fov;
-    }
-
-    /** Get the Field Of View.
-     * @return Field Of View, if detector has been built from a
-     * {@link org.orekit.propagation.events.FieldOfView}, or null of the
-     * detector was built from another implementation of {@link FieldOfView}
-     * @deprecated as of 10.1, replaced by {@link #getFOV()}
-     */
-    @Deprecated
-    public org.orekit.propagation.events.FieldOfView getFieldOfView() {
-        return fov instanceof org.orekit.propagation.events.FieldOfView ?
-               (org.orekit.propagation.events.FieldOfView) fov :
-               null;
     }
 
     /** Get the body on which the geographic zone is defined.

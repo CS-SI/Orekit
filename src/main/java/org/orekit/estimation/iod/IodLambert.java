@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -47,6 +48,43 @@ public class IodLambert {
      */
     public IodLambert(final double mu) {
         this.mu = mu;
+    }
+
+    /** Estimate an initial orbit from two position measurements.
+     * <p>
+     * The logic for setting {@code posigrade} and {@code nRev} is that the
+     * sweep angle Δυ travelled by the object between {@code t1} and {@code t2} is
+     * 2π {@code nRev +1} - α if {@code posigrade} is false and 2π {@code nRev} + α
+     * if {@code posigrade} is true, where α is the separation angle between
+     * {@code p1} and {@code p2}, which is always computed between 0 and π
+     * (because in 3D without a normal reference, vector angles cannot go past π).
+     * </p>
+     * <p>
+     * This implies that {@code posigrade} should be set to true if {@code p2} is
+     * located in the half orbit starting at {@code p1} and it should be set to
+     * false if {@code p2} is located in the half orbit ending at {@code p1},
+     * regardless of the number of periods between {@code t1} and {@code t2},
+     * and {@code nRev} should be set accordingly.
+     * </p>
+     * <p>
+     * As an example, if {@code t2} is less than half a period after {@code t1},
+     * then {@code posigrade} should be {@code true} and {@code nRev} should be 0.
+     * If {@code t2} is more than half a period after {@code t1} but less than
+     * one period after {@code t1}, {@code posigrade} should be {@code false} and
+     * {@code nRev} should be 0.
+     * </p>
+     * @param frame     measurements frame
+     * @param posigrade flag indicating the direction of motion
+     * @param nRev      number of revolutions
+     * @param p1        first position measurement
+     * @param p2        second position measurement
+     * @return an initial orbit estimation
+     * @since 11.0
+     */
+    public KeplerianOrbit estimate(final Frame frame, final boolean posigrade,
+                                   final int nRev, final Position p1,  final Position p2) {
+        return estimate(frame, posigrade, nRev,
+                        p1.getPosition(), p1.getDate(), p2.getPosition(), p2.getDate());
     }
 
     /** Estimate a Keplerian orbit given two position vectors and a duration.
@@ -226,7 +264,7 @@ public class IodLambert {
         final double tol = 1e-13;
         final int maxiter = 50;
         double xnew = 0;
-        while ((err > tol) && (iterations < maxiter)) {
+        while (err > tol && iterations < maxiter) {
             // new x
             xnew = (x1 * y2 - y1 * x2) / (y2 - y1);
 

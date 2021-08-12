@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import java.util.TreeMap;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -104,7 +104,7 @@ public class CoefficientsFactory {
      *  @param <T> the type of the field elements
      *  @return Q<sub>n,s</sub> coefficients array
      */
-    public static <T extends RealFieldElement<T>> T[][] computeQns(final T gamma, final int nMax, final int sMax) {
+    public static <T extends CalculusFieldElement<T>> T[][] computeQns(final T gamma, final int nMax, final int sMax) {
 
         // Initialization
         final int sDim = FastMath.min(sMax + 1, nMax) + 1;
@@ -178,7 +178,7 @@ public class CoefficientsFactory {
      *          The 1st column contains the G<sub>s</sub> values.
      *          The 2nd column contains the H<sub>s</sub> values.
      */
-    public static <T extends RealFieldElement<T>> T[][] computeGsHs(final T k, final T h,
+    public static <T extends CalculusFieldElement<T>> T[][] computeGsHs(final T k, final T h,
                                          final T alpha, final T beta,
                                          final int order, final Field<T> field) {
         // Zero for initialization
@@ -320,8 +320,8 @@ public class CoefficientsFactory {
                 return true;
             }
 
-            if ((key != null) && (key instanceof NSKey)) {
-                return (n == ((NSKey) key).n) && (s == ((NSKey) key).s);
+            if (key instanceof NSKey) {
+                return n == ((NSKey) key).n && s == ((NSKey) key).s;
             }
 
             return false;

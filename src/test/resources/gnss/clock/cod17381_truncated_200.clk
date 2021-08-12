@@ -1,0 +1,25 @@
+     2.00           CLOCK DATA                              RINEX VERSION / TYPE
+CCRNXC V5.3         AIUB                04-MAY-13 04:39     PGM / RUN BY / DATE 
+CODE final GPS clock information for day 119, 2013, 3D-sol  COMMENT             
+Clock information consistent with phase and P1/P2 code data COMMENT             
+Satellite/receiver clock values at intervals of 30/300 sec  COMMENT             
+High-rate (30 sec) clock interpolation based on phase data  COMMENT             
+   GPS                                                      TIME SYSTEM ID      
+    16                                                      LEAP SECONDS        
+G GPSEST V5.3       IGS08                                   SYS / PCVS APPLIED  
+G GPSEST V5.3       P1C1.DCB @ ftp.unibe.ch/aiub/CODE/      SYS / DCBS APPLIED  
+     2    AR    AS                                          # / TYPES OF DATA   
+COD  Center for Orbit Determination in Europe               ANALYSIS CENTER     
+     1                                                      # OF CLK REF        
+AMC2 40472S004                           0.000000000000E+00 ANALYSIS CLK REF    
+     2    IGb08                                             # OF SOLN STA / TRF 
+AMC2 40472S004           -1248596314 -4819428207  3976505961SOLN STA NAME / NUM 
+ALBH 40129M003           -2341333029 -3539049511  4745791277SOLN STA NAME / NUM 
+    2                                                       # OF SOLN SATS      
+G01 G02                                                     PRN LIST                      
+                                                            END OF HEADER       
+AR AMC2 2013 04 29 00 00  0.000000  2    0.192309152524E-08  0.115606834111E-09          
+AR ALBH 2013 04 29 00 00  0.000000  2   -0.915794488095E-09  0.114968516105E-09                    
+AR AMC2 2013 04 29 00 00 30.000000  1    0.192333320310E-08                              
+AS G01  2013 04 29 00 00 30.000000  1    0.207175738617E-04                              
+AS G02  2013 04 29 00 00 30.000000  1    0.429592315758E-03                              

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.attitudes;
 
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -156,7 +156,7 @@ public class FixedRateTest {
         doTestZeroRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestZeroRate(final Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestZeroRate(final Field<T> field)
         {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
@@ -188,7 +188,7 @@ public class FixedRateTest {
         doTestNonZeroRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNonZeroRate(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNonZeroRate(final Field<T> field) {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
                                                             new DateComponents(2004, 3, 2),
@@ -221,7 +221,7 @@ public class FixedRateTest {
         doTestSpin(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSpin(final Field<T> field) {
 
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Simple container class for pole correction parameters.
  * <p>This class is a simple container, it does not provide
@@ -25,7 +25,7 @@ import org.hipparchus.RealFieldElement;
  * @since 9.0
  * @author Luc Maisonobe
  */
-public class FieldPoleCorrection<T extends RealFieldElement<T>> {
+public class FieldPoleCorrection<T extends CalculusFieldElement<T>> {
 
     /** x<sub>p</sub> parameter (radians). */
     private final T xp;

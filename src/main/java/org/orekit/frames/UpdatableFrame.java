@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.frames;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -146,9 +146,9 @@ public class UpdatableFrame extends Frame {
         Transform fAtoB = f1Tof2;
 
         // make sure f1 is not a child of the instance
-        if (fA.isChildOf(this) || (fA == this)) {
+        if (fA.isChildOf(this) || fA == this) {
 
-            if (fB.isChildOf(this) || (fB == this)) {
+            if (fB.isChildOf(this) || fB == this) {
                 throw new FrameAncestorException(OrekitMessages.FRAME_ANCESTOR_OF_BOTH_FRAMES,
                                                  getName(), fA.getName(), fB.getName());
             }
@@ -159,7 +159,7 @@ public class UpdatableFrame extends Frame {
             fB = tmp;
             fAtoB = fAtoB.getInverse();
 
-        } else  if (!(fB.isChildOf(this) || (fB == this))) {
+        } else  if (!(fB.isChildOf(this) || fB == this)) {
             throw new FrameAncestorException(OrekitMessages.FRAME_ANCESTOR_OF_NEITHER_FRAME,
                                              getName(), fA.getName(), fB.getName());
         }
@@ -206,7 +206,7 @@ public class UpdatableFrame extends Frame {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return new FieldTransform<>(date.getField(), transform.get());
         }
     }

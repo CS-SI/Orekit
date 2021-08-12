@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.ode.FieldDenseOutputModel;
@@ -36,20 +36,23 @@ import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
 import org.hipparchus.ode.FieldSecondaryODE;
 import org.hipparchus.ode.events.Action;
+import org.hipparchus.ode.events.FieldEventHandlerConfiguration;
 import org.hipparchus.ode.events.FieldODEEventHandler;
+import org.hipparchus.ode.sampling.AbstractFieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStepHandler;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalStateException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -60,18 +63,19 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator FieldPropagator}
  *  methods for both numerical and semi-analytical propagators.
+ * @param <T> the type of the field elements
  *  @author Luc Maisonobe
  */
-public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldElement<T>> extends FieldAbstractPropagator<T> {
+public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T> {
 
     /** Event detectors not related to force models. */
     private final List<FieldEventDetector<T>> detectors;
 
+    /** Step handlers dedicated to ephemeris generation. */
+    private final List<FieldStoringStepHandler> generators;
+
     /** Integrator selected by the user for the orbital extrapolation process. */
     private final FieldODEIntegrator<T> integrator;
-
-    /** Mode handler. */
-    private FieldModeHandler<T> modeHandler;
 
     /** Additional equations. */
     private List<FieldAdditionalEquations<T>> additionalEquations;
@@ -84,9 +88,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Equations mapper. */
     private FieldEquationsMapper<T> equationsMapper;
-
-    /** Underlying raw rawInterpolator. */
-    private FieldODEStateInterpolator<T> mathInterpolator;
 
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
@@ -106,8 +107,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      */
     protected FieldAbstractIntegratedPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator, final PropagationType propagationType) {
         super(field);
-        detectors            = new ArrayList<FieldEventDetector<T>>();
-        additionalEquations  = new ArrayList<FieldAdditionalEquations<T>>();
+        detectors            = new ArrayList<>();
+        generators           = new ArrayList<>();
+        additionalEquations  = new ArrayList<>();
         this.integrator      = integrator;
         this.propagationType = propagationType;
         this.resetAtEnd      = true;
@@ -202,7 +204,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Get the central attraction coefficient μ.
      * @return mu central attraction coefficient (m³/s²)
-     * @see #setMu(RealFieldElement)
+     * @see #setMu(CalculusFieldElement)
      */
     public T getMu() {
         return stateMapper.getMu();
@@ -299,55 +301,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                               detector.getMaxIterationCount());
     }
 
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, PropagationType) constructor}. So if a specific
-     * step handler is needed, it should be added after this method has been callled.</p>
-     */
-    public void setSlaveMode() {
-        super.setSlaveMode();
-        if (integrator != null) {
-            integrator.clearStepHandlers();
-        }
-        modeHandler = null;
-    }
-
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, PropagationType) constructor}. So if a specific
-     * step handler is needed, it should be added after this method has been called.</p>
-     */
-    public void setMasterMode(final FieldOrekitStepHandler<T> handler) {
-        super.setMasterMode(handler);
-        integrator.clearStepHandlers();
-        final FieldAdaptedStepHandler wrapped = new FieldAdaptedStepHandler(handler);
-        integrator.addStepHandler(wrapped);
-        modeHandler = wrapped;
-    }
-
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, PropagationType) constructor}. So if a specific
-     * step handler is needed, it should be added after this method has been called.</p>
-     */
-    public void setEphemerisMode() {
-        super.setEphemerisMode();
-        integrator.clearStepHandlers();
-        final FieldEphemerisModeHandler ephemeris = new FieldEphemerisModeHandler();
-        modeHandler = ephemeris;
-        integrator.addStepHandler(ephemeris);
-    }
-
     /** {@inheritDoc} */
-    public FieldBoundedPropagator<T> getGeneratedEphemeris()
-        throws IllegalStateException {
-        if (getMode() != EPHEMERIS_GENERATION_MODE) {
-            throw new OrekitIllegalStateException(OrekitMessages.PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE);
-        }
-        return ((FieldEphemerisModeHandler) modeHandler).getEphemeris();
+    @Override
+    public FieldEphemerisGenerator<T> getEphemerisGenerator() {
+        final FieldStoringStepHandler storingHandler = new FieldStoringStepHandler();
+        generators.add(storingHandler);
+        return storingHandler;
     }
 
     /** Create a mapper between raw double components and spacecraft state.
@@ -378,63 +337,55 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** {@inheritDoc} */
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> target) {
-        try {
-            if (getStartDate() == null) {
-                if (getInitialState() == null) {
-                    throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
-                }
-                setStartDate(getInitialState().getDate());
+        if (getStartDate() == null) {
+            if (getInitialState() == null) {
+                throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
             }
-            return propagate(getStartDate(), target);
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded OrekitException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof OrekitException) {
-                    throw (OrekitException) t;
-                }
-            }
-            throw new OrekitException(oe);
-
+            setStartDate(getInitialState().getDate());
         }
+        return propagate(getStartDate(), target);
     }
 
     /** {@inheritDoc} */
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tStart, final FieldAbsoluteDate<T> tEnd) {
-        try {
 
-            if (getInitialState() == null) {
-                throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
-            }
+        if (getInitialState() == null) {
+            throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
+        }
+
+        // make sure the integrator will be reset properly even if we change its events handlers and step handlers
+        try (IntegratorResetter<T> resetter = new IntegratorResetter<>(integrator)) {
 
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection
-                propagate(tStart, false);
+                integrateDynamics(tStart);
+            }
+
+            // set up events added by user
+            setUpUserEventDetectors();
+
+            // set up step handlers
+            for (final FieldOrekitStepHandler<T> handler : getMultiplexer().getHandlers()) {
+                integrator.addStepHandler(new FieldAdaptedStepHandler(handler));
+            }
+            for (final FieldStoringStepHandler generator : generators) {
+                generator.setEndDate(tEnd);
+                integrator.addStepHandler(generator);
             }
 
             // propagate from start date to end date with event detection
-            return propagate(tEnd, true);
-
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded OrekitException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof OrekitException) {
-                    throw (OrekitException) t;
-                }
-            }
-            throw new OrekitException(oe);
+            return integrateDynamics(tEnd);
 
         }
+
     }
 
     /** Propagation with or without event detection.
      * @param tEnd target date to which orbit should be propagated
-     * @param activateHandlers if true, step and event handlers should be activated
      * @return state at end of propagation
      */
-    protected FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tEnd, final boolean activateHandlers) {
+    private FieldSpacecraftState<T> integrateDynamics(final FieldAbsoluteDate<T> tEnd) {
         try {
 
             initializePropagation();
@@ -459,23 +410,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                                                getInitialState().getMass());
             }
 
-            integrator.clearEventHandlers();
-            // set up events added by user
-            setUpUserEventDetectors();
-
             // convert space flight dynamics API to math API
             final FieldSpacecraftState<T> initialIntegrationState = getInitialIntegrationState();
             final FieldODEState<T> mathInitialState = createInitialState(initialIntegrationState);
             final FieldExpandableODE<T> mathODE = createODE(integrator, mathInitialState);
             equationsMapper = mathODE.getMapper();
-            mathInterpolator = null;
-            // initialize mode handler
-            if (modeHandler != null) {
-                modeHandler.initialize(activateHandlers, tEnd);
-            }
+
             // mathematical integration
             final FieldODEStateAndDerivative<T> mathFinalState;
-
             beforeIntegration(initialIntegrationState, tEnd);
             mathFinalState = integrator.integrate(mathODE, mathInitialState,
                                                   tEnd.durationFrom(getInitialState().getDate()));
@@ -629,8 +571,60 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     }
 
+    /** Get the interpolated state.
+     * @param os mathematical state
+     * @return interpolated state at the current interpolation date
+                       * the date
+     * @see #getInterpolatedDate()
+     * @see #setInterpolatedDate(FieldAbsoluteDate<T>)
+     */
+    private FieldSpacecraftState<T> convert(final FieldODEStateAndDerivative<T> os) {
+        try {
+
+            FieldSpacecraftState<T> s =
+                    stateMapper.mapArrayToState(os.getTime(),
+                                                os.getPrimaryState(),
+                                                os.getPrimaryDerivative(),
+                                                propagationType);
+            s = updateAdditionalStates(s);
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                final T[] secondary = os.getSecondaryState(i + 1);
+                s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
+            }
+
+            return s;
+
+        } catch (OrekitException oe) {
+            throw new OrekitException(oe);
+        }
+    }
+
+    /** Convert a state from space flight dynamics world to mathematical world.
+     * @param state space flight dynamics state
+     * @return mathematical state
+     */
+    private FieldODEStateAndDerivative<T> convert(final FieldSpacecraftState<T> state) {
+
+        // retrieve initial state
+        final T[] primary    = MathArrays.buildArray(getField(), getBasicDimension());
+        final T[] primaryDot = MathArrays.buildArray(getField(), getBasicDimension());
+        stateMapper.mapStateToArray(state, primary, primaryDot);
+
+        // secondary part of the ODE
+        final T[][] secondary    = MathArrays.buildArray(getField(), additionalEquations.size(), -1);
+        for (int i = 0; i < additionalEquations.size(); ++i) {
+            final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
+            secondary[i] = state.getAdditionalState(additional.getName());
+        }
+
+        return new FieldODEStateAndDerivative<>(stateMapper.mapDateToDouble(state.getDate()),
+                                                primary, primaryDot,
+                                                secondary, null);
+
+    }
+
     /** Differential equations for the main state (orbit, attitude and mass). */
-    public interface MainStateEquations<T extends RealFieldElement<T>> {
+    public interface MainStateEquations<T extends CalculusFieldElement<T>> {
 
         /**
          * Initialize the equations at the start of propagation. This method will be
@@ -845,14 +839,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * to Hipparchus {@link FieldODEStepHandler<T>} interface.
      * @author Luc Maisonobe
      */
-    private class FieldAdaptedStepHandler
-        implements FieldOrekitStepInterpolator<T>, FieldODEStepHandler<T>, FieldModeHandler<T> {
+    private class FieldAdaptedStepHandler implements FieldODEStepHandler<T> {
 
         /** Underlying handler. */
         private final FieldOrekitStepHandler<T> handler;
-
-        /** Flag for handler . */
-        private boolean activate;
 
         /** Build an instance.
          * @param handler underlying handler to wrap
@@ -862,22 +852,38 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
-        public void initialize(final boolean activateHandlers,
-                               final FieldAbsoluteDate<T> targetDate) {
-            this.activate = activateHandlers;
-        }
-        /** {@inheritDoc} */
         public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
             handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
                          stateMapper.mapDoubleToDate(t));
         }
 
         /** {@inheritDoc} */
-        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
-            mathInterpolator = interpolator;
-            if (activate) {
-                handler.handleStep(this, isLast);
-            }
+        public void handleStep(final FieldODEStateInterpolator<T> interpolator) {
+            handler.handleStep(new FieldAdaptedStepInterpolator(interpolator));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void finish(final FieldODEStateAndDerivative<T> finalState) {
+            handler.finish(convert(finalState));
+        }
+
+    }
+
+    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepInterpolator<T>}
+     * to Hipparchus {@link FieldODEStepInterpolator<T>} interface.
+     * @author Luc Maisonobe
+     */
+    private class FieldAdaptedStepInterpolator implements FieldOrekitStepInterpolator<T> {
+
+        /** Underlying raw rawInterpolator. */
+        private final FieldODEStateInterpolator<T> mathInterpolator;
+
+        /** Build an instance.
+         * @param mathInterpolator underlying raw interpolator
+         */
+        FieldAdaptedStepInterpolator(final FieldODEStateInterpolator<T> mathInterpolator) {
+            this.mathInterpolator = mathInterpolator;
         }
 
         /** {@inheritDoc}} */
@@ -898,34 +904,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             return convert(mathInterpolator.getInterpolatedState(date.durationFrom(getStartDate())));
         }
 
-        /** Get the interpolated state.
-         * @param os mathematical state
-         * @return interpolated state at the current interpolation date
-                           * the date
-         * @see #getInterpolatedDate()
-         * @see #setInterpolatedDate(FieldAbsoluteDate<T>)
-         */
-        private FieldSpacecraftState<T> convert(final FieldODEStateAndDerivative<T> os) {
-            try {
-
-                FieldSpacecraftState<T> s =
-                        stateMapper.mapArrayToState(os.getTime(),
-                                                    os.getPrimaryState(),
-                                                    os.getPrimaryDerivative(),
-                                                    propagationType);
-                s = updateAdditionalStates(s);
-                for (int i = 0; i < additionalEquations.size(); ++i) {
-                    final T[] secondary = os.getSecondaryState(i + 1);
-                    s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
-                }
-
-                return s;
-
-            } catch (OrekitException oe) {
-                throw new OrekitException(oe);
-            }
-        }
-
         /** Check is integration direction is forward in date.
          * @return true if integration is forward in date
          */
@@ -933,100 +911,164 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             return mathInterpolator.isForward();
         }
 
+        /** {@inheritDoc}} */
+        @Override
+        public FieldAdaptedStepInterpolator restrictStep(final FieldSpacecraftState<T> newPreviousState,
+                                                         final FieldSpacecraftState<T> newCurrentState) {
+            try {
+                final AbstractFieldODEStateInterpolator<T> aosi = (AbstractFieldODEStateInterpolator<T>) mathInterpolator;
+                return new FieldAdaptedStepInterpolator(aosi.restrictStep(convert(newPreviousState),
+                                                                          convert(newCurrentState)));
+            } catch (ClassCastException cce) {
+                // this should never happen
+                throw new OrekitInternalError(cce);
+            }
+        }
+
     }
 
-    private class FieldEphemerisModeHandler implements FieldModeHandler<T>, FieldODEStepHandler<T> {
+    /** Specialized step handler storing interpolators for ephemeris generation.
+     * @since 11.0
+     */
+    private class FieldStoringStepHandler implements FieldODEStepHandler<T>, FieldEphemerisGenerator<T> {
 
         /** Underlying raw mathematical model. */
         private FieldDenseOutputModel<T> model;
 
-        /** Generated ephemeris. */
-        private FieldBoundedPropagator<T> ephemeris;
-
-        /** Flag for handler . */
-        private boolean activate;
-
         /** the user supplied end date. Propagation may not end on this date. */
         private FieldAbsoluteDate<T> endDate;
 
-        /** Creates a new instance of FieldEphemerisModeHandler which must be
-         *  filled by the propagator.
+        /** Generated ephemeris. */
+        private FieldBoundedPropagator<T> ephemeris;
+
+        /** Set the end date.
+         * @param endDate end date
          */
-        FieldEphemerisModeHandler() {
+        public void setEndDate(final FieldAbsoluteDate<T> endDate) {
+            this.endDate = endDate;
         }
 
         /** {@inheritDoc} */
-        public void initialize(final boolean activateHandlers,
-                               final FieldAbsoluteDate<T> targetDate) {
-            this.activate = activateHandlers;
-            this.model    = new FieldDenseOutputModel<>();
-            this.endDate  = targetDate;
+        @Override
+        public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
+            this.model = new FieldDenseOutputModel<>();
+            model.init(s0, t);
 
             // ephemeris will be generated when last step is processed
             this.ephemeris = null;
 
         }
 
-        /** Get the generated ephemeris.
-         * @return a new instance of the generated ephemeris
-         */
-        public FieldBoundedPropagator<T> getEphemeris() {
+        /** {@inheritDoc} */
+        @Override
+        public FieldBoundedPropagator<T> getGeneratedEphemeris() {
             return ephemeris;
         }
 
         /** {@inheritDoc} */
-        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
-            if (activate) {
-                model.handleStep(interpolator, isLast);
-                if (isLast) {
-
-                    // set up the boundary dates
-                    final T tI = model.getInitialTime();
-                    final T tF = model.getFinalTime();
-                    // tI is almost? always zero
-                    final FieldAbsoluteDate<T> startDate =
-                                    stateMapper.mapDoubleToDate(tI);
-                    final FieldAbsoluteDate<T> finalDate =
-                                    stateMapper.mapDoubleToDate(tF, this.endDate);
-                    final FieldAbsoluteDate<T> minDate;
-                    final FieldAbsoluteDate<T> maxDate;
-                    if (tF.getReal() < tI.getReal()) {
-                        minDate = finalDate;
-                        maxDate = startDate;
-                    } else {
-                        minDate = startDate;
-                        maxDate = finalDate;
-                    }
-
-                    // get the initial additional states that are not managed
-                    final Map<String, T[]> unmanaged = new HashMap<String, T[]>();
-                    for (final Map.Entry<String, T[]> initial : getInitialState().getAdditionalStates().entrySet()) {
-                        if (!isAdditionalStateManaged(initial.getKey())) {
-                            // this additional state was in the initial state, but is unknown to the propagator
-                            // we simply copy its initial value as is
-                            unmanaged.put(initial.getKey(), initial.getValue());
-                        }
-                    }
-
-                    // get the names of additional states managed by differential equations
-                    final String[] names = new String[additionalEquations.size()];
-                    for (int i = 0; i < names.length; ++i) {
-                        names[i] = additionalEquations.get(i).getName();
-                    }
-
-                    // create the ephemeris
-                    ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
-                                                               stateMapper, propagationType, model, unmanaged,
-                                                               getAdditionalStateProviders(), names);
-
-                }
-
-            }
+        @Override
+        public void handleStep(final FieldODEStateInterpolator<T> interpolator) {
+            model.handleStep(interpolator);
         }
 
         /** {@inheritDoc} */
-        public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
-            model.init(s0, t);
+        @Override
+        public void finish(final FieldODEStateAndDerivative<T> finalState) {
+
+            // set up the boundary dates
+            final T tI = model.getInitialTime();
+            final T tF = model.getFinalTime();
+            // tI is almost? always zero
+            final FieldAbsoluteDate<T> startDate =
+                            stateMapper.mapDoubleToDate(tI);
+            final FieldAbsoluteDate<T> finalDate =
+                            stateMapper.mapDoubleToDate(tF, this.endDate);
+            final FieldAbsoluteDate<T> minDate;
+            final FieldAbsoluteDate<T> maxDate;
+            if (tF.getReal() < tI.getReal()) {
+                minDate = finalDate;
+                maxDate = startDate;
+            } else {
+                minDate = startDate;
+                maxDate = finalDate;
+            }
+
+            // get the initial additional states that are not managed
+            final Map<String, T[]> unmanaged = new HashMap<String, T[]>();
+            for (final Map.Entry<String, T[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+                if (!isAdditionalStateManaged(initial.getKey())) {
+                    // this additional state was in the initial state, but is unknown to the propagator
+                    // we simply copy its initial value as is
+                    unmanaged.put(initial.getKey(), initial.getValue());
+                }
+            }
+
+            // get the names of additional states managed by differential equations
+            final String[] names = new String[additionalEquations.size()];
+            for (int i = 0; i < names.length; ++i) {
+                names[i] = additionalEquations.get(i).getName();
+            }
+
+            // create the ephemeris
+            ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
+                                                       stateMapper, propagationType, model, unmanaged,
+                                                       getAdditionalStateProviders(), names);
+
+        }
+
+    }
+
+    /** Wrapper for resetting an integrator handlers.
+     * <p>
+     * This class is intended to be used in a try-with-resource statement.
+     * If propagator-specific event handlers and step handlers are added to
+     * the integrator in the try block, they will be removed automatically
+     * when leaving the block, so the integrator only keep its own handlers
+     * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate).
+     * </p>
+ * @param <T> the type of the field elements
+     * @since 11.0
+     */
+    private static class IntegratorResetter<T extends CalculusFieldElement<T>> implements AutoCloseable {
+
+        /** Wrapped integrator. */
+        private final FieldODEIntegrator<T> integrator;
+
+        /** Initial event handlers list. */
+        private final List<FieldEventHandlerConfiguration<T>> eventHandlersConfigurations;
+
+        /** Initial step handlers list. */
+        private final List<FieldODEStepHandler<T>> stepHandlers;
+
+        /** Simple constructor.
+         * @param integrator wrapped integrator
+         */
+        IntegratorResetter(final FieldODEIntegrator<T> integrator) {
+            this.integrator                  = integrator;
+            this.eventHandlersConfigurations = new ArrayList<>(integrator.getEventHandlersConfigurations());
+            this.stepHandlers                = new ArrayList<>(integrator.getStepHandlers());
+        }
+
+        /** {@inheritDoc}
+         * <p>
+         * Reset event handlers and step handlers back to the initial list
+         * </p>
+         */
+        @Override
+        public void close() {
+
+            // reset event handlers
+            integrator.clearEventHandlers();
+            eventHandlersConfigurations.forEach(c -> integrator.addEventHandler(c.getEventHandler(),
+                                                                                c.getMaxCheckInterval(),
+                                                                                c.getConvergence().getReal(),
+                                                                                c.getMaxIterationCount(),
+                                                                                c.getSolver()));
+
+            // reset step handlers
+            integrator.clearStepHandlers();
+            stepHandlers.forEach(stepHandler -> integrator.addStepHandler(stepHandler));
+
         }
 
     }

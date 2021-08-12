@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,6 +60,17 @@ public class LocalOrbitalFrameTest {
                    pv.getPosition(),
                    Vector3D.crossProduct(pv.getMomentum(), pv.getPosition()),
                    pv.getMomentum(),
+                   pv.getMomentum().negate());
+    }
+
+    @Test
+    public void testLVLH_CCSDS() {
+        AbsoluteDate date = initDate.shiftedBy(400);
+        PVCoordinates pv = provider.getPVCoordinates(date, inertialFrame);
+        checkFrame(LOFType.LVLH_CCSDS, date,
+                   Vector3D.crossProduct(pv.getMomentum(), pv.getPosition()),
+                   pv.getMomentum().negate(),
+                   pv.getPosition().negate(),
                    pv.getMomentum().negate());
     }
 

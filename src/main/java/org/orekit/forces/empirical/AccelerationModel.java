@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,9 @@
  */
 package org.orekit.forces.empirical;
 
-import org.hipparchus.RealFieldElement;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -62,11 +64,11 @@ public interface AccelerationModel {
      * @param <T> type of the elements
      * @return norm of the acceleration
      */
-    <T extends RealFieldElement<T>> T signedAmplitude(FieldSpacecraftState<T> state, T[] parameters);
+    <T extends CalculusFieldElement<T>> T signedAmplitude(FieldSpacecraftState<T> state, T[] parameters);
 
     /** Get the drivers for acceleration model parameters.
      * @return drivers for acceleration model parameters
      */
-    ParameterDriver[] getParametersDrivers();
+    List<ParameterDriver> getParametersDrivers();
 
 }

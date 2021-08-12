@@ -156,7 +156,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                 acceleration.subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
-        FieldSpacecraftState<DerivativeStructure> sDS = toDS(s, new LofOffset(s.getFrame(), LOFType.VVLH));
+        FieldSpacecraftState<DerivativeStructure> sDS = toDS(s, new LofOffset(s.getFrame(), LOFType.LVLH_CCSDS));
         final Vector3D actualDerivatives = relativity
                 .acceleration(sDS, relativity.getParameters(sDS.getDate().getField()))
                 .toVector3D();
@@ -180,7 +180,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         ));
 
         checkStateJacobianVs80Implementation(s, relativity,
-                                             new LofOffset(s.getFrame(), LOFType.VVLH),
+                                             new LofOffset(s.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-50, false);
     }
 
@@ -198,7 +198,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         ));
 
         checkStateJacobianVs80ImplementationGradient(s, relativity,
-                                             new LofOffset(s.getFrame(), LOFType.VVLH),
+                                             new LofOffset(s.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-50, false);
     }
 
@@ -234,7 +234,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                 acceleration.subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
-        FieldSpacecraftState<DerivativeStructure> sDS = toDS(state, new LofOffset(state.getFrame(), LOFType.VVLH));
+        FieldSpacecraftState<DerivativeStructure> sDS = toDS(state, new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS));
         FieldVector3D<DerivativeStructure> gradient =
                 relativity.acceleration(sDS, relativity.getParameters(sDS.getDate().getField()));
         Assert.assertEquals(
@@ -268,7 +268,6 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         DerivativeStructure mu  = factory.constant(Constants.EIGEN5C_EARTH_MU);
 
         Field<DerivativeStructure> field = a_0.getField();
-        DerivativeStructure zero = field.getZero();
 
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
@@ -289,7 +288,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -331,7 +330,6 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         Gradient mu  = Gradient.constant(freeParameters, Constants.EIGEN5C_EARTH_MU);
 
         Field<Gradient> field = a_0.getField();
-        Gradient zero = field.getZero();
 
         FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
 
@@ -352,7 +350,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -413,7 +411,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);

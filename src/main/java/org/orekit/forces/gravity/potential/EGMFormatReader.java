@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -144,7 +144,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
             }
         }
 
-        if ((!okFields) || (c.size() < 1)) {
+        if (!okFields || c.size() < 1) {
             String loaderName = getClass().getName();
             loaderName = loaderName.substring(loaderName.lastIndexOf('.') + 1);
             throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,

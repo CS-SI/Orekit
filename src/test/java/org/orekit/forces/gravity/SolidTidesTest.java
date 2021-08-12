@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -229,7 +229,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngle.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
-        doTestTideEffect(orbit, IERSConventions.IERS_2010, 24.02815, 30.92816);
+        doTestTideEffect(orbit, IERSConventions.IERS_2010, 24.02815, 30.37047);
     }
 
     @Test
@@ -256,7 +256,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Assert.assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -285,7 +285,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Assert.assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -313,7 +313,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getMoon());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -341,7 +341,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getMoon());
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }

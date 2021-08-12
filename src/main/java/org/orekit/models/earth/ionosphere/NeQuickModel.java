@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -158,7 +158,7 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
         // Date
         final FieldAbsoluteDate<T> date = state.getDate();
@@ -252,7 +252,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param satP satellite position
      * @return the STEC in TECUnits
      */
-    public <T extends RealFieldElement<T>> T stec(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T stec(final FieldAbsoluteDate<T> date,
                                                   final FieldGeodeticPoint<T> recP,
                                                   final FieldGeodeticPoint<T> satP) {
 
@@ -333,7 +333,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param dateTime current date and time componentns
      * @return result of the integration
      */
-    private <T extends RealFieldElement<T>> T stecIntegration(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T stecIntegration(final Field<T> field,
                                                               final FieldSegment<T> seg,
                                                               final DateTimeComponents dateTime) {
         // Integration points
@@ -380,7 +380,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param parameters NeQuick model parameters
      * @return electron density [m^-3]
      */
-    private <T extends RealFieldElement<T>> T electronDensity(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T electronDensity(final Field<T> field,
                                                               final T h,
                                                               final FieldNeQuickParameters<T> parameters) {
         // Convert height in kilometers
@@ -474,7 +474,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param parameters NeQuick model parameters
      * @return the electron density N in m-3
      */
-    private <T extends RealFieldElement<T>> T bottomElectronDensity(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final Field<T> field,
                                                                     final T h,
                                                                     final FieldNeQuickParameters<T> parameters) {
 
@@ -582,7 +582,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param parameters NeQuick model parameters
      * @return the electron density N in m-3
      */
-    private <T extends RealFieldElement<T>> T topElectronDensity(final Field<T> field,
+    private <T extends CalculusFieldElement<T>> T topElectronDensity(final Field<T> field,
                                                                  final T h,
                                                                  final FieldNeQuickParameters<T> parameters) {
 
@@ -659,7 +659,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param power power for exponential function
      * @return clipped exponential value
      */
-    private <T extends RealFieldElement<T>> T clipExp(final Field<T> field, final T power) {
+    private <T extends CalculusFieldElement<T>> T clipExp(final Field<T> field, final T power) {
         final T zero = field.getZero();
         if (power.getReal() > 80.0) {
             return zero.add(5.5406E34);
@@ -1149,7 +1149,7 @@ public class NeQuickModel implements IonosphericModel {
      * Container for ray-perigee parameters.
      * By convention, point 1 is at lower height.
      */
-    private static class FieldRay <T extends RealFieldElement<T>> {
+    private static class FieldRay <T extends CalculusFieldElement<T>> {
 
         /** Threshold for ray-perigee parameters computation. */
         private static final double THRESHOLD = 1.0e-10;
@@ -1191,6 +1191,7 @@ public class NeQuickModel implements IonosphericModel {
             final T r2 = satP.getAltitude().add(RE);
 
             // Useful parameters
+            final T pi   = r1.getPi();
             final T lat1 = recP.getLatitude();
             final T lat2 = satP.getLatitude();
             final T lon1 = recP.getLongitude();
@@ -1208,7 +1209,7 @@ public class NeQuickModel implements IonosphericModel {
             this.rp = r1.multiply(FastMath.sin(z));
 
             // Ray-perigee latitude and longitude
-            if (FastMath.abs(FastMath.abs(lat1).getReal() - 0.5 * FastMath.PI) < THRESHOLD) {
+            if (FastMath.abs(FastMath.abs(lat1).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD) {
 
                 // Ray-perigee latitude (Eq. 157)
                 if (lat1.getReal() < 0) {
@@ -1221,13 +1222,13 @@ public class NeQuickModel implements IonosphericModel {
                 if (z.getReal() < 0) {
                     this.lonP = lon2;
                 } else {
-                    this.lonP = lon2.add(FastMath.PI);
+                    this.lonP = lon2.add(pi);
                 }
 
             } else {
 
                 // Ray-perigee latitude (Eq. 158 to 163)
-                final T deltaP = z.negate().add(0.5 * FastMath.PI);
+                final T deltaP = z.negate().add(pi.multiply(0.5));
                 final FieldSinCos<T> scDeltaP = FastMath.sinCos(deltaP);
                 final T sinAz    = FastMath.sin(lon2.subtract(lon1)).multiply(scLatSat.cos()).divide(sinD);
                 final T cosAz    = scLatSat.sin().subtract(cosD.multiply(scLatRec.sin())).divide(sinD.multiply(scLatRec.cos()));
@@ -1249,7 +1250,7 @@ public class NeQuickModel implements IonosphericModel {
             // Sine and cosie of azimuth of satellite as seen from ray-perigee
             final T psi = greatCircleAngle(scLatSat, scLon);
             final FieldSinCos<T> scPsi = FastMath.sinCos(psi);
-            if (FastMath.abs(FastMath.abs(latP).getReal() - 0.5 * FastMath.PI) < THRESHOLD) {
+            if (FastMath.abs(FastMath.abs(latP).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD) {
                 // Eq. 172 and 173
                 this.sinAzP = field.getZero();
                 if (latP.getReal() < 0.0) {
@@ -1464,7 +1465,7 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     /** Performs the computation of the coordinates along the integration path. */
-    private static class FieldSegment <T extends RealFieldElement<T>> {
+    private static class FieldSegment <T extends CalculusFieldElement<T>> {
 
         /** Latitudes [rad]. */
         private final T[] latitudes;

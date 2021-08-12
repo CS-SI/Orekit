@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -178,7 +178,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         // very rough range check
         // (just to avoid ArrayOutOfboundException in MonthDayFactory later)
-        if ((month < 1) || (month > 12)) {
+        if (month < 1 || month > 12) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_MONTH, month);
         }
 
@@ -192,7 +192,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         // check the parameters for mismatch
         // (i.e. invalid date components, like 29 february on non-leap years)
-        if ((year != check.year) || (month != check.month) || (day != check.day)) {
+        if (year != check.year || month != check.month || day != check.day) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_YEAR_MONTH_DAY,
                                                       year, month, day);
         }
@@ -293,7 +293,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         final DateComponents d = new DateComponents(firstWeekMonday, 7 * week + dayOfWeek - 8);
 
         // check the parameters for invalid date components
-        if ((week != d.getCalendarWeek()) || (dayOfWeek != d.getDayOfWeek())) {
+        if (week != d.getCalendarWeek() || dayOfWeek != d.getDayOfWeek()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_WEEK_DATE,
                                                      wYear, week, dayOfWeek);
         }
@@ -391,7 +391,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         if (year < 1583) {
             if (year < 1) {
                 yFactory = PROLEPTIC_JULIAN_FACTORY;
-            } else if ((year < 1582) || (month < 10) || ((month < 11) && (day < 5))) {
+            } else if (year < 1582 || month < 10 || month < 11 && day < 5) {
                 yFactory = JULIAN_FACTORY;
             }
         }
@@ -491,8 +491,8 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     public boolean equals(final Object other) {
         try {
             final DateComponents otherDate = (DateComponents) other;
-            return (otherDate != null) && (year == otherDate.year) &&
-                   (month == otherDate.month) && (day == otherDate.day);
+            return otherDate != null && year == otherDate.year &&
+                   month == otherDate.month && day == otherDate.day;
         } catch (ClassCastException cce) {
             return false;
         }
@@ -593,7 +593,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         /** {@inheritDoc} */
         public boolean isLeap(final int year) {
-            return ((year % 4) == 0) && (((year % 400) == 0) || ((year % 100) != 0));
+            return (year % 4) == 0 && ((year % 400) == 0 || (year % 100) != 0);
         }
 
     }

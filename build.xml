@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="10.3.1" />
+  <property name="project.version"         value="11.0-SNAPSHOT" />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -18,7 +18,7 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="hipparchus.version"       value="1.8"                                            />
+  <property name="hipparchus.version"       value="2.0-SNAPSHOT"                                            />
   <property name="hipparchus.core.jar"      value="hipparchus-core-${hipparchus.version}.jar"      />
   <property name="hipparchus.geometry.jar"  value="hipparchus-geometry-${hipparchus.version}.jar"  />
   <property name="hipparchus.ode.jar"       value="hipparchus-ode-${hipparchus.version}.jar"       />
@@ -27,7 +27,7 @@
   <property name="hipparchus.filtering.jar" value="hipparchus-filtering-${hipparchus.version}.jar" />
   <property name="hipparchus.stat.jar"      value="hipparchus-stat-${hipparchus.version}.jar"      />
   <property name="hipparchus.maven.path"    value="org/hipparchus"                                 />
-  <property name="junit.version"            value="4.12"                                           />
+  <property name="junit.version"            value="4.13.1"                                           />
   <property name="junit.jar"                value="junit-${junit.version}.jar"                     />
   <property name="junit.maven.path"         value="junit/junit"                                    />
   <property name="mockito.version"          value="3.6.28"                                         />
@@ -46,7 +46,7 @@
   <property name="hamcrest.maven.path"      value="org/hamcrest"                                   />
   <property name="maven.repository"         value="https://repo1.maven.org/maven2"                 />
 
-  <property name="copyright"               value="2002-2020 CS GROUP" />
+  <property name="copyright"               value="2002-2021 CS GROUP" />
 
   <available file="${lib.dir}/${hipparchus.core.jar}" property="libs.present" />
 

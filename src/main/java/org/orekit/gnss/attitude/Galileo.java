@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.util.FastMath;
@@ -101,7 +101,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
                                                                   multiply(FastMath.copySign(1.0, -context.getSVBcos() * context.getDeltaDS().getPartialDerivative(1)));
                 final DerivativeStructure              c        = sd.multiply(cosBeta);
                 final DerivativeStructure              shy      = sinBeta.negate().subtract(sinY).
-                                                                  add(sinBeta.subtract(sinY).multiply(c.abs().multiply(FastMath.PI / FastMath.sin(BETA_X)).cos())).
+                                                                  add(sinBeta.subtract(sinY).multiply(c.abs().multiply(c.getPi().divide(FastMath.sin(BETA_X))).cos())).
                                                                   multiply(0.5);
                 final DerivativeStructure              phi      = FastMath.atan2(shy, c);
 
@@ -118,7 +118,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
+    protected <T extends CalculusFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
         // noon beta angle limit from yaw rate
         final double beta0 = FastMath.atan(context.getMuRate().getReal() / yawRate);
@@ -144,7 +144,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
                                                                          multiply(FastMath.copySign(1.0, -context.getSVBcos().getReal() * context.getDeltaDS().getPartialDerivative(1).getReal()));
                 final FieldDerivativeStructure<T>              c       = sd.multiply(cosBeta);
                 final FieldDerivativeStructure<T>              shy     = sinBeta.negate().subtract(sinY).
-                                                                         add(sinBeta.subtract(sinY).multiply(c.abs().multiply(FastMath.PI / FastMath.sin(BETA_X)).cos())).
+                                                                         add(sinBeta.subtract(sinY).multiply(c.abs().multiply(c.getPi().divide(FastMath.sin(BETA_X))).cos())).
                                                                          multiply(0.5);
                 final FieldDerivativeStructure<T>              phi     = FastMath.atan2(shy, c);
 

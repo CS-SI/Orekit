@@ -1,4 +1,4 @@
-# internal error, please notify development team by creating an issue at {0}
+# internal error, please notify development team by creating a new topic at {0}
 INTERNAL_ERROR = <MISSING TRANSLATION>
 
 # altitude ({0} m) is below the {1} m allowed threshold
@@ -18,6 +18,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = órbita con inclinación casi crítica (i = {
 
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = después de {0} iteraciones no se han conseguido calcular los parámetros medios de Eckstein-Hechler
+
+# unable to compute TLE after {0} iterations
+UNABLE_TO_COMPUTE_TLE = después de {0} iteraciones no se han conseguido calcular el TLE
 
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = sistema de referencia {0} huérfano en el árbol de sistemas de referencia
@@ -40,8 +43,8 @@ FRAME_NO_NTH_ANCESTOR = el sistema de referencia {0} está a una profundidad {1}
 # ITRF frame {0} not found
 NO_SUCH_ITRF_FRAME = <MISSING TRANSLATION>
 
-# unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local no reconocido, sistemas de referencia reconocidos : {0} y {1}
+# unsupported local orbital frame {0}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local no reconocido {0}
 
 # non pseudo-inertial frame "{0}"
 NON_PSEUDO_INERTIAL_FRAME = sistema de referencia no pseudo-inercial "{0}"
@@ -76,6 +79,9 @@ INCONSISTENT_DATES_IN_IERS_FILE = fechas {1}-{2}-{3} y MJD {4} incoherentes en e
 # unexpected data after line {0} in file {1}: {2}
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = datos imprevistos en la línea {0} del fichero {1} : {2}
 
+# unexpected data at line {0} in file {1}
+UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
+
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = fechas no cronológicas en el fichero {0} en la línea {1}
 
@@ -96,6 +102,9 @@ UNEXPECTED_END_OF_FILE_AFTER_LINE = fin imprevisto del fichero {0} (después de 
 
 # unable to parse line {0} of file {1}:\n{2}
 UNABLE_TO_PARSE_LINE_IN_FILE = imposible de analizar la línea {0} del fichero {1} :\n{2}
+
+# unable to parse element {0} at line {1}, file {2}
+UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
 
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = imposible de encontrar el fichero {0}
@@ -160,9 +169,6 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = las líneas TLE no se refieren al mismo 
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = parámetro del TLE inválido para el objeto {0}: {1} = {2}
 
-# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
-TLE_INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
-
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = suma de control incorrecta para la línea TLE {0}, en vez del valor esperado {1} se obtiene {2} ({3})
 
@@ -225,9 +231,6 @@ FRAMES_MISMATCH = el sistema de referencia ({0}) no corresponde al sistema de re
 
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estado inicial no especificado para la extrapolación de órbita
-
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = el extrapolador no está en modo de generación de efemérides
 
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = la fecha acontecimiento {0}, más grande que {1} menos {3} segundos y más pequeña que {2} más {3} segundos, no puede ser añadida
@@ -307,6 +310,12 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = longitud inválida para el campo fecha en
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = falta época de referencia específica agencia en una fecha CCSDS
 
+# missing mandatory key {0} in CCSDS file {1}
+CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
+
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = palabra clave inesperada en la línea {0} del fichero CCSDS {1}:\n{2}
 
@@ -319,29 +328,20 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = no hay masa de satélite asociada a este fichero
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = no se ha inicializado ninguna convención IERS antes de la lectura
 
-# frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = el sistema de referencia {0} no es válido en este contexto de fichero ODM
+# frame {0} is not valid in this CCSDS file context
+CCSDS_INVALID_FRAME = el sistema de referencia {0} no es válido en este contexto de fichero CCSDS
 
-# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemas temporales inconsistentes en los bloques de efemérides: {0} ≠ {1}
-
-# Inconsistent time systems in the observations blocks: {0} ≠ {1}
-CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = sistemas temporales inconsistentes en los bloques de observaciones: {0} ≠ {1}
-
-# Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
-CCSDS_TDM_INCONSISTENT_DATA_LINE = la línea de datos {0} del fichero TDM {1} es inconsistente.\nUna línea de datos TDM debería ser como sigue \"keyword = epoch value\".\nLa línea de datos que se ha leído es: {2}
+# inconsistent time systems: {0} ≠ {1}
+CCSDS_INCONSISTENT_TIME_SYSTEMS = sistemas temporales inconsistentes: {0} ≠ {1}
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = no se encontró palabra clave para CCSDS TDM en la línea {0} del fichero {1}:\n{2}
 
-# Parameter {0} needs a time system to be interpreted
-CCSDS_TIME_SYSTEM_NOT_READ_YET = para interpretar el parámetro {0} se necesita un sistema de tiempo
+# no Range Units converter configured for parsing Tracking Data Message
+CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
 
-# Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
-CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = bloque XML de observaciones inconsistente, línea {0} del fichero TDM {1}.\nUn bloque de observaciones TDM debería ser como sigue\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
-
-# TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
-CCSDS_TDM_UNKNOWN_FORMAT = el formato del fichero TDM {0} no se reconoce como válido. Porfavor especifique un formato de fichero: KEYVALUE o XML
+# Time system should have already been set before line {0} of file {1}
+CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE =  el nombre "{0}" ya está utilizado para un estado adicional
@@ -369,6 +369,12 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = <MISSING TRANSLATION>
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = final inesperado de un fichero sp3 (después de la línea {0})
+
+# unsupported clock file version {0}
+CLOCK_FILE_UNSUPPORTED_VERSION = versión de archivo de reloj {0} no reconocida
+
+# unsupported navigation messages file version {0}
+NAVIGATION_FILE_UNSUPPORTED_VERSION = versión de formato de los mensajes de navegación {0} no reconocida
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = no existe el fichero de modelo geomagnético {0} para el año {1}
@@ -445,11 +451,32 @@ NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = el fichero {0} no se reconoce como fichero v
 # only {0} GNSS orbits are provided while {1} are needed to compute the DOP
 NOT_ENOUGH_GNSS_FOR_DOP = sólo se han especificado {0} órbitas GNSS y se necesitan {1} para calcular el DOP
 
-# the CCSDS time system {0} has no corresponding Orekit TimeScale.
-CCSDS_NO_CORRESPONDING_TIME_SCALE = el sistema de tiempo CCSDS {0} no tiene ninguna escala de tiempo Orekit equivalente
-
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = para utilizar el sistema temporal {0} en los ficheros CCSDS se requiere un ICD adicional y no está disponible en Orekit
+
+# inconsistent time systems in the attitude blocks: {0} ≠ {1}
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+
+# attitude type {0} in CCSDS AEM files is not implemented in Orekit
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+
+# invalid rotation sequence {0} at line {1} of file {2}
+CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+
+# element set type {0} ({1}) is not supported yet
+CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = <MISSING TRANSLATION>
+
+# retrograde factor not supported in element set {0}
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
+
+# element set type {0} ({1}) expects {2} elements
+CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+
+# wrong number of units for maneuver {0}
+CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+
+# missing time field for maneuver {0}
+CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = para crear un propagador combinado se necesita al menos un propagador, pero no se ha especificado ninguno
@@ -462,9 +489,6 @@ NULL_ARGUMENT = la entrada {0} no puede ser nula
 
 # value {0} not found in {1}
 VALUE_NOT_FOUND = no se encontró el valor {0} en {1}
-
-# Ephemeris file format does not support multiple space objects
-EPHEMERIS_FILE_NO_MULTI_SUPPORT = el formato de fichero de efemérides no acepta objetos espaciales múltiples
 
 # Klobuchar coefficients α or β could not be loaded from {0}
 KLOBUCHAR_ALPHA_BETA_NOT_LOADED = los coeficientes Klobuchar α o β no se pudieron cargar de {0}
@@ -483,6 +507,12 @@ STATION_NOT_FOUND = no se encontró la estación {0}, estaciones conocidas: {1}
 
 # unknown satellite system {0}
 UNKNOWN_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+
+# unknown time system {0}
+UNKNOWN_TIME_SYSTEM = sistema de tiempo desconocido {0}
+
+# unknown clock data type {0}
+UNKNOWN_CLOCK_DATA_TYPE = tipo de datos de reloj desconocido {0}
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = <MISSING TRANSLATION>
@@ -597,18 +627,6 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
 
-# inconsistent time systems in the attitude blocks: {0} ≠ {1}
-CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
-
-# invalid attitude type {0}
-CCSDS_AEM_NULL_ATTITUDE_TYPE = <MISSING TRANSLATION>
-
-# attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
-
-# the rotation sequence of the Euler angles {0} is invalid
-CCSDS_AEM_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
-
 # observations {0}, {1} and {2} must have different dates
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
@@ -641,3 +659,72 @@ INVALID_RANGE_INDICATOR_IN_CRD_FILE = <MISSING TRANSLATION>
 
 # Unexpected end of CRD file (after line {0})
 CRD_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>
+
+# end of encoded message reached
+END_OF_ENCODED_MESSAGE = <MISSING TRANSLATION>
+
+# too large data type ({0} bits)
+TOO_LARGE_DATA_TYPE = <MISSING TRANSLATION>
+
+# unknown encoded message number {0}
+UNKNOWN_ENCODED_MESSAGE_NUMBER = <MISSING TRANSLATION>
+
+# unknown authentication method: {0}
+UNKNOWN_AUTHENTICATION_METHOD = <MISSING TRANSLATION>
+
+# unknown carrier phase code: {0}
+UNKNOWN_CARRIER_PHASE_CODE = <MISSING TRANSLATION>
+
+# unknown data format: {0}
+UNKNOWN_DATA_FORMAT = <MISSING TRANSLATION>
+
+# unknown navigation system: {0}
+UNKNOWN_NAVIGATION_SYSTEM = <MISSING TRANSLATION>
+
+# data stream {0} requires a NMEA fix data
+STREAM_REQUIRES_NMEA_FIX = <MISSING TRANSLATION>
+
+# failed authentication for mountpoint {0}
+FAILED_AUTHENTICATION = <MISSING TRANSLATION>
+
+# error connecting to {0}: {1}
+CONNECTION_ERROR = <MISSING TRANSLATION>
+
+# unexpected content type {0}
+UNEXPECTED_CONTENT_TYPE = <MISSING TRANSLATION>
+
+# cannot parse GNSS data from {0}
+CANNOT_PARSE_GNSS_DATA = <MISSING TRANSLATION>
+
+# unknown host {0}
+UNKNOWN_HOST = <MISSING TRANSLATION>
+
+# error parsing sourcetable line {0} from {1}: {2}
+SOURCETABLE_PARSE_ERROR = <MISSING TRANSLATION>
+
+# cannot parse sourcetable from {0}
+CANNOT_PARSE_SOURCETABLE = <MISSING TRANSLATION>
+
+# mount point {0} is already connected
+MOUNPOINT_ALREADY_CONNECTED = <MISSING TRANSLATION>
+
+# missing header from {0}: {1}
+MISSING_HEADER = <MISSING TRANSLATION>
+
+# {0} is not a valid international designator
+NOT_VALID_INTERNATIONAL_DESIGNATOR = <MISSING TRANSLATION>
+
+# value for key {0} has not been initialized
+UNINITIALIZED_VALUE_FOR_KEY = <MISSING TRANSLATION>
+
+# unknown unit {0}
+UNKNOWN_UNIT = <MISSING TRANSLATION>
+
+# units {0} and {1} are not compatible
+INCOMPATIBLE_UNITS = <MISSING TRANSLATION>
+
+# missing velocity data
+MISSING_VELOCITY = <MISSING TRANSLATION>
+
+# attempt to generate file {0} with a formatting error
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>

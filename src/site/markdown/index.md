@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS GROUP
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -112,14 +112,23 @@
         analyzes
     * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
-    * all propagators can be used in several different modes
-        * slave mode: propagator is driven by calling application
-        * master mode: propagator drives application callback functions
-        * ephemeris generation mode: all intermediate results are stored during
-          propagation and provided back to the application which can navigate at will
-          through them, effectively using the propagated orbit as if it was an
-          analytical model, even if it really is a numerically propagated one, which
+    * all propagators can manage the time loop by themselves and handle callback
+      functions (called step handlers) from the calling application at each time step.
+        * step handlers can be called at discrete time at regular time steps, which are
+          independent of propagator time steps
+        * step handlers can be called with interpolators valid throughout one propagator
+          time step, which can have varying sizes
+        * step handlers can be switched off completely, when only final state is desired
+        * special step handlers are provided for a posteriori ephemeris generation: all
+          intermediate results are stored during propagation and provided back to the application
+          which can navigate at will through them, effectively using the propagated orbit as if
+          it was analytical model, even if it really is a numerically propagated one, which
           is ideal for search and iterative algorithms
+        * several step handlers can be used simultaneously, so it is possible to have a fine
+          grained fixed time step to log state in a huge file, and have at the same time a
+          coarse grained time step to display progress for user at a more human-friendly rate,
+          this feature can also be used for debugging purpose, by setting up a temporary
+          step handler alongside the operational ones
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
     * predefined discrete events
@@ -165,7 +174,7 @@
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
-    * loading of CCSDS Attitude Data Messages (both AEM, and APM types are supported)
+    * loading and writing of CCSDS Attitude Data Messages (both AEM, and APM types are supported, in both KVN and XML formats, standalone or in combined NDM)
 
   * Orbit determination
   
@@ -183,7 +192,7 @@
         * measurements parameters estimation (biases, satellite clock offset, station clock offset,
           station position, pole motion and rate, prime meridian correction and rate, total zenith
           delay in tropospheric correction)
-    * can be used with both numerical propagator or DSST propagator
+    * can be used with numerical, DSST, or SDP4/SGP4 propagators
     * multi-satellites orbit determination
     * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
@@ -203,6 +212,7 @@
         * multiplexed
     * possibility to add custom measurements
     * loading of ILRS CRD laser ranging measurements file
+    * loading and writing of CCSDS Tracking Data Messages (in both KVN and XML formats, standalone or in combined NDM)
     * several predefined modifiers
         * tropospheric effects
         * ionospheric effects
@@ -234,11 +244,14 @@
     * loading of RINEX observation files (version 2 and version 3)
     * support for Hatanaka compact RINEX format
     * loading of SINEX station file
+    * loading of RINEX clock files (version 2 and version 3)
+    * parsing of IGS SSR messages for all constellations (version 1)
+    * implementation of Ntrip protocol
 
   * Orbit file handling
   
     * loading of SP3 orbit files (from version a to d)
-    * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
+    * loading and writing of CCSDS Orbit Data Messages (both OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format
     * loading of ILRS CPF orbit files

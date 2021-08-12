@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,17 +20,21 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.FieldLegendrePolynomials;
+import org.orekit.utils.LegendrePolynomials;
 import org.orekit.utils.ParameterDriver;
 
 /** The Vienna3 tropospheric delay model for radio techniques.
@@ -52,19 +56,13 @@ import org.orekit.utils.ParameterDriver;
  *
  * @author Bryan Cazabonne
  */
-public class ViennaThreeModel implements DiscreteTroposphericModel {
+public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunction {
 
     /** The a coefficient for the computation of the wet and hydrostatic mapping functions.*/
     private final double[] coefficientsA;
 
     /** Values of hydrostatic and wet delays as provided by the Vienna model. */
     private final double[] zenithDelay;
-
-    /** Geodetic site latitude, radians.*/
-    private final double latitude;
-
-    /** Geodetic site longitude, radians.*/
-    private final double longitude;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -75,41 +73,32 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
      *
      * @param coefficientA The a coefficients for the computation of the wet and hydrostatic mapping functions.
      * @param zenithDelay Values of hydrostatic and wet delays
-     * @param latitude geodetic latitude of the station, in radians
-     * @param longitude geodetic latitude of the station, in radians
-     * @see #ViennaThreeModel(double[], double[], double, double, TimeScale)
+     * @see #ViennaThreeModel(double[], double[], TimeScale)
      */
     @DefaultDataContext
-    public ViennaThreeModel(final double[] coefficientA, final double[] zenithDelay,
-                            final double latitude, final double longitude) {
-        this(coefficientA, zenithDelay, latitude, longitude,
-                DataContext.getDefault().getTimeScales().getUTC());
+    public ViennaThreeModel(final double[] coefficientA, final double[] zenithDelay) {
+        this(coefficientA, zenithDelay,
+             DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /** Build a new instance.
      * @param coefficientA The a coefficients for the computation of the wet and hydrostatic mapping functions.
      * @param zenithDelay Values of hydrostatic and wet delays
-     * @param latitude geodetic latitude of the station, in radians
-     * @param longitude geodetic latitude of the station, in radians
      * @param utc UTC time scale.
      * @since 10.1
      */
     public ViennaThreeModel(final double[] coefficientA,
                             final double[] zenithDelay,
-                            final double latitude,
-                            final double longitude,
                             final TimeScale utc) {
         this.coefficientsA = coefficientA.clone();
         this.zenithDelay   = zenithDelay.clone();
-        this.latitude      = latitude;
-        this.longitude     = longitude;
-        this.utc = utc;
+        this.utc           = utc;
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final double height,
-                                   final double[] parameters, final AbsoluteDate date) {
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -117,7 +106,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
         final int degree = 12;
         final int order  = 12;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order);
+        final LegendrePolynomials p = new LegendrePolynomials(degree, order, FastMath.cos(0.5 * FastMath.PI - point.getLatitude()));
 
         // Compute coefficients bh, bw, ch and cw with spherical harmonics
         double a0Bh = 0.;
@@ -144,7 +133,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
         int j = 0;
         for (int n = 0; n <= 12; n++) {
             for (int m = 0; m <= n; m++) {
-                final SinCos sc = FastMath.sinCos(m * longitude);
+                final SinCos sc = FastMath.sinCos(m * point.getLongitude());
                 final double pCosmLambda = p.getPnm(n, m) * sc.cos();
                 final double pSinmLambda = p.getPnm(n, m) * sc.sin();
 
@@ -185,17 +174,17 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
 
         // Compute Mapping Function Eq. 4
         final double[] function = new double[2];
-        function[0] = computeFunction(coefficientsA[0], bh, ch, elevation);
-        function[1] = computeFunction(coefficientsA[1], bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(coefficientsA[0], bh, ch, elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(coefficientsA[1], bw, cw, elevation);
 
         return function;
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
-                                                              final T[] parameters,  final FieldAbsoluteDate<T> date) {
-        final Field<T> field = height.getField();
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
+                                                              final FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
         final T zero         = field.getZero();
 
         // Day of year computation
@@ -205,7 +194,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
         final int degree = 12;
         final int order  = 12;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order);
+        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, FastMath.cos(point.getLatitude().negate().add(zero.getPi().multiply(0.5))));
 
         // Compute coefficients bh, bw, ch and cw with spherical harmonics
         T a0Bh = zero;
@@ -232,9 +221,9 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
         int j = 0;
         for (int n = 0; n <= 12; n++) {
             for (int m = 0; m <= n; m++) {
-                final SinCos sc = FastMath.sinCos(m * longitude);
-                final T pCosmLambda = zero.add(p.getPnm(n, m) * sc.cos());
-                final T pSinmLambda = zero.add(p.getPnm(n, m) * sc.sin());
+                final FieldSinCos<T> sc = FastMath.sinCos(point.getLongitude().multiply(m));
+                final T pCosmLambda = p.getPnm(n, m).multiply(sc.cos());
+                final T pSinmLambda = p.getPnm(n, m).multiply(sc.sin());
 
                 a0Bh = a0Bh.add(pCosmLambda.multiply(AnmBnm.getAnmBh(j, 0)).add(pSinmLambda.multiply(AnmBnm.getBnmBh(j, 0))));
                 a0Bw = a0Bw.add(pCosmLambda.multiply(AnmBnm.getAnmBw(j, 0)).add(pSinmLambda.multiply(AnmBnm.getBnmBw(j, 0))));
@@ -273,47 +262,66 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
 
         // Compute Mapping Function Eq. 4
         final T[] function = MathArrays.buildArray(field, 2);
-        function[0] = computeFunction(zero.add(coefficientsA[0]), bh, ch, elevation);
-        function[1] = computeFunction(zero.add(coefficientsA[1]), bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(zero.add(coefficientsA[0]), bh, ch, elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(zero.add(coefficientsA[1]), bw, cw, elevation);
 
         return function;
     }
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final double height,
+    public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         // zenith delay
-        final double[] delays = computeZenithDelay(height, parameters, date);
+        final double[] delays = computeZenithDelay(point, parameters, date);
         // mapping function
-        final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
+        final double[] mappingFunction = mappingFactors(elevation, point, date);
         // Tropospheric path delay
         return delays[0] * mappingFunction[0] + delays[1] * mappingFunction[1];
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height, final T[] parameters,
-                  final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
-        final T[] delays = computeZenithDelay(height, parameters, date);
+        final T[] delays = computeZenithDelay(point, parameters, date);
         // mapping function
-        final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
+        final T[] mappingFunction = mappingFactors(elevation, point, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
+    /** This method allows the  computation of the zenith hydrostatic and
+     * zenith wet delay. The resulting element is an array having the following form:
+     * <ul>
+     * <li>T[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>T[1] = D<sub>wz</sub> → zenith wet delay
+     * </ul>
+     * @param point station location
+     * @param parameters tropospheric model parameters
+     * @param date current date
+     * @return a two components array containing the zenith hydrostatic and wet delays.
+     */
+    public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters, final AbsoluteDate date) {
         return zenithDelay.clone();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+    /** This method allows the  computation of the zenith hydrostatic and
+     * zenith wet delay. The resulting element is an array having the following form:
+     * <ul>
+     * <li>T[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>T[1] = D<sub>wz</sub> → zenith wet delay
+     * </ul>
+     * @param <T> type of the elements
+     * @param point station location
+     * @param parameters tropospheric model parameters
+     * @param date current date
+     * @return a two components array containing the zenith hydrostatic and wet delays.
+     */
+    public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
-        final Field<T> field = height.getField();
+        final Field<T> field = date.getField();
         final T zero = field.getZero();
         final T[] delays = MathArrays.buildArray(field, 2);
         delays[0] = zero.add(zenithDelay[0]);
@@ -325,45 +333,6 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
-    }
-
-    /** Compute the mapping function related to the coefficient values and the elevation.
-     * @param a a coefficient
-     * @param b b coefficient
-     * @param c c coefficient
-     * @param elevation the elevation of the satellite, in radians.
-     * @return the value of the function at a given elevation
-     */
-    private double computeFunction(final double a, final double b, final double c, final double elevation) {
-        final double sinE = FastMath.sin(elevation);
-        // Numerator
-        final double numMP = 1 + a / (1 + b / (1 + c));
-        // Denominator
-        final double denMP = sinE + a / (sinE + b / (sinE + c));
-
-        final double felevation = numMP / denMP;
-
-        return felevation;
-    }
-
-    /** Compute the mapping function related to the coefficient values and the elevation.
-     * @param <T> type of the elements
-     * @param a a coefficient
-     * @param b b coefficient
-     * @param c c coefficient
-     * @param elevation the elevation of the satellite, in radians.
-     * @return the value of the function at a given elevation
-     */
-    private <T extends RealFieldElement<T>> T computeFunction(final T a, final T b, final T c, final T elevation) {
-        final T sinE = FastMath.sin(elevation);
-        // Numerator
-        final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
-        // Denominator
-        final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
-
-        final T felevation = numMP.divide(denMP);
-
-        return felevation;
     }
 
     /** Computes the empirical temporal information for the mapping function
@@ -399,71 +368,15 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
      * @param B2 Semi-annual amplitude of the coefficient
      * @return the mapping function coefficient at a given day.
      */
-    private <T extends RealFieldElement<T>> T computeSeasonalFit(final int doy, final T A0, final T A1,
+    private <T extends CalculusFieldElement<T>> T computeSeasonalFit(final int doy, final T A0, final T A1,
                                                                  final T A2, final T B1, final T B2) {
-        final double coef = (doy / 365.25) * 2 * FastMath.PI;
-        final SinCos sc1  = FastMath.sinCos(coef);
-        final SinCos sc2  = FastMath.sinCos(2.0 * coef);
+        final T coef = A0.getPi().multiply(2.0).multiply(doy / 365.25);
+        final FieldSinCos<T> sc1  = FastMath.sinCos(coef);
+        final FieldSinCos<T> sc2  = FastMath.sinCos(coef.multiply(2.0));
 
         return A0.add(
                A1.multiply(sc1.cos())).add(B1.multiply(sc1.sin())).add(
                A2.multiply(sc2.cos())).add(B2.multiply(sc2.sin()));
-    }
-
-    /** Computes the P<sub>nm</sub>(cos(polarDist)) coefficients.
-     *  The computation of the Legendre polynomials is performed following:
-     *  Heiskanen and Moritz, Physical Geodesy, 1967, eq. 1-62
-     */
-    private class LegendrePolynomials {
-
-        /** Array for the Legendre polynomials. */
-        private double[][] pCoef;
-
-        /** Create Legendre polynomials for the given degree and order.
-         * @param degree degree of the spherical harmonics
-         * @param order order of the spherical harmonics
-         */
-        LegendrePolynomials(final int degree, final int order) {
-
-            this.pCoef = new double[degree + 1][order + 1];
-
-            final double polarDist = 0.5 * FastMath.PI - latitude;
-            final double t  = FastMath.cos(polarDist);
-            final double t2 = t * t;
-
-            for (int n = 0; n <= degree; n++) {
-
-                // m shall be <= n (Heiskanen and Moritz, 1967, pp 21)
-                for (int m = 0; m <= FastMath.min(n, order); m++) {
-
-                    // r = int((n - m) / 2)
-                    final int r = (int) (n - m) / 2;
-                    double sum = 0.;
-                    for (int k = 0; k <= r; k++) {
-                        final double term = FastMath.pow(-1.0, k) * CombinatoricsUtils.factorialDouble(2 * n - 2 * k) /
-                                        (CombinatoricsUtils.factorialDouble(k) * CombinatoricsUtils.factorialDouble(n - k) *
-                                         CombinatoricsUtils.factorialDouble(n - m - 2 * k)) *
-                                         FastMath.pow(t, n - m - 2 * k);
-                        sum = sum + term;
-                    }
-
-                    pCoef[n][m] = FastMath.pow(2, -n) * FastMath.pow(1.0 - t2, 0.5 * m) * sum;
-
-                }
-
-            }
-
-        }
-
-        /** Return the coefficient P<sub>nm</sub>.
-         * @param n index
-         * @param m index
-         * @return The coefficient P<sub>nm</sub>
-         */
-        public double getPnm(final int n, final int m) {
-            return pCoef[n][m];
-        }
-
     }
 
     /** Class for the values of the coefficients a<sub>nm</sub> and b<sub>nm</sub>

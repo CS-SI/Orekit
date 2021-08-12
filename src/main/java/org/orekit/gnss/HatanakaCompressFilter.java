@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,8 @@
 package org.orekit.gnss;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +28,7 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataFilter;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -49,25 +47,25 @@ public class HatanakaCompressFilter implements DataFilter {
 
     /** {@inheritDoc} */
     @Override
-    public NamedData filter(final NamedData original) {
+    public DataSource filter(final DataSource original) {
 
-        final String                 oName   = original.getName();
-        final NamedData.StreamOpener oOpener = original.getStreamOpener();
+        final String            oName   = original.getName();
+        final DataSource.Opener oOpener = original.getOpener();
 
         final Matcher rinex2Matcher = RINEX_2_PATTERN.matcher(oName);
         if (rinex2Matcher.matches()) {
             // this is a rinex 2 file compressed with Hatanaka method
-            final String                 fName   = rinex2Matcher.group(1) + "o";
-            final NamedData.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openStream());
-            return new NamedData(fName, fOpener);
+            final String                  fName   = rinex2Matcher.group(1) + "o";
+            final DataSource.ReaderOpener fOpener = () -> new HatanakaReader(oName, oOpener.openReaderOnce());
+            return new DataSource(fName, fOpener);
         }
 
         final Matcher rinex3Matcher = RINEX_3_PATTERN.matcher(oName);
         if (rinex3Matcher.matches()) {
             // this is a rinex 3 file compressed with Hatanaka method
-            final String                 fName   = rinex3Matcher.group(1) + ".rnx";
-            final NamedData.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openStream());
-            return new NamedData(fName, fOpener);
+            final String                  fName   = rinex3Matcher.group(1) + ".rnx";
+            final DataSource.ReaderOpener fOpener = () -> new HatanakaReader(oName, oOpener.openReaderOnce());
+            return new DataSource(fName, fOpener);
         }
 
         // it is not an Hatanaka compressed rinex file
@@ -75,8 +73,8 @@ public class HatanakaCompressFilter implements DataFilter {
 
     }
 
-    /** Filtering of Hatanaka compressed stream. */
-    private static class HatanakaInputStream extends InputStream {
+    /** Filtering of Hatanaka compressed characters stream. */
+    private static class HatanakaReader extends Reader {
 
         /** Format of the current file. */
         private final CompactRinexFormat format;
@@ -85,7 +83,7 @@ public class HatanakaCompressFilter implements DataFilter {
         private final BufferedReader reader;
 
         /** Pending uncompressed output lines. */
-        private byte[] pending;
+        private CharSequence pending;
 
         /** Number of characters already output in pending lines. */
         private int countOut;
@@ -95,44 +93,39 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param input underlying compressed stream
          * @exception IOException if first lines cannot be read
          */
-        HatanakaInputStream(final String name, final InputStream input)
+        HatanakaReader(final String name, final Reader input)
             throws IOException {
 
-            reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+            reader = new BufferedReader(input);
 
             // check header
             format = CompactRinexFormat.getFormat(name, reader);
 
-            pending  = null;
+            pending = null;
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public int read() throws IOException {
-            final byte[] b = new byte[1];
-            return read(b, 0, 1) < 0 ? -1 : b[0];
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public int read(final byte[] b, final int offset, final int len) throws IOException {
+        public int read(final char[] b, final int offset, final int len) throws IOException {
 
             if (pending == null) {
-                // we need to read another section from the underlying stream and uncompress it
+                // we need to read another section from the underlying characters stream and uncompress it
                 countOut = 0;
                 final String firstLine = reader.readLine();
                 if (firstLine == null) {
                     // there are no lines left
                     return -1;
                 } else {
-                    pending = format.uncompressSection(firstLine).getBytes(StandardCharsets.UTF_8);
+                    pending = format.uncompressSection(firstLine);
                 }
             }
 
             // copy as many characters as possible from current line
-            int n = FastMath.min(len, pending.length - countOut);
-            System.arraycopy(pending, countOut, b, offset, n);
+            int n = FastMath.min(len, pending.length() - countOut);
+            for (int i = 0; i < n; ++i) {
+                b[offset + i] = pending.charAt(countOut + i);
+            }
 
             if (n < len) {
                 // line has been completed and we can still output end of line
@@ -172,7 +165,7 @@ public class HatanakaCompressFilter implements DataFilter {
         private int nbComponents;
 
         /** Uncompressed value. */
-        private String uncompressed;
+        private CharSequence uncompressed;
 
         /** Simple constructor.
          * @param fieldLength length of the uncompressed text field
@@ -224,14 +217,14 @@ public class HatanakaCompressFilter implements DataFilter {
                 builder.append(i > length ? '0' : unscaled.charAt(length - i));
             }
 
-            uncompressed = builder.toString();
+            uncompressed = builder;
 
         }
 
         /** Get a string representation of the uncompressed value.
          * @return string representation of the uncompressed value
          */
-        public String getUncompressed() {
+        public CharSequence getUncompressed() {
             return uncompressed;
         }
 
@@ -276,8 +269,8 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Get a string representation of the uncompressed value.
          * @return string representation of the uncompressed value
          */
-        public String getUncompressed() {
-            return state.toString();
+        public CharSequence getUncompressed() {
+            return state;
         }
 
     }
@@ -342,7 +335,7 @@ public class HatanakaCompressFilter implements DataFilter {
         private Section section;
 
         /** Satellites observed at current epoch. */
-        private List<CharSequence> satellites;
+        private List<String> satellites;
 
         /** Differential engine for epoch. */
         private TextDifferential epochDifferential;
@@ -354,7 +347,7 @@ public class HatanakaCompressFilter implements DataFilter {
         private TextDifferential satListDifferential;
 
         /** Differential engines for each satellite. */
-        private Map<CharSequence, CombinedDifferentials> differentials;
+        private Map<String, CombinedDifferentials> differentials;
 
         /** Simple constructor.
          * @param name file name
@@ -376,9 +369,9 @@ public class HatanakaCompressFilter implements DataFilter {
          * @return uncompressed section (contains several lines)
          * @exception IOException if we cannot read lines from underlying stream
          */
-        public String uncompressSection(final String firstLine)
+        public CharSequence uncompressSection(final String firstLine)
             throws IOException {
-            final String uncompressed;
+            final CharSequence uncompressed;
             switch (section) {
 
                 case HEADER : {
@@ -394,7 +387,7 @@ public class HatanakaCompressFilter implements DataFilter {
                         builder.append(parseHeaderLine(line));
                         trimTrailingSpaces(builder);
                     }
-                    uncompressed = builder.toString();
+                    uncompressed = builder;
                     section      = Section.EPOCH;
                     break;
                 }
@@ -429,7 +422,7 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param line header line
          * @return uncompressed line
          */
-        public String parseHeaderLine(final String line) {
+        public CharSequence parseHeaderLine(final String line) {
 
             if (isHeaderLine(NB_OF_SATELLITES, line)) {
                 // number of satellites
@@ -450,7 +443,7 @@ public class HatanakaCompressFilter implements DataFilter {
          * @return uncompressed line
          * @exception IOException if we cannot read additional special events lines
          */
-        public abstract String parseEpochAndClockLines(String epochLine, String clockLine)
+        public abstract CharSequence parseEpochAndClockLines(String epochLine, String clockLine)
             throws IOException;
 
         /** Parse epoch and receiver clock offset lines.
@@ -516,9 +509,9 @@ public class HatanakaCompressFilter implements DataFilter {
                     if (satListStart < loopEpochLine.length()) {
                         satListDifferential.accept(loopEpochLine.subSequence(satListStart, loopEpochLine.length()));
                     }
-                    final String satListPart = satListDifferential.getUncompressed();
+                    final CharSequence satListPart = satListDifferential.getUncompressed();
                     for (int i = 0; i < n; ++i) {
-                        satellites.add(satListPart.subSequence(i * 3, (i + 1) * 3));
+                        satellites.add(satListPart.subSequence(i * 3, (i + 1) * 3).toString());
                     }
 
                     // parse clock offset
@@ -541,21 +534,21 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Get the uncompressed epoch part.
          * @return uncompressed epoch part
          */
-        protected String getEpochPart() {
+        protected CharSequence getEpochPart() {
             return epochDifferential.getUncompressed();
         }
 
         /** Get the uncompressed clock part.
          * @return uncompressed clock part
          */
-        protected String getClockPart() {
+        protected CharSequence getClockPart() {
             return clockDifferential == null ? "" : clockDifferential.getUncompressed();
         }
 
         /** Get the satellites for current observations.
          * @return satellites for current observation
          */
-        protected List<CharSequence> getSatellites() {
+        protected List<String> getSatellites() {
             return satellites;
         }
 
@@ -571,7 +564,7 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param observationLines observation lines
          * @return uncompressed lines
          */
-        public abstract String parseObservationLines(String[] observationLines);
+        public abstract CharSequence parseObservationLines(String[] observationLines);
 
         /** Parse observation lines.
          * @param dataLength length of data fields
@@ -586,7 +579,7 @@ public class HatanakaCompressFilter implements DataFilter {
                 final CharSequence line = observationLines[i];
 
                 // get the differentials associated with this observations line
-                final CharSequence sat = satellites.get(i);
+                final String sat = satellites.get(i);
                 CombinedDifferentials satDiffs = differentials.get(sat);
                 if (satDiffs == null) {
                     final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(sat.subSequence(0, 1).toString());
@@ -691,7 +684,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
             // extract format version
             final int cVersion100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
-            if ((cVersion100 != 100) && (cVersion100 != 300)) {
+            if (cVersion100 != 100 && cVersion100 != 300) {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
             }
             if (!CRINEX_VERSION_TYPE.equals(parseString(line1, LABEL_START, CRINEX_VERSION_TYPE.length()))) {
@@ -712,9 +705,9 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param length length of the string
          * @return parsed string
          */
-        public static String parseString(final String line, final int start, final int length) {
+        public static String parseString(final CharSequence line, final int start, final int length) {
             if (line.length() > start) {
-                return line.substring(start, FastMath.min(line.length(), start + length)).trim();
+                return line.subSequence(start, FastMath.min(line.length(), start + length)).toString().trim();
             } else {
                 return null;
             }
@@ -726,8 +719,8 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param length length of the integer
          * @return parsed integer
          */
-        public static int parseInt(final String line, final int start, final int length) {
-            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
+        public static int parseInt(final CharSequence line, final int start, final int length) {
+            if (line.length() > start && parseString(line, start, length).length() > 0) {
                 return Integer.parseInt(parseString(line, start, length));
             } else {
                 return 0;
@@ -740,8 +733,8 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param length length of the real
          * @return parsed real, or {@code Double.NaN} if field was empty
          */
-        public static double parseDouble(final String line, final int start, final int length) {
-            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
+        public static double parseDouble(final CharSequence line, final int start, final int length) {
+            if (line.length() > start && parseString(line, start, length).length() > 0) {
                 return Double.parseDouble(parseString(line, start, length));
             } else {
                 return Double.NaN;
@@ -825,7 +818,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
         @Override
         /** {@inheritDoc} */
-        public String parseHeaderLine(final String line) {
+        public CharSequence parseHeaderLine(final String line) {
             if (isHeaderLine(NB_TYPES_OF_OBSERV, line)) {
                 for (final SatelliteSystem system : SatelliteSystem.values()) {
                     updateMaxObs(system, parseInt(line, 0, 6));
@@ -838,7 +831,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
         @Override
         /** {@inheritDoc} */
-        public String parseEpochAndClockLines(final String epochLine, final String clockLine)
+        public CharSequence parseEpochAndClockLines(final String epochLine, final String clockLine)
             throws IOException {
 
             final StringBuilder builder = new StringBuilder();
@@ -849,13 +842,13 @@ public class HatanakaCompressFilter implements DataFilter {
 
             // build uncompressed lines, taking care of clock being put
             // back in line 1 and satellites after 12th put in continuation lines
-            final List<CharSequence> satellites = getSatellites();
+            final List<String> satellites = getSatellites();
             builder.append(getEpochPart());
             int iSat = 0;
             while (iSat < FastMath.min(satellites.size(), MAX_SAT_EPOCH_LINE)) {
                 builder.append(satellites.get(iSat++));
             }
-            if (!getClockPart().isEmpty()) {
+            if (getClockPart().length() > 0) {
                 while (builder.length() < CLOCK_START) {
                     builder.append(' ');
                 }
@@ -875,13 +868,13 @@ public class HatanakaCompressFilter implements DataFilter {
                 }
             }
             trimTrailingSpaces(builder);
-            return builder.toString();
+            return builder;
 
         }
 
         @Override
         /** {@inheritDoc} */
-        public String parseObservationLines(final String[] observationLines) {
+        public CharSequence parseObservationLines(final String[] observationLines) {
 
             // parse the observation lines
             doParseObservationLines(DATA_LENGTH, DATA_DECIMAL_PLACES, observationLines);
@@ -894,7 +887,7 @@ public class HatanakaCompressFilter implements DataFilter {
                     builder.append('\n');
                 }
                 final CombinedDifferentials cd    = getCombinedDifferentials(sat);
-                final String                flags = cd.flags.getUncompressed();
+                final CharSequence          flags = cd.flags.getUncompressed();
                 for (int i = 0; i < cd.observations.length; ++i) {
                     if (i > 0 && i % 5 == 0) {
                         trimTrailingSpaces(builder);
@@ -917,7 +910,7 @@ public class HatanakaCompressFilter implements DataFilter {
                 }
             }
             trimTrailingSpaces(builder);
-            return builder.toString();
+            return builder;
 
         }
 
@@ -969,7 +962,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
         @Override
         /** {@inheritDoc} */
-        public String parseHeaderLine(final String line) {
+        public CharSequence parseHeaderLine(final String line) {
             if (isHeaderLine(SYS_NB_OBS_TYPES, line)) {
                 if (line.charAt(0) != ' ') {
                     // it is the first line of an observation types description
@@ -985,7 +978,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
         @Override
         /** {@inheritDoc} */
-        public String parseEpochAndClockLines(final String epochLine, final String clockLine)
+        public CharSequence parseEpochAndClockLines(final String epochLine, final String clockLine)
             throws IOException {
 
             final StringBuilder builder = new StringBuilder();
@@ -996,7 +989,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
             // build uncompressed line
             builder.append(getEpochPart());
-            if (!getClockPart().isEmpty()) {
+            if (getClockPart().length() > 0) {
                 while (builder.length() < CLOCK_START) {
                     builder.append(' ');
                 }
@@ -1004,13 +997,13 @@ public class HatanakaCompressFilter implements DataFilter {
             }
 
             trimTrailingSpaces(builder);
-            return builder.toString();
+            return builder;
 
         }
 
         @Override
         /** {@inheritDoc} */
-        public String parseObservationLines(final String[] observationLines) {
+        public CharSequence parseObservationLines(final String[] observationLines) {
 
             // parse the observation lines
             doParseObservationLines(DATA_LENGTH, DATA_DECIMAL_PLACES, observationLines);
@@ -1024,7 +1017,7 @@ public class HatanakaCompressFilter implements DataFilter {
                 }
                 builder.append(sat);
                 final CombinedDifferentials cd    = getCombinedDifferentials(sat);
-                final String                flags = cd.flags.getUncompressed();
+                final CharSequence          flags = cd.flags.getUncompressed();
                 for (int i = 0; i < cd.observations.length; ++i) {
                     if (cd.observations[i] == null) {
                         // missing observation
@@ -1043,7 +1036,7 @@ public class HatanakaCompressFilter implements DataFilter {
                 }
             }
             trimTrailingSpaces(builder);
-            return builder.toString();
+            return builder;
 
         }
 

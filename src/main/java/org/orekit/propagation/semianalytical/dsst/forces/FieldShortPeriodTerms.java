@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.Map;
 import java.util.Set;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -30,7 +30,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @see DSSTForceModel
  * @author Luc Maisonobe
  */
-public interface FieldShortPeriodTerms <T extends RealFieldElement<T>> {
+public interface FieldShortPeriodTerms <T extends CalculusFieldElement<T>> {
 
     /** Evaluate the contributions of the short period terms.
      * @param meanOrbit mean orbit to which the short period contribution applies

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -41,7 +41,7 @@ import org.orekit.utils.ElevationMask;
  * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * @author Hank Grabowski
  */
-public class FieldElevationDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldElevationDetector<T>, T> {
+public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldElevationDetector<T>, T> {
 
     /** Elevation mask used for calculations, if defined. */
     private final ElevationMask elevationMask;

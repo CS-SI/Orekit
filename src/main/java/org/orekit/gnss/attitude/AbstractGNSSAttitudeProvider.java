@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.frames.Frame;
@@ -60,7 +60,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
     private final SortedSet<TimeStamped> turns;
 
     /** Turns already encountered. */
-    private final transient Map<Field<? extends RealFieldElement<?>>, SortedSet<TimeStamped>> fieldTurns;
+    private final transient Map<Field<? extends CalculusFieldElement<?>>, SortedSet<TimeStamped>> fieldTurns;
 
     /** Simple constructor.
      * @param validityStart start of validity for this provider
@@ -113,7 +113,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
                                                                         final Frame frame) {
 
@@ -156,7 +156,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      * @param <T> type of the field elements
      * @return turn span covering the date, or null if no span covers this date
      */
-    private <T extends RealFieldElement<T>> FieldTurnSpan<T> getTurnSpan(final FieldAbsoluteDate<T> date) {
+    private <T extends CalculusFieldElement<T>> FieldTurnSpan<T> getTurnSpan(final FieldAbsoluteDate<T> date) {
 
         SortedSet<TimeStamped> sortedSet = fieldTurns.get(date.getField());
         if (sortedSet == null) {
@@ -194,7 +194,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      * @param <T> type of the field elements
      * @return corrected yaw, using inertial frame as the reference
      */
-    protected abstract <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
+    protected abstract <T extends CalculusFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
         correctedYaw(GNSSFieldAttitudeContext<T> context);
 
 }

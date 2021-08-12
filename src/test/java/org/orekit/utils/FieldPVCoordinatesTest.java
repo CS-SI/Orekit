@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.utils;
 
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -257,6 +257,15 @@ public class FieldPVCoordinatesTest {
         Assert.assertEquals(  -1.0, fv.getX().getDerivative(1).getReal(), 1.0e-15);
         Assert.assertEquals(  -0.1, fv.getY().getDerivative(1).getReal(), 1.0e-15);
         Assert.assertEquals( -10.0, fv.getZ().getDerivative(1).getReal(), 1.0e-15);
+
+        FieldPVCoordinates<Decimal64> fpv = new FieldPVCoordinates<>(fv);
+        Assert.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+
     }
 
     @Test
@@ -291,6 +300,18 @@ public class FieldPVCoordinatesTest {
             Assert.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
             Assert.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
+
+        FieldPVCoordinates<Decimal64> fpv = new FieldPVCoordinates<>(fv);
+        Assert.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+        Assert.assertEquals(  10.0, fpv.getAcceleration().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -1.0, fpv.getAcceleration().getY().getReal(), 1.0e-15);
+        Assert.assertEquals(-100.0, fpv.getAcceleration().getZ().getReal(), 1.0e-15);
+
     }
 
     @Test
@@ -318,6 +339,18 @@ public class FieldPVCoordinatesTest {
             Assert.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
             Assert.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
+
+        FieldPVCoordinates<Decimal64> fpv = new FieldPVCoordinates<>(fv);
+        Assert.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+        Assert.assertEquals(  10.0, fpv.getAcceleration().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -1.0, fpv.getAcceleration().getY().getReal(), 1.0e-15);
+        Assert.assertEquals(-100.0, fpv.getAcceleration().getZ().getReal(), 1.0e-15);
+
     }
 
     @Test
@@ -704,7 +737,7 @@ public class FieldPVCoordinatesTest {
                                    factory.variable(2, z));
     }
 
-    private <T extends RealFieldElement<T>> void checkPV(FieldPVCoordinates<T> expected, FieldPVCoordinates<T> real, double epsilon) {
+    private <T extends CalculusFieldElement<T>> void checkPV(FieldPVCoordinates<T> expected, FieldPVCoordinates<T> real, double epsilon) {
         Assert.assertEquals(expected.getPosition().getX().getReal(), real.getPosition().getX().getReal(), epsilon);
         Assert.assertEquals(expected.getPosition().getY().getReal(), real.getPosition().getY().getReal(), epsilon);
         Assert.assertEquals(expected.getPosition().getZ().getReal(), real.getPosition().getZ().getReal(), epsilon);
@@ -713,11 +746,11 @@ public class FieldPVCoordinatesTest {
         Assert.assertEquals(expected.getVelocity().getZ().getReal(), real.getVelocity().getZ().getReal(), epsilon);
     }
 
-    private interface OrbitFunction<T extends RealFieldElement<T>>  {
+    private interface OrbitFunction<T extends CalculusFieldElement<T>>  {
         FieldVector3D<T> apply(final FieldCartesianOrbit<T> o);
     }
 
-    private <T extends RealFieldElement<T>> FieldVector3D<T> differentiate(FieldCartesianOrbit<T> orbit,
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> differentiate(FieldCartesianOrbit<T> orbit,
                                                                            OrbitFunction<T> picker) {
         try {
             FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();

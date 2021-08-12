@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,10 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
@@ -111,12 +112,9 @@ public enum IERSConventions {
         @Override
         public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale,
                                                                  final TimeScales timeScales) {
-            try (InputStream in = getStream(NUTATION_ARGUMENTS)) {
-                return new FundamentalNutationArguments(this, timeScale,
-                        in, NUTATION_ARGUMENTS, timeScales);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            return load(NUTATION_ARGUMENTS, in -> new FundamentalNutationArguments(this, timeScale,
+                                                                                            in, NUTATION_ARGUMENTS,
+                                                                                            timeScales));
         }
 
         /** {@inheritDoc} */
@@ -140,7 +138,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return epsilonA.value(evaluateTC(date, timeScales));
                 }
 
@@ -180,12 +178,7 @@ public enum IERSConventions {
                     baseParser.
                     withSinCos(0, 7, deciMilliAS, -1, deciMilliAS).
                     withSinCos(1, 8, deciMilliAS,  9, deciMilliAS);
-            final PoissonSeries xSum;
-            try (InputStream in = getStream(X_Y_SERIES)) {
-                xSum = xParser.parse(in, X_Y_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries xSum = load(X_Y_SERIES, in -> xParser.parse(in, X_Y_SERIES));
 
             // Y = -0.00013″ - 22.40992″t² + 0.001836″t³ + 0.0011130″t⁴
             //     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
@@ -204,12 +197,7 @@ public enum IERSConventions {
                     baseParser.
                     withSinCos(0, -1, deciMilliAS, 10, deciMilliAS).
                     withSinCos(1, 12, deciMilliAS, 11, deciMilliAS);
-            final PoissonSeries ySum;
-            try (InputStream in = getStream(X_Y_SERIES)) {
-                ySum = yParser.parse(in, X_Y_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries ySum = load(X_Y_SERIES, in -> yParser.parse(in, X_Y_SERIES));
 
             final PoissonSeries.CompiledSeries xySum =
                     PoissonSeries.compile(xSum, ySum);
@@ -261,7 +249,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
                     final T[] xy             = xySum.value(elements);
@@ -350,23 +338,13 @@ public enum IERSConventions {
                     baseParser.
                     withSinCos(0, 7, deciMilliAS, -1, deciMilliAS).
                     withSinCos(1, 8, deciMilliAS, -1, deciMilliAS);
-            final PoissonSeries psiSeries;
-            try (InputStream in = getStream(PSI_EPSILON_SERIES)) {
-                psiSeries = psiParser.parse(in, PSI_EPSILON_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries psiSeries = load(PSI_EPSILON_SERIES, in -> psiParser.parse(in, PSI_EPSILON_SERIES));
 
             final PoissonSeriesParser epsilonParser =
                     baseParser.
                     withSinCos(0, -1, deciMilliAS, 9, deciMilliAS).
                     withSinCos(1, -1, deciMilliAS, 10, deciMilliAS);
-            final PoissonSeries epsilonSeries;
-            try (InputStream in = getStream(PSI_EPSILON_SERIES)) {
-                epsilonSeries = epsilonParser.parse(in, PSI_EPSILON_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries epsilonSeries = load(PSI_EPSILON_SERIES, in -> epsilonParser.parse(in, PSI_EPSILON_SERIES));
 
             final PoissonSeries.CompiledSeries psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
@@ -385,7 +363,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
                     final T[] psiEpsilon = psiEpsilonSeries.value(elements);
                     final T[] result = MathArrays.buildArray(date.getField(), 3);
@@ -438,7 +416,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final T dtai = date.durationFrom(gmstReference);
@@ -492,7 +470,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final T dtai = date.durationFrom(gmstReference);
@@ -544,7 +522,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // compute equation of equinoxes
                     final T[] angles = nutation.value(date);
@@ -581,35 +559,24 @@ public enum IERSConventions {
                     withOptionalColumn(1).
                     withGamma(7).
                     withFirstDelaunay(2);
-            final PoissonSeries xSeries;
-            try (InputStream in = getStream(TIDAL_CORRECTION_XP_YP_SERIES)) {
-                xSeries = xyParser.
-                        withSinCos(0, 14, milliAS, 15, milliAS).
-                        parse(in, TIDAL_CORRECTION_XP_YP_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
-            final PoissonSeries ySeries;
-            try (InputStream in = getStream(TIDAL_CORRECTION_XP_YP_SERIES)) {
-                ySeries = xyParser.
-                        withSinCos(0, 16, milliAS, 17, milliAS).
-                        parse(in, TIDAL_CORRECTION_XP_YP_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries xSeries =
+                            load(TIDAL_CORRECTION_XP_YP_SERIES, in -> xyParser.
+                                                                      withSinCos(0, 14, milliAS, 15, milliAS).
+                                                                      parse(in, TIDAL_CORRECTION_XP_YP_SERIES));
+            final PoissonSeries ySeries =
+                            load(TIDAL_CORRECTION_XP_YP_SERIES, in -> xyParser.
+                                                                      withSinCos(0, 16, milliAS, 17, milliAS).
+                                                                      parse(in, TIDAL_CORRECTION_XP_YP_SERIES));
 
             final double deciMilliS = 1.0e-4;
             final PoissonSeriesParser ut1Parser = new PoissonSeriesParser(17).
                     withOptionalColumn(1).
                     withGamma(7).
-                    withFirstDelaunay(2).
-                    withSinCos(0, 16, deciMilliS, 17, deciMilliS);
-            final PoissonSeries ut1Series;
-            try (InputStream in = getStream(TIDAL_CORRECTION_UT1_SERIES)) {
-                ut1Series = ut1Parser.parse(in, TIDAL_CORRECTION_UT1_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+                    withFirstDelaunay(2);
+            final PoissonSeries ut1Series =
+                            load(TIDAL_CORRECTION_UT1_SERIES, in -> ut1Parser.
+                                                                    withSinCos(0, 16, deciMilliS, 17, deciMilliS).
+                                                                    parse(in, TIDAL_CORRECTION_UT1_SERIES));
 
             return new EOPTidalCorrection(arguments, xSeries, ySeries, ut1Series);
 
@@ -645,39 +612,31 @@ public enum IERSConventions {
                         withFirstDelaunay(10);
 
             final double pico = 1.0e-12;
-            try (InputStream k20 = getStream(K20_FREQUENCY_DEPENDENCE);
-                 InputStream k21In1 = getStream(K21_FREQUENCY_DEPENDENCE);
-                 InputStream k21In2 = getStream(K21_FREQUENCY_DEPENDENCE);
-                 InputStream k22In1 = getStream(K22_FREQUENCY_DEPENDENCE);
-                 InputStream k22In2 = getStream(K22_FREQUENCY_DEPENDENCE)) {
-                final PoissonSeries c20Series =
-                        k20Parser.
-                        withSinCos(0, 18, -pico, 16, pico).
-                        parse(k20, K20_FREQUENCY_DEPENDENCE);
-                final PoissonSeries c21Series =
-                        k21Parser.
-                        withSinCos(0, 17, pico, 18, pico).
-                        parse(k21In1, K21_FREQUENCY_DEPENDENCE);
-                final PoissonSeries s21Series =
-                        k21Parser.
-                        withSinCos(0, 18, -pico, 17, pico).
-                        parse(k21In2, K21_FREQUENCY_DEPENDENCE);
-                final PoissonSeries c22Series =
-                        k22Parser.
-                        withSinCos(0, -1, pico, 16, pico).
-                        parse(k22In1, K22_FREQUENCY_DEPENDENCE);
-                final PoissonSeries s22Series =
-                        k22Parser.
-                        withSinCos(0, 16, -pico, -1, pico).
-                        parse(k22In2, K22_FREQUENCY_DEPENDENCE);
+            final PoissonSeries c20Series =
+                            load(K20_FREQUENCY_DEPENDENCE, in -> k20Parser.
+                                                                 withSinCos(0, 18, -pico, 16, pico).
+                                                                 parse(in, K20_FREQUENCY_DEPENDENCE));
+            final PoissonSeries c21Series =
+                            load(K21_FREQUENCY_DEPENDENCE, in -> k21Parser.
+                                                                 withSinCos(0, 17, pico, 18, pico).
+                                                                 parse(in, K21_FREQUENCY_DEPENDENCE));
+            final PoissonSeries s21Series =
+                            load(K21_FREQUENCY_DEPENDENCE, in -> k21Parser.
+                                                                 withSinCos(0, 18, -pico, 17, pico).
+                                                                 parse(in, K21_FREQUENCY_DEPENDENCE));
+            final PoissonSeries c22Series =
+                            load(K22_FREQUENCY_DEPENDENCE, in -> k22Parser.
+                                                                 withSinCos(0, -1, pico, 16, pico).
+                                                                 parse(in, K22_FREQUENCY_DEPENDENCE));
+            final PoissonSeries s22Series =
+                            load(K22_FREQUENCY_DEPENDENCE, in -> k22Parser.
+                                                                 withSinCos(0, 16, -pico, -1, pico).
+                                                                 parse(in, K22_FREQUENCY_DEPENDENCE));
 
-                return new TideFrequencyDependenceFunction(arguments,
-                                                           c20Series,
-                                                           c21Series, s21Series,
-                                                           c22Series, s22Series);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            return new TideFrequencyDependenceFunction(arguments,
+                                                       c20Series,
+                                                       c21Series, s21Series,
+                                                       c22Series, s22Series);
 
         }
 
@@ -693,7 +652,7 @@ public enum IERSConventions {
 
             // constants from IERS 1996 page 47
             final double globalFactor = -1.348e-9 / Constants.ARC_SECONDS_TO_RADIANS;
-            final double coupling     =  0.00112;
+            final double coupling     =  0.0112;
 
             return new TimeVectorFunction() {
 
@@ -709,7 +668,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     final FieldPoleCorrection<T> pole = eopHistory.getPoleCorrection(date);
                     final T[] a = MathArrays.buildArray(date.getField(), 2);
                     a[0] = pole.getXp().add(pole.getYp().multiply(coupling)).multiply(globalFactor);
@@ -737,7 +696,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     // there are no model for ocean pole tide prior to conventions 2010
                     return MathArrays.buildArray(date.getField(), 2);
                 }
@@ -841,12 +800,9 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale,
                                                                  final TimeScales timeScales) {
-            try (InputStream in = getStream(NUTATION_ARGUMENTS)) {
-                return new FundamentalNutationArguments(this, timeScale,
-                        in, NUTATION_ARGUMENTS, timeScales);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            return load(NUTATION_ARGUMENTS, in -> new FundamentalNutationArguments(this, timeScale,
+                                                                                   in, NUTATION_ARGUMENTS,
+                                                                                   timeScales));
         }
 
         /** {@inheritDoc} */
@@ -870,7 +826,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return epsilonA.value(evaluateTC(date, timeScales));
                 }
 
@@ -895,17 +851,10 @@ public enum IERSConventions {
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS);
 
-            final PoissonSeries.CompiledSeries xys;
-            try (InputStream xIn = getStream(X_SERIES);
-                 InputStream yIn = getStream(Y_SERIES);
-                 InputStream sIn = getStream(S_SERIES)) {
-                final PoissonSeries xSeries = parser.parse(xIn, X_SERIES);
-                final PoissonSeries ySeries = parser.parse(yIn, Y_SERIES);
-                final PoissonSeries sSeries = parser.parse(sIn, S_SERIES);
-                xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries xSeries = load(X_SERIES, in -> parser.parse(in, X_SERIES));
+            final PoissonSeries ySeries = load(Y_SERIES, in -> parser.parse(in, Y_SERIES));
+            final PoissonSeries sSeries = load(S_SERIES, in -> parser.parse(in, S_SERIES));
+            final PoissonSeries.CompiledSeries xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeVectorFunction() {
@@ -918,7 +867,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     return xys.value(arguments.evaluateAll(date));
                 }
 
@@ -970,22 +919,13 @@ public enum IERSConventions {
                     luniSolarParser.
                     withSinCos(0, 7, milliAS, 11, milliAS).
                     withSinCos(1, 8, milliAS, 12, milliAS);
-            final PoissonSeries psiLuniSolarSeries;
-            try (InputStream in = getStream(LUNI_SOLAR_SERIES)) {
-                psiLuniSolarSeries = luniSolarPsiParser.parse(in, LUNI_SOLAR_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
-            final PoissonSeriesParser luniSolarEpsilonParser =
-                    luniSolarParser.
-                    withSinCos(0, 13, milliAS, 9, milliAS).
-                    withSinCos(1, 14, milliAS, 10, milliAS);
-            final PoissonSeries epsilonLuniSolarSeries;
-            try (InputStream in = getStream(LUNI_SOLAR_SERIES)) {
-                epsilonLuniSolarSeries = luniSolarEpsilonParser.parse(in, LUNI_SOLAR_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries psiLuniSolarSeries =
+                            load(LUNI_SOLAR_SERIES, in -> luniSolarPsiParser.parse(in, LUNI_SOLAR_SERIES));
+            final PoissonSeriesParser luniSolarEpsilonParser = luniSolarParser.
+                                                               withSinCos(0, 13, milliAS, 9, milliAS).
+                                                               withSinCos(1, 14, milliAS, 10, milliAS);
+            final PoissonSeries epsilonLuniSolarSeries =
+                            load(LUNI_SOLAR_SERIES, in -> luniSolarEpsilonParser.parse(in, LUNI_SOLAR_SERIES));
 
             final PoissonSeriesParser planetaryParser =
                     new PoissonSeriesParser(21).
@@ -993,20 +933,12 @@ public enum IERSConventions {
                         withFirstPlanetary(7);
             final PoissonSeriesParser planetaryPsiParser =
                     planetaryParser.withSinCos(0, 17, milliAS, 18, milliAS);
-            final PoissonSeries psiPlanetarySeries;
-            try (InputStream in = getStream(PLANETARY_SERIES)) {
-                psiPlanetarySeries = planetaryPsiParser.parse(in, PLANETARY_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries psiPlanetarySeries =
+                            load(PLANETARY_SERIES, in -> planetaryPsiParser.parse(in, PLANETARY_SERIES));
             final PoissonSeriesParser planetaryEpsilonParser =
                     planetaryParser.withSinCos(0, 19, milliAS, 20, milliAS);
-            final PoissonSeries epsilonPlanetarySeries;
-            try (InputStream in = getStream(PLANETARY_SERIES)) {
-                epsilonPlanetarySeries = planetaryEpsilonParser.parse(in, PLANETARY_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries epsilonPlanetarySeries =
+                            load(PLANETARY_SERIES, in -> planetaryEpsilonParser.parse(in, PLANETARY_SERIES));
 
             final PoissonSeries.CompiledSeries luniSolarSeries =
                     PoissonSeries.compile(psiLuniSolarSeries, epsilonLuniSolarSeries);
@@ -1029,7 +961,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
                     final T[] luniSolar = luniSolarSeries.value(elements);
                     final T[] planetary = planetarySeries.value(elements);
@@ -1062,12 +994,7 @@ public enum IERSConventions {
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PolynomialNutation minusEO;
-            try (InputStream in = getStream(GST_SERIES)) {
-                minusEO = parser.parse(in, GST_SERIES).getPolynomial();
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PolynomialNutation minusEO = load(GST_SERIES, in -> parser.parse(in, GST_SERIES).getPolynomial());
 
             // create a function evaluating the series
             return new TimeScalarFunction() {
@@ -1080,7 +1007,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return era.value(date).add(minusEO.value(evaluateTC(date, timeScales)));
                 }
 
@@ -1106,12 +1033,7 @@ public enum IERSConventions {
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PolynomialNutation minusEO;
-            try (InputStream in = getStream(GST_SERIES)) {
-                minusEO = parser.parse(in, GST_SERIES).getPolynomial();
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PolynomialNutation minusEO = load(GST_SERIES, in -> parser.parse(in, GST_SERIES).getPolynomial());
 
             // create a function evaluating the series
             return new TimeScalarFunction() {
@@ -1124,7 +1046,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return minusEO.derivative(evaluateTC(date, timeScales)).add(era.getRate());
                 }
 
@@ -1152,24 +1074,16 @@ public enum IERSConventions {
                         withFirstDelaunay(1).
                         withSinCos(0, 7, milliAS, 11, milliAS).
                         withSinCos(1, 8, milliAS, 12, milliAS);
-            final PoissonSeries psiLuniSolarSeries;
-            try (InputStream in = getStream(LUNI_SOLAR_SERIES)) {
-                psiLuniSolarSeries = luniSolarPsiParser.parse(in, LUNI_SOLAR_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries psiLuniSolarSeries =
+                            load(LUNI_SOLAR_SERIES, in -> luniSolarPsiParser.parse(in, LUNI_SOLAR_SERIES));
 
             final PoissonSeriesParser planetaryPsiParser =
                     new PoissonSeriesParser(21).
                         withFirstDelaunay(2).
                         withFirstPlanetary(7).
                         withSinCos(0, 17, milliAS, 18, milliAS);
-            final PoissonSeries psiPlanetarySeries;
-            try (InputStream in = getStream(PLANETARY_SERIES)) {
-                psiPlanetarySeries = planetaryPsiParser.parse(in, PLANETARY_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries psiPlanetarySeries =
+                            load(PLANETARY_SERIES, in -> planetaryPsiParser.parse(in, PLANETARY_SERIES));
 
 
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
@@ -1179,12 +1093,7 @@ public enum IERSConventions {
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PoissonSeries gstSeries;
-            try (InputStream in = getStream(GST_SERIES)) {
-                gstSeries = gstParser.parse(in, GST_SERIES);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries gstSeries = load(GST_SERIES, in -> gstParser.parse(in, GST_SERIES));
             final PoissonSeries.CompiledSeries psiGstSeries =
                     PoissonSeries.compile(psiLuniSolarSeries, psiPlanetarySeries, gstSeries);
 
@@ -1213,7 +1122,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // evaluate equation of origins
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
@@ -1250,31 +1159,26 @@ public enum IERSConventions {
                     withOptionalColumn(1).
                     withGamma(2).
                     withFirstDelaunay(3);
-            try (InputStream tidalIn1 = getStream(TIDAL_CORRECTION_XP_YP_SERIES);
-                 InputStream tidalIn2 = getStream(TIDAL_CORRECTION_XP_YP_SERIES);
-                 InputStream tidalUt1 = getStream(TIDAL_CORRECTION_UT1_SERIES)) {
-                final PoissonSeries xSeries =
-                        xyParser.
-                        withSinCos(0, 10, microAS, 11, microAS).
-                        parse(tidalIn1, TIDAL_CORRECTION_XP_YP_SERIES);
-                final PoissonSeries ySeries =
-                        xyParser.
-                        withSinCos(0, 12, microAS, 13, microAS).
-                        parse(tidalIn2, TIDAL_CORRECTION_XP_YP_SERIES);
+            final double microS = 1.0e-6;
+            final PoissonSeriesParser ut1Parser = new PoissonSeriesParser(11).
+                            withOptionalColumn(1).
+                            withGamma(2).
+                            withFirstDelaunay(3);
+            final PoissonSeries xSeries =
+                            load(TIDAL_CORRECTION_XP_YP_SERIES, in -> xyParser.
+                                                                      withSinCos(0, 10, microAS, 11, microAS).
+                                                                      parse(in, TIDAL_CORRECTION_XP_YP_SERIES));
+            final PoissonSeries ySeries =
+                            load(TIDAL_CORRECTION_XP_YP_SERIES, in -> xyParser.
+                                                                      withSinCos(0, 12, microAS, 13, microAS).
+                                                                      parse(in, TIDAL_CORRECTION_XP_YP_SERIES));
 
-                final double microS = 1.0e-6;
-                final PoissonSeriesParser ut1Parser = new PoissonSeriesParser(11).
-                        withOptionalColumn(1).
-                        withGamma(2).
-                        withFirstDelaunay(3).
-                        withSinCos(0, 10, microS, 11, microS);
-                final PoissonSeries ut1Series =
-                        ut1Parser.parse(tidalUt1, TIDAL_CORRECTION_UT1_SERIES);
+            final PoissonSeries ut1Series =
+                            load(TIDAL_CORRECTION_UT1_SERIES, in -> ut1Parser.
+                                                                    withSinCos(0, 10, microS, 11, microS).
+                                                                    parse(in, TIDAL_CORRECTION_UT1_SERIES));
 
-                return new EOPTidalCorrection(arguments, xSeries, ySeries, ut1Series);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            return new EOPTidalCorrection(arguments, xSeries, ySeries, ut1Series);
 
         }
 
@@ -1308,39 +1212,31 @@ public enum IERSConventions {
                         withFirstDelaunay(10);
 
             final double pico = 1.0e-12;
-            try (InputStream k20In = getStream(K20_FREQUENCY_DEPENDENCE);
-                 InputStream k21In1 = getStream(K21_FREQUENCY_DEPENDENCE);
-                 InputStream k21In2 = getStream(K21_FREQUENCY_DEPENDENCE);
-                 InputStream k22In1 = getStream(K22_FREQUENCY_DEPENDENCE);
-                 InputStream k22In2 = getStream(K22_FREQUENCY_DEPENDENCE)) {
-                final PoissonSeries c20Series =
-                        k20Parser.
-                        withSinCos(0, 18, -pico, 16, pico).
-                        parse(k20In, K20_FREQUENCY_DEPENDENCE);
-                final PoissonSeries c21Series =
-                        k21Parser.
-                        withSinCos(0, 17, pico, 18, pico).
-                        parse(k21In1, K21_FREQUENCY_DEPENDENCE);
-                final PoissonSeries s21Series =
-                        k21Parser.
-                        withSinCos(0, 18, -pico, 17, pico).
-                        parse(k21In2, K21_FREQUENCY_DEPENDENCE);
-                final PoissonSeries c22Series =
-                        k22Parser.
-                        withSinCos(0, -1, pico, 16, pico).
-                        parse(k22In1, K22_FREQUENCY_DEPENDENCE);
-                final PoissonSeries s22Series =
-                        k22Parser.
-                        withSinCos(0, 16, -pico, -1, pico).
-                        parse(k22In2, K22_FREQUENCY_DEPENDENCE);
+            final PoissonSeries c20Series =
+                            load(K20_FREQUENCY_DEPENDENCE, in -> k20Parser.
+                                                                 withSinCos(0, 18, -pico, 16, pico).
+                                                                 parse(in, K20_FREQUENCY_DEPENDENCE));
+            final PoissonSeries c21Series =
+                            load(K21_FREQUENCY_DEPENDENCE, in -> k21Parser.
+                                                                 withSinCos(0, 17, pico, 18, pico).
+                                                                 parse(in, K21_FREQUENCY_DEPENDENCE));
+            final PoissonSeries s21Series =
+                            load(K21_FREQUENCY_DEPENDENCE, in -> k21Parser.
+                                                                 withSinCos(0, 18, -pico, 17, pico).
+                                                                 parse(in, K21_FREQUENCY_DEPENDENCE));
+            final PoissonSeries c22Series =
+                            load(K22_FREQUENCY_DEPENDENCE, in -> k22Parser.
+                                                                 withSinCos(0, -1, pico, 16, pico).
+                                                                 parse(in, K22_FREQUENCY_DEPENDENCE));
+            final PoissonSeries s22Series =
+                            load(K22_FREQUENCY_DEPENDENCE, in -> k22Parser.
+                                                                 withSinCos(0, 16, -pico, -1, pico).
+                                                                 parse(in, K22_FREQUENCY_DEPENDENCE));
 
-                return new TideFrequencyDependenceFunction(arguments,
-                                                           c20Series,
-                                                           c21Series, s21Series,
-                                                           c22Series, s22Series);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            return new TideFrequencyDependenceFunction(arguments,
+                                                       c20Series,
+                                                       c21Series, s21Series,
+                                                       c22Series, s22Series);
 
         }
 
@@ -1368,12 +1264,7 @@ public enum IERSConventions {
                 };
             final SimpleTimeStampedTableParser<MeanPole> parser =
                     new SimpleTimeStampedTableParser<MeanPole>(3, converter);
-            final List<MeanPole> annualPoleList;
-            try (InputStream in = getStream(ANNUAL_POLE)) {
-                annualPoleList = parser.parse(in, ANNUAL_POLE);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final List<MeanPole> annualPoleList = load(ANNUAL_POLE, in -> parser.parse(in, ANNUAL_POLE));
             final AbsoluteDate firstAnnualPoleDate = annualPoleList.get(0).getDate();
             final AbsoluteDate lastAnnualPoleDate  = annualPoleList.get(annualPoleList.size() - 1).getDate();
             final ImmutableTimeStampedCache<MeanPole> annualCache =
@@ -1387,7 +1278,7 @@ public enum IERSConventions {
 
             // constants from IERS 2003, section 6.2
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
-            final double ratio        =  0.00115;
+            final double ratio        =  0.0115;
 
             return new TimeVectorFunction() {
 
@@ -1456,7 +1347,7 @@ public enum IERSConventions {
                         // identifying this with ∆C₂₁ cos λ + ∆S₂₁ sin λ we get:
                         // ∆C₂₁ = A Re(k₂) [m₁ + Im(k₂)/Re(k₂) m₂)]
                         // ∆S₂₁ = A Re(k₂) [m₂ - Im(k₂)/Re(k₂) m₁)]
-                        // and Im(k₂)/Re(k₂) is very close to +0.00115
+                        // and Im(k₂)/Re(k₂) is very close to +0.0115
                         // As the equation as written in the IERS 2003 conventions are used in
                         // legacy systems, we have reproduced this alleged error here (and fixed it in
                         // the IERS 2010 conventions below) for validation purposes. We don't recommend
@@ -1473,7 +1364,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
                     final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -1542,7 +1433,7 @@ public enum IERSConventions {
                     // identifying this with ∆C₂₁ cos λ + ∆S₂₁ sin λ we get:
                     // ∆C₂₁ = A Re(k₂) [m₁ + Im(k₂)/Re(k₂) m₂)]
                     // ∆S₂₁ = A Re(k₂) [m₂ - Im(k₂)/Re(k₂) m₁)]
-                    // and Im(k₂)/Re(k₂) is very close to +0.00115
+                    // and Im(k₂)/Re(k₂) is very close to +0.0115
                     // As the equation as written in the IERS 2003 conventions are used in
                     // legacy systems, we have reproduced this alleged error here (and fixed it in
                     // the IERS 2010 conventions below) for validation purposes. We don't recommend
@@ -1579,7 +1470,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     // there are no model for ocean pole tide prior to conventions 2010
                     return MathArrays.buildArray(date.getField(), 2);
                 }
@@ -1667,12 +1558,9 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale,
                                                                  final TimeScales timeScales) {
-            try (InputStream in = getStream(NUTATION_ARGUMENTS)) {
-                return new FundamentalNutationArguments(this, timeScale,
-                        in, NUTATION_ARGUMENTS, timeScales);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            return load(NUTATION_ARGUMENTS, in -> new FundamentalNutationArguments(this, timeScale,
+                                                                                            in, NUTATION_ARGUMENTS,
+                                                                                            timeScales));
         }
 
         /** {@inheritDoc} */
@@ -1698,7 +1586,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return epsilonA.value(evaluateTC(date, timeScales));
                 }
 
@@ -1722,17 +1610,10 @@ public enum IERSConventions {
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS);
-            final PoissonSeries.CompiledSeries xys;
-            try (InputStream xIn = getStream(X_SERIES);
-                 InputStream yIn = getStream(Y_SERIES);
-                 InputStream sIn = getStream(S_SERIES)) {
-                final PoissonSeries xSeries = parser.parse(xIn, X_SERIES);
-                final PoissonSeries ySeries = parser.parse(yIn, Y_SERIES);
-                final PoissonSeries sSeries = parser.parse(sIn, S_SERIES);
-                xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries                xSeries = load(X_SERIES, in -> parser.parse(in, X_SERIES));
+            final PoissonSeries                ySeries = load(Y_SERIES, in -> parser.parse(in, Y_SERIES));
+            final PoissonSeries                sSeries = load(S_SERIES, in -> parser.parse(in, S_SERIES));
+            final PoissonSeries.CompiledSeries xys     = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeVectorFunction() {
@@ -1745,7 +1626,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     return xys.value(arguments.evaluateAll(date));
                 }
 
@@ -1783,39 +1664,26 @@ public enum IERSConventions {
                         withFirstDelaunay(10);
 
             final double pico = 1.0e-12;
-            try (InputStream k0In = getStream(K20_FREQUENCY_DEPENDENCE);
-                 InputStream k21In1 = getStream(K21_FREQUENCY_DEPENDENCE);
-                 InputStream k21In2 = getStream(K21_FREQUENCY_DEPENDENCE);
-                 InputStream k22In1 = getStream(K22_FREQUENCY_DEPENDENCE);
-                 InputStream k22In2 = getStream(K22_FREQUENCY_DEPENDENCE)) {
-                final PoissonSeries c20Series =
-                        k20Parser.
-                        withSinCos(0, 18, -pico, 16, pico).
-                        parse(k0In, K20_FREQUENCY_DEPENDENCE);
-                final PoissonSeries c21Series =
-                        k21Parser.
-                        withSinCos(0, 17, pico, 18, pico).
-                        parse(k21In1, K21_FREQUENCY_DEPENDENCE);
-                final PoissonSeries s21Series =
-                        k21Parser.
-                        withSinCos(0, 18, -pico, 17, pico).
-                        parse(k21In2, K21_FREQUENCY_DEPENDENCE);
-                final PoissonSeries c22Series =
-                        k22Parser.
-                        withSinCos(0, -1, pico, 16, pico).
-                        parse(k22In1, K22_FREQUENCY_DEPENDENCE);
-                final PoissonSeries s22Series =
-                        k22Parser.
-                        withSinCos(0, 16, -pico, -1, pico).
-                        parse(k22In2, K22_FREQUENCY_DEPENDENCE);
+            final PoissonSeries c20Series = load(K20_FREQUENCY_DEPENDENCE, in -> k20Parser.
+                                                                                 withSinCos(0, 18, -pico, 16, pico).
+                                                                                 parse(in, K20_FREQUENCY_DEPENDENCE));
+            final PoissonSeries c21Series = load(K21_FREQUENCY_DEPENDENCE, in -> k21Parser.
+                                                                                 withSinCos(0, 17, pico, 18, pico).
+                                                                                 parse(in, K21_FREQUENCY_DEPENDENCE));
+            final PoissonSeries s21Series = load(K21_FREQUENCY_DEPENDENCE, in -> k21Parser.
+                                                                                 withSinCos(0, 18, -pico, 17, pico).
+                                                                                 parse(in, K21_FREQUENCY_DEPENDENCE));
+            final PoissonSeries c22Series = load(K22_FREQUENCY_DEPENDENCE, in -> k22Parser.
+                                                                                 withSinCos(0, -1, pico, 16, pico).
+                                                                                 parse(in, K22_FREQUENCY_DEPENDENCE));
+            final PoissonSeries s22Series = load(K22_FREQUENCY_DEPENDENCE, in -> k22Parser.
+                                                                                 withSinCos(0, 16, -pico, -1, pico).
+                                                                                 parse(in, K22_FREQUENCY_DEPENDENCE));
 
-                return new TideFrequencyDependenceFunction(arguments,
-                                                           c20Series,
-                                                           c21Series, s21Series,
-                                                           c22Series, s22Series);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            return new TideFrequencyDependenceFunction(arguments,
+                                                       c20Series,
+                                                       c21Series, s21Series,
+                                                       c22Series, s22Series);
 
         }
 
@@ -1886,7 +1754,7 @@ public enum IERSConventions {
          * @param eopHistory EOP history
          * @return array containing m₁ and m₂
          */
-        private <T extends RealFieldElement<T>> T[] computePoleWobble(final FieldAbsoluteDate<T> date, final EOPHistory eopHistory) {
+        private <T extends CalculusFieldElement<T>> T[] computePoleWobble(final FieldAbsoluteDate<T> date, final EOPHistory eopHistory) {
 
             // polynomial model from IERS 2010, table 7.7
             final double f0 = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
@@ -1941,7 +1809,7 @@ public enum IERSConventions {
 
             // constants from IERS 2010, section 6.4
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
-            final double ratio        =  0.00115;
+            final double ratio        =  0.0115;
 
             return new TimeVectorFunction() {
 
@@ -1969,7 +1837,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
                     // evaluate wobble variables
                     final T[] wobbleM = computePoleWobble(date, eopHistory);
@@ -2021,7 +1889,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
                     final T[] v = MathArrays.buildArray(date.getField(), 2);
 
@@ -2091,15 +1959,9 @@ public enum IERSConventions {
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS);
-            final PoissonSeries.CompiledSeries psiEpsilonSeries;
-            try (InputStream psiIn = getStream(PSI_SERIES);
-                 InputStream epsilonIn = getStream(EPSILON_SERIES)) {
-                final PoissonSeries psiSeries     = parser.parse(psiIn, PSI_SERIES);
-                final PoissonSeries epsilonSeries = parser.parse(epsilonIn, EPSILON_SERIES);
-                psiEpsilonSeries = PoissonSeries.compile(psiSeries, epsilonSeries);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeries psiSeries     = load(PSI_SERIES,     in -> parser.parse(in, PSI_SERIES));
+            final PoissonSeries epsilonSeries = load(EPSILON_SERIES, in -> parser.parse(in, EPSILON_SERIES));
+            final PoissonSeries.CompiledSeries psiEpsilonSeries = PoissonSeries.compile(psiSeries, epsilonSeries);
 
             return new TimeVectorFunction() {
 
@@ -2116,7 +1978,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
                     final T[] psiEpsilon = psiEpsilonSeries.value(elements);
                     final T[] result = MathArrays.buildArray(date.getField(), 3);
@@ -2148,12 +2010,7 @@ public enum IERSConventions {
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PolynomialNutation minusEO;
-            try (InputStream in = getStream(GST_SERIES)) {
-                minusEO = parser.parse(in, GST_SERIES).getPolynomial();
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PolynomialNutation minusEO = load(GST_SERIES, in ->  parser.parse(in, GST_SERIES).getPolynomial());
 
             // create a function evaluating the series
             return new TimeScalarFunction() {
@@ -2166,7 +2023,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return era.value(date).add(minusEO.value(evaluateTC(date, timeScales)));
                 }
 
@@ -2192,12 +2049,7 @@ public enum IERSConventions {
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PolynomialNutation minusEO;
-            try (InputStream in = getStream(GST_SERIES)) {
-                minusEO = parser.parse(in, GST_SERIES).getPolynomial();
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PolynomialNutation minusEO = load(GST_SERIES, in -> parser.parse(in, GST_SERIES).getPolynomial());
 
             // create a function evaluating the series
             return new TimeScalarFunction() {
@@ -2210,7 +2062,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return minusEO.derivative(evaluateTC(date, timeScales)).add(era.getRate());
                 }
 
@@ -2238,16 +2090,10 @@ public enum IERSConventions {
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS);
-            final PoissonSeriesParser gstParser  = baseParser.withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PoissonSeries.CompiledSeries psiGstSeries;
-            try (InputStream psiIn = getStream(PSI_SERIES);
-                 InputStream gstIn = getStream(GST_SERIES)) {
-                final PoissonSeries psiSeries        = baseParser.parse(psiIn, PSI_SERIES);
-                final PoissonSeries gstSeries        = gstParser.parse(gstIn, GST_SERIES);
-                psiGstSeries = PoissonSeries.compile(psiSeries, gstSeries);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            final PoissonSeriesParser          gstParser    = baseParser.withPolynomialPart('t', Unit.ARC_SECONDS);
+            final PoissonSeries                psiSeries    = load(PSI_SERIES, in -> baseParser.parse(in, PSI_SERIES));
+            final PoissonSeries                gstSeries    = load(GST_SERIES, in -> gstParser.parse(in, GST_SERIES));
+            final PoissonSeries.CompiledSeries psiGstSeries = PoissonSeries.compile(psiSeries, gstSeries);
 
             // ERA function
             final TimeScalarFunction era =
@@ -2274,7 +2120,7 @@ public enum IERSConventions {
 
                 /** {@inheritDoc} */
                 @Override
-                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
                     // evaluate equation of origins
                     final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
@@ -2307,35 +2153,29 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser xyParser = new PoissonSeriesParser(13).
-                    withOptionalColumn(1).
-                    withGamma(2).
-                    withFirstDelaunay(3);
-            try (InputStream xpIn = getStream(TIDAL_CORRECTION_XP_YP_SERIES);
-                 InputStream ypIn = getStream(TIDAL_CORRECTION_XP_YP_SERIES);
-                 InputStream ut1In = getStream(TIDAL_CORRECTION_UT1_SERIES)) {
-                final PoissonSeries xSeries =
-                        xyParser.
-                        withSinCos(0, 10, microAS, 11, microAS).
-                        parse(xpIn, TIDAL_CORRECTION_XP_YP_SERIES);
-                final PoissonSeries ySeries =
-                        xyParser.
-                        withSinCos(0, 12, microAS, 13, microAS).
-                        parse(ypIn, TIDAL_CORRECTION_XP_YP_SERIES);
+            final PoissonSeriesParser xyParser  = new PoissonSeriesParser(13).
+                                                  withOptionalColumn(1).
+                                                  withGamma(2).
+                                                  withFirstDelaunay(3);
+            final double microS = 1.0e-6;
+            final PoissonSeriesParser ut1Parser = new PoissonSeriesParser(11).
+                                                  withOptionalColumn(1).
+                                                  withGamma(2).
+                                                  withFirstDelaunay(3);
+            final PoissonSeries xSeries =
+                            load(TIDAL_CORRECTION_XP_YP_SERIES, xpIn -> xyParser.
+                                                                        withSinCos(0, 10, microAS, 11, microAS).
+                                                                        parse(xpIn, TIDAL_CORRECTION_XP_YP_SERIES));
+            final PoissonSeries ySeries =
+                            load(TIDAL_CORRECTION_XP_YP_SERIES, ypIn -> xyParser.
+                                                                        withSinCos(0, 12, microAS, 13, microAS).
+                                                                        parse(ypIn, TIDAL_CORRECTION_XP_YP_SERIES));
+            final PoissonSeries ut1Series =
+                            load(TIDAL_CORRECTION_UT1_SERIES, ut1In -> ut1Parser.
+                                                                       withSinCos(0, 10, microS, 11, microS).
+                                                                       parse(ut1In, TIDAL_CORRECTION_UT1_SERIES));
 
-                final double microS = 1.0e-6;
-                final PoissonSeriesParser ut1Parser = new PoissonSeriesParser(11).
-                        withOptionalColumn(1).
-                        withGamma(2).
-                        withFirstDelaunay(3).
-                        withSinCos(0, 10, microS, 11, microS);
-                final PoissonSeries ut1Series =
-                        ut1Parser.parse(ut1In, TIDAL_CORRECTION_UT1_SERIES);
-
-                return new EOPTidalCorrection(arguments, xSeries, ySeries, ut1Series);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
+            return new EOPTidalCorrection(arguments, xSeries, ySeries, ut1Series);
 
         }
 
@@ -2438,7 +2278,7 @@ public enum IERSConventions {
      * @see #evaluateTC(FieldAbsoluteDate, TimeScales)
      */
     @DefaultDataContext
-    public <T extends RealFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date) {
         return evaluateTC(date, DataContext.getDefault().getTimeScales());
     }
 
@@ -2449,7 +2289,7 @@ public enum IERSConventions {
      * @return date offset in Julian centuries
      * @since 10.1
      */
-    public <T extends RealFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date,
                                                         final TimeScales timeScales) {
         return date.durationFrom(getNutationReferenceEpoch(timeScales))
                 .divide(Constants.JULIAN_CENTURY);
@@ -2868,69 +2708,58 @@ public enum IERSConventions {
                                                                                    final int rIp, final int rOp,
                                                                                    final int tIp, final int tOp) {
 
-        try (InputStream in1 = getStream(tableName);
-             InputStream in2 = getStream(tableName);
-             InputStream in3 = getStream(tableName);
-             InputStream in4 = getStream(tableName);
-             InputStream in5 = getStream(tableName);
-             InputStream in6 = getStream(tableName)) {
-            // radial component, missing the sin 2φ factor; this corresponds to:
-            //  - equation 15a in IERS conventions 1996, chapter 7
-            //  - equation 16a in IERS conventions 2003, chapter 7
-            //  - equation 7.12a in IERS conventions 2010, chapter 7
-            final PoissonSeries drCos = new PoissonSeriesParser(cols).
-                                        withOptionalColumn(1).
-                                        withDoodson(4, 3).
-                                        withFirstDelaunay(10).
-                                        withSinCos(0, rIp, +1.0e-3, rOp, +1.0e-3).
-                                        parse(in1, tableName);
-            final PoissonSeries drSin = new PoissonSeriesParser(cols).
-                                        withOptionalColumn(1).
-                                        withDoodson(4, 3).
-                                        withFirstDelaunay(10).
-                                        withSinCos(0, rOp, -1.0e-3, rIp, +1.0e-3).
-                                        parse(in2, tableName);
+        // radial component, missing the sin 2φ factor; this corresponds to:
+        //  - equation 15a in IERS conventions 1996, chapter 7
+        //  - equation 16a in IERS conventions 2003, chapter 7
+        //  - equation 7.12a in IERS conventions 2010, chapter 7
+        final PoissonSeries drCos = load(tableName, in -> new PoissonSeriesParser(cols).
+                                                          withOptionalColumn(1).
+                                                          withDoodson(4, 3).
+                                                          withFirstDelaunay(10).
+                                                          withSinCos(0, rIp, +1.0e-3, rOp, +1.0e-3).
+                                                          parse(in, tableName));
+        final PoissonSeries drSin = load(tableName, in -> new PoissonSeriesParser(cols).
+                                                          withOptionalColumn(1).
+                                                          withDoodson(4, 3).
+                                                          withFirstDelaunay(10).
+                                                          withSinCos(0, rOp, -1.0e-3, rIp, +1.0e-3).
+                                                          parse(in, tableName));
 
-            // North component, missing the cos 2φ factor; this corresponds to:
-            //  - equation 15b in IERS conventions 1996, chapter 7
-            //  - equation 16b in IERS conventions 2003, chapter 7
-            //  - equation 7.12b in IERS conventions 2010, chapter 7
-            final PoissonSeries dnCos = new PoissonSeriesParser(cols).
-                                        withOptionalColumn(1).
-                                        withDoodson(4, 3).
-                                        withFirstDelaunay(10).
-                                        withSinCos(0, tIp, +1.0e-3, tOp, +1.0e-3).
-                                        parse(in3, tableName);
-            final PoissonSeries dnSin = new PoissonSeriesParser(cols).
-                                        withOptionalColumn(1).
-                                        withDoodson(4, 3).
-                                        withFirstDelaunay(10).
-                                        withSinCos(0, tOp, -1.0e-3, tIp, +1.0e-3).
-                                        parse(in4, tableName);
+        // North component, missing the cos 2φ factor; this corresponds to:
+        //  - equation 15b in IERS conventions 1996, chapter 7
+        //  - equation 16b in IERS conventions 2003, chapter 7
+        //  - equation 7.12b in IERS conventions 2010, chapter 7
+        final PoissonSeries dnCos = load(tableName, in -> new PoissonSeriesParser(cols).
+                                                          withOptionalColumn(1).
+                                                          withDoodson(4, 3).
+                                                          withFirstDelaunay(10).
+                                                          withSinCos(0, tIp, +1.0e-3, tOp, +1.0e-3).
+                                                          parse(in, tableName));
+        final PoissonSeries dnSin = load(tableName, in -> new PoissonSeriesParser(cols).
+                                                          withOptionalColumn(1).
+                                                          withDoodson(4, 3).
+                                                          withFirstDelaunay(10).
+                                                          withSinCos(0, tOp, -1.0e-3, tIp, +1.0e-3).
+                                                          parse(in, tableName));
 
-            // East component, missing the sin φ factor; this corresponds to:
-            //  - equation 15b in IERS conventions 1996, chapter 7
-            //  - equation 16b in IERS conventions 2003, chapter 7
-            //  - equation 7.12b in IERS conventions 2010, chapter 7
-            final PoissonSeries deCos = new PoissonSeriesParser(cols).
-                                        withOptionalColumn(1).
-                                        withDoodson(4, 3).
-                                        withFirstDelaunay(10).
-                                        withSinCos(0, tOp, -1.0e-3, tIp, +1.0e-3).
-                                        parse(in5, tableName);
-            final PoissonSeries deSin = new PoissonSeriesParser(cols).
-                                        withOptionalColumn(1).
-                                        withDoodson(4, 3).
-                                        withFirstDelaunay(10).
-                                        withSinCos(0, tIp, -1.0e-3, tOp, -1.0e-3).
-                                        parse(in6, tableName);
+        // East component, missing the sin φ factor; this corresponds to:
+        //  - equation 15b in IERS conventions 1996, chapter 7
+        //  - equation 16b in IERS conventions 2003, chapter 7
+        //  - equation 7.12b in IERS conventions 2010, chapter 7
+        final PoissonSeries deCos = load(tableName, in -> new PoissonSeriesParser(cols).
+                                                          withOptionalColumn(1).
+                                                          withDoodson(4, 3).
+                                                          withFirstDelaunay(10).
+                                                          withSinCos(0, tOp, -1.0e-3, tIp, +1.0e-3).
+                                                          parse(in, tableName));
+        final PoissonSeries deSin = load(tableName, in -> new PoissonSeriesParser(cols).
+                                                          withOptionalColumn(1).
+                                                          withDoodson(4, 3).
+                                                          withFirstDelaunay(10).
+                                                          withSinCos(0, tIp, -1.0e-3, tOp, -1.0e-3).
+                                                          parse(in, tableName));
 
-            return PoissonSeries.compile(drCos, drSin,
-                                         dnCos, dnSin,
-                                         deCos, deSin);
-        } catch (IOException e) {
-            throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-        }
+        return PoissonSeries.compile(drCos, drSin, dnCos, dnSin, deCos, deSin);
 
     }
 
@@ -2962,34 +2791,29 @@ public enum IERSConventions {
                                                                                  final int rIp, final int rOp,
                                                                                  final int tIp, final int tOp) {
 
-        try (InputStream in1 = getStream(tableName);
-             InputStream in2 = getStream(tableName)) {
-            // radial component, missing the 3⁄2 sin² φ - 1⁄2 factor; this corresponds to:
-            //  - equation 16a in IERS conventions 1996, chapter 7
-            //  - equation 17a in IERS conventions 2003, chapter 7
-            //  - equation 7.13a in IERS conventions 2010, chapter 7
-            final PoissonSeries dr = new PoissonSeriesParser(cols).
-                                     withOptionalColumn(1).
-                                     withDoodson(4, 3).
-                                     withFirstDelaunay(10).
-                                     withSinCos(0, rOp, +1.0e-3, rIp, +1.0e-3).
-                                     parse(in1, tableName);
+        // radial component, missing the 3⁄2 sin² φ - 1⁄2 factor; this corresponds to:
+        //  - equation 16a in IERS conventions 1996, chapter 7
+        //  - equation 17a in IERS conventions 2003, chapter 7
+        //  - equation 7.13a in IERS conventions 2010, chapter 7
+        final PoissonSeries dr = load(tableName, in -> new PoissonSeriesParser(cols).
+                                                       withOptionalColumn(1).
+                                                       withDoodson(4, 3).
+                                                       withFirstDelaunay(10).
+                                                       withSinCos(0, rOp, +1.0e-3, rIp, +1.0e-3).
+                                                       parse(in, tableName));
 
-            // North component, missing the sin 2φ factor; this corresponds to:
-            //  - equation 16b in IERS conventions 1996, chapter 7
-            //  - equation 17b in IERS conventions 2003, chapter 7
-            //  - equation 7.13b in IERS conventions 2010, chapter 7
-            final PoissonSeries dn = new PoissonSeriesParser(cols).
-                                     withOptionalColumn(1).
-                                     withDoodson(4, 3).
-                                     withFirstDelaunay(10).
-                                     withSinCos(0, tOp, +1.0e-3, tIp, +1.0e-3).
-                                     parse(in2, tableName);
+        // North component, missing the sin 2φ factor; this corresponds to:
+        //  - equation 16b in IERS conventions 1996, chapter 7
+        //  - equation 17b in IERS conventions 2003, chapter 7
+        //  - equation 7.13b in IERS conventions 2010, chapter 7
+        final PoissonSeries dn = load(tableName, in -> new PoissonSeriesParser(cols).
+                                                       withOptionalColumn(1).
+                                                       withDoodson(4, 3).
+                                                       withFirstDelaunay(10).
+                                                       withSinCos(0, tOp, +1.0e-3, tIp, +1.0e-3).
+                                                       parse(in, tableName));
 
-            return PoissonSeries.compile(dr, dn);
-        } catch (IOException e) {
-            throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-        }
+        return PoissonSeries.compile(dr, dn);
 
     }
 
@@ -3146,7 +2970,7 @@ public enum IERSConventions {
                             }
                             final int n = Integer.parseInt(fields[0]);
                             final int m = Integer.parseInt(fields[1]);
-                            if ((n < 2) || (n > 3) || (m < 0) || (m > n)) {
+                            if (n < 2 || n > 3 || m < 0 || m > n) {
                                 // this should never happen with files embedded within Orekit
                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                           lineNumber, nameLove, line);
@@ -3177,12 +3001,19 @@ public enum IERSConventions {
         }
     }
 
-    /** Get a data stream.
-     * @param name file name of the resource stream
-     * @return stream
+    /** Load resources.
+     * @param name name of the resource
+     * @param loader loaader for the resource
+     * @param <T> type of the processed data
+     * @return processed data
      */
-    private static InputStream getStream(final String name) {
-        return IERSConventions.class.getResourceAsStream(name);
+    private static <T> T load(final String name, final Function<InputStream, T> loader) {
+        try (InputStream is = IERSConventions.class.getResourceAsStream(name)) {
+            return loader.apply(is);
+        } catch (IOException ioe) {
+            // this should never happen with internal streams
+            throw new OrekitException(OrekitMessages.INTERNAL_ERROR, ioe);
+        }
     }
 
     /** Correction to equation of equinoxes.
@@ -3232,7 +3063,7 @@ public enum IERSConventions {
          * @param <T> type of the field elements
          * @return correction value (0 before 1997-02-27)
          */
-        public static <T extends RealFieldElement<T>> T value(
+        public static <T extends CalculusFieldElement<T>> T value(
                 final FieldDelaunayArguments<T> arguments,
                 final TimeScale tai) {
             /* Start date for applying Moon corrections to the equation of the equinoxes.
@@ -3327,7 +3158,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
 
             // split the date offset as a full number of days plus a smaller part
             final int secondsInDay = 86400;
@@ -3433,7 +3264,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
             final T[] a = MathArrays.buildArray(date.getField(), 3);
             final T tc = evaluateTC(date, timeScales);
             a[0] = psiA.value(tc);
@@ -3480,7 +3311,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
             return kSeries.value(arguments.evaluateAll(date));
         }
 
@@ -3525,7 +3356,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
             final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
             final T[] correction    = correctionSeries.value(elements);

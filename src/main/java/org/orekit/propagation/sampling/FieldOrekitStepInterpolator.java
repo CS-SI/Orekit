@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -27,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
-public interface FieldOrekitStepInterpolator<T extends RealFieldElement<T>> {
+public interface FieldOrekitStepInterpolator<T extends CalculusFieldElement<T>> {
 
     /**
      * Get the state at previous grid point date.
@@ -52,5 +52,18 @@ public interface FieldOrekitStepInterpolator<T extends RealFieldElement<T>> {
      * @return true if integration is forward in date
      */
     boolean isForward();
+
+    /** Create a new restricted version of the instance.
+     * <p>
+     * The instance is not changed at all.
+     * </p>
+     * @param newPreviousState start of the restricted step
+     * @param newCurrentState end of the restricted step
+     * @return restricted version of the instance
+     * @see #getPreviousState()
+     * @see #getCurrentState()
+     * @since 11.0
+     */
+    FieldOrekitStepInterpolator<T> restrictStep(FieldSpacecraftState<T> newPreviousState, FieldSpacecraftState<T> newCurrentState);
 
 }

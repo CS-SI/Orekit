@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -244,23 +244,23 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 }
                 final String[] tab = SEPARATOR.split(line);
                 if (inHeader) {
-                    if ((tab.length == 2) && PRODUCT_TYPE.equals(tab[0])) {
+                    if (tab.length == 2 && PRODUCT_TYPE.equals(tab[0])) {
                         if (!GRAVITY_FIELD.equals(tab[1])) {
                             throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                            lineNumber, name, line);
                         }
-                    } else if ((tab.length == 2) && tab[0].endsWith(GRAVITY_CONSTANT)) {
+                    } else if (tab.length == 2 && tab[0].endsWith(GRAVITY_CONSTANT)) {
                         setMu(parseDouble(tab[1]));
-                    } else if ((tab.length == 2) && REFERENCE_RADIUS.equals(tab[0])) {
+                    } else if (tab.length == 2 && REFERENCE_RADIUS.equals(tab[0])) {
                         setAe(parseDouble(tab[1]));
-                    } else if ((tab.length == 2) && MAX_DEGREE.equals(tab[0])) {
+                    } else if (tab.length == 2 && MAX_DEGREE.equals(tab[0])) {
 
                         final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(tab[1]));
                         final int order  = FastMath.min(getMaxParseOrder(), degree);
                         c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
                         s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
 
-                    } else if ((tab.length == 2) && TIDE_SYSTEM_INDICATOR.equals(tab[0])) {
+                    } else if (tab.length == 2 && TIDE_SYSTEM_INDICATOR.equals(tab[0])) {
                         if (ZERO_TIDE.equals(tab[1])) {
                             tideSystem = TideSystem.ZERO_TIDE;
                         } else if (TIDE_FREE.equals(tab[1])) {
@@ -271,7 +271,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                             throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                            lineNumber, name, line);
                         }
-                    } else if ((tab.length == 2) && NORMALIZATION_INDICATOR.equals(tab[0])) {
+                    } else if (tab.length == 2 && NORMALIZATION_INDICATOR.equals(tab[0])) {
                         if (NORMALIZED.equals(tab[1])) {
                             normalized = true;
                         } else if (UNNORMALIZED.equals(tab[1])) {
@@ -280,11 +280,11 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                             throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                            lineNumber, name, line);
                         }
-                    } else if ((tab.length == 2) && END_OF_HEADER.equals(tab[0])) {
+                    } else if (tab.length == 2 && END_OF_HEADER.equals(tab[0])) {
                         inHeader = false;
                     }
                 } else {
-                    if ((tab.length == 7 && GFC.equals(tab[0])) || (tab.length == 8 && GFCT.equals(tab[0]))) {
+                    if (tab.length == 7 && GFC.equals(tab[0]) || tab.length == 8 && GFCT.equals(tab[0])) {
 
                         final int i = Integer.parseInt(tab[1]);
                         final int j = Integer.parseInt(tab[2]);

@@ -1,4 +1,4 @@
-' Copyright 2002-2020 CS GROUP
+' Copyright 2002-2021 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -32,64 +32,67 @@
   hide footbox
 
   participant DataProvidersManager
+  participant FiltersManager
   participant GzipFilter
   participant "DataProvider\nDirectoryCrawler" as DirectoryCrawler
   participant MSAFEPattern
   participant "DataLoader\nMSAFELoader" as MSAFELoader
-  participant "NamedData\nutc-tai.dat" as NamedData1
-  participant "NamedData\nmay2019f10_prd.txt.gz" as NamedData2
-  participant "NamedData\nmay2019f10_prd.txt" as NamedData3
+  participant "DataSource\nutc-tai.dat" as DataSource1
+  participant "DataSource\nmay2019f10_prd.txt.gz" as DataSource2
+  participant "DataSource\nmay2019f10_prd.txt" as DataSource3
 
   activate DataProvidersManager
     DataProvidersManager -> DirectoryCrawler : feed
     activate DirectoryCrawler
-      create NamedData1
-      DirectoryCrawler                    ->           NamedData1 : create
-      DirectoryCrawler                    ->         DataProvidersManager : applyFilters
-      activate DataProvidersManager
-        DataProvidersManager  -> GzipFilter : filter
+      create DataSource1
+      DirectoryCrawler                    ->         DataSource1 : create
+      DirectoryCrawler                    ->         DataProvidersManager : getFiltersManager
+      DirectoryCrawler                    ->         FiltersManager : applyRelevantFilters
+      activate FiltersManager
+        FiltersManager  -> GzipFilter : filter
         activate GzipFilter
-          GzipFilter -> NamedData1 : getName
+          GzipFilter -> DataSource1 : getName
           return no filtering
         deactivate GzipFilter
-        DataProvidersManager                    -->         DirectoryCrawler
-      deactivate DataProvidersManager
+        FiltersManager                    -->         DirectoryCrawler
+      deactivate FiltersManager
       DirectoryCrawler -> MSAFEPattern : check name
       activate MSAFEPattern
         MSAFEPattern --> DirectoryCrawler : no match
       deactivate MSAFEPattern
       DirectoryCrawler -> DirectoryCrawler : drop utc-tai.dat
-      create NamedData2
-      DirectoryCrawler                    ->           NamedData2 : create
-      DirectoryCrawler                    ->         DataProvidersManager : applyFilters
-      activate DataProvidersManager
-        DataProvidersManager  -> GzipFilter : filter
+      create DataSource2
+      DirectoryCrawler                    ->         DataSource2 : create
+      DirectoryCrawler                    ->         DataProvidersManager : getFiltersManager
+      DirectoryCrawler                    ->         FiltersManager : applyRelevantFilters
+      activate FiltersManager
+        FiltersManager  -> GzipFilter : filter
         activate GzipFilter
-          GzipFilter -> NamedData2 : getName
-          create NamedData3
-           GzipFilter -> NamedData3 : create
-          return filtered NamedData
+          GzipFilter -> DataSource2 : getName
+          create DataSource3
+           GzipFilter -> DataSource3 : create
+          return filtered DataSource
         deactivate GzipFilter
-        DataProvidersManager -> DataProvidersManager : restart loop on filters
-        DataProvidersManager  -> GzipFilter : filter
+        FiltersManager -> FiltersManager : restart loop on filters
+        FiltersManager  -> GzipFilter : filter
         activate GzipFilter
-          GzipFilter -> NamedData3 : getName
+          GzipFilter -> DataSource3 : getName
           return no filtering
         deactivate GzipFilter
-        DataProvidersManager                    -->         DirectoryCrawler
-      deactivate DataProvidersManager
+        FiltersManager                    -->         DirectoryCrawler
+      deactivate FiltersManager
       DirectoryCrawler -> MSAFEPattern : check name
       activate MSAFEPattern
         MSAFEPattern --> DirectoryCrawler : match found
       deactivate MSAFEPattern
-      DirectoryCrawler -> NamedData3 : openStream
-      activate NamedData3
-        NamedData3 -> NamedData2 : openStream
-        activate NamedData2
-          NamedData2 --> NamedData3 : compressed stream
-        deactivate NamedData2
-          NamedData3 --> DirectoryCrawler : uncompressed stream
-      deactivate NamedData3
+      DirectoryCrawler -> DataSource3 : openStreamOnce
+      activate DataSource3
+        DataSource3 -> DataSource2 : openStreamOnce
+        activate DataSource2
+          DataSource2 --> DataSource3 : compressed stream
+        deactivate DataSource2
+          DataSource3 --> DirectoryCrawler : uncompressed stream
+      deactivate DataSource3
       DirectoryCrawler -> MSAFELoader : feed
       activate MSAFELoader
         MSAFELoader -> MSAFELoader : parse data

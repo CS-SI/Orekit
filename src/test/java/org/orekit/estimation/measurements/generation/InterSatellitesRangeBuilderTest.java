@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -99,7 +99,7 @@ public class InterSatellitesRangeBuilderTest {
         ObservableSatellite remote = generator.addPropagator(new KeplerianPropagator(o2)); // useful sixth propagator
         final double step = 60.0;
 
-        // beware that in order to avoid deadlocks, the slave PV coordinates provider
+        // beware that in order to avoid deadlocks, the secondary PV coordinates provider
         // in InterSatDirectViewDetector must be *different* from the second propagator
         // added to generator above! The reason is the event detector will be bound
         // to the first propagator, so it cannot also refer to the second one at the same time

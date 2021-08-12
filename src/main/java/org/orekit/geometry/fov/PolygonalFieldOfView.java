@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,27 +67,6 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
         super(margin);
         this.zone = zone;
         this.cap  = zone.getEnclosingCap();
-    }
-
-    /** Build Field Of View with a regular polygon shape.
-     * @param center center of the polygon (the center is in the inside part)
-     * @param meridian point defining the reference meridian for middle of first edge
-     * @param insideRadius distance of the edges middle points to the center
-     * (the polygon vertices will therefore be farther away from the center)
-     * @param n number of sides of the polygon
-     * @param margin angular margin to apply to the zone (if positive,
-     * points outside of the raw FoV but close enough to the boundary are
-     * considered visible; if negative, points inside of the raw FoV
-     * but close enough to the boundary are considered not visible)
-     * @deprecated as of 10.1, replaced by {@link #PolygonalFieldOfView(Vector3D,
-     * DefiningConeType, Vector3D, double, int, double)}
-     */
-    @Deprecated
-    public PolygonalFieldOfView(final Vector3D center, final Vector3D meridian,
-                                final double insideRadius, final int n,
-                                final double margin) {
-        this(center, DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
-             meridian, insideRadius, n, margin);
     }
 
     /** Build Field Of View with a regular polygon shape.

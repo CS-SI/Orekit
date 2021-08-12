@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,10 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -108,7 +107,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doSameDateCartesian(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doSameDateCartesian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doSameDateCartesian(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // Definition of initial conditions with position and velocity
@@ -159,7 +158,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doSameDateKeplerian(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doSameDateKeplerian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doSameDateKeplerian(Field<T> field) {
 
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -208,7 +207,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doAlmostSphericalBody(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doAlmostSphericalBody(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doAlmostSphericalBody(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -283,7 +282,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doPropagatedCartesian(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doPropagatedCartesian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doPropagatedCartesian(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // Definition of initial conditions with position and velocity
@@ -378,7 +377,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doPropagatedKeplerian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doPropagatedKeplerian(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // Definition of initial conditions with Keplerian parameters
@@ -465,7 +464,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doUndergroundOrbit(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doUndergroundOrbit(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doUndergroundOrbit(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // for a semi major axis < equatorial radius
@@ -496,7 +495,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doEquatorialOrbit(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doEquatorialOrbit(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doEquatorialOrbit(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -527,7 +526,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doCriticalInclination(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doCriticalInclination(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doCriticalInclination(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field);
         FieldOrbit<T> initialOrbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(zero.add(-3862363.8474653554),
@@ -561,7 +560,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doTooEllipticalOrbit(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // for an eccentricity too big for the model
@@ -592,7 +591,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doHyperbolic(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doHyperbolic(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doHyperbolic(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldKeplerianOrbit<T> hyperbolic =
@@ -613,7 +612,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doWrongAttitude(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doWrongAttitude(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doWrongAttitude(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldKeplerianOrbit<T> orbit =
@@ -630,7 +629,7 @@ public class FieldEcksteinHechlerPropagatorTest {
             }
 
             @Override
-            public <Q extends RealFieldElement<Q>> FieldAttitude<Q>
+            public <Q extends CalculusFieldElement<Q>> FieldAttitude<Q>
                 getAttitude(FieldPVCoordinatesProvider<Q> pvProv,
                             FieldAbsoluteDate<Q> date, Frame frame)
                     {
@@ -652,7 +651,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doTestAcceleration(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestAcceleration(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAcceleration(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -673,7 +672,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldVector3D<T> referenceV    = interpolated.getVelocity();
         FieldVector3D<T> computedA     = sample.get(1).getAcceleration();
         FieldVector3D<T> referenceA    = interpolated.getAcceleration();
-        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target));
+        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target, null));
         final FieldCircularOrbit<T> keplerian =
                 new FieldCircularOrbit<>(propagated.getA(),
                                          propagated.getCircularEx(),
@@ -715,7 +714,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doAscendingNode(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doAscendingNode(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doAscendingNode(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -748,7 +747,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doStopAtTargetDate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doStopAtTargetDate(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doStopAtTargetDate(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -769,7 +768,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doPerigee(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doPerigee(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doPerigee(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -792,7 +791,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doDate(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doDate(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -815,7 +814,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doFixedStep(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doFixedStep(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -824,10 +823,10 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         final T step = zero.add(100.0);
-        propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
+        propagator.setStepHandler(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
-            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
-            {
+            @Override
+            public void handleStep(FieldSpacecraftState<T> currentState) {
                 if (previous != null) {
                     Assert.assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
                 }
@@ -845,7 +844,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doSetting(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doSetting(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -880,7 +879,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doTestIssue504(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue504(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue504(Field<T> field) {
         final T zero = field.getZero();
         // LEO orbit
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
@@ -894,8 +893,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final FieldDSSTPropagator<T> dsst = new FieldDSSTPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(10.0)));
-        final FieldSpacecraftState<T> meanState = dsst.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
         final FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(meanState.getOrbit(), provider, PropagationType.MEAN);
@@ -922,7 +920,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         doTestIssue504Bis(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue504Bis(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue504Bis(Field<T> field) {
         final T zero = field.getZero();
         // LEO orbit
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
@@ -936,8 +934,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final FieldDSSTPropagator<T> dsst = new FieldDSSTPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(10.0)));
-        final FieldSpacecraftState<T> meanState = dsst.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
         final FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(meanState.getOrbit(), Propagator.DEFAULT_LAW, zero.add(498.5), provider, PropagationType.MEAN);
@@ -959,7 +956,7 @@ public class FieldEcksteinHechlerPropagatorTest {
                             4.2e-2);
     }
 
-    private <T extends RealFieldElement<T>> T tangLEmLv(T Lv, T ex, T ey) {
+    private <T extends CalculusFieldElement<T>> T tangLEmLv(T Lv, T ex, T ey) {
         // tan ((LE - Lv) /2)) =
         return ey.multiply(Lv.cos()).subtract(ex.multiply(Lv.sin())).divide(
          ex.multiply(Lv.cos()).add(1.0).add(ey.multiply(Lv.sin()).add(ex.negate().multiply(ex).add(1.0).subtract(

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,25 +50,6 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
 
     /** Field of view of the sensor. */
     private final FieldOfView fov;
-
-    /**
-     * Build a new instance.
-     *
-     * <p>The maximal interval between distance to FOV boundary checks should be
-     * smaller than the half duration of the minimal pass to handle, otherwise
-     * some short passes could be missed.</p>
-     *
-     * @param frame the reference frame attached to the sensor.
-     * @param fov   Field Of View of the sensor.
-     * @deprecated as of 10.1, replaced by {@link #GroundFieldOfViewDetector(Frame, FieldOfView)}
-     */
-    @Deprecated
-    public GroundFieldOfViewDetector(final Frame frame,
-                                     final org.orekit.propagation.events.FieldOfView fov) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                new StopOnIncreasing<GroundFieldOfViewDetector>(),
-                frame, fov);
-    }
 
     /**
      * Build a new instance.
@@ -138,19 +119,6 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
      */
     public FieldOfView getFOV() {
         return fov;
-    }
-
-    /** Get the Field Of View.
-     * @return Field Of View, if detector has been built from a
-     * {@link org.orekit.propagation.events.FieldOfView}, or null of the
-     * detector was built from another implementation of {@link FieldOfView}
-     * @deprecated as of 10.1, replaced by {@link #getFOV()}
-     */
-    @Deprecated
-    public org.orekit.propagation.events.FieldOfView getFieldOfView() {
-        return fov instanceof org.orekit.propagation.events.FieldOfView ?
-               (org.orekit.propagation.events.FieldOfView) fov :
-               null;
     }
 
     /**

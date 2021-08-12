@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,11 +25,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.junit.Assert;
@@ -38,10 +36,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
-import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
+import org.orekit.files.ilrs.CPF.CPFCoordinate;
+import org.orekit.files.ilrs.CPF.CPFEphemeris;
+import org.orekit.time.TimeScalesFactory;
 
 public class CPFWriterTest {
 
@@ -58,16 +58,14 @@ public class CPFWriterTest {
 
         // Simple test for version 2.0, only contains position entries
         final String ex = "/ilrs/jason3_cpf_180613_16401.cne";
-
-        final CPFParser parser = new CPFParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CPFFile file = (CPFFile) parser.parse(fileName);
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final CPF file = new CPFParser().parse(source);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
-        CPFWriter writer = new CPFWriter(file.getHeader());
+        CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
-        final CPFFile generatedCpfFile = parser.parse(tempCPFFilePath);
+        final CPF generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
     }
@@ -77,16 +75,14 @@ public class CPFWriterTest {
 
         // Simple test for version 2.0, only contains position entries
         final String ex = "/ilrs/lageos1_cpf_180613_16401.hts";
-
-        final CPFParser parser = new CPFParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CPFFile file = (CPFFile) parser.parse(fileName);
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final CPF file = new CPFParser().parse(source);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
-        CPFWriter writer = new CPFWriter(file.getHeader());
+        CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
-        final CPFFile generatedCpfFile = parser.parse(tempCPFFilePath);
+        final CPF generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
     }
@@ -96,27 +92,24 @@ public class CPFWriterTest {
 
         // Simple test for version 1.0, only contains position entries
         final String ex = "/ilrs/galileo212_cpf_180613_6641.esa";
-
-        final CPFParser parser = new CPFParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CPFFile file = (CPFFile) parser.parse(fileName);
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final CPF file = new CPFParser().parse(source);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
-        CPFWriter writer = new CPFWriter(file.getHeader());
+        CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
-        final CPFFile generatedCpfFile = parser.parse(tempCPFFilePath);
+        final CPF generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
     }
 
     @Test
     public void testNullFile() throws IOException {
-        final String ex = "/ilrs/lageos1_cpf_180613_16401.hts";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final CPFParser parser = new CPFParser();
-        final CPFFile cpfFile = parser.parse(inEntry);
-        CPFWriter writer = new CPFWriter(cpfFile.getHeader());
+        final String    ex      = "/ilrs/lageos1_cpf_180613_16401.hts";
+        final DataSource source  = new DataSource(ex, () ->  getClass().getResourceAsStream(ex));
+        final CPF   cpfFile = new CPFParser().parse(source);
+        final CPFWriter writer  = new CPFWriter(cpfFile.getHeader(), TimeScalesFactory.getUTC());
         try {
             writer.write((BufferedWriter) null, cpfFile);
             fail("an exception should have been thrown");
@@ -129,7 +122,7 @@ public class CPFWriterTest {
     @Test
     public void testNullEphemeris() throws IOException {
         File tempCPFFile = tempFolder.newFile("TestNullEphemeris.cpf");
-        CPFWriter writer = new CPFWriter(null);
+        CPFWriter writer = new CPFWriter(null, TimeScalesFactory.getUTC());
         writer.write(tempCPFFile.toString(), null);
         assertTrue(tempCPFFile.exists());
         try (FileInputStream   fis = new FileInputStream(tempCPFFile);
@@ -143,7 +136,7 @@ public class CPFWriterTest {
         }
     }
 
-    public static void compareCpfFiles(CPFFile file1, CPFFile file2) {
+    public static void compareCpfFiles(CPF file1, CPF file2) {
 
         // Header
         final CPFHeader header1 = file1.getHeader();
@@ -154,7 +147,6 @@ public class CPFWriterTest {
         final CPFEphemeris eph1 = file1.getSatellites().get(header1.getIlrsSatelliteId());
         final CPFEphemeris eph2 = file2.getSatellites().get(header2.getIlrsSatelliteId());
         Assert.assertEquals(eph1.getId(), eph2.getId());
-        Assert.assertEquals(eph1.getTimeScale(), eph2.getTimeScale());
         Assert.assertEquals(eph1.getStart(), eph2.getStart());
         Assert.assertEquals(eph1.getStop(), eph2.getStop());
 
@@ -177,6 +169,8 @@ public class CPFWriterTest {
         Assert.assertEquals(header1.getName(), header2.getName());
         Assert.assertEquals(header1.getIlrsSatelliteId(), header2.getIlrsSatelliteId());
         Assert.assertEquals(header1.getSic(), header2.getSic());
+        Assert.assertEquals(0.0, header1.getStartEpoch().durationFrom(header2.getStartEpoch()), 1.0e-15);
+        Assert.assertEquals(0.0, header1.getEndEpoch().durationFrom(header2.getEndEpoch()), 1.0e-15);
     }
 
     public static void verifyEphemerisLine(CPFCoordinate coord1, CPFCoordinate coord2) {

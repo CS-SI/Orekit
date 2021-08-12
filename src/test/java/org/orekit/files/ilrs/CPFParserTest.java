@@ -17,7 +17,6 @@
 package org.orekit.files.ilrs;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -27,10 +26,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
-import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
+import org.orekit.files.ilrs.CPF.CPFCoordinate;
+import org.orekit.files.ilrs.CPF.CPFEphemeris;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -49,7 +49,7 @@ public class CPFParserTest {
 
         final CPFParser parser = new CPFParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CPFFile file = (CPFFile) parser.parse(fileName);
+        final CPF file = (CPF) parser.parse(new DataSource(fileName));
 
         // Start date
         final AbsoluteDate start = new AbsoluteDate("2018-06-13T00:00:00.000", file.getTimeScale());
@@ -108,11 +108,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
 
         // Verify Ephemeris
-        Assert.assertNull(ephemeris.getFrameCenterString());
-        Assert.assertNull(ephemeris.getFrameString());
-        Assert.assertNull(ephemeris.getTimeScaleString());
         Assert.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
-        Assert.assertEquals(ephemeris.getTimeScale(), file.getTimeScale());
         Assert.assertEquals(10, ephemeris.getInterpolationSamples());
         Assert.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
         Assert.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
@@ -135,11 +131,9 @@ public class CPFParserTest {
     public void testLageos1Version2() throws URISyntaxException, IOException {
 
         // Simple test for version 2.0, only contains position entries
-        final String ex = "/ilrs/lageos1_cpf_180613_16401.hts";
-
-        final CPFParser parser = new CPFParser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final CPFFile file = (CPFFile) parser.parse(inEntry);
+        final String    ex     = "/ilrs/lageos1_cpf_180613_16401.hts";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final CPF   file   = new CPFParser().parse(source);
 
         // Start date
         final AbsoluteDate start = new AbsoluteDate("2018-06-13T00:00:00.000", file.getTimeScale());
@@ -197,11 +191,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
 
         // Verify Ephemeris
-        Assert.assertNull(ephemeris.getFrameCenterString());
-        Assert.assertNull(ephemeris.getFrameString());
-        Assert.assertNull(ephemeris.getTimeScaleString());
         Assert.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
-        Assert.assertEquals(ephemeris.getTimeScale(), file.getTimeScale());
         Assert.assertEquals(10, ephemeris.getInterpolationSamples());
         Assert.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
         Assert.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
@@ -222,11 +212,9 @@ public class CPFParserTest {
     public void testGalileoVersion1() throws URISyntaxException, IOException {
 
         // Simple test for version 1.0, only contains position entries
-        final String ex = "/ilrs/galileo212_cpf_180613_6641.esa";
-
-        final CPFParser parser = new CPFParser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final CPFFile file = (CPFFile) parser.parse(inEntry);
+        final String    ex     = "/ilrs/galileo212_cpf_180613_6641.esa";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final CPF   file   = new CPFParser().parse(source);
 
         // Start date
         final AbsoluteDate start = new AbsoluteDate("2018-06-12T23:59:42.000", file.getTimeScale());
@@ -281,11 +269,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
 
         // Verify Ephemeris
-        Assert.assertNull(ephemeris.getFrameCenterString());
-        Assert.assertNull(ephemeris.getFrameString());
-        Assert.assertNull(ephemeris.getTimeScaleString());
         Assert.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
-        Assert.assertEquals(ephemeris.getTimeScale(), file.getTimeScale());
         Assert.assertEquals(10, ephemeris.getInterpolationSamples());
         Assert.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
         Assert.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
@@ -306,11 +290,9 @@ public class CPFParserTest {
     public void testAllFields() throws URISyntaxException, IOException {
 
         // Simple test for version 2.0, only contains position entries
-        final String ex = "/ilrs/cpf_all_fields.csg";
-
-        final CPFParser parser = new CPFParser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final CPFFile file = (CPFFile) parser.parse(inEntry);
+        final String    ex     = "/ilrs/cpf_all_fields.csg";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final CPF   file   = new CPFParser().parse(source);
 
         // Verify comments
         final List<String> comments = file.getComments();
@@ -345,9 +327,8 @@ public class CPFParserTest {
     public void testInvalifFormat() throws URISyntaxException, IOException {
         try {
             final String ex = "/ilrs/cpf_invalid_format.csg";
-            final CPFParser parser = new CPFParser();
-            final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-            parser.parse(fileName);
+            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+            new CPFParser().parse(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNEXPECTED_FORMAT_FOR_ILRS_FILE,
@@ -361,9 +342,8 @@ public class CPFParserTest {
     public void testMissingEOF() throws IOException, URISyntaxException {
         try {
             final String ex = "/ilrs/cpf_unexpected_end_of_file.csg";
-            final CPFParser parser = new CPFParser();
-            final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-            parser.parse(fileName);
+            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+            new CPFParser().parse(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CPF_UNEXPECTED_END_OF_FILE,
@@ -377,9 +357,8 @@ public class CPFParserTest {
     public void testCorruptedData() throws IOException, URISyntaxException {
         try {
             final String ex = "/ilrs/cpf_corrupted_data.csg";
-            final CPFParser parser = new CPFParser();
-            final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-            parser.parse(fileName);
+            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+            new CPFParser().parse(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,

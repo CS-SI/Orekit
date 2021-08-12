@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -112,6 +114,45 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
+    public void testToDerivativeStructureVector1() {
+        FieldVector3D<DerivativeStructure> fv =
+                new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                             new Vector3D( 1,  0.1,  10),
+                                             new Vector3D(-1, -0.1, -10),
+                                             new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(1);
+        Assert.assertEquals(1, fv.getX().getFreeParameters());
+        Assert.assertEquals(1, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        checkPV(new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                             new Vector3D( 1,  0.1,  10),
+                                             new Vector3D(-1, -0.1, -10),
+                                             Vector3D.ZERO),
+                new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH, fv), 1.0e-15);
+
+        for (double dt = 0; dt < 10; dt += 0.125) {
+            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
+                                           new Vector3D(-1, -0.1, -10)).shiftedBy(dt).getPosition();
+            Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+        }
+
+        TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH, fv);
+        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+
+    }
+
+    @Test
     public void testToDerivativeStructureVector2() {
         FieldVector3D<DerivativeStructure> fv =
                 new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
@@ -143,6 +184,103 @@ public class TimeStampedPVCoordinatesTest {
             Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
             Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
         }
+
+        TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH, fv);
+        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        Assert.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
+        Assert.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
+        Assert.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
+
+    }
+
+    @Test
+    public void testToUnivariateDerivative1Vector() {
+        FieldVector3D<UnivariateDerivative1> fv =
+                        new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                                     new Vector3D( 1,  0.1,  10),
+                                                     new Vector3D(-1, -0.1, -10),
+                                                     new Vector3D(10, -1.0, -100)).toUnivariateDerivative1Vector();
+        Assert.assertEquals(1, fv.getX().getFreeParameters());
+        Assert.assertEquals(1, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        checkPV(new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                             new Vector3D( 1,  0.1,  10),
+                                             new Vector3D(-1, -0.1, -10),
+                                             Vector3D.ZERO),
+                new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH, fv), 1.0e-15);
+
+        for (double dt = 0; dt < 10; dt += 0.125) {
+            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
+                                           new Vector3D(-1, -0.1, -10)).shiftedBy(dt).getPosition();
+            Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+        }
+
+        TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH, fv);
+        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+
+    }
+
+    @Test
+    public void testToUnivariateDerivative2Vector() {
+        FieldVector3D<UnivariateDerivative2> fv =
+                        new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                                     new Vector3D( 1,  0.1,  10),
+                                                     new Vector3D(-1, -0.1, -10),
+                                                     new Vector3D(10, -1.0, -100)).toUnivariateDerivative2Vector();
+        Assert.assertEquals(1, fv.getX().getFreeParameters());
+        Assert.assertEquals(2, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
+        Assert.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
+        Assert.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
+        checkPV(new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                             new Vector3D( 1,  0.1,  10),
+                                             new Vector3D(-1, -0.1, -10),
+                                             new Vector3D(10, -1.0, -100)),
+                new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH, fv), 1.0e-15);
+
+        for (double dt = 0; dt < 10; dt += 0.125) {
+            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
+                                           new Vector3D(-1, -0.1, -10),
+                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
+            Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+        }
+
+        TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH, fv);
+        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        Assert.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
+        Assert.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
+        Assert.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
+
     }
 
     @Test

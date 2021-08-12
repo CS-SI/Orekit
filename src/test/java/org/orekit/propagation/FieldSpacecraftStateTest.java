@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -48,6 +48,7 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -70,6 +71,7 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
 public class FieldSpacecraftStateTest {
@@ -143,8 +145,13 @@ public class FieldSpacecraftStateTest {
     public void testResetOnEventNumerical() {
         doTestAdditionalTestResetOnEventNumerical(Decimal64Field.getInstance());
     }
+    
+    @Test
+    public void testIssue775() {
+        doTestIssue775(Decimal64Field.getInstance());
+    }
 
-    private <T extends RealFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
         T zero = field.getZero();
 
         double mu = 3.9860047e14;
@@ -209,7 +216,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>>  void doTestShiftVsEcksteinHechlerError(final Field<T> field)
+    private <T extends CalculusFieldElement<T>>  void doTestShiftVsEcksteinHechlerError(final Field<T> field)
         {
 
         T zero = field.getZero();
@@ -301,7 +308,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestDatesConsistency(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDatesConsistency(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -329,7 +336,7 @@ public class FieldSpacecraftStateTest {
      * Check orbit and attitude dates can be off by a few ulps. I see this when using
      * FixedRate attitude provider.
      */
-    private <T extends RealFieldElement<T>> void doTestDateConsistencyClose(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDateConsistencyClose(final Field<T> field) {
 
 
         //setup
@@ -370,7 +377,7 @@ public class FieldSpacecraftStateTest {
     }
 
     // (expected=IllegalArgumentException.class)
-    private <T extends RealFieldElement<T>> void doTestFramesConsistency(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFramesConsistency(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -395,7 +402,7 @@ public class FieldSpacecraftStateTest {
                                                 field));
     }
 
-    private <T extends RealFieldElement<T>> void doTestTransform(final Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestTransform(final Field<T> field)
         {
 
         T zero = field.getZero();
@@ -439,7 +446,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalStates(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalStates(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -529,14 +536,14 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field)
         throws ParseException, OrekitException {
         checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, field);
         checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0, field);
         checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0, field);
     }
 
-    private <T extends RealFieldElement<T>> void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
+    private <T extends CalculusFieldElement<T>> void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
                                          double expectedErrorA, double expectedErrorM, double expectedErrorQ, Field<T> field)
         {
 
@@ -601,7 +608,7 @@ public class FieldSpacecraftStateTest {
         Assert.assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldVsRealAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldVsRealAbsPV(final Field<T> field) {
         T zero = field.getZero();
 
         T x_f     = zero.add(0.8);
@@ -664,7 +671,7 @@ public class FieldSpacecraftStateTest {
      * Check orbit and attitude dates can be off by a few ulps. I see this when using
      * FixedRate attitude provider.
      */
-    private <T extends RealFieldElement<T>> void doTestDateConsistencyCloseAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDateConsistencyCloseAbsPV(final Field<T> field) {
 
 
         //setup
@@ -706,7 +713,7 @@ public class FieldSpacecraftStateTest {
 
 
     // (expected=IllegalArgumentException.class)
-    private <T extends RealFieldElement<T>> void doTestFramesConsistencyAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFramesConsistencyAbsPV(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -734,7 +741,7 @@ public class FieldSpacecraftStateTest {
                                         FieldVector3D.getZero(field)));
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalStatesAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalStatesAbsPV(final Field<T> field) {
 
         T zero = field.getZero();
         T x_f     = zero.add(0.8);
@@ -824,7 +831,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalTestResetOnEventAnalytical(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalTestResetOnEventAnalytical(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -862,7 +869,7 @@ public class FieldSpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(zero.add(0.125), (s, isFinal) -> {
+        propagator.setStepHandler(zero.add(0.125), s -> {
             if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {
@@ -874,7 +881,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalTestResetOnEventNumerical(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalTestResetOnEventNumerical(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -913,7 +920,7 @@ public class FieldSpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(zero.add(0.125), (s, isFinal) -> {
+        propagator.setStepHandler(zero.add(0.125), s -> {
             if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {
@@ -925,6 +932,39 @@ public class FieldSpacecraftStateTest {
 
     }
 
+    private <T extends CalculusFieldElement<T>> void doTestIssue775(final Field<T> field) {
+        final T zero = field.getZero();
+        // Conversion from double to Field
+         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new AbsoluteDate(new DateComponents(2004, 01, 01), TimeComponents.H00, TimeScalesFactory.getUTC()));
+         FieldAbsoluteDate<T> finalDate = new FieldAbsoluteDate<>(field, new AbsoluteDate(new DateComponents(2004, 01, 02), TimeComponents.H00, TimeScalesFactory.getUTC()));
+         Frame inertialFrame = FramesFactory.getEME2000();
+
+         // Initial PV coordinates
+         FieldAbsolutePVCoordinates<T> initPV = new FieldAbsolutePVCoordinates<>(inertialFrame,
+                 new TimeStampedFieldPVCoordinates<>(initDate,
+                         new FieldPVCoordinates<>(new FieldVector3D<>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0)),
+                                           new FieldVector3D<>(zero.add(-2194.0), zero.add(-2141.0), zero.add(-8.0))))) ;
+
+         // Input parameters
+         int numberOfInterals = 15;
+         T deltaT = finalDate.durationFrom(initDate).divide(numberOfInterals);
+
+         // Build the list of spacecraft states
+         List<FieldSpacecraftState<T>> states = new ArrayList<FieldSpacecraftState<T>>(numberOfInterals + 1);
+         for (int j = 0; j<= numberOfInterals; j++) {
+             states.add(new FieldSpacecraftState<T>(initPV).shiftedBy(deltaT.multiply(j)));
+         }
+
+         // Get initial state without orbit
+          FieldSpacecraftState<T> withoutOrbit = states.get(0);
+         // Interpolation
+          withoutOrbit = withoutOrbit.interpolate(states.get(10).getDate(), states.stream());
+          Assert.assertEquals(0.0, FieldVector3D.distance(withoutOrbit.getAbsPVA().getPosition(), states.get(10).getAbsPVA().getPosition()).getReal(), 1.0e-10);
+    }
+
+    
+    
+    
     @Before
     public void setUp(){
         try {

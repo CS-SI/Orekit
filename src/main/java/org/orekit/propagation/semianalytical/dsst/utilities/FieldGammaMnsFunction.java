@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,13 +19,13 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import java.util.Arrays;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 
 /** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13). */
-public class FieldGammaMnsFunction <T extends RealFieldElement<T>> {
+public class FieldGammaMnsFunction <T extends CalculusFieldElement<T>> {
 
     /** Factorial ratios. */
     private static double[] PRECOMPUTED_RATIOS;

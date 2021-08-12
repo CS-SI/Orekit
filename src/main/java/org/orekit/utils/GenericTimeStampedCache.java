@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -340,7 +340,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
                     // we really need to create a new slot in the current thread
                     // (no other threads have created it while we were waiting for the lock)
-                    if ((!slots.isEmpty()) &&
+                    if (!slots.isEmpty() &&
                         slots.get(index).getLatestQuantum() < dateQuantum - newSlotQuantumGap) {
                         ++index;
                     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -101,7 +101,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @param <T> the type of the field elements
  * @since 9.0
  */
-public class FieldTransform<T extends RealFieldElement<T>>
+public class FieldTransform<T extends CalculusFieldElement<T>>
     implements TimeStamped, TimeShiftable<FieldTransform<T>> {
 
     /** Date of the transform. */
@@ -287,7 +287,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return identity transform
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> getIdentity(final Field<T> field) {
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> getIdentity(final Field<T> field) {
         return new FieldIdentityTransform<>(field);
     }
 
@@ -297,7 +297,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return translation part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeTranslation(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeTranslation(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldVector3D<T> p1 = first.cartesian.getPosition();
         final FieldRotation<T> r1 = first.angular.getRotation();
@@ -313,7 +313,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return velocity part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeVelocity(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeVelocity(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldVector3D<T> v1 = first.cartesian.getVelocity();
         final FieldRotation<T> r1 = first.angular.getRotation();
@@ -333,7 +333,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return acceleration part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeAcceleration(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeAcceleration(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldVector3D<T> a1    = first.cartesian.getAcceleration();
         final FieldRotation<T> r1    = first.angular.getRotation();
@@ -357,7 +357,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return rotation part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldRotation<T> compositeRotation(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldRotation<T> compositeRotation(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldRotation<T> r1 = first.angular.getRotation();
         final FieldRotation<T> r2 = second.angular.getRotation();
@@ -372,7 +372,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return rotation rate part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeRotationRate(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeRotationRate(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldVector3D<T> o1 = first.angular.getRotationRate();
         final FieldRotation<T> r2 = second.angular.getRotation();
@@ -388,7 +388,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return rotation acceleration part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeRotationAcceleration(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeRotationAcceleration(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldVector3D<T> o1    = first.angular.getRotationRate();
         final FieldVector3D<T> oDot1 = first.angular.getRotationAcceleration();
@@ -442,7 +442,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new instance, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
                                                                                 final Collection<FieldTransform<T>> sample) {
         return interpolate(interpolationDate,
                            CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
@@ -473,7 +473,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @return a new instance, interpolated at specified date
           * @param <T> the type of the field elements
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
                                                                                 final Collection<FieldTransform<T>> sample) {
@@ -504,7 +504,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @return a new instance, interpolated at specified date
           * @param <T> the type of the field elements
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
                                                                                 final Stream<FieldTransform<T>> sample) {
@@ -655,7 +655,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * BEWARE! This method does explicit computation of velocity and acceleration by combining
      * the transform velocity, acceleration, rotation rate and rotation acceleration with the
      * velocity and acceleration from the argument. This implies that this method should
-     * <em>not</em> be used when derivatives are contained in the {@link RealFieldElement field
+     * <em>not</em> be used when derivatives are contained in the {@link CalculusFieldElement field
      * elements} (typically when using {@link org.hipparchus.analysis.differentiation.DerivativeStructure
      * DerivativeStructure} elements where time is one of the differentiation parameter), otherwise
      * the time derivatives would be computed twice, once explicitly in this method and once implicitly
@@ -689,7 +689,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * BEWARE! This method does explicit computation of velocity and acceleration by combining
      * the transform velocity, acceleration, rotation rate and rotation acceleration with the
      * velocity and acceleration from the argument. This implies that this method should
-     * <em>not</em> be used when derivatives are contained in the {@link RealFieldElement field
+     * <em>not</em> be used when derivatives are contained in the {@link CalculusFieldElement field
      * elements} (typically when using {@link org.hipparchus.analysis.differentiation.DerivativeStructure
      * DerivativeStructure} elements where time is one of the differentiation parameter), otherwise
      * the time derivatives would be computed twice, once explicitly in this method and once implicitly
@@ -908,7 +908,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
     }
 
     /** Specialized class for identity transform. */
-    private static class FieldIdentityTransform<T extends RealFieldElement<T>> extends FieldTransform<T> {
+    private static class FieldIdentityTransform<T extends CalculusFieldElement<T>> extends FieldTransform<T> {
 
         /** Simple constructor.
          * @param field field for the components

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
@@ -44,7 +44,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface FieldEventDetector <T extends RealFieldElement<T>> {
+public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
 
     /** Initialize event handler at the start of a propagation.
      * <p>

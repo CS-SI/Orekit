@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ public abstract class AbstractListCrawlerTest<T> {
     @Before
     public void setUp() {
         // Clear any filters that another test may have left
-        DataContext.getDefault().getDataProvidersManager().clearFilters();
+        DataContext.getDefault().getDataProvidersManager().resetFiltersToDefault();
     }
 
     @Test

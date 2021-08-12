@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -218,7 +218,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     public boolean equals(final Object other) {
         try {
             final DateTimeComponents otherDateTime = (DateTimeComponents) other;
-            return (otherDateTime != null) &&
+            return otherDateTime != null &&
                    date.equals(otherDateTime.date) && time.equals(otherDateTime.time);
         } catch (ClassCastException cce) {
             return false;

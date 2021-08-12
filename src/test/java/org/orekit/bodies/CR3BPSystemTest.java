@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,12 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.LagrangianPoints;
@@ -41,7 +41,9 @@ public class CR3BPSystemTest {
 
     @Test
     public void testCR3BPSystem() {
-    	final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        TimeScale timeScale = TimeScalesFactory.getUTC();
+    	final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
     	final double lDim = syst.getDdim();
     	Assert.assertNotNull(lDim);
 	
@@ -54,31 +56,41 @@ public class CR3BPSystemTest {
 
     @Test
     public void testGetRotatingFrame() {
-    	final Frame baryFrame = CR3BPFactory.getSunEarthCR3BP().getRotatingFrame();
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        TimeScale timeScale = TimeScalesFactory.getUTC();
+    	final Frame baryFrame = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getRotatingFrame();
     	Assert.assertNotNull(baryFrame);
     }
 
     @Test
     public void testGetPrimary() {
-    	final CelestialBody primaryBody = CR3BPFactory.getSunEarthCR3BP().getPrimary();
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        TimeScale timeScale = TimeScalesFactory.getUTC();
+    	final CelestialBody primaryBody = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getPrimary();
     	Assert.assertNotNull(primaryBody);
     }
 
     @Test
     public void testGetSecondary() {
-    	final CelestialBody secondaryBody = CR3BPFactory.getSunEarthCR3BP().getSecondary();
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        TimeScale timeScale = TimeScalesFactory.getUTC();
+    	final CelestialBody secondaryBody = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getSecondary();
     	Assert.assertNotNull(secondaryBody);	
     }
 
     @Test
     public void testGetMu() {
-    	final double mu = CR3BPFactory.getSunJupiterCR3BP().getMassRatio();
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        TimeScale timeScale = TimeScalesFactory.getUTC();
+    	final double mu = CR3BPFactory.getSunJupiterCR3BP(date, timeScale).getMassRatio();
     	Assert.assertNotNull(mu);
     }
 
     @Test
     public void testGetName() {
-    	final String name = CR3BPFactory.getSunEarthCR3BP().getName();
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        TimeScale timeScale = TimeScalesFactory.getUTC();
+    	final String name = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getName();
     	Assert.assertNotNull(name);
     }
 
@@ -112,10 +124,11 @@ public class CR3BPSystemTest {
 	    Assert.assertEquals(0.0, l5Position.getZ() * syst.getDdim(),1E3);
     }
 
-    @Ignore // temporarily ignore for 10.3.1 patch release due to issue 744, which is fixed in develop branch
     @Test
     public void testGetGamma() {
-    	final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
+        TimeScale timeScale = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2020, 7, 5, 12, 0, 0.0, timeScale);
+    	final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
     
     	final double l1Gamma = syst.getGamma(LagrangianPoints.L1);
     	Assert.assertEquals(1.497655E9, l1Gamma * syst.getDdim(),1E3);
@@ -133,11 +146,12 @@ public class CR3BPSystemTest {
     public void testGetRealAPV() {
         
         // Time settings
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
         final AbsoluteDate initialDate =
             new AbsoluteDate(1996, 06, 26, 0, 0, 00.000,
                              TimeScalesFactory.getUTC());
         
-        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
+        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(initialDate, timeScale);
         
         final CelestialBody primaryBody = syst.getPrimary();
         final CelestialBody secondaryBody = syst.getSecondary(); 

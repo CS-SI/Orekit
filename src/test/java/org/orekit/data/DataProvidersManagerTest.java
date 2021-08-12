@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ public class DataProvidersManagerTest {
     @After
     public void tearDown() {
         // clear the filters so they don't change other tests
-        DataContext.getDefault().getDataProvidersManager().clearFilters();
+        DataContext.getDefault().getDataProvidersManager().resetFiltersToDefault();
     }
 
     @Test
@@ -141,8 +141,7 @@ public class DataProvidersManagerTest {
         Assert.assertNotNull(manager.removeProvider(providers.get(0)));
         Assert.assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
-            @Deprecated
-            public boolean feed(Pattern supported, DataLoader visitor) {
+            public boolean feed(Pattern supported, DataLoader visitor, DataProvidersManager manager) {
                 return true;
             }
         };
@@ -154,7 +153,7 @@ public class DataProvidersManagerTest {
         Assert.assertEquals(1, manager.getProviders().size());
         Assert.assertNull(manager.removeProvider(new DataProvider() {
             @Deprecated
-            public boolean feed(Pattern supported, DataLoader visitor) {
+            public boolean feed(Pattern supported, DataLoader visitor, DataProvidersManager manager) {
                 throw new OrekitException(new DummyLocalizable("oops!"));
             }
         }));
@@ -200,7 +199,7 @@ public class DataProvidersManagerTest {
     public void testSimpleFilter() {
         Utils.setDataRoot("regular-data");
         CountingFilter filter = new CountingFilter();
-        DataContext.getDefault().getDataProvidersManager().addFilter(filter);
+        DataContext.getDefault().getDataProvidersManager().getFiltersManager().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assert.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
         Assert.assertEquals(18, crawler.getCount());
@@ -213,7 +212,7 @@ public class DataProvidersManagerTest {
         Utils.setDataRoot("regular-data");
         final int layers = 10;
         MultiLayerFilter filter = new MultiLayerFilter(layers);
-        DataContext.getDefault().getDataProvidersManager().addFilter(filter);
+        DataContext.getDefault().getDataProvidersManager().getFiltersManager().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assert.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
         Assert.assertEquals(18, crawler.getCount());
@@ -243,20 +242,20 @@ public class DataProvidersManagerTest {
     }
 
     private static class CountingFilter implements DataFilter {
-        private Map<NamedData, NamedData> filtered;
+        private Map<DataSource, DataSource> filtered;
         private int opened;
         public CountingFilter() {
             filtered = new IdentityHashMap<>();
             opened   = 0;
         }
-        public NamedData filter(NamedData original) {
+        public DataSource filter(DataSource original) {
             if (filtered.containsKey(original)) {
                 return original;
             } else {
-                NamedData f = new NamedData(original.getName(),
+                DataSource f = new DataSource(original.getName(),
                                             () -> {
                                                 ++opened;
-                                                return original.getStreamOpener().openStream();
+                                                return original.getOpener().openStreamOnce();
                                             });
                 filtered.put(f, f);
                 return f;
@@ -279,7 +278,7 @@ public class DataProvidersManagerTest {
             this.layers = layers;
             this.opened = 0;
         }
-        public NamedData filter(final NamedData original) {
+        public DataSource filter(final DataSource original) {
             Matcher matcher = PATTERN.matcher(original.getName());
             int level = 0;
             String baseName = original.getName();
@@ -289,10 +288,10 @@ public class DataProvidersManagerTest {
             }
             if (level++ < layers) {
                 // add one filtering layer
-                return new NamedData(PREFIX + level + "-" + baseName,
+                return new DataSource(PREFIX + level + "-" + baseName,
                                      () -> {
                                          ++opened;
-                                         return original.getStreamOpener().openStream();
+                                         return original.getOpener().openStreamOnce();
                                      });
             } else {
                 // final layer, don't filter anymore

@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -48,7 +48,7 @@ import org.orekit.utils.Constants;
  *
  * @author Evan Ward
  */
-public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>>{
+public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElement<T>>{
 
     public static final double mu = Constants.EIGEN5C_EARTH_MU;
     public static final Frame eci = FramesFactory.getGCRF();
@@ -2330,7 +2330,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
 
         @Override
         public T g(FieldSpacecraftState<T> s) {
-            return FastMath.signum(g.g(s));
+            return FastMath.sign(g.g(s));
         }
 
         @Override

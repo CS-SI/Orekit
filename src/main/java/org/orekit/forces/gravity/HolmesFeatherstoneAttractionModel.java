@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,12 @@
 package org.orekit.forces.gravity;
 
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -386,7 +388,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @param <T> type of field used
      * @return gradient of the non-central part of the gravity field
      */
-    public <T extends RealFieldElement<T>> T[] gradient(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
+    public <T extends CalculusFieldElement<T>> T[] gradient(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
                                                         final T mu) {
 
         final int degree = provider.getMaxDegree();
@@ -735,7 +737,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @param <T> type of field used
      * @return array containing (a/r)<sup>n</sup>
      */
-    private <T extends RealFieldElement<T>> T[] createDistancePowersArray(final T aOr) {
+    private <T extends CalculusFieldElement<T>> T[] createDistancePowersArray(final T aOr) {
 
         // initialize array
         final T[] aOrN = MathArrays.buildArray(aOr.getField(), provider.getMaxDegree() + 1);
@@ -796,7 +798,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @return array containing cos(m &times; λ) in row 0
      * and sin(m &times; λ) in row 1
      */
-    private <T extends RealFieldElement<T>> T[][] createCosSinArrays(final T cosLambda, final T sinLambda) {
+    private <T extends CalculusFieldElement<T>> T[][] createCosSinArrays(final T cosLambda, final T sinLambda) {
 
         final T one = cosLambda.getField().getOne();
         final T zero = cosLambda.getField().getZero();
@@ -948,7 +950,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @param <T> instance of field element
      * @return new value for index
      */
-    private <T extends RealFieldElement<T>> int computeTesseral(final int m, final int degree, final int index,
+    private <T extends CalculusFieldElement<T>> int computeTesseral(final int m, final int degree, final int index,
                                                                 final T t, final T u, final T tOu,
                                                                 final T[] pnm0Plus2, final T[] pnm0Plus1, final T[] pnm1Plus1,
                                                                 final T[] pnm0, final T[] pnm1, final T[] pnm2) {
@@ -1038,7 +1040,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
 
         final T mu = parameters[0];
@@ -1080,7 +1082,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
     @Override
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
@@ -1090,7 +1092,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @return true if state corresponds to derivatives with respect to state
      * @since 9.0
      */
-    private <T extends RealFieldElement<T>> boolean isDSStateDerivative(final FieldSpacecraftState<T> state) {
+    private <T extends CalculusFieldElement<T>> boolean isDSStateDerivative(final FieldSpacecraftState<T> state) {
         try {
             final DerivativeStructure dsMass = (DerivativeStructure) state.getMass();
             final int o = dsMass.getOrder();
@@ -1114,7 +1116,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @return true if state corresponds to derivatives with respect to state
      * @since 10.2
      */
-    private <T extends RealFieldElement<T>> boolean isGradientStateDerivative(final FieldSpacecraftState<T> state) {
+    private <T extends CalculusFieldElement<T>> boolean isGradientStateDerivative(final FieldSpacecraftState<T> state) {
         try {
             final Gradient gMass = (Gradient) state.getMass();
             final int p = gMass.getFreeParameters();
@@ -1164,7 +1166,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** Compute acceleration derivatives with respect to state parameters.
      * <p>
      * From a theoretical point of view, this method computes the same values
-     * as {@link #acceleration(FieldSpacecraftState, RealFieldElement[])} in the
+     * as {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[])} in the
      * specific case of {@link DerivativeStructure} with respect to state, so
      * it is less general. However, it is *much* faster in this important case.
      * <p>
@@ -1240,7 +1242,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** Compute acceleration derivatives with respect to state parameters.
      * <p>
      * From a theoretical point of view, this method computes the same values
-     * as {@link #acceleration(FieldSpacecraftState, RealFieldElement[])} in the
+     * as {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[])} in the
      * specific case of {@link DerivativeStructure} with respect to state, so
      * it is less general. However, it is *much* faster in this important case.
      * <p>
@@ -1311,10 +1313,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** {@inheritDoc} */
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            gmParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(gmParameterDriver);
     }
 
 }

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS GROUP
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -30,60 +30,91 @@ the `PVCoordinatesProvider` interface) and several implementations.
 ![propagation class diagram](../images/design/propagation-class-diagram.png)
 
 
-## Propagation modes
+## Steps management
 
-Depending on the needs of the calling application, all propagators can be used in
-different modes:
+Depending on the needs of the calling application, the propagator can provide
+intermediate states between the initial time and propagation target time, or
+it can provide only the final state.
  
-* slave mode: This mode is used when the user wants to completely drive evolution of
-  time with his own loop. The (slave) propagator is passive: it computes this result and
-  returns it to the  calling (master) application, without any intermediate feedback.
-  Users often use this mode in loops, each target propagation time representing the next
-  small time step. In that case the events  detection is made but the _step handler_ does
-  nothing, actions are managed directly by the calling application.
-
-
-* master mode: This mode is used when the user needs to have some custom function 
-  called at the end of each finalized step during integration. The (master) propagator 
-  is active: the integration loop calls the (slave) application callback methods at each 
-  finalized step, through the _step handler_. Users often use this mode with only a single
+* intermediate states: In order to get intermediate states, users need to register
+  some custom object implementation the `OrekitStepHandler` or `OrekitFixedStephHandler`
+  interfaces to the propagator before running it. As the propagator computes the
+  evolution of spacecraft state, it performs some internal time loops and will call these
+  step handlers at each finalized step. Users often use this mode with only a single
   call to propagation with the target propagation time representing the end final date.
+  The core business of the application is in the step handlers, and the application
+  does not really handle time by itself, it let the propagator do it.
 
+* final state only: This method is used when the user wants to completely control the
+  evolution of time. The application gives a target time and no step handlers at all.
+  The propagator then has no callback to perform and its internal loop is invisible to
+  caller application. The only feedback is the return value of the propagator with the
+  final state at target time. Users often use this mode in loops, each target propagation
+  time representing the next small time step.
 
-* ephemeris generation mode: This mode is used when the user needs random access 
-  to the orbit state at any time between the initial and target times, and in no
-  sequential order. A typical example is the implementation of search and iterative 
-  algorithms that may navigate forward and backward inside the propagation range before 
-  finding their result.
-  CAVEATS: Be aware that this mode cannot support events that modify spacecraft initial state. 
-  Be aware that since this mode stores all intermediate results, it may be memory-intensive
-  for long integration ranges and high precision/short time steps.
+There is no limitation on the number of step handlers that can be registered to a propagator.
+Step handlers. Each propagator contains a multiplexer that can accept several step handlers.
+Step handlers can be either of `OrekitFixedStepHandler` type, which will be called at regular time
+intervals and fed with a single `SpacecraftState`, or they can be of `OrekitStepHandler` type,
+which will be called when the propagator accepts one step according to its internal time loop
+and fed with an `OrekitStepInterpolator` that is valid throughout the step, hence providing
+dense output. The following class diagram shows this architecture.
 
-The recommended mode is master mode. It is very simple to use and allow user to get
-rid of concerns about synchronizing force models, file output, discrete events. All
-these parts are handled separately in different user code parts, and Orekit takes
-care of all management. The following class diagram shows the main interfaces used
-for master mode.
+![sampling class diagram](../images/design/sampling-class-diagram.png)
 
-![master mode class diagram](../images/design/sampling-class-diagram.png)
+Orekit uses internally this mechanism to provide some important features with specialized
+internal step handlers. The following class diagram shows for example that the `EphemerisGenerator`
+that can be requested from a propagator is based on a step handler that will store all intermediate
+steps during the propagation. Ephemeris generation from a propagator is used when the user needs
+random access to the orbit state at any time between the initial and target times, and in no
+sequential order. A typical example is the implementation of search and iterative  algorithms that
+may navigate forward and backward inside the propagation range before finding their result.
 
-This mode also lets the propagator choose its own step size,
-but still let user choose a different step size for its output, which greatly increases
-performances. The following sequence diagram shows how a user-provided step handler is
-called when propagation is done in master mode.
+CAVEATS: Be aware that this mode cannot support events that modify spacecraft initial state. 
+Be aware that since this mode stores all intermediate results, it may be memory-intensive
+for long integration ranges and high precision/short time steps.
 
-![master mode sequence diagram](../images/design/master-mode-sequence-diagram.png)
+![ephemeris generation sequence diagram](../images/design/ephemeris-generation-sequence-diagram.png)
 
-The following sequence diagram shows how user can handle themselves time when
-propagation is done in slave mode, with a loop managed at user level.
+The fact ephemeris generation is based on a specialized step handler as shown in the following
+sequence diagram explains that in order to generate an ephemeris, users must call three methods
+in sequence:
 
-![slave mode sequence diagram](../images/design/slave-mode-sequence-diagram.png)
+    final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+    propagator.propagate(start, end);  // here we ignore the returned final state
+    final BoundedPropagator = generator.getGeneratedEphemeris();
 
-The following sequence diagram shows how user can use ephemeris generation mode to
-do a two phases propagation, one first phase to generate the epehemeris, and a second
-phase using the generated ephemeris.
+Of course, as several step handlers can be used simultaneously, it is possible to generate
+an ephemeris and to set up other step handlers performing other computations at the same time.
 
-![ephemeris generation mode class diagram](../images/design/ephemeris-generation-mode-sequence-diagram.png)
+The following sequence diagram shows a use case for several step handlers dealing with fixed
+steps at different rates: one high rate (i.e. small step size) handler logging some detailed
+information on a huge log file, and at the same time a low rate (i.e. large step size) handler
+intended to display progress for the user if computation is expected to be long.
+
+![with step handlers sequence diagram](../images/design/with-step-handlers-sequence-diagram.png)
+
+The next sequence diagram shows a case where users want to control the time loop tightly
+from within their application. In this case, the step handlers multiplexer is cleared and
+the propagator is called multiple time, and returns states at requested target times.
+
+[without step handlers sequence diagram](../images/design/without-step-handlers-sequence-diagram.png)
+
+Controlling the time loop at application level by ignoring step handlers and just getting
+states at specified times may seem appealing and more natural to most first time Orekit
+users. The previous class diagram appears much simpler than the previous one. The fact is that
+the burden of time management complexity is on the users side, not on Orekit side. It is therefore
+not the recommended way to use propagation.
+
+The recommended way is to register step handlers and call the propagation just once with the final
+time of the study as the target time and letting the propagator perform the time loop. It is
+very simple to use and allow user to get rid of concerns about synchronizing force models,
+file output, discrete events. All these parts are handled separately in different user code
+parts, and Orekit takes care of all management. From a user point of view, using step handler
+lead to much simpler code to maintain with smaller independent parts. Another important point is
+that letting the propagator manage the time loop lets it select an integration step size that may
+be larger than the user output sampling, which greatly increases performances (some experiments
+had shown up to 50 fold performance increase, mainly when high rate output are desired).
 
 ## Events management
 
@@ -249,6 +280,13 @@ If users need a more definitive initialization of an Eckstein-Hechler propagator
 should consider using a propagator converter to initialize their Eckstein-Hechler
 propagator using a complete sample instead of just a single initial orbit.
 
+### GNSS propagation
+
+There are several dedicated models used for GNSS constellations propagation. These
+models are generally fed by navigation messages or ephemerides updated regularly
+or directly from the satellites signals. All naviagation constellations are supported
+(GPS, Galileo, GLONASS, Beidou, IRNSS, QZSS and SBAS).
+
 ### SGP4/SDP4 propagation
 
 This analytical model is dedicated to Two-Line Elements (TLE) propagation.
@@ -373,7 +411,7 @@ propagation. As can be seen, the process is very close the one for the numerical
 Since 9.0, most of the Orekit propagators (in fact all of them except DSST) have both a regular
 version the propagates states based on classical real numbers (i.e. double precision numbers)
 and a more general version that propagates states based on any class that implements the
-`RealFieldElement` interface from Hipparchus. Such classes mimic real numbers in the way they
+`CalculusFieldElement` interface from Hipparchus. Such classes mimic real numbers in the way they
 support all operations from the real field (addition, subtraction, multiplication, division,
 but also direct and inverse trigonometric functions, direct and inverse hyperbolic functions,
 logarithms, powers, roots...).
@@ -382,7 +420,7 @@ logarithms, powers, roots...).
 
 ### Taylor algebra
 
-A very important implementation of the `RealFieldElement` interface is the `DerivativeStructure`
+A very important implementation of the `CalculusFieldElement` interface is the `DerivativeStructure`
 class, which in addition to compute the result of the canonical operation (add, multiply, sin,
 atanh...) also computes its derivatives, with respect to any number of variables and to any
 derivation order. If for example a user starts a computation with 6 canonical variables px,
@@ -423,7 +461,7 @@ analyses more often use several thousands of evaluations, the payoff is really i
 
 ### Parallel computation
 
-Another important implementation of the `RealFieldElement` interface is the `Tuple`
+Another important implementation of the `CalculusFieldElement` interface is the `Tuple`
 class, which computes the same operation on a number of components of a tuple, hence
 allowing to perform parallel orbit propagation in one run. Each spacecraft will correspond
 to one component of the tuple. The first spacecraft (component at index 0) is the reference.

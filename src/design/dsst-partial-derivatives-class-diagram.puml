@@ -1,4 +1,4 @@
-' Copyright 2002-2020 CS GROUP
+' Copyright 2002-2021 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
@@ -37,7 +38,7 @@
 
       Propagator <|.. AbstractPropagator
 
-      package integration #EAECE6 {
+      package integration #CBDBC8 {
         interface AdditionalEquations {
           +String getName()
           +void computeDerivatives()
@@ -49,9 +50,9 @@
         AdditionalEquations <---o AbstractIntegratedPropagator : additional
       }
 
-      package semianalytical.dsst #EAECE6 {
+      package semianalytical.dsst #CBDBC8 {
 
-      	package forces #DDEBD8 {
+      	package forces #CCCCC7 {
 
         	interface DSSTForceModel {
           	   +void initialize()

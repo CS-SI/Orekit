@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -146,7 +146,7 @@ public class ITRFVersionLoader implements ItrfVersionProvider {
         private static final String INFINITY_DATE  = "\\s+-+";
 
         /** Regular expression matching an ITRF version. */
-        private static final String ITRF  = "\\s+(ITRF-\\d\\d(?:\\d\\d)?)";
+        private static final String ITRF  = "\\s+([Ii][Tt][Rr][Ff][-_ ]?[0-9]{2,4})";
 
         /** Regular expression matching end of line. */
         private static final String END  = "$";

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,11 +19,10 @@ package org.orekit.gnss;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,8 +31,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
-import org.orekit.data.NamedData;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -47,9 +46,9 @@ public class HatanakaCompressFilterTest {
     public void testNotFiltered() throws IOException {
         
         final String name = "rinex/aaaa0000.00o";
-        final NamedData raw = new NamedData(name,
+        final DataSource raw = new DataSource(name,
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        final NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        final DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         Assert.assertSame(raw, filtered);
     }
 
@@ -95,12 +94,11 @@ public class HatanakaCompressFilterTest {
 
     private void doTestWrong(final String name, final OrekitMessages expectedError)
         throws IOException {
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         try {
-            try (InputStream       is  = new HatanakaCompressFilter().filter(raw).getStreamOpener().openStream();
-                 InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-                 BufferedReader    br  = new BufferedReader(isr)) {
+            try (Reader            r   = new HatanakaCompressFilter().filter(raw).getOpener().openReaderOnce();
+                 BufferedReader    br  = new BufferedReader(r)) {
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
                     // nothing to do here
                 }
@@ -115,12 +113,11 @@ public class HatanakaCompressFilterTest {
     public void testRinex2MoreThan12Satellites() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/bogi1210.09d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
+                                         "7b1556a1f582b4e037b6bae7e31672370fbea23ebb9289ceebcefefa898afe9c");
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(135, ods.size());
@@ -141,8 +138,7 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(satsPerEpoch.length, epochCount + 1);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("7b1556a1f582b4e037b6bae7e31672370fbea23ebb9289ceebcefefa898afe9c", md);
-
+        digester.checkDigest();
 
     }
 
@@ -150,12 +146,11 @@ public class HatanakaCompressFilterTest {
     public void testHatanakaRinex2() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/arol0090.01d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
+                                         "2ec64a396f19c09e70d0748e01ebb0f96d4961fdfd3ba8f023011de40b52c2b4");
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2001, 1, 9, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -201,7 +196,7 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(2.2504,              ods.get(920).getObservationData().get(6).getValue(), 1.0e-3);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("2ec64a396f19c09e70d0748e01ebb0f96d4961fdfd3ba8f023011de40b52c2b4", md);
+        digester.checkDigest();
 
     }
 
@@ -210,12 +205,11 @@ public class HatanakaCompressFilterTest {
         
         //Tests Rinex 3 with Hatanaka compression
         final String name = "rinex/GANP00SVK_R_20151890000_01H_10M_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
+                                         "680cf9145f416d92458afc82aabd9cef3460c27f33837686fa0535195df379fe");
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2015, 7, 8, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -261,7 +255,7 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(40.200,                  ods.get(187).getObservationData().get(2).getValue(), 1.0e-3);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("680cf9145f416d92458afc82aabd9cef3460c27f33837686fa0535195df379fe", md);
+        digester.checkDigest();
 
     }
 
@@ -269,12 +263,11 @@ public class HatanakaCompressFilterTest {
     public void testClockReset() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/clckReset_U_20190320000_10M_10M_MO.crx";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(raw);
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        Digester digester = new Digester(new HatanakaCompressFilter().filter(raw),
+                                         "b54f4ec3fb860a032f93f569199224e247b35ceba309bc96478779ff7120455a");
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(23, ods.size());
@@ -288,7 +281,7 @@ public class HatanakaCompressFilterTest {
         }
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("b54f4ec3fb860a032f93f569199224e247b35ceba309bc96478779ff7120455a", md);
+        digester.checkDigest();
 
     }
 
@@ -300,12 +293,11 @@ public class HatanakaCompressFilterTest {
         //  - epoch lines do contain a clock offset (which is a dummy value manually edited from original IGS file)
         //  - differences are reinitialized every 20 epochs
         final String name = "rinex/ZIMM00CHE_R_20190320000_15M_30S_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
+                                         "6ac7c9160d2131581156b2ea88c0c5844b88e1369c3a03956cb77f919c5cca3e");
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(349, ods.size());
@@ -317,7 +309,7 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(130406727.683, last.getObservationData().get(1).getValue(), 1.0e-4);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("6ac7c9160d2131581156b2ea88c0c5844b88e1369c3a03956cb77f919c5cca3e", md);
+        digester.checkDigest();
 
     }
 
@@ -325,12 +317,11 @@ public class HatanakaCompressFilterTest {
     public void testSplice() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/aber0440.16d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
+                                         "b2bc4c32c144f8e6fdda15c9a041c17cbd6b48653c0866dd121f9ad5663f3895");
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -342,7 +333,7 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(0.0,                 ods.get(0).getDate().durationFrom(t0), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("b2bc4c32c144f8e6fdda15c9a041c17cbd6b48653c0866dd121f9ad5663f3895", md);
+        digester.checkDigest();
 
     }
 
@@ -350,12 +341,11 @@ public class HatanakaCompressFilterTest {
     public void testVerySmallValue() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/abmf0440.16d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
+                                         "8eee596cd333bb784ece5a7afd94ab1674f27af58ede842873d952414a39998f");
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 10, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -369,7 +359,7 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(-0.096,              ods.get(59).getObservationData().get(7).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("8eee596cd333bb784ece5a7afd94ab1674f27af58ede842873d952414a39998f", md);
+        digester.checkDigest();
 
     }
 
@@ -377,12 +367,11 @@ public class HatanakaCompressFilterTest {
     public void testMultipleOf5Observations() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/arev0440.16d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        Digester digester = new Digester(new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw)),
+                                         "4e5d77c4f4b21f9c995da88b4e1efd75d0e808e3e531ec815f95c4a8652fba8f");
+        RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -396,7 +385,7 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(79103696.341,            ods.get(16).getObservationData().get(1).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("4e5d77c4f4b21f9c995da88b4e1efd75d0e808e3e531ec815f95c4a8652fba8f", md);
+        digester.checkDigest();
 
     }
 
@@ -404,10 +393,10 @@ public class HatanakaCompressFilterTest {
     public void testSingleByteReads() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/arev0440.16d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-        try (InputStream is = filtered.getStreamOpener().openStream()) {
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        try (InputStream is = filtered.getOpener().openStreamOnce()) {
             int count = 0;
             while (is.read() >= 0) {
                 ++count;
@@ -458,7 +447,7 @@ public class HatanakaCompressFilterTest {
 
             for (int i = 0; i < compressed.length; ++i) {
                 acceptMethod.invoke(differential, Long.toString(compressed[i]));
-                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differential));
+                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differential).toString());
             }
 
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
@@ -525,7 +514,7 @@ public class HatanakaCompressFilterTest {
                 acceptMethod.invoke(differentialClass,
                                     compressed[i].subSequence(compressed[i].indexOf('@') + 1,
                                                               compressed[i].lastIndexOf('@')));
-                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differentialClass));
+                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differentialClass).toString());
             }
 
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
@@ -538,12 +527,11 @@ public class HatanakaCompressFilterTest {
     public void testManyObservations() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/THTG00PYF_R_20160440000_60S_30S_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
-                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
+                                              () -> Utils.class.getClassLoader().getResourceAsStream(name));
+          Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
+                                           "f07c83dcd4dfa02e517ebb8bed6ac7caa0a8ba6f5809cb9d367d7e757741afab");
+          RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -557,7 +545,7 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(129123198.213,          ods.get(24).getObservationData().get(1).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("f07c83dcd4dfa02e517ebb8bed6ac7caa0a8ba6f5809cb9d367d7e757741afab", md);
+        digester.checkDigest();
 
     }
 
@@ -565,12 +553,11 @@ public class HatanakaCompressFilterTest {
     public void testSeptentrioMissingType() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/TLSG00FRA_R_20160440000_30S_30S_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
-                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
+                                              () -> Utils.class.getClassLoader().getResourceAsStream(name));
+          Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
+                                           "79b524e36869055b41238ee5919b13f0ca2923b95f8516fe0e09a7ac968a62d6");
+          RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -584,7 +571,7 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(2.648,                  ods.get(37).getObservationData().get(2).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("79b524e36869055b41238ee5919b13f0ca2923b95f8516fe0e09a7ac968a62d6", md);
+        digester.checkDigest();
 
     }
 
@@ -592,12 +579,11 @@ public class HatanakaCompressFilterTest {
     public void testSeptentrioPhaseShiftWithS() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/VILL00ESP_R_20160440000_01D_30S_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
-                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
-                                             filtered.getName());
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
+                                              () -> Utils.class.getClassLoader().getResourceAsStream(name));
+          Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
+                                           "a7f7136b71923d1fbd44638843300298872bb35a732325782ebe13cc299c0d46");
+          RinexObservationLoader loader = new RinexObservationLoader(digester.getDigestedSource());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -611,20 +597,38 @@ public class HatanakaCompressFilterTest {
         Assert.assertEquals(111836179.674,           ods.get(35).getObservationData().get(1).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
-        checkDigest("a7f7136b71923d1fbd44638843300298872bb35a732325782ebe13cc299c0d46", md);
+        digester.checkDigest();
 
     }
 
-    private void checkDigest(final String expected, final MessageDigest md) {
-        StringBuilder builder = new StringBuilder();
-        for (final byte b : md.digest()) {
-            final int ib = Byte.toUnsignedInt(b);
-            if (ib < 0x10) {
-                builder.append('0');
-            }
-            builder.append(Integer.toHexString(ib));
+    private static class Digester {
+
+        final DataSource    source;
+        final MessageDigest md;
+        final String        expected256;
+
+        Digester(final DataSource source, final String expected256) throws NoSuchAlgorithmException {
+            this.source      = source;
+            this.md          = MessageDigest.getInstance("SHA-256");
+            this.expected256 = expected256;
         }
-        Assert.assertEquals(expected, builder.toString());
+
+        DataSource getDigestedSource() {
+            return new DataSource(source.getName(),
+                                  () -> new DigestInputStream(source.getOpener().openStreamOnce(), md));
+        }
+
+        void checkDigest() {
+            StringBuilder builder = new StringBuilder();
+            for (final byte b : md.digest()) {
+                final int ib = Byte.toUnsignedInt(b);
+                if (ib < 0x10) {
+                    builder.append('0');
+                }
+                builder.append(Integer.toHexString(ib));
+            }
+            Assert.assertEquals(expected256, builder.toString());
+        }
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.data;
 
 import java.util.Arrays;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -188,7 +188,7 @@ abstract class SeriesTerm {
      * @param <T> the type of the field elements
      * @return value of the series term
      */
-    public <T extends RealFieldElement<T>> T[] value(final FieldBodiesElements<T> elements) {
+    public <T extends CalculusFieldElement<T>> T[] value(final FieldBodiesElements<T> elements) {
 
         // preliminary computation
         final T tc  = elements.getTC();
@@ -216,7 +216,7 @@ abstract class SeriesTerm {
      * @param <T> the type of the field elements
      * @return time derivative of the series term
      */
-    public <T extends RealFieldElement<T>> T[] derivative(final FieldBodiesElements<T> elements) {
+    public <T extends CalculusFieldElement<T>> T[] derivative(final FieldBodiesElements<T> elements) {
 
         // preliminary computation
         final T tc   = elements.getTC();
@@ -256,14 +256,14 @@ abstract class SeriesTerm {
      * @param <T> the type of the field elements
      * @return current value of the argument
      */
-    protected abstract <T extends RealFieldElement<T>> T argument(FieldBodiesElements<T> elements);
+    protected abstract <T extends CalculusFieldElement<T>> T argument(FieldBodiesElements<T> elements);
 
     /** Compute the time derivative of the argument for the current date.
      * @param elements luni-solar and planetary elements for the current date
      * @param <T> the type of the field elements
      * @return current time derivative of the argument
      */
-    protected abstract <T extends RealFieldElement<T>> T argumentDerivative(FieldBodiesElements<T> elements);
+    protected abstract <T extends CalculusFieldElement<T>> T argumentDerivative(FieldBodiesElements<T> elements);
 
     /** Factory method for building the appropriate object.
      * <p>The method checks the null coefficients and build an instance

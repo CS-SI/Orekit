@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
@@ -54,6 +54,7 @@ import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
+import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for JPL ephemerides binary files (DE 4xx) and similar formats (INPOP 06/08/10).
  * <p>JPL ephemerides binary files contain ephemerides for all solar system planets.</p>
@@ -194,7 +195,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
          * @param <T> type of the field elements
          * @return position-velocity at the specified date
          */
-        <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
+        <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
 
     }
 
@@ -374,7 +375,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
      * @return astronomical unit in meters
      */
     public double getLoadedAstronomicalUnit() {
-        return 1000.0 * getLoadedConstant(CONSTANT_AU);
+        return UnitsConverter.KILOMETRES_TO_METRES.convert(getLoadedConstant(CONSTANT_AU));
     }
 
     /** Get Earth/Moon mass ratio.
@@ -505,7 +506,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         // (x, y, z) are contained in the file, positions are in kilometers
         // and times are in TDB
         components   = 3;
-        positionUnit = 1000.0;
+        positionUnit = UnitsConverter.KILOMETRES_TO_METRES.convert(1.0);
         timeScale    = timeScales.getTDB();
 
         if (deNum == INPOP_DE_NUMBER) {
@@ -539,18 +540,18 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             final int row1 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET     + 12 * i);
             final int row2 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 4 + 12 * i);
             final int row3 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 8 + 12 * i);
-            ok = ok && (row1 >= 0) && (row2 >= 0) && (row3 >= 0);
-            if (((i ==  0) && (loadType == EphemerisType.MERCURY))    ||
-                    ((i ==  1) && (loadType == EphemerisType.VENUS))      ||
-                    ((i ==  2) && (loadType == EphemerisType.EARTH_MOON)) ||
-                    ((i ==  3) && (loadType == EphemerisType.MARS))       ||
-                    ((i ==  4) && (loadType == EphemerisType.JUPITER))    ||
-                    ((i ==  5) && (loadType == EphemerisType.SATURN))     ||
-                    ((i ==  6) && (loadType == EphemerisType.URANUS))     ||
-                    ((i ==  7) && (loadType == EphemerisType.NEPTUNE))    ||
-                    ((i ==  8) && (loadType == EphemerisType.PLUTO))      ||
-                    ((i ==  9) && (loadType == EphemerisType.MOON))       ||
-                    ((i == 10) && (loadType == EphemerisType.SUN))) {
+            ok = ok && row1 >= 0 && row2 >= 0 && row3 >= 0;
+            if (i ==  0 && loadType == EphemerisType.MERCURY    ||
+                    i ==  1 && loadType == EphemerisType.VENUS      ||
+                    i ==  2 && loadType == EphemerisType.EARTH_MOON ||
+                    i ==  3 && loadType == EphemerisType.MARS       ||
+                    i ==  4 && loadType == EphemerisType.JUPITER    ||
+                    i ==  5 && loadType == EphemerisType.SATURN     ||
+                    i ==  6 && loadType == EphemerisType.URANUS     ||
+                    i ==  7 && loadType == EphemerisType.NEPTUNE    ||
+                    i ==  8 && loadType == EphemerisType.PLUTO      ||
+                    i ==  9 && loadType == EphemerisType.MOON       ||
+                    i == 10 && loadType == EphemerisType.SUN) {
                 firstIndex = row1;
                 coeffs     = row2;
                 chunks     = row3;
@@ -559,7 +560,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
         // compute chunks duration
         final double timeSpan = extractDouble(record, HEADER_CHUNK_DURATION_OFFSET);
-        ok = ok && (timeSpan > 0) && (timeSpan < 100);
+        ok = ok && timeSpan > 0 && timeSpan < 100;
         chunksDuration = Constants.JULIAN_DAY * (timeSpan / chunks);
         if (Double.isNaN(maxChunksDuration)) {
             maxChunksDuration = chunksDuration;
@@ -944,7 +945,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
             // check astronomical unit consistency
             final double au = 1000 * extractDouble(first, HEADER_ASTRONOMICAL_UNIT_OFFSET);
-            if ((au < 1.4e11) || (au > 1.6e11)) {
+            if (au < 1.4e11 || au > 1.6e11) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
             if (FastMath.abs(getLoadedAstronomicalUnit() - au) >= 10.0) {
@@ -954,7 +955,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
             // check Earth-Moon mass ratio consistency
             final double emRat = extractDouble(first, HEADER_EM_RATIO_OFFSET);
-            if ((emRat < 80) || (emRat > 82)) {
+            if (emRat < 80 || emRat > 82) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
             if (FastMath.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-5) {
@@ -1065,7 +1066,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
 
             // get raw PV from Chebyshev polynomials
             PosVelChebyshev chebyshev;
@@ -1096,7 +1097,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
             return FieldPVCoordinates.getZero(date.getField());
         }
 

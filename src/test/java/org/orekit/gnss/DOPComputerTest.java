@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,8 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.gnss.GPSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -223,7 +224,7 @@ public class DOPComputerTest {
         // Creates the GPS propagators from the almanacs
         final List<Propagator> propagators = new ArrayList<Propagator>();
         for (GPSAlmanac almanac: almanacs) {
-            propagators.add(new GPSPropagator.Builder(almanac).build());
+            propagators.add(new GNSSPropagatorBuilder(almanac).build());
         }
         return propagators;
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -656,6 +656,12 @@ public class AbsoluteDateTest {
         Assert.assertEquals(true, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
         Assert.assertEquals(false, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
         Assert.assertEquals(false, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
+
+        Assert.assertTrue(AbsoluteDate.J2000_EPOCH.durationFrom(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY))
+                          == Double.POSITIVE_INFINITY);
+        Assert.assertTrue(AbsoluteDate.J2000_EPOCH.durationFrom(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY))
+                          == Double.NEGATIVE_INFINITY);
+
     }
 
     @Test

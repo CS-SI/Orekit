@@ -101,6 +101,10 @@ albedo.infrared.angular.resolution = 15.0
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = true
 
+## Use range and range-rate measurements
+use.range.measurements = true
+use.range.rate.measurements = false
+
 ## On-board range bias (m) [0.0]
 onboard.range.bias     = 0.0
 onboard.range.bias.min = 0.0
@@ -135,6 +139,9 @@ range.shapiro = true
 
 ## Center of mass correction
 range.center.of.mass.correction = 0.251
+
+## Use a time span tropospheric model or not
+use.time.span.tropospheric.model = true
 
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ## Station names correspond to their identifier in Sinex and CRD files

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,14 +38,14 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modeling a turn-around range measurement using a master ground station and a slave ground station.
+/** Class modeling a turn-around range measurement using a primary ground station and a secondary ground station.
  * <p>
  * The measurement is considered to be a signal:
- * - Emitted from the master ground station
+ * - Emitted from the primary ground station
  * - Reflected on the spacecraft
- * - Reflected on the slave ground station
+ * - Reflected on the secondary ground station
  * - Reflected on the spacecraft again
- * - Received on the master ground station
+ * - Received on the primary ground station
  * Its value is the elapsed time between emission and reception
  * divided by 2c were c is the speed of light.
  * The motion of the stations and the spacecraft
@@ -69,7 +69,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * @param Range parent class
      */
     public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange) {
-        super(turnAroundRange.getMasterStation(), turnAroundRange.getSlaveStation(),
+        super(turnAroundRange.getPrimaryStation(), turnAroundRange.getSecondaryStation(),
               turnAroundRange.getDate(), turnAroundRange.getObservedValue()[0],
               turnAroundRange.getTheoreticalStandardDeviation()[0],
               turnAroundRange.getBaseWeight()[0],
@@ -92,56 +92,56 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                                                                   final SpacecraftState state) {
 
         // Stations attributes from parent Range class
-        final GroundStation masterGroundStation = this.getMasterStation();
-        final GroundStation slaveGroundStation  = this.getSlaveStation();
+        final GroundStation primaryGroundStation = this.getPrimaryStation();
+        final GroundStation secondaryGroundStation  = this.getSecondaryStation();
 
         // Compute propagation times:
         //
         // The path of the signal is divided in two legs.
-        // Leg1: Emission from master station to satellite in masterTauU seconds
-        //     + Reflection from satellite to slave station in slaveTauD seconds
-        // Leg2: Reflection from slave station to satellite in slaveTauU seconds
-        //     + Reflection from satellite to master station in masterTaudD seconds
+        // Leg1: Emission from primary station to satellite in primaryTauU seconds
+        //     + Reflection from satellite to secondary station in secondaryTauD seconds
+        // Leg2: Reflection from secondary station to satellite in secondaryTauU seconds
+        //     + Reflection from satellite to primary station in primaryTaudD seconds
         // The measurement is considered to be time stamped at reception on ground
-        // by the master station. All times are therefore computed as backward offsets
+        // by the primary station. All times are therefore computed as backward offsets
         // with respect to this reception time.
         //
         // Two intermediate spacecraft states are defined:
         //  - transitStateLeg2: State of the satellite when it bounced back the signal
-        //                      from slave station to master station during the 2nd leg
+        //                      from secondary station to primary station during the 2nd leg
         //  - transitStateLeg1: State of the satellite when it bounced back the signal
-        //                      from master station to slave station during the 1st leg
+        //                      from primary station to secondary station during the 1st leg
 
         // Compute propagation time for the 2nd leg of the signal path
         // --
 
-        // Master station PV at measurement date
+        // Primary station PV at measurement date
         final AbsoluteDate measurementDate = this.getDate();
-        final Transform masterTopoToInert =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDate);
-        final TimeStampedPVCoordinates masterArrival =
-                        masterTopoToInert.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
+        final Transform primaryTopoToInert =
+                        primaryGroundStation.getOffsetToInertial(state.getFrame(), measurementDate);
+        final TimeStampedPVCoordinates primaryArrival =
+                        primaryTopoToInert.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
                                                                                               PVCoordinates.ZERO));
 
-        // Downlink time of flight from master station at t to spacecraft at t'
-        final double tMd    = signalTimeOfFlight(state.getPVCoordinates(), masterArrival.getPosition(), measurementDate);
+        // Downlink time of flight from primary station at t to spacecraft at t'
+        final double tMd    = signalTimeOfFlight(state.getPVCoordinates(), primaryArrival.getPosition(), measurementDate);
 
         // Time difference between t (date of the measurement) and t' (date tagged in spacecraft state)
-        // (if state has already been set up to pre-compensate propagation delay, delta = masterTauD + slaveTauU)
+        // (if state has already been set up to pre-compensate propagation delay, delta = primaryTauD + secondaryTauU)
         final double delta  = getDate().durationFrom(state.getDate());
 
-        // Transit state from which the satellite reflected the signal from slave to master station
+        // Transit state from which the satellite reflected the signal from secondary to primary station
         final SpacecraftState transitStateLeg2  = state.shiftedBy(delta - tMd);
         final AbsoluteDate    transitDateLeg2   = transitStateLeg2.getDate();
 
-        // Slave station PV at transit state leg2 date
-        final Transform slaveTopoToInertTransitLeg2 =
-                        slaveGroundStation.getOffsetToInertial(state.getFrame(), transitDateLeg2);
-        final TimeStampedPVCoordinates QSlaveTransitLeg2PV = slaveTopoToInertTransitLeg2.
+        // secondary station PV at transit state leg2 date
+        final Transform secondaryTopoToInertTransitLeg2 =
+                        secondaryGroundStation.getOffsetToInertial(state.getFrame(), transitDateLeg2);
+        final TimeStampedPVCoordinates QsecondaryTransitLeg2PV = secondaryTopoToInertTransitLeg2.
                         transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg2, PVCoordinates.ZERO));
 
-        // Uplink time of flight from slave station to transit state leg2
-        final double tSu    = signalTimeOfFlight(QSlaveTransitLeg2PV,
+        // Uplink time of flight from secondary station to transit state leg2
+        final double tSu    = signalTimeOfFlight(QsecondaryTransitLeg2PV,
                                                  transitStateLeg2.getPVCoordinates().getPosition(),
                                                  transitDateLeg2);
 
@@ -152,36 +152,36 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // Compute propagation time for the 1st leg of the signal path
         // --
 
-        // Absolute date of arrival of the signal to slave station
-        final AbsoluteDate slaveStationArrivalDate = measurementDate.shiftedBy(-t2);
+        // Absolute date of arrival of the signal to secondary station
+        final AbsoluteDate secondaryStationArrivalDate = measurementDate.shiftedBy(-t2);
 
-        // Slave station position in inertial frame at date slaveStationArrivalDate
-        final Transform slaveTopoToInertArrivalDate =
-                        slaveGroundStation.getOffsetToInertial(state.getFrame(), slaveStationArrivalDate);
-        final TimeStampedPVCoordinates slaveRebound =
-                        slaveTopoToInertArrivalDate.transformPVCoordinates(new TimeStampedPVCoordinates(slaveStationArrivalDate,
+        // secondary station position in inertial frame at date secondaryStationArrivalDate
+        final Transform secondaryTopoToInertArrivalDate =
+                        secondaryGroundStation.getOffsetToInertial(state.getFrame(), secondaryStationArrivalDate);
+        final TimeStampedPVCoordinates secondaryRebound =
+                        secondaryTopoToInertArrivalDate.transformPVCoordinates(new TimeStampedPVCoordinates(secondaryStationArrivalDate,
                                                                                                         PVCoordinates.ZERO));
 
-        // Dowlink time of flight from transitStateLeg1 to slave station at slaveStationArrivalDate
-        final double tSd = signalTimeOfFlight(transitStateLeg2.getPVCoordinates(), slaveRebound.getPosition(), slaveStationArrivalDate);
+        // Dowlink time of flight from transitStateLeg1 to secondary station at secondaryStationArrivalDate
+        final double tSd = signalTimeOfFlight(transitStateLeg2.getPVCoordinates(), secondaryRebound.getPosition(), secondaryStationArrivalDate);
 
-        // Transit state from which the satellite reflected the signal from master to slave station
+        // Transit state from which the satellite reflected the signal from primary to secondary station
         final SpacecraftState transitStateLeg1  = state.shiftedBy(delta -tMd -tSu -tSd);
         final AbsoluteDate    transitDateLeg1   = transitStateLeg1.getDate();
 
-        // Master station PV at transit state date of leg1
-        final Transform masterTopoToInertTransitLeg1 =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), transitDateLeg1);
-        final TimeStampedPVCoordinates QMasterTransitLeg1PV = masterTopoToInertTransitLeg1.
+        // Primary station PV at transit state date of leg1
+        final Transform primaryTopoToInertTransitLeg1 =
+                        primaryGroundStation.getOffsetToInertial(state.getFrame(), transitDateLeg1);
+        final TimeStampedPVCoordinates QPrimaryTransitLeg1PV = primaryTopoToInertTransitLeg1.
                         transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg1, PVCoordinates.ZERO));
 
-        // Uplink time of flight from master station to transit state leg1
-        final double tMu = signalTimeOfFlight(QMasterTransitLeg1PV,
+        // Uplink time of flight from primary station to transit state leg1
+        final double tMu = signalTimeOfFlight(QPrimaryTransitLeg1PV,
                                               transitStateLeg1.getPVCoordinates().getPosition(),
                                               transitDateLeg1);
         final AbsoluteDate emissionDate = transitDateLeg1.shiftedBy(-tMu);
-        final TimeStampedPVCoordinates masterDeparture =
-                        masterTopoToInertTransitLeg1.shiftedBy(emissionDate.durationFrom(masterTopoToInertTransitLeg1.getDate())).
+        final TimeStampedPVCoordinates primaryDeparture =
+                        primaryTopoToInertTransitLeg1.shiftedBy(emissionDate.durationFrom(primaryTopoToInertTransitLeg1.getDate())).
                         transformPVCoordinates(new TimeStampedPVCoordinates(emissionDate, PVCoordinates.ZERO));
         // Total time of flight for leg 1
         final double t1 = tSd + tMu;
@@ -191,23 +191,23 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // The state we use to define the estimated measurement is a middle ground between the two transit states
         // This is done to avoid calling "SpacecraftState.shiftedBy" function on long duration
-        // Thus we define the state at the date t" = date of arrival of the signal to the slave station
-        // Or t" = t -masterTauD -slaveTauU
+        // Thus we define the state at the date t" = date of arrival of the signal to the secondary station
+        // Or t" = t -primaryTauD -secondaryTauU
         // The iterative process in the estimation ensures that, after several iterations, the date stamped in the
         // state S in input of this function will be close to t"
         // Therefore we will shift state S by:
-        //  - +slaveTauU to get transitStateLeg2
-        //  - -slaveTauD to get transitStateLeg1
+        //  - +secondaryTauU to get transitStateLeg2
+        //  - -secondaryTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        transitStateLeg2.shiftedBy(-tSu)
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       masterDeparture,
+                                                       primaryDeparture,
                                                        transitStateLeg1.getPVCoordinates(),
-                                                       slaveRebound,
+                                                       secondaryRebound,
                                                        transitStateLeg2.getPVCoordinates(),
-                                                       masterArrival
+                                                       primaryArrival
                                                    });
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2
@@ -222,9 +222,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tMd derivatives / state
         // -----------------------
 
-        // QMt = Master station position at tmeas = t = signal arrival at master station
+        // QMt = Primary station position at tmeas = t = signal arrival at primary station
         final Vector3D vel      = state.getPVCoordinates().getVelocity();
-        final Transform FMt     = masterGroundStation.getOffsetToInertial(state.getFrame(), getDate());
+        final Transform FMt     = primaryGroundStation.getOffsetToInertial(state.getFrame(), getDate());
         final PVCoordinates QMt = FMt.transformPVCoordinates(PVCoordinates.ZERO);
         final Vector3D QMt_V    = QMt.getVelocity();
         final Vector3D pos2     = transitStateLeg2.getPVCoordinates().getPosition();
@@ -246,13 +246,13 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tSu derivatives / state
         // -----------------------
 
-        // QSt = slave station position at tmeas = t = signal arrival at master station
-        final Transform FSt     = slaveGroundStation.getOffsetToInertial(state.getFrame(), getDate());
+        // QSt = secondary station position at tmeas = t = signal arrival at primary station
+        final Transform FSt     = secondaryGroundStation.getOffsetToInertial(state.getFrame(), getDate());
         final PVCoordinates QSt = FSt.transformPVCoordinates(PVCoordinates.ZERO);
         final Vector3D QSt_V    = QSt.getVelocity();
 
-        // QSt2 = slave station position at t-t2 = signal arrival at slave station
-        final Transform FSt2     = slaveGroundStation.getOffsetToInertial(state.getFrame(), getDate().shiftedBy(-t2));
+        // QSt2 = secondary station position at t-t2 = signal arrival at secondary station
+        final Transform FSt2     = secondaryGroundStation.getOffsetToInertial(state.getFrame(), getDate().shiftedBy(-t2));
         final PVCoordinates QSt2 = FSt2.transformPVCoordinates(PVCoordinates.ZERO);
 
         final Vector3D QSt2_P2   = pos2.subtract(QSt2.getPosition());
@@ -302,8 +302,8 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tMu derivatives / state
         // -----------------------
 
-        // QMt1 = Master station position at t1 = t - tau = signal departure from master station
-        final Transform FMt1     = masterGroundStation.getOffsetToInertial(state.getFrame(), getDate().shiftedBy(-t1-t2));
+        // QMt1 = Primary station position at t1 = t - tau = signal departure from primary station
+        final Transform FMt1     = primaryGroundStation.getOffsetToInertial(state.getFrame(), getDate().shiftedBy(-t1-t2));
         final PVCoordinates QMt1 = FMt1.transformPVCoordinates(PVCoordinates.ZERO);
 
         final Vector3D QMt1_P1   = pos1.subtract(QMt1.getPosition());
@@ -353,43 +353,43 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // TAR derivatives w/r stations' position in topocentric frames
         // ------------------------------------------------------------
 
-        if (masterGroundStation.getEastOffsetDriver().isSelected()  ||
-            masterGroundStation.getNorthOffsetDriver().isSelected() ||
-            masterGroundStation.getZenithOffsetDriver().isSelected()||
-            slaveGroundStation.getEastOffsetDriver().isSelected()  ||
-            slaveGroundStation.getNorthOffsetDriver().isSelected() ||
-            slaveGroundStation.getZenithOffsetDriver().isSelected()) {
+        if (primaryGroundStation.getEastOffsetDriver().isSelected()  ||
+            primaryGroundStation.getNorthOffsetDriver().isSelected() ||
+            primaryGroundStation.getZenithOffsetDriver().isSelected()||
+            secondaryGroundStation.getEastOffsetDriver().isSelected()  ||
+            secondaryGroundStation.getNorthOffsetDriver().isSelected() ||
+            secondaryGroundStation.getZenithOffsetDriver().isSelected()) {
 
             // tMd derivatives / stations
             // --------------------------
 
-            // Master station rotation and angular speed at tmeas
+            // Primary station rotation and angular speed at tmeas
             final AngularCoordinates acM = FMt.getAngular().revert();
-            final Rotation rotationMasterTopoToInert = acM.getRotation();
+            final Rotation rotationPrimaryTopoToInert = acM.getRotation();
             final Vector3D OmegaM = acM.getRotationRate();
 
-            // Slave station rotation and angular speed at tmeas
+            // secondary station rotation and angular speed at tmeas
             final AngularCoordinates acS = FSt.getAngular().revert();
-            final Rotation rotationSlaveTopoToInert = acS.getRotation();
+            final Rotation rotationsecondaryTopoToInert = acS.getRotation();
             final Vector3D OmegaS = acS.getRotationRate();
 
-            // Master station - Inertial frame
+            // Primary station - Inertial frame
             final double dtMddQMx_I   = P2_QMt.getX() / dMDown;
             final double dtMddQMy_I   = P2_QMt.getY() / dMDown;
             final double dtMddQMz_I   = P2_QMt.getZ() / dMDown;
 
-            // Slave station - Inertial frame
+            // secondary station - Inertial frame
             final double dtMddQSx_I   = 0.;
             final double dtMddQSy_I   = 0.;
             final double dtMddQSz_I   = 0.;
 
 
             // Topo frames
-            final Vector3D dtMddQM = rotationMasterTopoToInert.
+            final Vector3D dtMddQM = rotationPrimaryTopoToInert.
                             applyTo(new Vector3D(dtMddQMx_I,
                                                  dtMddQMy_I,
                                                  dtMddQMz_I));
-            final Vector3D dtMddQS = rotationSlaveTopoToInert.
+            final Vector3D dtMddQS = rotationsecondaryTopoToInert.
                             applyTo(new Vector3D(dtMddQSx_I,
                                                  dtMddQSy_I,
                                                  dtMddQSz_I));
@@ -397,12 +397,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
             // tSu derivatives / stations
             // --------------------------
 
-            // Master station - Inertial frame
+            // Primary station - Inertial frame
             final double dtSudQMx_I   = dtMddQMx_I*alphaSu;
             final double dtSudQMy_I   = dtMddQMy_I*alphaSu;
             final double dtSudQMz_I   = dtMddQMz_I*alphaSu;
 
-            // Slave station - Inertial frame
+            // secondary station - Inertial frame
             final double dtSudQSx_I   = 1./dSUp
                             *QSt2_P2.dotProduct(Vector3D.MINUS_I
                                                 .add(OmegaS.crossProduct(Vector3D.PLUS_I).scalarMultiply(t2)));
@@ -414,11 +414,11 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                                 .add(OmegaS.crossProduct(Vector3D.PLUS_K).scalarMultiply(t2)));
 
             // Topo frames
-            final Vector3D dtSudQM = rotationMasterTopoToInert.
+            final Vector3D dtSudQM = rotationPrimaryTopoToInert.
                             applyTo(new Vector3D(dtSudQMx_I,
                                                  dtSudQMy_I,
                                                  dtSudQMz_I));
-            final Vector3D dtSudQS = rotationSlaveTopoToInert.
+            final Vector3D dtSudQS = rotationsecondaryTopoToInert.
                             applyTo(new Vector3D(dtSudQSx_I,
                                                  dtSudQSy_I,
                                                  dtSudQSz_I));
@@ -440,12 +440,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
             // tSd derivatives / stations
             // --------------------------
 
-            // Master station - Inertial frame
+            // Primary station - Inertial frame
             final double dtSddQMx_I   = dt2dQMx_I*alphaSd;
             final double dtSddQMy_I   = dt2dQMy_I*alphaSd;
             final double dtSddQMz_I   = dt2dQMz_I*alphaSd;
 
-            // Slave station - Inertial frame
+            // secondary station - Inertial frame
             final double dtSddQSx_I   = dt2dQSx_I*alphaSd + 1./dSDown
                             *P1_QSt2.dotProduct(Vector3D.PLUS_I
                                                 .subtract(OmegaS.crossProduct(Vector3D.PLUS_I).scalarMultiply(t2)));
@@ -458,11 +458,11 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                                 .subtract(OmegaS.crossProduct(Vector3D.PLUS_K).scalarMultiply(t2)));
 
             // Topo frames
-            final Vector3D dtSddQM = rotationMasterTopoToInert.
+            final Vector3D dtSddQM = rotationPrimaryTopoToInert.
                             applyTo(new Vector3D(dtSddQMx_I,
                                                  dtSddQMy_I,
                                                  dtSddQMz_I));
-            final Vector3D dtSddQS = rotationSlaveTopoToInert.
+            final Vector3D dtSddQS = rotationsecondaryTopoToInert.
                             applyTo(new Vector3D(dtSddQSx_I,
                                                  dtSddQSy_I,
                                                  dtSddQSz_I));
@@ -470,7 +470,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
             // tMu derivatives / stations
             // --------------------------
 
-            // Master station - Inertial frame
+            // Primary station - Inertial frame
             final double dtMudQMx_I = alphaMu*(dt2dQMx_I+dtSddQMx_I) + 1/dMUp*
                             QMt1_P1.dotProduct(Vector3D.MINUS_I
                                                .add(OmegaM.crossProduct(Vector3D.PLUS_I).scalarMultiply(tau)));
@@ -481,18 +481,18 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                             QMt1_P1.dotProduct(Vector3D.MINUS_K
                                                .add(OmegaM.crossProduct(Vector3D.PLUS_K).scalarMultiply(tau)));
 
-            // Slave station - Inertial frame
+            // secondary station - Inertial frame
             final double dtMudQSx_I = alphaMu*(dt2dQSx_I+dtSddQSx_I);
             final double dtMudQSy_I = alphaMu*(dt2dQSy_I+dtSddQSy_I);
             final double dtMudQSz_I = alphaMu*(dt2dQSz_I+dtSddQSz_I);
 
 
             // Topo frames
-            final Vector3D dtMudQM = rotationMasterTopoToInert.
+            final Vector3D dtMudQM = rotationPrimaryTopoToInert.
                             applyTo(new Vector3D(dtMudQMx_I,
                                                  dtMudQMy_I,
                                                  dtMudQMz_I));
-            final Vector3D dtMudQS = rotationSlaveTopoToInert.
+            final Vector3D dtMudQS = rotationsecondaryTopoToInert.
                             applyTo(new Vector3D(dtMudQSx_I,
                                                  dtMudQSy_I,
                                                  dtMudQSz_I));
@@ -509,26 +509,26 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
             final Vector3D dRdQM = (dt1dQM.add(dt2dQM)).scalarMultiply(cOver2);
             final Vector3D dRdQS = (dt1dQS.add(dt2dQS)).scalarMultiply(cOver2);
 
-            // Master station drivers
-            if (masterGroundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(masterGroundStation.getEastOffsetDriver(), dRdQM.getX());
+            // Primary station drivers
+            if (primaryGroundStation.getEastOffsetDriver().isSelected()) {
+                estimated.setParameterDerivatives(primaryGroundStation.getEastOffsetDriver(), dRdQM.getX());
             }
-            if (masterGroundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(masterGroundStation.getNorthOffsetDriver(), dRdQM.getY());
+            if (primaryGroundStation.getNorthOffsetDriver().isSelected()) {
+                estimated.setParameterDerivatives(primaryGroundStation.getNorthOffsetDriver(), dRdQM.getY());
             }
-            if (masterGroundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(masterGroundStation.getZenithOffsetDriver(), dRdQM.getZ());
+            if (primaryGroundStation.getZenithOffsetDriver().isSelected()) {
+                estimated.setParameterDerivatives(primaryGroundStation.getZenithOffsetDriver(), dRdQM.getZ());
             }
 
-            // Slave station drivers
-            if (slaveGroundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(slaveGroundStation.getEastOffsetDriver(), dRdQS.getX());
+            // secondary station drivers
+            if (secondaryGroundStation.getEastOffsetDriver().isSelected()) {
+                estimated.setParameterDerivatives(secondaryGroundStation.getEastOffsetDriver(), dRdQS.getX());
             }
-            if (slaveGroundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(slaveGroundStation.getNorthOffsetDriver(), dRdQS.getY());
+            if (secondaryGroundStation.getNorthOffsetDriver().isSelected()) {
+                estimated.setParameterDerivatives(secondaryGroundStation.getNorthOffsetDriver(), dRdQS.getY());
             }
-            if (slaveGroundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(slaveGroundStation.getZenithOffsetDriver(), dRdQS.getZ());
+            if (secondaryGroundStation.getZenithOffsetDriver().isSelected()) {
+                estimated.setParameterDerivatives(secondaryGroundStation.getZenithOffsetDriver(), dRdQS.getZ());
             }
         }
 
@@ -548,12 +548,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationValidation(final int iteration, final int evaluation,
                                                                                     final SpacecraftState state) {
         // Stations & DSFactory attributes from parent TurnArounsRange class
-        final GroundStation masterGroundStation       = getMasterStation();
-        final GroundStation slaveGroundStation        = getSlaveStation();
+        final GroundStation primaryGroundStation       = getPrimaryStation();
+        final GroundStation secondaryGroundStation        = getSecondaryStation();
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
-            // we have to check for duplicate keys because master and slave station share
+            // we have to check for duplicate keys because primary and secondary station share
             // pole and prime meridian parameters names that must be considered
             // as one set only (they are combined together by the estimation engine)
             if (driver.isSelected() && !indices.containsKey(driver.getName())) {
@@ -567,110 +567,110 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final TimeStampedFieldPVCoordinates<Gradient> pvaDS = getCoordinates(state, 0, nbParams);
 
         // The path of the signal is divided in two legs.
-        // Leg1: Emission from master station to satellite in masterTauU seconds
-        //     + Reflection from satellite to slave station in slaveTauD seconds
-        // Leg2: Reflection from slave station to satellite in slaveTauU seconds
-        //     + Reflection from satellite to master station in masterTaudD seconds
+        // Leg1: Emission from primary station to satellite in primaryTauU seconds
+        //     + Reflection from satellite to secondary station in secondaryTauD seconds
+        // Leg2: Reflection from secondary station to satellite in secondaryTauU seconds
+        //     + Reflection from satellite to primary station in primaryTaudD seconds
         // The measurement is considered to be time stamped at reception on ground
-        // by the master station. All times are therefore computed as backward offsets
+        // by the primary station. All times are therefore computed as backward offsets
         // with respect to this reception time.
         //
         // Two intermediate spacecraft states are defined:
         //  - transitStateLeg2: State of the satellite when it bounced back the signal
-        //                      from slave station to master station during the 2nd leg
+        //                      from secondary station to primary station during the 2nd leg
         //  - transitStateLeg1: State of the satellite when it bounced back the signal
-        //                      from master station to slave station during the 1st leg
+        //                      from primary station to secondary station during the 1st leg
 
         // Compute propagation time for the 2nd leg of the signal path
         // --
 
         // Time difference between t (date of the measurement) and t' (date tagged in spacecraft state)
         // (if state has already been set up to pre-compensate propagation delay,
-        // we will have delta = masterTauD + slaveTauU)
+        // we will have delta = primaryTauD + secondaryTauU)
         final AbsoluteDate measurementDate = getDate();
         final FieldAbsoluteDate<Gradient> measurementDateDS = new FieldAbsoluteDate<>(field, measurementDate);
         final double delta = measurementDate.durationFrom(state.getDate());
 
-        // transform between master station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
-        // The components of master station's position in offset frame are the 3 third derivative parameters
-        final FieldTransform<Gradient> masterToInert =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDate, nbParams, indices);
+        // transform between primary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
+        // The components of primary station's position in offset frame are the 3 third derivative parameters
+        final FieldTransform<Gradient> primaryToInert =
+                        primaryGroundStation.getOffsetToInertial(state.getFrame(), measurementDate, nbParams, indices);
 
-        // Master station PV in inertial frame at measurement date
-        final FieldVector3D<Gradient> QMaster = masterToInert.transformPosition(zero);
+        // Primary station PV in inertial frame at measurement date
+        final FieldVector3D<Gradient> QPrimary = primaryToInert.transformPosition(zero);
 
         // Compute propagation times
-        final Gradient masterTauD = signalTimeOfFlight(pvaDS, QMaster, measurementDateDS);
+        final Gradient primaryTauD = signalTimeOfFlight(pvaDS, QPrimary, measurementDateDS);
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 2nd leg
-        final Gradient dtLeg2 = masterTauD.negate().add(delta);
+        final Gradient dtLeg2 = primaryTauD.negate().add(delta);
 
-        // Transit state where the satellite reflected the signal from slave to master station
+        // Transit state where the satellite reflected the signal from secondary to primary station
         final SpacecraftState transitStateLeg2 = state.shiftedBy(dtLeg2.getValue());
 
         // Transit state pv of leg2 (re)computed with gradients
         final TimeStampedFieldPVCoordinates<Gradient> transitStateLeg2PV = pvaDS.shiftedBy(dtLeg2);
 
-        // transform between slave station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
-        // The components of slave station's position in offset frame are the 3 last derivative parameters
+        // transform between secondary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
+        // The components of secondary station's position in offset frame are the 3 last derivative parameters
         final FieldAbsoluteDate<Gradient> approxReboundDate = measurementDateDS.shiftedBy(-delta);
-        final FieldTransform<Gradient> slaveToInertApprox =
-                        slaveGroundStation.getOffsetToInertial(state.getFrame(), approxReboundDate, nbParams, indices);
+        final FieldTransform<Gradient> secondaryToInertApprox =
+                        secondaryGroundStation.getOffsetToInertial(state.getFrame(), approxReboundDate, nbParams, indices);
 
-        // Slave station PV in inertial frame at approximate rebound date on slave station
-        final TimeStampedFieldPVCoordinates<Gradient> QSlaveApprox =
-                        slaveToInertApprox.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxReboundDate,
+        // secondary station PV in inertial frame at approximate rebound date on secondary station
+        final TimeStampedFieldPVCoordinates<Gradient> QsecondaryApprox =
+                        secondaryToInertApprox.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxReboundDate,
                                                                                                       zero, zero, zero));
 
-        // Uplink time of flight from slave station to transit state of leg2
-        final Gradient slaveTauU =
-                        signalTimeOfFlight(QSlaveApprox,
+        // Uplink time of flight from secondary station to transit state of leg2
+        final Gradient secondaryTauU =
+                        signalTimeOfFlight(QsecondaryApprox,
                                            transitStateLeg2PV.getPosition(),
                                            transitStateLeg2PV.getDate());
 
         // Total time of flight for leg 2
-        final Gradient tauLeg2 = masterTauD.add(slaveTauU);
+        final Gradient tauLeg2 = primaryTauD.add(secondaryTauU);
 
         // Compute propagation time for the 1st leg of the signal path
         // --
 
-        // Absolute date of rebound of the signal to slave station
+        // Absolute date of rebound of the signal to secondary station
         final FieldAbsoluteDate<Gradient> reboundDateDS = measurementDateDS.shiftedBy(tauLeg2.negate());
-        final FieldTransform<Gradient> slaveToInert =
-                        slaveGroundStation.getOffsetToInertial(state.getFrame(), reboundDateDS, nbParams, indices);
+        final FieldTransform<Gradient> secondaryToInert =
+                        secondaryGroundStation.getOffsetToInertial(state.getFrame(), reboundDateDS, nbParams, indices);
 
-        // Slave station PV in inertial frame at rebound date on slave station
-        final FieldVector3D<Gradient> QSlave = slaveToInert.transformPosition(zero);
+        // secondary station PV in inertial frame at rebound date on secondary station
+        final FieldVector3D<Gradient> Qsecondary = secondaryToInert.transformPosition(zero);
 
-        // Downlink time of flight from transitStateLeg1 to slave station at rebound date
-        final Gradient slaveTauD = signalTimeOfFlight(transitStateLeg2PV, QSlave, reboundDateDS);
+        // Downlink time of flight from transitStateLeg1 to secondary station at rebound date
+        final Gradient secondaryTauD = signalTimeOfFlight(transitStateLeg2PV, Qsecondary, reboundDateDS);
 
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 1st leg
-        final Gradient dtLeg1 = dtLeg2.subtract(slaveTauU).subtract(slaveTauD);
+        final Gradient dtLeg1 = dtLeg2.subtract(secondaryTauU).subtract(secondaryTauD);
 
         // Transit state pv of leg2 (re)computed with derivative structures
         final TimeStampedFieldPVCoordinates<Gradient> transitStateLeg1PV = pvaDS.shiftedBy(dtLeg1);
 
-        // transform between master station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
-        // The components of master station's position in offset frame are the 3 third derivative parameters
+        // transform between primary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
+        // The components of primary station's position in offset frame are the 3 third derivative parameters
         final FieldAbsoluteDate<Gradient> approxEmissionDate =
-                        measurementDateDS.shiftedBy(-2 * (slaveTauU.getValue() + masterTauD.getValue()));
-        final FieldTransform<Gradient> masterToInertApprox =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), approxEmissionDate, nbParams, indices);
+                        measurementDateDS.shiftedBy(-2 * (secondaryTauU.getValue() + primaryTauD.getValue()));
+        final FieldTransform<Gradient> primaryToInertApprox =
+                        primaryGroundStation.getOffsetToInertial(state.getFrame(), approxEmissionDate, nbParams, indices);
 
-        // Master station PV in inertial frame at approximate emission date
-        final TimeStampedFieldPVCoordinates<Gradient> QMasterApprox =
-                        masterToInertApprox.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxEmissionDate,
+        // Primary station PV in inertial frame at approximate emission date
+        final TimeStampedFieldPVCoordinates<Gradient> QPrimaryApprox =
+                        primaryToInertApprox.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxEmissionDate,
                                                                                                        zero, zero, zero));
 
-        // Uplink time of flight from master station to transit state of leg1
-        final Gradient masterTauU = signalTimeOfFlight(QMasterApprox,
+        // Uplink time of flight from primary station to transit state of leg1
+        final Gradient primaryTauU = signalTimeOfFlight(QPrimaryApprox,
                                                                   transitStateLeg1PV.getPosition(),
                                                                   transitStateLeg1PV.getDate());
 
         // Total time of flight for leg 1
-        final Gradient tauLeg1 = slaveTauD.add(masterTauU);
+        final Gradient tauLeg1 = secondaryTauD.add(primaryTauU);
 
 
         // --
@@ -679,17 +679,17 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // The state we use to define the estimated measurement is a middle ground between the two transit states
         // This is done to avoid calling "SpacecraftState.shiftedBy" function on long duration
-        // Thus we define the state at the date t" = date of rebound of the signal at the slave station
-        // Or t" = t -masterTauD -slaveTauU
+        // Thus we define the state at the date t" = date of rebound of the signal at the secondary station
+        // Or t" = t -primaryTauD -secondaryTauU
         // The iterative process in the estimation ensures that, after several iterations, the date stamped in the
         // state S in input of this function will be close to t"
         // Therefore we will shift state S by:
-        //  - +slaveTauU to get transitStateLeg2
-        //  - -slaveTauD to get transitStateLeg1
+        //  - +secondaryTauU to get transitStateLeg2
+        //  - -secondaryTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       transitStateLeg2.shiftedBy(-slaveTauU.getValue())
+                                                       transitStateLeg2.shiftedBy(-secondaryTauU.getValue())
                                                    }, null);
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2 and multiplied by c
@@ -720,34 +720,34 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // Time difference between t (date of the measurement) and t' (date tagged in spacecraft state)
         // (if state has already been set up to pre-compensate propagation delay,
-        // we will have delta = masterTauD + slaveTauU)
+        // we will have delta = primaryTauD + secondaryTauU)
 
-        // Master station PV at measurement date
-        final Transform masterTopoToInert =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDate);
-        final TimeStampedPVCoordinates QMt = masterTopoToInert.
+        // Primary station PV at measurement date
+        final Transform primaryTopoToInert =
+                        primaryGroundStation.getOffsetToInertial(state.getFrame(), measurementDate);
+        final TimeStampedPVCoordinates QMt = primaryTopoToInert.
                         transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate, PVCoordinates.ZERO));
 
-        // Slave station PV at measurement date
-        final Transform slaveTopoToInert =
-                        slaveGroundStation.getOffsetToInertial(state.getFrame(), measurementDate);
-        final TimeStampedPVCoordinates QSt = slaveTopoToInert.
+        // secondary station PV at measurement date
+        final Transform secondaryTopoToInert =
+                        secondaryGroundStation.getOffsetToInertial(state.getFrame(), measurementDate);
+        final TimeStampedPVCoordinates QSt = secondaryTopoToInert.
                         transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate, PVCoordinates.ZERO));
 
-        // Downlink time of flight from master station at t to spacecraft at t'
+        // Downlink time of flight from primary station at t to spacecraft at t'
         final double tMd    = signalTimeOfFlight(state.getPVCoordinates(), QMt.getPosition(), measurementDate);
 
-        // Transit state from which the satellite reflected the signal from slave to master station
+        // Transit state from which the satellite reflected the signal from secondary to primary station
         final SpacecraftState state2            = state.shiftedBy(delta - tMd);
         final AbsoluteDate    transitDateLeg2   = transitStateLeg2.getDate();
 
-        // Slave station PV at transit state leg2 date
-        final Transform slaveTopoToInertTransitLeg2 =
-                      slaveGroundStation.getOffsetToInertial(state.getFrame(), transitDateLeg2);
-        final TimeStampedPVCoordinates QSdate2PV = slaveTopoToInertTransitLeg2.
+        // secondary station PV at transit state leg2 date
+        final Transform secondaryTopoToInertTransitLeg2 =
+                      secondaryGroundStation.getOffsetToInertial(state.getFrame(), transitDateLeg2);
+        final TimeStampedPVCoordinates QSdate2PV = secondaryTopoToInertTransitLeg2.
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg2, PVCoordinates.ZERO));
 
-        // Uplink time of flight from slave station to transit state leg2
+        // Uplink time of flight from secondary station to transit state leg2
         final double tSu    = signalTimeOfFlight(QSdate2PV,
                                                  state2.getPVCoordinates().getPosition(),
                                                  transitDateLeg2);
@@ -759,29 +759,29 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // Compute propagation time for the 1st leg of the signal path
         // --
 
-        // Absolute date of arrival of the signal to slave station
+        // Absolute date of arrival of the signal to secondary station
         final AbsoluteDate    tQSA = measurementDate.shiftedBy(-t2);
 
-        // Slave station position in inertial frame at date tQSA
-        final Transform slaveTopoToInertArrivalDate =
-                        slaveGroundStation.getOffsetToInertial(state.getFrame(), tQSA);
-        final Vector3D QSA = slaveTopoToInertArrivalDate.transformPosition(Vector3D.ZERO);
+        // secondary station position in inertial frame at date tQSA
+        final Transform secondaryTopoToInertArrivalDate =
+                        secondaryGroundStation.getOffsetToInertial(state.getFrame(), tQSA);
+        final Vector3D QSA = secondaryTopoToInertArrivalDate.transformPosition(Vector3D.ZERO);
 
-        // Dowlink time of flight from transitStateLeg1 to slave station at slaveStationArrivalDate
+        // Dowlink time of flight from transitStateLeg1 to secondary station at secondaryStationArrivalDate
         final double tSd = signalTimeOfFlight(state2.getPVCoordinates(), QSA, tQSA);
 
 
-        // Transit state from which the satellite reflected the signal from master to slave station
+        // Transit state from which the satellite reflected the signal from primary to secondary station
         final SpacecraftState state1            = state.shiftedBy(delta -tMd -tSu -tSd);
         final AbsoluteDate    transitDateLeg1   = transitStateLeg1PV.getDate().toAbsoluteDate();
 
-        // Master station PV at transit state date of leg1
-        final Transform masterTopoToInertTransitLeg1 =
-                      masterGroundStation.getOffsetToInertial(state.getFrame(), transitDateLeg1);
-        final TimeStampedPVCoordinates QMdate1PV = masterTopoToInertTransitLeg1.
+        // Primary station PV at transit state date of leg1
+        final Transform primaryTopoToInertTransitLeg1 =
+                      primaryGroundStation.getOffsetToInertial(state.getFrame(), transitDateLeg1);
+        final TimeStampedPVCoordinates QMdate1PV = primaryTopoToInertTransitLeg1.
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg1, PVCoordinates.ZERO));
 
-        // Uplink time of flight from master station to transit state leg1
+        // Uplink time of flight from primary station to transit state leg1
         final double tMu = signalTimeOfFlight(QMdate1PV,
                                               state1.getPVCoordinates().getPosition(),
                                               transitDateLeg1);
@@ -801,9 +801,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tMd derivatives / state
         // -----------------------
 
-        // QMt_PV = Master station PV at tmeas = t = signal arrival at master station
+        // QMt_PV = Primary station PV at tmeas = t = signal arrival at primary station
         final Vector3D vel         = state.getPVCoordinates().getVelocity();
-        final PVCoordinates QMt_PV = masterTopoToInert.transformPVCoordinates(PVCoordinates.ZERO);
+        final PVCoordinates QMt_PV = primaryTopoToInert.transformPVCoordinates(PVCoordinates.ZERO);
         final Vector3D QMt_V       = QMt_PV.getVelocity();
         final Vector3D pos2        = state2.getPVCoordinates().getPosition();
         final Vector3D P2_QMt      = QMt_PV.getPosition().subtract(pos2);
@@ -821,12 +821,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double dtMddVz   = dtMddPz*dt;
 
         // From the DS
-        final double dtMddPxDS = masterTauD.getPartialDerivative(0);
-        final double dtMddPyDS = masterTauD.getPartialDerivative(1);
-        final double dtMddPzDS = masterTauD.getPartialDerivative(2);
-        final double dtMddVxDS = masterTauD.getPartialDerivative(3);
-        final double dtMddVyDS = masterTauD.getPartialDerivative(4);
-        final double dtMddVzDS = masterTauD.getPartialDerivative(5);
+        final double dtMddPxDS = primaryTauD.getPartialDerivative(0);
+        final double dtMddPyDS = primaryTauD.getPartialDerivative(1);
+        final double dtMddPzDS = primaryTauD.getPartialDerivative(2);
+        final double dtMddVxDS = primaryTauD.getPartialDerivative(3);
+        final double dtMddVyDS = primaryTauD.getPartialDerivative(4);
+        final double dtMddVzDS = primaryTauD.getPartialDerivative(5);
 
         // Difference
         final double d_dtMddPx = dtMddPxDS-dtMddPx;
@@ -840,13 +840,13 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tSu derivatives / state
         // -----------------------
 
-        // QSt = slave station PV at tmeas = t = signal arrival at master station
-//        final Transform FSt     = slaveStation.getOffsetFrame().getTransformTo(state.getFrame(), measurementDate);
+        // QSt = secondary station PV at tmeas = t = signal arrival at primary station
+//        final Transform FSt     = secondaryStation.getOffsetFrame().getTransformTo(state.getFrame(), measurementDate);
 //        final PVCoordinates QSt = FSt.transformPVCoordinates(PVCoordinates.ZERO);
         final Vector3D QSt_V    = QSt.getVelocity();
 
-        // QSt2 = slave station PV at t-t2 = signal arrival at slave station
-        final PVCoordinates QSt2 = slaveTopoToInertArrivalDate.transformPVCoordinates(PVCoordinates.ZERO);
+        // QSt2 = secondary station PV at t-t2 = signal arrival at secondary station
+        final PVCoordinates QSt2 = secondaryTopoToInertArrivalDate.transformPVCoordinates(PVCoordinates.ZERO);
 
         final Vector3D QSt2_P2   = pos2.subtract(QSt2.getPosition());
         final double   dSUp    = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tSu -
@@ -864,12 +864,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
 
         // From the DS
-        final double dtSudPxDS = slaveTauU.getPartialDerivative(0);
-        final double dtSudPyDS = slaveTauU.getPartialDerivative(1);
-        final double dtSudPzDS = slaveTauU.getPartialDerivative(2);
-        final double dtSudVxDS = slaveTauU.getPartialDerivative(3);
-        final double dtSudVyDS = slaveTauU.getPartialDerivative(4);
-        final double dtSudVzDS = slaveTauU.getPartialDerivative(5);
+        final double dtSudPxDS = secondaryTauU.getPartialDerivative(0);
+        final double dtSudPyDS = secondaryTauU.getPartialDerivative(1);
+        final double dtSudPzDS = secondaryTauU.getPartialDerivative(2);
+        final double dtSudVxDS = secondaryTauU.getPartialDerivative(3);
+        final double dtSudVyDS = secondaryTauU.getPartialDerivative(4);
+        final double dtSudVzDS = secondaryTauU.getPartialDerivative(5);
 
         // Difference
         final double d_dtSudPx = dtSudPxDS-dtSudPx;
@@ -928,12 +928,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double dtSddVz   = -dt2/ dSDown*P1_QSt2.getZ()+alphaSd*dt2dVz;
 
         // From the DS
-        final double dtSddPxDS = slaveTauD.getPartialDerivative(0);
-        final double dtSddPyDS = slaveTauD.getPartialDerivative(1);
-        final double dtSddPzDS = slaveTauD.getPartialDerivative(2);
-        final double dtSddVxDS = slaveTauD.getPartialDerivative(3);
-        final double dtSddVyDS = slaveTauD.getPartialDerivative(4);
-        final double dtSddVzDS = slaveTauD.getPartialDerivative(5);
+        final double dtSddPxDS = secondaryTauD.getPartialDerivative(0);
+        final double dtSddPyDS = secondaryTauD.getPartialDerivative(1);
+        final double dtSddPzDS = secondaryTauD.getPartialDerivative(2);
+        final double dtSddVxDS = secondaryTauD.getPartialDerivative(3);
+        final double dtSddVyDS = secondaryTauD.getPartialDerivative(4);
+        final double dtSddVzDS = secondaryTauD.getPartialDerivative(5);
 
         // Difference
         final double d_dtSddPx = dtSddPxDS-dtSddPx;
@@ -947,8 +947,8 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tMu derivatives / state
         // -----------------------
 
-        // QMt1 = Master station position at t1 = t - tau = signal departure from master station
-        final Transform FMt1     = masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDate.shiftedBy(-t1-t2));
+        // QMt1 = Primary station position at t1 = t - tau = signal departure from primary station
+        final Transform FMt1     = primaryGroundStation.getOffsetToInertial(state.getFrame(), measurementDate.shiftedBy(-t1-t2));
         final PVCoordinates QMt1 = FMt1.transformPVCoordinates(PVCoordinates.ZERO);
 
         final Vector3D QMt1_P1   = pos1.subtract(QMt1.getPosition());
@@ -966,12 +966,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double dtMudVz = dt2/dMUp*QMt1_P1.getZ() + alphaMu*(dt2dVz+dtSddVz);
 
         // From the DS
-        final double dtMudPxDS = masterTauU.getPartialDerivative(0);
-        final double dtMudPyDS = masterTauU.getPartialDerivative(1);
-        final double dtMudPzDS = masterTauU.getPartialDerivative(2);
-        final double dtMudVxDS = masterTauU.getPartialDerivative(3);
-        final double dtMudVyDS = masterTauU.getPartialDerivative(4);
-        final double dtMudVzDS = masterTauU.getPartialDerivative(5);
+        final double dtMudPxDS = primaryTauU.getPartialDerivative(0);
+        final double dtMudPyDS = primaryTauU.getPartialDerivative(1);
+        final double dtMudPzDS = primaryTauU.getPartialDerivative(2);
+        final double dtMudVxDS = primaryTauU.getPartialDerivative(3);
+        final double dtMudVyDS = primaryTauU.getPartialDerivative(4);
+        final double dtMudVzDS = primaryTauU.getPartialDerivative(5);
 
         // Difference
         final double d_dtMudPx = dtMudPxDS-dtMudPx;
@@ -1041,45 +1041,45 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tMd derivatives / stations
         // --------------------------
 
-        // Master station rotation and angular speed at tmeas
-        final AngularCoordinates acM = masterTopoToInert.getAngular().revert();
-        final Rotation rotationMasterTopoToInert = acM.getRotation();
+        // Primary station rotation and angular speed at tmeas
+        final AngularCoordinates acM = primaryTopoToInert.getAngular().revert();
+        final Rotation rotationPrimaryTopoToInert = acM.getRotation();
         final Vector3D OmegaM = acM.getRotationRate();
 
-        // Slave station rotation and angular speed at tmeas
-        final AngularCoordinates acS = slaveTopoToInert.getAngular().revert();
-        final Rotation rotationSlaveTopoToInert = acS.getRotation();
+        // secondary station rotation and angular speed at tmeas
+        final AngularCoordinates acS = secondaryTopoToInert.getAngular().revert();
+        final Rotation rotationsecondaryTopoToInert = acS.getRotation();
         final Vector3D OmegaS = acS.getRotationRate();
 
-        // Master station - Inertial frame
+        // Primary station - Inertial frame
         final double dtMddQMx_I   = P2_QMt.getX() / dMDown;
         final double dtMddQMy_I   = P2_QMt.getY() / dMDown;
         final double dtMddQMz_I   = P2_QMt.getZ() / dMDown;
 
-        // Slave station - Inertial frame
+        // secondary station - Inertial frame
         final double dtMddQSx_I   = 0.;
         final double dtMddQSy_I   = 0.;
         final double dtMddQSz_I   = 0.;
 
 
         // Topo frames
-        final Vector3D dtMddQM = rotationMasterTopoToInert.
+        final Vector3D dtMddQM = rotationPrimaryTopoToInert.
                         applyTo(new Vector3D(dtMddQMx_I,
                                              dtMddQMy_I,
                                              dtMddQMz_I));
-        final Vector3D dtMddQS = rotationSlaveTopoToInert.
+        final Vector3D dtMddQS = rotationsecondaryTopoToInert.
                         applyTo(new Vector3D(dtMddQSx_I,
                                              dtMddQSy_I,
                                              dtMddQSz_I));
 
         // With DS
-        double dtMddQMx_DS = masterTauD.getPartialDerivative(6);
-        double dtMddQMy_DS = masterTauD.getPartialDerivative(7);
-        double dtMddQMz_DS = masterTauD.getPartialDerivative(8);
+        double dtMddQMx_DS = primaryTauD.getPartialDerivative(6);
+        double dtMddQMy_DS = primaryTauD.getPartialDerivative(7);
+        double dtMddQMz_DS = primaryTauD.getPartialDerivative(8);
 
-        double dtMddQSx_DS = masterTauD.getPartialDerivative(9);
-        double dtMddQSy_DS = masterTauD.getPartialDerivative(10);
-        double dtMddQSz_DS = masterTauD.getPartialDerivative(11);
+        double dtMddQSx_DS = primaryTauD.getPartialDerivative(9);
+        double dtMddQSy_DS = primaryTauD.getPartialDerivative(10);
+        double dtMddQSz_DS = primaryTauD.getPartialDerivative(11);
 
 
         // Diff
@@ -1096,12 +1096,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tSu derivatives / stations
         // --------------------------
 
-        // Master station - Inertial frame
+        // Primary station - Inertial frame
         final double dtSudQMx_I   = dtMddQMx_I*alphaSu;
         final double dtSudQMy_I   = dtMddQMy_I*alphaSu;
         final double dtSudQMz_I   = dtMddQMz_I*alphaSu;
 
-        // Slave station - Inertial frame
+        // secondary station - Inertial frame
         final double dtSudQSx_I   = 1./dSUp*QSt2_P2
                         .dotProduct(Vector3D.MINUS_I
                                     .add(OmegaS.crossProduct(Vector3D.PLUS_I).scalarMultiply(t2)));
@@ -1113,22 +1113,22 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                     .add(OmegaS.crossProduct(Vector3D.PLUS_K).scalarMultiply(t2)));
 
         // Topo frames
-        final Vector3D dtSudQM = rotationMasterTopoToInert.
+        final Vector3D dtSudQM = rotationPrimaryTopoToInert.
                         applyTo(new Vector3D(dtSudQMx_I,
                                              dtSudQMy_I,
                                              dtSudQMz_I));
-        final Vector3D dtSudQS = rotationSlaveTopoToInert.
+        final Vector3D dtSudQS = rotationsecondaryTopoToInert.
                         applyTo(new Vector3D(dtSudQSx_I,
                                              dtSudQSy_I,
                                              dtSudQSz_I));
         // With DS
-        double dtSudQMx_DS = slaveTauU.getPartialDerivative(6);
-        double dtSudQMy_DS = slaveTauU.getPartialDerivative(7);
-        double dtSudQMz_DS = slaveTauU.getPartialDerivative(8);
+        double dtSudQMx_DS = secondaryTauU.getPartialDerivative(6);
+        double dtSudQMy_DS = secondaryTauU.getPartialDerivative(7);
+        double dtSudQMz_DS = secondaryTauU.getPartialDerivative(8);
 
-        double dtSudQSx_DS = slaveTauU.getPartialDerivative(9);
-        double dtSudQSy_DS = slaveTauU.getPartialDerivative(10);
-        double dtSudQSz_DS = slaveTauU.getPartialDerivative(11);
+        double dtSudQSx_DS = secondaryTauU.getPartialDerivative(9);
+        double dtSudQSy_DS = secondaryTauU.getPartialDerivative(10);
+        double dtSudQSz_DS = secondaryTauU.getPartialDerivative(11);
 
 
         // Diff
@@ -1174,12 +1174,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tSd derivatives / stations
         // --------------------------
 
-        // Master station - Inertial frame
+        // Primary station - Inertial frame
         final double dtSddQMx_I   = dt2dQMx_I*alphaSd;
         final double dtSddQMy_I   = dt2dQMy_I*alphaSd;
         final double dtSddQMz_I   = dt2dQMz_I*alphaSd;
 
-        // Slave station - Inertial frame
+        // secondary station - Inertial frame
         final double dtSddQSx_I   = dt2dQSx_I*alphaSd + 1./dSDown
                         *P1_QSt2.dotProduct(Vector3D.PLUS_I
                                             .subtract(OmegaS.crossProduct(Vector3D.PLUS_I).scalarMultiply(t2)));
@@ -1192,21 +1192,21 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                             .subtract(OmegaS.crossProduct(Vector3D.PLUS_K).scalarMultiply(t2)));
 
         // Topo frames
-        final Vector3D dtSddQM = rotationMasterTopoToInert.
+        final Vector3D dtSddQM = rotationPrimaryTopoToInert.
                         applyTo(new Vector3D(dtSddQMx_I,
                                              dtSddQMy_I,
                                              dtSddQMz_I));
-        final Vector3D dtSddQS = rotationSlaveTopoToInert.
+        final Vector3D dtSddQS = rotationsecondaryTopoToInert.
                         applyTo(new Vector3D(dtSddQSx_I,
                                              dtSddQSy_I,
                                              dtSddQSz_I));
         // With DS
-        double dtSddQMx_DS = slaveTauD.getPartialDerivative(6);
-        double dtSddQMy_DS = slaveTauD.getPartialDerivative(7);
-        double dtSddQMz_DS = slaveTauD.getPartialDerivative(8);
-        double dtSddQSx_DS = slaveTauD.getPartialDerivative(9);
-        double dtSddQSy_DS = slaveTauD.getPartialDerivative(10);
-        double dtSddQSz_DS = slaveTauD.getPartialDerivative(11);
+        double dtSddQMx_DS = secondaryTauD.getPartialDerivative(6);
+        double dtSddQMy_DS = secondaryTauD.getPartialDerivative(7);
+        double dtSddQMz_DS = secondaryTauD.getPartialDerivative(8);
+        double dtSddQSx_DS = secondaryTauD.getPartialDerivative(9);
+        double dtSddQSy_DS = secondaryTauD.getPartialDerivative(10);
+        double dtSddQSz_DS = secondaryTauD.getPartialDerivative(11);
 
 
         // Diff
@@ -1221,7 +1221,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tMu derivatives / stations
         // --------------------------
 
-        // Master station - Inertial frame
+        // Primary station - Inertial frame
         final double dtMudQMx_I = -QMt1_P1.getX()/dMUp + alphaMu*(dt2dQMx_I+dtSddQMx_I)
                         + t/dMUp*QMt1_P1.dotProduct(OmegaM.crossProduct(Vector3D.PLUS_I));
 
@@ -1232,28 +1232,28 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                         + t/dMUp*QMt1_P1.dotProduct(OmegaM.crossProduct(Vector3D.PLUS_K));
 
 
-        // Slave station - Inertial frame
+        // secondary station - Inertial frame
         final double dtMudQSx_I = alphaMu*(dt2dQSx_I+dtSddQSx_I);
         final double dtMudQSy_I = alphaMu*(dt2dQSy_I+dtSddQSy_I);
         final double dtMudQSz_I = alphaMu*(dt2dQSz_I+dtSddQSz_I);
 
 
         // Topo frames
-        final Vector3D dtMudQM = rotationMasterTopoToInert.
+        final Vector3D dtMudQM = rotationPrimaryTopoToInert.
                         applyTo(new Vector3D(dtMudQMx_I,
                                              dtMudQMy_I,
                                              dtMudQMz_I));
-        final Vector3D dtMudQS = rotationSlaveTopoToInert.
+        final Vector3D dtMudQS = rotationsecondaryTopoToInert.
                         applyTo(new Vector3D(dtMudQSx_I,
                                              dtMudQSy_I,
                                              dtMudQSz_I));
         // With DS
-        double dtMudQMx_DS = masterTauU.getPartialDerivative(6);
-        double dtMudQMy_DS = masterTauU.getPartialDerivative(7);
-        double dtMudQMz_DS = masterTauU.getPartialDerivative(8);
-        double dtMudQSx_DS = masterTauU.getPartialDerivative(9);
-        double dtMudQSy_DS = masterTauU.getPartialDerivative(10);
-        double dtMudQSz_DS = masterTauU.getPartialDerivative(11);
+        double dtMudQMx_DS = primaryTauU.getPartialDerivative(6);
+        double dtMudQMy_DS = primaryTauU.getPartialDerivative(7);
+        double dtMudQMz_DS = primaryTauU.getPartialDerivative(8);
+        double dtMudQSx_DS = primaryTauU.getPartialDerivative(9);
+        double dtMudQSy_DS = primaryTauU.getPartialDerivative(10);
+        double dtMudQSz_DS = primaryTauU.getPartialDerivative(11);
 
         // Diff
         final double d_dtMudQMx = dtMudQMx_DS-dtMudQM.getX();

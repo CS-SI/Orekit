@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -274,7 +274,7 @@ public class Frame implements Serializable {
      * @param <T> the type of the field elements
      * @return transform from the instance to the destination frame
      */
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
 
         if (this == destination) {
             // shortcut for special case that may be frequent

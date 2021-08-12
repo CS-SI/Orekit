@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.models.earth.atmosphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -462,7 +462,7 @@ public class JB2008 implements Atmosphere {
 
         // Compute the high altitude exospheric density correction factor
         double fex = 1.0;
-        if ((altKm >= 1000.0) && (altKm < 1500.0)) {
+        if (altKm >= 1000.0 && altKm < 1500.0) {
             final double zeta = (altKm - 1000.) * 0.002;
             final double f15c = CHT[0] + CHT[1] * f10B + (CHT[2] + CHT[3] * f10B) * 1500.0;
             final double f15cZeta = (CHT[2] + CHT[3] * f10B) * 500.0;
@@ -506,7 +506,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return total mass-Density at input position (kg/m³)
      */
-    public <T extends RealFieldElement<T>> T getDensity(final T dateMJD, final T sunRA, final T sunDecli,
+    public <T extends CalculusFieldElement<T>> T getDensity(final T dateMJD, final T sunRA, final T sunDecli,
                                                         final T satLon, final T satLat, final T satAlt,
                                                         final double f10, final double f10B, final double s10,
                                                         final double s10B, final double xm10, final double xm10B,
@@ -518,6 +518,7 @@ public class JB2008 implements Atmosphere {
         }
 
         final Field<T> field  = satAlt.getField();
+        final T pi    = field.getOne().getPi();
         final T altKm = satAlt.divide(1000.0);
 
         // Equation (14)
@@ -533,7 +534,7 @@ public class JB2008 implements Atmosphere {
         // Equation (16)
         final T h   = satLon.subtract(sunRA);
         final T tau = h.subtract(0.64577182).add(h.add(0.75049158).sin().multiply(0.10471976));
-        T solarTime = h.add(FastMath.PI).multiply(12.0 / FastMath.PI);
+        T solarTime = FastMath.toDegrees(h.add(pi)).divide(15.0);
         while (solarTime.getReal() >= 24) {
             solarTime = solarTime.subtract(24);
         }
@@ -571,7 +572,7 @@ public class JB2008 implements Atmosphere {
         tc[0] = tsubx;
         tc[1] = gsubx;
         // A of Equation (13)
-        tc[2] = tinf.subtract(tsubx).multiply(2. / FastMath.PI);
+        tc[2] = tinf.subtract(tsubx).multiply(pi.reciprocal().multiply(2.0));
         tc[3] = gsubx.divide(tc[2]);
 
         // Equation (5)
@@ -729,7 +730,7 @@ public class JB2008 implements Atmosphere {
 
         // Compute the high altitude exospheric density correction factor
         T fex = field.getOne();
-        if ((altKm.getReal() >= 1000.0) && (altKm.getReal() < 1500.0)) {
+        if (altKm.getReal() >= 1000.0 && altKm.getReal() < 1500.0) {
             final T zeta = altKm.subtract(1000.).multiply(0.002);
             final double f15c     = CHT[0] + CHT[1] * f10B + (CHT[2] + CHT[3] * f10B) * 1500.0;
             final double f15cZeta = (CHT[2] + CHT[3] * f10B) * 500.0;
@@ -761,17 +762,17 @@ public class JB2008 implements Atmosphere {
         final double fs = (f10 - 100.0) / 100.0;
 
         // Calculates dTc according to height
-        if ((satAlt >= 120) && (satAlt <= 200)) {
+        if (satAlt >= 120 && satAlt <= 200) {
             final double dtc200 = poly2CDTC(fs, st, cs);
             final double dtc200dz = poly1CDTC(fs, st, cs);
             final double cc = 3.0 * dtc200 - dtc200dz;
             final double dd = dtc200 - cc;
             final double zp = (satAlt - 120.0) / 80.0;
             dTc = zp * zp * (cc + dd * zp);
-        } else if ((satAlt > 200.0) && (satAlt <= 240.0)) {
+        } else if (satAlt > 200.0 && satAlt <= 240.0) {
             final double h = (satAlt - 200.0) / 50.0;
             dTc = poly1CDTC(fs, st, cs) * h + poly2CDTC(fs, st, cs);
-        } else if ((satAlt > 240.0) && (satAlt <= 300.0)) {
+        } else if (satAlt > 240.0 && satAlt <= 300.0) {
             final double h = 0.8;
             final double bb = poly1CDTC(fs, st, cs);
             final double aa = bb * h + poly2CDTC(fs, st, cs);
@@ -782,10 +783,10 @@ public class JB2008 implements Atmosphere {
             final double dd = dtc300 - aa - bb - cc;
             final double zp = (satAlt - 240.0) / 60.0;
             dTc = aa + zp * (bb + zp * (cc + zp * dd));
-        } else if ((satAlt > 300.0) && (satAlt <= 600.0)) {
+        } else if (satAlt > 300.0 && satAlt <= 600.0) {
             final double h = satAlt / 100.0;
             dTc = poly1BDTC(fs, st, cs, h * poly2BDTC(st));
-        } else if ((satAlt > 600.0) && (satAlt <= 800.0)) {
+        } else if (satAlt > 600.0 && satAlt <= 800.0) {
             final double poly2 = poly2BDTC(st);
             final double aa = poly1BDTC(fs, st, cs, 6 * poly2);
             final double bb = cs * poly2;
@@ -806,7 +807,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type of the filed elements
      * @return dTc correction
      */
-    private static <T extends RealFieldElement<T>> T dTc(final double f10, final T solarTime,
+    private static <T extends CalculusFieldElement<T>> T dTc(final double f10, final T solarTime,
                                                          final T satLat, final T satAlt) {
         T dTc = solarTime.getField().getZero();
         final T      st = solarTime.divide(24.0);
@@ -814,17 +815,17 @@ public class JB2008 implements Atmosphere {
         final double fs = (f10 - 100.0) / 100.0;
 
         // Calculates dTc according to height
-        if ((satAlt.getReal() >= 120) && (satAlt.getReal() <= 200)) {
+        if (satAlt.getReal() >= 120 && satAlt.getReal() <= 200) {
             final T dtc200   = poly2CDTC(fs, st, cs);
             final T dtc200dz = poly1CDTC(fs, st, cs);
             final T cc       = dtc200.multiply(3).subtract(dtc200dz);
             final T dd       = dtc200.subtract(cc);
             final T zp       = satAlt.subtract(120.0).divide(80.0);
             dTc = zp.multiply(zp).multiply(cc.add(dd.multiply(zp)));
-        } else if ((satAlt.getReal() > 200.0) && (satAlt.getReal() <= 240.0)) {
+        } else if (satAlt.getReal() > 200.0 && satAlt.getReal() <= 240.0) {
             final T h = satAlt.subtract(200.0).divide(50.0);
             dTc = poly1CDTC(fs, st, cs).multiply(h).add(poly2CDTC(fs, st, cs));
-        } else if ((satAlt.getReal() > 240.0) && (satAlt.getReal() <= 300.0)) {
+        } else if (satAlt.getReal() > 240.0 && satAlt.getReal() <= 300.0) {
             final T h = solarTime.getField().getZero().add(0.8);
             final T bb = poly1CDTC(fs, st, cs);
             final T aa = bb.multiply(h).add(poly2CDTC(fs, st, cs));
@@ -835,10 +836,10 @@ public class JB2008 implements Atmosphere {
             final T dd = dtc300.subtract(aa).subtract(bb).subtract(cc);
             final T zp = satAlt.subtract(240.0).divide(60.0);
             dTc = aa.add(zp.multiply(bb.add(zp.multiply(cc.add(zp.multiply(dd))))));
-        } else if ((satAlt.getReal() > 300.0) && (satAlt.getReal() <= 600.0)) {
+        } else if (satAlt.getReal() > 300.0 && satAlt.getReal() <= 600.0) {
             final T h = satAlt.divide(100.0);
             dTc = poly1BDTC(fs, st, cs, h.multiply(poly2BDTC(st)));
-        } else if ((satAlt.getReal() > 600.0) && (satAlt.getReal() <= 800.0)) {
+        } else if (satAlt.getReal() > 600.0 && satAlt.getReal() <= 800.0) {
             final T poly2 = poly2BDTC(st);
             final T aa = poly1BDTC(fs, st, cs, poly2.multiply(6));
             final T bb = cs.multiply(poly2);
@@ -871,7 +872,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return the value of the polynomial
      */
-    private static <T extends RealFieldElement<T>>  T poly1CDTC(final double fs, final T st, final T cs) {
+    private static <T extends CalculusFieldElement<T>>  T poly1CDTC(final double fs, final T st, final T cs) {
         return    st.multiply(CDTC[6]).
               add(CDTC[5]).multiply(st).
               add(CDTC[4]).multiply(st).
@@ -908,7 +909,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return the value of the polynomial
      */
-    private static <T extends RealFieldElement<T>>  T poly2CDTC(final double fs, final T st, final T cs) {
+    private static <T extends CalculusFieldElement<T>>  T poly2CDTC(final double fs, final T st, final T cs) {
         return         st.multiply(CDTC[19]).
                    add(CDTC[18]).multiply(st).
                    add(CDTC[17]).multiply(cs).multiply(st).
@@ -939,7 +940,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return the value of the polynomial
      */
-    private static <T extends RealFieldElement<T>>  T poly1BDTC(final double fs, final T st, final T cs, final T hp) {
+    private static <T extends CalculusFieldElement<T>>  T poly1BDTC(final double fs, final T st, final T cs, final T hp) {
         return     st.multiply(BDTC[6]).
                add(BDTC[5]).multiply(st).
                add(BDTC[4]).multiply(st).
@@ -968,7 +969,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return the value of the polynomial
      */
-    private static <T extends RealFieldElement<T>>  T poly2BDTC(final T st) {
+    private static <T extends CalculusFieldElement<T>>  T poly2BDTC(final T st) {
         return     st.multiply(BDTC[17]).
                add(BDTC[16]).multiply(st).
                add(BDTC[15]).multiply(st).
@@ -995,7 +996,7 @@ public class JB2008 implements Atmosphere {
      * @return mean molecular mass
      * @param <T> type fo the field elements
      */
-    private static <T extends RealFieldElement<T>>  T mBar(final T z) {
+    private static <T extends CalculusFieldElement<T>>  T mBar(final T z) {
         final T dz = z.subtract(100.);
         T amb = z.getField().getZero().add(CMB[6]);
         for (int i = 5; i >= 0; --i) {
@@ -1024,7 +1025,7 @@ public class JB2008 implements Atmosphere {
      * @return temperature profile
      * @param <T> type fo the field elements
      */
-    private static <T extends RealFieldElement<T>>  T localTemp(final T z, final T[] tc) {
+    private static <T extends CalculusFieldElement<T>>  T localTemp(final T z, final T[] tc) {
         final T dz = z.subtract(125.);
         if (dz.getReal() <= 0.) {
             return dz.multiply(-9.8204695e-6).subtract(7.3039742e-4).multiply(dz).multiply(dz).add(1.0).multiply(dz).multiply(tc[1]).add(tc[0]);
@@ -1047,7 +1048,7 @@ public class JB2008 implements Atmosphere {
      * @return the gravity (m/s2)
      * @param <T> type fo the field elements
      */
-    private static <T extends RealFieldElement<T>>  T gravity(final T z) {
+    private static <T extends CalculusFieldElement<T>>  T gravity(final T z) {
         final T tmp = z.divide(EARTH_RADIUS).add(1);
         return tmp.multiply(tmp).reciprocal().multiply(Constants.G0_STANDARD_GRAVITY);
     }
@@ -1094,7 +1095,7 @@ public class JB2008 implements Atmosphere {
      * @return semi-annual variation
      * @param <T> type fo the field elements
      */
-    private static <T extends RealFieldElement<T>>  T semian08(final T doy, final T alt,
+    private static <T extends CalculusFieldElement<T>>  T semian08(final T doy, final T alt,
                                                                final double f10B, final double s10B, final double xm10B) {
 
         final T htz = alt.divide(1000.0);
@@ -1154,7 +1155,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type of the field elements
      * @return the number days in year
      */
-    private static <T extends RealFieldElement<T>> T dayOfYear(final T dateMJD) {
+    private static <T extends CalculusFieldElement<T>> T dayOfYear(final T dateMJD) {
         final T d1950 = dateMJD.subtract(33281);
 
         int iyday = (int) d1950.getReal();
@@ -1180,7 +1181,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return min value
      */
-    private <T extends RealFieldElement<T>> T min(final double d, final T f) {
+    private <T extends CalculusFieldElement<T>> T min(final double d, final T f) {
         return (f.getReal() > d) ? f.getField().getZero().add(d) : f;
     }
 
@@ -1190,7 +1191,7 @@ public class JB2008 implements Atmosphere {
      * @param <T> type fo the field elements
      * @return max value
      */
-    private <T extends RealFieldElement<T>> T max(final double d, final T f) {
+    private <T extends CalculusFieldElement<T>> T max(final double d, final T f) {
         return (f.getReal() <= d) ? f.getField().getZero().add(d) : f;
     }
 
@@ -1235,14 +1236,14 @@ public class JB2008 implements Atmosphere {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
                                                         final Frame frame) {
 
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
-        if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
-                        (dateD.compareTo(inputParams.getMinDate()) < 0)) {
+        if (dateD.compareTo(inputParams.getMaxDate()) > 0 ||
+                        dateD.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       dateD, inputParams.getMinDate(), inputParams.getMaxDate());
         }

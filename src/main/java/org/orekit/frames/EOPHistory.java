@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.MathArrays;
@@ -168,7 +168,7 @@ public class EOPHistory implements Serializable {
      * @return true if the instance uses interpolation on tidal corrections
      */
     public boolean usesInterpolation() {
-        return tidalCorrection != null && tidalCorrection instanceof CachedCorrection;
+        return tidalCorrection instanceof CachedCorrection;
     }
 
     /** Get the IERS conventions to which these EOP apply.
@@ -228,7 +228,7 @@ public class EOPHistory implements Serializable {
      * @return UT1-UTC in seconds (0 if date is outside covered range)
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> T getUT1MinusUTC(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T getUT1MinusUTC(final FieldAbsoluteDate<T> date) {
 
         //check if there is data for date
         final AbsoluteDate absDate = date.toAbsoluteDate();
@@ -315,7 +315,7 @@ public class EOPHistory implements Serializable {
     }
 
     /** Local class for DUT1 interpolation, crossing leaps safely. */
-    private static class FieldDUT1Interpolator<T extends RealFieldElement<T>> implements Consumer<EOPEntry> {
+    private static class FieldDUT1Interpolator<T extends CalculusFieldElement<T>> implements Consumer<EOPEntry> {
 
         /** DUT at first entry. */
         private double firstDUT;
@@ -418,7 +418,7 @@ public class EOPHistory implements Serializable {
      * @return LoD in seconds (0 if date is outside covered range)
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> T getLOD(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T getLOD(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -475,7 +475,7 @@ public class EOPHistory implements Serializable {
      * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
-    public <T extends RealFieldElement<T>> FieldPoleCorrection<T> getPoleCorrection(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldPoleCorrection<T> getPoleCorrection(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -527,7 +527,7 @@ public class EOPHistory implements Serializable {
      * @return nutation correction in longitude ΔΨ and in obliquity Δε
      * (zero if date is outside covered range)
      */
-    public <T extends RealFieldElement<T>> T[] getEquinoxNutationCorrection(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T[] getEquinoxNutationCorrection(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -568,7 +568,7 @@ public class EOPHistory implements Serializable {
      * @return nutation correction in Celestial Intermediat Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
-    public <T extends RealFieldElement<T>> T[] getNonRotatinOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T[] getNonRotatinOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -616,7 +616,7 @@ public class EOPHistory implements Serializable {
         for (final TimeStamped current : this.cache.getAll()) {
 
             // compare the dates of preceding and current entries
-            if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
+            if (preceding != null && (current.getDate().durationFrom(preceding.getDate())) > maxGap) {
                 throw new OrekitException(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES,
                                           preceding.getDate(), current.getDate());
             }
@@ -684,7 +684,7 @@ public class EOPHistory implements Serializable {
      * @param <T> type of the field elements
      * @return interpolated value
      */
-    private <T extends RealFieldElement<T>> T interpolate(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T interpolate(final FieldAbsoluteDate<T> date,
                                                           final AbsoluteDate aDate,
                                                           final Function<EOPEntry, Double> selector) {
         try {
@@ -743,7 +743,7 @@ public class EOPHistory implements Serializable {
      * @param <T> type of the field elements
      * @return interpolated value
      */
-    private <T extends RealFieldElement<T>> T[] interpolate(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T[] interpolate(final FieldAbsoluteDate<T> date,
                                                             final AbsoluteDate aDate,
                                                             final Function<EOPEntry, Double> selector1,
                                                             final Function<EOPEntry, Double> selector2) {
@@ -891,7 +891,7 @@ public class EOPHistory implements Serializable {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
             try {
 
                 final AbsoluteDate aDate = date.toAbsoluteDate();

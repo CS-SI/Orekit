@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,8 +30,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.GLONASSAlmanac;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.GLONASSDate;
@@ -39,6 +41,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -50,7 +53,7 @@ public class GLONASSAnalyticalPropagatorTest {
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
         // Reference values for validation are given into Glonass Interface Control Document v1.0 2016
-        final double pi = GLONASSOrbitalElements.GLONASS_PI;
+        final double pi = GNSSConstants.GLONASS_PI;
         almanac = new GLONASSAlmanac(0, 1, 22, 12, 2007, 33571.625,
                                      -0.293967247009277 * pi,
                                      -0.00012947082519531 * pi,
@@ -64,7 +67,12 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testPerfectValues() {
         // Build the propagator
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagator.Builder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).
+                        attitudeProvider(Propagator.DEFAULT_LAW).
+                        mass(1521.0).
+                        eci(FramesFactory.getEME2000()).
+                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                        build();
 
         // Target
         final AbsoluteDate target = new AbsoluteDate(new DateComponents(2007, 12, 23),
@@ -89,7 +97,7 @@ public class GLONASSAnalyticalPropagatorTest {
                                                                         -3249.98587740305799));
 
         // Check
-        Assert.assertEquals(Propagator.DEFAULT_MASS, propagator.getMass(target), 0.1);
+        Assert.assertEquals(1521.0, propagator.getMass(target), 0.1);
         Assert.assertEquals(0.0, pvFinal.getPosition().distance(pvExpected.getPosition()), 1.1e-7);
         Assert.assertEquals(0.0, pvFinal.getVelocity().distance(pvExpected.getVelocity()), 1.1e-5);
 
@@ -101,10 +109,10 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the GLONASSAnalyticalPropagator from the almanac
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagator.Builder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
         Assert.assertEquals("EME2000", propagator.getFrame().getName());
         Assert.assertEquals("EME2000", propagator.getECI().getName());
-        Assert.assertEquals(3.986004418e+14, GLONASSOrbitalElements.GLONASS_MU, 1.0e6);
+        Assert.assertEquals(3.986004418e+14, GNSSConstants.GLONASS_MU, 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -124,7 +132,7 @@ public class GLONASSAnalyticalPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagator.Builder(almanac).build();
+        GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
         GLONASSOrbitalElements elements = propagator.getGLONASSOrbitalElements();
         AbsoluteDate t0 = new GLONASSDate(elements.getNa(), elements.getN4(), elements.getTime()).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -152,14 +160,14 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagator.Builder(almanac).build();
+            GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
             propagator.resetInitialState(propagator.getInitialState());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
-            GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagator.Builder(almanac).build();
+            GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -170,7 +178,7 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the GLONASSAnalyticalPropagator from the almanac
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagator.Builder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
         // In order to test the issue, we volontary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);

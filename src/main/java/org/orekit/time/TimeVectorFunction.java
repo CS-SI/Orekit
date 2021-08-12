@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** This interface represents a multi-valued function of time.
  * @author Luc Maisonobe
@@ -34,6 +34,6 @@ public interface TimeVectorFunction {
      * @param <T> type of the field elements
      * @return value of the function
      */
-    <T extends RealFieldElement<T>> T[] value(FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> T[] value(FieldAbsoluteDate<T> date);
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,9 +36,18 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.ccsds.OEMParser;
-import org.orekit.files.ccsds.OEMWriter;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.odm.oem.EphemerisWriter;
+import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
+import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
+import org.orekit.files.ccsds.ndm.odm.oem.OemSegment;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.OrekitEphemerisFile.OrekitSatelliteEphemeris;
 import org.orekit.frames.Frame;
@@ -127,18 +136,26 @@ public class OrekitEphemerisFileTest {
         assertEquals(body.getGM(),
                      satellite.getSegments().get(0).getMu(), muTolerance);
 
-        String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
-        new OEMWriter().write(tempOemFile, ephemerisFile);
+        String tempOem = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
+        OemMetadata template = new OemMetadata(2);
+        template.setTimeSystem(TimeSystem.UTC);
+        template.setObjectID(satId);
+        template.setObjectName(satId);
+        template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
+        template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
+        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+                                                     null, template, FileFormat.KVN, "dummy", 60);
+        writer.write(tempOem, ephemerisFile);
 
-        EphemerisFile ephemerisFromFile = new OEMParser().parse(tempOemFile);
-        Files.delete(Paths.get(tempOemFile));
+        OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
+        EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFrom = parser.parse(new DataSource(tempOem));
+        Files.delete(Paths.get(tempOem));
         
-        EphemerisSegment segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
+        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getCoordinates().size());
         assertEquals(frame, segment.getFrame());
-        assertEquals(body.getName().toUpperCase(), segment.getFrameCenterString());
         assertEquals(body.getGM(), segment.getMu(), muTolerance);
         assertEquals(CartesianDerivativesFilter.USE_PV, segment.getAvailableDerivatives());
         assertEquals("GCRF", segment.getFrame().getName());
@@ -159,7 +176,8 @@ public class OrekitEphemerisFileTest {
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, altitude);
         final TopocentricFrame topo = new TopocentricFrame(parentShape, point, "testPoint1");
         final ElevationDetector elevationDetector = new ElevationDetector(topo);
-        final EphemerisSegmentPropagator ephemerisSegmentPropagator = new EphemerisSegmentPropagator(segment);
+        final EphemerisSegmentPropagator<TimeStampedPVCoordinates> ephemerisSegmentPropagator =
+                        new EphemerisSegmentPropagator<>(segment);
         final EventsLogger lookupLogger = new EventsLogger();
         ephemerisSegmentPropagator.addEventDetector(lookupLogger.monitorDetector(elevationDetector));
 

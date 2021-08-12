@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -196,7 +196,7 @@ public class UTCTAIHistoryFilesLoader extends AbstractSelfFeedingLoader
                                                                           Integer.parseInt(matcher.group(3).trim()));
 
                         final int offset = Integer.parseInt(matcher.group(matcher.groupCount()));
-                        if ((lastDate != null) && leapDay.compareTo(lastDate) <= 0) {
+                        if (lastDate != null && leapDay.compareTo(lastDate) <= 0) {
                             throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_IN_FILE,
                                                       name, lineNumber);
                         }

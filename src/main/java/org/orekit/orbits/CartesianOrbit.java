@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -286,7 +286,7 @@ public class CartesianOrbit extends Orbit {
     public double getHx() {
         final Vector3D w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
-        if (((w.getX() * w.getX() + w.getY() * w.getY()) == 0) && w.getZ() < 0) {
+        if ((w.getX() * w.getX() + w.getY() * w.getY()) == 0 && w.getZ() < 0) {
             return Double.NaN;
         }
         return -w.getY() / (1 + w.getZ());
@@ -302,7 +302,7 @@ public class CartesianOrbit extends Orbit {
             final double x = w.getX().getValue();
             final double y = w.getY().getValue();
             final double z = w.getZ().getValue();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return Double.NaN;
             }
             final UnivariateDerivative2 hx = w.getY().negate().divide(w.getZ().add(1));
@@ -316,7 +316,7 @@ public class CartesianOrbit extends Orbit {
     public double getHy() {
         final Vector3D w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
-        if (((w.getX() * w.getX() + w.getY() * w.getY()) == 0) && w.getZ() < 0) {
+        if ((w.getX() * w.getX() + w.getY() * w.getY()) == 0 && w.getZ() < 0) {
             return Double.NaN;
         }
         return  w.getX() / (1 + w.getZ());
@@ -332,7 +332,7 @@ public class CartesianOrbit extends Orbit {
             final double x = w.getX().getValue();
             final double y = w.getY().getValue();
             final double z = w.getZ().getValue();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return Double.NaN;
             }
             final UnivariateDerivative2 hy = w.getX().divide(w.getZ().add(1));
@@ -622,7 +622,7 @@ public class CartesianOrbit extends Orbit {
         // Initial guess
         double H;
         if (ecc < 1.6) {
-            if ((-FastMath.PI < M && M < 0.) || M > FastMath.PI) {
+            if (-FastMath.PI < M && M < 0. || M > FastMath.PI) {
                 H = M - ecc;
             } else {
                 H = M + ecc;

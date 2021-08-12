@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -517,7 +517,7 @@ public class EcksteinHechlerPropagatorTest {
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
-            public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+            public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                                 FieldAbsoluteDate<T> date, Frame frame)
                 {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
@@ -660,10 +660,9 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         final double step = 100.0;
-        propagator.setMasterMode(step, new OrekitFixedStepHandler() {
+        propagator.setStepHandler(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+            public void handleStep(SpacecraftState currentState) {
                 if (previous != null) {
                     Assert.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }

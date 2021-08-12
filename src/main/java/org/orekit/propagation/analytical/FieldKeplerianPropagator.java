@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,10 @@ package org.orekit.propagation.analytical;
 
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
@@ -34,16 +35,14 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
+import org.orekit.utils.ParameterDriver;
 
 /** Simple Keplerian orbit propagator.
  * @see FieldOrbit
  * @author Guylaine Prat
  */
-public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
+public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
-
-    /** Initial state. */
-    private FieldSpacecraftState<T> initialState;
 
     /** All states. */
     private transient FieldTimeSpanMap<FieldSpacecraftState<T>, T> states;
@@ -71,7 +70,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      *
      * @param initialFieldOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
-     * @see #FieldKeplerianPropagator(FieldOrbit, AttitudeProvider, RealFieldElement)
+     * @see #FieldKeplerianPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement)
      */
     @DefaultDataContext
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final T mu) {
@@ -117,13 +116,13 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
         super(initialOrbit.getA().getField(), attitudeProv);
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        initialState = fixState(initialOrbit,
-                                getAttitudeProvider().getAttitude(initialOrbit,
-                                                                  initialOrbit.getDate(),
-                                                                  initialOrbit.getFrame()),
-                                mass, mu, Collections.emptyMap());
-        states = new FieldTimeSpanMap<>(initialState, initialOrbit.getA().getField());
-        super.resetInitialState(initialState);
+        final FieldSpacecraftState<T> initial = fixState(initialOrbit,
+                                                         getAttitudeProvider().getAttitude(initialOrbit,
+                                                                                           initialOrbit.getDate(),
+                                                                                           initialOrbit.getFrame()),
+                                                         mass, mu, Collections.emptyMap());
+        states = new FieldTimeSpanMap<>(initial, initialOrbit.getA().getField());
+        super.resetInitialState(initial);
     }
 
     /** Fix state to use a specified mu and remove derivatives.
@@ -139,7 +138,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @return fixed orbit
      */
     private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass,
-                                     final T mu, final Map<String, T[]> additionalStates) {
+                                             final T mu, final Map<String, T[]> additionalStates) {
         final OrbitType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
         type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
@@ -156,15 +155,15 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     public void resetInitialState(final FieldSpacecraftState<T> state) {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        final T mu = initialState == null ? state.getMu() : initialState.getMu();
+        final FieldSpacecraftState<T> formerInitial = getInitialState();
+        final T mu = formerInitial == null ? state.getMu() : formerInitial.getMu();
         final FieldSpacecraftState<T> fixedState = fixState(state.getOrbit(),
                                                             state.getAttitude(),
                                                             state.getMass(),
                                                             mu,
                                                             state.getAdditionalStates());
 
-        initialState = fixedState;
-        states       = new FieldTimeSpanMap<>(initialState, state.getDate().getField());
+        states = new FieldTimeSpanMap<>(fixedState, state.getDate().getField());
         super.resetInitialState(fixedState);
 
     }
@@ -180,7 +179,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // propagate orbit
         FieldOrbit<T> orbit = states.get(date).getOrbit();
         do {
@@ -194,6 +193,13 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     /** {@inheritDoc}*/
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return states.get(date).getMass();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected List<ParameterDriver> getParametersDrivers() {
+        // Keplerian propagation model does not have parameter drivers.
+        return Collections.emptyList();
     }
 
 }

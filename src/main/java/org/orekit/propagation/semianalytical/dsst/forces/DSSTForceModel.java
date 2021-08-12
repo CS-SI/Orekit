@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -29,6 +29,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
@@ -40,7 +41,7 @@ import org.orekit.utils.ParameterDriver;
  *  </p>
  *  <p>
  *  The propagator will call at the very beginning of a propagation the {@link
- *  #initialize(AuxiliaryElements, PropagationType, double[])} method allowing
+ *  #initializeShortPeriodTerms(AuxiliaryElements, PropagationType, double[])} method allowing
  *  preliminary computation such as truncation if needed.
  *  </p>
  *  <p>
@@ -59,6 +60,17 @@ import org.orekit.utils.ParameterDriver;
  */
 public interface DSSTForceModel {
 
+    /**
+     * Initialize the force model at the start of propagation.
+     * <p> The default implementation of this method does nothing.</p>
+     *
+     * @param initialState spacecraft state at the start of propagation.
+     * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
+     * @since 11.0
+     */
+    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    }
+
     /** Performs initialization prior to propagation for the current force model.
      *  <p>
      *  This method aims at being called at the very beginning of a propagation.
@@ -69,8 +81,8 @@ public interface DSSTForceModel {
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      */
-    List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
-                                      PropagationType type, double[] parameters);
+    List<ShortPeriodTerms> initializeShortPeriodTerms(AuxiliaryElements auxiliaryElements,
+                                                      PropagationType type, double[] parameters);
 
     /** Performs initialization prior to propagation for the current force model.
      *  <p>
@@ -83,18 +95,18 @@ public interface DSSTForceModel {
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      */
-    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                              PropagationType type, T[] parameters);
+    <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                              PropagationType type, T[] parameters);
 
     /** Get force model parameters.
      * @return force model parameters
      * @since 9.0
      */
     default double[] getParameters() {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.length];
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].getValue();
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue();
         }
         return parameters;
     }
@@ -105,11 +117,11 @@ public interface DSSTForceModel {
      * @return force model parameters
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
         }
         return parameters;
     }
@@ -132,7 +144,7 @@ public interface DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return the mean element rates dai/dt
      */
-    <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
+    <T extends CalculusFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
                                                            FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
 
 
@@ -148,7 +160,7 @@ public interface DSSTForceModel {
      * @return array of events detectors or null if the model is not
      * related to any discrete events
      */
-    <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field);
+    <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field);
 
     /** Register an attitude provider.
      * <p>
@@ -162,7 +174,7 @@ public interface DSSTForceModel {
      * <p>
      * The {@link ShortPeriodTerms short period terms} that will be updated
      * are the ones that were returned during the call to {@link
-     * #initialize(AuxiliaryElements, PropagationType, double[])}.
+     * #initializeShortPeriodTerms(AuxiliaryElements, PropagationType, double[])}.
      * </p>
      * @param parameters values of the force model parameters
      * @param meanStates mean states information: date, kinematics, attitude
@@ -173,18 +185,18 @@ public interface DSSTForceModel {
      * <p>
      * The {@link ShortPeriodTerms short period terms} that will be updated
      * are the ones that were returned during the call to {@link
-     * #initialize(AuxiliaryElements, PropagationType, double[])}.
+     * #initializeShortPeriodTerms(AuxiliaryElements, PropagationType, double[])}.
      * </p>
      * @param <T> type of the elements
      * @param parameters values of the force model parameters
      * @param meanStates mean states information: date, kinematics, attitude
      */
     @SuppressWarnings("unchecked")
-    <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters, FieldSpacecraftState<T>... meanStates);
+    <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(T[] parameters, FieldSpacecraftState<T>... meanStates);
 
     /** Get the drivers for force model parameters.
      * @return drivers for force model parameters
      */
-    ParameterDriver[] getParametersDrivers();
+    List<ParameterDriver> getParametersDrivers();
 
 }

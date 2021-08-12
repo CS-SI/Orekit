@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface is intended for ephemerides valid only during a time range.
@@ -26,11 +26,12 @@ import org.orekit.time.FieldAbsoluteDate;
  * based on external data files and by continuous models built after numerical
  * integration has been completed and dense output data as been
  * gathered.</p>
+ * @param <T> the type of the field elements
  *
  * @author Luc Maisonobe
  *
  */
-public interface FieldBoundedPropagator<T extends RealFieldElement<T>> extends FieldPropagator<T> {
+public interface FieldBoundedPropagator<T extends CalculusFieldElement<T>> extends FieldPropagator<T> {
 
     /** Get the first date of the range.
      * @return the first date of the range

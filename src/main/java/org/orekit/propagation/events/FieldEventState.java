@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
@@ -48,7 +48,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @param <D> class type for the generic version
  */
-public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFieldElement<T>> {
+public class FieldEventState<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> {
 
     /** Event detector. */
     private D detector;
@@ -257,7 +257,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         final T zero = ga.getField().getZero();
 
         // check there appears to be a root in [ta, tb]
-        check(ga.getReal() == 0.0 || gb.getReal() == 0.0 || (ga.getReal() > 0.0 && gb.getReal() < 0.0) || (ga.getReal() < 0.0 && gb.getReal() > 0.0));
+        check(ga.getReal() == 0.0 || gb.getReal() == 0.0 || ga.getReal() > 0.0 && gb.getReal() < 0.0 || ga.getReal() < 0.0 && gb.getReal() > 0.0);
         final T convergence = detector.getThreshold();
         final int maxIterationCount = detector.getMaxIterationCount();
         final BracketedUnivariateSolver<UnivariateFunction> solver =
@@ -343,8 +343,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
             // check loop is making some progress
-            check((forward && afterRootT.compareTo(beforeRootT) > 0) ||
-                  (!forward && afterRootT.compareTo(beforeRootT) < 0));
+            check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
+                  !forward && afterRootT.compareTo(beforeRootT) < 0);
             // setup next iteration
             loopT = afterRootT;
             loopG = afterRootG;
@@ -480,7 +480,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         g0 = afterG;
         g0Positive = increasing;
         // check g0Positive set correctly
-        check(g0.getReal() == 0.0 || g0Positive == (g0.getReal() > 0));
+        check(g0.getReal() == 0.0 || g0Positive == g0.getReal() > 0);
         return new EventOccurrence<T>(action, newState, stopTime);
     }
 
@@ -554,7 +554,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * Class to hold the data related to an event occurrence that is needed to decide how
      * to modify integration.
      */
-    public static class EventOccurrence<T extends RealFieldElement<T>> {
+    public static class EventOccurrence<T extends CalculusFieldElement<T>> {
 
         /** User requested action. */
         private final Action action;

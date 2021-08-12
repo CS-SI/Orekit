@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,14 +23,17 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
+import org.xml.sax.SAXException;
 
 
 public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest {
@@ -56,12 +59,40 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
         } catch (OrekitException e) {
             // Malformed URL exception indicates external resource was disabled
             // file not found exception indicates parser tried to load the resource
-            Assert.assertThat(e.getCause(),
+            MatcherAssert.assertThat(e.getCause(),
                     CoreMatchers.instanceOf(MalformedURLException.class));
         }
 
         // problem if any EOP data is loaded
         Assert.assertEquals(0, history.size());
+    }
+
+    @Test
+    public void testInconsistentDate() {
+        setRoot("rapid-data-xml");
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        try {
+            new RapidDataAndPredictionXMLLoader("^inconsistent-date\\.xml$", manager, () -> utc).fillHistory(converter, history);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testMalformedXml() {
+        setRoot("rapid-data-xml");
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        try {
+            new RapidDataAndPredictionXMLLoader("^malformed\\.xml$", manager, () -> utc).fillHistory(converter, history);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertTrue(oe.getCause() instanceof SAXException);
+        }
     }
 
     @Test

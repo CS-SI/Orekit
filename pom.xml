@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>10.3.1</version>
+  <version>11.0-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -24,8 +24,8 @@
     <orekit.jacoco-maven-plugin.version>0.8.6</orekit.jacoco-maven-plugin.version>
     <orekit.maven-bundle-plugin.version>5.1.1</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>3.1.1</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>8.38</orekit.checkstyle.version>
+    <orekit.maven-checkstyle-plugin.version>3.1.2</orekit.maven-checkstyle-plugin.version>
+    <orekit.checkstyle.version>8.41</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.8.1</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>3.2.0</orekit.maven-javadoc-plugin.version>
@@ -50,8 +50,8 @@
     <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>1.8</orekit.hipparchus.version>
-    <orekit.junit.version>4.12</orekit.junit.version>
+    <orekit.hipparchus.version>2.0</orekit.hipparchus.version>
+    <orekit.junit.version>4.13.1</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
@@ -204,6 +204,9 @@
       <name>Lucian B&#259;rbulescu</name>
     </contributor>
     <contributor>
+      <name>Julie Bayard</name>
+    </contributor>
+    <contributor>
       <name>Petre Bazavan</name>
     </contributor>
     <contributor>
@@ -235,6 +238,9 @@
     </contributor>
     <contributor>
       <name>Mikael Fillastre</name>
+    </contributor>
+    <contributor>
+      <name>Andrew Goetz</name>
     </contributor>
     <contributor>
       <name>Andrea Fiorentino</name>
@@ -274,6 +280,12 @@
     </contributor>
     <contributor>
       <name>Mathieu Rom&#233;ro</name>
+    </contributor>
+    <contributor>
+      <name>Chiara Rusconi</name>
+    </contributor>
+    <contributor>
+      <name>Mark Rutten</name>
     </contributor>
     <contributor>
       <name>Beatriz Salazar Garc&#237;a</name>

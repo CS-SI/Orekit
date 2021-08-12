@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -117,7 +117,7 @@ class TEMEProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final T eqe = getEquationOfEquinoxes(date);
         return new FieldTransform<>(date, new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
                                                               eqe,
@@ -158,7 +158,7 @@ class TEMEProvider implements EOPBasedTransformProvider {
      * @param <T> type of the field elements
      * @return equation of the equinoxes
      */
-    private <T extends RealFieldElement<T>> T getEquationOfEquinoxes(final FieldAbsoluteDate<T> date) {
+    private <T extends CalculusFieldElement<T>> T getEquationOfEquinoxes(final FieldAbsoluteDate<T> date) {
 
         // compute nutation angles
         final T[] angles = nutationFunction.value(date);

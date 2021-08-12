@@ -139,8 +139,8 @@
     <Class name="~.*\.TurnAroundRangeTroposphericDelayModifier$"/>
     <Method name="modify" />
     <Or>
-      <Local name="masterDjac" />
-      <Local name="slaveDjac" />
+      <Local name="primaryDjac" />
+      <Local name="secondaryDjac" />
     </Or>
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
@@ -190,6 +190,10 @@
   </Match>
   <Match>
     <Class name="~.*\.SEMParser$"/>
+    <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.Units$"/>
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
   

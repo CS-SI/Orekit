@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
@@ -28,26 +28,26 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldAbstractGaussianContributionContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** 2 / (n² * a) . */
     protected T ton2a;
 
-    /** 1 / A .*/
+    /** 1 / A . */
     protected T ooA;
 
-    /** 1 / (A * B) .*/
+    /** 1 / (A * B) . */
     protected T ooAB;
 
-    /** C / (2 * A * B) .*/
+    /** C / (2 * A * B) . */
     protected T co2AB;
 
-    /** 1 / (1 + B) .*/
+    /** 1 / (1 + B) . */
     protected T ooBpo;
 
-    /** 1 / μ .*/
+    /** 1 / μ . */
     protected T ooMu;
 
     /** A = sqrt(μ * a). */
@@ -65,7 +65,7 @@ class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> ex
      * Simple constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param parameters parameters values of the force model parameters
+     * @param parameters        parameters values of the force model parameters
      */
     FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
 
@@ -90,7 +90,7 @@ class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> ex
         // 2 / (n² * a)
         ton2a = (n.multiply(n).multiply(auxiliaryElements.getSma())).divide(2.).reciprocal();
         // 1 / mu
-        ooMu  = mu.reciprocal();
+        ooMu = mu.reciprocal();
 
     }
 

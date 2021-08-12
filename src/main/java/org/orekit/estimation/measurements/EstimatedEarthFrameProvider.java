@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,7 @@ package org.orekit.estimation.measurements;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -246,7 +244,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         final T zero = date.getField().getZero();
 
@@ -259,36 +257,6 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final T ypNeg    = linearModel(date, polarOffsetYDriver, polarDriftYDriver).negate();
         final T xpNegDot = zero.subtract(polarDriftXDriver.getValue());
         final T ypNegDot = zero.subtract(polarDriftYDriver.getValue());
-
-        return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
-
-    }
-
-    /** Get the transform with derivatives.
-     * @param date date of the transform
-     * @param factory factory for the derivatives
-     * @param indices indices of the estimated parameters in derivatives computations
-     * @return computed transform with derivatives
-     * @deprecated as of 10.2, replaced by {@link #getTransform(FieldAbsoluteDate, int, Map)}
-     */
-    @Deprecated
-    public FieldTransform<DerivativeStructure> getTransform(final FieldAbsoluteDate<DerivativeStructure> date,
-                                                            final DSFactory factory,
-                                                            final Map<String, Integer> indices) {
-
-        // prime meridian shift parameters
-        final DerivativeStructure theta    = linearModel(factory, date,
-                                                         primeMeridianOffsetDriver, primeMeridianDriftDriver,
-                                                         indices);
-        final DerivativeStructure thetaDot = primeMeridianDriftDriver.getValue(factory, indices);
-
-        // pole shift parameters
-        final DerivativeStructure xpNeg    = linearModel(factory, date,
-                                                         polarOffsetXDriver, polarDriftXDriver, indices).negate();
-        final DerivativeStructure ypNeg    = linearModel(factory, date,
-                                                         polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final DerivativeStructure xpNegDot = polarDriftXDriver.getValue(factory, indices).negate();
-        final DerivativeStructure ypNegDot = polarDriftYDriver.getValue(factory, indices).negate();
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
@@ -334,7 +302,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @param <T> type of the field elements
      * @return computed transform with derivatives
      */
-    private <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
                                                                            final T theta, final T thetaDot,
                                                                            final T xpNeg, final T xpNegDot,
                                                                            final T ypNeg, final T ypNegDot) {
@@ -389,7 +357,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @return current value of the linear model
      * @param <T> type of the filed elements
      */
-    private <T extends RealFieldElement<T>> T linearModel(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T linearModel(final FieldAbsoluteDate<T> date,
                                                           final ParameterDriver offsetDriver,
                                                           final ParameterDriver driftDriver) {
         if (offsetDriver.getReferenceDate() == null) {
@@ -399,29 +367,6 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final T dt          = date.durationFrom(offsetDriver.getReferenceDate());
         final double offset = offsetDriver.getValue();
         final double drift  = driftDriver.getValue();
-        return dt.multiply(drift).add(offset);
-    }
-
-    /** Evaluate a parametric linear model.
-     * @param factory factory for the derivatives
-     * @param date current date
-     * @param offsetDriver driver for the offset parameter
-     * @param driftDriver driver for the drift parameter
-     * @param indices indices of the estimated parameters in derivatives computations
-     * @return current value of the linear model
-     * @deprecated as of 10.2, replaced by {@link #linearModel(int, FieldAbsoluteDate, ParameterDriver, ParameterDriver, Map)}
-     */
-    @Deprecated
-    private DerivativeStructure linearModel(final DSFactory factory, final FieldAbsoluteDate<DerivativeStructure> date,
-                                            final ParameterDriver offsetDriver, final ParameterDriver driftDriver,
-                                            final Map<String, Integer> indices) {
-        if (offsetDriver.getReferenceDate() == null) {
-            throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
-                                      offsetDriver.getName());
-        }
-        final DerivativeStructure dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final DerivativeStructure offset = offsetDriver.getValue(factory, indices);
-        final DerivativeStructure drift  = driftDriver.getValue(factory, indices);
         return dt.multiply(drift).add(offset);
     }
 
@@ -478,7 +423,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
             final T dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver).divide(EARTH_ANGULAR_VELOCITY);
             return baseUT1.offsetFromTAI(date).add(dut1);
         }

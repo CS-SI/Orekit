@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.MathUtils.SumAndResidual;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -309,21 +311,11 @@ public class AbsoluteDate
         final double seconds  = time.getSecond();
         final double tsOffset = timeScale.offsetToTAI(date, time);
 
-        // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
-        // at the end, the EXACT result of addition seconds + tsOffset
-        // is sum + residual, where sum is the closest representable number to the exact
-        // result and residual is the missing part that does not fit in the first number
-        final double sum      = seconds + tsOffset;
-        final double sPrime   = sum - tsOffset;
-        final double tPrime   = sum - sPrime;
-        final double deltaS   = seconds  - sPrime;
-        final double deltaT   = tsOffset - tPrime;
-        final double residual = deltaS   + deltaT;
-        final long   dl       = (long) FastMath.floor(sum);
+        // Use 2Sum for high precision.
+        final SumAndResidual sumAndResidual = MathUtils.twoSum(seconds, tsOffset);
+        final long dl = (long) FastMath.floor(sumAndResidual.getSum());
 
-        offset = (sum - dl) + residual;
+        offset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
         epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
                         time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
 
@@ -430,26 +422,15 @@ public class AbsoluteDate
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
-
-        final double sum = since.offset + elapsedDuration;
-        if (Double.isInfinite(sum)) {
-            offset = sum;
-            epoch  = (sum < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+        // Use 2Sum for high precision.
+        final SumAndResidual sumAndResidual = MathUtils.twoSum(since.offset, elapsedDuration);
+        if (Double.isInfinite(sumAndResidual.getSum())) {
+            offset = sumAndResidual.getSum();
+            epoch  = (sumAndResidual.getSum() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
-            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-            // the following statements must NOT be simplified, they rely on floating point
-            // arithmetic properties (rounding and representable numbers)
-            // at the end, the EXACT result of addition since.offset + elapsedDuration
-            // is sum + residual, where sum is the closest representable number to the exact
-            // result and residual is the missing part that does not fit in the first number
-            final double oPrime   = sum - elapsedDuration;
-            final double dPrime   = sum - oPrime;
-            final double deltaO   = since.offset - oPrime;
-            final double deltaD   = elapsedDuration - dPrime;
-            final double residual = deltaO + deltaD;
-            final long   dl       = (long) FastMath.floor(sum);
-            offset = (sum - dl) + residual;
-            epoch  = since.epoch  + dl;
+            final long dl = (long) FastMath.floor(sumAndResidual.getSum());
+            offset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
+            epoch  = since.epoch + dl;
         }
     }
 
@@ -1057,24 +1038,14 @@ public class AbsoluteDate
             }
         }
 
-        // compute offset from 2000-01-01T00:00:00 in specified time scale exactly,
-        // using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
-        // at the end, the EXACT result of addition offset + timeScale.offsetFromTAI(this)
-        // is sum + residual, where sum is the closest representable number to the exact
-        // result and residual is the missing part that does not fit in the first number
+        // Compute offset from 2000-01-01T00:00:00 in specified time scale.
+        // Use 2Sum for high precision.
         final double taiOffset = timeScale.offsetFromTAI(this);
-        final double sum       = offset + taiOffset;
-        final double oPrime    = sum - taiOffset;
-        final double dPrime    = sum - oPrime;
-        final double deltaO    = offset - oPrime;
-        final double deltaD    = taiOffset - dPrime;
-        final double residual  = deltaO + deltaD;
+        final SumAndResidual sumAndResidual = MathUtils.twoSum(offset, taiOffset);
 
         // split date and time
-        final long   carry = (long) FastMath.floor(sum);
-        double offset2000B = (sum - carry) + residual;
+        final long   carry = (long) FastMath.floor(sumAndResidual.getSum());
+        double offset2000B = (sumAndResidual.getSum() - carry) + sumAndResidual.getResidual();
         long   offset2000A = epoch + carry + 43200l;
         if (offset2000B < 0) {
             offset2000A -= 1;
@@ -1221,7 +1192,7 @@ public class AbsoluteDate
             return true;
         }
 
-        if ((date != null) && (date instanceof AbsoluteDate)) {
+        if (date instanceof AbsoluteDate) {
             return durationFrom((AbsoluteDate) date) == 0;
         }
 

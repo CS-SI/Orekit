@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,12 +29,12 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataFilter;
 import org.orekit.data.GzipFilter;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexLoader;
+import org.orekit.gnss.RinexObservationLoader;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -51,14 +51,14 @@ public class GeometryFreeCycleSlipDetectorTest {
         final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/shld0440.16d.Z").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "shld0440.16d.Z";
-        NamedData nd = new NamedData(fileName,
+        DataSource nd = new DataSource(fileName,
                                      () -> new FileInputStream(new File(input.getParentFile(), fileName)));
         for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                      new UnixCompressFilter(),
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
+        final RinexObservationLoader loader = new RinexObservationLoader(nd);
         //RinexLoader  loader = loadCompressed("cycleSlip/shld0440.16d.Z");
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         GeometryFreeCycleSlipDetector slipDetectors =
@@ -106,14 +106,14 @@ public class GeometryFreeCycleSlipDetectorTest {
         final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/WithCycleSlip.16o").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "WithCycleSlip.16o";
-        NamedData nd = new NamedData(fileName,
+        DataSource nd = new DataSource(fileName,
                                      () -> new FileInputStream(new File(input.getParentFile(), fileName)));
         for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                      new UnixCompressFilter(),
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
+        final RinexObservationLoader loader = new RinexObservationLoader(nd);
         final List<ObservationDataSet>  obserDataSets = loader.getObservationDataSets();
         //With dt = 31 s, cycle slip should not exist, a very huge threshold is used to not detect cycle-slip
         GeometryFreeCycleSlipDetector slipDetectors =
@@ -136,14 +136,14 @@ public class GeometryFreeCycleSlipDetectorTest {
         final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/WithCycleSlip.16o").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "WithCycleSlip.16o";
-        NamedData nd = new NamedData(fileName,
+        DataSource nd = new DataSource(fileName,
                                      () -> new FileInputStream(new File(input.getParentFile(), fileName)));
         for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                      new UnixCompressFilter(),
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
+        final RinexObservationLoader loader = new RinexObservationLoader(nd);
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         //With dt = 31 s, cycle slip for time gap cannot be detected (see previous test).
         //We use T0 = 60s for threshold time constant as advice from Navipedia page.

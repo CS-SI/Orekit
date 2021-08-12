@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,11 @@
  */
 package org.orekit.forces.radiation;
 
-import org.hipparchus.RealFieldElement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -66,11 +70,8 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
      */
     private final double SCALE = FastMath.scalb(1.0, -3);
 
-    /** Driver for absorption coefficient. */
-    private final ParameterDriver absorptionParameterDriver;
-
-    /** Driver for specular reflection coefficient. */
-    private final ParameterDriver reflectionParameterDriver;
+    /** Drivers for absorption and specular reflection coefficients. */
+    private final List<ParameterDriver> parameterDrivers;
 
     /** Cross section (m²). */
     private final double crossSection;
@@ -81,19 +82,16 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
      * @param tau specular reflection coefficient τ between 0.0 an 1.0
      */
     public IsotropicRadiationCNES95Convention(final double crossSection, final double alpha, final double tau) {
-        absorptionParameterDriver = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                        alpha, SCALE, 0.0, 1.0);
-        reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                        tau, SCALE, 0.0, 1.0);
+        this.parameterDrivers = new ArrayList<>(2);
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT, alpha, SCALE, 0.0, 1.0));
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT, tau, SCALE, 0.0, 1.0));
         this.crossSection = crossSection;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getRadiationParametersDrivers() {
-        return new ParameterDriver[] {
-            absorptionParameterDriver, reflectionParameterDriver
-        };
+    public List<ParameterDriver> getRadiationParametersDrivers() {
+        return Collections.unmodifiableList(parameterDrivers);
     }
 
     /** {@inheritDoc} */
@@ -109,7 +107,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
         radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,

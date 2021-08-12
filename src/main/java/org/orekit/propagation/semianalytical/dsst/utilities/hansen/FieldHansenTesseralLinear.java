@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,8 @@ package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import java.lang.reflect.Array;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
@@ -40,7 +38,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
  * @author Lucian Barbulescu
  * @author Bryan Cazabonne
  */
-public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
+public class FieldHansenTesseralLinear <T extends CalculusFieldElement<T>> {
 
     /** The number of coefficients that will be computed with a set of roots. */
     private static final int SLICE = 10;
@@ -450,7 +448,7 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
      * in Danielson 2.7.3-10 and 3.3-5
      * </p>
      */
-    private static class FieldHansenCoefficientsBySeries <T extends RealFieldElement<T>> {
+    private static class FieldHansenCoefficientsBySeries <T extends CalculusFieldElement<T>> {
 
         /** -n-1 coefficient. */
         private final int mnm1;
@@ -466,9 +464,6 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
 
         /** Polynomial representing the serie. */
         private PolynomialFunction polynomial;
-
-        /** Factory for the DerivativeStructure instances. */
-        private final FDSFactory<T> factory;
 
         /**
          * Class constructor.
@@ -486,33 +481,6 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
             this.j = j;
             this.maxNewcomb = maxHansen;
             this.polynomial = generatePolynomial();
-            this.factory = new FDSFactory<>(field, 1, 1);
-        }
-
-        /** Computes the value of Hansen kernel and its derivative at e².
-         * <p>
-         * The formulae applied are described in Danielson 2.7.3-10 and
-         * 3.3-5
-         * </p>
-         * @param e2 e²
-         * @param chi &Chi;
-         * @param chi2 &Chi;²
-         * @return the value of the Hansen coefficient and its derivative for e²
-         * @deprecated as of 10.2, replaced by {@link #getValueGradient(RealFieldElement, RealFieldElement, RealFieldElement)}
-         */
-        @SuppressWarnings("unused")
-        @Deprecated
-        public FieldDerivativeStructure<T> getValue(final T e2, final T chi, final T chi2) {
-
-            final T zero = e2.getField().getZero();
-            //Estimation of the serie expansion at e2
-            final FieldDerivativeStructure<T> serie = polynomial.value(factory.variable(0, e2));
-
-            final T value      =  FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getValue()).divide(chi);
-            final T coef       = zero.subtract(mnm1 + 1.5);
-            final T derivative = coef.multiply(chi2).multiply(value).
-                            add(FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getPartialDerivative(1)).divide(chi));
-            return factory.build(value, derivative);
         }
 
         /** Computes the value of Hansen kernel and its derivative at e².

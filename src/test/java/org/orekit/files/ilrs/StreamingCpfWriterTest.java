@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,8 @@
  */
 package org.orekit.files.ilrs;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.StringReader;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +25,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
+import org.orekit.data.DataSource;
+import org.orekit.files.ilrs.CPF.CPFEphemeris;
 import org.orekit.files.ilrs.StreamingCpfWriter.Segment;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
@@ -57,10 +57,9 @@ public class StreamingCpfWriterTest {
                 Arrays.asList("/ilrs/jason3_cpf_180613_16401.cne",
                               "/ilrs/lageos1_cpf_180613_16401.hts",
                               "/ilrs/galileo212_cpf_180613_6641.esa");
-        for (String ex : files) {
-            InputStream inEntry = getClass().getResourceAsStream(ex);
-            CPFParser parser = new CPFParser();
-            CPFFile cpfFile = parser.parse(inEntry);
+        for (final String ex : files) {
+            DataSource source0 = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+            CPF cpfFile = new CPFParser().parse(source0);
 
             CPFEphemeris satellite =
                             cpfFile.getSatellites().values().iterator().next();
@@ -75,13 +74,13 @@ public class StreamingCpfWriterTest {
             writer.writeHeader();
             Segment segment = writer.newSegment(frame);
             BoundedPropagator propagator = satellite.getPropagator();
-            propagator.setMasterMode(step, segment);
+            propagator.setStepHandler(step, segment);
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
 
-            BufferedReader reader =
-                            new BufferedReader(new StringReader(buffer.toString()));
-            CPFFile generatedCpfFile = parser.parse(reader, "buffer");
-            CPFWriterTest.compareCpfFiles(cpfFile, generatedCpfFile);
+            final byte[]    bytes1            = buffer.toString().getBytes(StandardCharsets.UTF_8);
+            final DataSource source1           = new DataSource("buffer", () -> new ByteArrayInputStream(bytes1));
+            final CPF   generatedCpfFile1 = new CPFParser().parse(source1);
+            CPFWriterTest.compareCpfFiles(cpfFile, generatedCpfFile1);
 
             // check calling the methods directly
             buffer = new StringBuilder();
@@ -94,9 +93,10 @@ public class StreamingCpfWriterTest {
             writer.writeEndOfFile();
 
             // verify
-            reader = new BufferedReader(new StringReader(buffer.toString()));
-            generatedCpfFile = parser.parse(reader, "buffer");
-            CPFWriterTest.compareCpfFiles(cpfFile, generatedCpfFile);
+            final byte[]    bytes2            = buffer.toString().getBytes(StandardCharsets.UTF_8);
+            final DataSource source2           = new DataSource("buffer", () -> new ByteArrayInputStream(bytes2));
+            final CPF   generatedCpfFile2 = new CPFParser().parse(source2);
+            CPFWriterTest.compareCpfFiles(cpfFile, generatedCpfFile2);
 
         }
 

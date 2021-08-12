@@ -16,7 +16,7 @@
  */
 package org.orekit.bodies;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.FastMath;
@@ -32,7 +32,7 @@ import org.junit.Test;
 public class FieldGeodeticPointTest {
 
     /**
-     * check {@link FieldGeodeticPoint#GeodeticPoint(RealFieldElement, RealFieldElement, RealFieldElement)} angle
+     * check {@link FieldGeodeticPoint#GeodeticPoint(CalculusFieldElement, CalculusFieldElement, CalculusFieldElement)} angle
      * normalization.
      */
     @Test
@@ -57,7 +57,7 @@ public class FieldGeodeticPointTest {
     }
 
     /**
-     * check {@link FieldGeodeticPoint#GeodeticPoint(RealFieldElement, RealFieldElement, RealFieldElement)} for
+     * check {@link FieldGeodeticPoint#GeodeticPoint(CalculusFieldElement, CalculusFieldElement, CalculusFieldElement)} for
      * several different angles.
      */
     @Test

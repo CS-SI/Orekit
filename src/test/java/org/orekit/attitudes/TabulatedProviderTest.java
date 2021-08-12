@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
@@ -50,8 +51,12 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TabulatedProviderTest {
 
@@ -66,6 +71,39 @@ public class TabulatedProviderTest {
 
     // Earth shape
     OneAxisEllipsoid earthShape;
+
+    @Test
+    public void testDifferentFrames() {
+        double             samplingRate      = 10.0;
+        int                n                 = 8;
+        AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
+        List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
+        TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
+                                                                     AngularDerivativesFilter.USE_R);
+        Attitude attE = provider.getAttitude((date, frame) -> new TimeStampedPVCoordinates(date, PVCoordinates.ZERO),
+                                             date,
+                                             circOrbit.getFrame());
+        Assert.assertEquals(circOrbit.getFrame().getName(), attE.getReferenceFrame().getName());
+        Frame gcrf = FramesFactory.getGCRF();
+        Attitude attG = provider.getAttitude((date, frame) -> new TimeStampedPVCoordinates(date, PVCoordinates.ZERO),
+                                             date,
+                                             gcrf);
+        Assert.assertEquals(gcrf.getName(), attG.getReferenceFrame().getName());
+
+        Assert.assertEquals(1.12e-7,
+                            Rotation.distance(attE.getRotation(), attG.getRotation()), 1.0e-9);
+        Assert.assertEquals(circOrbit.getFrame().getTransformTo(gcrf, date).getRotation().getAngle(),
+                            Rotation.distance(attE.getRotation(), attG.getRotation()),
+                            1.0e-14);
+
+        FieldAttitude<Decimal64> attG64 =
+                        provider.getAttitude((date, frame) -> new TimeStampedFieldPVCoordinates<>(date,
+                                                                        FieldPVCoordinates.getZero(Decimal64Field.getInstance())),
+                                             new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date),
+                                             gcrf);
+        Assert.assertEquals(gcrf.getName(), attG64.getReferenceFrame().getName());
+
+    }
 
     @Test
     public void testWithoutRate() {
@@ -121,13 +159,7 @@ public class TabulatedProviderTest {
 
         // create sample
         final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
-        referencePropagator.setMasterMode(samplingRate, new OrekitFixedStepHandler() {
-
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
-                sample.add(currentState.getAttitude().getOrientation());
-            }
-
-        });
+        referencePropagator.setStepHandler(samplingRate, currentState -> sample.add(currentState.getAttitude().getOrientation()));
         referencePropagator.propagate(circOrbit.getDate().shiftedBy(2 * circOrbit.getKeplerianPeriod()));
 
         return sample;
@@ -144,13 +176,13 @@ public class TabulatedProviderTest {
 
         // compute interpolation error on the internal steps .
         final double[] error = new double[1];
-        interpolatingPropagator.setMasterMode(checkingRate, new OrekitFixedStepHandler() {
+        interpolatingPropagator.setStepHandler(checkingRate, new OrekitFixedStepHandler() {
 
             public void init(SpacecraftState s0, AbsoluteDate t, double step) {
                 error[0] = 0.0;
             }
 
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
+            public void handleStep(SpacecraftState currentState) {
                 Attitude interpolated = currentState.getAttitude();
                 Attitude reference    = referenceProvider.getAttitude(currentState.getOrbit(),
                                                                       currentState.getDate(),
@@ -167,7 +199,7 @@ public class TabulatedProviderTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
+    private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame) {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);

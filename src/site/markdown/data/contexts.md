@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS GROUP
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -88,7 +88,7 @@ and by `LazyLoadedTimeScales` (for `UT1`). The `LazyLoadedFrames` also depends o
 interface (for `ICRF`).
 
 There are some static methods in the various factories (`TimeScales.of(...)`, `Frames.of(...)`
-that create factories with preloaded constant data. These method are useful for
+that create factories with preloaded constant data. These methods are useful for
 users who need to implement their own data context.
 
 ## Using a context

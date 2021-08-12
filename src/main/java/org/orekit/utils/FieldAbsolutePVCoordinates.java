@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,9 @@ package org.orekit.utils;
 
 import java.util.stream.Stream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
@@ -37,7 +37,7 @@ import org.orekit.time.FieldTimeStamped;
  * @see AbsolutePVCoordinates
  * @author Vincent Mouraux
  */
-public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
+public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
     implements FieldTimeStamped<T>, FieldTimeInterpolable<FieldAbsolutePVCoordinates<T>, T>,
                FieldPVCoordinatesProvider<T> {
 
@@ -196,9 +196,10 @@ public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends T
      * @param frame the frame in which the parameters are defined
      * @param date date of the built coordinates
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
-            final FieldVector3D<FieldDerivativeStructure<T>> p) {
+    public <U extends FieldDerivative<T, U>> FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
+                                                                        final FieldVector3D<U> p) {
         super(date, p);
         this.frame = frame;
     }
@@ -209,7 +210,7 @@ public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends T
      * @param <T> the type of the field elements
      * @throws OrekitIllegalArgumentException if frames are different
      */
-    private static <T extends RealFieldElement<T>> void ensureIdenticalFrames(final FieldAbsolutePVCoordinates<T> absPv1, final FieldAbsolutePVCoordinates<T> absPv2)
+    private static <T extends CalculusFieldElement<T>> void ensureIdenticalFrames(final FieldAbsolutePVCoordinates<T> absPv1, final FieldAbsolutePVCoordinates<T> absPv2)
         throws OrekitIllegalArgumentException {
         if (!absPv1.frame.equals(absPv2.frame)) {
             throw new OrekitIllegalArgumentException(OrekitMessages.INCOMPATIBLE_FRAMES,
@@ -331,7 +332,7 @@ public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends T
      * @exception OrekitIllegalArgumentException if some elements in the sample do not
      * have the same defining frame as other
      */
-    public static <T extends RealFieldElement<T>> FieldAbsolutePVCoordinates<T> interpolate(final Frame frame, final FieldAbsoluteDate<T> date,
+    public static <T extends CalculusFieldElement<T>> FieldAbsolutePVCoordinates<T> interpolate(final Frame frame, final FieldAbsoluteDate<T> date,
                                                     final CartesianDerivativesFilter filter,
                                                     final Stream<FieldAbsolutePVCoordinates<T>> sample) {
 

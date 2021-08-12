@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
@@ -66,7 +66,7 @@ public class TwoBodiesBaryFrameTest {
         doTestFieldTransformationOrientationForEarthMoon(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldTransformationOrientationForEarthMoon(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldTransformationOrientationForEarthMoon(final Field<T> field) {
 
         // Load Bodies
         final CelestialBody barycenter = CelestialBodyFactory.getEarthMoonBarycenter();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,12 +29,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -92,7 +90,7 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.setMasterMode(10.0, (currentState, isLast) -> {
+        propagator.setStepHandler(10.0, currentState -> {
             // we exceed the events history in the past,
             // and in this example get stuck with Transformer.MAX
             // transformer, hence the g function is always positive
@@ -126,18 +124,13 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
-
-            @Override
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-                {
+        propagator.setStepHandler(10.0, currentState -> {
                 // we exceed the events history in the past,
                 // and in this example get stuck with Transformer.MIN
                 // transformer, hence the g function is always negative
                 // in the test range
                 Assert.assertTrue(filter.g(currentState) < 0);
-            }
-        });
+            });
         propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY + 3600),
                              iniDate.shiftedBy(6 * Constants.JULIAN_DAY + 3600));
     }
@@ -398,6 +391,7 @@ public class EventSlopeFilterTest {
             decreasingCounter = 0;
         }
 
+        @Override
         public Action eventOccurred(SpacecraftState s, EclipseDetector ed, boolean increasing) {
             if (increasing) {
                 increasingCounter++;
@@ -427,7 +421,7 @@ public class EventSlopeFilterTest {
             iniDate = new AbsoluteDate(1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
             final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                      FramesFactory.getGCRF(), iniDate, mu);
-            propagator = new KeplerianPropagator(orbit, AbstractPropagator.DEFAULT_LAW, mu);
+            propagator = new KeplerianPropagator(orbit, Propagator.DEFAULT_LAW, mu);
             earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                          Constants.WGS84_EARTH_FLATTENING,
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));

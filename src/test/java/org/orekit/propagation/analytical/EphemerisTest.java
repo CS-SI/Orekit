@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -77,7 +76,7 @@ public class EphemerisTest {
         int numberOfInterals = 1440;
         double deltaT = finalDate.durationFrom(initDate)/((double)numberOfInterals);
 
-        propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
+        propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
 
         List<SpacecraftState> states = new ArrayList<SpacecraftState>(numberOfInterals + 1);
         for (int j = 0; j<= numberOfInterals; j++) {
@@ -98,9 +97,9 @@ public class EphemerisTest {
             double positionDelta = calculatePositionDelta(ephemState, keplerState);
             double velocityDelta = calculateVelocityDelta(ephemState, keplerState);
             double attitudeDelta = calculateAttitudeDelta(ephemState, keplerState);
-            Assert.assertEquals("VVLH Unmatched Position at: " + currentDate, 0.0, positionDelta, positionTolerance);
-            Assert.assertEquals("VVLH Unmatched Velocity at: " + currentDate, 0.0, velocityDelta, velocityTolerance);
-            Assert.assertEquals("VVLH Unmatched Attitude at: " + currentDate, 0.0, attitudeDelta, attitudeTolerance);
+            Assert.assertEquals("LVLH_CCSDS Unmatched Position at: " + currentDate, 0.0, positionDelta, positionTolerance);
+            Assert.assertEquals("LVLH_CCSDS Unmatched Velocity at: " + currentDate, 0.0, velocityDelta, velocityTolerance);
+            Assert.assertEquals("LVLH_CCSDS Unmatched Attitude at: " + currentDate, 0.0, attitudeDelta, attitudeTolerance);
         }
 
         //Now force an override on the attitude and check it against a Keplerian propagator
@@ -155,15 +154,7 @@ public class EphemerisTest {
         // Propagate and build ephemeris
         final List<SpacecraftState> propagatedStates = new ArrayList<>();
 
-        propagator.setMasterMode(60, new OrekitFixedStepHandler() {
-          @Override
-          public void handleStep(SpacecraftState currentState,
-                                 boolean isLast)
-            throws OrekitException
-          {
-            propagatedStates.add(currentState);
-          }              
-        });
+        propagator.setStepHandler(60, currentState -> propagatedStates.add(currentState));
         propagator.propagate(initialDate.shiftedBy(2*86400.0));
         final Ephemeris ephemeris = new Ephemeris(propagatedStates, 8);
 
@@ -209,7 +200,7 @@ public class EphemerisTest {
     @Test
     public void testNonResettableState() {
         try {
-            propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
+            propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
 
             List<SpacecraftState> states = new ArrayList<SpacecraftState>();
             for (double dt = 0; dt >= -1200; dt -= 60.0) {
@@ -227,7 +218,7 @@ public class EphemerisTest {
     public void testAdditionalStates() {
         final String name1  = "dt0";
         final String name2  = "dt1";
-        propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
+        propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
 
         List<SpacecraftState> states = new ArrayList<SpacecraftState>();
         for (double dt = 0; dt >= -1200; dt -= 60.0) {
@@ -265,7 +256,7 @@ public class EphemerisTest {
     public void testProtectedMethods()
         throws SecurityException, NoSuchMethodException,
                InvocationTargetException, IllegalAccessException {
-        propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
+        propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
 
         List<SpacecraftState> states = new ArrayList<SpacecraftState>();
         for (double dt = 0; dt >= -1200; dt -= 60.0) {
@@ -353,7 +344,7 @@ public class EphemerisTest {
         Assert.assertEquals(additionalValue, stateBefore.getAdditionalState(additionalName)[0], Double.MIN_VALUE);
 
         // Set an attitude provider
-        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
+        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
 
         // State after adding an attitude provider
         SpacecraftState stateAfter = ephemPropagator.propagate(ephemPropagator.getMaxDate().shiftedBy(-60.0));
@@ -389,7 +380,7 @@ public class EphemerisTest {
         Assert.assertEquals(0.0, Vector3D.distance(withoutAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()), 1.0e-10);
 
         // Set an attitude provider
-        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
+        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
 
         // Get initial state with attitude provider
         SpacecraftState withAttitudeProvider = ephemPropagator.getInitialState();

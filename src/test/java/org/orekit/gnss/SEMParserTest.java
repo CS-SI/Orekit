@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.time.GNSSDate;
 
 
@@ -91,12 +92,12 @@ public class SEMParserTest {
         Assert.assertEquals(319488.0, alm.getTime(), 0.);
         Assert.assertEquals(5.15360253906250E+03, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
         Assert.assertEquals(5.10072708129883E-03, alm.getE(), FastMath.ulp(8E-05));
-        Assert.assertEquals(6.84547424316406E-03,  (alm.getI0() / GPSOrbitalElements.GPS_PI) - 0.30, 1.E-17);
+        Assert.assertEquals(6.84547424316406E-03,  (alm.getI0() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
         Assert.assertEquals(0., alm.getIDot(), 0.);
-        Assert.assertEquals(-2.08778738975525E-01, alm.getOmega0() / GPSOrbitalElements.GPS_PI, FastMath.ulp(-2E-01));
-        Assert.assertEquals(-2.48837750405073E-09, alm.getOmegaDot() / GPSOrbitalElements.GPS_PI, FastMath.ulp(-3E-09));
-        Assert.assertEquals(1.46086812019348E-01, alm.getPa() / GPSOrbitalElements.GPS_PI, FastMath.ulp(1E-01));
-        Assert.assertEquals(4.55284833908081E-01, alm.getM0() / GPSOrbitalElements.GPS_PI, FastMath.ulp(4E-01));
+        Assert.assertEquals(-2.08778738975525E-01, alm.getOmega0() / GNSSConstants.GNSS_PI, FastMath.ulp(-2E-01));
+        Assert.assertEquals(-2.48837750405073E-09, alm.getOmegaDot() / GNSSConstants.GNSS_PI, FastMath.ulp(-3E-09));
+        Assert.assertEquals(1.46086812019348E-01, alm.getPa() / GNSSConstants.GNSS_PI, FastMath.ulp(1E-01));
+        Assert.assertEquals(4.55284833908081E-01, alm.getM0() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
         Assert.assertEquals(1.33514404296875E-05, alm.getAf0(), FastMath.ulp(1E-05));
         Assert.assertEquals(0., alm.getAf1(), 0.);
         Assert.assertEquals(0, alm.getHealth());
@@ -134,12 +135,12 @@ public class SEMParserTest {
         Assert.assertEquals(319488.0, alm.getTime(), 0.);
         Assert.assertEquals(5.16559130859375E+03, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
         Assert.assertEquals(7.96318054199219E-05, alm.getE(), FastMath.ulp(8E-05));
-        Assert.assertEquals(5.53321838378906E-03,  (alm.getI0() / GPSOrbitalElements.GPS_PI) - 0.30, 1.E-17);
+        Assert.assertEquals(5.53321838378906E-03,  (alm.getI0() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
         Assert.assertEquals(0., alm.getIDot(), 0.);
-        Assert.assertEquals(4.53996539115906E-01, alm.getOmega0() / GPSOrbitalElements.GPS_PI, FastMath.ulp(5E-01));
-        Assert.assertEquals(-2.46291165240109E-09, alm.getOmegaDot() / GPSOrbitalElements.GPS_PI, FastMath.ulp(-3E-09));
-        Assert.assertEquals(7.92368650436401E-02, alm.getPa() / GPSOrbitalElements.GPS_PI, FastMath.ulp(8E-02));
-        Assert.assertEquals(3.84885787963867E-01, alm.getM0() / GPSOrbitalElements.GPS_PI, FastMath.ulp(4E-01));
+        Assert.assertEquals(4.53996539115906E-01, alm.getOmega0() / GNSSConstants.GNSS_PI, FastMath.ulp(5E-01));
+        Assert.assertEquals(-2.46291165240109E-09, alm.getOmegaDot() / GNSSConstants.GNSS_PI, FastMath.ulp(-3E-09));
+        Assert.assertEquals(7.92368650436401E-02, alm.getPa() / GNSSConstants.GNSS_PI, FastMath.ulp(8E-02));
+        Assert.assertEquals(3.84885787963867E-01, alm.getM0() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
         Assert.assertEquals(9.5367431640625E-6, alm.getAf0(), 0.);
         Assert.assertEquals(3.63797880709171E-12, alm.getAf1(), 0.);
         Assert.assertEquals(63, alm.getHealth());

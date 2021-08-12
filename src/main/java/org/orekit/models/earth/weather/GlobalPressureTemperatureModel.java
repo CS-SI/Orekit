@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.models.earth.weather;
 
-import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
@@ -26,6 +25,7 @@ import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.utils.LegendrePolynomials;
 
 /** The Global Pressure and Temperature model.
  * This model is an empirical model that provides the temperature and the pressure depending
@@ -141,7 +141,7 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
         // Compute Legendre Polynomials Pnm(sin(phi))
         final int degree = 9;
         final int order  = 9;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order);
+        final LegendrePolynomials p = new LegendrePolynomials(degree, order, FastMath.sin(latitude));
 
         // Geoid for height computation
         final Geoid geoid = new Geoid(
@@ -185,61 +185,6 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
         final double degrees = temp0 + TEMPERATURE_GRADIENT * correctedheight;
         this.temperature = degrees + 273.15;
         this.pressure    = pres0 * FastMath.pow(1.0 - correctedheight * 0.0000226, 5.225);
-    }
-
-    /** Computes the P<sub>nm</sub>(sin(&#934)) coefficients of Eq. 4 (Ref).
-     *  The computation of the Legendre polynomials is performed following:
-     *  Heiskanen and Moritz, Physical Geodesy, 1967, eq. 1-62
-     */
-    private class LegendrePolynomials {
-
-        /** Array for the Legendre polynomials. */
-        private double[][] pCoef;
-
-        /** Create Legendre polynomials for the given degree and order.
-         * @param degree degree of the spherical harmonics
-         * @param order order of the spherical harmonics
-         */
-        LegendrePolynomials(final int degree, final int order) {
-
-            this.pCoef = new double[degree + 1][order + 1];
-
-            final double t  = FastMath.sin(latitude);
-            final double t2 = t * t;
-
-            for (int n = 0; n <= degree; n++) {
-
-                // m shall be <= n (Heiskanen and Moritz, 1967, pp 21)
-                for (int m = 0; m <= FastMath.min(n, order); m++) {
-
-                    // r = int((n - m) / 2)
-                    final int r = (int) (n - m) / 2;
-                    double sum = 0.;
-                    for (int k = 0; k <= r; k++) {
-                        final double term = FastMath.pow(-1.0, k) * CombinatoricsUtils.factorialDouble(2 * n - 2 * k) /
-                                        (CombinatoricsUtils.factorialDouble(k) * CombinatoricsUtils.factorialDouble(n - k) *
-                                         CombinatoricsUtils.factorialDouble(n - m - 2 * k)) *
-                                         FastMath.pow(t, n - m - 2 * k);
-                        sum = sum + term;
-                    }
-
-                    pCoef[n][m] = FastMath.pow(2, -n) * FastMath.pow(1.0 - t2, 0.5 * m) * sum;
-
-                }
-
-            }
-
-        }
-
-        /** Return the coefficient P<sub>nm</sub>.
-         * @param n index
-         * @param m index
-         * @return The coefficient P<sub>nm</sub>
-         */
-        public double getPnm(final int n, final int m) {
-            return pCoef[n][m];
-        }
-
     }
 
     private static class ABCoefficients {

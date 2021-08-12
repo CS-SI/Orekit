@@ -8,10 +8,11 @@
 in Java. Orekit is designed to be easily used in very different contexts, from
 quick studies up to critical operations. As a library, Orekit provides basic
 elements (orbits, dates, attitude, frames, ...) and various algorithms to
-handle them (conversions, propagations, pointing, ...).
+handle them (conversions, propagations, pointing, events detection, orbit determination ...).
 
-[![](https://sonar.orekit.org/api/project_badges/measure?project=org.orekit%3Aorekit&metric=alert_status)](https://sonar.orekit.org/dashboard?id=org.orekit%3Aorekit)
-[![](https://sonar.orekit.org/api/project_badges/measure?project=org.orekit%3Aorekit&metric=coverage)](https://sonar.orekit.org/dashboard?id=org.orekit%3Aorekit)
+[![](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![](https://sonar.orekit.org/api/project_badges/measure?project=orekit%3Aorekit&metric=alert_status)](https://sonar.orekit.org/dashboard?id=org.orekit%3Aorekit)
+[![](https://sonar.orekit.org/api/project_badges/measure?project=orekit%3Aorekit&metric=coverage)](https://sonar.orekit.org/dashboard?id=org.orekit%3Aorekit)
 
 ## Download
 

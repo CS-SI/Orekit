@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.bodies;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -90,7 +90,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             return new FieldVector3D<>(date.getField(), pole);
         }
 
@@ -100,7 +100,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             return FastMath.toRadians(d(date).multiply(W_DOT).add(W0));
         }
 
@@ -192,7 +192,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
             return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
                                        FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
@@ -210,7 +210,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
             return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0).
                              add(FastMath.toRadians(d.multiply(M1_DOT).add(M1_0)).sin().multiply(M1_COEFF)).
@@ -253,7 +253,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             return new FieldVector3D<>(date.getField(), pole);
         }
 
@@ -263,7 +263,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
@@ -310,7 +310,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
             return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
                                        FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
@@ -326,7 +326,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getNode(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getNode(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
             return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0 + 90.0)),
                                        date.getField().getZero());
@@ -338,7 +338,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
@@ -575,7 +575,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
             final T t = t(date);
 
@@ -627,7 +627,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
             return FastMath.toRadians(d.multiply(d.multiply(W_DOT_DOT).add(W_DOT)).add(W_0).
                                       add(FastMath.toRadians(d.multiply(E01_DOT).add(E01_0)).sin().multiply(E01_W_SIN)).
@@ -688,7 +688,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
             return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
                                        FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
@@ -700,7 +700,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
@@ -830,7 +830,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
 
             final T t = t(date);
             final T ja = FastMath.toRadians(t.multiply(JA_DOT).add(JA_0));
@@ -866,7 +866,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
@@ -913,7 +913,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
             return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
                                        FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
@@ -925,7 +925,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
@@ -962,7 +962,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             return new FieldVector3D<>(date.getField(), pole);
         }
 
@@ -972,7 +972,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
@@ -1029,7 +1029,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T n = FastMath.toRadians(t(date).multiply(N_DOT).add(N_0));
             final FieldSinCos<T> sc = FastMath.sinCos(n);
             return new FieldVector3D<>(FastMath.toRadians(sc.sin().multiply(ALPHA_SIN).add(ALPHA_0)),
@@ -1043,7 +1043,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             final T n = FastMath.toRadians(t(date).multiply(N_DOT).add(N_0));
             return FastMath.toRadians(d(date).multiply(W_DOT).add(n.sin().multiply(W_SIN)).add(W_0));
         }
@@ -1081,7 +1081,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             return new FieldVector3D<>(date.getField(), pole);
         }
 
@@ -1091,7 +1091,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
@@ -1124,7 +1124,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             return FieldVector3D.getPlusK(date.getField());
         }
 
@@ -1136,7 +1136,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> getNode(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getNode(final FieldAbsoluteDate<T> date) {
             return FieldVector3D.getPlusI(date.getField());
         }
 
@@ -1146,7 +1146,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             return date.getField().getZero();
         }
 
@@ -1226,7 +1226,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
      * @param <T> type of the filed elements
      * @return interval between date and standard epoch in julian centuries
      */
-    protected <T extends RealFieldElement<T>> T t(final FieldAbsoluteDate<T> date) {
+    protected <T extends CalculusFieldElement<T>> T t(final FieldAbsoluteDate<T> date) {
         final FieldAbsoluteDate<T> j2000Epoch =
                 new FieldAbsoluteDate<>(date.getField(), timeScales.getJ2000Epoch());
         return date.offsetFrom(j2000Epoch, timeScales.getTDB()).divide(Constants.JULIAN_CENTURY);
@@ -1246,7 +1246,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
      * @param <T> type of the filed elements
      * @return interval between date and standard epoch in julian days
      */
-    protected <T extends RealFieldElement<T>> T d(final FieldAbsoluteDate<T> date) {
+    protected <T extends CalculusFieldElement<T>> T d(final FieldAbsoluteDate<T> date) {
         final FieldAbsoluteDate<T> j2000Epoch =
                 new FieldAbsoluteDate<>(date.getField(), timeScales.getJ2000Epoch());
         return date.offsetFrom(j2000Epoch, timeScales.getTDB()).divide(Constants.JULIAN_DAY);

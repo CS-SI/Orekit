@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,10 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -45,32 +48,35 @@ public enum ITRFVersion {
     /** Constant for ITRF 2000. */
     ITRF_2000(2000),
 
-    /** Constant for ITRF 97. */
-    ITRF_97(1997),
+    /** Constant for ITRF 1997. */
+    ITRF_1997(1997),
 
-    /** Constant for ITRF 96. */
-    ITRF_96(1996),
+    /** Constant for ITRF 1996. */
+    ITRF_1996(1996),
 
-    /** Constant for ITRF 94. */
-    ITRF_94(1994),
+    /** Constant for ITRF 1994. */
+    ITRF_1994(1994),
 
-    /** Constant for ITRF 93. */
-    ITRF_93(1993),
+    /** Constant for ITRF 1993. */
+    ITRF_1993(1993),
 
-    /** Constant for ITRF 92. */
-    ITRF_92(1992),
+    /** Constant for ITRF 1992. */
+    ITRF_1992(1992),
 
-    /** Constant for ITRF 91. */
-    ITRF_91(1991),
+    /** Constant for ITRF 1991. */
+    ITRF_1991(1991),
 
-    /** Constant for ITRF 90. */
-    ITRF_90(1990),
+    /** Constant for ITRF 1990. */
+    ITRF_1990(1990),
 
     /** Constant for ITRF 89. */
-    ITRF_89(1989),
+    ITRF_1989(1989),
 
     /** Constant for ITRF 88. */
-    ITRF_88(1988);
+    ITRF_1988(1988);
+
+    /** Regular expression for ITRF names, using several variations. */
+    private static final Pattern PATTERN = Pattern.compile("[Ii][Tt][Rr][Ff][-_ ]?([0-9]{2,4})");
 
     /** Reference year of the frame version. */
     private final int year;
@@ -83,7 +89,7 @@ public enum ITRFVersion {
      */
     ITRFVersion(final int year) {
         this.year = year;
-        this.name = "ITRF-" + ((year >= 2000) ? year : (year - 1900));
+        this.name = "ITRF-" + year;
     }
 
     /** Get the reference year of the frame version.
@@ -106,9 +112,11 @@ public enum ITRFVersion {
      */
     public static ITRFVersion getITRFVersion(final int year) {
 
+        final int fixedYear = (year > 87 && year < 100) ? (year + 1900) : year;
+
         // loop over all predefined frames versions
         for (final ITRFVersion version : values()) {
-            if (version.getYear() == year) {
+            if (version.getYear() == fixedYear) {
                 return version;
             }
         }
@@ -124,10 +132,13 @@ public enum ITRFVersion {
      */
     public static ITRFVersion getITRFVersion(final String name) {
 
-        // loop over all predefined frames versions
-        for (final ITRFVersion version : values()) {
-            if (version.getName().equalsIgnoreCase(name)) {
-                return version;
+        // extract year from name
+        final Matcher matcher = PATTERN.matcher(name);
+        if (matcher.matches()) {
+            try {
+                return getITRFVersion(Integer.parseInt(matcher.group(1)));
+            } catch (OrekitException oe) {
+                throw new OrekitException(OrekitMessages.NO_SUCH_ITRF_FRAME, name);
             }
         }
 
@@ -260,7 +271,7 @@ public enum ITRFVersion {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return provider.getTransform(date);
         }
 

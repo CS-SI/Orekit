@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,8 @@ package org.orekit.propagation.analytical;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -53,6 +54,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
@@ -64,7 +66,6 @@ import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.OrekitStepHandlerMultiplexer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -118,20 +119,39 @@ public class KeplerianPropagatorTest {
 
         // action
         final List<SpacecraftState> states = new ArrayList<>();
-        propagator.setEphemerisMode((interpolator, isLast) -> {
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        propagator.setStepHandler(interpolator -> {
             states.add(interpolator.getCurrentState());
             states.add(interpolator.getPreviousState());
         });
         propagator.propagate(end);
-        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         Assert.assertTrue(states.size() > 1); // got some data
         for (SpacecraftState state : states) {
             PVCoordinates actual =
                     ephemeris.propagate(state.getDate()).getPVCoordinates();
-            Assert.assertThat(actual, OrekitMatchers.pvIs(state.getPVCoordinates()));
+            MatcherAssert.assertThat(actual, OrekitMatchers.pvIs(state.getPVCoordinates()));
         }
+    }
+
+    @Test
+    public void testAdditionalState() {
+        AbsoluteDate initDate = AbsoluteDate.GPS_EPOCH;
+        Orbit ic = new KeplerianOrbit(6378137 + 500e3, 1e-3, 0, 0, 0, 0, PositionAngle.TRUE, FramesFactory.getGCRF(), initDate, mu);
+        Propagator propagator = new KeplerianPropagator(ic);
+        SpacecraftState initialState = propagator.getInitialState().addAdditionalState("myState", 4.2);
+        propagator.resetInitialState(initialState);
+        AbsoluteDate end = initDate.shiftedBy(90 * 60);
+        EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        SpacecraftState finalStateKeplerianPropagator = propagator.propagate(end);
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        SpacecraftState ephemerisInitialState = ephemeris.getInitialState();
+        SpacecraftState finalStateBoundedPropagator = ephemeris.propagate(end);
+        Assert.assertEquals(4.2, finalStateKeplerianPropagator.getAdditionalState("myState")[0], 1.0e-15);
+        Assert.assertEquals(4.2, ephemerisInitialState.getAdditionalState("myState")[0], 1.0e-15);
+        Assert.assertEquals(4.2, finalStateBoundedPropagator.getAdditionalState("myState")[0], 1.0e-15);
     }
 
     @Test
@@ -399,7 +419,7 @@ public class KeplerianPropagatorTest {
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
-            public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+            public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                                 FieldAbsoluteDate<T> date, Frame frame)
                 {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
@@ -415,16 +435,11 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        OrekitStepHandlerMultiplexer multiplexer = new OrekitStepHandlerMultiplexer();
-        propagator.setMasterMode(multiplexer);
-        multiplexer.add(new OrekitStepHandler() {
-            public void init(SpacecraftState s0, AbsoluteDate t) {
+        propagator.getMultiplexer().add(new OrekitStepHandler() {
+            public void handleStep(OrekitStepInterpolator interpolator) {
             }
-            public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) {
-                if (isLast) {
-                    throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
-                }
+            public void finish(SpacecraftState finalState) {
+                throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
             }
         });
 
@@ -445,7 +460,7 @@ public class KeplerianPropagatorTest {
                                                                         throw new OrekitException((Throwable) null,
                                                                                                   new DummyLocalizable("dummy error"));
                                                                     }
-                                                                    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+                                                                    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                                                                                         FieldAbsoluteDate<T> date, Frame frame)
                                                                         {
                                                                         throw new OrekitException((Throwable) null,
@@ -564,10 +579,9 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = 100.0;
-        propagator.setMasterMode(step, new OrekitFixedStepHandler() {
+        propagator.setStepHandler(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+            public void handleStep(SpacecraftState currentState) {
                 if (previous != null) {
                     Assert.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
@@ -585,12 +599,18 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = orbit.getKeplerianPeriod() / 100;
-        propagator.setMasterMode(new OrekitStepHandler() {
+        propagator.setStepHandler(new OrekitStepHandler() {
             private AbsoluteDate previous;
-            public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) {
-                if ((previous != null) && !isLast) {
-                    Assert.assertEquals(step, interpolator.getCurrentState().getDate().durationFrom(previous), 1.0e-10);
+            private AbsoluteDate target;
+            @Override
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+                target = t;
+            }
+            @Override
+            public void handleStep(OrekitStepInterpolator interpolator) {
+                final AbsoluteDate t = interpolator.getCurrentState().getDate();
+                if (previous != null && target.durationFrom(t) > 0.001) {
+                    Assert.assertEquals(step, t.durationFrom(previous), 1.0e-10);
                 }
                 previous = interpolator.getCurrentState().getDate();
             }
@@ -605,11 +625,10 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        propagator.setEphemerisMode();
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(farTarget);
-        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Assert.assertEquals(0.0, ephemeris.getMinDate().durationFrom(orbit.getDate()), 1.0e10);
         Assert.assertEquals(0.0, ephemeris.getMaxDate().durationFrom(farTarget), 1.0e10);
     }
@@ -622,13 +641,13 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), initialDate, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
 
-        propagator.setEphemerisMode();
+        propagator.getEphemerisGenerator();
         propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
         PVCoordinates pv1 = propagator.getPVCoordinates(initialDate, FramesFactory.getEME2000());
 
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
-        PVCoordinates pv2 = propagator.getGeneratedEphemeris().getPVCoordinates(initialDate, FramesFactory.getEME2000());
+        PVCoordinates pv2 = generator.getGeneratedEphemeris().getPVCoordinates(initialDate, FramesFactory.getEME2000());
 
         Assert.assertEquals(0.0, pv1.getPosition().subtract(pv2.getPosition()).getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm(), 1.0e-15);
@@ -698,7 +717,7 @@ public class KeplerianPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isBefore(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
@@ -729,7 +748,7 @@ public class KeplerianPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isAfter(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
