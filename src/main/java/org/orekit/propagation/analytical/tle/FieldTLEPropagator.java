@@ -454,7 +454,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         final T xlt   = xl.add(xll);
         final T ayn   = e.multiply(FastMath.sin(omega)).add(aynl);
         final T elsq  = axn.multiply(axn).add(ayn.multiply(ayn));
-        final T capu  = MathUtils.normalizeAngle(xlt.subtract(xnode), zero.add(FastMath.PI));
+        final T capu  = MathUtils.normalizeAngle(xlt.subtract(xnode), zero.getPi());
         T epw    = capu;
         T ecosE  = zero;
         T esinE  = zero;

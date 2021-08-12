@@ -716,12 +716,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                 E = reducedM.add(e.multiply( (reducedM.multiply(6).cbrt()).subtract(reducedM)));
             }
         } else {
+            final T pi = e.getPi();
             if (reducedM.getReal() < 0) {
-                final T w = reducedM.add(FastMath.PI);
-                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).subtract(FastMath.PI).subtract(reducedM)));
+                final T w = reducedM.add(pi);
+                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).subtract(pi).subtract(reducedM)));
             } else {
-                final T w = reducedM.negate().add(FastMath.PI);
-                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).negate().subtract(reducedM).add(FastMath.PI)));
+                final T w = reducedM.negate().add(pi);
+                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).negate().subtract(reducedM).add(pi)));
             }
         }
 
@@ -802,16 +803,19 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
+        // Field value of pi
+        final T pi = e.getPi();
+
         // Initial guess
         T H;
         if (e.getReal() < 1.6) {
-            if (-FastMath.PI < M.getReal() && M.getReal() < 0. || M.getReal() > FastMath.PI) {
+            if (-pi.getReal() < M.getReal() && M.getReal() < 0. || M.getReal() > pi.getReal()) {
                 H = M.subtract(e);
             } else {
                 H = M.add(e);
             }
         } else {
-            if (e.getReal() < 3.6 && M.abs().getReal() > FastMath.PI) {
+            if (e.getReal() < 3.6 && M.abs().getReal() > pi.getReal()) {
                 H = M.subtract(e.copySign(M));
             } else {
                 H = M.divide(e.subtract(1));
@@ -895,7 +899,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     public T getHx() {
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return this.zero.add(Double.NaN);
         }
         return  raan.cos().multiply(i.divide(2).tan());
@@ -909,7 +913,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         }
 
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return this.zero.add(Double.NaN);
         }
 
@@ -922,7 +926,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     public T getHy() {
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return this.zero.add(Double.NaN);
         }
         return  raan.sin().multiply(i.divide(2).tan());
@@ -936,7 +940,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         }
 
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return this.zero.add(Double.NaN);
         }
 

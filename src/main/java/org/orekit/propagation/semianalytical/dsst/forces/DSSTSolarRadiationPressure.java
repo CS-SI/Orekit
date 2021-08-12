@@ -306,11 +306,12 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final Field<T> field = state.getDate().getField();
         final T zero = field.getZero();
         final T one  = field.getOne();
+        final T pi   = one.getPi();
 
         // Default bounds without shadow [-PI, PI]
         final T[] ll = MathArrays.buildArray(field, 2);
-        ll[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
-        ll[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+        ll[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(pi);
+        ll[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(pi);
 
         // Direction cosines of the Sun in the equinoctial frame
         final FieldVector3D<T> sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
@@ -377,16 +378,16 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                 // Must be one entry and one exit or none
                 if (!(entryFound == exitFound)) {
                     // entry or exit found but not both ! In this case, consider there is no eclipse...
-                    ll[0] = zero.add(-FastMath.PI);
-                    ll[1] = zero.add(FastMath.PI);
+                    ll[0] = pi.negate();
+                    ll[1] = pi;
                 }
                 // Quadrature between L at exit and L at entry so Lexit must be lower than Lentry
                 if (ll[0].getReal() > ll[1].getReal()) {
                     // Keep the angles between [-2PI, 2PI]
                     if (ll[1].getReal() < 0.) {
-                        ll[1] = ll[1].add(zero.add(2. * FastMath.PI));
+                        ll[1] = ll[1].add(pi.multiply(2.0));
                     } else {
-                        ll[0] = ll[0].subtract(zero.add(2. * FastMath.PI));
+                        ll[0] = ll[0].subtract(pi.multiply(2.0));
                     }
                 }
             }
@@ -698,8 +699,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final T sqP = FastMath.sqrt(p).multiply(2.);
 
             y[0] = b.add(sqP.multiply(FastMath.cos(phi)));
-            y[1] = b.subtract(sqP.multiply(FastMath.cos(phi.add(FastMath.PI / 3.))));
-            y[2] = b.subtract(sqP.multiply(FastMath.cos(phi.negate().add(FastMath.PI / 3.))));
+            y[1] = b.subtract(sqP.multiply(FastMath.cos(phi.add(b.getPi().divide(3.)))));
+            y[2] = b.subtract(sqP.multiply(FastMath.cos(phi.negate().add(b.getPi().divide(3.)))));
 
             return 3;
 

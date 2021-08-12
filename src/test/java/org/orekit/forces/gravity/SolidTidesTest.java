@@ -229,7 +229,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngle.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
-        doTestTideEffect(orbit, IERSConventions.IERS_2010, 24.02815, 30.92816);
+        doTestTideEffect(orbit, IERSConventions.IERS_2010, 24.02815, 30.37047);
     }
 
     @Test

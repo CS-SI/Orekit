@@ -158,7 +158,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
         final FieldDerivativeStructure<T> absDelta;
         if (svbCos.getValue().getReal() <= 0) {
             // in eclipse turn mode
-            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(FastMath.PI));
+            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(svbCos.getPi()));
         } else {
             // in noon turn mode
             absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos());
@@ -209,7 +209,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
         final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(d, inertialFrame);
         return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum()).
                negate().
-               add(0.5 * FastMath.PI);
+               add(svPV.getPosition().getX().getPi().multiply(0.5));
     }
 
     /** Compute Sun elevation.
@@ -222,7 +222,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
                         toDerivativeStructurePV(d.getField().getZero().getOrder());
         return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum()).
                negate().
-               add(0.5 * FastMath.PI);
+               add(svPV.getPosition().getX().getPi().multiply(0.5));
     }
 
     /** Compute Sun elevation.
@@ -343,7 +343,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      * @return orbit angle since solar midnight
      */
     public T getOrbitAngleSinceMidnight() {
-        final T absAngle = inOrbitPlaneAbsoluteAngle(FastMath.acos(svbCos.getValue()).negate().add(FastMath.PI));
+        final T absAngle = inOrbitPlaneAbsoluteAngle(FastMath.acos(svbCos.getValue()).negate().add(svbCos.getValue().getPi()));
         return morning ? absAngle : absAngle.negate();
     }
 

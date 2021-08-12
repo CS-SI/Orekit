@@ -234,7 +234,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, MappingFunctio
         } else {
             c10h = zero.add(0.002);
             c11h = zero.add(0.007);
-            psi  = zero.add(FastMath.PI);
+            psi  = zero.getPi();
         }
 
         // Compute hydrostatique coefficient c
@@ -244,7 +244,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, MappingFunctio
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef = psi.add(((dofyear - t0) / 365) * 2 * FastMath.PI);
+        final T coef = psi.add(zero.getPi().multiply(2.0).multiply((dofyear - t0) / 365));
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(FastMath.cos(latitude).negate().add(1.)).add(c0h);
 
         // General constants | Wet part
