@@ -31,7 +31,7 @@ verify:
   stage: verify
   script:
     - mvn $MAVEN_CLI_OPTS verify site
-    - mvn $MAVEN_CLI_OPTS sonar:sonar
+    - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
           -Dsonar.login=${SONAR_TOKEN}
           -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
           -Dsonar.projectKey="$SONAR_PROJECT_KEY"
@@ -43,6 +43,15 @@ verify:
     reports:
       junit:
         - target/surefire-reports/*.xml
+
+verify:warning:
+  stage: verify
+  script:
+    - echo "Please, configure SonarQube!"
+    - exit 1
+  allow_failure: true
+  rules:
+    - if: $SONAR_TOKEN == null
 
 # Convert and import in GitLab coverage data.
 # The information is then available directly in merge-request view.
