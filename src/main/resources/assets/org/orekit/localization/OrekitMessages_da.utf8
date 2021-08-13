@@ -341,7 +341,7 @@ CCSDS_TDM_KEYWORD_NOT_FOUND = Intet CCSDS TDM nøgleord blev fundet i linje {0} 
 CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
 
 # Time system should have already been set before line {0} of file {1}
-CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
+CCSDS_TIME_SYSTEM_NOT_READ_YET = Tidssystem skulle have været sat før linje {0} af fil {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = navnet "{0}" er allerede brugt til en anden tilstand
@@ -473,10 +473,10 @@ CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
 CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
 
 # wrong number of units for maneuver {0}
-CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = forkert antal enheder til manøvre {0}
 
 # missing time field for maneuver {0}
-CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
+CCSDS_MANEUVER_MISSING_TIME = manglende tidsfelt for manøvre {0}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Oprettelsen af en aggregeret propagator kræver mindst en propagator-bestanddel, men ingen blev angivet.
@@ -572,7 +572,7 @@ NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
 IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>
 
 # invalid satellite system {0}
-INVALID_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+INVALID_SATELLITE_SYSTEM = ugyldigt satellitsystem
 
 # IONEX file {0} does not contain TEC data for date {1}
 NO_TEC_DATA_IN_FILE_FOR_DATE = <MISSING TRANSLATION>
@@ -604,7 +604,7 @@ MODIP_GRID_NOT_LOADED = <MISSING TRANSLATION>
 NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
 
 # file {0} is not a supported Hatanaka-compressed file
-NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = filen {0] er ikke en understøttet Hatanaka-komprimeret fil
 
 # Cannot compute around {0}
 CANNOT_COMPUTE_LAGRANGIAN = <MISSING TRANSLATION>
@@ -631,7 +631,7 @@ EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
 # observations are not in the same plane
-NON_COPLANAR_POINTS = <MISSING TRANSLATION>
+NON_COPLANAR_POINTS = observationer er ikke i samme plan
 
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
