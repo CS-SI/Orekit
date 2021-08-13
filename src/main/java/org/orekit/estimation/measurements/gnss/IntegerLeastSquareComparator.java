@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /** Comparator for {@link IntegerLeastSquareSolution} instance.
@@ -23,7 +24,10 @@ import java.util.Comparator;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class IntegerLeastSquareComparator implements Comparator<IntegerLeastSquareSolution> {
+public class IntegerLeastSquareComparator implements Comparator<IntegerLeastSquareSolution>, Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20210813;
 
     /** Simple constructor.
      */
