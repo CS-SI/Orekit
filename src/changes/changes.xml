@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="820">
+        TLE Jacobians are now calculated in cartesian elements.
+      </action>
       <action dev="bryan" type="update" issue="626">
         Used a separate Comparator for sorting integer least square solutions.
       </action>
