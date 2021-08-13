@@ -65,6 +65,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
      * @param parameters selected parameters for Jacobian computation
      * @param propagator the propagator that will handle the orbit propagation
      */
+    @DefaultDataContext
     public TLEJacobiansMapper(final String name,
                               final ParameterDriversList parameters,
                               final TLEPropagator propagator) {

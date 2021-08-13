@@ -583,6 +583,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * state containing the derivatives.
      * </p>
      */
+    @DefaultDataContext
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());

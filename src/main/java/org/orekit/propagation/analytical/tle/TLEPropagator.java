@@ -545,6 +545,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * state containing the derivatives.
      * </p>
      */
+    @DefaultDataContext
     public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
