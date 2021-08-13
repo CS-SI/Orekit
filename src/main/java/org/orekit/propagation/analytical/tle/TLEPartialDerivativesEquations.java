@@ -81,7 +81,9 @@ public class TLEPartialDerivativesEquations {
             // create new selected parameter driver list
             selected = new ParameterDriversList();
             for (final ParameterDriver driver : propagator.getTLE().getParametersDrivers()) {
-                selected.add(driver);
+                if (driver.isSelected()) {
+                    selected.add(driver);
+                }
             }
         }
     }

@@ -79,11 +79,11 @@ public class TLEBatchLSModelTest {
                 Assert.assertEquals(1, newOrbits.length);
                 Assert.assertEquals(0,
                                     context.initialTLE.getDate().durationFrom(newOrbits[0].getDate()),
-                                    3.0e-8);
+                                    Double.MIN_VALUE);
                 Assert.assertEquals(0,
                                     Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                                       newOrbits[0].getPVCoordinates().getPosition()),
-                                    3.0e-8);
+                                    4.97e-6);
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
@@ -108,7 +108,7 @@ public class TLEBatchLSModelTest {
         for (ObservedMeasurement<?> measurement : measurements) {
             for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
-                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 5.e-7);
+                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 4.75e-5);
             }
         }
         Assert.assertEquals(index, value.getFirst().getDimension());
