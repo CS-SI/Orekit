@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.tle;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
@@ -81,7 +82,9 @@ public class TLEPartialDerivativesEquations {
             // create new selected parameter driver list
             selected = new ParameterDriversList();
             for (final ParameterDriver driver : propagator.getTLE().getParametersDrivers()) {
-                selected.add(driver);
+                if (driver.isSelected()) {
+                    selected.add(driver);
+                }
             }
         }
     }
@@ -100,6 +103,7 @@ public class TLEPartialDerivativesEquations {
      * @param s0 initial state
      * @return state with initial Jacobians added
      */
+    @DefaultDataContext
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
         final int stateDimension = 6;
@@ -123,6 +127,7 @@ public class TLEPartialDerivativesEquations {
      * to parameters (may be null if no parameters are selected)
      * @return state with initial Jacobians added
      */
+    @DefaultDataContext
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
                                                final double[][] dY1dY0, final double[][] dY1dP) {
 
@@ -161,6 +166,7 @@ public class TLEPartialDerivativesEquations {
      * @see #setInitialJacobians(SpacecraftState)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
+    @DefaultDataContext
     public TLEJacobiansMapper getMapper() {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
