@@ -48,10 +48,6 @@
  *  <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
  *  detects apside crossing (and by default stop at perigee)
  *  </li>
- *  <li>{@link org.orekit.propagation.events.CircularFieldOfViewDetector CircularFieldOfViewDetector}
- *  detects moving target entering/exiting satellite sensor Field Of View with a
- *  circular shaped boundary (and by default continue on entry and stop on exit)
- *  </li>
  *  <li>{@link org.orekit.propagation.events.DateDetector DateDetector}
  *  detects occurrence of a predefine instant (and by default stop there)
  *  </li>

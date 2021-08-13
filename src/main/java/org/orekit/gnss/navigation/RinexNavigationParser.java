@@ -18,7 +18,6 @@ package org.orekit.gnss.navigation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -88,7 +87,7 @@ public class RinexNavigationParser {
     /**
      * Constructor.
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.</p>
-     * @see #NavigationFileParser(TimeScales)
+     * @see #RinexNavigationParser(TimeScales)
      *
      */
     @DefaultDataContext
@@ -109,8 +108,6 @@ public class RinexNavigationParser {
      * @param source source providing the data to parse
      * @return a parsed  RINEX navigation messages file
      * @throws IOException if {@code reader} throws one
-     * @see #parse(InputStream)
-     * @see #parse(String)
      */
     public RinexNavigation parse(final DataSource source) throws IOException {
 

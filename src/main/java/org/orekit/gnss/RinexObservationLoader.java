@@ -126,7 +126,7 @@ public class RinexObservationLoader {
      * global {@link DataContext#getDefault() default data context}.
      * </p>
      * @param supportedNames regular expression for supported files names
-     * @see #RinexLoader(String, DataProvidersManager, TimeScales)
+     * @see #RinexObservationLoader(String, DataProvidersManager, TimeScales)
      */
     @DefaultDataContext
     public RinexObservationLoader(final String supportedNames) {
@@ -158,7 +158,7 @@ public class RinexObservationLoader {
      * default data context}.
      *
      * @param source source for the RINEX data
-     * @see #RinexLoader(DataSource, TimeScales)
+     * @see #RinexObservationLoader(DataSource, TimeScales)
      */
     @DefaultDataContext
     public RinexObservationLoader(final DataSource source) {

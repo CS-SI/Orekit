@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements;
 import java.util.Map;
 
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -484,7 +483,7 @@ public class GroundStation {
      * @param indices indices of the estimated parameters in derivatives computations
      * @return transform between offset frame and inertial frame, at <em>real</em> measurement
      * date (i.e. with clock, Earth and station offsets applied)
-     * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, DSFactory, Map)
+     * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, int, Map)
      * @since 10.2
      */
     public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
@@ -511,7 +510,6 @@ public class GroundStation {
      * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the estimated parameters in derivatives computations
      * @return transform between offset frame and inertial frame, at specified date
-     * @see #getOffsetToInertial(Frame, AbsoluteDate, DSFactory, Map)
      * @since 10.2
      */
     public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,

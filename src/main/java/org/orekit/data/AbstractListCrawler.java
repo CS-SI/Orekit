@@ -31,7 +31,7 @@ import org.orekit.errors.OrekitException;
 
 /** Provider for data files defined in a list.
  * <p>
- * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * All {@link FiltersManager#addFilter(DataFilter) registered}
  * {@link DataFilter filters} are applied.
  * </p>
  * <p>
