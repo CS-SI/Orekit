@@ -235,7 +235,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @return string representation of this pair
      */
     public String toString() {
-        return toString(60);
+        return toStringRfc3339();
     }
 
     /** Return a string representation of this pair.

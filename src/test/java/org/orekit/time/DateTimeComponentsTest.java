@@ -22,6 +22,7 @@ import org.hamcrest.MatcherAssert;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 
 
 public class DateTimeComponentsTest {
@@ -73,7 +74,7 @@ public class DateTimeComponentsTest {
     public void testString() {
         final DateTimeComponents date =
             new DateTimeComponents(DateComponents.J2000_EPOCH, TimeComponents.H12);
-        Assert.assertEquals("2000-01-01T12:00:00.000", date.toString());
+        Assert.assertEquals("2000-01-01T12:00:00Z", date.toString());
     }
 
     @Test
@@ -86,7 +87,7 @@ public class DateTimeComponentsTest {
 
     @Test
     public void testParse() {
-        String s = "2000-01-02T03:04:05.000";
+        String s = "2000-01-02T03:04:05-01:05";
         Assert.assertEquals(s, DateTimeComponents.parseDateTime(s).toString());
     }
 
@@ -149,6 +150,31 @@ public class DateTimeComponentsTest {
                 new TimeComponents(hour, minute, second, minutesFromUtc));
 
         MatcherAssert.assertThat(actual.toStringRfc3339(), CoreMatchers.is(expected));
+    }
+
+    /**
+     * Check {@link DateTimeComponents#toString()} for leap second and rounding issues.
+     * See #591.
+     */
+    @Test
+    public void testToString() {
+        Utils.setDataRoot("regular-data");
+        TimeScale utc = TimeScalesFactory.getUTC();
+        // latest leap second in the file
+        AbsoluteDate d = new AbsoluteDate("2015-07-01", utc).shiftedBy(-0.5);
+        DateTimeComponents dtc = d.getComponents(utc);
+        Assert.assertEquals(dtc.toString(), "2015-06-30T23:59:60.5Z");
+        // first leap second and change
+        d = new AbsoluteDate("1961-01-01", utc).shiftedBy(-0.1);
+        dtc = d.getComponents(utc);
+        Assert.assertEquals(dtc.toString(), "1960-12-31T23:59:61.32281798015773Z");
+        // test rounding
+        d = new AbsoluteDate("2014-02-02", utc).shiftedBy(-FastMath.ulp(1.0));
+        dtc = d.getComponents(utc);
+        Assert.assertEquals(dtc.toString(), "2014-02-01T23:59:59.99999999999999Z");
+        // test time zone
+        dtc = new DateTimeComponents(dtc.getDate(), new TimeComponents(1, 2, 3, 456));
+        Assert.assertEquals(dtc.toString(), "2014-02-01T01:02:03+07:36");
     }
 
 }

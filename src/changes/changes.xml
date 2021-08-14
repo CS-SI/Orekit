@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="evan" type="update" issue="590">
+        Fix DateTimeComponents.toString(): correct ISO 8601, leap second, rounding issues.
+        Backwards incompatible.
+      </action>
       <action dev="bryan" type="update" issue="626">
         Used a separate Comparator for sorting integer least square solutions.
       </action>
