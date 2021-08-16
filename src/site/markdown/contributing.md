@@ -268,10 +268,11 @@ initialize the project in SonarQube. Here is how to do it.
 
 6. After that, you can run again the pipeline on your working branch.
 
-If your working branch is from an older version of Orekit, step 5 described
-above will not work because of the continuous integration scripts did not
-manage forks properly. In this case, you will need to initiate the project in
-SonarQube from your workstation, by executing the following commands:
+If your working branch is from an Orekit version prior to 11.0, step 5
+described above will not work because of the continuous integration scripts
+did not manage forks properly. In this case, you will need to initiate the
+project in SonarQube from your workstation, by executing the following
+commands:
 
 ```bash
 $ cd orekit-repository
