@@ -24,12 +24,12 @@ This document is intended to help you take your first steps in the project.
 
 You can contribute in many ways:
 
-* [Participate in the exchanges on the forum](#participate)
+* [Participate in the discussions on the forum](#participate)
 * [Report bugs or feature requests](#report-bugs)
 * [Improve the documentation](#improve-documentation)
 * [Improve or extend the source code](#improve-source-code)
 
-<span id="participate">**Participate in the exchanges on the forum**</span>
+<span id="participate">**Participate in the discussions on the forum**</span>
 
 You can participate in discussions on the [forum](https://forum.orekit.org/),
 share your experience with Orekit or in space flight dynamics, provide help to
@@ -46,14 +46,14 @@ You can report bugs in our
 [bug tracking system](https://gitlab.orekit.org/orekit/orekit/-/issues). If
 you have trouble qualifying the problem, talk about it on the
 [forum](https://forum.orekit.org/) first. **And remember: the more information
-we get, the easier we can reproduce and fix it.**
+we get, the easier the community can reproduce and fix it.**
 
 The bug tracking system is also the right place to report your feature
 requests. We do not promise you to take them into account, and even less to do
 it quickly, because we have limited human resources and our own priorities.
 But by expressing your needs in the tracking system, you leave a record of
-them and a contributor will be able to implement the feature when he will be
-available.
+them and a contributor will be able to implement the feature when he or she
+will be available.
 
 <span id="improve-documentation">**Improve the documentation**</span>
 
@@ -166,10 +166,10 @@ distributed under the Apache License Version 2.0.
 
 ## Configure Orekit checkstyle
 
-Checkstyle is a development tool to help programmers write Java code that
-adheres to a coding standard. It automates the process of checking Java code
-to spare humans of this boring (but important) task. This makes it ideal for
-projects that want to enforce a coding standard.
+Checkstyle is a development tool to help programmers write Java code that is
+compliant with a coding standard. It automates the process of checking Java
+code to spare humans of this boring (but important) task. This makes it ideal
+for projects that want to enforce a coding standard.
 
 Configuring checkstyle can be a difficult task when installing Orekit in an
 Integrated Development Environment (IDE). However, it is an important step for
@@ -202,9 +202,9 @@ the context menu of the project explorer panel.
 In the *Properties* popup, select *Checkstyle* entry.
 
 In this second popup (i.e. *Local Check Configurations*) define a project
-relative configuration as presented in the figure below. We browse the
-workspace to select our checkstyle.xml file, and we tick the *Protect
-Checkstyle configuration file* check box to prevent the plugin to alter the
+relative configuration as presented in the figure below. Browse the workspace
+to select your checkstyle.xml file, and tick the *Protect Checkstyle
+configuration file* check box to prevent the plugin to alter the
 configuration.
 
 ![checkstyle-plugin](./images/project-checkstyle-configuration.png).
@@ -268,8 +268,8 @@ initialize the project in SonarQube. Here is how to do it.
 6. After that, you can run again the pipeline on your working branch.
 
 If your working branch is from an older version of Orekit, step 5 described
-above will not work because of the previous state of the continuous
-integration script. In this case, you will need to initiate the project in
+above will not work because of the continuous integration scripts did not
+manage forks properly. In this case, you will need to initiate the project in
 SonarQube from your workstation, by executing the following commands:
 
 ```bash
