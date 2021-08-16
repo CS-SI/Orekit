@@ -158,7 +158,12 @@ Here's how to make your first contribution:
     official repository an the **develop** branch). Be sure that the target of
     your request is the **develop** branch of the official repository.
 
-11. Wait for one of the developers to merge your code on the repository.
+11. Gitlab notifies the core team members of your merge request. One of them
+    will review it as soon as he or she can. If your contribution seems to
+    meet the project's expectations, he or she will accept it. If not, he or
+    she will explain to you how it could be improved. You can then enhance
+    your contribution and push new commits, which will be automatically added
+    to the current merge request.
 
 If you have any question during your contribution you can also visit the forum
 and ask them. The larger the community is, the better Orekit will be. The main
