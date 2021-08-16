@@ -49,17 +49,17 @@ you have trouble qualifying the problem, talk about it on the
 we get, the easier the community can reproduce and fix it.**
 
 The bug tracking system is also the right place to report your feature
-requests. We do not promise you to take them into account, and even less to do
-it quickly, because we have limited human resources and our own priorities.
-But by expressing your needs in the tracking system, you leave a record of
-them and a contributor will be able to implement the feature when he or she
-will be available.
+requests. We do not promise to take them into account, and even less to do it
+quickly, because we have limited human resources and our own priorities. But
+by expressing your needs in the tracking system, you leave a record of them
+and a contributor will be able to implement the feature when he or she will be
+available.
 
 <span id="improve-documentation">**Improve the documentation**</span>
 
 You can help us improving the [existing documentation](index.html) or you can
-write a new [tutorial](https://www.orekit.org/doc-tutorials.html), which helps
-to better understand the use of some features.
+write a new [tutorial](https://www.orekit.org/doc-tutorials.html), to help
+users to better understand the use of some features.
 
 Except for the tutorials, all the documentation is embedded with the source
 code. You can find it in the
@@ -106,7 +106,8 @@ is established by SonarQube. Since using CheckStyle in Eclipse and configuring
 SonarQube to take your project into account is not trivial, you will find
 detailed instructions about them in this guide. We know that these "details"
 may seem boring, but the quality of the source code determines the difficulty
-we will have to maintain it (and therefore to accept your contribution).
+the community will have in maintaining it. Therefore code quality is checked
+before accepting contributions.
 
 Are you ready to go? Great!
 
@@ -128,7 +129,7 @@ Here's how to make your first contribution:
    branch.
 
 4. Create a new branch on your fork. The branch must:
-	- have **develop** branch as source branch.
+	- have the **develop** branch as the source branch.
 	- have a name related to the future contribution. For instance, if you
       want to correct an issue, the name must be **issue-XXX** where **XXX**
       represents the issue number.
@@ -144,7 +145,7 @@ Here's how to make your first contribution:
 
 8. Run all Orekit tests to ensure everything works.
 
-9. Commit your code on your branch and push it on Gitlab (you can make several
+9. Commit your code on your branch and push it to Gitlab (you can make several
     local commits and push them at once).
 
 10. Submit a merge request (a "MR" in the Gitlab jargon) on the forge, by
@@ -204,7 +205,7 @@ In the *Properties* popup, select *Checkstyle* entry.
 In this second popup (i.e. *Local Check Configurations*) define a project
 relative configuration as presented in the figure below. Browse the workspace
 to select your checkstyle.xml file, and tick the *Protect Checkstyle
-configuration file* check box to prevent the plugin to alter the
+configuration file* check box to prevent the plugin from altering the
 configuration.
 
 ![checkstyle-plugin](./images/project-checkstyle-configuration.png).
