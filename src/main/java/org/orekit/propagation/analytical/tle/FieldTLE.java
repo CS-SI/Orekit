@@ -26,17 +26,18 @@ import java.util.Objects;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -747,10 +748,15 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * @param templateTLE first guess used to get identification and estimate new TLE
      * @param <T> type of the element
      * @return TLE matching with Spacecraft State and template identification
+     * @see #stateToTLE(FieldSpacecraftState, FieldTLE, TimeScale, Frame)
+     * @see #stateToTLE(FieldSpacecraftState, FieldTLE, TimeScale, Frame, double, int)
+     * @since 11.0
      */
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE) {
-        return stateToTLE(state, templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+        return stateToTLE(state, templateTLE,
+                          DataContext.getDefault().getTimeScales().getUTC(),
+                          DataContext.getDefault().getFrames().getTEME());
     }
 
     /**
@@ -759,21 +765,46 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * and generates a usable TLE version of a state.
      * New TLE epoch is state epoch.
      *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>
+     * This method uses {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT}
+     * for method convergence.
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param utc the UTC time scale
+     * @param teme the TEME frame to use for propagation
+     * @param <T> type of the element
+     * @return TLE matching with Spacecraft State and template identification
+     * @see #stateToTLE(FieldSpacecraftState, FieldTLE, TimeScale, Frame, double, int)
+     * @since 11.0
+     */
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+                                                                             final TimeScale utc, final Frame teme) {
+        return stateToTLE(state, templateTLE, utc, teme, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
+     * and generates a usable TLE version of a state.
+     * New TLE epoch is state epoch.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param utc the UTC time scale
+     * @param teme the TEME frame to use for propagation
      * @param epsilon used to compute threshold for convergence check
      * @param maxIterations maximum number of iterations for convergence
      * @param <T> type of the element
      * @return TLE matching with Spacecraft State and template identification
+     * @since 11.0
      */
-    @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+                                                                             final TimeScale utc, final Frame teme,
                                                                              final double epsilon, final int maxIterations) {
 
         // Gets equinoctial parameters in TEME frame from state
-        final FieldEquinoctialOrbit<T> equiOrbit = convert(state.getOrbit());
+        final FieldEquinoctialOrbit<T> equiOrbit = convert(state.getOrbit(), teme);
         T sma = equiOrbit.getA();
         T ex  = equiOrbit.getEquinoctialEx();
         T ey  = equiOrbit.getEquinoctialEy();
@@ -783,7 +814,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
 
         // Rough initialization of the TLE
         final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equiOrbit);
-        FieldTLE<T> current = newTLE(keplerianOrbit, templateTLE);
+        FieldTLE<T> current = newTLE(keplerianOrbit, templateTLE, utc);
 
         // Field
         final Field<T> field = state.getDate().getField();
@@ -798,7 +829,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
-            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, templateTLE.getParameters(field));
+            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, new InertialProvider(Rotation.IDENTITY, teme), state.getMass(), teme, templateTLE.getParameters(field));
             final FieldOrbit<T> recovOrbit = propagator.getInitialState().getOrbit();
             final FieldEquinoctialOrbit<T> recovEquiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
@@ -834,7 +865,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
             final FieldKeplerianOrbit<T> newKeplOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE
-            current = newTLE(newKeplOrbit, templateTLE);
+            current = newTLE(newKeplOrbit, templateTLE, utc);
         }
 
         throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
@@ -844,12 +875,11 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * Converts an orbit into an equinoctial orbit expressed in TEME frame.
      *
      * @param orbitIn the orbit to convert
+     * @param teme the TEME frame to use for propagation
      * @param <T> type of the element
      * @return the converted orbit, i.e. equinoctial in TEME frame
      */
-    @DefaultDataContext
-    private static <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn) {
-        final Frame teme = FramesFactory.getTEME();
+    private static <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn, final Frame teme) {
         return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
     }
 
@@ -857,11 +887,12 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * Builds a new TLE from Keplerian parameters and a template for TLE data.
      * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
+     * @param utc the UTC time scale
      * @param <T> type of the element
      * @return TLE with template identification and new orbital parameters
      */
-    @DefaultDataContext
-    private static <T extends CalculusFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit, final FieldTLE<T> templateTLE) {
+    private static <T extends CalculusFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit, final FieldTLE<T> templateTLE,
+                                                                          final TimeScale utc) {
         // Keplerian parameters
         final T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
         final T e           = keplerianOrbit.getE();
@@ -891,7 +922,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         // Returns the new TLE
         return new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                        elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar);
+                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
     }
 
 

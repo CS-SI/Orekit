@@ -19,18 +19,18 @@ package org.orekit.propagation.analytical.tle;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -51,6 +51,15 @@ class TLEGradientConverter extends AbstractGradientConverter {
     /** Current TLE. */
     private final TLE tle;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /** TEME frame. */
+    private final Frame teme;
+
+    /** Attitude provider. */
+    private final AttitudeProvider provider;
+
     /** States with various number of additional propagation parameters. */
     private final List<FieldSpacecraftState<Gradient>> gStates;
 
@@ -61,14 +70,16 @@ class TLEGradientConverter extends AbstractGradientConverter {
 
         super(FREE_STATE_PARAMETERS);
 
-        // TLE
-        this.tle = propagator.getTLE();
+        // TLE and related parameters
+        this.tle  = propagator.getTLE();
+        this.teme = propagator.getFrame();
+        this.utc  = tle.getUtc();
+
+        // Attitude provider
+        this.provider = propagator.getAttitudeProvider();
 
         // Spacecraft state
         final SpacecraftState state = propagator.getInitialState();
-
-        // Derivative field
-        final Field<Gradient> field =  GradientField.getField(FREE_STATE_PARAMETERS);
 
         // Position always has derivatives
         final Vector3D pos = state.getPVCoordinates().getPosition();
@@ -97,8 +108,8 @@ class TLEGradientConverter extends AbstractGradientConverter {
                         new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posG, velG, accG),
                                                   state.getFrame(), gMu);
 
-        // TLE model does not depend on attitude, don't bother recomputing it
-        final FieldAttitude<Gradient> gAttitude = new FieldAttitude<>(field, state.getAttitude());
+        // Attitude
+        final FieldAttitude<Gradient> gAttitude = provider.getAttitude(gOrbit, gOrbit.getDate(), gOrbit.getFrame());
 
         // Initialize the list with the state having 0 force model parameters
         gStates = new ArrayList<>();
@@ -182,7 +193,6 @@ class TLEGradientConverter extends AbstractGradientConverter {
      * @param parameters model parameters as returned by {@link #getParameters(FieldSpacecraftState, TLE)}
      * @return the converted propagator
      */
-    @DefaultDataContext
     public FieldTLEPropagator<Gradient> getPropagator(final FieldSpacecraftState<Gradient> state,
                                                       final Gradient[] parameters) {
 
@@ -204,12 +214,13 @@ class TLEGradientConverter extends AbstractGradientConverter {
         final FieldTLE<Gradient> templateTLE = new FieldTLE<>(satelliteNumber, classification,
                         launchYear, launchNumber, launchPiece, ephemerisType, elementNumber, state.getDate(),
                         zero, zero, zero, zero, zero, zero, zero, zero,
-                        revolutionNumberAtEpoch, bStar);
+                        revolutionNumberAtEpoch, bStar, utc);
 
         // TLE
-        final FieldTLE<Gradient> gTLE = FieldTLE.stateToTLE(state, templateTLE);
+        final FieldTLE<Gradient> gTLE = FieldTLE.stateToTLE(state, templateTLE, utc, teme);
 
-        return FieldTLEPropagator.selectExtrapolator(gTLE, parameters);
+        // Return the "Field" propagator
+        return FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme, parameters);
 
     }
 

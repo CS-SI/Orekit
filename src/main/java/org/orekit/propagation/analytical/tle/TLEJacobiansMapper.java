@@ -17,7 +17,6 @@
 package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -65,7 +64,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
      * @param parameters selected parameters for Jacobian computation
      * @param propagator the propagator that will handle the orbit propagation
      */
-    @DefaultDataContext
     public TLEJacobiansMapper(final String name,
                               final ParameterDriversList parameters,
                               final TLEPropagator propagator) {
@@ -138,7 +136,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
     /** {@inheritDoc} */
     @Override
-    @DefaultDataContext
     public void analyticalDerivatives(final SpacecraftState s) {
 
         // Initialize Jacobians to zero
@@ -166,7 +163,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         final double[] derivativesVy  = gPv.getVelocity().getY().getGradient();
         final double[] derivativesVz  = gPv.getVelocity().getZ().getGradient();
 
-        // update Jacobian with respect to state
+        // Update Jacobian with respect to state
         addToRow(derivativesX,  0, stateGrad);
         addToRow(derivativesY,  1, stateGrad);
         addToRow(derivativesZ,  2, stateGrad);
@@ -189,12 +186,14 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
             ++parameterIndex;
         }
 
+        // State derivatives
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
                 stateTransition[j + dim * i] = stateGrad[i][j];
             }
         }
 
+        // Propagation parameters derivatives
         final int columnTop = dim * dim;
         for (int k = 0; k < paramDim; k++) {
             for (int i = 0; i < dim; ++i) {
