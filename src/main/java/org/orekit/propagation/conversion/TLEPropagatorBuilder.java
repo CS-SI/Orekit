@@ -27,13 +27,14 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.AbstractKalmanModel;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.estimation.sequential.TLEKalmanModel;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -93,8 +94,8 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
                                 final PositionAngle positionAngle,
                                 final double positionScale,
                                 final DataContext dataContext) {
-        super(OrbitType.KEPLERIAN.convertType(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
-                        .getInitialState().getOrbit()),
+        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
+                        .getInitialState().getOrbit(),
               positionAngle, positionScale, false,
               Propagator.getDefaultLaw(dataContext.getFrames()));
         for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
@@ -106,20 +107,31 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
-    @DefaultDataContext
+    @Override
     public TLEPropagator buildPropagator(final double[] normalizedParameters) {
 
         // create the orbit
         setParameters(normalizedParameters);
+        final Orbit           orbit = createInitialOrbit();
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final Frame           teme  = dataContext.getFrames().getTEME();
+        final TimeScale       utc   = dataContext.getTimeScales().getUTC();
 
-        // we really need a Keplerian orbit type
-        final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(createInitialOrbit());
-        final SpacecraftState state = new SpacecraftState(kep);
+        // TLE related to the orbit
+        final TLE tle = TLE.stateToTLE(state, templateTLE, utc, teme);
+        final List<ParameterDriver> drivers = templateTLE.getParametersDrivers();
+        for (int index = 0; index < drivers.size(); index++) {
+            if (drivers.get(index).isSelected()) {
+                tle.getParametersDrivers().get(index).setSelected(true);
+            }
+        }
 
-        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(templateTLE, getAttitudeProvider(),
-                                                                          Propagator.DEFAULT_MASS, dataContext.getFrames().getTEME());
-        propagator.resetInitialState(state);
-        return propagator;
+        // propagator
+        return TLEPropagator.selectExtrapolator(tle,
+                                                getAttitudeProvider(),
+                                                Propagator.DEFAULT_MASS,
+                                                teme);
+
     }
 
     /** Getter for the template TLE.

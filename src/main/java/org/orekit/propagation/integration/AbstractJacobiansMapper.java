@@ -17,6 +17,9 @@
 package org.orekit.propagation.integration;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
+import org.orekit.propagation.numerical.JacobiansMapper;
+import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
 
 /** Base class for jacobian mapper.
@@ -67,10 +70,12 @@ public abstract class AbstractJacobiansMapper {
     }
 
     /** Compute the derivatives needed by analytical orbit determination methods.
+     * <p>
+     * Analytical derivatives are used to calculate state transition matrix of
+     * analytical orbit propagators and short period derivatives of DSST orbit
+     * propagator. In other word, this method does nothing for the numerical propagator.
      *
-     *<p> By default, this method does nothing.
-     *
-     * @param s initial spacecraft state with respect to which calculate derivatives
+     * @param s spacecraft state with respect to which calculate derivatives
      */
     public void analyticalDerivatives(final SpacecraftState s) {
         // noting by default
@@ -91,7 +96,11 @@ public abstract class AbstractJacobiansMapper {
      * <p>
      * This method extract the data from the {@code state} and put it in the
      * {@code dYdY0} array.
-     * </p>
+     * <p>
+     * For {@link JacobiansMapper} and {@link TLEJacobiansMapper}, the method provides
+     * the Jacobian with respect to Cartesian elements.
+     * For {@link DSSTJacobiansMapper} the method provides the Jacobian with respect to
+     * Equinoctial elements.
      * @param state spacecraft state
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
      * @see #getParametersJacobian(SpacecraftState, double[][])

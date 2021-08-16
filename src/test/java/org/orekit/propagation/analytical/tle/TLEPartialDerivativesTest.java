@@ -30,14 +30,13 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -51,20 +50,19 @@ public class TLEPartialDerivativesTest {
 
     @Test
     public void testStateJacobianSDP4() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestStateJacobian(4.63e-7, tleGPS);
+        doTestStateJacobian(2.53e-9, tleGPS);
     }
 
     @Test
     public void testStateJacobianSGP4() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestStateJacobian(4.71e-2, tleSPOT);
+        doTestStateJacobian(7.65e-10, tleSPOT);
     }
 
     @Test
     public void testBStarDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(TLE.B_STAR,
-                                    5.88e-4,
-                                    tleGPS,
-                                    PropagationType.MEAN);
+                                    5.16e-3,
+                                    tleSPOT);
     }
    
     @Test(expected=OrekitException.class)
@@ -133,46 +131,44 @@ public class TLEPartialDerivativesTest {
     
     private void doTestStateJacobian(double tolerance, TLE tle)
         throws FileNotFoundException, UnsupportedEncodingException {
-               
-        double dt = Constants.JULIAN_DAY;
 
         // compute state Jacobian using PartialDerivatives
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         final SpacecraftState initialState = propagator.getInitialState();
-        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
-        KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
+        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
+        Orbit orbit = propagator.getInitialState().getOrbit();
         TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
         final SpacecraftState initState = partials.setInitialJacobians(propagator.getInitialState());
         final double[] stateVector = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(initState.getOrbit(), PositionAngle.MEAN, stateVector, null);
+        OrbitType.CARTESIAN.mapOrbitToArray(initState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        propagator.setInitialState(initState);
+        propagator.resetInitialState(initState);
         mapper.analyticalDerivatives(propagator.propagate(target));
         mapper.getStateJacobian(initState, dYdY0);
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
         TLEPropagator propagator2;
-        double[] steps = NumericalPropagator.tolerances(10, orbit, OrbitType.KEPLERIAN)[0];
+        double[] steps = NumericalPropagator.tolerances(10, orbit, OrbitType.CARTESIAN)[0];
         for (int i = 0; i < 6; ++i) {
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, -4 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, -4 * steps[i], i), tle));
             SpacecraftState sM4h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, -3 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, -3 * steps[i], i), tle));
             SpacecraftState sM3h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, -2 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, -2 * steps[i], i), tle));
             SpacecraftState sM2h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, -1 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, -1 * steps[i], i), tle));
             SpacecraftState sM1h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, +1 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, +1 * steps[i], i), tle));
             SpacecraftState sP1h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, +2 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, +2 * steps[i], i), tle));
             SpacecraftState sP2h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, +3 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, +3 * steps[i], i), tle));
             SpacecraftState sP3h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, +4 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, +4 * steps[i], i), tle));
             SpacecraftState sP4h = propagator2.propagate(target);
-            fillJacobianColumn(dYdY0Ref, i, OrbitType.KEPLERIAN, steps[i],
+            fillJacobianColumn(dYdY0Ref, i, OrbitType.CARTESIAN, steps[i],
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
         }
 
@@ -186,10 +182,8 @@ public class TLEPartialDerivativesTest {
         }
     }
 
-    private void doTestParametersDerivatives(String parameterName, double tolerance, TLE tle,
-                                             PropagationType type) {
+    private void doTestParametersDerivatives(String parameterName, double tolerance, TLE tle) {
 
-        double dt = Constants.JULIAN_DAY;       
         // compute state Jacobian using PartialDerivatives
         ParameterDriversList bound = new ParameterDriversList();
 
@@ -203,11 +197,11 @@ public class TLEPartialDerivativesTest {
         }
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         final SpacecraftState initialState = propagator.getInitialState();
-        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
+        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
         TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
         final SpacecraftState endState = partials.setInitialJacobians(propagator.propagate(target));
         final double[] stateVector = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
+        OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdP =  new double[TLEJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
         mapper.analyticalDerivatives(endState);
@@ -215,62 +209,37 @@ public class TLEPartialDerivativesTest {
 
         // compute reference Jacobian using finite differences
         
-        OrbitType orbitType = OrbitType.KEPLERIAN;
+        OrbitType orbitType = OrbitType.CARTESIAN;
         TLEPropagator propagator2 = TLEPropagator.selectExtrapolator(tle);
-        final KeplerianOrbit initialOrbit = (KeplerianOrbit) propagator2.getInitialState().getOrbit();
         double[][] dYdPRef = new double[6][1];
 
         ParameterDriver selected = bound.getDrivers().get(0);
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
         selected.setValue(p0 - 4 * h);
-        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
-                                                   initialState.getFrame(), initialState.getDate(),
-                                                   initialState.getMu(), // the mu may have been reset above
-                                                   initialState.getAttitude()));
-        SpacecraftState sM4h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        propagator2 = TLEPropagator.selectExtrapolator(newTLE(tle, selected.getValue()));
+        SpacecraftState sM4h = propagator2.propagate(target);
         selected.setValue(p0 - 3 * h);
-        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
-                                                   initialState.getFrame(), initialState.getDate(),
-                                                   initialState.getMu(), // the mu may have been reset above
-                                                   initialState.getAttitude()));
-        SpacecraftState sM3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        propagator2 = TLEPropagator.selectExtrapolator(newTLE(tle, selected.getValue()));
+        SpacecraftState sM3h = propagator2.propagate(target);
         selected.setValue(p0 - 2 * h);
-        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
-                                                   initialState.getFrame(), initialState.getDate(),
-                                                   initialState.getMu(), // the mu may have been reset above
-                                                   initialState.getAttitude()));
-        SpacecraftState sM2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        propagator2 = TLEPropagator.selectExtrapolator(newTLE(tle, selected.getValue()));
+        SpacecraftState sM2h = propagator2.propagate(target);
         selected.setValue(p0 - 1 * h);
-        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
-                                                   initialState.getFrame(), initialState.getDate(),
-                                                   initialState.getMu(), // the mu may have been reset above
-                                                   initialState.getAttitude()));
-        SpacecraftState sM1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        propagator2 = TLEPropagator.selectExtrapolator(newTLE(tle, selected.getValue()));
+        SpacecraftState sM1h = propagator2.propagate(target);
         selected.setValue(p0 + 1 * h);
-        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
-                                                   initialState.getFrame(), initialState.getDate(),
-                                                   initialState.getMu(), // the mu may have been reset above
-                                                   initialState.getAttitude()));
-        SpacecraftState sP1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        propagator2 = TLEPropagator.selectExtrapolator(newTLE(tle, selected.getValue()));
+        SpacecraftState sP1h = propagator2.propagate(target);
         selected.setValue(p0 + 2 * h);
-        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
-                                                   initialState.getFrame(), initialState.getDate(),
-                                                   initialState.getMu(), // the mu may have been reset above
-                                                   initialState.getAttitude()));
-        SpacecraftState sP2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        propagator2 = TLEPropagator.selectExtrapolator(newTLE(tle, selected.getValue()));
+        SpacecraftState sP2h = propagator2.propagate(target);
         selected.setValue(p0 + 3 * h);
-        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
-                                                   initialState.getFrame(), initialState.getDate(),
-                                                   initialState.getMu(), // the mu may have been reset above
-                                                   initialState.getAttitude()));
-        SpacecraftState sP3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        propagator2 = TLEPropagator.selectExtrapolator(newTLE(tle, selected.getValue()));
+        SpacecraftState sP3h = propagator2.propagate(target);
         selected.setValue(p0 + 4 * h);
-        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
-                                                   initialState.getFrame(), initialState.getDate(),
-                                                   initialState.getMu(), // the mu may have been reset above
-                                                   initialState.getAttitude()));
-        SpacecraftState sP4h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        propagator2 = TLEPropagator.selectExtrapolator(newTLE(tle, selected.getValue()));
+        SpacecraftState sP4h = propagator2.propagate(target);
         fillJacobianColumn(dYdPRef, 0, orbitType, h,
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
        
@@ -326,10 +295,19 @@ public class TLEPartialDerivativesTest {
     private SpacecraftState arrayToState(double[][] array, 
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
-        KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);
+        CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);
         return new SpacecraftState(orbit, attitude);
     }
-      
+
+    private TLE newTLE(final TLE template, final double newBStar) {
+        return new TLE(template.getSatelliteNumber(), template.getClassification(),
+                       template.getLaunchYear(), template.getLaunchNumber(), template.getLaunchPiece(),
+                       template.getEphemerisType(), template.getElementNumber(), template.getDate(),
+                       template.getMeanMotion(), template.getMeanMotionFirstDerivative(), template.getMeanMotionSecondDerivative(),
+                       template.getE(), template.getI(), template.getPerigeeArgument(),
+                       template.getRaan(), template.getMeanAnomaly(), template.getRevolutionNumberAtEpoch(),
+                       newBStar);
+    }
 
     @Before
     public void setUp() {

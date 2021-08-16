@@ -32,9 +32,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
@@ -220,7 +218,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         initializeCommons(parameters);
         sxpInitialize(parameters);
         // set the initial state
-        final FieldKeplerianOrbit<T> orbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(propagateOrbit(initialTLE.getDate(), parameters));
+        final FieldOrbit<T> orbit = propagateOrbit(initialTLE.getDate(), parameters);
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude, mass));
     }
@@ -577,12 +575,18 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      */
     protected abstract void sxpPropagate(T t, T[] parameters);
 
-    /** {@inheritDoc} */
-    @DefaultDataContext
+    /** {@inheritDoc}
+     * <p>
+     * For TLE propagator, calling this method is only recommended
+     * for covariance propagation when the new <code>state</code>
+     * differs from the previous one by only adding the additional
+     * state containing the derivatives.
+     * </p>
+     */
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
-        final FieldTLE<T> newTLE = FieldTLE.stateToTLE(state, tle);
+        final FieldTLE<T> newTLE = FieldTLE.stateToTLE(state, tle, utc, teme);
         this.tle = newTLE;
         initializeCommons(tle.getParameters(state.getDate().getField()));
         sxpInitialize(tle.getParameters(state.getDate().getField()));
@@ -600,7 +604,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
 
     /** {@inheritDoc} */
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
-        return OrbitType.KEPLERIAN.convertType(new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().add(TLEConstants.MU)));
+        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().add(TLEConstants.MU));
     }
 
     /** Get the underlying TLE.
