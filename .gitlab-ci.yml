@@ -47,7 +47,8 @@ verify:
 verify:warning:
   stage: verify
   script:
-    - echo "Please, configure SonarQube!"
+    - echo "Please, configure SonarQube by following steps described in the contribution guide:"
+    - echo "https://www.orekit.org/site-orekit-development/contributing.html"
     - exit 1
   allow_failure: true
   rules:
@@ -89,7 +90,6 @@ deploy:artifacts:
     - develop@orekit/orekit
     - /^release-[.0-9]+$/@orekit/orekit
     - master@orekit/orekit
-
 
 deploy:site:
   stage: deploy
