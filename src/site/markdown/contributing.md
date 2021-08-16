@@ -46,7 +46,7 @@ You can report bugs in our
 [bug tracking system](https://gitlab.orekit.org/orekit/orekit/-/issues). If
 you have trouble qualifying the problem, talk about it on the
 [forum](https://forum.orekit.org/) first. **And remember: the more information
-we get, the easier the community can reproduce and fix it.**
+the community get, the easier the community can reproduce and fix it.**
 
 The bug tracking system is also the right place to report your feature
 requests. We do not promise to take them into account, and even less to do it
