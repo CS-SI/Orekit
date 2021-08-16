@@ -189,7 +189,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
             ++parameterIndex;
         }
 
-        // the previous derivatives correspond to state transition matrix with mean motion as 1rst element instead of semi major axis
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
                 stateTransition[j + dim * i] = stateGrad[i][j];
@@ -207,7 +206,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
     /** Fill Jacobians rows.
      * @param derivatives derivatives of a component
-     * @param index component index (0 for a, 1 for e, 2 for i, 3 for RAAN, 4 for PA, 5 for M)
+     * @param index component index (0 for X, 1 for Y, 2 for Z, 3 for Vx, 4 for Vy, 5 for Vz)
      * @param grad Jacobian of mean elements rate with respect to mean elements
      */
     private void addToRow(final double[] derivatives, final int index,
