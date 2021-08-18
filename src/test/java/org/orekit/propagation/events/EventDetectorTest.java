@@ -82,7 +82,8 @@ public class EventDetectorTest {
 
             @Override
             public void init(SpacecraftState initialState,
-                             AbsoluteDate target) {
+                             AbsoluteDate target,
+                             DateDetector detector) {
                 initCalled = true;
             }
         };
