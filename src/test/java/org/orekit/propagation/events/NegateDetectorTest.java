@@ -51,7 +51,7 @@ public class NegateDetectorTest {
 
         //verify
         Mockito.verify(a).init(s, t);
-        Mockito.verify(c).init(s, t);
+        Mockito.verify(c).init(s, t, detector);
     }
 
     /**

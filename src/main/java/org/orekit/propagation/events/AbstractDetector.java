@@ -73,10 +73,11 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * handler. If a subclass overrides this method it should call {@code
      * super.init(s0, t)}.
      */
+    @SuppressWarnings("unchecked")
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {
         forward = t.durationFrom(s0.getDate()) >= 0.0;
-        getHandler().init(s0, t);
+        getHandler().init(s0, t, (T) this);
     }
 
     /** {@inheritDoc} */
