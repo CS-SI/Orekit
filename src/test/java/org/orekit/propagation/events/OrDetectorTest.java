@@ -139,7 +139,7 @@ public class OrDetectorTest {
         Assert.assertEquals(2, or.getDetectors().size());
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
-        Mockito.verify(c).init(s, t);
+        Mockito.verify(c).init(s, t, or);
     }
 
     /** check when no operands are passed to the constructor. */

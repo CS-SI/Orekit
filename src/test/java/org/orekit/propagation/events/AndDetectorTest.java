@@ -135,7 +135,7 @@ public class AndDetectorTest {
         Assert.assertEquals(2, and.getDetectors().size());
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
-        Mockito.verify(c).init(s, t);
+        Mockito.verify(c).init(s, t, and);
     }
 
     /** check when no operands are passed to the constructor. */
