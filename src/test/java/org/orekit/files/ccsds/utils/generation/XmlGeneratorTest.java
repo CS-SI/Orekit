@@ -35,13 +35,14 @@ public class XmlGeneratorTest {
             generator.writeEntry("KEY", 1234567.8, Unit.parse("Hz"), false);
             generator.exitSection();
             generator.endMessage("abc");
-            Assert.assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                "<abc id=\"CCSDS_ABC_VERSION\" version=\"99.0\">\n" +
-                                "  <BLOCK>\n" +
-                                "    <KEY units=\"Hz\">1234567.8</KEY>\n" +
-                                "  </BLOCK>\n" +
-                                "</abc>\n",
+            Assert.assertEquals(String.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n" +
+                                              "<abc id=\"CCSDS_ABC_VERSION\" version=\"99.0\">%n" +
+                                              "  <BLOCK>%n" +
+                                              "    <KEY units=\"Hz\">1234567.8</KEY>%n" +
+                                              "  </BLOCK>%n" +
+                                              "</abc>%n"),
                                 caw.toString());
+
         }
     }
 
@@ -53,11 +54,11 @@ public class XmlGeneratorTest {
             generator.writeEntry("KEY_2",    1234567.8,   Unit.parse("n/a"),       false);
             generator.writeEntry("KEY_3",    1234567.8,   Unit.parse("1"),         false);
             generator.writeEntry("LOOOOONG", "1234567.8", null,                    false);
-            Assert.assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                "<KEY_1 units=\"km*kg**3/s**0.5\">1234.5678</KEY_1>\n" +
-                                "<KEY_2>1234567.8</KEY_2>\n" +
-                                "<KEY_3>1234567.8</KEY_3>\n" +
-                                "<LOOOOONG>1234567.8</LOOOOONG>\n",
+            Assert.assertEquals(String.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n" +
+                                              "<KEY_1 units=\"km*kg**3/s**0.5\">1234.5678</KEY_1>%n" +
+                                              "<KEY_2>1234567.8</KEY_2>%n" +
+                                              "<KEY_3>1234567.8</KEY_3>%n" +
+                                              "<LOOOOONG>1234567.8</LOOOOONG>%n"),
                                 caw.toString());
         }
     }
@@ -69,10 +70,10 @@ public class XmlGeneratorTest {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), false);
             generator.writeEntry("PERCENT", 0.25, Unit.parse("%"), false);
-            Assert.assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                "<KEY_1 units=\"deg\">90.0</KEY_1>\n" +
-                                "<KEY_2 units=\"deg\">180.0</KEY_2>\n" +
-                                "<PERCENT units=\"%\">25.0</PERCENT>\n",
+            Assert.assertEquals(String.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n" +
+                                              "<KEY_1 units=\"deg\">90.0</KEY_1>%n" +
+                                              "<KEY_2 units=\"deg\">180.0</KEY_2>%n" +
+                                              "<PERCENT units=\"%%\">25.0</PERCENT>%n"),
                                 caw.toString());
         }
     }
@@ -83,9 +84,9 @@ public class XmlGeneratorTest {
         try (Generator generator = new XmlGenerator(caw, 2, "", false)) {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), true);
-            Assert.assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                "<KEY_1>90.0</KEY_1>\n" +
-                                "<KEY_2>180.0</KEY_2>\n",
+            Assert.assertEquals(String.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n" +
+                                              "<KEY_1>90.0</KEY_1>%n" +
+                                              "<KEY_2>180.0</KEY_2>%n"),
                                 caw.toString());
         }
     }
