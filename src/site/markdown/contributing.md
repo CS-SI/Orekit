@@ -135,8 +135,8 @@ Here's how to make your first contribution:
       represents the issue number.
 
 5. Be sure to activate checkstyle (use the **checkstyle.xml** file at the root
-    of the project) to help you follow the coding rules of Orekit (see Eclipse
-    example below).
+    of the project) to help you follow the coding rules of Orekit (see
+    examples below).
 
 6. Perform your development and validation.
 
@@ -177,12 +177,22 @@ compliant with a coding standard. It automates the process of checking Java
 code to spare humans of this boring (but important) task. This makes it ideal
 for projects that want to enforce a coding standard.
 
-Configuring checkstyle can be a difficult task when installing Orekit in an
-Integrated Development Environment (IDE). However, it is an important step for
-contributing to the library.
+### Verify checkstyle using Maven
+
+Checkstyle violations can be quickly verified in a Linux terminal by using
+Maven commands. Contributors can execute the following command in the same
+folder as the `pom.xml` file:
+
+    mvn checkstyle:check findbugs:check test
+
+Note that this command is also used to check that no Spotbugs warning were
+created (`findbugs:check`) and that the tests are running correctly (`test`).
 
 ### Configure checkstyle in Eclipse
 
+Configuring checkstyle can be a difficult task when installing Orekit in an
+Integrated Development Environment (IDE). However, it is an important step for
+contributing to the library.
 Here are the steps you will need to follow to configure checkstyle in Eclipse.
 
 #### Installing Eclipse Checkstyle plugin.
