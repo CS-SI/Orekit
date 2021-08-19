@@ -71,6 +71,21 @@ public class OemParserTest {
     }
 
     @Test
+    public void testIssue788() {
+
+        // Read the file
+        final String ex = "/ccsds/odm/oem/test.oem";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final OemParser parser  = new ParserBuilder().buildOemParser();
+        final Oem file = parser.parseMessage(source);
+
+        // Verify
+        Assert.assertEquals(file.getDataContext().getCelestialBodies().getEarth().getGM(), file.getSegments().get(0).getMu(), Double.MIN_VALUE);
+        Assert.assertEquals(3.986004328969392E14, file.getSegments().get(0).getMu(), Double.MIN_VALUE);
+
+    }
+
+    @Test
     public void testParseOEM1() throws IOException {
         //
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
