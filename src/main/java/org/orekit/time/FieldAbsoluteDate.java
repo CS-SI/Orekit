@@ -1493,13 +1493,15 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         return toString(DataContext.getDefault().getTimeScales().getUTC());
     }
 
-    /** Get a String representation of the instant location.
+    /**
+     * Get a String representation of the instant location in ISO-8601 format without the
+     * UTC offset and with up to 16 digits of precision for the seconds value.
+     *
      * @param timeScale time scale to use
-     * @return a string representation of the instance,
-     * in ISO-8601 format with milliseconds accuracy
+     * @return a string representation of the instance.
      */
     public String toString(final TimeScale timeScale) {
-        return getComponents(timeScale).toString(timeScale.minuteDuration(this));
+        return getComponents(timeScale).toStringWithoutUtcOffset();
     }
 
     /** Get a String representation of the instant location for a local time.

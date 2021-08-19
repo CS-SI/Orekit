@@ -1094,14 +1094,14 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(   7, dtc.getTime().getHour());
         Assert.assertEquals(  54, dtc.getTime().getMinute());
         Assert.assertEquals(60 - 9.094947e-13, dtc.getTime().getSecond(), 1.0e-15);
-        Assert.assertEquals("2015-09-30T07:55:00.000",
+        Assert.assertEquals("2015-09-30T07:54:59.99999999999909",
                             date.toString(utc));
         FieldAbsoluteDate<T> beforeMidnight = new FieldAbsoluteDate<>(field, 2008, 2, 29, 23, 59, 59.9994, utc);
         FieldAbsoluteDate<T> stillBeforeMidnight = beforeMidnight.shiftedBy(2.0e-4);
         Assert.assertEquals(59.9994, beforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
         Assert.assertEquals(59.9996, stillBeforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
-        Assert.assertEquals("2008-02-29T23:59:59.999", beforeMidnight.toString(utc));
-        Assert.assertEquals("2008-03-01T00:00:00.000", stillBeforeMidnight.toString(utc));
+        Assert.assertEquals("2008-02-29T23:59:59.9994", beforeMidnight.toString(utc));
+        Assert.assertEquals("2008-02-29T23:59:59.9996", stillBeforeMidnight.toString(utc));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue508(final Field<T> field) {
