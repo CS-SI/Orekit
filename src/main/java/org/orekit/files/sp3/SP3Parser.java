@@ -215,6 +215,10 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             type = SP3FileType.GLONASS;
         } else if ("L".equalsIgnoreCase(fileType)) {
             type = SP3FileType.LEO;
+        } else if ("S".equalsIgnoreCase(fileType)) {
+            type = SP3FileType.SBAS;
+        } else if ("I".equalsIgnoreCase(fileType)) {
+            type = SP3FileType.IRNSS;
         } else if ("E".equalsIgnoreCase(fileType)) {
             type = SP3FileType.GALILEO;
         } else if ("C".equalsIgnoreCase(fileType)) {
