@@ -495,6 +495,7 @@ public class SP3ParserTest {
         final SP3Coordinate coord = coords.get(0);
 
         // Verify
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
 
         // PL52   2228.470946   7268.265924   9581.471543
         // VL52 -44856.945000  24321.151000  -7116.222800
@@ -509,7 +510,7 @@ public class SP3ParserTest {
     @Test
     public void testIssue827() {
 
-        // Test issue 803 (see https://gitlab.orekit.org/orekit/orekit/-/issues/803)
+        // Test issue 827 (see https://gitlab.orekit.org/orekit/orekit/-/issues/827)
         final String    ex     = "/sp3/truncated-nsgf.orb.lageos2.160305.v35.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
@@ -521,6 +522,7 @@ public class SP3ParserTest {
 
         // Verify
         Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
 
         // 2016  2 28 0 0 0.00000000
         Assert.assertEquals(new AbsoluteDate(2016, 2, 28, 0, 0, 0,
@@ -534,6 +536,34 @@ public class SP3ParserTest {
                      coord);
         Assert.assertEquals(999999.999999, coord.getClockCorrection(), 1.0e-6);
         Assert.assertEquals(999999.999999, coord.getClockRateChange(), 1.0e-6);
+
+    }
+
+    @Test
+    public void testIssue828() {
+
+        // Test issue 828 (see https://gitlab.orekit.org/orekit/orekit/-/issues/828)
+        final String    ex     = "/sp3/example-d-3.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.IRNSS, file.getType());
+
+    }
+
+    @Test
+    public void testIssue828Bis() {
+
+        // Test issue 828 (see https://gitlab.orekit.org/orekit/orekit/-/issues/828)
+        final String    ex     = "/sp3/example-d-4.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.SBAS, file.getType());
 
     }
 
