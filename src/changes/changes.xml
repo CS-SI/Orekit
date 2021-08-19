@@ -36,6 +36,9 @@
       <action dev="bryan" type="fix" issue="820">
         TLE Jacobians are now calculated in cartesian elements.
       </action>
+      <action dev="evan" type="update" issue="825">
+        In AbsoluteDate.toString() fallback to TAI when no leap seconds are loaded.
+      </action>
       <action dev="evan" type="update" issue="591">
         Fix TimeComponents.toString(): correct ISO 8601 with UTC offset, rounding issues.
         Backwards incompatible.

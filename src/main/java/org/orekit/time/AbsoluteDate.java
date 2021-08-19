@@ -1307,17 +1307,46 @@ public class AbsoluteDate
         return (int) (l ^ (l >>> 32));
     }
 
-    /** Get a String representation of the instant location in UTC time scale.
+    /**
+     * Get a String representation of the instant location.
+     *
+     * <p> Since this method is used in exception messages and error handling every
+     * effort
+     * is made to return some representation of the instant. If UTC is available from the
+     * default data context then it is used to format the string in UTC. If not then TAI
+     * is used. Finally if the prior attempts fail this method falls back to converting
+     * this class's internal representation to a string.
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
-     * @return a string representation of the instance,
-     * in ISO-8601 format with milliseconds accuracy
+     * @return a string representation of the instance, in ISO-8601 format if UTC is
+     * available from the default data context.
      * @see #toString(TimeScale)
      */
     @DefaultDataContext
     public String toString() {
-        return toString(DataContext.getDefault().getTimeScales().getUTC());
+        try {
+            // try to use UTC first at that is likely most familiar to the user.
+            return toString(DataContext.getDefault().getTimeScales().getUTC());
+        } catch (RuntimeException e1) {
+            // catch OrekitException, OrekitIllegalStateException, etc.
+            try {
+                // UTC failed, try to use TAI
+                return toString(new TAIScale()) + " TAI";
+            } catch (RuntimeException e2) {
+                // catch OrekitException, OrekitIllegalStateException, etc.
+                // Likely failed to convert to ymdhms.
+                // Give user some indication of what time it is.
+                try {
+                    return "(" + this.epoch + " + " + this.offset + ") seconds past epoch";
+                } catch (RuntimeException e3) {
+                    // give up and throw an exception
+                    e2.addSuppressed(e3);
+                    e1.addSuppressed(e2);
+                    throw e1;
+                }
+            }
+        }
     }
 
     /**

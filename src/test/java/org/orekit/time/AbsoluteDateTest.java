@@ -38,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -1289,6 +1290,36 @@ public class AbsoluteDateTest {
     private void checkToString(final AbsoluteDate d, final String s) {
         MatcherAssert.assertThat(d.toString(), CoreMatchers.is(s));
         MatcherAssert.assertThat(d.getComponents(utc).toString(), CoreMatchers.is(s + "+00:00"));
+    }
+
+    /**
+     * Check {@link AbsoluteDate#toString()} when UTC throws an exception. This ~is~ was
+     * the most common issue new and old users face.
+     */
+    @Test
+    public void testToStringException() {
+        Utils.setDataRoot("no-data");
+        try {
+            DataContext.getDefault().getTimeScales().getUTC();
+            Assert.fail("Expected Exception");
+        } catch (OrekitException e) {
+            // expected
+            Assert.assertEquals(e.getSpecifier(), OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
+        }
+        // try some unusual values
+        MatcherAssert.assertThat(present.toString(), CoreMatchers.is("2000-01-01T12:00:32.000 TAI"));
+        MatcherAssert.assertThat(present.shiftedBy(Double.POSITIVE_INFINITY).toString(),
+                CoreMatchers.is("5881610-07-11T23:59:59.999 TAI"));
+        MatcherAssert.assertThat(present.shiftedBy(Double.NEGATIVE_INFINITY).toString(),
+                CoreMatchers.is("-5877490-03-03T00:00:00.000 TAI"));
+        String nan = "1.8".equals(System.getProperty("java.specification.version")) ? "\uFFFD" : "NaN";
+        MatcherAssert.assertThat(present.shiftedBy(Double.NaN).toString(),
+                CoreMatchers.is("2000-01-01T12:00:" + nan + " TAI"));
+        // infinity is special cased, but I can make AbsoluteDate.offset larger than
+        // Long.MAX_VALUE see #584
+        AbsoluteDate d = present.shiftedBy(1e300).shiftedBy(1e300).shiftedBy(1e300);
+        MatcherAssert.assertThat(d.toString(),
+                CoreMatchers.is("(-9223372036854775779 + 3.0E300) seconds past epoch"));
     }
 
     @Before
