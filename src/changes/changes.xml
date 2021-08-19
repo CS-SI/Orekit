@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="827">
+        Fixed time system used in SP3 files.
+      </action>
       <action dev="bryan" type="fix" issue="803">
         Fixed parsing of clock values in SP3 files.
       </action>

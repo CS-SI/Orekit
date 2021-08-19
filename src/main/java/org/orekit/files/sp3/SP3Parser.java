@@ -39,6 +39,7 @@ import org.orekit.files.sp3.SP3.SP3FileType;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -252,6 +253,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         /** The timescale used in the SP3 file. */
         private TimeScale timeScale;
 
+        /** Date and time of the file. */
+        private DateTimeComponents epoch;
+
         /** The number of satellites as contained in the SP3 file. */
         private int maxSatellites;
 
@@ -278,6 +282,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             latestPosition     = null;
             latestClock        = 0.0;
             hasVelocityEntries = false;
+            epoch              = DateTimeComponents.JULIAN_EPOCH;
             timeScale          = timeScales.getGPS();
             maxSatellites      = 0;
             nbAccuracies       = 0;
@@ -320,11 +325,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final int    minute = scanner.nextInt();
                     final double second = scanner.nextDouble();
 
-                    final AbsoluteDate epoch = new AbsoluteDate(year, month, day,
-                                                                hour, minute, second,
-                                                                pi.timeScales.getGPS());
-
-                    pi.file.setEpoch(epoch);
+                    pi.epoch = new DateTimeComponents(year, month, day,
+                                                      hour, minute, second);
 
                     final int numEpochs = scanner.nextInt();
                     pi.file.setNumberOfEpochs(numEpochs);
@@ -457,7 +459,10 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                         ts = TimeSystem.valueOf(tsStr);
                     }
                     pi.file.setTimeSystem(ts);
+                    pi.timeScale = ts.getTimeScale(pi.timeScales);
 
+                    // now we know the time scale used, we can set the file epoch
+                    pi.file.setEpoch(new AbsoluteDate(pi.epoch, pi.timeScale));
                 }
 
             }
