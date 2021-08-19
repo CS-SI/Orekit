@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="829">
+        Fixed DataSourceTest.testFileName for Windows users.
+      </action>
       <action dev="bryan" type="fix" issue="788" due-to="luc">
         Fixed missing call to setMuCreated() in OemParser.
       </action>
