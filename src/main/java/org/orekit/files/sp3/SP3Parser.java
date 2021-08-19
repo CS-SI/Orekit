@@ -59,6 +59,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class SP3Parser implements EphemerisFileParser<SP3> {
 
+    /** Bad or absent clock values are to be set to 999999.999999. */
+    public static final double DEFAULT_CLOCK_VALUE = 999999.999999;
+
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
 
@@ -574,8 +577,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
 
                     // clock (microsec)
-                    pi.latestClock =
-                            Double.parseDouble(line.substring(46, 60).trim()) * 1e-6;
+                    pi.latestClock = line.length() <= 46 ?
+                                                          DEFAULT_CLOCK_VALUE :
+                                                              Double.parseDouble(line.substring(46, 60).trim()) * 1e-6;
 
                     // the additional items are optional and not read yet
 
@@ -657,8 +661,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
 
                     // clock rate in file is 1e-4 us / s
-                    final double clockRateChange =
-                            Double.parseDouble(line.substring(46, 60).trim()) * 1e-4;
+                    final double clockRateChange = line.length() <= 46 ?
+                                                                        DEFAULT_CLOCK_VALUE :
+                                                                            Double.parseDouble(line.substring(46, 60).trim()) * 1e-4;
 
                     // the additional items are optional and not read yet
 
