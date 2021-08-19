@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="828">
+        Fixed missing file types in SP3Parser.
+      </action>
       <action dev="bryan" type="fix" issue="827">
         Fixed time system used in SP3 files.
       </action>
