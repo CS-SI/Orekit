@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -31,9 +30,6 @@ import org.orekit.time.FieldAbsoluteDate;
  *  </p>
  */
 public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
-
-    /** \(2\pi\) . */
-    public static final double TWO_PI = 2 * FastMath.PI;
 
     /** Orbit date. */
     private final FieldAbsoluteDate<T> date;
@@ -119,9 +115,7 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
      */
     public FieldAuxiliaryElements(final FieldOrbit<T> orbit, final int retrogradeFactor) {
 
-        final Field<T> field = orbit.getDate().getField();
-        final T zero = field.getZero();
-        final T pi = zero.add(FastMath.PI);
+        final T pi = orbit.getDate().getField().getZero().getPi();
 
         // Date of the orbit
         date = orbit.getDate();

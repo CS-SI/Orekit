@@ -94,7 +94,7 @@ public class TLERangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 6.9e-09);
+        Assert.assertEquals(0, maxRelativeError, 1.6e-08);
 
     }
 

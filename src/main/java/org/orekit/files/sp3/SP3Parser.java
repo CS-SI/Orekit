@@ -39,6 +39,7 @@ import org.orekit.files.sp3.SP3.SP3FileType;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -58,6 +59,9 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  */
 public class SP3Parser implements EphemerisFileParser<SP3> {
+
+    /** Bad or absent clock values are to be set to 999999.999999. */
+    public static final double DEFAULT_CLOCK_VALUE = 999999.999999;
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -211,6 +215,10 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             type = SP3FileType.GLONASS;
         } else if ("L".equalsIgnoreCase(fileType)) {
             type = SP3FileType.LEO;
+        } else if ("S".equalsIgnoreCase(fileType)) {
+            type = SP3FileType.SBAS;
+        } else if ("I".equalsIgnoreCase(fileType)) {
+            type = SP3FileType.IRNSS;
         } else if ("E".equalsIgnoreCase(fileType)) {
             type = SP3FileType.GALILEO;
         } else if ("C".equalsIgnoreCase(fileType)) {
@@ -249,6 +257,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         /** The timescale used in the SP3 file. */
         private TimeScale timeScale;
 
+        /** Date and time of the file. */
+        private DateTimeComponents epoch;
+
         /** The number of satellites as contained in the SP3 file. */
         private int maxSatellites;
 
@@ -275,6 +286,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             latestPosition     = null;
             latestClock        = 0.0;
             hasVelocityEntries = false;
+            epoch              = DateTimeComponents.JULIAN_EPOCH;
             timeScale          = timeScales.getGPS();
             maxSatellites      = 0;
             nbAccuracies       = 0;
@@ -317,11 +329,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final int    minute = scanner.nextInt();
                     final double second = scanner.nextDouble();
 
-                    final AbsoluteDate epoch = new AbsoluteDate(year, month, day,
-                                                                hour, minute, second,
-                                                                pi.timeScales.getGPS());
-
-                    pi.file.setEpoch(epoch);
+                    pi.epoch = new DateTimeComponents(year, month, day,
+                                                      hour, minute, second);
 
                     final int numEpochs = scanner.nextInt();
                     pi.file.setNumberOfEpochs(numEpochs);
@@ -454,7 +463,10 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                         ts = TimeSystem.valueOf(tsStr);
                     }
                     pi.file.setTimeSystem(ts);
+                    pi.timeScale = ts.getTimeScale(pi.timeScales);
 
+                    // now we know the time scale used, we can set the file epoch
+                    pi.file.setEpoch(new AbsoluteDate(pi.epoch, pi.timeScale));
                 }
 
             }
@@ -574,8 +586,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
 
                     // clock (microsec)
-                    pi.latestClock =
-                            Double.parseDouble(line.substring(46, 60).trim()) * 1e-6;
+                    pi.latestClock = line.length() <= 46 ?
+                                                          DEFAULT_CLOCK_VALUE :
+                                                              Double.parseDouble(line.substring(46, 60).trim()) * 1e-6;
 
                     // the additional items are optional and not read yet
 
@@ -657,8 +670,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
 
                     // clock rate in file is 1e-4 us / s
-                    final double clockRateChange =
-                            Double.parseDouble(line.substring(46, 60).trim()) * 1e-4;
+                    final double clockRateChange = line.length() <= 46 ?
+                                                                        DEFAULT_CLOCK_VALUE :
+                                                                            Double.parseDouble(line.substring(46, 60).trim()) * 1e-4;
 
                     // the additional items are optional and not read yet
 

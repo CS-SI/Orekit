@@ -210,6 +210,9 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.validate(header.getFormatVersion());
+        if (metadata.getCenter().getBody() != null) {
+            setMuCreated(metadata.getCenter().getBody().getGM());
+        }
         anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;
     }

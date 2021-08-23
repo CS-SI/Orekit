@@ -109,7 +109,7 @@ public class RinexClockParser {
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
-     * @see #ClockFileParser(Function)
+     * @see #RinexClockParser(Function)
      */
     @DefaultDataContext
     public RinexClockParser() {
@@ -124,7 +124,7 @@ public class RinexClockParser {
      * @param frameBuilder is a function that can construct a frame from a clock file
      *                     coordinate system string. The coordinate system can be
      *                     any 5 character string e.g. ITR92, IGb08.
-     * @see #ClockFileParser(Function, TimeScales)
+     * @see #RinexClockParser(Function, TimeScales)
      */
     @DefaultDataContext
     public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder) {

@@ -54,7 +54,7 @@ import org.orekit.errors.OrekitException;
  * </pre>
  *
  * <p>
- * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * All {@link FiltersManager#addFilter(DataFilter) registered}
  * {@link DataFilter filters} are applied.
  * </p>
  * <p>

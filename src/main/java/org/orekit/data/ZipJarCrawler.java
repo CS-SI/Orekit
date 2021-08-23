@@ -45,7 +45,7 @@ import org.orekit.errors.OrekitException;
  * loader, all of them will be loaded.
  * </p>
  * <p>
- * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * All {@link FiltersManager#addFilter(DataFilter) registered}
  * {@link DataFilter filters} are applied.
  * </p>
  * <p>

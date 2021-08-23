@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import org.hipparchus.util.FastMath;
 
 /** Enumerate for triggering visibility of spherical bodies.
- * @see CircularFieldOfViewDetector
  * @see FieldOfViewDetector
  * @author Luc Maisonobe
  * @since 10.0

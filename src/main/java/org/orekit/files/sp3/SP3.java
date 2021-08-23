@@ -55,6 +55,10 @@ public class SP3
         LEO,
         /** Galileo only file. */
         GALILEO,
+        /** SBAS only file. */
+        SBAS,
+        /** IRNSS only file. */
+        IRNSS,
         /** COMPASS only file. */
         COMPASS,
         /** QZSS only file. */

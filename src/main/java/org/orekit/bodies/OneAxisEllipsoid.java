@@ -561,7 +561,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
             final double evoluteCuspZ     = FastMath.copySign(getA() * e2 / g, -z.getReal());
             final T      deltaZ           = z.subtract(evoluteCuspZ);
             // we use π/2 - atan(r/Δz) instead of atan(Δz/r) for accuracy purposes, as r is much smaller than Δz
-            phi = r.divide(deltaZ.abs()).atan().negate().add(0.5 * FastMath.PI).copySign(deltaZ);
+            phi = r.divide(deltaZ.abs()).atan().negate().add(r.getPi().multiply(0.5)).copySign(deltaZ);
             h   = deltaZ.hypot(r).subtract(osculatingRadius);
         } else if (FastMath.abs(z.getReal()) <= ANGULAR_THRESHOLD * r.getReal()) {
             // the point is almost on the major axis

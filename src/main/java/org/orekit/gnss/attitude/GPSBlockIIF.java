@@ -149,7 +149,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
             final T absBeta = FastMath.abs(context.beta(context.getDate()));
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))) :
-                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),
+                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(aNoon.getPi())),
                                 END_MARGIN);
             if (context.inTurnTimeRange()) {
 

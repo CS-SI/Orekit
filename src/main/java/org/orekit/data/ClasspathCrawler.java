@@ -45,7 +45,7 @@ import org.orekit.errors.OrekitMessages;
  * data and another one for system-wide or general data.
  * </p>
  * <p>
- * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * All {@link FiltersManager#addFilter(DataFilter) registered}
  * {@link DataFilter filters} are applied.
  * </p>
  * <p>

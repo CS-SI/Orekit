@@ -20,7 +20,7 @@ package org.orekit.estimation.measurements.gnss;
  * @author Luc Maisonobe
  * @since 10.0
  */
-public class IntegerLeastSquareSolution implements Comparable<IntegerLeastSquareSolution> {
+public class IntegerLeastSquareSolution {
 
     /** Solution array. */
     private final long[] solution;
@@ -49,32 +49,6 @@ public class IntegerLeastSquareSolution implements Comparable<IntegerLeastSquare
      */
     public double getSquaredDistance() {
         return d2;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int compareTo(final IntegerLeastSquareSolution other) {
-        return Double.compare(getSquaredDistance(), other.getSquaredDistance());
-    }
-
-    /** {@inheritDoc}
-     * @since 10.1
-     */
-    @Override
-    public boolean equals(final Object other) {
-        if (other instanceof IntegerLeastSquareSolution) {
-            return getSquaredDistance() == ((IntegerLeastSquareSolution) other).getSquaredDistance();
-        }
-
-        return false;
-    }
-
-    /** {@inheritDoc}
-     * @since 10.1
-     */
-    @Override
-    public int hashCode() {
-        return 0X67b3 ^ Double.hashCode(getSquaredDistance());
     }
 
 }

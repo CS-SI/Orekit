@@ -70,11 +70,11 @@ public class EventMultipleHandler<D extends EventDetector> implements EventHandl
      * </p>
      * @param initialState initial state
      * @param target target date for the propagation
-     *
+     * @param detector event detector related to the event handler
      */
     @Override
-    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-        handlers.forEach(handler -> handler.init(initialState, target));
+    public void init(final SpacecraftState initialState, final AbsoluteDate target, final D detector) {
+        handlers.forEach(handler -> handler.init(initialState, target, detector));
     }
 
     /**

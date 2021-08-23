@@ -25,15 +25,16 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -721,11 +722,39 @@ public class TLE implements TimeStamped, Serializable {
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
      * @return TLE matching with Spacecraft State and template identification
+     * @see #stateToTLE(SpacecraftState, TLE, TimeScale, Frame)
+     * @see #stateToTLE(SpacecraftState, TLE, TimeScale, Frame, double, int)
      * @since 11.0
      */
     @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
-        return stateToTLE(state, templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+        return stateToTLE(state, templateTLE,
+                          DataContext.getDefault().getTimeScales().getUTC(),
+                          DataContext.getDefault().getFrames().getTEME());
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * This converter uses Fixed Point method to reverse SGP4 and SDP4 propagation algorithm
+     * and generates a usable TLE version of a state.
+     * Equinocital orbital parameters are used in order to get a stiff method.
+     * New TLE epoch is state epoch.
+     *
+     * <p>
+     * This method uses {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT}
+     * for method convergence.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param utc the UTC time scale
+     * @param teme the TEME frame to use for propagation
+     * @return TLE matching with Spacecraft State and template identification
+     * @see #stateToTLE(SpacecraftState, TLE, TimeScale, Frame, double, int)
+     * @since 11.0
+     */
+    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
+                                 final TimeScale utc, final Frame teme) {
+        return stateToTLE(state, templateTLE, utc, teme, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
     }
 
     /**
@@ -734,21 +763,21 @@ public class TLE implements TimeStamped, Serializable {
      * and generates a usable TLE version of a state.
      * New TLE epoch is state epoch.
      *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param utc the UTC time scale
+     * @param teme the TEME frame to use for propagation
      * @param epsilon used to compute threshold for convergence check
      * @param maxIterations maximum number of iterations for convergence
      * @return TLE matching with Spacecraft State and template identification
      * @since 11.0
      */
-    @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
+                                 final TimeScale utc, final Frame teme,
                                  final double epsilon, final int maxIterations) {
 
         // Gets equinoctial parameters in TEME frame from state
-        final EquinoctialOrbit equiOrbit = convert(state.getOrbit());
+        final EquinoctialOrbit equiOrbit = convert(state.getOrbit(), teme);
         double sma = equiOrbit.getA();
         double ex  = equiOrbit.getEquinoctialEx();
         double ey  = equiOrbit.getEquinoctialEy();
@@ -758,7 +787,7 @@ public class TLE implements TimeStamped, Serializable {
 
         // Rough initialization of the TLE
         final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(equiOrbit);
-        TLE current = newTLE(keplerianOrbit, templateTLE);
+        TLE current = newTLE(keplerianOrbit, templateTLE, utc);
 
         // threshold for each parameter
         final double thrA = epsilon * (1 + sma);
@@ -770,7 +799,7 @@ public class TLE implements TimeStamped, Serializable {
         while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
-            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current);
+            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current, new InertialProvider(Rotation.IDENTITY, teme), state.getMass(), teme);
             final Orbit recovOrbit = propagator.getInitialState().getOrbit();
             final EquinoctialOrbit recovEquiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
@@ -806,7 +835,7 @@ public class TLE implements TimeStamped, Serializable {
             final KeplerianOrbit newKeplOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE
-            current = newTLE(newKeplOrbit, templateTLE);
+            current = newTLE(newKeplOrbit, templateTLE, utc);
         }
 
         throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
@@ -816,11 +845,10 @@ public class TLE implements TimeStamped, Serializable {
      * Converts an orbit into an equinoctial orbit expressed in TEME frame.
      *
      * @param orbitIn the orbit to convert
+     * @param teme the TEME frame to use for propagation
      * @return the converted orbit, i.e. equinoctial in TEME frame
      */
-    @DefaultDataContext
-    private static EquinoctialOrbit convert(final Orbit orbitIn) {
-        final Frame teme = FramesFactory.getTEME();
+    private static EquinoctialOrbit convert(final Orbit orbitIn, final Frame teme) {
         return new EquinoctialOrbit(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
     }
 
@@ -828,10 +856,11 @@ public class TLE implements TimeStamped, Serializable {
      * Builds a new TLE from Keplerian parameters and a template for TLE data.
      * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
+     * @param utc the UTC time scale
      * @return TLE with template identification and new orbital parameters
      */
-    @DefaultDataContext
-    private static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE) {
+    private static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE,
+                              final TimeScale utc) {
         // Keplerian parameters
         final double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
         final double e           = keplerianOrbit.getE();
@@ -861,7 +890,7 @@ public class TLE implements TimeStamped, Serializable {
         // Returns the new TLE
         return new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                        elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar);
+                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
     }
 
     /** Check the lines format validity.

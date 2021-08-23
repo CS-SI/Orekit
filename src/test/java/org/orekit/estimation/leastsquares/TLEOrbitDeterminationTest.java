@@ -187,7 +187,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
         
-        // initiate TLE
+        // initiate TLE (from Celestrak)
         final String line1 = "1 32711U 08012A   16044.40566026 -.00000039  00000-0  00000+0 0  9991";
         final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
         templateTLE = new TLE(line1, line2);
@@ -202,14 +202,14 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final double distanceAccuracy = 113.46;
 
         //test on the convergence
-        final int numberOfIte  = 4;
-        final int numberOfEval = 5;
+        final int numberOfIte  = 2;
+        final int numberOfEval = 3;
         Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
         
         //test on the estimated position (reference from file esa18836.sp3)
         TimeStampedPVCoordinates odPV = odGNSS.getEstimatedPV();
-        final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getGCRF(), odPV.getDate());
+        final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), odPV.getDate());
         odPV = transform.transformPVCoordinates(odPV);
         final Vector3D estimatedPos = odPV.getPosition();
         
@@ -221,8 +221,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         
         //test on statistic for the range residuals
         final long nbRange = 8211;
-        final double[] RefStatRange = { -13.708, 38.132, 3.616, 7.318 };
-        
+        final double[] RefStatRange = { -14.448, 18.736, 0.132, 6.323 };        
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
@@ -255,12 +254,12 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 162.93;
-        final double velocityAccuracy = 2.94e-2;
+        final double distanceAccuracy = 212.82;
+        final double velocityAccuracy = 6.17e-2;
 
         //test on the convergence
-        final int numberOfIte  = 7;
-        final int numberOfEval = 7;
+        final int numberOfIte  = 4;
+        final int numberOfEval = 4;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -279,12 +278,12 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //test on statistic for the range residuals
         final long nbRange = 95;
-        final double[] RefStatRange = { -67.7496, 87.1117, 6.4482E-5, 33.6349 };
+        final double[] RefStatRange = { -67.331, 79.823, 6.668E-8, 32.296 };
         Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
-        Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
+        Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
+        Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
+        Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }
 

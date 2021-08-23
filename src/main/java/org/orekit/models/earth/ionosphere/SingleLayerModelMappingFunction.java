@@ -80,7 +80,7 @@ public class SingleLayerModelMappingFunction implements IonosphericMappingFuncti
     @Override
     public <T extends CalculusFieldElement<T>> T mappingFactor(final T elevation) {
         // Calculate the zenith angle from the elevation
-        final T z = FastMath.abs(elevation.negate().add(0.5 * FastMath.PI));
+        final T z = FastMath.abs(elevation.negate().add(elevation.getPi().multiply(0.5)));
         // Distance ratio
         final double ratio = RE / (RE + hIon);
         // Mapping function
