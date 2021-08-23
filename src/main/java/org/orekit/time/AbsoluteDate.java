@@ -1327,7 +1327,7 @@ public class AbsoluteDate
     public String toString() {
         try {
             // try to use UTC first at that is likely most familiar to the user.
-            return toString(DataContext.getDefault().getTimeScales().getUTC());
+            return toString(DataContext.getDefault().getTimeScales().getUTC()) + "Z";
         } catch (RuntimeException e1) {
             // catch OrekitException, OrekitIllegalStateException, etc.
             try {

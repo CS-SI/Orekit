@@ -182,7 +182,7 @@ public class AbsoluteDateTest {
     public void testTimeZoneDisplay() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final AbsoluteDate date = new AbsoluteDate("2000-01-01T01:01:01.000", utc);
-        Assert.assertEquals("2000-01-01T01:01:01.000",       date.toString());
+        Assert.assertEquals("2000-01-01T01:01:01.000Z",      date.toString());
         Assert.assertEquals("2000-01-01T11:01:01.000+10:00", date.toString( 600));
         Assert.assertEquals("1999-12-31T23:01:01.000-02:00", date.toString(-120));
         Assert.assertEquals("2000-01-01T01:01:01.000+00:00", date.toString(0));
@@ -294,13 +294,13 @@ public class AbsoluteDateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2002, 01, 01),
                                              new TimeComponents(00, 00, 01),
                                              utc);
-        Assert.assertEquals("2002-01-01T00:00:01.000", date.toString());
+        Assert.assertEquals("2002-01-01T00:00:01.000Z", date.toString());
     }
 
     @Test
     public void test1970() {
         AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
-        Assert.assertEquals("1970-01-01T00:00:00.000", date.toString());
+        Assert.assertEquals("1970-01-01T00:00:00.000Z", date.toString());
     }
 
     @Test
@@ -657,8 +657,8 @@ public class AbsoluteDateTest {
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
         Assert.assertTrue(Double.isNaN(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.FUTURE_INFINITY)));
         Assert.assertTrue(Double.isNaN(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
-        Assert.assertEquals("5881610-07-11T23:59:59.999",  AbsoluteDate.FUTURE_INFINITY.toString());
-        Assert.assertEquals("-5877490-03-03T00:00:00.000", AbsoluteDate.PAST_INFINITY.toString());
+        Assert.assertEquals("5881610-07-11T23:59:59.999Z",  AbsoluteDate.FUTURE_INFINITY.toString());
+        Assert.assertEquals("-5877490-03-03T00:00:00.000Z", AbsoluteDate.PAST_INFINITY.toString());
         Assert.assertEquals(true, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
         Assert.assertEquals(true, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
         Assert.assertEquals(false, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
@@ -1288,7 +1288,7 @@ public class AbsoluteDateTest {
     }
 
     private void checkToString(final AbsoluteDate d, final String s) {
-        MatcherAssert.assertThat(d.toString(), CoreMatchers.is(s));
+        MatcherAssert.assertThat(d.toString(), CoreMatchers.is(s + "Z"));
         MatcherAssert.assertThat(d.getComponents(utc).toString(), CoreMatchers.is(s + "+00:00"));
     }
 
