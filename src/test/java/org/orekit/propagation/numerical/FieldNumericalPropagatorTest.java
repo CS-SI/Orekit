@@ -1162,13 +1162,13 @@ public class FieldNumericalPropagatorTest {
             ephemeris1.propagate(ephemeris1.getMinDate().shiftedBy(-10.0));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException pe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, pe.getSpecifier());
         }
         try {
             ephemeris1.propagate(ephemeris1.getMaxDate().shiftedBy(+10.0));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException pe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, pe.getSpecifier());
         }
 
         double shift = -60;

@@ -36,6 +36,10 @@
       <action dev="bryan" type="fix" issue="820">
         TLE Jacobians are now calculated in cartesian elements.
       </action>
+      <action dev="evan" type="update" issue="825">
+        Improve exception messages with two AbsoluteDates by including duration between
+        them.
+      </action>
       <action dev="evan" type="update" issue="637" due-to="Piotr">
         Add trailing "Z" to AbsoluteDate.toString() to indicate UTC.
         Backwards incompatible.

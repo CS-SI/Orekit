@@ -130,7 +130,7 @@ public class IodLambert {
 
         // Exception if t2 < t1
         if (tau < 0.0) {
-            throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, t1, t2);
+            throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, t1, t2, -tau);
         }
 
         // normalizing constants
