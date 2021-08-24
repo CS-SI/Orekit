@@ -48,7 +48,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     private static final long serialVersionUID = 20160331L;
 
     /** Formatting symbols used in {@link #toString()}. */
-    public static final DecimalFormatSymbols US_SYMBOLS =
+    private static final DecimalFormatSymbols US_SYMBOLS =
             new DecimalFormatSymbols(Locale.US);
 
     /** Basic and extends formats for local time, with optional timezone. */
