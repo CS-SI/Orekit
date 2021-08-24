@@ -420,7 +420,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /**
      * Package private method that allows specification of seconds format. Allows access
      * from {@link DateTimeComponents#toString(int, int)}. Access from outside of rounding
-     * methods would result in invalid times, see #591.
+     * methods would result in invalid times, see #590, #591.
      *
      * @param secondsFormat for the seconds.
      * @return string without UTC offset.
@@ -432,7 +432,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /**
      * Get a string representation of the time without the offset from UTC.
      *
-     * @return a string representation of the time.
+     * @return a string representation of the time in an ISO 8601 like format.
+     * @see #formatUtcOffset()
+     * @see #toString()
      */
     public String toStringWithoutUtcOffset() {
         // create formats here as they are not thread safe
@@ -446,6 +448,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * Get the UTC offset as a string in ISO8601 format. For example, {@code +00:00}.
      *
      * @return the UTC offset as a string.
+     * @see #toStringWithoutUtcOffset()
+     * @see #toString()
      */
     public String formatUtcOffset() {
         final int hourOffset = FastMath.abs(minutesFromUTC) / 60;
@@ -454,8 +458,13 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                 String.format("%02d:%02d", hourOffset, minuteOffset);
     }
 
-    /** Get a string representation of the time including the offset from UTC.
-     * @return string representation of the time
+    /**
+     * Get a string representation of the time including the offset from UTC.
+     *
+     * @return string representation of the time in an ISO 8601 like format including the
+     * UTC offset.
+     * @see #toStringWithoutUtcOffset()
+     * @see #formatUtcOffset()
      */
     public String toString() {
         return toStringWithoutUtcOffset() + formatUtcOffset();

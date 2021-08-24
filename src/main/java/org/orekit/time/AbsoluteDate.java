@@ -1308,20 +1308,22 @@ public class AbsoluteDate
     }
 
     /**
-     * Get a String representation of the instant location.
+     * Get a String representation of the instant location with up to 16 digits of
+     * precision for the seconds value.
      *
      * <p> Since this method is used in exception messages and error handling every
-     * effort
-     * is made to return some representation of the instant. If UTC is available from the
-     * default data context then it is used to format the string in UTC. If not then TAI
-     * is used. Finally if the prior attempts fail this method falls back to converting
-     * this class's internal representation to a string.
+     * effort is made to return some representation of the instant. If UTC is available
+     * from the default data context then it is used to format the string in UTC. If not
+     * then TAI is used. Finally if the prior attempts fail this method falls back to
+     * converting this class's internal representation to a string.
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @return a string representation of the instance, in ISO-8601 format if UTC is
      * available from the default data context.
      * @see #toString(TimeScale)
+     * @see #toStringRfc3339(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
      */
     @DefaultDataContext
     public String toString() {
@@ -1355,6 +1357,8 @@ public class AbsoluteDate
      *
      * @param timeScale time scale to use
      * @return a string representation of the instance.
+     * @see #toStringRfc3339(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
      */
     public String toString(final TimeScale timeScale) {
         return getComponents(timeScale).toStringWithoutUtcOffset();
@@ -1386,6 +1390,8 @@ public class AbsoluteDate
      * @return string representation of the instance, in ISO-8601 format with milliseconds
      * accuracy
      * @since 10.1
+     * @see #getComponents(int, TimeScale)
+     * @see DateTimeComponents#toString(int, int)
      */
     public String toString(final int minutesFromUTC, final TimeScale utc) {
         final int minuteDuration = utc.minuteDuration(this);
@@ -1415,6 +1421,8 @@ public class AbsoluteDate
      * @return string representation of the instance, in ISO-8601 format with milliseconds
      * accuracy
      * @since 10.1
+     * @see #getComponents(TimeZone, TimeScale)
+     * @see DateTimeComponents#toString(int, int)
      */
     public String toString(final TimeZone timeZone, final TimeScale utc) {
         final int minuteDuration = utc.minuteDuration(this);
@@ -1423,7 +1431,8 @@ public class AbsoluteDate
 
     /**
      * Represent the given date as a string according to the format in RFC 3339. RFC3339
-     * is a restricted subset of ISO 8601 with a well defined grammar.
+     * is a restricted subset of ISO 8601 with a well defined grammar. Enough digits are
+     * included in the seconds value to avoid rounding up to the next minute.
      *
      * <p>This method is different than {@link AbsoluteDate#toString(TimeScale)} in that
      * it includes a {@code "Z"} at the end to indicate the time zone and enough precision

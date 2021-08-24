@@ -231,7 +231,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     }
 
     /** Return a string representation of this pair.
-     * <p>The format used is ISO8601.</p>
+     * <p>The format used is ISO8601 including the UTC offset.</p>
      * @return string representation of this pair
      */
     public String toString() {
@@ -243,6 +243,8 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * format used is ISO6801, except without the offset from UTC.
      *
      * @return a string representation of the date-time.
+     * @see #toString(int, int)
+     * @see #toStringRfc3339()
      */
     public String toStringWithoutUtcOffset() {
         return date.toString() + 'T' + time.toStringWithoutUtcOffset();
@@ -259,6 +261,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      *                       leap second introduction and the magnitude of the leap
      *                       second.
      * @return string representation of this date, time, & UTC offset
+     * @see #toString(int, int)
      */
     public String toString(final int minuteDuration) {
         return toString(minuteDuration, 3);
@@ -269,14 +272,17 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      *
      * <p>The format used is ISO8601 including the UTC offset.</p>
      *
-     * @param minuteDuration 60, 61, or 62 seconds depending on the date being close to a
-     *                       leap second introduction and the magnitude of the leap
+     * @param minuteDuration 59, 60, 61, or 62 seconds depending on the date being close
+     *                       to a leap second introduction and the magnitude of the leap
      *                       second.
      * @param fractionDigits the number of digits to include after the decimal point in
      *                       the string representation of the seconds. The date & time is
      *                       first rounded as necessary. {@code fractionDigits} must be
      *                       greater than or equal to {@code 0}.
      * @return string representation of this date, time, & UTC offset
+     * @see #toStringRfc3339()
+     * @see #toStringWithoutUtcOffset()
+     * @since 11.0
      */
     public String toString(final int minuteDuration, final int fractionDigits) {
         final DecimalFormat secondsFormat =
@@ -323,7 +329,8 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @return RFC 3339 format string.
      * @see <a href="https://tools.ietf.org/html/rfc3339#page-8">RFC 3339</a>
      * @see AbsoluteDate#toStringRfc3339(TimeScale)
-     * @see #toString(int)
+     * @see #toString(int, int)
+     * @see #toStringWithoutUtcOffset()
      */
     public String toStringRfc3339() {
         final DateComponents d = this.getDate();
