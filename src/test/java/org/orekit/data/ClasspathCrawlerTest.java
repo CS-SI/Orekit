@@ -53,7 +53,7 @@ public class ClasspathCrawlerTest {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("compressed-data/UTC-TAI.history.gz",
                              "compressed-data/eopc04_08_IAU2000.00.gz",
-                             "compressed-data/eopc04_08_IAU2000.02.gz").feed(Pattern.compile(".*/eopc04.*"),
+                             "compressed-data/eopc04_08_IAU2000.02.gz").feed(Pattern.compile(".*eopc04.*"),
                                                                              crawler,
                                                                              DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(2, crawler.getCount());
