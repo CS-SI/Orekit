@@ -69,7 +69,9 @@ public interface Propagator extends PVCoordinatesProvider {
      *
      * @see InertialProvider#InertialProvider(Rotation, Frame)
      * @see #getDefaultLaw(Frames)
+     * @deprecated use {@link InertialProvider#of(Frame)} or {@link #getDefaultLaw(Frames)}.
      */
+    @Deprecated
     @DefaultDataContext
     AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 

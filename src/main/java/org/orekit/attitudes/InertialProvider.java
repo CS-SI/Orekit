@@ -44,7 +44,9 @@ public class InertialProvider implements AttitudeProvider {
      *
      * @see #InertialProvider(Rotation, Frame)
      * @see #InertialProvider(Frame)
+     * @deprecated use {@link #of(Frame)}.
      */
+    @Deprecated
     @DefaultDataContext
     public static final InertialProvider EME2000_ALIGNED =
         new InertialProvider(Rotation.IDENTITY);
