@@ -24,6 +24,9 @@
       <action dev="bryan" type="fix" issue="788" due-to="luc">
         Fixed missing call to setMuCreated() in OemParser.
       </action>
+      <action dev="evan" type="update" issue="618">
+        Fix supportedNames matching in ClasspathCrawler. Backwards incompatible.
+      </action>
       <action dev="bryan" type="fix" issue="828">
         Fixed missing file types in SP3Parser.
       </action>
