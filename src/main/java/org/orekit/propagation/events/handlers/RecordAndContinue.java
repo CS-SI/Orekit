@@ -158,10 +158,4 @@ public class RecordAndContinue<T extends EventDetector>
         return Action.CONTINUE;
     }
 
-    @Override
-    public SpacecraftState resetState(final T detector,
-                                      final SpacecraftState oldState) {
-        return null;
-    }
-
 }
