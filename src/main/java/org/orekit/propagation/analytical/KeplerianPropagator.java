@@ -19,14 +19,12 @@ package org.orekit.propagation.analytical;
 import java.util.Collections;
 import java.util.Map;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
@@ -45,29 +43,23 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * for the initial orbit definition. Mass and attitude provider are set to
      * unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param initialOrbit initial orbit
      * @see #KeplerianPropagator(Orbit, AttitudeProvider)
      */
-    @DefaultDataContext
     public KeplerianPropagator(final Orbit initialOrbit) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 initialOrbit.getMu(), DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param initialOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
      * @see #KeplerianPropagator(Orbit, AttitudeProvider, double)
      */
-    @DefaultDataContext
     public KeplerianPropagator(final Orbit initialOrbit, final double mu) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 mu, DEFAULT_MASS);
     }
 

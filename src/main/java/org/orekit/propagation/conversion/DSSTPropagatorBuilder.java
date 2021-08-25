@@ -20,10 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -74,8 +73,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * callers of this builder to the real orbital parameters.
      * </p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
      * @param positionScale scaling factor used for orbital parameters normalization
@@ -85,14 +82,13 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * @see #DSSTPropagatorBuilder(Orbit, ODEIntegratorBuilder, double, PropagationType,
      * PropagationType, AttitudeProvider)
      */
-    @DefaultDataContext
     public DSSTPropagatorBuilder(final Orbit referenceOrbit,
                                  final ODEIntegratorBuilder builder,
                                  final double positionScale,
                                  final PropagationType propagationType,
                                  final PropagationType stateType) {
         this(referenceOrbit, builder, positionScale, propagationType, stateType,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+                InertialProvider.of(referenceOrbit.getFrame()));
     }
 
     /** Build a new instance.

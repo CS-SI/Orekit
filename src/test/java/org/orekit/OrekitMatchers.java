@@ -445,6 +445,35 @@ public class OrekitMatchers {
 
     }
 
+    /* Replace with Matchers.greaterThan(...) if hamcrest becomes available. */
+
+    /**
+     * Create a matcher to see if a value is greater than another one using {@link
+     * Comparable#compareTo(Object)}.
+     *
+     * @param expected value.
+     * @param <T>      type of value.
+     * @return matcher of value.
+     */
+    public static <T extends Comparable<T>> Matcher<T> greaterThan(final T expected) {
+        return new TypeSafeDiagnosingMatcher<T>() {
+            @Override
+            protected boolean matchesSafely(T item, Description mismatchDescription) {
+                if (expected.compareTo(item) >= 0) {
+                    mismatchDescription.appendText("less than or equal to ")
+                            .appendValue(expected);
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("greater than ").appendValue(expected);
+            }
+        };
+    }
+
 
     /**
      * Matcher for the distance in seconds between two {@link AbsoluteDate}s. Uses {@link
