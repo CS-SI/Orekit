@@ -39,7 +39,7 @@ public class TimeStampedCacheExceptionTest {
         Assert.assertEquals(3, e.getParts().length);
         Assert.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
         Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816Z, données requises pour {1}",
+        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816Z, données requises pour 1858-11-16T23:59:27.816Z qui est 1,0E-16 s avant",
                             e.getMessage(Locale.FRENCH));
     }
 
@@ -54,7 +54,7 @@ public class TimeStampedCacheExceptionTest {
         Assert.assertEquals(1, e.getParts().length);
         Assert.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
         Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816Z, données requises pour {1}",
+        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816Z, données requises pour {1} qui est {2} s avant",
                             e.getMessage(Locale.FRENCH));
     }
 
