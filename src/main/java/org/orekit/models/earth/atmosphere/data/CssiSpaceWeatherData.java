@@ -145,8 +145,13 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
      * @param date date to bracket
      */
     private void bracketDate(final AbsoluteDate date) {
-        if (date.durationFrom(firstDate) < 0 || date.durationFrom(lastDate) > 0) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
+        if (date.durationFrom(firstDate) < 0) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                    date, firstDate, lastDate, firstDate.durationFrom(date));
+        }
+        if (date.durationFrom(lastDate) > 0) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                    date, firstDate, lastDate, date.durationFrom(lastDate));
         }
 
         // don't search if the cached selection is fine
@@ -158,7 +163,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         final List<TimeStamped> neigbors = data.getNeighbors(date).collect(Collectors.toList());
         previousParam = (LineParameters) neigbors.get(0);
         nextParam = (LineParameters) neigbors.get(1);
-        if (previousParam.getDate().compareTo(date) > 0) {
+        if (previousParam.getDate().compareTo(date) > 0) { // TODO delete dead code
             /**
              * Throwing exception if neighbors are unbalanced because we are at the
              * beginning of the data set

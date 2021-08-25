@@ -617,8 +617,9 @@ public class EOPHistory implements Serializable {
 
             // compare the dates of preceding and current entries
             if (preceding != null && (current.getDate().durationFrom(preceding.getDate())) > maxGap) {
-                throw new OrekitException(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES,
-                                          preceding.getDate(), current.getDate());
+                throw new OrekitException(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP,
+                                          preceding.getDate(), current.getDate(),
+                                          current.getDate().durationFrom(preceding.getDate()));
             }
 
             // prepare next iteration

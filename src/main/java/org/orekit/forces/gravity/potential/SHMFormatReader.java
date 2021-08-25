@@ -179,8 +179,10 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                         // first reference found, store it
                                         referenceDate = toDate(localRef);
                                     } else if (!referenceDate.equals(toDate(localRef))) {
+                                        final AbsoluteDate localDate = toDate(localRef);
                                         throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
-                                                                  referenceDate, toDate(localRef), name);
+                                                                  referenceDate, localDate, name,
+                                                                  localDate.durationFrom(referenceDate));
                                     }
 
                                 } else {

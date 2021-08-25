@@ -382,7 +382,7 @@ public class MeasurementCombinationFactoryTest {
         // Verify receiver clock
         Assert.assertEquals(0.0, combinedDataSet.getRcvrClkOffset(), eps);
         // Verify date
-        Assert.assertEquals("2016-02-13T00:49:43.000", combinedDataSet.getDate().toString());
+        Assert.assertEquals("2016-02-13T00:49:43.000Z", combinedDataSet.getDate().toString());
     }
 
     private RinexObservationLoader load(final String name) {

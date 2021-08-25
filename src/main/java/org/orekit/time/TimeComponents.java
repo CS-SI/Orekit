@@ -47,12 +47,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Serializable UID. */
     private static final long serialVersionUID = 20160331L;
 
-    /** Format for hours and minutes. */
-    private static final DecimalFormat TWO_DIGITS = new DecimalFormat("00");
-
-    /** Format for seconds. */
-    private static final DecimalFormat SECONDS_FORMAT =
-        new DecimalFormat("00.000", new DecimalFormatSymbols(Locale.US));
+    /** Formatting symbols used in {@link #toString()}. */
+    private static final DecimalFormatSymbols US_SYMBOLS =
+            new DecimalFormatSymbols(Locale.US);
 
     /** Basic and extends formats for local time, with optional timezone. */
     private static final Pattern ISO8601_FORMATS = Pattern.compile("^(\\d\\d):?(\\d\\d):?(\\d\\d(?:[.,]\\d+)?)?(?:Z|([-+]\\d\\d(?::?\\d\\d)?))?$");
@@ -420,21 +417,57 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         return second + 60 * (minute - minutesFromUTC) + 3600 * hour;
     }
 
-    /** Get a string representation of the time.
-     * @return string representation of the time
+    /**
+     * Package private method that allows specification of seconds format. Allows access
+     * from {@link DateTimeComponents#toString(int, int)}. Access from outside of rounding
+     * methods would result in invalid times, see #590, #591.
+     *
+     * @param secondsFormat for the seconds.
+     * @return string without UTC offset.
+     */
+    String toStringWithoutUtcOffset(final DecimalFormat secondsFormat) {
+        return String.format("%02d:%02d:%s", hour, minute, secondsFormat.format(second));
+    }
+
+    /**
+     * Get a string representation of the time without the offset from UTC.
+     *
+     * @return a string representation of the time in an ISO 8601 like format.
+     * @see #formatUtcOffset()
+     * @see #toString()
+     */
+    public String toStringWithoutUtcOffset() {
+        // create formats here as they are not thread safe
+        // Format for seconds to prevent rounding up to an invalid time. See #591
+        final DecimalFormat secondsFormat =
+                new DecimalFormat("00.000###########", US_SYMBOLS);
+        return toStringWithoutUtcOffset(secondsFormat);
+    }
+
+    /**
+     * Get the UTC offset as a string in ISO8601 format. For example, {@code +00:00}.
+     *
+     * @return the UTC offset as a string.
+     * @see #toStringWithoutUtcOffset()
+     * @see #toString()
+     */
+    public String formatUtcOffset() {
+        final int hourOffset = FastMath.abs(minutesFromUTC) / 60;
+        final int minuteOffset = FastMath.abs(minutesFromUTC) % 60;
+        return (minutesFromUTC < 0 ? '-' : '+') +
+                String.format("%02d:%02d", hourOffset, minuteOffset);
+    }
+
+    /**
+     * Get a string representation of the time including the offset from UTC.
+     *
+     * @return string representation of the time in an ISO 8601 like format including the
+     * UTC offset.
+     * @see #toStringWithoutUtcOffset()
+     * @see #formatUtcOffset()
      */
     public String toString() {
-        StringBuilder builder  = new StringBuilder().
-                                 append(TWO_DIGITS.format(hour)).append(':').
-                                 append(TWO_DIGITS.format(minute)).append(':').
-                                 append(SECONDS_FORMAT.format(second));
-        if (minutesFromUTC != 0) {
-            builder = builder.
-                      append(minutesFromUTC < 0 ? '-' : '+').
-                      append(TWO_DIGITS.format(FastMath.abs(minutesFromUTC) / 60)).append(':').
-                      append(TWO_DIGITS.format(FastMath.abs(minutesFromUTC) % 60));
-        }
-        return builder.toString();
+        return toStringWithoutUtcOffset() + formatUtcOffset();
     }
 
     /** {@inheritDoc} */
