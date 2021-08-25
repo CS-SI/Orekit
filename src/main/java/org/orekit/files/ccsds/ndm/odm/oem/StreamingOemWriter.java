@@ -128,8 +128,10 @@ public class StreamingOemWriter implements AutoCloseable {
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
             try {
-                if (t.isBefore(s0)) {
-                    throw new OrekitException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES, s0.getDate(), t);
+                final AbsoluteDate date = s0.getDate();
+                if (t.isBefore(date)) {
+                    throw new OrekitException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
+                            date, t, date.durationFrom(t));
                 }
 
                 if (headerWritePending) {
@@ -138,7 +140,7 @@ public class StreamingOemWriter implements AutoCloseable {
                     headerWritePending = false;
                 }
 
-                metadata.setStartTime(s0.getDate());
+                metadata.setStartTime(date);
                 metadata.setUseableStartTime(null);
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);

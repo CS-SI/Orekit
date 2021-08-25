@@ -64,6 +64,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -73,6 +74,9 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
+
+    /** UTC time scale. */
+    private TimeScale utc;
 
     /** Compute acceleration derivatives around input position at input date.
      *  Using finite differences in position.
@@ -294,12 +298,12 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         drivers = forceModel.getParametersDrivers();
         Assert.assertEquals(3,  drivers.size());
         Assert.assertEquals(dragCd2,  drivers.get(0).getValue(), 0.);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(),
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(utc),
                             drivers.get(0).getName());
         Assert.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
         Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
         Assert.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_AFTER + date.shiftedBy(+dt).toString(),
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_AFTER + date.shiftedBy(+dt).toString(utc),
                             drivers.get(2).getName());
         
         // Check that proper models are returned at significant test dates
@@ -613,14 +617,14 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         drivers = forceModel.getParametersDrivers();
         Assert.assertEquals(3,  drivers.size());
         Assert.assertEquals(dragCd2,  drivers.get(0).getValue(), 0.);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(),
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(utc),
                             drivers.get(0).getName());
         
         Assert.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
         Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
         
         Assert.assertEquals(dragCd1,  drivers.get(2).getValue(), 0.);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_AFTER + date.shiftedBy(+dt).toString(),
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_AFTER + date.shiftedBy(+dt).toString(utc),
                             drivers.get(2).getName());
         
         // Check the models at dates
@@ -719,10 +723,10 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         drivers = forceModel.getParametersDrivers();
         Assert.assertEquals(6,  drivers.size());
         Assert.assertEquals(dragCd2,  drivers.get(0).getValue(), 0.);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(),
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(utc),
                             drivers.get(0).getName());
         Assert.assertEquals(dragCl2,  drivers.get(1).getValue(), 0.);
-        Assert.assertEquals(DragSensitive.LIFT_RATIO + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(),
+        Assert.assertEquals(DragSensitive.LIFT_RATIO + TimeSpanDragForce.DATE_BEFORE + date.shiftedBy(-dt).toString(utc),
                             drivers.get(1).getName());
         
         Assert.assertEquals(dragCd0,  drivers.get(2).getValue(), 0.);
@@ -731,10 +735,10 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Assert.assertEquals(DragSensitive.LIFT_RATIO,  drivers.get(3).getName());
         
         Assert.assertEquals(dragCd1,  drivers.get(4).getValue(), 0.);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_AFTER + date.shiftedBy(+dt).toString(),
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT + TimeSpanDragForce.DATE_AFTER + date.shiftedBy(+dt).toString(utc),
                             drivers.get(4).getName());
         Assert.assertEquals(dragCl1,  drivers.get(5).getValue(), 0.);
-        Assert.assertEquals(DragSensitive.LIFT_RATIO + TimeSpanDragForce.DATE_AFTER + date.shiftedBy(+dt).toString(),
+        Assert.assertEquals(DragSensitive.LIFT_RATIO + TimeSpanDragForce.DATE_AFTER + date.shiftedBy(+dt).toString(utc),
                             drivers.get(5).getName());
         
         // Check the models at dates
@@ -828,7 +832,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         forceModel.addDragSensitiveValidBefore(box3, date3);
         
         // Name of Cl3 is kept as default for the test
-        final String nameCl3 = DragSensitive.LIFT_RATIO + TimeSpanDragForce.DATE_BEFORE + date3;
+        final String nameCl3 = DragSensitive.LIFT_RATIO + TimeSpanDragForce.DATE_BEFORE + date3.toString(utc);
         
 
         Assert.assertFalse(forceModel.dependsOnPositionOnly());
@@ -916,7 +920,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         forceModel.addDragSensitiveValidBefore(box3, date3);
         
         // Name of Cl3 is kept as default for the test
-        final String nameCl3 = DragSensitive.LIFT_RATIO + TimeSpanDragForce.DATE_BEFORE + date3;
+        final String nameCl3 = DragSensitive.LIFT_RATIO + TimeSpanDragForce.DATE_BEFORE + date3.toString(utc);
         
 
         Assert.assertFalse(forceModel.dependsOnPositionOnly());
@@ -1604,6 +1608,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
+        utc = TimeScalesFactory.getUTC();
     }
 }
 
