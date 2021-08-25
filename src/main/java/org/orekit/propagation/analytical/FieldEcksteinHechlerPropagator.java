@@ -27,9 +27,8 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -41,7 +40,6 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
-import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
@@ -76,8 +74,6 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
     /** Build a propagator from FieldOrbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * <p>Using this constructor, an initial osculating orbit is considered.</p>
      *
      * @param initialOrbit initial FieldOrbit
@@ -87,10 +83,9 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, UnnormalizedSphericalHarmonicsProvider,
      * PropagationType)
      */
-    @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
              initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
@@ -131,8 +126,6 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
      * <p>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * <p>Using this constructor, an initial osculating orbit is considered.</p>
      *
      * @param initialOrbit initial FieldOrbit
@@ -147,20 +140,17 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, double,
      * CalculusFieldElement, double, double, double, double, double)
      */
-    @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
              initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit, mass and potential provider.
      * <p>Attitude law is set to an unspecified non-null arbitrary value.</p>
-     *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * <p>Using this constructor, an initial osculating orbit is considered.</p>
      *
@@ -170,10 +160,9 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
      * CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider)
      */
-    @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
@@ -189,8 +178,6 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
      * <p>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * <p>Using this constructor, an initial osculating orbit is considered.</p>
      *
      * @param initialOrbit initial FieldOrbit
@@ -205,12 +192,11 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
      * CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, double)
      */
-    @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -314,8 +300,6 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * <p>Using this constructor, it is possible to define the initial orbit as
      * a mean Eckstein-Hechler orbit or an osculating one.</p>
      *
@@ -324,11 +308,10 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
      * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
      * @since 10.2
      */
-    @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final UnnormalizedSphericalHarmonicsProvider provider,
                                           final PropagationType initialType) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
              initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType);
     }

@@ -61,7 +61,10 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
      *
      * @see Propagator#getDefaultLaw(Frames)
      * @see InertialProvider#InertialProvider(Frame)
+     * @deprecated use {@link InertialProvider#of(Frame)}
+     *             or {@link Propagator#getDefaultLaw(Frames)}
      */
+    @Deprecated
     @DefaultDataContext
     AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 

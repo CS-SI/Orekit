@@ -16,9 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -47,8 +46,6 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * callers of this builder to the real orbital parameters.
      * </p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param templateOrbit reference orbit from which real orbits will be built
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
@@ -60,13 +57,12 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @see #EcksteinHechlerPropagatorBuilder(Orbit,
      * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider)
      */
-    @DefaultDataContext
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final UnnormalizedSphericalHarmonicsProvider provider,
                                             final PositionAngle positionAngle,
                                             final double positionScale) {
         this(templateOrbit, provider, positionAngle, positionScale,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+                InertialProvider.of(templateOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -108,8 +104,6 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * callers of this builder to the real orbital parameters.
      * </p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param templateOrbit reference orbit from which real orbits will be built
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
@@ -129,7 +123,6 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @see #EcksteinHechlerPropagatorBuilder(Orbit,
      * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider)
      */
-    @DefaultDataContext
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final double referenceRadius,
                                             final double mu,
