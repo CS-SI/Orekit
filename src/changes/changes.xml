@@ -30,6 +30,9 @@
       <action dev="bryan" type="fix" issue="827">
         Fixed time system used in SP3 files.
       </action>
+      <action dev="evan" type="fix" issue="685">
+        Fix AnalyticalPropagator RESET_STATE when new state is null.
+      </action>
       <action dev="bryan" type="fix" issue="803">
         Fixed parsing of clock values in SP3 files.
       </action>
