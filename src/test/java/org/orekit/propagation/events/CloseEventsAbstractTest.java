@@ -2014,7 +2014,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     /** Trigger an event at a particular time. */
-    private static class TimeDetector extends AbstractDetector<TimeDetector> {
+    protected static class TimeDetector extends AbstractDetector<TimeDetector> {
 
         /** time of the event to trigger. */
         private final List<AbsoluteDate> eventTs;

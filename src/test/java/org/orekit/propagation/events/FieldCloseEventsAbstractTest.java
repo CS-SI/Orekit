@@ -2238,7 +2238,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
     }
 
     /** Trigger an event at a particular time. */
-    private class TimeDetector extends FieldAbstractDetector<TimeDetector, T> {
+    protected class TimeDetector extends FieldAbstractDetector<TimeDetector, T> {
 
         /** time of the event to trigger. */
         private final List<FieldAbsoluteDate<T>> eventTs;

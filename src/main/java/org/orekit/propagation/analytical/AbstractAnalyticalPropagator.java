@@ -41,9 +41,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventState;
 import org.orekit.propagation.events.EventState.EventOccurrence;
-import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
-import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -125,22 +123,9 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             lastPropagationStart = start;
 
             final double    dt      = target.durationFrom(start);
+            final boolean isForward = dt >= 0;
             final double    epsilon = FastMath.ulp(dt);
             SpacecraftState state   = updateAdditionalStates(basicPropagate(start));
-
-            // evaluate step size
-            final double stepSize;
-            if (getMultiplexer().getHandlers().isEmpty()) {
-                stepSize = dt;
-            } else {
-                // we look only at the first handler
-                final OrekitStepHandler handler = getMultiplexer().getHandlers().get(0);
-                if (handler instanceof OrekitStepNormalizer) {
-                    stepSize = FastMath.copySign(((OrekitStepNormalizer) handler).getFixedTimeStep(), dt);
-                } else {
-                    stepSize = FastMath.copySign(state.getKeplerianPeriod() / 100, dt);
-                }
-            }
 
             // initialize event detectors
             for (final EventState<?> es : eventsStates) {
@@ -150,23 +135,16 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             // initialize step handlers
             getMultiplexer().init(state, target);
 
-            // iterate over the propagation range
+            // iterate over the propagation range, need loop due to reset events
             statesInitialized = false;
             isLastStep = false;
             do {
 
-                // go ahead one step size
+                // attempt to advance to the target date
                 final SpacecraftState previous = state;
-                AbsoluteDate t = previous.getDate().shiftedBy(stepSize);
-                if (dt == 0 || ((dt > 0) ^ (t.compareTo(target) <= 0)) ||
-                        FastMath.abs(target.durationFrom(t)) <= epsilon) {
-                    // current step exceeds target
-                    // or is target to within double precision
-                    t = target;
-                }
-                final SpacecraftState current = updateAdditionalStates(basicPropagate(t));
-                final OrekitStepInterpolator interpolator = new BasicStepInterpolator(dt >= 0, previous, current);
-
+                final SpacecraftState current = updateAdditionalStates(basicPropagate(target));
+                final OrekitStepInterpolator interpolator =
+                        new BasicStepInterpolator(isForward, previous, current);
 
                 // accept the step, trigger events and step handlers
                 state = acceptStep(interpolator, target, epsilon);
