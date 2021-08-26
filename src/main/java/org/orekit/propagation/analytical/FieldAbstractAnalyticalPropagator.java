@@ -28,7 +28,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -132,9 +131,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
             lastPropagationStart = start;
 
-            final T                 dt      = target.durationFrom(start);
-            final boolean           isForward = dt.getReal() >= 0;
-            final double            epsilon = FastMath.ulp(dt.getReal());
+            final boolean           isForward = target.compareTo(start) >= 0;
             FieldSpacecraftState<T> state   = updateAdditionalStates(basicPropagate(start));
 
             // initialize event detectors
@@ -157,7 +154,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                         new FieldBasicStepInterpolator(isForward, previous, current);
 
                 // accept the step, trigger events and step handlers
-                state = acceptStep(interpolator, target, epsilon);
+                state = acceptStep(interpolator, target);
 
                 // Update the potential changes in the spacecraft state due to the events
                 // especially the potential attitude transition
@@ -178,12 +175,11 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
     /** Accept a step, triggering events and step handlers.
      * @param interpolator interpolator for the current step
      * @param target final propagation time
-     * @param epsilon threshold for end date detection
      * @return state at the end of the step
-          * @exception MathRuntimeException if an event cannot be located
+     * @exception MathRuntimeException if an event cannot be located
      */
     protected FieldSpacecraftState<T> acceptStep(final FieldBasicStepInterpolator interpolator,
-                                         final FieldAbsoluteDate<T> target, final double epsilon)
+                                                 final FieldAbsoluteDate<T> target)
         throws MathRuntimeException {
 
         FieldSpacecraftState<T>       previous   = interpolator.getPreviousState();

@@ -26,7 +26,6 @@ import java.util.Queue;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -122,9 +121,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             lastPropagationStart = start;
 
-            final double    dt      = target.durationFrom(start);
-            final boolean isForward = dt >= 0;
-            final double    epsilon = FastMath.ulp(dt);
+            final boolean isForward = target.compareTo(start) >= 0;
             SpacecraftState state   = updateAdditionalStates(basicPropagate(start));
 
             // initialize event detectors
@@ -147,7 +144,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                         new BasicStepInterpolator(isForward, previous, current);
 
                 // accept the step, trigger events and step handlers
-                state = acceptStep(interpolator, target, epsilon);
+                state = acceptStep(interpolator, target);
 
                 // Update the potential changes in the spacecraft state due to the events
                 // especially the potential attitude transition
@@ -168,12 +165,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Accept a step, triggering events and step handlers.
      * @param interpolator interpolator for the current step
      * @param target final propagation time
-     * @param epsilon threshold for end date detection
      * @return state at the end of the step
-          * @exception MathRuntimeException if an event cannot be located
+     * @exception MathRuntimeException if an event cannot be located
      */
     protected SpacecraftState acceptStep(final OrekitStepInterpolator interpolator,
-                                         final AbsoluteDate target, final double epsilon)
+                                         final AbsoluteDate target)
         throws MathRuntimeException {
 
         SpacecraftState        previous   = interpolator.getPreviousState();
