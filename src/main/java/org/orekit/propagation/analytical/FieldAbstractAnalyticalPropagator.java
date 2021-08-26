@@ -329,12 +329,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             doneWithStep = true;
         } while (!doneWithStep);
 
-        final T remaining = target.durationFrom(current.getDate());
-        if (interpolator.isForward()) {
-            isLastStep = remaining.getReal() <  epsilon;
-        } else {
-            isLastStep = remaining.getReal() > -epsilon;
-        }
+        isLastStep = target.equals(current.getDate());
 
         // handle the remaining part of the step, after all events if any
         getMultiplexer().handleStep(interpolator);
