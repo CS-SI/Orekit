@@ -579,17 +579,29 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = 100.0;
+        final int[] counter = new int[] {0};  // mutable int
         propagator.setStepHandler(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
             public void handleStep(SpacecraftState currentState) {
                 if (previous != null) {
                     Assert.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
+                // check state is accurate
+                PVCoordinates expected = new KeplerianPropagator(orbit)
+                        .propagate(currentState.getDate()).getPVCoordinates();
+                MatcherAssert.assertThat(
+                        currentState.getPVCoordinates(),
+                        OrekitMatchers.pvIs(expected));
                 previous = currentState.getDate();
+                counter[0]++;
             }
         });
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         propagator.propagate(farTarget);
+        // check the step handler was executed
+        Assert.assertEquals(
+                counter[0],
+                (int) (farTarget.durationFrom(orbit.getDate()) / step) + 1);
     }
 
     @Test
@@ -599,24 +611,29 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = orbit.getKeplerianPeriod() / 100;
+        final int[] counter = new int[] {0};  // mutable int
         propagator.setStepHandler(new OrekitStepHandler() {
-            private AbsoluteDate previous;
-            private AbsoluteDate target;
-            @Override
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-                target = t;
-            }
+            private AbsoluteDate t = orbit.getDate();
             @Override
             public void handleStep(OrekitStepInterpolator interpolator) {
-                final AbsoluteDate t = interpolator.getCurrentState().getDate();
-                if (previous != null && target.durationFrom(t) > 0.001) {
-                    Assert.assertEquals(step, t.durationFrom(previous), 1.0e-10);
-                }
-                previous = interpolator.getCurrentState().getDate();
+                // check the states provided by the interpolator are accurate.
+                do {
+                    PVCoordinates expected = new KeplerianPropagator(orbit)
+                            .propagate(t).getPVCoordinates();
+                    MatcherAssert.assertThat(
+                            interpolator.getInterpolatedState(t).getPVCoordinates(),
+                            OrekitMatchers.pvIs(expected));
+                    t = t.shiftedBy(step);
+                    counter[0]++;
+                } while (t.compareTo(interpolator.getCurrentState().getDate()) <= 0);
             }
         });
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         propagator.propagate(farTarget);
+        // check the step handler was executed
+        Assert.assertEquals(
+                counter[0],
+                (int) (farTarget.durationFrom(orbit.getDate()) / step) + 1);
     }
 
     @Test

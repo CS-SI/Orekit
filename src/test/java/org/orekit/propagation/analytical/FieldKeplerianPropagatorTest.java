@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical;
 
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.DummyLocalizable;
@@ -33,6 +34,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -81,6 +83,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -714,6 +717,7 @@ public class FieldKeplerianPropagatorTest {
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final T step = zero.add(100.0);
+        final int[] counter = new int[] {0};  // mutable int
         propagator.setStepHandler(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
             @Override
@@ -721,11 +725,22 @@ public class FieldKeplerianPropagatorTest {
                 if (previous != null) {
                     Assert.assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
                 }
+                // check state is accurate
+                FieldPVCoordinates<T> expected = new FieldKeplerianPropagator<>(orbit)
+                        .propagate(currentState.getDate()).getPVCoordinates();
+                MatcherAssert.assertThat(
+                        currentState.getPVCoordinates().toTimeStampedPVCoordinates(),
+                        OrekitMatchers.pvIs(expected.toPVCoordinates()));
                 previous = currentState.getDate();
+                counter[0]++;
             }
         });
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         propagator.propagate(farTarget);
+        // check the step handler was executed
+        Assert.assertEquals(
+                counter[0],
+                (int) (farTarget.durationFrom(orbit.getDate()).getReal() / step.getReal()) + 1);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestVariableStep(Field<T> field) {
@@ -735,24 +750,30 @@ public class FieldKeplerianPropagatorTest {
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final T step = orbit.getKeplerianPeriod().divide(100);
+        final int[] counter = new int[] {0};  // mutable int
         propagator.setStepHandler(new FieldOrekitStepHandler<T>() {
-            private FieldAbsoluteDate<T> previous;
-            private FieldAbsoluteDate<T> target;
-            @Override
-            public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
-                target = t;
-            }
+            private FieldAbsoluteDate<T> t = orbit.getDate();
             @Override
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
-                final FieldAbsoluteDate<T> t = interpolator.getCurrentState().getDate();
-                if (previous != null && target.durationFrom(t).getReal() > 0.001) {
-                    Assert.assertEquals(step.getReal(), t.durationFrom(previous).getReal(), 1.0e-10);
-                }
-                previous = interpolator.getCurrentState().getDate();
+                // check the states provided by the interpolator are accurate.
+                do {
+                    PVCoordinates expected = new FieldKeplerianPropagator<>(orbit)
+                            .propagate(t).getPVCoordinates().toTimeStampedPVCoordinates();
+                    MatcherAssert.assertThat(
+                            interpolator.getInterpolatedState(t).getPVCoordinates()
+                                    .toTimeStampedPVCoordinates(),
+                            OrekitMatchers.pvIs(expected));
+                    t = t.shiftedBy(step);
+                    counter[0]++;
+                } while (t.compareTo(interpolator.getCurrentState().getDate()) <= 0);
             }
         });
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         propagator.propagate(farTarget);
+        // check the step handler was executed
+        Assert.assertEquals(
+                counter[0],
+                (int) (farTarget.durationFrom(orbit.getDate()).getReal() / step.getReal()) + 1);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEphemeris(Field<T> field) {
