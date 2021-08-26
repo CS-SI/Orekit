@@ -319,7 +319,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         isLastStep = target.equals(current.getDate());
 
         // handle the remaining part of the step, after all events if any
-        getMultiplexer().handleStep(interpolator);
+        getMultiplexer().handleStep(restricted);
         if (isLastStep) {
             getMultiplexer().finish(restricted.getCurrentState());
         }

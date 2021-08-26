@@ -45,6 +45,10 @@
       <action dev="evan" type="update" issue="830" due-to="skyrex">
         Remove step size limitations in analytic propagators. Backwards incompatible.
       </action>
+      <action dev="evan" type="fix">
+        Fix part of step passed to the step handler twice in analytic propagators with
+        event handlers.
+      </action>
       <action dev="bryan" type="fix" issue="795" due-to="guylaine">
         Fixed output of NRLMSISE00 for altitude at 32.5 km.
       </action>
