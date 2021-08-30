@@ -274,7 +274,7 @@ public class FieldDSSTAtmosphericDragTest {
         drag.registerAttitudeProvider(attitudeProvider);
                         
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
         
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(drag);
@@ -413,7 +413,7 @@ public class FieldDSSTAtmosphericDragTest {
         }
       
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
       
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(drag);

@@ -68,7 +68,7 @@ public class GLONASSAnalyticalPropagatorTest {
     public void testPerfectValues() {
         // Build the propagator
         final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).
-                        attitudeProvider(Propagator.DEFAULT_LAW).
+                        attitudeProvider(Utils.defaultLaw()).
                         mass(1521.0).
                         eci(FramesFactory.getEME2000()).
                         ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).

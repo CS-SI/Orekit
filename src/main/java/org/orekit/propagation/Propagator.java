@@ -76,8 +76,7 @@ public interface Propagator extends PVCoordinatesProvider {
     AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 
     /**
-     * Get a default law using the given frames. A data context aware replacement for
-     * {@link #DEFAULT_LAW}.
+     * Get a default law using the given frames.
      *
      * @param frames the set of frames to use.
      * @return attitude law.

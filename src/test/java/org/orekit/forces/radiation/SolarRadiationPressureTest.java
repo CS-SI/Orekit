@@ -390,7 +390,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit.shiftedBy(deltaT)), forceModel,
-                                              Propagator.DEFAULT_LAW, dP, checkTolerance, print);
+                                              Utils.defaultLaw(), dP, checkTolerance, print);
 
     }
 
@@ -414,7 +414,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit.shiftedBy(deltaT)), forceModel,
-                                              Propagator.DEFAULT_LAW, dP, checkTolerance, print);
+                                              Utils.defaultLaw(), dP, checkTolerance, print);
 
     }
 

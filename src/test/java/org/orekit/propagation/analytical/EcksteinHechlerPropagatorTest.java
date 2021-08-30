@@ -91,6 +91,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class EcksteinHechlerPropagatorTest {
 
+    private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
+
     @Test
     public void sameDateCartesian() {
 
@@ -781,7 +783,7 @@ public class EcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final SpacecraftState meanState = DSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final SpacecraftState meanState = DSSTPropagator.computeMeanState(initialState, DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
         final EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(meanState.getOrbit(), provider, PropagationType.MEAN);
@@ -817,10 +819,10 @@ public class EcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final SpacecraftState meanState = DSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final SpacecraftState meanState = DSSTPropagator.computeMeanState(initialState, DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
-        final EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(meanState.getOrbit(), Propagator.DEFAULT_LAW, 458.6, provider, PropagationType.MEAN);
+        final EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(meanState.getOrbit(), DEFAULT_LAW, 458.6, provider, PropagationType.MEAN);
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Verify

@@ -360,7 +360,7 @@ public class NumericalConverterTest {
 
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
-        builder.setAttitudeProvider(InertialProvider.EME2000_ALIGNED);
+        builder.setAttitudeProvider(Utils.defaultLaw());
         builder.setMass(1000.0);
 
         JacobianPropagatorConverter fitter = new JacobianPropagatorConverter(builder, 1.0, 500);
