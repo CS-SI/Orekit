@@ -64,8 +64,7 @@ public class GLONASSNumericalPropagatorBuilder {
 
     /**
      * Initializes the builder.
-     * <p>The attitude provider is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+     * <p>The attitude provider is set by default to EME2000 aligned in the
      *  default data context.<br>
      * The mass is set by default to the
      *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>

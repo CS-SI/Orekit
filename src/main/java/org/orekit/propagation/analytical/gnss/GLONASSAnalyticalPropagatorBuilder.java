@@ -62,9 +62,7 @@ public class GLONASSAnalyticalPropagatorBuilder {
 
     /** Initializes the builder.
      * <p>The GLONASS orbital elements is the only requested parameter to build a GLONASSAnalyticalPropagator.</p>
-     * <p>The attitude provider is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
-     *  default data context.<br>
+     * <p>The attitude provider is set by default to be aligned with the EME2000 frame.<br>
      * The mass is set by default to the
      *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
      * The data context is by default to the
