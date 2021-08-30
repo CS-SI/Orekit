@@ -72,6 +72,7 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_FIND_RESOURCE("unable to find resource {0} in classpath"),
     NO_EARTH_ORIENTATION_PARAMETERS_LOADED("no Earth Orientation Parameters loaded"),
     MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES("missing Earth Orientation Parameters between {0} and {1}"),
+    MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP("missing Earth Orientation Parameters between {0} and {1}, gap is {2,number,0.0##############E0} s"),
     NO_EARTH_ORIENTATION_PARAMETERS("missing Earth Orientation Parameters"),
     NOT_A_SUPPORTED_IERS_DATA_FILE("file {0} is not a supported IERS data file"),
     INCONSISTENT_DATES_IN_IERS_FILE("inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}"),
@@ -100,7 +101,7 @@ public enum OrekitMessages implements Localizable {
     MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE("missing gravity field coefficient {0}({1}, {2}) in file {3}"),
     TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD("too large degree (n = {0}, potential maximal degree is {1})"),
     TOO_LARGE_ORDER_FOR_GRAVITY_FIELD("too large order (m = {0}, potential maximal order is {1})"),
-    SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD("several reference dates ({0} and {1}) found in gravity field file {2}"),
+    SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD("several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}"),
     NO_TLE_FOR_OBJECT("no TLE data available for object {0}"),
     NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE(
             "no TLE data available for launch year {0}, launch number {1}, launch piece {2}"),
@@ -131,7 +132,7 @@ public enum OrekitMessages implements Localizable {
     FRAMES_MISMATCH("frame {0} does not match frame {1}"),
     INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION("initial state not specified for orbit propagation"),
     EVENT_DATE_TOO_CLOSE(
-            "event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added"),
+            "target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added"),
     UNABLE_TO_READ_JPL_HEADER("unable to read header record from JPL ephemerides binary file {0}"),
     INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES(
             "inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})"),
@@ -144,6 +145,8 @@ public enum OrekitMessages implements Localizable {
     NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND("no JPL ephemerides binary files found"),
     OUT_OF_RANGE_BODY_EPHEMERIDES_DATE("out of range date for {0} ephemerides: {1}"),
     OUT_OF_RANGE_EPHEMERIDES_DATE("out of range date for ephemerides: {0}, [{1}, {2}]"),
+    OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE("out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]"),
+    OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER("out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]"),
     UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH(
             "unexpected two elevation values: {0} and {1}, for one azimuth: {2}"),
     UNSUPPORTED_PARAMETER_NAME("unsupported parameter name {0}, supported names: {1}"),
@@ -204,10 +207,10 @@ public enum OrekitMessages implements Localizable {
     NOT_ENOUGH_DATA_FOR_INTERPOLATION("not enough data for interpolation (sample size = {0})"),
     NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
     NO_CACHED_ENTRIES("no cached entries"),
-    NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1}"),
+    NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s"),
     NO_DATA_GENERATED("no data generated around date: {0}"),
-    UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}, data requested for {1}"),
-    UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}, data requested for {1}"),
+    UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before"),
+    UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after"),
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY(
             "unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
@@ -286,10 +289,11 @@ public enum OrekitMessages implements Localizable {
             "invalid measurement types {0} and {1} for the combination of measurements {2}"),
     INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS(
             "frequencies {0} and {1} are incompatibles for the {2} combination"),
-    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates"),
+    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations are not in chronological order: {0} is {2,number,0.0##############E0} s after {1}"),
     EXCEPTIONAL_DATA_CONTEXT(
             "Use of the ExceptionalDataContext detected. This is typically used to detect developer errors."),
-    NON_DIFFERENT_DATES_FOR_OBSERVATIONS("observations {0}, {1} and {2} must have different dates"),
+    NON_DIFFERENT_DATES_FOR_OBSERVATIONS(
+            "Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)"),
     NON_COPLANAR_POINTS("observations are not in the same plane"),
     INVALID_PARAMETER_RANGE("invalid parameter {0}: {1} not in range [{2}, {3}]"),
     PARAMETER_NOT_SET("The parameter {0} should not be null in {1}"),
