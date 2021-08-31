@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class DataSourceTest {
     @Test
     public void testFileName() throws IOException, URISyntaxException {
         URL url = DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
-        DataSource ds = new DataSource(url.toURI().getPath());
+        DataSource ds = new DataSource(Paths.get(url.toURI()).toString());
         Assert.assertTrue(ds.getName().endsWith("UTC-TAI.history"));
         Assert.assertTrue(ds.getOpener().rawDataIsBinary());
         try (InputStream       is  = ds.getOpener().openStreamOnce();
@@ -65,6 +66,19 @@ public class DataSourceTest {
     public void testFile() throws IOException, URISyntaxException {
         URL url = DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
         DataSource ds = new DataSource(new File(url.toURI().getPath()));
+        Assert.assertTrue(ds.getName().endsWith("UTC-TAI.history"));
+        Assert.assertTrue(ds.getOpener().rawDataIsBinary());
+        try (InputStream       is  = ds.getOpener().openStreamOnce();
+             InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader    br  = new BufferedReader(isr)) {
+            checkHistory(br);
+        }
+    }
+    
+    @Test
+    public void testUri() throws IOException, URISyntaxException {
+        URL url = DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
+        DataSource ds = new DataSource(url.toURI());
         Assert.assertTrue(ds.getName().endsWith("UTC-TAI.history"));
         Assert.assertTrue(ds.getOpener().rawDataIsBinary());
         try (InputStream       is  = ds.getOpener().openStreamOnce();
