@@ -189,7 +189,8 @@ public class EventDetectorTest {
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(n * step));
-        Assert.assertEquals(n + 1, counter.getCount());
+        // analytical propagator can take one big step, further reducing calls to g()
+        Assert.assertEquals(2, counter.getCount());
     }
 
     private static class GCallsCounter extends AbstractDetector<GCallsCounter> {
