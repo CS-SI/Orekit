@@ -309,10 +309,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                         // some event handler has triggered changes that
                         // invalidate the derivatives, we need to recompute them
                         final FieldSpacecraftState<T> resetState = occurrence.getNewState();
-                        if (resetState != null) {
-                            resetIntermediateState(resetState, interpolator.isForward());
-                            return resetState;
-                        }
+                        resetIntermediateState(resetState, interpolator.isForward());
+                        return resetState;
                     }
                     // at this point action == Action.CONTINUE or Action.RESET_EVENTS
 
