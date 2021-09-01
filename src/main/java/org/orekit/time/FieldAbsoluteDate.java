@@ -1480,26 +1480,39 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         return (int) (l ^ (l >>> 32));
     }
 
-    /** Get a String representation of the instant location in UTC time scale.
+    /**
+     * Get a String representation of the instant location with up to 16 digits of
+     * precision for the seconds value.
+     *
+     * <p> Since this method is used in exception messages and error handling every
+     * effort is made to return some representation of the instant. If UTC is available
+     * from the default data context then it is used to format the string in UTC. If not
+     * then TAI is used. Finally if the prior attempts fail this method falls back to
+     * converting this class's internal representation to a string.
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
-     * @return a string representation of the instance,
-     * in ISO-8601 format with milliseconds accuracy
+     * @return a string representation of the instance, in ISO-8601 format if UTC is
+     * available from the default data context.
+     * @see AbsoluteDate#toString()
      * @see #toString(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
      */
     @DefaultDataContext
     public String toString() {
-        return toString(DataContext.getDefault().getTimeScales().getUTC());
+        return toAbsoluteDate().toString();
     }
 
-    /** Get a String representation of the instant location.
+    /**
+     * Get a String representation of the instant location in ISO-8601 format without the
+     * UTC offset and with up to 16 digits of precision for the seconds value.
+     *
      * @param timeScale time scale to use
-     * @return a string representation of the instance,
-     * in ISO-8601 format with milliseconds accuracy
+     * @return a string representation of the instance.
+     * @see DateTimeComponents#toString(int, int)
      */
     public String toString(final TimeScale timeScale) {
-        return getComponents(timeScale).toString(timeScale.minuteDuration(this));
+        return getComponents(timeScale).toStringWithoutUtcOffset();
     }
 
     /** Get a String representation of the instant location for a local time.

@@ -990,12 +990,14 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             // extract time range covered by the record
             final AbsoluteDate rangeStart = extractDate(record, DATA_START_RANGE_OFFSET);
             if (rangeStart.compareTo(startEpoch) < 0) {
-                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeStart, startEpoch, finalEpoch);
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                        rangeStart, startEpoch, finalEpoch, startEpoch.durationFrom(rangeStart));
             }
 
             final AbsoluteDate rangeEnd   = extractDate(record, DATE_END_RANGE_OFFSET);
             if (rangeEnd.compareTo(finalEpoch) > 0) {
-                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeEnd, startEpoch, finalEpoch);
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                        rangeEnd, startEpoch, finalEpoch, rangeEnd.durationFrom(finalEpoch));
             }
 
             if (rangeStart.compareTo(end) > 0 || rangeEnd.compareTo(start) < 0) {

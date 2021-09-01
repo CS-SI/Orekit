@@ -73,7 +73,7 @@ public class DateTimeComponentsTest {
     public void testString() {
         final DateTimeComponents date =
             new DateTimeComponents(DateComponents.J2000_EPOCH, TimeComponents.H12);
-        Assert.assertEquals("2000-01-01T12:00:00.000", date.toString());
+        Assert.assertEquals("2000-01-01T12:00:00.000+00:00", date.toString());
     }
 
     @Test
@@ -87,6 +87,8 @@ public class DateTimeComponentsTest {
     @Test
     public void testParse() {
         String s = "2000-01-02T03:04:05.000";
+        Assert.assertEquals(s, DateTimeComponents.parseDateTime(s).toStringWithoutUtcOffset());
+        s = "2000-01-02T03:04:05.000+00:00";
         Assert.assertEquals(s, DateTimeComponents.parseDateTime(s).toString());
     }
 
@@ -149,6 +151,48 @@ public class DateTimeComponentsTest {
                 new TimeComponents(hour, minute, second, minutesFromUtc));
 
         MatcherAssert.assertThat(actual.toStringRfc3339(), CoreMatchers.is(expected));
+    }
+
+    @Test
+    public void testToStringRounding() {
+        // these tests were copied from AbsoluteDateTest
+        check(2015, 9, 30, 7, 54, 60 - 9.094947e-13, 60,
+                "2015-09-30T07:54:59.99999999999909+00:00",
+                "2015-09-30T07:55:00.000+00:00",
+                "2015-09-30T07:55:00+00:00");
+        check(2008, 2, 29, 23, 59, 59.9994, 60,
+                "2008-02-29T23:59:59.99940000000000+00:00",
+                "2008-02-29T23:59:59.999+00:00",
+                "2008-03-01T00:00:00+00:00");
+        check(2008, 2, 29, 23, 59, 59.9996, 60,
+                "2008-02-29T23:59:59.99960000000000+00:00",
+                "2008-03-01T00:00:00.000+00:00",
+                "2008-03-01T00:00:00+00:00");
+        // check a leap second
+        check(2015, 6, 30, 23, 59, 59.999999, 61,
+                "2015-06-30T23:59:59.99999900000000+00:00",
+                "2015-06-30T23:59:60.000+00:00",
+                "2015-06-30T23:59:60+00:00");
+        check(2015, 6, 30, 23, 59, 60.5, 61,
+                "2015-06-30T23:59:60.50000000000000+00:00",
+                "2015-06-30T23:59:60.500+00:00",
+                "2015-07-01T00:00:00+00:00");
+        // check a bigger leap second. First leap was 1.422818 s.
+        // TODO can't run this test because of #707
+        //check(1960, 12, 31, 23, 59, 61.42281, 62,
+        //        "1960-12-31T23:59:61.42281000000000+00:00",
+        //        "1960-12-31T23:59:61.42300000000000+00:00", // TODO this date is invalid
+        //        "1961-01-01T00:00:00+00:00");
+    }
+
+    private void check(int year, int month, int day, int hour, int minute, double second,
+                       int minuteDuration, String full, String medium, String shor) {
+        DateTimeComponents dtc =
+                new DateTimeComponents(year, month, day, hour, minute, second);
+        MatcherAssert.assertThat(dtc.toString(minuteDuration), CoreMatchers.is(medium));
+        MatcherAssert.assertThat(dtc.toString(minuteDuration, 3), CoreMatchers.is(medium));
+        MatcherAssert.assertThat(dtc.toString(minuteDuration, 0), CoreMatchers.is(shor));
+        MatcherAssert.assertThat(dtc.toString(minuteDuration, 14), CoreMatchers.is(full));
     }
 
 }
