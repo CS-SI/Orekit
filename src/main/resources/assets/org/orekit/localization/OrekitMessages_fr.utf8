@@ -67,6 +67,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = aucun Paramètre d''Orientation de la T
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = paramètres d''Orientation de la Terre manquants entre {0} et {1}
 
+# missing Earth Orientation Parameters between {0} and {1}, gap is {2,number,0.0##############E0} s
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = <MISSING TRANSLATION>
+
 # missing Earth Orientation Parameters
 NO_EARTH_ORIENTATION_PARAMETERS = paramètres d''Orientation de la Terre manquants
 
@@ -148,8 +151,9 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = degré trop important (n = {0}, le degré d
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordre trop important (n = {0}, l''ordre de potentiel maximal est {1})
 
-# several reference dates ({0} and {1}) found in gravity field file {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = plusieurs dates de références ({0} et {1}) trouvées dans le fichier de champ de gravité {2}
+# several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
+# SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = plusieurs dates de références ({0} et {1}) trouvées dans le fichier de champ de gravité {2}
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
 
 # no TLE data available for object {0}
 NO_TLE_FOR_OBJECT = aucune donnée TLE n''est disponible pour l''objet {0}
@@ -232,8 +236,9 @@ FRAMES_MISMATCH = le repère ({0}) ne correspond pas au repère ({1})
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = état initial non spécifié pour l''extrapolation d''orbite
 
-# event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
-EVENT_DATE_TOO_CLOSE = la date évènement {0}, plus grande que {1} moins {3} secondes et plus petite que {2} plus {3} secondes, ne peut pas être ajoutée
+# target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
+# EVENT_DATE_TOO_CLOSE = la date évènement {0}, plus grande que {1} moins {3} secondes et plus petite que {2} plus {3} secondes, ne peut pas être ajoutée
+EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION>
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = impossible de lire l''en-tête du fichier d''éphémérides du JPL {0}
@@ -261,6 +266,12 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = date hors du domaine de validité des éph�
 
 # out of range date for ephemerides: {0}, [{1}, {2}]
 OUT_OF_RANGE_EPHEMERIDES_DATE = date hors du domaine de validité des éphémérides : {0}, [{1}, {2}]
+
+# out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = <MISSING TRANSLATION>
+
+# out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = <MISSING TRANSLATION>
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
 UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = données inattendues, deux valeurs de site : {0} et {1}, pour un azimut : {2}
@@ -394,17 +405,18 @@ NOT_ENOUGH_CACHED_NEIGHBORS =  nombre de voisins en cache trop petit : {0} (il f
 # no cached entries
 NO_CACHED_ENTRIES = aucune entrée en cache
 
-# generated entries not sorted: {0} > {1}
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = les entrées générées ne sont pas dans l''ordre chronologique : {0} > {1}
+# generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
+# NON_CHRONOLOGICALLY_SORTED_ENTRIES = les entrées générées ne sont pas dans l''ordre chronologique : {0} > {1}
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = aucune donnée générée aux alentours de la date : {0}
 
-# unable to generate new data before {0}, data requested for {1}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossible de générer des données avant le {0}, données requises pour {1}
+# unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossible de générer des données avant le {0}, données requises pour {1} qui est {2,number,0.0##############E0} s avant
 
-# unable to generate new data after {0}, data requested for {1}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des données après le {0}, données requises pour {1}
+# unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des données après le {0}, données requises pour {1} qui est {2,number,0.0##############E0} s après
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossible de calculer l''anomalie excentrique hyperbolique à partir de l''anomalie moyenne après {0} itérations
@@ -621,14 +633,16 @@ INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = les types de mesure 
 # frequencies {0} and {1} are incompatibles for the {2} combination
 INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = les fréquences {0} et {1} sont incompatibles pour la combinaison {2}
 
-# observations {0} and {1} are not in chronological dates
-NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = les observations aux dates {0} et {1} ne sont pas dans l''ordre chronologique
+# observations are not in chronological order: {0} is {2,number,0.0##############E0} s after {1}
+# NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = les observations aux dates {0} et {1} ne sont pas dans l''ordre chronologique
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = une utilisation de ExceptionalDataContext a été détectée. Ce mécanisme est généralement activé explicitement pour détecter des erreur de développement
 
-# observations {0}, {1} and {2} must have different dates
-NON_DIFFERENT_DATES_FOR_OBSERVATIONS = les observations {0}, {1} et {2} doivent avoir des dates différentes
+# Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
+# NON_DIFFERENT_DATES_FOR_OBSERVATIONS = les observations {0}, {1} et {2} doivent avoir des dates différentes
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
 # observations are not in the same plane
 NON_COPLANAR_POINTS = les observations ne sont pas dans le même plan
