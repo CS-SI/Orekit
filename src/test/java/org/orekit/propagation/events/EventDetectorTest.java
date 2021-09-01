@@ -299,7 +299,8 @@ public class EventDetectorTest {
             k.propagate(initialDate.shiftedBy(Constants.JULIAN_YEAR));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertSame(dummyCause, oe.getCause());
+            Assert.assertSame(OrekitException.class, oe.getClass());
+            Assert.assertSame(dummyCause, oe.getCause().getCause());
         }
     }
 
