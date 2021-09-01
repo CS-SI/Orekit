@@ -1327,6 +1327,7 @@ public class AbsoluteDate
      */
     @DefaultDataContext
     public String toString() {
+        // CHECKSTYLE: stop IllegalCatch check
         try {
             // try to use UTC first at that is likely most familiar to the user.
             return toString(DataContext.getDefault().getTimeScales().getUTC()) + "Z";
@@ -1349,6 +1350,7 @@ public class AbsoluteDate
                 }
             }
         }
+        // CHECKSTYLE: resume IllegalCatch check
     }
 
     /**
