@@ -235,7 +235,8 @@ public class FieldEventDetectorTest {
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(step.multiply(n)));
-        Assert.assertEquals(n + 1, counter.getCount());
+        // analytical propagator can take one big step, further reducing calls to g()
+        Assert.assertEquals(2, counter.getCount());
     }
 
     private static class GCallsCounter<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<GCallsCounter<T>, T> {

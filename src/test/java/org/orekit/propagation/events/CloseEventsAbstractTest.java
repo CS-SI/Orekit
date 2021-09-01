@@ -37,6 +37,8 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.RecordAndContinue.Event;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -1046,6 +1048,42 @@ public abstract class CloseEventsAbstractTest {
         Assert.assertSame(detectorA, events.get(0).getDetector());
     }
 
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandler() {
+        // setup
+        double tolerance = 1e-18;
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(5)
+                .withHandler(new Handler<>(Action.CONTINUE))
+                .withThreshold(tolerance));
+        StepHandler stepHandler = new StepHandler();
+        propagator.setStepHandler(stepHandler);
+        AbsoluteDate target = epoch.shiftedBy(10);
+
+        // action
+        SpacecraftState finalState = propagator.propagate(target);
+
+        // verify
+        Assert.assertEquals(10.0, finalState.getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(10.0, stepHandler.targetDate.durationFrom(epoch), tolerance);
+        Assert.assertEquals(10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch), tolerance);
+        OrekitStepInterpolator interpolator = stepHandler.interpolators.get(0);
+        Assert.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assert.assertEquals(5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(2, stepHandler.interpolators.size());
+    }
+
     /**
      * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
      * null}.
@@ -2016,6 +2054,41 @@ public abstract class CloseEventsAbstractTest {
         Assert.assertSame(detectorA, events.get(0).getDetector());
     }
 
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandlerReverse() {
+        // setup
+        double tolerance = 1e-18;
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(-5)
+                .withHandler(new Handler<>(Action.CONTINUE))
+                .withThreshold(tolerance));
+        StepHandler stepHandler = new StepHandler();
+        propagator.setStepHandler(stepHandler);
+
+        // action
+        SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(-10));
+
+        // verify
+        Assert.assertEquals(-10.0, finalState.getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(-10.0, stepHandler.targetDate.durationFrom(epoch), tolerance);
+        Assert.assertEquals(-10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch), tolerance);
+        OrekitStepInterpolator interpolator = stepHandler.interpolators.get(0);
+        Assert.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(-5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assert.assertEquals(-5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(-10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(2, stepHandler.interpolators.size());
+    }
+
     /**
      * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
      * null}.
@@ -2070,7 +2143,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     /** Trigger an event at a particular time. */
-    private static class TimeDetector extends AbstractDetector<TimeDetector> {
+    protected static class TimeDetector extends AbstractDetector<TimeDetector> {
 
         /** time of the event to trigger. */
         private final List<AbsoluteDate> eventTs;
@@ -2275,6 +2348,30 @@ public abstract class CloseEventsAbstractTest {
         public SpacecraftState resetState(T detector, SpacecraftState oldState) {
             Assert.assertEquals(0, newState.getDate().durationFrom(oldState.getDate()), 0);
             return newState;
+        }
+    }
+
+    private static class StepHandler implements OrekitStepHandler {
+
+        private SpacecraftState initialState;
+        private AbsoluteDate targetDate;
+        private List<OrekitStepInterpolator> interpolators = new ArrayList<>();
+        private SpacecraftState finalState;
+
+        @Override
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            initialState = s0;
+            targetDate = t;
+        }
+
+        @Override
+        public void handleStep(OrekitStepInterpolator interpolator) {
+            interpolators.add(interpolator);
+        }
+
+        @Override
+        public void finish(SpacecraftState finalState) {
+            this.finalState = finalState;
         }
     }
 
