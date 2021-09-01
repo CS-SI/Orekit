@@ -37,20 +37,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class InertialProvider implements AttitudeProvider {
 
-
-    /** Dummy attitude provider, perfectly aligned with the EME2000 frame.
-     *
-     * <p>This field uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @see #InertialProvider(Rotation, Frame)
-     * @see #InertialProvider(Frame)
-     * @deprecated use {@link #of(Frame)}.
-     */
-    @Deprecated
-    @DefaultDataContext
-    public static final InertialProvider EME2000_ALIGNED =
-        new InertialProvider(Rotation.IDENTITY);
-
     /** Fixed satellite frame. */
     private final Frame satelliteFrame;
 
