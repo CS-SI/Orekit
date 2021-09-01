@@ -21,14 +21,23 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="anne-laure" type="update" issue="797">
+        Add information if a detector failed during propagation
+      </action>
       <action dev="bryan" type="fix" issue="788" due-to="luc">
         Fixed missing call to setMuCreated() in OemParser.
+      </action>
+      <action dev="evan" type="update" issue="618">
+        Fix supportedNames matching in ClasspathCrawler. Backwards incompatible.
       </action>
       <action dev="bryan" type="fix" issue="828">
         Fixed missing file types in SP3Parser.
       </action>
       <action dev="bryan" type="fix" issue="827">
         Fixed time system used in SP3 files.
+      </action>
+      <action dev="evan" type="fix" issue="685">
+        Fix AnalyticalPropagator RESET_STATE when new state is null.
       </action>
       <action dev="bryan" type="fix" issue="803">
         Fixed parsing of clock values in SP3 files.
