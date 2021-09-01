@@ -306,59 +306,64 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         T loopG = ga;
         while ((afterRootG.getReal() == 0.0 || afterRootG.getReal() > 0.0 == g0Positive) &&
                 strictlyAfter(afterRootT, tb)) {
-            try {
-                if (loopG.getReal() == 0.0) {
-                    // ga == 0.0 and gb may or may not be 0.0
-                    // handle the root at ta first
-                    beforeRootT = loopT;
-                    beforeRootG = loopG;
-                    afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
-                    afterRootG = g(interpolator.getInterpolatedState(afterRootT));
-                } else {
-                    // both non-zero, the usual case, use a root finder.
-                    // time zero for evaluating the function f. Needs to be final
-                    final FieldAbsoluteDate<T> fT0 = loopT;
-                    final UnivariateFunction f = dt -> {
-                        return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
-                    };
-                    // tb as a double for use in f
-                    final T tbDouble = tb.durationFrom(fT0);
-                    if (forward) {
+            if (loopG.getReal() == 0.0) {
+                // ga == 0.0 and gb may or may not be 0.0
+                // handle the root at ta first
+                beforeRootT = loopT;
+                beforeRootG = loopG;
+                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
+                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+            } else {
+                // both non-zero, the usual case, use a root finder.
+                // time zero for evaluating the function f. Needs to be final
+                final FieldAbsoluteDate<T> fT0 = loopT;
+                final UnivariateFunction f = dt -> {
+                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
+                };
+                // tb as a double for use in f
+                final T tbDouble = tb.durationFrom(fT0);
+                if (forward) {
+                    try {
                         final Interval interval =
                                 solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
                         beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
                         beforeRootG = zero.add(interval.getLeftValue());
                         afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
                         afterRootG = zero.add(interval.getRightValue());
-                    } else {
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, loopT, loopG, tb, gb, lastT, lastG);
+                    }
+                } else {
+                    try {
                         final Interval interval =
                                 solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
                         beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
                         beforeRootG = zero.add(interval.getRightValue());
                         afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
                         afterRootG = zero.add(interval.getLeftValue());
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, tb, gb, loopT, loopG, lastT, lastG);
                     }
                 }
-                // tolerance is set to less than 1 ulp
-                // assume tolerance is 1 ulp
-                if (beforeRootT.equals(afterRootT)) {
-                    afterRootT = nextAfter(afterRootT);
-                    afterRootG = g(interpolator.getInterpolatedState(afterRootT));
-                }
-                // check loop is making some progress
-                check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
-                      !forward && afterRootT.compareTo(beforeRootT) < 0);
-                // setup next iteration
-                loopT = afterRootT;
-                loopG = afterRootG;
             }
-            catch (RuntimeException e) {
-                if (forward) {
-                    throw new OrekitException(e, OrekitMessages.FIND_ROOT, detector, ta, ga, tb, gb, lastT, lastG);
-                } else {
-                    throw new OrekitException(e, OrekitMessages.FIND_ROOT, detector, tb, gb, ta, ga, lastT, lastG);
-                }
+            // tolerance is set to less than 1 ulp
+            // assume tolerance is 1 ulp
+            if (beforeRootT.equals(afterRootT)) {
+                afterRootT = nextAfter(afterRootT);
+                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
+            // check loop is making some progress
+            check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
+                  !forward && afterRootT.compareTo(beforeRootT) < 0);
+            // setup next iteration
+            loopT = afterRootT;
+            loopG = afterRootG;
         }
 
         // figure out the result of root finding, and return accordingly
