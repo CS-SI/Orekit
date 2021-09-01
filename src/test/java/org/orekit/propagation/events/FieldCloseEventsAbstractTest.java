@@ -35,6 +35,8 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue.Event;
@@ -1176,6 +1178,35 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Assert.assertEquals(2, stepHandler.interpolators.size());
     }
 
+    /**
+     * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
+     * null}.
+     */
+    @Test
+    public void testEventCausedByDerivativesReset() {
+        // setup
+        TimeDetector detectorA = new TimeDetector(15.0)
+                .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
+                    @Override
+                    public FieldSpacecraftState<T> resetState(TimeDetector d,
+                                                              FieldSpacecraftState<T> s) {
+                        return null;
+                    }
+                })
+                .withMaxCheck(v(10))
+                .withThreshold(v(1e-6));
+        FieldPropagator<T> propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+
+        try {
+            // action
+            propagator.propagate(epoch.shiftedBy(20.0));
+            Assert.fail("Expected Exception");
+        } catch (NullPointerException e) {
+            // expected
+        }
+    }
+
 
     /* The following tests are copies of the above tests, except that they propagate in
      * the reverse direction and all the signs on the time values are negated.
@@ -2273,6 +2304,35 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Assert.assertEquals(-10.0,
                 interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
         Assert.assertEquals(2, stepHandler.interpolators.size());
+    }
+
+    /**
+     * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
+     * null}.
+     */
+    @Test
+    public void testEventCausedByDerivativesResetReverse() {
+        // setup
+        TimeDetector detectorA = new TimeDetector(-15.0)
+                .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
+                    @Override
+                    public FieldSpacecraftState<T> resetState(TimeDetector d,
+                                                              FieldSpacecraftState<T> s) {
+                        return null;
+                    }
+                })
+                .withMaxCheck(v(10))
+                .withThreshold(v(1e-6));
+        FieldPropagator<T> propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+
+        try {
+            // action
+            propagator.propagate(epoch.shiftedBy(-20.0));
+            Assert.fail("Expected Exception");
+        } catch (NullPointerException e) {
+            // expected
+        }
     }
 
 
