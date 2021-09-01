@@ -22,8 +22,6 @@ import org.junit.Test;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
-import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 
 
 /**

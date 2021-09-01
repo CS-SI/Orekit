@@ -1152,14 +1152,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                 .withThreshold(v(tolerance)));
         StepHandler<T> stepHandler = new StepHandler<>();
         propagator.setStepHandler(stepHandler);
-        FieldSpacecraftState<T> initialState = propagator.getInitialState();
 
         // action
         FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(10));
 
         // verify
         Assert.assertEquals(10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
-        Assert.assertEquals(0.0, initialState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch).getReal(), tolerance);
         Assert.assertEquals(10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
         Assert.assertEquals(10.0,
                 stepHandler.finalState.getDate().durationFrom(epoch).getReal(), tolerance);
@@ -2251,14 +2251,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                 .withThreshold(v(tolerance)));
         StepHandler<T> stepHandler = new StepHandler<>();
         propagator.setStepHandler(stepHandler);
-        FieldSpacecraftState<T> initialState = propagator.getInitialState();
 
         // action
         FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(-10));
 
         // verify
         Assert.assertEquals(-10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
-        Assert.assertEquals(0.0, initialState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch).getReal(), tolerance);
         Assert.assertEquals(-10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
         Assert.assertEquals(-10.0,
                 stepHandler.finalState.getDate().durationFrom(epoch).getReal(), tolerance);

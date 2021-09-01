@@ -25,7 +25,6 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue;
-import org.orekit.propagation.events.handlers.RecordAndContinue;
 
 
 /**
