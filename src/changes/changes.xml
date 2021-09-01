@@ -21,6 +21,16 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="evan" type="update" issue="586">
+        Deprecate InertialProvider.EME2000_ALIGNED
+      </action>
+      <action dev="evan" type="update" issue="586">
+        Change default attitude provider to be aligned with propagation frame for all
+        analytic propagators and GLONASS propagator. Backward incompatible.
+      </action>
+      <action dev="evan" type="update" issue="586">
+        Improve performance of IntertialProvider(Frame)
+      </action>
       <action dev="bryan" type="fix" issue="788" due-to="luc">
         Fixed missing call to setMuCreated() in OemParser.
       </action>

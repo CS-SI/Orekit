@@ -24,16 +24,14 @@ import java.util.stream.Collectors;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ImmutableTimeStampedCache;
@@ -83,8 +81,6 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * extrapolation threshold}.
      * </p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
           * @exception MathIllegalArgumentException if the number of states is smaller than
@@ -92,15 +88,12 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @see #Ephemeris(List, int, double)
      * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
-    @DefaultDataContext
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
         throws MathIllegalArgumentException {
         this(states, interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
     }
 
     /** Constructor with tabulated states.
-     *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
@@ -111,12 +104,12 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @since 9.0
      * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
-    @DefaultDataContext
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints,
                      final double extrapolationThreshold)
         throws MathIllegalArgumentException {
         this(states, interpolationPoints, extrapolationThreshold,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+                // if states is empty an exception will be thrown in the other constructor
+                states.isEmpty() ? null : InertialProvider.of(states.get(0).getFrame()));
     }
 
     /** Constructor with tabulated states.
