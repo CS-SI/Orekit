@@ -17,8 +17,11 @@
 package org.orekit.propagation.events;
 
 import java.lang.reflect.Array;
+import java.util.Locale;
 import java.util.function.Function;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -372,6 +375,11 @@ public class FieldEventDetectorTest {
         } catch (OrekitException oe) {
             Assert.assertSame(OrekitException.class, oe.getClass());
             Assert.assertSame(dummyCause, oe.getCause().getCause());
+            String expected = "failed to find root between 2011-05-11T00:00:00.000 " +
+                    "(g=-3.6E3) and 2012-05-10T06:00:00.000 (g=3.1554E7)\n" +
+                    "Last iteration at 2011-05-11T01:00:00.000 (g=-3.6E3)";
+            MatcherAssert.assertThat(oe.getMessage(Locale.US),
+                    CoreMatchers.containsString(expected));
         }
     }
 
