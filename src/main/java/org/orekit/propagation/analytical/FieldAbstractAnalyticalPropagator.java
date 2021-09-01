@@ -28,7 +28,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -45,9 +44,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventState;
 import org.orekit.propagation.events.FieldEventState.EventOccurrence;
-import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
-import org.orekit.propagation.sampling.FieldOrekitStepNormalizer;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
@@ -134,23 +131,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
             lastPropagationStart = start;
 
-            final T                 dt      = target.durationFrom(start);
-            final double            epsilon = FastMath.ulp(dt.getReal());
+            final boolean           isForward = target.compareTo(start) >= 0;
             FieldSpacecraftState<T> state   = updateAdditionalStates(basicPropagate(start));
-
-            // evaluate step size
-            final T stepSize;
-            if (getMultiplexer().getHandlers().isEmpty()) {
-                stepSize = dt;
-            } else {
-                // we look only at the first handler
-                final FieldOrekitStepHandler<T> handler = getMultiplexer().getHandlers().get(0);
-                if (handler instanceof FieldOrekitStepNormalizer) {
-                    stepSize = FastMath.copySign(((FieldOrekitStepNormalizer<T>) handler).getFixedTimeStep(), dt);
-                } else {
-                    stepSize = FastMath.copySign(state.getKeplerianPeriod().divide(100), dt);
-                }
-            }
 
             // initialize event detectors
             for (final FieldEventState<?, T> es : eventsStates) {
@@ -160,25 +142,19 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             // initialize step handlers
             getMultiplexer().init(state, target);
 
-            // iterate over the propagation range
+            // iterate over the propagation range, need loop due to reset events
             statesInitialized = false;
             isLastStep = false;
             do {
 
-                // go ahead one step size
+                // attempt to advance to the target date
                 final FieldSpacecraftState<T> previous = state;
-                FieldAbsoluteDate<T> t = previous.getDate().shiftedBy(stepSize);
-                if (dt.getReal() == 0 || ((dt.getReal() > 0) ^ (t.compareTo(target) <= 0))) {
-                    // current step exceeds target
-                    t = target;
-                }
-                final FieldSpacecraftState<T> current = updateAdditionalStates(basicPropagate(t));
-                final FieldBasicStepInterpolator interpolator = new FieldBasicStepInterpolator(dt.getReal() >= 0, previous, current);
-
-
+                final FieldSpacecraftState<T> current = updateAdditionalStates(basicPropagate(target));
+                final FieldBasicStepInterpolator interpolator =
+                        new FieldBasicStepInterpolator(isForward, previous, current);
 
                 // accept the step, trigger events and step handlers
-                state = acceptStep(interpolator, target, epsilon);
+                state = acceptStep(interpolator, target);
 
                 // Update the potential changes in the spacecraft state due to the events
                 // especially the potential attitude transition
@@ -199,12 +175,11 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
     /** Accept a step, triggering events and step handlers.
      * @param interpolator interpolator for the current step
      * @param target final propagation time
-     * @param epsilon threshold for end date detection
      * @return state at the end of the step
-          * @exception MathRuntimeException if an event cannot be located
+     * @exception MathRuntimeException if an event cannot be located
      */
     protected FieldSpacecraftState<T> acceptStep(final FieldBasicStepInterpolator interpolator,
-                                         final FieldAbsoluteDate<T> target, final double epsilon)
+                                                 final FieldAbsoluteDate<T> target)
         throws MathRuntimeException {
 
         FieldSpacecraftState<T>       previous   = interpolator.getPreviousState();
@@ -348,15 +323,10 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             doneWithStep = true;
         } while (!doneWithStep);
 
-        final T remaining = target.durationFrom(current.getDate());
-        if (interpolator.isForward()) {
-            isLastStep = remaining.getReal() <  epsilon;
-        } else {
-            isLastStep = remaining.getReal() > -epsilon;
-        }
+        isLastStep = target.equals(current.getDate());
 
         // handle the remaining part of the step, after all events if any
-        getMultiplexer().handleStep(interpolator);
+        getMultiplexer().handleStep(restricted);
         if (isLastStep) {
             getMultiplexer().finish(restricted.getCurrentState());
         }
