@@ -22,9 +22,9 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.data.DataContext;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.TimeScale;
@@ -90,7 +90,7 @@ public abstract class LibrationOrbit {
      */
     @DefaultDataContext
     public void applyDifferentialCorrection() {
-        applyDifferentialCorrection(Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        applyDifferentialCorrection(InertialProvider.of(syst.getRotatingFrame()),
                                     DataContext.getDefault().getTimeScales().getUTC());
     }
 
