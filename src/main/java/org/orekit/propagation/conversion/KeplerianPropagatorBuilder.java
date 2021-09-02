@@ -16,9 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -40,8 +39,6 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * callers of this builder to the real orbital parameters.
      * </p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param templateOrbit reference orbit from which real orbits will be built
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
@@ -49,11 +46,10 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * @since 8.0
      * @see #KeplerianPropagatorBuilder(Orbit, PositionAngle, double, AttitudeProvider)
      */
-    @DefaultDataContext
     public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
                                       final double positionScale) {
         this(templateOrbit, positionAngle, positionScale,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+                InertialProvider.of(templateOrbit.getFrame()));
     }
 
     /** Build a new instance.

@@ -21,6 +21,17 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="evan" type="remove" issue="586">
+        Remove InertialProvider.EME2000_ALIGNED, Propagator.DEFAULT_LAW. Use
+        InertialProvider.of(Frame).
+      </action>
+      <action dev="evan" type="update" issue="586">
+        Change default attitude provider to be aligned with propagation frame for all
+        analytic propagators and GLONASS propagator. Backward incompatible.
+      </action>
+      <action dev="evan" type="update" issue="586">
+        Improve performance of IntertialProvider(Frame)
+      </action>
       <action dev="anne-laure" type="update" issue="797">
         Add information if a detector failed during propagation
       </action>

@@ -74,7 +74,7 @@ public class GLONASSNumericalPropagatorTest {
 
         // Initialize the propagator
         final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(integrator, ephemeris, false).
-                        attitudeProvider(Propagator.DEFAULT_LAW).
+                        attitudeProvider(Utils.defaultLaw()).
                         mass(1521.0).
                         eci(FramesFactory.getEME2000()).
                         build();

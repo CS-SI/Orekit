@@ -53,8 +53,7 @@ public class SBASPropagatorBuilder {
 
     /** Initializes the builder.
      * <p>The SBAS orbital elements is the only requested parameter to build a SBASPropagator.</p>
-     * <p>The attitude provider is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+     * <p>The attitude provider is set by default be aligned with the EME2000 frame.<br>
      * The Earth gravity coefficient is set by default to the
      *  {@link org.orekit.propagation.analytical.gnss.data.GNSSConstants#SBAS_MU SBAS_MU}.<br>
      * The mass is set by default to the

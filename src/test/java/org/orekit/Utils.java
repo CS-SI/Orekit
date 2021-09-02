@@ -26,6 +26,8 @@ import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
@@ -214,6 +216,16 @@ public class Utils {
             }
         });
 
+    }
+
+    /**
+     * An attitude law compatible with the old Propagator.DEFAULT_LAW. This is used so as
+     * not to change the results of tests written against the old implementation.
+     *
+     * @return an attitude law.
+     */
+    public static AttitudeProvider defaultLaw() {
+        return InertialProvider.of(FramesFactory.getEME2000());
     }
 
 }

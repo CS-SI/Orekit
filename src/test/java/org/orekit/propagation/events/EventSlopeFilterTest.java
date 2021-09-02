@@ -421,7 +421,7 @@ public class EventSlopeFilterTest {
             iniDate = new AbsoluteDate(1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
             final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                      FramesFactory.getGCRF(), iniDate, mu);
-            propagator = new KeplerianPropagator(orbit, Propagator.DEFAULT_LAW, mu);
+            propagator = new KeplerianPropagator(orbit, Utils.defaultLaw(), mu);
             earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                          Constants.WGS84_EARTH_FLATTENING,
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));

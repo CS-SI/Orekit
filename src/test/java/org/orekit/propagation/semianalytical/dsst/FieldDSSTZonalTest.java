@@ -258,7 +258,7 @@ public class FieldDSSTZonalTest {
         final DSSTForceModel zonal   = new DSSTZonal(provider, 2, 1, 5);
                         
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
         
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(zonal);
@@ -379,7 +379,7 @@ public class FieldDSSTZonalTest {
         }
       
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
       
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(zonal);

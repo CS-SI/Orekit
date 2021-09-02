@@ -336,7 +336,7 @@ public class FieldDSSTTesseralTest {
                                          4, 4, 4, 8, 4, 4, 2);
                         
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
         
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(tesseral);
@@ -459,7 +459,7 @@ public class FieldDSSTTesseralTest {
         }
       
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
       
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(tesseral);

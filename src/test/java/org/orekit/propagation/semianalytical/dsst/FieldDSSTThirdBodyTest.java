@@ -203,7 +203,7 @@ public class FieldDSSTThirdBodyTest {
         forces.add(sun);
                         
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
 
         // Compute state Jacobian using directly the method
         final double[][] shortPeriodJacobian = new double[6][6];
@@ -330,7 +330,7 @@ public class FieldDSSTThirdBodyTest {
         }
       
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
         
         final double[][] shortPeriodJacobian = new double[6][1];
       

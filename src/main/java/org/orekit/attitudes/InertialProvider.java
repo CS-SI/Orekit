@@ -30,23 +30,12 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
- * This class handles an inertial attitude provider.
+ * This class handles an attitude provider aligned with a frame or a fixed offset to it.
+ * Contrary to the name the frame need not be an inertial frame.
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
  */
 public class InertialProvider implements AttitudeProvider {
-
-
-    /** Dummy attitude provider, perfectly aligned with the EME2000 frame.
-     *
-     * <p>This field uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @see #InertialProvider(Rotation, Frame)
-     * @see #InertialProvider(Frame)
-     */
-    @DefaultDataContext
-    public static final InertialProvider EME2000_ALIGNED =
-        new InertialProvider(Rotation.IDENTITY);
 
     /** Fixed satellite frame. */
     private final Frame satelliteFrame;
@@ -69,7 +58,9 @@ public class InertialProvider implements AttitudeProvider {
      * @param frame the reference frame for the attitude.
      */
     public InertialProvider(final Frame frame) {
-        this(Rotation.IDENTITY, frame);
+        // it is faster to use the frame directly here rather than call the other
+        // constructor because of the == shortcut in frame.getTransformTo
+        this.satelliteFrame = frame;
     }
 
     /**
@@ -84,6 +75,24 @@ public class InertialProvider implements AttitudeProvider {
         satelliteFrame =
             new Frame(reference,
                     new Transform(AbsoluteDate.ARBITRARY_EPOCH, rotation), null, false);
+    }
+
+    /**
+     * Creates an attitude provider aligned with the given frame. The frame does not need
+     * to be inertial.
+     *
+     * <p>This attitude provider returned by this method is designed to be as fast as
+     * possible for when attitude is irrelevant while still being a valid implementation
+     * of {@link AttitudeProvider}. To ensure good performance the specified attitude
+     * reference frame should be the same frame used for propagation so that computing the
+     * frame transformation is trivial.
+     *
+     * @param satelliteFrame with which the satellite is aligned.
+     * @return new attitude provider aligned with the given frame.
+     * @since 11.0
+     */
+    public static AttitudeProvider of(final Frame satelliteFrame) {
+        return new InertialProvider(satelliteFrame);
     }
 
     /** {@inheritDoc} */
