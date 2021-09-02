@@ -84,7 +84,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals( 1,  counter60.finishCount);
 
         Assert.assertEquals( 1,  counterVar.initCount);
-        Assert.assertEquals( 2,  counterVar.handleCount);
+        Assert.assertEquals( 1,  counterVar.handleCount);
         Assert.assertEquals( 1,  counterVar.finishCount);
 
         Assert.assertEquals( 1,  counter10.initCount);
@@ -119,7 +119,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals(  0.0, counter60.start, 1.0e-15);
         Assert.assertEquals( 90.0, counter60.stop, 1.0e-15);
         Assert.assertEquals( 1,    counterVar.initCount);
-        Assert.assertEquals( 2,    counterVar.handleCount);
+        Assert.assertEquals( 1,    counterVar.handleCount);
         Assert.assertEquals( 1,    counterVar.finishCount);
         Assert.assertEquals(  0.0, counterVar.start, 1.0e-15);
         Assert.assertEquals( 90.0, counterVar.stop, 1.0e-15);
@@ -139,7 +139,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals(100.0, counter60.start, 1.0e-15);
         Assert.assertEquals(190.0, counter60.stop, 1.0e-15);
         Assert.assertEquals( 2,    counterVar.initCount);
-        Assert.assertEquals( 4,    counterVar.handleCount);
+        Assert.assertEquals( 2,    counterVar.handleCount);
         Assert.assertEquals( 2,    counterVar.finishCount);
         Assert.assertEquals(100.0, counterVar.start, 1.0e-15);
         Assert.assertEquals(190.0, counterVar.stop, 1.0e-15);
@@ -159,7 +159,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals(200.0, counter60.start, 1.0e-15);
         Assert.assertEquals(290.0, counter60.stop, 1.0e-15);
         Assert.assertEquals( 3,    counterVar.initCount);
-        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.handleCount);
         Assert.assertEquals( 3,    counterVar.finishCount);
         Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
         Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
@@ -179,7 +179,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals(300.0, counter60.start, 1.0e-15);
         Assert.assertEquals(390.0, counter60.stop, 1.0e-15);
         Assert.assertEquals( 3,    counterVar.initCount);
-        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.handleCount);
         Assert.assertEquals( 3,    counterVar.finishCount);
         Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
         Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
@@ -199,7 +199,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals(400.0, counter60.start, 1.0e-15);
         Assert.assertEquals(490.0, counter60.stop, 1.0e-15);
         Assert.assertEquals( 3,    counterVar.initCount);
-        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.handleCount);
         Assert.assertEquals( 3,    counterVar.finishCount);
         Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
         Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);
@@ -219,7 +219,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals(400.0, counter60.start, 1.0e-15);
         Assert.assertEquals(490.0, counter60.stop, 1.0e-15);
         Assert.assertEquals( 3,    counterVar.initCount);
-        Assert.assertEquals( 6,    counterVar.handleCount);
+        Assert.assertEquals( 3,    counterVar.handleCount);
         Assert.assertEquals( 3,    counterVar.finishCount);
         Assert.assertEquals(200.0, counterVar.start, 1.0e-15);
         Assert.assertEquals(290.0, counterVar.stop, 1.0e-15);

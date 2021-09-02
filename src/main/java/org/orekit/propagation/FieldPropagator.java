@@ -54,17 +54,6 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
 
-    /**
-     * Default attitude provider.
-     *
-     * <p>This field uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @see Propagator#getDefaultLaw(Frames)
-     * @see InertialProvider#InertialProvider(Frame)
-     */
-    @DefaultDataContext
-    AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
-
     /** Get the multiplexer holding all step handlers.
      * @return multiplexer holding all step handlers
      * @since 11.0

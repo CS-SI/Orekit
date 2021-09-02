@@ -63,19 +63,8 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
 
-    /** Default attitude provider.
-     *
-     * <p>This field uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @see InertialProvider#InertialProvider(Rotation, Frame)
-     * @see #getDefaultLaw(Frames)
-     */
-    @DefaultDataContext
-    AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
-
     /**
-     * Get a default law using the given frames. A data context aware replacement for
-     * {@link #DEFAULT_LAW}.
+     * Get a default law using the given frames.
      *
      * @param frames the set of frames to use.
      * @return attitude law.

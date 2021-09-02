@@ -19,6 +19,7 @@ package org.orekit.propagation.numerical;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -63,8 +64,7 @@ public class GLONASSNumericalPropagatorBuilder {
 
     /**
      * Initializes the builder.
-     * <p>The attitude provider is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+     * <p>The attitude provider is set by default to EME2000 aligned in the
      *  default data context.<br>
      * The mass is set by default to the
      *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
@@ -93,9 +93,8 @@ public class GLONASSNumericalPropagatorBuilder {
 
     /**
      * Initializes the builder.
-     * <p>The attitude provider is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
-     *  default data context.<br>
+     * <p>The attitude provider is set by default to EME2000 aligned in the
+     *  provided data context.<br>
      * The mass is set by default to the
      *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
      * The ECI frame is set by default to the
@@ -122,7 +121,7 @@ public class GLONASSNumericalPropagatorBuilder {
         this.mass             = Propagator.DEFAULT_MASS;
         this.dataContext      = context;
         this.eci              = dataContext.getFrames().getEME2000();
-        this.attitudeProvider = Propagator.getDefaultLaw(dataContext.getFrames());
+        this.attitudeProvider = InertialProvider.of(this.eci);
     }
 
     /**
