@@ -1481,10 +1481,14 @@ public class DSSTZonal implements DSSTForceModel {
             final Slot         slot  = new Slot(maxFrequencyShortPeriodics, interpolationPoints);
             final AbsoluteDate first = meanStates[0].getDate();
             final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
-            if (first.compareTo(last) <= 0) {
+            final int compare = first.compareTo(last);
+            if (compare < 0) {
                 slots.addValidAfter(slot, first);
-            } else {
+            } else if (compare > 0) {
                 slots.addValidBefore(slot, first);
+            } else {
+                // single date, valid for all time
+                slots.addValidAfter(slot, AbsoluteDate.PAST_INFINITY);
             }
             return slot;
         }
