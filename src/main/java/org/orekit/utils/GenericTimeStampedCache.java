@@ -724,9 +724,10 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
 
             if (!inserted) {
+                final AbsoluteDate earliest = cache.get(0).getData().getDate();
                 throw new TimeStampedCacheException(
                         OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                        cache.get(0).getData().getDate(), requestedDate);
+                        earliest, requestedDate, earliest.durationFrom(requestedDate));
             }
 
             // evict excess data at end
@@ -763,10 +764,10 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
 
             if (!appended) {
+                final AbsoluteDate latest = cache.get(cache.size() - 1).getData().getDate();
                 throw new TimeStampedCacheException(
                         OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                        cache.get(cache.size() - 1).getData().getDate(),
-                        requestedDate);
+                        latest, requestedDate, requestedDate.durationFrom(latest));
             }
 
             // evict excess data at start
@@ -794,10 +795,11 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                 throw new TimeStampedCacheException(OrekitMessages.NO_DATA_GENERATED, date);
             }
             for (int i = 1; i < entries.size(); ++i) {
-                if (entries.get(i).getDate().compareTo(entries.get(i - 1).getDate()) < 0) {
+                final AbsoluteDate previous = entries.get(i - 1).getDate();
+                final AbsoluteDate current = entries.get(i).getDate();
+                if (current.compareTo(previous) < 0) {
                     throw new TimeStampedCacheException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
-                                                                  entries.get(i - 1).getDate(),
-                                                                  entries.get(i).getDate());
+                            previous, current, previous.durationFrom(current));
                 }
             }
             return entries;

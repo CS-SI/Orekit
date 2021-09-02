@@ -106,16 +106,23 @@ public class TimeComponentsTest {
 
     @Test
     public void testString() {
-        Assert.assertEquals("00:00:00.000", new TimeComponents(0).toString());
-        Assert.assertEquals("06:00:00.000", new TimeComponents(21600).toString());
-        Assert.assertEquals("12:00:00.000", new TimeComponents(43200).toString());
-        Assert.assertEquals("18:00:00.000", new TimeComponents(64800).toString());
-        Assert.assertEquals("23:59:59.900", new TimeComponents(86399.9).toString());
+        Assert.assertEquals("00:00:00.000+00:00", new TimeComponents(0).toString());
+        Assert.assertEquals("06:00:00.000+00:00", new TimeComponents(21600).toString());
+        Assert.assertEquals("12:00:00.000+00:00", new TimeComponents(43200).toString());
+        Assert.assertEquals("18:00:00.000+00:00", new TimeComponents(64800).toString());
+        Assert.assertEquals("23:59:59.89999999999418+00:00", new TimeComponents(86399.9).toString());
         Assert.assertEquals("00:00:00.000+10:00", new TimeComponents( 0,  0,  0,    600).toString());
         Assert.assertEquals("06:00:00.000+10:00", new TimeComponents( 6,  0,  0,    600).toString());
         Assert.assertEquals("12:00:00.000-04:30", new TimeComponents(12,  0,  0,   -270).toString());
         Assert.assertEquals("18:00:00.000-04:30", new TimeComponents(18,  0,  0,   -270).toString());
         Assert.assertEquals("23:59:59.900-04:30", new TimeComponents(23, 59, 59.9, -270).toString());
+        // test leap seconds
+        Assert.assertEquals("23:59:60.500+00:00", TimeComponents.fromSeconds(86399, 0.5, 1, 61).toString());
+        // leap second on 1961 is between 1 and 2 seconds in duration
+        Assert.assertEquals("23:59:61.32281798015773+00:00", TimeComponents.fromSeconds(86399, 0.32281798015773, 2, 62).toString());
+        // test rounding
+        Assert.assertEquals("23:59:59.99999999998545+00:00", new TimeComponents(86399.99999999999).toString());
+        Assert.assertEquals("23:59:59.99999999999999+00:00", TimeComponents.fromSeconds(86399, FastMath.nextDown(1.0), 0, 60).toString());
     }
 
     @Test

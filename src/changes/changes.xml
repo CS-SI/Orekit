@@ -56,6 +56,33 @@
       <action dev="bryan" type="fix" issue="820">
         TLE Jacobians are now calculated in cartesian elements.
       </action>
+      <action dev="evan" type="update" issue="825">
+        Improve exception messages with two AbsoluteDates by including duration between
+        them.
+      </action>
+      <action dev="evan" type="update" issue="637" due-to="Piotr">
+        Add trailing "Z" to AbsoluteDate.toString() to indicate UTC.
+        Backwards incompatible.
+      </action>
+      <action dev="evan" type="update" issue="825">
+        In AbsoluteDate.toString() fallback to TAI when no leap seconds are loaded.
+      </action>
+      <action dev="evan" type="update" issue="591">
+        Fix TimeComponents.toString(): correct ISO 8601 with UTC offset, rounding issues.
+        Backwards incompatible.
+      </action>
+      <action dev="evan" type="update" issue="590">
+        Fix DateTimeComponents.toString(): correct ISO 8601, leap second, rounding issues.
+        Backwards incompatible.
+      </action>
+      <action dev="evan" type="update" issue="637" due-to="Piotr">
+        Fix AbsoluteDate.toString(timeZone) and toString(minutesFromUtc) to include the
+        UTC offset when it is zero.
+      </action>
+      <action dev="evan" type="add">
+        Add DateTimeComponents.toString(...) method with correct rounding for user
+        specified precision.
+      </action>
       <action dev="bryan" type="update" issue="626">
         Used a separate Comparator for sorting integer least square solutions.
       </action>
