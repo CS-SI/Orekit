@@ -41,6 +41,8 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue.Event;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.sampling.FieldOrekitStepHandler;
+import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -1141,6 +1143,41 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Assert.assertSame(detectorA, events.get(0).getDetector());
     }
 
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandler() {
+        // setup
+        double tolerance = 1e-18;
+        FieldPropagator<T> propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(5)
+                .withHandler(new Handler<>(Action.CONTINUE))
+                .withThreshold(v(tolerance)));
+        StepHandler<T> stepHandler = new StepHandler<>();
+        propagator.setStepHandler(stepHandler);
+
+        // action
+        FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(10));
+
+        // verify
+        Assert.assertEquals(10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        FieldOrekitStepInterpolator<T> interpolator = stepHandler.interpolators.get(0);
+        Assert.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assert.assertEquals(5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(2, stepHandler.interpolators.size());
+    }
+
     /**
      * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
      * null}.
@@ -2234,6 +2271,41 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Assert.assertSame(detectorA, events.get(0).getDetector());
     }
 
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandlerReverse() {
+        // setup
+        double tolerance = 1e-18;
+        FieldPropagator<T> propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(-5)
+                .withHandler(new Handler<>(Action.CONTINUE))
+                .withThreshold(v(tolerance)));
+        StepHandler<T> stepHandler = new StepHandler<>();
+        propagator.setStepHandler(stepHandler);
+
+        // action
+        FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(-10));
+
+        // verify
+        Assert.assertEquals(-10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(-10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(-10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        FieldOrekitStepInterpolator<T> interpolator = stepHandler.interpolators.get(0);
+        Assert.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(-5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assert.assertEquals(-5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(-10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(2, stepHandler.interpolators.size());
+    }
+
     /**
      * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
      * null}.
@@ -2299,7 +2371,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
     }
 
     /** Trigger an event at a particular time. */
-    private class TimeDetector extends FieldAbstractDetector<TimeDetector, T> {
+    protected class TimeDetector extends FieldAbstractDetector<TimeDetector, T> {
 
         /** time of the event to trigger. */
         private final List<FieldAbsoluteDate<T>> eventTs;
@@ -2509,6 +2581,31 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         public FieldSpacecraftState<T> resetState(D detector, FieldSpacecraftState<T> oldState) {
             Assert.assertEquals(0, newState.getDate().durationFrom(oldState.getDate()).getReal(), 0);
             return newState;
+        }
+    }
+
+    private static class StepHandler<D extends CalculusFieldElement<D>>
+            implements FieldOrekitStepHandler<D> {
+
+        private FieldSpacecraftState<D> initialState;
+        private FieldAbsoluteDate<D> targetDate;
+        private List<FieldOrekitStepInterpolator<D>> interpolators = new ArrayList<>();
+        private FieldSpacecraftState<D> finalState;
+
+        @Override
+        public void init(FieldSpacecraftState<D> s0, FieldAbsoluteDate<D> t) {
+            initialState = s0;
+            targetDate = t;
+        }
+
+        @Override
+        public void handleStep(FieldOrekitStepInterpolator<D> interpolator) {
+            interpolators.add(interpolator);
+        }
+
+        @Override
+        public void finish(FieldSpacecraftState<D> finalState) {
+            this.finalState = finalState;
         }
     }
 
