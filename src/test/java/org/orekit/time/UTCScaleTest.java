@@ -51,7 +51,7 @@ public class UTCScaleTest {
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(2020, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        Assert.assertEquals("2020-12-31T23:59:59.000", d1.toString());
+        Assert.assertEquals("2020-12-31T23:59:59.000Z", d1.toString());
     }
 
     @Test
@@ -130,7 +130,8 @@ public class UTCScaleTest {
     @Test
     public void testWrapBeforeLeap() {
         AbsoluteDate t = new AbsoluteDate("2015-06-30T23:59:59.999999", utc);
-        Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
+        Assert.assertEquals("2015-06-30T23:59:60.000+00:00",
+                t.getComponents(utc).toString(utc.minuteDuration(t)));
     }
 
     @Test
