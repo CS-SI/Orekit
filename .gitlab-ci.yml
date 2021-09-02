@@ -30,7 +30,7 @@ variables:
 verify:
   stage: verify
   script:
-    - mvn $MAVEN_CLI_OPTS verify site
+    - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
           -Dsonar.login=${SONAR_TOKEN}
           -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
