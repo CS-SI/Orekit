@@ -1161,7 +1161,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
-        checkStateJacobianVsFiniteDifferences(state, hfModel, Propagator.DEFAULT_LAW,
+        checkStateJacobianVsFiniteDifferences(state, hfModel, Utils.defaultLaw(),
                                               10.0, 2.0e-10, false);
 
     }
@@ -1188,7 +1188,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
-        checkStateJacobianVsFiniteDifferencesGradient(state, hfModel, Propagator.DEFAULT_LAW,
+        checkStateJacobianVsFiniteDifferencesGradient(state, hfModel, Utils.defaultLaw(),
                                               10.0, 2.0e-10, false);
 
     }

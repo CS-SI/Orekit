@@ -84,6 +84,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldEcksteinHechlerPropagatorTest {
 
+    private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
+
     private double mu;
     private double ae;
 
@@ -893,7 +895,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
         final FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(meanState.getOrbit(), provider, PropagationType.MEAN);
@@ -934,10 +936,10 @@ public class FieldEcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
-        final FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(meanState.getOrbit(), Propagator.DEFAULT_LAW, zero.add(498.5), provider, PropagationType.MEAN);
+        final FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(meanState.getOrbit(), DEFAULT_LAW, zero.add(498.5), provider, PropagationType.MEAN);
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate);
 
         // Verify

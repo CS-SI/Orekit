@@ -267,11 +267,6 @@ public class FieldKeplerianPropagatorTest {
         doTestSetting(Decimal64Field.getInstance());
     }
 
-    @Test
-    public void testDefaultLaw() {
-        Assert.assertSame(InertialProvider.EME2000_ALIGNED, FieldPropagator.DEFAULT_LAW);
-    }
-
     private <T extends CalculusFieldElement<T>> void doTestSameDateCartesian(Field<T> field) {
         T zero = field.getZero();
         // Definition of initial conditions with position and velocity

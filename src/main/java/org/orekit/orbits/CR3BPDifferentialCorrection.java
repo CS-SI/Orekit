@@ -24,11 +24,11 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.HaloXZPlaneCrossingDetector;
@@ -83,7 +83,7 @@ public class CR3BPDifferentialCorrection {
     public CR3BPDifferentialCorrection(final PVCoordinates firstguess,
                                        final CR3BPSystem syst, final double orbitalPeriod) {
         this(firstguess, syst, orbitalPeriod,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                InertialProvider.of(syst.getRotatingFrame()),
                 DataContext.getDefault().getTimeScales().getUTC());
     }
 

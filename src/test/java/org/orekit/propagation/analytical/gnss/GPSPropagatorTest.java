@@ -94,7 +94,7 @@ public class GPSPropagatorTest {
     public void testGPSCycle() {
         // Builds the GPSPropagator from the almanac
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).
-                        attitudeProvider(Propagator.DEFAULT_LAW).
+                        attitudeProvider(Utils.defaultLaw()).
                         mass(1521.0).
                         eci(FramesFactory.getEME2000()).
                         ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
