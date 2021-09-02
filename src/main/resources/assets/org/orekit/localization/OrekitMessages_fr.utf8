@@ -728,3 +728,6 @@ MISSING_VELOCITY = données de vitesse manquantes
 
 # attempt to generate file {0} with a formatting error
 ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentative de génération du fichier {0} avec une erreur de format
+
+# {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
+FIND_ROOT = {0} n''a pas réussi à trouver une solution entre {1} (g={2,number,0.0##############E0}) et {3} (g={4,number,0.0##############E0})\nLa dernière itération était à {5} (g={6,number,0.0##############E0})

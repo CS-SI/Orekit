@@ -322,7 +322,8 @@ public enum OrekitMessages implements Localizable {
     UNKNOWN_UNIT("unknown unit {0}"),
     INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
     MISSING_VELOCITY("missing velocity data"),
-    ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error");
+    ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error"),
+    FIND_ROOT("{0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})");
 
     // CHECKSTYLE: resume JavadocVariable check
 

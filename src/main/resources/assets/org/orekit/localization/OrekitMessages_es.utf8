@@ -728,3 +728,6 @@ MISSING_VELOCITY = <MISSING TRANSLATION>
 
 # attempt to generate file {0} with a formatting error
 ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
+
+# {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
+FIND_ROOT = {0} ha fallado buscando una solución entre {1} (g={2,number,0.0##############E0}) y {3} (g={4,number,0.0##############E0})\nÚltima iteración en {5} (g={6,number,0.0##############E0})

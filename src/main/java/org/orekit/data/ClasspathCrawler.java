@@ -127,8 +127,10 @@ public class ClasspathCrawler implements DataProvider {
 
                         } else {
 
+                            // match supported name against file name #618
+                            final String fileName = name.substring(name.lastIndexOf('/') + 1);
+                            DataSource data = new DataSource(fileName, () -> classLoader.getResourceAsStream(name));
                             // apply all registered filters
-                            DataSource data = new DataSource(name, () -> classLoader.getResourceAsStream(name));
                             data = manager.getFiltersManager().applyRelevantFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {

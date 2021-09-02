@@ -24,7 +24,9 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -149,8 +151,8 @@ public class EventState<T extends EventDetector> {
      */
     private double g(final SpacecraftState s) {
         if (!s.getDate().equals(lastT)) {
-            lastT = s.getDate();
             lastG = detector.g(s);
+            lastT = s.getDate();
         }
         return lastG;
     }
@@ -316,19 +318,33 @@ public class EventState<T extends EventDetector> {
                 // tb as a double for use in f
                 final double tbDouble = tb.durationFrom(fT0);
                 if (forward) {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, 0, tbDouble);
-                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    beforeRootG = interval.getLeftValue();
-                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    afterRootG = interval.getRightValue();
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, 0, tbDouble);
+                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        beforeRootG = interval.getLeftValue();
+                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        afterRootG = interval.getRightValue();
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, loopT, loopG, tb, gb, lastT, lastG);
+                    }
                 } else {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, tbDouble, 0);
-                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    beforeRootG = interval.getRightValue();
-                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    afterRootG = interval.getLeftValue();
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, tbDouble, 0);
+                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        beforeRootG = interval.getRightValue();
+                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        afterRootG = interval.getLeftValue();
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, tb, gb, loopT, loopG, lastT, lastG);
+                    }
                 }
             }
             // tolerance is set to less than 1 ulp
