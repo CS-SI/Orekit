@@ -20,12 +20,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
-import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
