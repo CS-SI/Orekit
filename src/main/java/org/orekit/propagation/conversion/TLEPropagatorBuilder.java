@@ -19,6 +19,7 @@ package org.orekit.propagation.conversion;
 import java.util.List;
 
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
@@ -97,7 +98,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
                         .getInitialState().getOrbit(),
               positionAngle, positionScale, false,
-              Propagator.getDefaultLaw(dataContext.getFrames()));
+              InertialProvider.of(dataContext.getFrames().getTEME()));
         for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
             addSupportedParameter(driver);
         }

@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.tle;
 
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
@@ -28,6 +29,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -176,7 +178,8 @@ public class FieldTLEPropagatorTest {
         propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         propagator.setStepHandler(T_zero.add(900.0), checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
-        Assert.assertEquals(1.5219e7, checker.getMinDistance(), 1000.0);
+        MatcherAssert.assertThat(checker.getMinDistance(),
+                OrekitMatchers.greaterThan(1.5218e7));
         Assert.assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
 
     }

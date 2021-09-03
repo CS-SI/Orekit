@@ -84,7 +84,7 @@ public class SBASPropagatorTest {
     public void testPropagationAtReferenceTime() {
         // SBAS propagator
         final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).
-                        attitudeProvider(InertialProvider.EME2000_ALIGNED).
+                        attitudeProvider(Utils.defaultLaw()).
                         mu(GNSSConstants.SBAS_MU).
                         mass(SBASPropagator.DEFAULT_MASS).
                         eci(FramesFactory.getEME2000()).

@@ -37,7 +37,7 @@ intermediate states between the initial time and propagation target time, or
 it can provide only the final state.
  
 * intermediate states: In order to get intermediate states, users need to register
-  some custom object implementation the `OrekitStepHandler` or `OrekitFixedStephHandler`
+  some custom object implementation of the `OrekitStepHandler` or `OrekitFixedStephHandler`
   interfaces to the propagator before running it. As the propagator computes the
   evolution of spacecraft state, it performs some internal time loops and will call these
   step handlers at each finalized step. Users often use this mode with only a single
@@ -53,16 +53,16 @@ it can provide only the final state.
   time representing the next small time step.
 
 There is no limitation on the number of step handlers that can be registered to a propagator.
-Step handlers. Each propagator contains a multiplexer that can accept several step handlers.
+Each propagator contains a multiplexer that can accept several step handlers.
 Step handlers can be either of `OrekitFixedStepHandler` type, which will be called at regular time
 intervals and fed with a single `SpacecraftState`, or they can be of `OrekitStepHandler` type,
 which will be called when the propagator accepts one step according to its internal time loop
-and fed with an `OrekitStepInterpolator` that is valid throughout the step, hence providing
-dense output. The following class diagram shows this architecture.
+(time steps durection can vary in this case) and fed with an `OrekitStepInterpolator` that is valid
+throughout the step, hence providing dense output. The following class diagram shows this architecture.
 
 ![sampling class diagram](../images/design/sampling-class-diagram.png)
 
-Orekit uses internally this mechanism to provide some important features with specialized
+Orekit uses this mechanism internally to provide some important features with specialized
 internal step handlers. The following class diagram shows for example that the `EphemerisGenerator`
 that can be requested from a propagator is based on a step handler that will store all intermediate
 steps during the propagation. Ephemeris generation from a propagator is used when the user needs
@@ -95,7 +95,7 @@ intended to display progress for the user if computation is expected to be long.
 ![with step handlers sequence diagram](../images/design/with-step-handlers-sequence-diagram.png)
 
 The next sequence diagram shows a case where users want to control the time loop tightly
-from within their application. In this case, the step handlers multiplexer is cleared and
+from within their application. In this case, the step handlers multiplexer is cleared,
 the propagator is called multiple time, and returns states at requested target times.
 
 [without step handlers sequence diagram](../images/design/without-step-handlers-sequence-diagram.png)
@@ -108,7 +108,7 @@ not the recommended way to use propagation.
 
 The recommended way is to register step handlers and call the propagation just once with the final
 time of the study as the target time and letting the propagator perform the time loop. It is
-very simple to use and allow user to get rid of concerns about synchronizing force models,
+very simple to use and allows users to get rid of concerns about synchronizing force models,
 file output, discrete events. All these parts are handled separately in different user code
 parts, and Orekit takes care of all management. From a user point of view, using step handler
 lead to much simpler code to maintain with smaller independent parts. Another important point is

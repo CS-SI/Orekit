@@ -157,7 +157,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         final InertialForces forceModel = new InertialForces(pva.getFrame());
         assertFalse(forceModel.dependsOnPositionOnly());
         checkStateJacobianVs80Implementation(new SpacecraftState(pva), forceModel,
-                                             Propagator.DEFAULT_LAW,
+                                             Utils.defaultLaw(),
                                              1.0e-50, false);
     }
 
@@ -177,7 +177,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         final InertialForces forceModel = new InertialForces(pva.getFrame());
         assertFalse(forceModel.dependsOnPositionOnly());
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(pva), forceModel,
-                                             Propagator.DEFAULT_LAW,
+                                             Utils.defaultLaw(),
                                              1.0e-50, false);
     }
 

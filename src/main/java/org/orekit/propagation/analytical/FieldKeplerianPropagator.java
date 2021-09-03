@@ -23,16 +23,14 @@ import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
@@ -52,29 +50,23 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      * for the initial orbit definition. Mass and attitude provider are set to
      * unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param initialFieldOrbit initial orbit
      * @see #FieldKeplerianPropagator(FieldOrbit, AttitudeProvider)
      */
-    @DefaultDataContext
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit) {
-        this(initialFieldOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialFieldOrbit, InertialProvider.of(initialFieldOrbit.getFrame()),
                 initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param initialFieldOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
      * @see #FieldKeplerianPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement)
      */
-    @DefaultDataContext
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final T mu) {
-        this(initialFieldOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialFieldOrbit, InertialProvider.of(initialFieldOrbit.getFrame()),
                 mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 

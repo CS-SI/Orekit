@@ -158,10 +158,4 @@ public class FieldRecordAndContinue
         return Action.CONTINUE;
     }
 
-    @Override
-    public FieldSpacecraftState<E> resetState(final T detector,
-                                              final FieldSpacecraftState<E> oldState) {
-        return null;
-    }
-
 }

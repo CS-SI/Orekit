@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
@@ -59,9 +60,7 @@ public class GNSSPropagatorBuilder {
     /**
      * Initializes the builder.
      * <p>The GNSS orbital elements is the only requested parameter to build a GNSSPropagator.</p>
-     * <p>The attitude provider is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
-     *  default data context.<br>
+     * <p>The attitude provider is set by default to be aligned with the EME2000 frame.<br>
      * The mass is set by default to the
      *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
      * The ECI frame is set by default to the
@@ -89,8 +88,7 @@ public class GNSSPropagatorBuilder {
 
     /** Initializes the builder.
      * <p>The GNSS orbital elements is the only requested parameter to build a GNSSPropagator.</p>
-     * <p>The attitude provider is set by default to the
-     *  {@link org.orekit.propagation.Propagator#getDefaultLaw(Frames)}  DEFAULT_LAW}.<br>
+     * <p>The attitude provider is set by default to be aligned with the EME2000 frame.<br>
      * The mass is set by default to the
      *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
      * The ECI frame is set by default to the
@@ -111,7 +109,7 @@ public class GNSSPropagatorBuilder {
         this.mass  = Propagator.DEFAULT_MASS;
         this.eci   = frames.getEME2000();
         this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
-        attitudeProvider = Propagator.getDefaultLaw(frames);
+        attitudeProvider = InertialProvider.of(this.eci);
     }
 
     /** Sets the attitude provider.

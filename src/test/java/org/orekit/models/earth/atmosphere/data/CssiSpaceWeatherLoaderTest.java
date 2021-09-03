@@ -118,7 +118,7 @@ public class CssiSpaceWeatherLoaderTest {
             cswl.getAp(date);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -135,7 +135,7 @@ public class CssiSpaceWeatherLoaderTest {
             cswl.getAp(date);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -152,7 +152,7 @@ public class CssiSpaceWeatherLoaderTest {
             cswl.getAp(date);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -206,7 +206,7 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
         final double meanFlux = cswl.getMeanFlux(date);
-        assertThat(meanFlux, closeTo(158.6, 1e-10));
+        assertThat(meanFlux, closeTo(165.6, 1e-10));
     }
 
     @Test
@@ -214,7 +214,7 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2034, 6, 16, 0, 0, 0.0, utc);
         final double meanFlux = cswl.getMeanFlux(date);
-        assertThat(meanFlux, closeTo((134.8 + 138.8) / 2, 1e-3));
+        assertThat(meanFlux, closeTo((132.1 + 134.9) / 2, 1e-3));
     }
 
     @Test
@@ -238,7 +238,7 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, utc);
         final double instantFlux = cswl.getInstantFlux(date);
-        assertThat(instantFlux, closeTo((125.6 + 128.5) / 2, 1e-10));
+        assertThat(instantFlux, closeTo((129.9 + 132.9) / 2, 1e-10));
     }
 
     /**

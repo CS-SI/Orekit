@@ -17,11 +17,13 @@
 package org.orekit.attitudes;
 
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
@@ -32,6 +34,8 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -45,6 +49,15 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.orekit.OrekitMatchers.attitudeIs;
+import static org.orekit.OrekitMatchers.closeTo;
+import static org.orekit.OrekitMatchers.distanceIs;
 
 
 public class InertialAttitudeTest {
@@ -139,6 +152,96 @@ public class InertialAttitudeTest {
         Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
         Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
+
+    @Test
+    public void testGetAttitude() {
+        // expected
+        Frame eci = orbit0.getFrame();
+        Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
+        AttitudeProvider law = InertialProvider.of(eci);
+
+        // action + verify
+        Attitude actual = law.getAttitude(orbit0, t0, eci);
+        MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
+        MatcherAssert.assertThat(actual, attitudeIs(expected));
+        actual = law.getAttitude(orbit0.shiftedBy(1e3), t0.shiftedBy(1e3), eci);
+        MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
+        MatcherAssert.assertThat(actual, attitudeIs(expected));
+        // create new frame for testing frame transforms
+        Rotation rotation = new Rotation(
+                Vector3D.PLUS_K,
+                FastMath.PI / 2.0,
+                RotationConvention.FRAME_TRANSFORM);
+        Transform angular = new Transform(
+                t0,
+                rotation,
+                new Vector3D(1, 2, 3),
+                new Vector3D(-4, 5, 6));
+        Transform translation = new Transform(
+                t0,
+                new Vector3D(-1, 2, -3),
+                new Vector3D(4, -5, 6),
+                new Vector3D(7, 8, -9));
+        Frame other = new Frame(eci, new Transform(t0, angular, translation), "other");
+        actual = law.getAttitude(orbit0.shiftedBy(1e3), t0.shiftedBy(1e3), other);
+        MatcherAssert.assertThat(actual.getReferenceFrame(), is(other));
+        MatcherAssert.assertThat(actual, attitudeIs(expected));
+        // check not identity rotation
+        MatcherAssert.assertThat(actual.getRotation(),
+                not(distanceIs(Rotation.IDENTITY, closeTo(0.0, 1e-1))));
+    }
+
+
+    /**
+     * Unit tests for {@link FrameAligned#getAttitude(FieldPVCoordinatesProvider,
+     * FieldAbsoluteDate, Frame)}.
+     */
+    @Test
+    public void testGetAttitudeField() {
+        // expected
+        Frame eci = orbit0.getFrame();
+        Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
+        AttitudeProvider law = InertialProvider.of(eci);
+        Decimal64 one = Decimal64.ONE;
+        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(one.getField(), t0);
+        FieldOrbit<Decimal64> orbit = new FieldCartesianOrbit<>(
+                new FieldPVCoordinates<>(one, this.orbit0.getPVCoordinates()),
+                eci,
+                date,
+                one.multiply(orbit0.getMu()));
+
+        // action + verify
+        FieldAttitude<Decimal64> actual = law.getAttitude(orbit, date, eci);
+        MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
+        MatcherAssert.assertThat(actual.toAttitude(), attitudeIs(expected));
+        actual = law.getAttitude(orbit.shiftedBy(1e3), date.shiftedBy(1e3), eci);
+        MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
+        MatcherAssert.assertThat(actual.toAttitude(), attitudeIs(expected));
+        // create new frame for testing frame transforms
+        Rotation rotation = new Rotation(
+                Vector3D.PLUS_K,
+                FastMath.PI / 2.0,
+                RotationConvention.FRAME_TRANSFORM);
+        Transform angular = new Transform(
+                t0,
+                rotation,
+                new Vector3D(1, 2, 3),
+                new Vector3D(-4, 5, 6));
+        Transform translation = new Transform(
+                t0,
+                new Vector3D(-1, 2, -3),
+                new Vector3D(4, -5, 6),
+                new Vector3D(7, 8, -9));
+        Frame other = new Frame(eci, new Transform(t0, angular, translation), "other");
+        actual = law.getAttitude(orbit.shiftedBy(1e3), date.shiftedBy(1e3), other);
+        MatcherAssert.assertThat(actual.getReferenceFrame(), is(other));
+        MatcherAssert.assertThat(actual.toAttitude(), attitudeIs(expected));
+        // check not identity rotation
+        MatcherAssert.assertThat(actual.getRotation().toRotation(),
+                not(distanceIs(Rotation.IDENTITY, closeTo(0.0, 1e-1))));
+    }
+
+
 
     @Before
     public void setUp() {

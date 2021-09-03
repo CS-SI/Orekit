@@ -26,6 +26,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,7 +35,6 @@ import org.orekit.frames.Frames;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -251,7 +251,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames, final T[] parameters) {
         return selectExtrapolator(
                 tle,
-                Propagator.getDefaultLaw(frames),
+                InertialProvider.of(frames.getTEME()),
                 tle.getE().getField().getZero().add(DEFAULT_MASS),
                 frames.getTEME(),
                 parameters);

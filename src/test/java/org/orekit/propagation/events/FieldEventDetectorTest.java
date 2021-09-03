@@ -17,8 +17,11 @@
 package org.orekit.propagation.events;
 
 import java.lang.reflect.Array;
+import java.util.Locale;
 import java.util.function.Function;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -232,7 +235,8 @@ public class FieldEventDetectorTest {
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(step.multiply(n)));
-        Assert.assertEquals(n + 1, counter.getCount());
+        // analytical propagator can take one big step, further reducing calls to g()
+        Assert.assertEquals(2, counter.getCount());
     }
 
     private static class GCallsCounter<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<GCallsCounter<T>, T> {
@@ -369,7 +373,13 @@ public class FieldEventDetectorTest {
             k.propagate(initialDate.shiftedBy(Constants.JULIAN_YEAR));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertSame(dummyCause, oe.getCause());
+            Assert.assertSame(OrekitException.class, oe.getClass());
+            Assert.assertSame(dummyCause, oe.getCause().getCause());
+            String expected = "failed to find root between 2011-05-11T00:00:00.000Z " +
+                    "(g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)\n" +
+                    "Last iteration at 2011-05-11T01:00:00.000Z (g=-3.6E3)";
+            MatcherAssert.assertThat(oe.getMessage(Locale.US),
+                    CoreMatchers.containsString(expected));
         }
     }
 
