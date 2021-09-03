@@ -49,7 +49,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     /** Proximity angle (rad). */
     private final double proximityAngle;
 
-    /** Build a new angular detachement detector.
+    /** Build a new angular detachment detector.
      * @param primaryObject primaryObject, at the center of the proximity zone
      * @param secondaryObject secondaryObject, that may come close to
      *        the primaryObject as seen from the spacecraft
