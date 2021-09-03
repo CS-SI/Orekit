@@ -27,6 +27,9 @@
       <action dev="evan" type="fix" issue="798">
         Allow DSST event detection when propagating backwards.
       </action>
+      <action dev="bryan" type="fix" issue="717" due-to="evan">
+        Fixed DSST orbit determination when propagating backwards.
+      </action>
       <action dev="evan" type="remove" issue="586">
         Remove InertialProvider.EME2000_ALIGNED, Propagator.DEFAULT_LAW. Use
         InertialProvider.of(Frame).
