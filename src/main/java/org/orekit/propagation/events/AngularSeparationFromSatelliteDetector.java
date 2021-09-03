@@ -36,6 +36,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @author Thomas Paulet
+ * @since 11.0
  */
 public class AngularSeparationFromSatelliteDetector extends AbstractDetector<AngularSeparationFromSatelliteDetector> {
 
@@ -57,7 +58,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     public AngularSeparationFromSatelliteDetector(final PVCoordinatesProvider primaryObject,
                                                   final PVCoordinatesProvider secondaryObject,
                                                   final double proximityAngle) {
-        this(60.0, 1.0e-3, 100, new StopOnDecreasing<AngularSeparationFromSatelliteDetector>(),
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing<AngularSeparationFromSatelliteDetector>(),
              primaryObject, secondaryObject, proximityAngle);
     }
 
