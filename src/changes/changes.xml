@@ -24,6 +24,9 @@
       <action dev="bryan" type="fix" issue="818">
         Use observed solar flux instead of adjusted in DTM2000 model.
       </action>
+      <action dev="evan" type="fix" issue="798">
+        Allow DSST event detection when propagating backwards.
+      </action>
       <action dev="evan" type="remove" issue="586">
         Remove InertialProvider.EME2000_ALIGNED, Propagator.DEFAULT_LAW. Use
         InertialProvider.of(Frame).
