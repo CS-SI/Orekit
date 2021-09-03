@@ -30,7 +30,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.propagation.Propagator;
 
 /** Attitude modes.
  * @author Luc Maisonobe
