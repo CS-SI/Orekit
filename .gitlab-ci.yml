@@ -108,3 +108,14 @@ deploy:site:
     - master@orekit/orekit
     - /^release-[.0-9]+$/@orekit/orekit
     - develop@orekit/orekit
+
+# trigger performance tests after artifacts are deployed to Nexus
+# similar to Jenkins' "build after a snapshot dependency is built"
+performance:
+  stage: deploy
+  needs:
+    - job: deploy:artifacts
+      artifacts: false
+  trigger: evanward1/orekit-performance
+  only:
+    - develop@orekit/orekit

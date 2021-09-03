@@ -38,6 +38,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
@@ -49,6 +50,9 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -58,6 +62,45 @@ import org.orekit.utils.IERSConventions;
 
 
 public class PropagatorsParallelizerTest {
+
+    @Test
+    public void testIssue717() {
+
+        // Gravity
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
+        UnnormalizedSphericalHarmonicsProvider gravity = GravityFieldFactory.getUnnormalizedProvider(8, 8);
+
+        // Orbit
+        Orbit orbit = new KeplerianOrbit(15000000.0, 0.125, 1.25,
+                                         0.250, 1.375, 0.0625, PositionAngle.MEAN,
+                                         FramesFactory.getEME2000(),
+                                         new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, TimeScalesFactory.getUTC()),
+                                         gravity.getMu());
+
+
+        // Propagator
+        final double[][] tol = DSSTPropagator.tolerances(0.01, orbit);
+        final DSSTPropagator propagator = new DSSTPropagator(new DormandPrince853Integrator(0.01, 600.0, tol[0], tol[1]), PropagationType.OSCULATING);
+
+        // Force models
+        final DSSTForceModel zonal = new DSSTZonal(gravity, 4, 3, 9);
+        propagator.addForceModel(zonal);
+
+        propagator.setInitialState(new SpacecraftState(orbit));
+
+        // Configure epochs in order to have a backward propagation mode
+        final double deltaT = 30.0;
+
+        final PropagatorsParallelizer parallelizer =
+                        new PropagatorsParallelizer(Arrays.asList(propagator),  interpolators -> {interpolators.get(0).getCurrentState().getDate();});
+
+        final SpacecraftState state = parallelizer.propagate(orbit.getDate().shiftedBy(deltaT).shiftedBy(+1.0), orbit.getDate().shiftedBy(-2.0 * deltaT).shiftedBy(-1.0)).get(0);
+
+        // Verify that the backward propagation worked properly
+        Assert.assertNotNull(state);
+        
+    }
 
     @Test
     public void testNumericalNotInitialized() {
