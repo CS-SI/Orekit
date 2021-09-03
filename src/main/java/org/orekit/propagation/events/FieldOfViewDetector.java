@@ -27,6 +27,12 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for target entry/exit events with respect to a satellite sensor
  * {@link FieldOfView Field Of View}.
+ * <p>Beware that this detector is unaware of any bodies occluding line-of-sight to
+ * the target. It can be therefore used for many contexts from Earth Observation to
+ * interplanetary mission design. For instance, in an Earth Observation context,
+ * it can be easily combined to an {@link ElevationDetector} using
+ * {@link BooleanDetector#andCombine(java.util.Collection)} to calculate station
+ * visibility opportunities within the satellite's field of view.
  * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
  * propagation at FOV entry and to {@link Action#STOP stop} propagation
  * at FOV exit. This can be changed by calling
