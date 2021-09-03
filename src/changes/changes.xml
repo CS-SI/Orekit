@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="evan" type="fix" issue="798">
+        Allow DSST event detection when propagating backwards.
+      </action>
       <action dev="evan" type="remove" issue="586">
         Remove InertialProvider.EME2000_ALIGNED, Propagator.DEFAULT_LAW. Use
         InertialProvider.of(Frame).
