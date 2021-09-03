@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,9 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.annotation.DefaultDataContext;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -36,7 +36,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
@@ -98,8 +97,6 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * <p>Using this constructor, an initial osculating orbit is considered.</p>
      *
      * @param initialOrbit initial orbit
@@ -109,10 +106,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @see #EcksteinHechlerPropagator(Orbit, UnnormalizedSphericalHarmonicsProvider,
      *                                 PropagationType)
      */
-    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -154,8 +150,6 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      *
      * <p> C<sub>n,0</sub> = -J<sub>n</sub>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * <p>Using this constructor, an initial osculating orbit is considered.</p>
      *
      * @param initialOrbit initial orbit
@@ -170,19 +164,16 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double, double, double,
      * double, double, double, double, double)
      */
-    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
      * <p>Attitude law is set to an unspecified non-null arbitrary value.</p>
-     *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * <p>Using this constructor, an initial osculating orbit is considered.</p>
      *
@@ -192,10 +183,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double,
      * UnnormalizedSphericalHarmonicsProvider)
      */
-    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -211,8 +201,6 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      *
      * <p> C<sub>n,0</sub> = -J<sub>n</sub>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * <p>Using this constructor, an initial osculating orbit is considered.</p>
      *
      * @param initialOrbit initial orbit
@@ -227,12 +215,11 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double, double, double,
      * double, double, double, double, double)
      */
-    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -337,8 +324,6 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * <p>Using this constructor, it is possible to define the initial orbit as
      * a mean Eckstein-Hechler orbit or an osculating one.</p>
      *
@@ -347,11 +332,10 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
      * @since 10.2
      */
-    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider,
                                      final PropagationType initialType) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
              DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), initialType);
     }
 
@@ -541,12 +525,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                   mass, referenceRadius, mu, ck0);
 
             // check convergence
-            if ((FastMath.abs(deltaA)      < thresholdA) &&
-                (FastMath.abs(deltaEx)     < thresholdE) &&
-                (FastMath.abs(deltaEy)     < thresholdE) &&
-                (FastMath.abs(deltaI)      < thresholdAngles) &&
-                (FastMath.abs(deltaRAAN)   < thresholdAngles) &&
-                (FastMath.abs(deltaAlphaM) < thresholdAngles)) {
+            if (FastMath.abs(deltaA)      < thresholdA &&
+                FastMath.abs(deltaEx)     < thresholdE &&
+                FastMath.abs(deltaEy)     < thresholdE &&
+                FastMath.abs(deltaI)      < thresholdAngles &&
+                FastMath.abs(deltaRAAN)   < thresholdAngles &&
+                FastMath.abs(deltaAlphaM) < thresholdAngles) {
                 return current;
             }
 
@@ -661,8 +645,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             ql *= q;
             final double g6 = ck0[6] * ql;
 
-            final double cosI1 = FastMath.cos(mean.getI());
-            final double sinI1 = FastMath.sin(mean.getI());
+            final SinCos sc    = FastMath.sinCos(mean.getI());
+            final double cosI1 = sc.cos();
+            final double sinI1 = sc.sin();
             final double sinI2 = sinI1 * sinI1;
             final double sinI4 = sinI2 * sinI2;
             final double sinI6 = sinI2 * sinI4;
@@ -977,7 +962,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             cosAlphaE      = alphaE.cos();
             sinAlphaE      = alphaE.sin();
 
-        } while ((++iter < 50) && (FastMath.abs(shift.getValue()) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift.getValue()) > 1.0e-12);
 
         return alphaE;
 

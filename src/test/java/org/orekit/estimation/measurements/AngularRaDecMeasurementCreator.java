@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,7 +62,7 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState) {
         for (final GroundStation station : context.stations) {
 
             final AbsoluteDate     date      = currentState.getDate();

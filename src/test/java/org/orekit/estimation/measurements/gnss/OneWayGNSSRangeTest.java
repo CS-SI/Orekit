@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,10 +38,10 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
@@ -132,9 +132,9 @@ public class OneWayGNSSRangeTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
 
@@ -150,9 +150,8 @@ public class OneWayGNSSRangeTest {
         final List<Double> absoluteErrors = new ArrayList<Double>();
         final List<Double> relativeErrors = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -261,9 +260,9 @@ public class OneWayGNSSRangeTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
 
@@ -279,9 +278,8 @@ public class OneWayGNSSRangeTest {
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -415,9 +413,9 @@ public class OneWayGNSSRangeTest {
                                                     context.initialOrbit.getFrame(),
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit, propagatorBuilder);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // Create perfect range measurements
         final double localClockOffset  = 0.137e-6;
@@ -433,9 +431,8 @@ public class OneWayGNSSRangeTest {
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,13 +29,13 @@ public class GzipFilter implements DataFilter {
 
     /** {@inheritDoc} */
     @Override
-    public NamedData filter(final NamedData original) {
-        final String                 oName   = original.getName();
-        final NamedData.StreamOpener oOpener = original.getStreamOpener();
+    public DataSource filter(final DataSource original) {
+        final String            oName   = original.getName();
+        final DataSource.Opener oOpener = original.getOpener();
         if (oName.endsWith(SUFFIX)) {
-            final String                 fName   = oName.substring(0, oName.length() - SUFFIX.length());
-            final NamedData.StreamOpener fOpener = () -> new GZIPInputStream(oOpener.openStream());
-            return new NamedData(fName, fOpener);
+            final String                  fName   = oName.substring(0, oName.length() - SUFFIX.length());
+            final DataSource.StreamOpener fOpener = () -> new GZIPInputStream(oOpener.openStreamOnce());
+            return new DataSource(fName, fOpener);
         } else {
             return original;
         }

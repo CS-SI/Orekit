@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -56,15 +57,17 @@ public class NiellMappingFunctionModelTest {
         final AbsoluteDate date = new AbsoluteDate(1994, 1, 1, TimeScalesFactory.getUTC());
         
         final double latitude    = FastMath.toRadians(48.0);
+        final double longitude   = FastMath.toRadians(0.20);
         final double height      = 68.0;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
         final double elevation     = FastMath.toRadians(5.0);
         final double expectedHydro = 10.16;
         final double expectedWet   = 10.75;
 
-        final MappingFunction model = new NiellMappingFunctionModel(latitude);
+        final MappingFunction model = new NiellMappingFunctionModel();
         
-        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
@@ -73,14 +76,15 @@ public class NiellMappingFunctionModelTest {
     @Test
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
-        MappingFunction model = new NiellMappingFunctionModel(FastMath.toRadians(45.0));
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
+        MappingFunction model = new NiellMappingFunctionModel();
         double[] lastFactors = new double[] {
             Double.MAX_VALUE,
             Double.MAX_VALUE
         };
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), 350, model.getParameters(), date);
+            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point, date);
             Assert.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
             Assert.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
@@ -47,7 +47,7 @@ public class FieldStopOnDecreasingTest {
         doTestDecreasing(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNoReset(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNoReset(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0),
@@ -63,7 +63,7 @@ public class FieldStopOnDecreasingTest {
         Assert.assertSame(s, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().resetState(null, s));
     }
 
-    private <T extends RealFieldElement<T>> void doTestIncreasing(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIncreasing(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0),
@@ -80,7 +80,7 @@ public class FieldStopOnDecreasingTest {
         Assert.assertSame(Action.CONTINUE, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
     }
 
-    private <T extends RealFieldElement<T>> void doTestDecreasing(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDecreasing(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0),

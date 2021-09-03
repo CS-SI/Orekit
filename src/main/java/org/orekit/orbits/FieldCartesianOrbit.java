@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -30,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -75,7 +76,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
  */
-public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
+public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 
     /** Indicator for non-Keplerian acceleration. */
     private final transient boolean hasNonKeplerianAcceleration;
@@ -97,7 +98,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position, velocity and acceleration of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
@@ -122,7 +123,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
@@ -302,7 +303,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final double x = w.getX().getReal();
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
-        if (((x * x + y * y) == 0) && z < 0) {
+        if ((x * x + y * y) == 0 && z < 0) {
             return zero.add(Double.NaN);
         }
         return w.getY().negate().divide(w.getZ().add(1));
@@ -318,7 +319,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final double x = w.getX().getValue().getReal();
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return zero.add(Double.NaN);
             }
             final FieldUnivariateDerivative2<T> hx = w.getY().negate().divide(w.getZ().add(1));
@@ -335,7 +336,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final double x = w.getX().getReal();
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
-        if (((x * x + y * y) == 0) && z < 0) {
+        if ((x * x + y * y) == 0 && z < 0) {
             return zero.add(Double.NaN);
         }
         return  w.getX().divide(w.getZ().add(1));
@@ -351,7 +352,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final double x = w.getX().getValue().getReal();
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return zero.add(Double.NaN);
             }
             final FieldUnivariateDerivative2<T> hy = w.getX().divide(w.getZ().add(1));
@@ -469,19 +470,21 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // the following equations rely on the specific choice of u explained above,
         // some coefficients that vanish to 0 in this case have already been removed here
-        final T ex      = eCE.subtract(e2).multiply(a).divide(r);
-        final T s       = e2.negate().add(1).sqrt();
-        final T ey      = s.negate().multiply(eSE).multiply(a).divide(r);
-        final T beta    = s.add(1).reciprocal();
-        final T thetaE0 = ey.add(eSE.multiply(beta).multiply(ex)).atan2(r.divide(a).add(ex).subtract(eSE.multiply(beta).multiply(ey)));
-        final T thetaM0 = thetaE0.subtract(ex.multiply(thetaE0.sin())).add(ey.multiply(thetaE0.cos()));
+        final T              ex        = eCE.subtract(e2).multiply(a).divide(r);
+        final T              s         = e2.negate().add(1).sqrt();
+        final T              ey        = s.negate().multiply(eSE).multiply(a).divide(r);
+        final T              beta      = s.add(1).reciprocal();
+        final T              thetaE0   = ey.add(eSE.multiply(beta).multiply(ex)).atan2(r.divide(a).add(ex).subtract(eSE.multiply(beta).multiply(ey)));
+        final FieldSinCos<T> scThetaE0 = FastMath.sinCos(thetaE0);
+        final T              thetaM0   = thetaE0.subtract(ex.multiply(scThetaE0.sin())).add(ey.multiply(scThetaE0.cos()));
 
         // compute in-plane shifted eccentric argument
-        final T sqrtMmuOA = a.reciprocal().multiply(getMu()).sqrt();
-        final T thetaM1   = thetaM0.add(sqrtMmuOA.divide(a).multiply(dt));
-        final T thetaE1   = meanToEccentric(thetaM1, ex, ey);
-        final T cTE       = thetaE1.cos();
-        final T sTE       = thetaE1.sin();
+        final T              sqrtMmuOA = a.reciprocal().multiply(getMu()).sqrt();
+        final T              thetaM1   = thetaM0.add(sqrtMmuOA.divide(a).multiply(dt));
+        final T              thetaE1   = meanToEccentric(thetaM1, ex, ey);
+        final FieldSinCos<T> scTE      = FastMath.sinCos(thetaE1);
+        final T              cTE       = scTE.cos();
+        final T              sTE       = scTE.sin();
 
         // compute shifted in-plane Cartesian coordinates
         final T exey   = ex.multiply(ey);
@@ -608,11 +611,10 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         T thetaEMthetaM = zero;
         int    iter          = 0;
         do {
-            final T cosThetaE = thetaE.cos();
-            final T sinThetaE = thetaE.sin();
+            final FieldSinCos<T> scThetaE = FastMath.sinCos(thetaE);
 
-            final T f2 = ex.multiply(sinThetaE).subtract(ey.multiply(cosThetaE));
-            final T f1 = one.subtract(ex.multiply(cosThetaE)).subtract(ey.multiply(sinThetaE));
+            final T f2 = ex.multiply(scThetaE.sin()).subtract(ey.multiply(scThetaE.cos()));
+            final T f1 = one.subtract(ex.multiply(scThetaE.cos())).subtract(ey.multiply(scThetaE.sin()));
             final T f0 = thetaEMthetaM.subtract(f2);
 
             final T f12 = f1.multiply(2.0);
@@ -644,16 +646,19 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
+        // Field value of pi
+        final T pi = ecc.getPi();
+
         // Initial guess
         T H;
         if (ecc.getReal() < 1.6) {
-            if ((-FastMath.PI < M.getReal() && M.getReal() < 0.) || M.getReal() > FastMath.PI) {
+            if (-pi.getReal() < M.getReal() && M.getReal() < 0. || M.getReal() > pi.getReal()) {
                 H = M.subtract(ecc);
             } else {
                 H = M.add(ecc);
             }
         } else {
-            if (ecc.getReal() < 3.6 && FastMath.abs(M.getReal()) > FastMath.PI) {
+            if (ecc.getReal() < 3.6 && FastMath.abs(M.getReal()) > pi.getReal()) {
                 H = M.subtract(ecc.copySign(M));
             } else {
                 H = M.divide(ecc.subtract(1.));

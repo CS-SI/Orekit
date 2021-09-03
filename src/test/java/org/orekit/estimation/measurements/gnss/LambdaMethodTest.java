@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.estimation.measurements.gnss;
+
+import java.util.Comparator;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -52,6 +54,44 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
             doTestPermutation(random, indirection, covariance);
 
         }
+    }
+
+    @Test
+    public void testCustomComparator() {
+
+        // Initialize
+        final double[] floatAmbiguities = new double[] {
+            5.450, 3.100, 2.970
+        };
+        final int[] indirection = new int[] { 0, 1, 2 };
+        final RealMatrix covariance = MatrixUtils.createRealMatrix(new double[][] {
+            { 6.290, 5.978, 0.544 },
+            { 5.978, 6.292, 2.340 },
+            { 0.544, 2.340, 6.288 }
+        });
+
+
+        final AbstractLambdaMethod reducer = buildReducer();
+
+        // Using this comparator, only one solution can be added to the list
+        // In reality, two solutions are found with these inputs (see testJoostenTiberiusFAQ())
+        reducer.setComparator(new Comparator<IntegerLeastSquareSolution>() {
+            
+            @Override
+            public int compare(final IntegerLeastSquareSolution o1,
+                               final IntegerLeastSquareSolution o2) {
+                return 0;
+            }
+        });
+
+        IntegerLeastSquareSolution[] solutions = reducer.solveILS(1, floatAmbiguities, indirection, covariance);
+
+        // Verify
+        Assert.assertEquals(1, solutions.length);
+        Assert.assertEquals(0.2183310953369383, solutions[0].getSquaredDistance(), 1.0e-15);
+        Assert.assertEquals(5l, solutions[0].getSolution()[0]);
+        Assert.assertEquals(3l, solutions[0].getSolution()[1]);
+        Assert.assertEquals(4l, solutions[0].getSolution()[2]);
     }
 
     private void doTestPermutation(final RandomGenerator random,

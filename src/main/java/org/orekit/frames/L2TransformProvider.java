@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.orekit.frames;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -91,7 +91,7 @@ class L2TransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
         final FieldVector3D<T>      translation = getL2(pv21.getPosition()).negate();
         final Field<T>              field       = pv21.getPosition().getX().getField();
@@ -147,7 +147,7 @@ class L2TransformProvider implements TransformProvider {
      * @param primaryToSecondary relative position of secondary body with respect to primary body
      * @return coordinates of the L2 point given in frame: primaryBody.getInertiallyOrientedFrame()
      */
-    private <T extends RealFieldElement<T>> FieldVector3D<T>
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T>
         getL2(final FieldVector3D<T> primaryToSecondary) {
 
         // mass ratio
@@ -158,7 +158,7 @@ class L2TransformProvider implements TransformProvider {
         final T baseR = bigR.multiply(FastMath.cbrt(massRatio / 3) + 1);
 
         // Accurate position of L2 point, by solving the L2 equilibrium equation
-        final RealFieldUnivariateFunction<T> l2Equation = r -> {
+        final CalculusFieldUnivariateFunction<T> l2Equation = r -> {
             final T rminusbigR = r.subtract(bigR);
             final T lhs1       = r.multiply(r).reciprocal();
             final T lhs2       = rminusbigR.multiply(rminusbigR).reciprocal().multiply(massRatio);

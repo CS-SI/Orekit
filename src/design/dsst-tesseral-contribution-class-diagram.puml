@@ -1,4 +1,4 @@
-' Copyright 2002-2020 CS GROUP
+' Copyright 2002-2021 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,12 +25,13 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
     package propagation.semianalytical.dsst #DDEBD8 {
 
-      Package forces #CEEBD8 {
+      Package forces #CBDBC8 {
         interface DSSTForceModel
         interface ShortPeriodTerms
         DSSTForceModel <|-- DSSTTesseral
@@ -38,15 +39,15 @@
         ShortPeriodTerms <|-- TesseralShortPeriodicCoefficients
       }
 
-      package utilities #CEEBD8 {
-        package hansen #EAECE6 {
+      package utilities #CBDBC8 {
+        package hansen #CCCCC7 {
           class HansenTesseralLinear
         }
           TesseralShortPeriodicCoefficients *--> "*" ShortPeriodicsInterpolatedCoefficient
           DSSTTesseral *--> HansenTesseralLinear
        }
 
-      package forces.gravity.potential #DDEBD8 {
+      package forces.gravity.potential #CBDBC8 {
           interface UnnormalizedSphericalHarmonicsProvider
           UnnormalizedSphericalHarmonicsProvider "1" <--* DSSTTesseral
       }

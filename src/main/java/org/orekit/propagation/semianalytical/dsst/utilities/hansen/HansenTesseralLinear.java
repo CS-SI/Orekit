@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
@@ -458,9 +456,6 @@ public class HansenTesseralLinear {
         /** Polynomial representing the serie. */
         private PolynomialFunction polynomial;
 
-        /** Factory for the DerivativeStructure instances. */
-        private final DSFactory factory;
-
         /**
          * Class constructor.
          *
@@ -476,32 +471,6 @@ public class HansenTesseralLinear {
             this.j = j;
             this.maxNewcomb = maxHansen;
             this.polynomial = generatePolynomial();
-            this.factory = new DSFactory(1, 1);
-        }
-
-        /** Computes the value of Hansen kernel and its derivative at e².
-         * <p>
-         * The formulae applied are described in Danielson 2.7.3-10 and
-         * 3.3-5
-         * </p>
-         * @param e2 e²
-         * @param chi &Chi;
-         * @param chi2 &Chi;²
-         * @return the value of the Hansen coefficient and its derivative for e²
-         * @deprecated as of 10.2, replaced by {@link #getValueGradient(double, double, double)}
-         */
-        @SuppressWarnings("unused")
-        @Deprecated
-        public DerivativeStructure getValue(final double e2, final double chi, final double chi2) {
-
-            //Estimation of the serie expansion at e2
-            final DerivativeStructure serie = polynomial.value(factory.variable(0, e2));
-
-            final double value      =  FastMath.pow(chi2, -mnm1 - 1) * serie.getValue() / chi;
-            final double coef       = -(mnm1 + 1.5);
-            final double derivative = coef * chi2 * value +
-                                      FastMath.pow(chi2, -mnm1 - 1) * serie.getPartialDerivative(1) / chi;
-            return factory.build(value, derivative);
         }
 
         /** Computes the value of Hansen kernel and its derivative at e².

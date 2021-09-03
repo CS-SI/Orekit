@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -80,7 +80,7 @@ public class FieldEventsLoggerTest {
         doTestClearLog(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestLogUmbra(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestLogUmbra(Field<T> field) {
 
         T zero = field.getZero();
 
@@ -99,7 +99,7 @@ public class FieldEventsLoggerTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
@@ -124,7 +124,7 @@ public class FieldEventsLoggerTest {
         checkCounts(logger, 3, 3, 0, 0, umbraDetector, penumbraDetector);
     }
 
-    private <T extends RealFieldElement<T>> void doTestLogPenumbra(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestLogPenumbra(final Field<T> field) {
 
 
         T zero = field.getZero();
@@ -144,7 +144,7 @@ public class FieldEventsLoggerTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
@@ -161,7 +161,7 @@ public class FieldEventsLoggerTest {
         checkCounts(logger, 0, 0, 2, 3, umbraDetector, penumbraDetector);
     }
 
-    private <T extends RealFieldElement<T>> void doTestLogAll(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestLogAll(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -180,7 +180,7 @@ public class FieldEventsLoggerTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
@@ -204,7 +204,7 @@ public class FieldEventsLoggerTest {
         checkCounts(logger, 3, 3, 2, 3, umbraDetector, penumbraDetector);
     }
 
-    private <T extends RealFieldElement<T>> void doTestImmutableList(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestImmutableList(final Field<T> field) {
 
 
         T zero = field.getZero();
@@ -224,7 +224,7 @@ public class FieldEventsLoggerTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
@@ -258,7 +258,7 @@ public class FieldEventsLoggerTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void doTestClearLog(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestClearLog(final Field<T> field) {
 
 
 
@@ -280,7 +280,7 @@ public class FieldEventsLoggerTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
@@ -304,7 +304,7 @@ public class FieldEventsLoggerTest {
         Assert.assertEquals( 9, secondList.size());
     }
 
-    private <T extends RealFieldElement<T>> void checkCounts(FieldEventsLogger<T> logger,
+    private <T extends CalculusFieldElement<T>> void checkCounts(FieldEventsLogger<T> logger,
                              int expectedUmbraIncreasingCount, int expectedUmbraDecreasingCount,
                              int expectedPenumbraIncreasingCount, int expectedPenumbraDecreasingCount,
                              FieldEventDetector<T> umbraDetector, FieldEventDetector<T> penumbraDetector) {
@@ -334,7 +334,7 @@ public class FieldEventsLoggerTest {
         Assert.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
-    private <T extends RealFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
+    private <T extends CalculusFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
 
         FieldEclipseDetector<T> detector =
                 new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1.e-3), CelestialBodyFactory.getSun(), 696000000,

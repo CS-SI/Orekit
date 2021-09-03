@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -256,7 +256,7 @@ public class BodyCenterPointingTest {
         doTestSpin(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>void doTestTarget(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>>void doTestTarget(final Field<T> field) {
 
         T mu = field.getZero().add(3.9860047e14);
         T zero = field.getZero();
@@ -294,7 +294,7 @@ public class BodyCenterPointingTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestBodyCenterInPointingDirection(final Field<T> field)  {
+    private <T extends CalculusFieldElement<T>> void doTestBodyCenterInPointingDirection(final Field<T> field)  {
 
         T zero = field.getZero();
         T mu = zero.add(3.9860047e14);
@@ -355,7 +355,7 @@ public class BodyCenterPointingTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestQDot(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestQDot(final Field<T> field) {
 
         final double ae  = 6.378137e6;
         final double c20 = -1.08263e-3;
@@ -440,7 +440,7 @@ public class BodyCenterPointingTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSpin(final Field<T> field) {
 
         final double ae  = 6.378137e6;
         final double c20 = -1.08263e-3;

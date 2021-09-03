@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -69,8 +70,10 @@ public class ViennaOneModelTest {
 
         final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 0, TimeScalesFactory.getUTC());
         
-        final double latitude    = FastMath.toRadians(38.0);
-        final double height      = 824.17;
+        final double latitude     = FastMath.toRadians(38.0);
+        final double longitude    = FastMath.toRadians(280.0);
+        final double height       = 824.17;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
         final double elevation     = 0.5 * FastMath.PI - 1.278564131;
         final double expectedHydro = 3.425088;
@@ -79,9 +82,9 @@ public class ViennaOneModelTest {
         final double[] a = { 0.00127683, 0.00060955 };
         final double[] z = {2.0966, 0.2140};
         
-        final ViennaOneModel model = new ViennaOneModel(a, z, latitude);
+        final ViennaOneModel model = new ViennaOneModel(a, z);
         
-        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], 4.1e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
@@ -94,8 +97,9 @@ public class ViennaOneModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         final double[] a = { 0.00127683, 0.00060955 };
         final double[] z = {2.0966, 0.2140};
-        ViennaOneModel model = new ViennaOneModel(a, z, FastMath.toRadians(45.0));
-        final double path = model.pathDelay(FastMath.toRadians(elevation), height, model.getParameters(), date);
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
+        ViennaOneModel model = new ViennaOneModel(a, z);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
         Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
@@ -105,11 +109,12 @@ public class ViennaOneModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         final double[] a = { 0.00127683, 0.00060955 };
         final double[] z = {2.0966, 0.2140};
-        ViennaOneModel model = new ViennaOneModel(a, z, FastMath.toRadians(45.0));
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
+        ViennaOneModel model = new ViennaOneModel(a, z);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), 350, model.getParameters(), date);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), point, model.getParameters(), date);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }

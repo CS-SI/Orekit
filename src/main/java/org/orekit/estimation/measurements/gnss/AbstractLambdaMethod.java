@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -57,6 +58,19 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
     /** Placeholder for solutions found. */
     private SortedSet<IntegerLeastSquareSolution> solutions;
 
+    /** Comparator for integer least square solutions. */
+    private Comparator<IntegerLeastSquareSolution> comparator;
+
+    /** Constructor.
+     * <p>
+     * By default a {@link IntegerLeastSquareComparator} is used
+     * to compare integer least square solutions
+     * </p>
+     */
+    protected AbstractLambdaMethod() {
+        this.comparator = new IntegerLeastSquareComparator();
+    }
+
     /** {@inheritDoc} */
     @Override
     public IntegerLeastSquareSolution[] solveILS(final int nbSol, final double[] floatAmbiguities,
@@ -82,6 +96,18 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
     }
 
+    /** Set a custom comparator for integer least square solutions comparison.
+     * <p>
+     * Calling this method overrides any comparator that could have been set
+     * beforehand. It also overrides the default {@link IntegerLeastSquareComparator}.
+     * </p>
+     * @param newCompartor new comparator to use
+     * @since 11.0
+     */
+    public void setComparator(final Comparator<IntegerLeastSquareSolution> newCompartor) {
+        this.comparator = newCompartor;
+    }
+
     /** Initialize ILS problem.
      * @param floatAmbiguities float estimates of ambiguities
      * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
@@ -97,7 +123,7 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         this.diag                   = new double[n];
         this.zInverseTransformation = new int[n * n];
         this.maxSolutions           = nbSol;
-        this.solutions              = new TreeSet<>();
+        this.solutions              = new TreeSet<>(comparator);
 
         // initialize decomposition matrices
         for (int i = 0; i < n; ++i) {

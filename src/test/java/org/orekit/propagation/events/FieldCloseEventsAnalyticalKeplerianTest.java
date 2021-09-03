@@ -19,9 +19,12 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
+import org.junit.Assert;
+import org.junit.Test;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.FieldRecordAndContinue;
 
 
 /**
@@ -38,6 +41,54 @@ public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbs
     @Override
     public FieldPropagator<Decimal64> getPropagator(double stepSize) {
         return new FieldKeplerianPropagator<>(initialOrbit);
+    }
+
+    /* Extra test for analytic propagator that take big steps. */
+
+    /** Test Analytic propagators take big steps. #830 */
+    @Test
+    public void testBigStep() {
+        // setup
+        FieldPropagator<Decimal64> propagator = getPropagator(1e100);
+        propagator.setStepHandler(interpolator -> {});
+        double period = 2 * initialOrbit.getKeplerianPeriod().getReal();
+
+        FieldRecordAndContinue<TimeDetector, Decimal64> handler =
+                new FieldRecordAndContinue<>();
+        TimeDetector detector = new TimeDetector(1, period - 1)
+                .withHandler(handler)
+                .withMaxCheck(v(1e100))
+                .withThreshold(v(1));
+        propagator.addEventDetector(detector);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(period));
+
+        // verify no events
+        Assert.assertEquals(0, handler.getEvents().size());
+    }
+
+    /** Test Analytic propagators take big steps. #830 */
+    @Test
+    public void testBigStepReverse() {
+        // setup
+        FieldPropagator<Decimal64> propagator = getPropagator(1e100);
+        propagator.setStepHandler(interpolator -> {});
+        double period = -2 * initialOrbit.getKeplerianPeriod().getReal();
+
+        FieldRecordAndContinue<TimeDetector, Decimal64> handler =
+                new FieldRecordAndContinue<>();
+        TimeDetector detector = new TimeDetector(-1, period + 1)
+                .withHandler(handler)
+                .withMaxCheck(v(1e100))
+                .withThreshold(v(1));
+        propagator.addEventDetector(detector);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(period));
+
+        // verify no events
+        Assert.assertEquals(0, handler.getEvents().size());
     }
 
 }

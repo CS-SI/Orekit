@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,9 @@
 package org.orekit.propagation.integration;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
+import org.orekit.propagation.numerical.JacobiansMapper;
+import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
 
 /** Base class for jacobian mapper.
@@ -64,22 +65,21 @@ public abstract class AbstractJacobiansMapper {
     /** Compute the length of the one-dimensional additional state array needed.
      * @return length of the one-dimensional additional state array
      */
-    public abstract int getAdditionalStateDimension();
+    public int getAdditionalStateDimension() {
+        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
+    }
 
-    /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
+    /** Compute the derivatives needed by analytical orbit determination methods.
      * <p>
-     * For a {@link DSSTPropagator DSST propagator}, state parameters and parameters used for derivatives are the same,
-     * so the Jocabian is simply the identity.
-     * </p>
-     * <p>
-     * For {@link NumericalPropagator Numerical propagator}, parameters used for derivatives are cartesian
-     * and they can be different from state parameters because the numerical propagator can accept different type
-     * of orbits.
-     * </p>
-     * @param state spacecraft state
-     * @return conversion Jacobian
+     * Analytical derivatives are used to calculate state transition matrix of
+     * analytical orbit propagators and short period derivatives of DSST orbit
+     * propagator. In other word, this method does nothing for the numerical propagator.
+     *
+     * @param s spacecraft state with respect to which calculate derivatives
      */
-    protected abstract double[][] getConversionJacobian(SpacecraftState state);
+    public void analyticalDerivatives(final SpacecraftState s) {
+        // noting by default
+    }
 
     /** Set the Jacobian with respect to state into a one-dimensional additional state array.
      * @param state spacecraft state
@@ -96,7 +96,11 @@ public abstract class AbstractJacobiansMapper {
      * <p>
      * This method extract the data from the {@code state} and put it in the
      * {@code dYdY0} array.
-     * </p>
+     * <p>
+     * For {@link JacobiansMapper} and {@link TLEJacobiansMapper}, the method provides
+     * the Jacobian with respect to Cartesian elements.
+     * For {@link DSSTJacobiansMapper} the method provides the Jacobian with respect to
+     * Equinoctial elements.
      * @param state spacecraft state
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
      * @see #getParametersJacobian(SpacecraftState, double[][])

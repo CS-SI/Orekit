@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,15 +38,15 @@ public class ITRFVersionTest {
         Assert.assertEquals(2008, ITRFVersion.ITRF_2008.getYear());
         Assert.assertEquals(2005, ITRFVersion.ITRF_2005.getYear());
         Assert.assertEquals(2000, ITRFVersion.ITRF_2000.getYear());
-        Assert.assertEquals(1997, ITRFVersion.ITRF_97.getYear());
-        Assert.assertEquals(1996, ITRFVersion.ITRF_96.getYear());
-        Assert.assertEquals(1994, ITRFVersion.ITRF_94.getYear());
-        Assert.assertEquals(1993, ITRFVersion.ITRF_93.getYear());
-        Assert.assertEquals(1992, ITRFVersion.ITRF_92.getYear());
-        Assert.assertEquals(1991, ITRFVersion.ITRF_91.getYear());
-        Assert.assertEquals(1990, ITRFVersion.ITRF_90.getYear());
-        Assert.assertEquals(1989, ITRFVersion.ITRF_89.getYear());
-        Assert.assertEquals(1988, ITRFVersion.ITRF_88.getYear());
+        Assert.assertEquals(1997, ITRFVersion.ITRF_1997.getYear());
+        Assert.assertEquals(1996, ITRFVersion.ITRF_1996.getYear());
+        Assert.assertEquals(1994, ITRFVersion.ITRF_1994.getYear());
+        Assert.assertEquals(1993, ITRFVersion.ITRF_1993.getYear());
+        Assert.assertEquals(1992, ITRFVersion.ITRF_1992.getYear());
+        Assert.assertEquals(1991, ITRFVersion.ITRF_1991.getYear());
+        Assert.assertEquals(1990, ITRFVersion.ITRF_1990.getYear());
+        Assert.assertEquals(1989, ITRFVersion.ITRF_1989.getYear());
+        Assert.assertEquals(1988, ITRFVersion.ITRF_1988.getYear());
     }
 
     @Test
@@ -55,15 +55,15 @@ public class ITRFVersionTest {
         Assert.assertEquals("ITRF-2008", ITRFVersion.ITRF_2008.getName());
         Assert.assertEquals("ITRF-2005", ITRFVersion.ITRF_2005.getName());
         Assert.assertEquals("ITRF-2000", ITRFVersion.ITRF_2000.getName());
-        Assert.assertEquals("ITRF-97",   ITRFVersion.ITRF_97.getName());
-        Assert.assertEquals("ITRF-96",   ITRFVersion.ITRF_96.getName());
-        Assert.assertEquals("ITRF-94",   ITRFVersion.ITRF_94.getName());
-        Assert.assertEquals("ITRF-93",   ITRFVersion.ITRF_93.getName());
-        Assert.assertEquals("ITRF-92",   ITRFVersion.ITRF_92.getName());
-        Assert.assertEquals("ITRF-91",   ITRFVersion.ITRF_91.getName());
-        Assert.assertEquals("ITRF-90",   ITRFVersion.ITRF_90.getName());
-        Assert.assertEquals("ITRF-89",   ITRFVersion.ITRF_89.getName());
-        Assert.assertEquals("ITRF-88",   ITRFVersion.ITRF_88.getName());
+        Assert.assertEquals("ITRF-1997", ITRFVersion.ITRF_1997.getName());
+        Assert.assertEquals("ITRF-1996", ITRFVersion.ITRF_1996.getName());
+        Assert.assertEquals("ITRF-1994", ITRFVersion.ITRF_1994.getName());
+        Assert.assertEquals("ITRF-1993", ITRFVersion.ITRF_1993.getName());
+        Assert.assertEquals("ITRF-1992", ITRFVersion.ITRF_1992.getName());
+        Assert.assertEquals("ITRF-1991", ITRFVersion.ITRF_1991.getName());
+        Assert.assertEquals("ITRF-1990", ITRFVersion.ITRF_1990.getName());
+        Assert.assertEquals("ITRF-1989", ITRFVersion.ITRF_1989.getName());
+        Assert.assertEquals("ITRF-1988", ITRFVersion.ITRF_1988.getName());
     }
 
     @Test
@@ -72,15 +72,24 @@ public class ITRFVersionTest {
         Assert.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion(2008));
         Assert.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion(2005));
         Assert.assertEquals(ITRFVersion.ITRF_2000, ITRFVersion.getITRFVersion(2000));
-        Assert.assertEquals(ITRFVersion.ITRF_97,   ITRFVersion.getITRFVersion(1997));
-        Assert.assertEquals(ITRFVersion.ITRF_96,   ITRFVersion.getITRFVersion(1996));
-        Assert.assertEquals(ITRFVersion.ITRF_94,   ITRFVersion.getITRFVersion(1994));
-        Assert.assertEquals(ITRFVersion.ITRF_93,   ITRFVersion.getITRFVersion(1993));
-        Assert.assertEquals(ITRFVersion.ITRF_92,   ITRFVersion.getITRFVersion(1992));
-        Assert.assertEquals(ITRFVersion.ITRF_91,   ITRFVersion.getITRFVersion(1991));
-        Assert.assertEquals(ITRFVersion.ITRF_90,   ITRFVersion.getITRFVersion(1990));
-        Assert.assertEquals(ITRFVersion.ITRF_89,   ITRFVersion.getITRFVersion(1989));
-        Assert.assertEquals(ITRFVersion.ITRF_88,   ITRFVersion.getITRFVersion(1988));
+        Assert.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion(1997));
+        Assert.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion(1996));
+        Assert.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion(1994));
+        Assert.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion(1993));
+        Assert.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion(1992));
+        Assert.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion(1991));
+        Assert.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion(1990));
+        Assert.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion(1989));
+        Assert.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion(1988));
+        Assert.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion(  97));
+        Assert.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion(  96));
+        Assert.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion(  94));
+        Assert.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion(  93));
+        Assert.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion(  92));
+        Assert.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion(  91));
+        Assert.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion(  90));
+        Assert.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion(  89));
+        Assert.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion(  88));
     }
 
     @Test
@@ -96,19 +105,28 @@ public class ITRFVersionTest {
 
     @Test
     public void testBuildFromName() {
-        Assert.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion("itrf-2014"));
-        Assert.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion("itrf-2008"));
-        Assert.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion("itrf-2005"));
-        Assert.assertEquals(ITRFVersion.ITRF_2000, ITRFVersion.getITRFVersion("itrf-2000"));
-        Assert.assertEquals(ITRFVersion.ITRF_97,   ITRFVersion.getITRFVersion("itrf-97"));
-        Assert.assertEquals(ITRFVersion.ITRF_96,   ITRFVersion.getITRFVersion("itrf-96"));
-        Assert.assertEquals(ITRFVersion.ITRF_94,   ITRFVersion.getITRFVersion("itrf-94"));
-        Assert.assertEquals(ITRFVersion.ITRF_93,   ITRFVersion.getITRFVersion("itrf-93"));
-        Assert.assertEquals(ITRFVersion.ITRF_92,   ITRFVersion.getITRFVersion("itrf-92"));
-        Assert.assertEquals(ITRFVersion.ITRF_91,   ITRFVersion.getITRFVersion("itrf-91"));
-        Assert.assertEquals(ITRFVersion.ITRF_90,   ITRFVersion.getITRFVersion("itrf-90"));
-        Assert.assertEquals(ITRFVersion.ITRF_89,   ITRFVersion.getITRFVersion("itrf-89"));
-        Assert.assertEquals(ITRFVersion.ITRF_88,   ITRFVersion.getITRFVersion("itrf-88"));
+        Assert.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion("ITRF-2014"));
+        Assert.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion("ItRf-2008"));
+        Assert.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion("iTrF-2005"));
+        Assert.assertEquals(ITRFVersion.ITRF_2000, ITRFVersion.getITRFVersion("itrf_2000"));
+        Assert.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion("itrf 1997"));
+        Assert.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion("itrf1996"));
+        Assert.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion("itrf-1994"));
+        Assert.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion("itrf-1993"));
+        Assert.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion("itrf-1992"));
+        Assert.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion("itrf-1991"));
+        Assert.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion("itrf-1990"));
+        Assert.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion("itrf-1989"));
+        Assert.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion("itrf-1988"));
+        Assert.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion("ITRF97"));
+        Assert.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion("itrf-96"));
+        Assert.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion("itrf-94"));
+        Assert.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion("itrf-93"));
+        Assert.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion("itrf-92"));
+        Assert.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion("itrf-91"));
+        Assert.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion("itrf-90"));
+        Assert.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion("itrf-89"));
+        Assert.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion("itrf-88"));
     }
 
     @Test
@@ -119,6 +137,17 @@ public class ITRFVersionTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
             Assert.assertEquals("itrf-99", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testMalformedName() {
+        try {
+            ITRFVersion.getITRFVersion("YTRF-2014");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
+            Assert.assertEquals("YTRF-2014", oe.getParts()[0]);
         }
     }
 
@@ -203,15 +232,15 @@ public class ITRFVersionTest {
 
     private HelmertTransformation.Predefined from2014(final int year) {
         switch (year) {
-            case 1988 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_88;
-            case 1989 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_89;
-            case 1990 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_90;
-            case 1991 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_91;
-            case 1992 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_92;
-            case 1993 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_93;
-            case 1994 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_94;
-            case 1996 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_96;
-            case 1997 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_97;
+            case 1988 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_1988;
+            case 1989 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_1989;
+            case 1990 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_1990;
+            case 1991 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_1991;
+            case 1992 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_1992;
+            case 1993 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_1993;
+            case 1994 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_1994;
+            case 1996 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_1996;
+            case 1997 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_1997;
             case 2000 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_2000;
             case 2005 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_2005;
             case 2008 : return HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_2008;

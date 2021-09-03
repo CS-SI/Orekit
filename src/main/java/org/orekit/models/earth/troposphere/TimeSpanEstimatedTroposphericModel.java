@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableSet;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -156,7 +158,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #pathDelay(double, double, double[], AbsoluteDate) pathDelay} method.
+     * {@link #pathDelay(double, GeodeticPoint, double[], AbsoluteDate) pathDelay} method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
@@ -183,14 +185,14 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #pathDelay(double, double, double[], AbsoluteDate) pathDelay} method.
+     * {@link #pathDelay(double, GeodeticPoint, double[], AbsoluteDate) pathDelay} method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
-     * @param <T> extends RealFieldElements
+     * @param <T> extends CalculusFieldElements
      * @return the parameters given the date
      */
-    public <T extends RealFieldElement<T>> T[] extractParameters(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
                                                                  final FieldAbsoluteDate<T> date) {
 
         // Get the tropospheric parameter drivers of the date
@@ -213,66 +215,24 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final double height,
-                                   final double[] parameters, final AbsoluteDate date) {
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = extractParameters(parameters, date);
-        // Compute and return the mapping factors
-        return getTroposphericModel(date).mappingFactors(elevation, height,
-                                                         extractedParameters, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[]  mappingFactors(final T elevation, final T height,
-                                                               final T[] parameters, final  FieldAbsoluteDate<T> date) {
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = extractParameters(parameters, date);
-        // Compute and return the mapping factors
-        return getTroposphericModel(date.toAbsoluteDate()).mappingFactors(elevation, height,
-                                                                          extractedParameters, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double pathDelay(final double elevation, final double height,
+    public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         // Extract the proper parameters valid at date from the input array
         final double[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay
-        return getTroposphericModel(date).pathDelay(elevation, height,
+        return getTroposphericModel(date).pathDelay(elevation, point,
                                                     extractedParameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final  T height,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final  FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Extract the proper parameters valid at date from the input array
         final T[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay
-        return getTroposphericModel(date.toAbsoluteDate()).pathDelay(elevation, height,
+        return getTroposphericModel(date.toAbsoluteDate()).pathDelay(elevation, point,
                                                                      extractedParameters, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] computeZenithDelay(final double height, final double[] parameters,
-                                       final AbsoluteDate date) {
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = extractParameters(parameters, date);
-        // Compute and return zenith delay
-        return getTroposphericModel(date).computeZenithDelay(height, extractedParameters, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
-                                                                  final FieldAbsoluteDate<T> date) {
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = extractParameters(parameters, date);
-        // Compute and return zenith delay
-        return getTroposphericModel(date.toAbsoluteDate()).computeZenithDelay(height, extractedParameters, date);
     }
 
     /** Find if a parameter driver with a given name already exists in a list of parameter drivers.

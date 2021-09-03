@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.EstimationsProvider;
+import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -50,6 +51,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -365,9 +367,9 @@ public class BatchLSEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         
@@ -578,9 +580,9 @@ public class BatchLSEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         final List<ObservedMeasurement<?>> r12 =
@@ -730,9 +732,9 @@ public class BatchLSEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         
@@ -953,9 +955,14 @@ public class BatchLSEstimatorTest {
         // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
@@ -998,9 +1005,14 @@ public class BatchLSEstimatorTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
         // concat measurements

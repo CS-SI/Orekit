@@ -95,6 +95,10 @@ solar.radiation.pressure.area = 0.28270
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = false
 
+## Use range and range-rate measurements
+use.range.measurements = true
+use.range.rate.measurements = false
+
 ## On-board range bias (m) [0.0]
 onboard.range.bias     = 0.0
 onboard.range.bias.min = 0.0
@@ -126,6 +130,9 @@ ocean.loading.correction                              = false
 
 ## Shapiro time delay on range measurement
 range.shapiro = true
+
+## Use a time span tropospheric model or not
+use.time.span.tropospheric.model = true
 
 ## Center of mass correction
 range.center.of.mass.correction = 0.251

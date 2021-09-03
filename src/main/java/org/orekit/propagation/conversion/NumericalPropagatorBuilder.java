@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -44,7 +43,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
+public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -65,8 +64,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      * callers of this builder to the real orbital parameters.
      * </p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
      * @param positionAngle position angle type to use
@@ -76,13 +73,12 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      * @see #NumericalPropagatorBuilder(Orbit, ODEIntegratorBuilder, PositionAngle,
      * double, AttitudeProvider)
      */
-    @DefaultDataContext
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
                                       final PositionAngle positionAngle,
                                       final double positionScale) {
         this(referenceOrbit, builder, positionAngle, positionScale,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+                InertialProvider.of(referenceOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -231,7 +227,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public BatchLSModel buildLSModel(final IntegratedPropagatorBuilder[] builders,
+    public BatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
                             final List<ObservedMeasurement<?>> measurements,
                             final ParameterDriversList estimatedMeasurementsParameters,
                             final ModelObserver observer) {
@@ -239,10 +235,13 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public KalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                  final ParameterDriversList estimatedMeasurementsParameters) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
+    @Override
+    public KalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+                                        final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                        final ParameterDriversList estimatedMeasurementsParameters,
+                                        final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
+                               estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
     /** Check if Newtonian attraction force model is available.

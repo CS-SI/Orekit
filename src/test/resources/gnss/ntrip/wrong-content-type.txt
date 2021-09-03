@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+Ntrip-Version: Ntrip/2.0
+Ntrip-Flags: st_filter,st_auth,st_match,st_strict,rtsp,plain_rtp
+Server: NTRIP BKG Caster/2.0.34
+Date: Tue, 29 Jan 2019 16:40:58 GMT
+Connection: close
+Content-Type: text/html
+Content-Length: 15
+
+<html></html>

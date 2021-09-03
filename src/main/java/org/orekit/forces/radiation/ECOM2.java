@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,16 @@
  */
 package org.orekit.forces.radiation;
 
-import org.hipparchus.RealFieldElement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.SinCos;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -87,7 +93,7 @@ public class ECOM2 extends AbstractRadiationForceModel {
      * then along eY, then 2*nB following are along eB axis.
      * </p>
      */
-    private final ParameterDriver[] coefficients;
+    private final List<ParameterDriver> coefficients;
 
     /** Sun model. */
     private final ExtendedPVCoordinatesProvider sun;
@@ -105,40 +111,29 @@ public class ECOM2 extends AbstractRadiationForceModel {
         super(sun, equatorialRadius);
         this.nB = nB;
         this.nD = nD;
-        this.coefficients = new ParameterDriver[2 * (nD + nB) + 3];
-        ParameterDriver driver;
+        this.coefficients = new ArrayList<>(2 * (nD + nB) + 3);
+
         // Add parameter along eB axis in alphabetical order
-        driver = new ParameterDriver(ECOM_COEFFICIENT + " B0", value, SCALE, MIN_VALUE, MAX_VALUE);
-        driver.setSelected(true);
-        coefficients[0] = driver;
+        coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " B0", value, SCALE, MIN_VALUE, MAX_VALUE));
         for (int i = 1; i < nB + 1; i++) {
-            driver = new ParameterDriver(ECOM_COEFFICIENT + " Bcos" + Integer.toString(i - 1), value, SCALE, MIN_VALUE, MAX_VALUE);
-            driver.setSelected(true);
-            coefficients[i]  = driver;
+            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Bcos" + Integer.toString(i - 1), value, SCALE, MIN_VALUE, MAX_VALUE));
         }
         for (int i = nB + 1; i < 2 * nB + 1; i++) {
-            driver = new ParameterDriver(ECOM_COEFFICIENT + " Bsin" + Integer.toString(i - (nB + 1)), value, SCALE, MIN_VALUE, MAX_VALUE);
-            driver.setSelected(true);
-            coefficients[i] = driver;
+            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Bsin" + Integer.toString(i - (nB + 1)), value, SCALE, MIN_VALUE, MAX_VALUE));
         }
         // Add driver along eD axis in alphabetical order
-        driver = new ParameterDriver(ECOM_COEFFICIENT + " D0", value, SCALE, MIN_VALUE, MAX_VALUE);
-        driver.setSelected(true);
-        coefficients[2 * nB + 1 ] = driver;
+        coefficients.add(2 * nB + 1, new ParameterDriver(ECOM_COEFFICIENT + " D0", value, SCALE, MIN_VALUE, MAX_VALUE));
         for (int i = 2 * nB + 2; i < 2 * nB + 2 + nD; i++) {
-            driver = new ParameterDriver(ECOM_COEFFICIENT + " Dcos" + Integer.toString(i - (2 * nB + 2)), value, SCALE, MIN_VALUE, MAX_VALUE);
-            driver.setSelected(true);
-            coefficients[i] = driver;
+            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Dcos" + Integer.toString(i - (2 * nB + 2)), value, SCALE, MIN_VALUE, MAX_VALUE));
         }
         for (int i = 2 * nB + 2 + nD; i < 2 * (nB + nD) + 2; i++) {
-            driver = new ParameterDriver(ECOM_COEFFICIENT + " Dsin" + Integer.toString(i - (2 * nB + nD + 2)), value, SCALE, MIN_VALUE, MAX_VALUE);
-            driver.setSelected(true);
-            coefficients[i] = driver;
+            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Dsin" + Integer.toString(i - (2 * nB + nD + 2)), value, SCALE, MIN_VALUE, MAX_VALUE));
         }
         // Add  Y0
-        driver = new ParameterDriver(ECOM_COEFFICIENT + " Y0", value, SCALE, MIN_VALUE, MAX_VALUE);
-        driver.setSelected(true);
-        coefficients[2 * (nB + nD) + 2] = driver;
+        coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Y0", value, SCALE, MIN_VALUE, MAX_VALUE));
+
+        // For ECOM2 model, all parameters are estimated
+        coefficients.forEach(parameter -> parameter.setSelected(true));
         this.sun = sun;
     }
 
@@ -162,12 +157,14 @@ public class ECOM2 extends AbstractRadiationForceModel {
         // Compute B(u)
         double b_u = parameters[0];
         for (int i = 1; i < nB + 1; i++) {
-            b_u += parameters[i] * FastMath.cos(2 * i * delta_u) + parameters[i + nB] * FastMath.sin(2 * i * delta_u);
+            final SinCos sc = FastMath.sinCos(2 * i * delta_u);
+            b_u += parameters[i] * sc.cos() + parameters[i + nB] * sc.sin();
         }
         // Compute D(u)
         double d_u = parameters[2 * nB + 1];
         for (int i = 1; i < nD + 1; i++) {
-            d_u += parameters[2 * nB + 1 + i] * FastMath.cos((2 * i - 1) * delta_u) + parameters[2 * nB + 1 + i + nD] * FastMath.sin((2 * i - 1) * delta_u);
+            final SinCos sc = FastMath.sinCos((2 * i - 1) * delta_u);
+            d_u += parameters[2 * nB + 1 + i] * sc.cos() + parameters[2 * nB + 1 + i + nD] * sc.sin();
         }
         // Return acceleration
         return new Vector3D(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
@@ -175,7 +172,7 @@ public class ECOM2 extends AbstractRadiationForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
         // Build the coordinate system
         final FieldVector3D<T> Z = s.getPVCoordinates().getMomentum().normalize();
         final FieldVector3D<T> sunPos = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition().normalize();
@@ -194,13 +191,15 @@ public class ECOM2 extends AbstractRadiationForceModel {
         // Compute B(u)
         T b_u =  parameters[0];
         for (int i = 1; i < nB + 1; i++) {
-            b_u = b_u.add(FastMath.cos(delta_u.multiply(2 * i)).multiply(parameters[i])).add(FastMath.sin(delta_u.multiply(2 * i)).multiply(parameters[i + nB]));
+            final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i));
+            b_u = b_u.add(sc.cos().multiply(parameters[i])).add(sc.sin().multiply(parameters[i + nB]));
         }
         // Compute D(u)
         T d_u = parameters[2 * nB + 1];
 
         for (int i = 1; i < nD + 1; i++) {
-            d_u =  d_u.add(FastMath.cos(delta_u.multiply(2 * i - 1)).multiply(parameters[2 * nB + 1 + i])).add(FastMath.sin(delta_u.multiply(2 * i - 1)).multiply(parameters[2 * nB + 1 + i + nD]));
+            final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i - 1));
+            d_u =  d_u.add(sc.cos().multiply(parameters[2 * nB + 1 + i])).add(sc.sin().multiply(parameters[2 * nB + 1 + i + nD]));
         }
         // Return the acceleration
         return new FieldVector3D<>(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
@@ -208,8 +207,8 @@ public class ECOM2 extends AbstractRadiationForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return coefficients.clone();
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.unmodifiableList(coefficients);
     }
 
 }

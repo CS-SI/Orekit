@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ package org.orekit.estimation.common;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.attitudes.NadirPointing;
 import org.orekit.attitudes.YawCompensation;
@@ -27,12 +28,23 @@ import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 
 /** Attitude modes.
  * @author Luc Maisonobe
  */
 enum AttitudeMode {
+
+    /** Default law. */
+    DEFAULT_LAW() {
+        /** {@inheritDoc} */
+        @Override
+        public AttitudeProvider getProvider(Frame inertialFrame,
+                                            OneAxisEllipsoid body) {
+            return InertialProvider.of(FramesFactory.getEME2000());
+        }
+    },
 
     /** Nadir pointing with yaw compensation. */
     NADIR_POINTING_WITH_YAW_COMPENSATION() {
@@ -64,6 +76,17 @@ enum AttitudeMode {
         }
     },
 
+    /** Aligned with Local Vertical, Local Horizontal frame, CCSDS definition.
+     * @since 11.0
+     */
+    LOF_ALIGNED_LVLH_CCSDS {
+        /** {@inheritDoc} */
+        @Override
+        public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body) {
+            return new LofOffset(inertialFrame, LOFType.LVLH_CCSDS);
+        }
+    },
+
     /** Aligned with QSW frame. */
     LOF_ALIGNED_QSW {
         /** {@inheritDoc} */
@@ -91,12 +114,25 @@ enum AttitudeMode {
         }
     },
 
-    /** Aligned with Vehicle Velocity, Local Horizontal frame. */
-    LOF_ALIGNED_VVLH {
+    /** aligned with Equinoctial Coordinate System.
+     * @since 11.0
+     */
+    LOF_ALIGNED_EQW {
         /** {@inheritDoc} */
         @Override
         public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body) {
-            return new LofOffset(inertialFrame, LOFType.VVLH);
+            return new LofOffset(inertialFrame, LOFType.EQW);
+        }
+    },
+
+    /** aligned with Transverse Velocity Normal coordinate system.
+     * @since 11.0
+     */
+    LOF_ALIGNED_NTW {
+        /** {@inheritDoc} */
+        @Override
+        public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body) {
+            return new LofOffset(inertialFrame, LOFType.NTW);
         }
     };
 

@@ -1,0 +1,15 @@
+CCSDS_OCM_VERS            = 3.0
+
+COMMENT  This file intentionally has two metadata sections
+
+CREATION_DATE             = 2019-07-23T10:29:31.576Z
+ORIGINATOR                = JPL
+
+META_START
+COMMENT  first metadata section is expected
+EPOCH_TZERO               = 2001-11-06T11:17:33
+META_STOP
+
+META_START
+COMMENT  second metadata section is an error
+META_STOP

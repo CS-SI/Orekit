@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.List;
+
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -199,12 +201,12 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
         return null;
     }
 
     /** {@inheritDoc} */
-    protected ParameterDriver[] getParametersDriversWithoutMu() {
+    protected List<ParameterDriver> getParametersDriversWithoutMu() {
         return spacecraft.getRadiationParametersDrivers();
     }
 
@@ -298,17 +300,18 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
+    protected <T extends CalculusFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
                                                              final FieldAuxiliaryElements<T> auxiliaryElements) {
 
         final Field<T> field = state.getDate().getField();
         final T zero = field.getZero();
         final T one  = field.getOne();
+        final T pi   = one.getPi();
 
         // Default bounds without shadow [-PI, PI]
         final T[] ll = MathArrays.buildArray(field, 2);
-        ll[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
-        ll[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+        ll[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(pi);
+        ll[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(pi);
 
         // Direction cosines of the Sun in the equinoctial frame
         final FieldVector3D<T> sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
@@ -375,16 +378,16 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                 // Must be one entry and one exit or none
                 if (!(entryFound == exitFound)) {
                     // entry or exit found but not both ! In this case, consider there is no eclipse...
-                    ll[0] = zero.add(-FastMath.PI);
-                    ll[1] = zero.add(FastMath.PI);
+                    ll[0] = pi.negate();
+                    ll[1] = pi;
                 }
                 // Quadrature between L at exit and L at entry so Lexit must be lower than Lentry
                 if (ll[0].getReal() > ll[1].getReal()) {
                     // Keep the angles between [-2PI, 2PI]
                     if (ll[1].getReal() < 0.) {
-                        ll[1] = ll[1].add(zero.add(2. * FastMath.PI));
+                        ll[1] = ll[1].add(pi.multiply(2.0));
                     } else {
-                        ll[0] = ll[0].subtract(zero.add(2. * FastMath.PI));
+                        ll[0] = ll[0].subtract(pi.multiply(2.0));
                     }
                 }
             }
@@ -485,7 +488,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param field field of elements
      * @return the number of real roots
      */
-    private <T extends RealFieldElement<T>> int realQuarticRoots(final T[] a, final T[] y,
+    private <T extends CalculusFieldElement<T>> int realQuarticRoots(final T[] a, final T[] y,
                                                                  final Field<T> field) {
 
         final T zero = field.getZero();
@@ -653,7 +656,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param field field of elements
      * @return the number of real roots
      */
-    private <T extends RealFieldElement<T>> int realCubicRoots(final T[] a, final T[] y,
+    private <T extends CalculusFieldElement<T>> int realCubicRoots(final T[] a, final T[] y,
                                                                final Field<T> field) {
 
         if (Precision.equals(a[0].getReal(), 0.)) {
@@ -696,8 +699,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final T sqP = FastMath.sqrt(p).multiply(2.);
 
             y[0] = b.add(sqP.multiply(FastMath.cos(phi)));
-            y[1] = b.subtract(sqP.multiply(FastMath.cos(phi.add(FastMath.PI / 3.))));
-            y[2] = b.subtract(sqP.multiply(FastMath.cos(phi.negate().add(FastMath.PI / 3.))));
+            y[1] = b.subtract(sqP.multiply(FastMath.cos(phi.add(b.getPi().divide(3.)))));
+            y[2] = b.subtract(sqP.multiply(FastMath.cos(phi.negate().add(b.getPi().divide(3.)))));
 
             return 3;
 
@@ -780,7 +783,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param y the real roots sorted in descending order
      * @return the number of real roots
      */
-    private <T extends RealFieldElement<T>> int realQuadraticRoots(final T[] a, final T[] y) {
+    private <T extends CalculusFieldElement<T>> int realQuadraticRoots(final T[] a, final T[] y) {
 
         if (Precision.equals(a[0].getReal(), 0.)) {
             // Degenerate quadratic

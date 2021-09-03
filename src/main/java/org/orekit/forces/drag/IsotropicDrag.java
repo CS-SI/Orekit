@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,10 @@
  */
 package org.orekit.forces.drag;
 
-import org.hipparchus.RealFieldElement;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -48,7 +51,7 @@ public class IsotropicDrag implements DragSensitive {
     private final double SCALE = FastMath.scalb(1.0, -3);
 
     /** Drivers for drag coefficient parameter. */
-    private final ParameterDriver[] dragParametersDrivers;
+    private final ParameterDriver dragParametersDrivers;
 
     /** Cross section (m²). */
     private final double crossSection;
@@ -69,10 +72,9 @@ public class IsotropicDrag implements DragSensitive {
      */
     public IsotropicDrag(final double crossSection, final double dragCoeff,
                          final double dragCoeffMin, final double dragCoeffMax) {
-        this.dragParametersDrivers = new ParameterDriver[1];
         // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
         // the single coefficient may be arbitrary, and even negative
-        dragParametersDrivers[0]   = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
+        this.dragParametersDrivers = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
                                                          dragCoeff, SCALE,
                                                          dragCoeffMin, dragCoeffMax);
         this.crossSection = crossSection;
@@ -80,8 +82,8 @@ public class IsotropicDrag implements DragSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getDragParametersDrivers() {
-        return dragParametersDrivers.clone();
+    public List<ParameterDriver> getDragParametersDrivers() {
+        return Collections.singletonList(dragParametersDrivers);
     }
 
     /** {@inheritDoc} */
@@ -97,7 +99,7 @@ public class IsotropicDrag implements DragSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
         dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final T density,

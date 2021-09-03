@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,6 +46,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -315,10 +316,10 @@ public class AdapterPropagatorTest {
                                                                            gravityField));
         }
 
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(t0.shiftedBy(nbOrbits * orbit.getKeplerianPeriod()));
 
-        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // both the initial propagator and generated ephemeris manage one of the two
         // additional states, but they also contain unmanaged copies of the other one

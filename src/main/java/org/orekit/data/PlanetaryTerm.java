@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Class for planetary only terms.
  * @author Luc Maisonobe
@@ -91,7 +91,7 @@ class PlanetaryTerm extends SeriesTerm {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
+    protected <T extends CalculusFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
         return elements.getLMe().multiply(cMe).
                add(elements.getLVe().multiply(cVe)).
                add(elements.getLE().multiply(cE)).
@@ -104,7 +104,7 @@ class PlanetaryTerm extends SeriesTerm {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T argumentDerivative(final FieldBodiesElements<T> elements) {
+    protected <T extends CalculusFieldElement<T>> T argumentDerivative(final FieldBodiesElements<T> elements) {
         return elements.getLMeDot().multiply(cMe).
                add(elements.getLVeDot().multiply(cVe)).
                add(elements.getLEDot().multiply(cE)).

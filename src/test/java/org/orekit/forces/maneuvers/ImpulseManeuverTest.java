@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,7 +71,7 @@ public class ImpulseManeuverTest {
         final double vApo = FastMath.sqrt(mu * (1 - e) / (a * (1 + e)));
         double dv = 0.99 * FastMath.tan(i) * vApo;
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit,
-                                                                 new LofOffset(initialOrbit.getFrame(), LOFType.VVLH));
+                                                                 new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS));
         propagator.addEventDetector(new ImpulseManeuver<NodeDetector>(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
                                                                       new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -105,8 +106,9 @@ abstract class SDP4  extends TLEPropagator {
         xl = xll + omgadf + xnode;
 
         // Dundee change:  Reset cosio,  sinio for new xinc:
-        cosi0 = FastMath.cos(xinc);
-        sini0 = FastMath.sin(xinc);
+        final SinCos scI0 = FastMath.sinCos(xinc);
+        cosi0 = scI0.cos();
+        sini0 = scI0.sin();
         e = em;
         i = xinc;
         omega = omgadf;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,11 +85,7 @@ public class OrekitStepHandlerTest {
 
         final Propagator kepler = new KeplerianPropagator(initialOrbit);
 
-        kepler.setMasterMode(fixedStepSize, new OrekitFixedStepHandler() {
-            @Override
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
-            }
-        });
+        kepler.setStepHandler(fixedStepSize, currentState -> {});
 
         kepler.propagate(initialDate.shiftedBy(propagationTime));
 
@@ -135,20 +131,17 @@ public class OrekitStepHandlerTest {
         // action and verify
         Queue<Boolean> expected =
                 new ArrayDeque<>(Arrays.asList(false, false, false, true, true, false));
-        propagator.setMasterMode(new OrekitStepHandler() {
-            @Override
-            public void handleStep(OrekitStepInterpolator interpolator, boolean isLast) {
-                assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
-                assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
-            }
+        propagator.setStepHandler(interpolator -> {
+            assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
+            assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
         });
         final AbsoluteDate end = date.shiftedBy(120);
         assertEquals(end, propagator.propagate(end).getDate());
     }
 
     @Before
-    public void setUp()
-        {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
+
 }

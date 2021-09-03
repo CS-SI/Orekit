@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ public enum OrekitMessages implements Localizable {
 
     // CHECKSTYLE: stop JavadocVariable check
 
-    INTERNAL_ERROR("internal error, please notify development team by creating an issue at {0}"),
+    INTERNAL_ERROR("internal error, please notify development team by creating a new topic at {0}"),
     ALTITUDE_BELOW_ALLOWED_THRESHOLD("altitude ({0} m) is below the {1} m allowed threshold"),
     POINT_INSIDE_ELLIPSOID("point is inside ellipsoid"),
     TRAJECTORY_INSIDE_BRILLOUIN_SPHERE("trajectory inside the Brillouin sphere (r = {0})"),
@@ -55,6 +55,8 @@ public enum OrekitMessages implements Localizable {
     ALMOST_CRITICALLY_INCLINED_ORBIT("almost critically inclined orbit (i = {0} degrees)"),
     UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS(
             "unable to compute Eckstein-Hechler mean parameters after {0} iterations"),
+    UNABLE_TO_COMPUTE_TLE(
+                    "unable to compute TLE after {0} iterations"),
     NULL_PARENT_FOR_FRAME("null parent for frame {0}"),
     FRAME_ALREADY_ATTACHED("frame {0} is already attached to frame {1}"),
     FRAME_NOT_ATTACHED("frame {0} is not attached to the main frames tree"),
@@ -62,7 +64,7 @@ public enum OrekitMessages implements Localizable {
     FRAME_ANCESTOR_OF_NEITHER_FRAME("frame {0} is an ancestor of neither frame {1} nor {2}"),
     FRAME_NO_NTH_ANCESTOR("frame {0} has depth {1}, it cannot have an ancestor {2} levels above"),
     NO_SUCH_ITRF_FRAME("ITRF frame {0} not found"),
-    UNSUPPORTED_LOCAL_ORBITAL_FRAME("unsupported local orbital frame, supported types: {0} and {1}"),
+    UNSUPPORTED_LOCAL_ORBITAL_FRAME("unsupported local orbital frame {0}"),
     NON_PSEUDO_INERTIAL_FRAME("non pseudo-inertial frame \"{0}\""),
     DATA_ROOT_DIRECTORY_DOES_NOT_EXIST("data root directory {0} does not exist"),
     NOT_A_DIRECTORY("{0} is not a directory"),
@@ -70,10 +72,12 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_FIND_RESOURCE("unable to find resource {0} in classpath"),
     NO_EARTH_ORIENTATION_PARAMETERS_LOADED("no Earth Orientation Parameters loaded"),
     MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES("missing Earth Orientation Parameters between {0} and {1}"),
+    MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP("missing Earth Orientation Parameters between {0} and {1}, gap is {2,number,0.0##############E0} s"),
     NO_EARTH_ORIENTATION_PARAMETERS("missing Earth Orientation Parameters"),
     NOT_A_SUPPORTED_IERS_DATA_FILE("file {0} is not a supported IERS data file"),
     INCONSISTENT_DATES_IN_IERS_FILE("inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}"),
     UNEXPECTED_DATA_AFTER_LINE_IN_FILE("unexpected data after line {0} in file {1}: {2}"),
+    UNEXPECTED_DATA_AT_LINE_IN_FILE("unexpected data at line {0} in file {1}"),
     NON_CHRONOLOGICAL_DATES_IN_FILE("non-chronological dates in file {0}, line {1}"),
     NO_IERS_UTC_TAI_HISTORY_DATA_LOADED("no IERS UTC-TAI history data loaded"),
     NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE("no entries found in IERS UTC-TAI history file {0}"),
@@ -81,9 +85,11 @@ public enum OrekitMessages implements Localizable {
     CANNOT_PARSE_BOTH_TAU_AND_GAMMA("cannot parse both τ and γ from the same Poissons series file"),
     UNEXPECTED_END_OF_FILE_AFTER_LINE("unexpected end of file {0} (after line {1})"),
     UNABLE_TO_PARSE_LINE_IN_FILE("unable to parse line {0} of file {1}:\n{2}"),
+    UNABLE_TO_PARSE_ELEMENT_IN_FILE("unable to parse element {0} at line {1}, file {2}"),
     UNABLE_TO_FIND_FILE("unable to find file {0}"),
     SPACECRAFT_MASS_BECOMES_NEGATIVE("spacecraft mass becomes negative: {0} kg"),
-    POSITIVE_FLOW_RATE("positive flow rate (q: {0})"), NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
+    POSITIVE_FLOW_RATE("positive flow rate (q: {0})"),
+    NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
     GRAVITY_FIELD_NORMALIZATION_UNDERFLOW("gravity field normalization underflow for degree {0} and order {1}"),
     NO_OCEAN_TIDE_DATA_LOADED("no ocean tide data loaded"),
     OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS("ocean tide data file {0} limited to degree {1} and order {2}"),
@@ -95,7 +101,7 @@ public enum OrekitMessages implements Localizable {
     MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE("missing gravity field coefficient {0}({1}, {2}) in file {3}"),
     TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD("too large degree (n = {0}, potential maximal degree is {1})"),
     TOO_LARGE_ORDER_FOR_GRAVITY_FIELD("too large order (m = {0}, potential maximal order is {1})"),
-    SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD("several reference dates ({0} and {1}) found in gravity field file {2}"),
+    SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD("several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}"),
     NO_TLE_FOR_OBJECT("no TLE data available for object {0}"),
     NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE(
             "no TLE data available for launch year {0}, launch number {1}, launch piece {2}"),
@@ -103,16 +109,18 @@ public enum OrekitMessages implements Localizable {
     MISSING_SECOND_TLE_LINE("expected a second TLE line after line {0}:\n{0}: \"{1}\""),
     TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT("TLE lines do not refer to the same object:\n{0}\n{1}"),
     TLE_INVALID_PARAMETER("invalid TLE parameter for object {0}: {1} = {2}"),
-    TLE_INVALID_PARAMETER_RANGE("invalid TLE parameter {0}: {1} not in range [{2}, {3}]"),
     TLE_CHECKSUM_ERROR("wrong checksum of TLE line {0}, expected {1} but got {2} ({3})"),
     NO_TLE_DATA_AVAILABLE("no TLE data available"),
     NOT_POSITIVE_SPACECRAFT_MASS("spacecraft mass is not positive: {0} kg"),
     TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL("too large eccentricity for propagation model: e = {0}"),
     NO_SOLAR_ACTIVITY_AT_DATE("no solar activity available at {0}, data available only in range [{1}, {2}]"),
-    NON_EXISTENT_MONTH("non-existent month {0}"), NON_EXISTENT_YEAR_MONTH_DAY("non-existent date {0}-{1}-{2}"),
-    NON_EXISTENT_WEEK_DATE("non-existent week date {0}-W{1}-{2}"), NON_EXISTENT_DATE("non-existent date {0}"),
+    NON_EXISTENT_MONTH("non-existent month {0}"),
+    NON_EXISTENT_YEAR_MONTH_DAY("non-existent date {0}-{1}-{2}"),
+    NON_EXISTENT_WEEK_DATE("non-existent week date {0}-W{1}-{2}"),
+    NON_EXISTENT_DATE("non-existent date {0}"),
     NON_EXISTENT_DAY_NUMBER_IN_YEAR("no day number {0} in year {1}"),
-    NON_EXISTENT_HMS_TIME("non-existent time {0}:{1}:{2}"), NON_EXISTENT_TIME("non-existent time {0}"),
+    NON_EXISTENT_HMS_TIME("non-existent time {0}:{1}:{2}"),
+    NON_EXISTENT_TIME("non-existent time {0}"),
     OUT_OF_RANGE_SECONDS_NUMBER("out of range seconds number: {0}"),
     OUT_OF_RANGE_SECONDS_NUMBER_DETAIL("out of range seconds number: {0} is not in [{1}, {2})"),
     ANGLE_TYPE_NOT_SUPPORTED("angle type not supported, supported angles: {0}, {1} and {2}"),
@@ -123,9 +131,8 @@ public enum OrekitMessages implements Localizable {
     ORBIT_AND_ATTITUDE_DATES_MISMATCH("orbit date ({0}) does not match attitude date ({1})"),
     FRAMES_MISMATCH("frame {0} does not match frame {1}"),
     INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION("initial state not specified for orbit propagation"),
-    PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE("propagator is not in ephemeris generation mode"),
     EVENT_DATE_TOO_CLOSE(
-            "event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added"),
+            "target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added"),
     UNABLE_TO_READ_JPL_HEADER("unable to read header record from JPL ephemerides binary file {0}"),
     INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES(
             "inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})"),
@@ -138,11 +145,14 @@ public enum OrekitMessages implements Localizable {
     NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND("no JPL ephemerides binary files found"),
     OUT_OF_RANGE_BODY_EPHEMERIDES_DATE("out of range date for {0} ephemerides: {1}"),
     OUT_OF_RANGE_EPHEMERIDES_DATE("out of range date for ephemerides: {0}, [{1}, {2}]"),
+    OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE("out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]"),
+    OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER("out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]"),
     UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH(
             "unexpected two elevation values: {0} and {1}, for one azimuth: {2}"),
     UNSUPPORTED_PARAMETER_NAME("unsupported parameter name {0}, supported names: {1}"),
     TOO_SMALL_SCALE_FOR_PARAMETER("scale factor for parameter {0} is too small: {1}"),
-    UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""), UNKNOWN_MONTH("unknown month \"{0}\""),
+    UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""),
+    UNKNOWN_MONTH("unknown month \"{0}\""),
     SINGULAR_JACOBIAN_FOR_ORBIT_TYPE("Jacobian matrix for type {0} is singular with current orbit"),
     STATE_JACOBIAN_NOT_INITIALIZED("state Jacobian has not been initialized yet"),
     STATE_JACOBIAN_NOT_6X6("state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix"),
@@ -156,28 +166,27 @@ public enum OrekitMessages implements Localizable {
     CCSDS_DATE_INVALID_PREAMBLE_FIELD("invalid preamble field in CCSDS date: {0}"),
     CCSDS_DATE_INVALID_LENGTH_TIME_FIELD("invalid time field length in CCSDS date: {0}, expected {1}"),
     CCSDS_DATE_MISSING_AGENCY_EPOCH("missing agency epoch in CCSDS date"),
+    CCSDS_MISSING_KEYWORD("missing mandatory key {0} in CCSDS file {1}"),
+    CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION("key {0} is not allowed in format version {1}"),
     CCSDS_UNEXPECTED_KEYWORD("unexpected keyword in CCSDS line number {0} of file {1}:\n{2}"),
     CCSDS_UNKNOWN_GM("the central body gravitational coefficient cannot be retrieved from the ODM"),
     CCSDS_UNKNOWN_SPACECRAFT_MASS("there is no spacecraft mass associated with this ODM file"),
     CCSDS_UNKNOWN_CONVENTIONS("no IERS conventions have been set before parsing"),
-    CCSDS_INVALID_FRAME("frame {0} is not valid in this ODM file context"),
-    CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the ephemeris blocks: {0} ≠ {1}"),
+    CCSDS_INVALID_FRAME("frame {0} is not valid in this CCSDS file context"),
+    CCSDS_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems: {0} ≠ {1}"),
     CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED(
             "use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit"),
-    CCSDS_NO_CORRESPONDING_TIME_SCALE("the CCSDS time system {0} has no corresponding Orekit TimeScale."),
-    CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS("Inconsistent time systems in the observations blocks: {0} ≠ {1}"),
-    CCSDS_TDM_INCONSISTENT_DATA_LINE("Inconsistent data line in TDM file at line {0} of file {1}.\n" +
-            "A TDM data line should be as follows \"keyword = epoch value\".\n" + "Whereas read data line is: {2}"),
-    CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK("Inconsistent XML observation block at line {0} of TDM file {1}.\n" +
-            "A TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n" +
-            "\t\t<KEYWORD>value</KEYWORD>\n\t</observation>"),
     CCSDS_TDM_KEYWORD_NOT_FOUND("No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}"),
-    CCSDS_TIME_SYSTEM_NOT_READ_YET("Parameter {0} needs a time system to be interpreted"),
-    CCSDS_TDM_UNKNOWN_FORMAT("TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML"),
+    CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER("no Range Units converter configured for parsing Tracking Data Message"),
+    CCSDS_TIME_SYSTEM_NOT_READ_YET("Time system should have already been set before line {0} of file {1}"),
     CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the attitude blocks: {0} ≠ {1}"),
-    CCSDS_AEM_NULL_ATTITUDE_TYPE("invalid attitude type {0}"),
     CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED("attitude type {0} in CCSDS AEM files is not implemented in Orekit"),
-    CCSDS_AEM_INVALID_ROTATION_SEQUENCE("the rotation sequence of the Euler angles {0} is invalid"),
+    CCSDS_INVALID_ROTATION_SEQUENCE("invalid rotation sequence {0} at line {1} of file {2}"),
+    CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE("element set type {0} ({1}) is not supported yet"),
+    CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL("retrograde factor not supported in element set {0}"),
+    CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS("element set type {0} ({1}) expects {2} elements"),
+    CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS("wrong number of units for maneuver {0}"),
+    CCSDS_MANEUVER_MISSING_TIME("missing time field for maneuver {0}"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
@@ -188,6 +197,8 @@ public enum OrekitMessages implements Localizable {
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
     SP3_NUMBER_OF_EPOCH_MISMATCH("found {0} epochs in file {1}, expected {2}"),
     SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
+    CLOCK_FILE_UNSUPPORTED_VERSION("unsupported clock file version {0}"),
+    NAVIGATION_FILE_UNSUPPORTED_VERSION("unsupported navigation messages file version {0}"),
     NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}"),
     UNSUPPORTED_TIME_TRANSFORM(
             "geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined"),
@@ -196,10 +207,10 @@ public enum OrekitMessages implements Localizable {
     NOT_ENOUGH_DATA_FOR_INTERPOLATION("not enough data for interpolation (sample size = {0})"),
     NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
     NO_CACHED_ENTRIES("no cached entries"),
-    NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1}"),
+    NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s"),
     NO_DATA_GENERATED("no data generated around date: {0}"),
-    UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}, data requested for {1}"),
-    UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}, data requested for {1}"),
+    UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before"),
+    UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after"),
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY(
             "unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
@@ -220,21 +231,26 @@ public enum OrekitMessages implements Localizable {
     NOT_ENOUGH_GNSS_FOR_DOP("only {0} GNSS orbits are provided while {1} are needed to compute the DOP"),
     NOT_ENOUGH_PROPAGATORS(
             "Creating an aggregate propagator requires at least one constituent propagator, but none were provided."),
-    NULL_ARGUMENT("argument {0} cannot be null"), VALUE_NOT_FOUND("value {0} not found in {1}"),
-    EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects"),
+    NOT_ENOUGH_ATTITUDE_PROVIDERS(
+                    "Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided."),
+    NULL_ARGUMENT("argument {0} cannot be null"),
+    VALUE_NOT_FOUND("value {0} not found in {1}"),
     KLOBUCHAR_ALPHA_BETA_NOT_LOADED("Klobuchar coefficients α or β could not be loaded from {0}"),
     KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE("Klobuchar coefficients α or β not available for date {0}"),
     NO_KLOBUCHAR_ALPHA_BETA_IN_FILE("file {0} does not contain Klobuchar coefficients α or β"),
     NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}"),
     STATION_NOT_FOUND("station {0} not found, known stations: {1}"),
     UNKNOWN_SATELLITE_SYSTEM("unknown satellite system {0}"),
+    UNKNOWN_TIME_SYSTEM("unknown time system {0}"),
+    UNKNOWN_CLOCK_DATA_TYPE("unknown clock data type {0}"),
     UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
     UNSUPPORTED_FREQUENCY_FOR_ANTENNA("frequency {0} is not supported by antenna {1}"),
     CANNOT_FIND_SATELLITE_IN_SYSTEM("cannot find satellite {0} in satellite system {1}"),
     UNKNOWN_RINEX_FREQUENCY("unknown RINEX frequency {0} in file {1}, line {2}"),
     MISMATCHED_FREQUENCIES("mismatched frequencies in file {0}, line {1} (expected {2}, got {3})"),
     WRONG_COLUMNS_NUMBER("wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)"),
-    UNSUPPORTED_FILE_FORMAT("unsupported format for file {0}"), INCOMPLETE_HEADER("incomplete header in file {0}"),
+    UNSUPPORTED_FILE_FORMAT("unsupported format for file {0}"),
+    INCOMPLETE_HEADER("incomplete header in file {0}"),
     INCONSISTENT_NUMBER_OF_SATS(
             "inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}"),
     INCONSISTENT_SATELLITE_SYSTEM(
@@ -242,7 +258,8 @@ public enum OrekitMessages implements Localizable {
     NO_PROPAGATOR_CONFIGURED("no propagator configured"),
     DIMENSION_INCONSISTENT_WITH_PARAMETERS("dimension {0} is inconsistent with parameters list: {1}"),
     NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE("file {0} is not a supported Unix-compressed file"),
-    UNEXPECTED_END_OF_FILE("unexpected end of file {0}"), CORRUPTED_FILE("file {0} is corrupted"),
+    UNEXPECTED_END_OF_FILE("unexpected end of file {0}"),
+    CORRUPTED_FILE("file {0} is corrupted"),
     VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED("Vienna coefficients ah or aw or zh or zw could not be loaded from {0}"),
     VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE(
             "Vienna coefficients ah or aw or zh or zw not available for date {0}"),
@@ -272,10 +289,11 @@ public enum OrekitMessages implements Localizable {
             "invalid measurement types {0} and {1} for the combination of measurements {2}"),
     INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS(
             "frequencies {0} and {1} are incompatibles for the {2} combination"),
-    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates"),
+    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations are not in chronological order: {0} is {2,number,0.0##############E0} s after {1}"),
     EXCEPTIONAL_DATA_CONTEXT(
             "Use of the ExceptionalDataContext detected. This is typically used to detect developer errors."),
-    NON_DIFFERENT_DATES_FOR_OBSERVATIONS("observations {0}, {1} and {2} must have different dates"),
+    NON_DIFFERENT_DATES_FOR_OBSERVATIONS(
+            "Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)"),
     NON_COPLANAR_POINTS("observations are not in the same plane"),
     INVALID_PARAMETER_RANGE("invalid parameter {0}: {1} not in range [{2}, {3}]"),
     PARAMETER_NOT_SET("The parameter {0} should not be null in {1}"),
@@ -285,7 +303,31 @@ public enum OrekitMessages implements Localizable {
     CPF_UNEXPECTED_END_OF_FILE("Unexpected end of CPF file (after line {0})"),
     UNEXPECTED_FORMAT_FOR_ILRS_FILE("Unexpected file format. Must be {0} but is {1}"),
     CRD_UNEXPECTED_END_OF_FILE("Unexpected end of CRD file (after line {0})"),
-    INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header");
+    INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header"),
+    END_OF_ENCODED_MESSAGE("end of encoded message reached"),
+    TOO_LARGE_DATA_TYPE("too large data type ({0} bits)"),
+    UNKNOWN_ENCODED_MESSAGE_NUMBER("unknown encoded message number {0}"),
+    UNKNOWN_AUTHENTICATION_METHOD("unknown authentication method: {0}"),
+    UNKNOWN_CARRIER_PHASE_CODE("unknown carrier phase code: {0}"),
+    UNKNOWN_DATA_FORMAT("unknown data format: {0}"),
+    UNKNOWN_NAVIGATION_SYSTEM("unknown navigation system: {0}"),
+    STREAM_REQUIRES_NMEA_FIX("data stream {0} requires a NMEA fix data"),
+    FAILED_AUTHENTICATION("failed authentication for mountpoint {0}"),
+    CONNECTION_ERROR("error connecting to {0}: {1}"),
+    UNEXPECTED_CONTENT_TYPE("unexpected content type {0}"),
+    CANNOT_PARSE_GNSS_DATA("cannot parse GNSS data from {0}"),
+    UNKNOWN_HOST("unknown host {0}"),
+    SOURCETABLE_PARSE_ERROR("error parsing sourcetable line {0} from {1}: {2}"),
+    CANNOT_PARSE_SOURCETABLE("cannot parse sourcetable from {0}"),
+    MOUNPOINT_ALREADY_CONNECTED("mount point {0} is already connected"),
+    MISSING_HEADER("missing header from {0}: {1}"),
+    NOT_VALID_INTERNATIONAL_DESIGNATOR("{0} is not a valid international designator"),
+    UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized"),
+    UNKNOWN_UNIT("unknown unit {0}"),
+    INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
+    MISSING_VELOCITY("missing velocity data"),
+    ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error"),
+    FIND_ROOT("{0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})");
 
     // CHECKSTYLE: resume JavadocVariable check
 
@@ -315,8 +357,8 @@ public enum OrekitMessages implements Localizable {
             final ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale, new UTF8Control());
             if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
                 final String translated = bundle.getString(name());
-                if ((translated != null) && (translated.length() > 0) &&
-                        (!translated.toLowerCase().contains("missing translation"))) {
+                if (translated != null && translated.length() > 0 &&
+                        !translated.toLowerCase().contains("missing translation")) {
                     // the value of the resource is the translated format
                     return translated;
                 }

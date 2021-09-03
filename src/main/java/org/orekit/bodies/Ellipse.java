@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.frames.Frame;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -158,7 +159,8 @@ public class Ellipse implements Serializable {
      * @return ellipse point at theta, in underlying ellipsoid frame
      */
     public Vector3D pointAt(final double theta) {
-        return toSpace(new Vector2D(a * FastMath.cos(theta), b * FastMath.sin(theta)));
+        final SinCos scTheta = FastMath.sinCos(theta);
+        return toSpace(new Vector2D(a * scTheta.cos(), b * scTheta.sin()));
     }
 
     /** Create a point from its ellipse-relative coordinates.

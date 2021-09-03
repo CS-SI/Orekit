@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -27,7 +27,7 @@ import org.junit.Test;
 public class FieldHansenThirdBodyLinearTest {
     
 
-    private static <T extends RealFieldElement<T>> T hansen(int n, int s, T chi, final Field<T> field) {
+    private static <T extends CalculusFieldElement<T>> T hansen(int n, int s, T chi, final Field<T> field) {
         final T zero = field.getZero();
         if (n == 0 && s == 0) {
             return zero.add(1.0);
@@ -105,7 +105,7 @@ public class FieldHansenThirdBodyLinearTest {
         doTestLinearVsRecursive(zero.add(0.9), zero.add(8.9e-16), Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestLinearVsRecursive(final T ecc, final T tol, final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestLinearVsRecursive(final T ecc, final T tol, final Field<T> field) {
         final T zero = field.getZero();
         final int N = 22;
         final T chi = FastMath.sqrt(ecc.multiply(ecc.negate()).add(1.)).reciprocal();

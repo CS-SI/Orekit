@@ -1,4 +1,4 @@
-' Copyright 2002-2020 CS GROUP
+' Copyright 2002-2021 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,12 +25,19 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit.propagation #ECEBD8 {
 
+    interface Propagator {
+      +void addEventDetector(EventDetector detector)
+      +Collection<EventDetector> getEventsDetectors()
+      +void clearEventsDetectors()
+    }
+
     package events #DDEBD8 {
 
-      package handlers #CEEBD8 {
+      package handlers #CBDBC8 {
 
         interface "EventHandler<T extends EventDetector>" as EventHandler_T_ {
           +init(SpacecraftState s0, AbsoluteDate target)
@@ -92,6 +99,7 @@
       EventDetector <--* "1" EventSlopeFilter 
       EventSlopeFilter "1" *--> FilterType
 
+      Propagator "1" o--> "*" EventDetector  : detectors
       EventDetector <--* "1" EventEnablingPredicateFilter 
       EventEnablingPredicateFilter "1" *--> EnablingPredicate
 
@@ -114,13 +122,6 @@
       EventHandler_T_ "1" <--o AbstractDetector_T_ : handler
 
     }
-
-    interface Propagator {
-      +void addEventDetector(EventDetector detector)
-      +Collection<EventDetector> getEventsDetectors()
-      +void clearEventsDetectors()
-    }
-    EventDetector "*" <--o "1" Propagator : detectors
 
   }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -38,7 +37,7 @@ import org.orekit.errors.OrekitMessages;
  * files are checked for loading.
  * </p>
  * <p>
- * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * All {@link FiltersManager#addFilter(DataFilter) registered}
  * {@link DataFilter filters} are applied.
  * </p>
  * <p>
@@ -64,13 +63,6 @@ public class DirectoryCrawler implements DataProvider {
             throw new OrekitException(OrekitMessages.NOT_A_DIRECTORY, root.getAbsolutePath());
         }
         this.root = root;
-    }
-
-    @Override
-    @Deprecated
-    @DefaultDataContext
-    public boolean feed(final Pattern supported, final DataLoader visitor) {
-        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
     }
 
     /** {@inheritDoc} */
@@ -126,12 +118,12 @@ public class DirectoryCrawler implements DataProvider {
                     } else {
 
                         // apply all registered filters
-                        NamedData data = new NamedData(file.getName(), () -> new FileInputStream(file));
-                        data = manager.applyAllFilters(data);
+                        DataSource data = new DataSource(file.getName(), () -> new FileInputStream(file));
+                        data = manager.getFiltersManager().applyRelevantFilters(data);
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file
-                            try (InputStream input = data.getStreamOpener().openStream()) {
+                            try (InputStream input = data.getOpener().openStreamOnce()) {
                                 visitor.loadData(input, file.getPath());
                                 loaded = true;
                             }

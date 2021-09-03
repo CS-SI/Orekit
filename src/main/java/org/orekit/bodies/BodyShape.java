@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -72,7 +72,7 @@ public interface BodyShape extends Serializable {
      * not intersect the surface
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(FieldLine<T> line, FieldVector3D<T> close,
+    <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(FieldLine<T> line, FieldVector3D<T> close,
                                                                                Frame frame, FieldAbsoluteDate<T> date);
 
     /** Project a point to the ground.
@@ -112,7 +112,7 @@ public interface BodyShape extends Serializable {
      * @return point at the same location but as a surface-relative point
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(FieldVector3D<T> point, Frame frame,
+    <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> transform(FieldVector3D<T> point, Frame frame,
                                                                     FieldAbsoluteDate<T> date);
 
     /** Transform a surface-relative point to a Cartesian point.
@@ -127,6 +127,6 @@ public interface BodyShape extends Serializable {
      * @return point at the same location but as a Cartesian point
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> transform(FieldGeodeticPoint<T> point);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> transform(FieldGeodeticPoint<T> point);
 
 }

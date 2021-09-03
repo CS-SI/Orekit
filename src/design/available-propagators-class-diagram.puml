@@ -1,4 +1,4 @@
-' Copyright 2002-2020 CS GROUP
+' Copyright 2002-2021 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
@@ -36,12 +37,10 @@
  
     package propagation #DDEBD8 {
       interface Propagator {
-        +int getMode()
-        +void setSlaveMode()
-        +void setMasterMode(double h, OrekitFixedStepHandler handler)
-        +void setMasterMode(OrekitStepHandler handler)
-        +void setEphemerisMode()
-        +BoundedPropagator getGeneratedEphemeris()
+        +StepHandlerMultiplexer getMultiplexer()
+        +void clearStepHandlers()
+        +void setStepHandler(double h, OrekitFixedStepHandler handler)
+        +void setStepHandler(OrekitStepHandler handler)
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
         +void addEventDetector(EventDetector detector)
@@ -66,7 +65,7 @@
       Propagator            <|.. AbstractPropagator
       Propagator            <|.. BoundedPropagator
 
-      package analytical #ECEBD8 {
+      package analytical #CBDBC8 {
 
         abstract class AbstractAnalyticalPropagator {
           +PVCoordinatesProvider getPvProvider()
@@ -81,17 +80,17 @@
         AbstractAnalyticalPropagator <|-- Ephemeris
         BoundedPropagator            <|.. Ephemeris
 
-        package tle #DDEBD8 {
+        package tle #CCCCC7 {
           AbstractAnalyticalPropagator <|-- TLEPropagator
         }
 
-        package gnss #DDEBD8 {
+        package gnss #CCCCC7 {
           AbstractAnalyticalPropagator <|-- GPSPropagator
         }
 
      }
 
-     package integration #ECEBD8 {
+     package integration #CBDBC8 {
 
        abstract class AbstractIntegratedPropagator {
          +void setIntegrator(FirstOrderIntegrator integrator)
@@ -106,15 +105,15 @@
 
      }
 
-     package semianalytical #ECEBD8 {
+     package semianalytical #CBDBC8 {
 
-       package dsst #DDEBD8 {
+       package dsst #CCCCC7 {
          DSSTPropagator --|> AbstractIntegratedPropagator
        }
 
      }
 
-     package numerical #ECEBD8 {
+     package numerical #CBDBC8 {
        NumericalPropagator --|> AbstractIntegratedPropagator
      }
 

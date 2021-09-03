@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -87,18 +87,18 @@ public interface ThrustPropulsionModel extends PropulsionModel {
     /** Get the thrust vector in spacecraft frame (N).
      * @param s current spacecraft state
      * @param parameters propulsion model parameters
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return thrust vector in spacecraft frame (N)
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> getThrustVector(FieldSpacecraftState<T> s, T[] parameters);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(FieldSpacecraftState<T> s, T[] parameters);
 
     /** Get the flow rate (kg/s).
      * @param s current spacecraft state
      * @param parameters propulsion model parameters
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return flow rate (kg/s)
      */
-    <T extends RealFieldElement<T>> T getFlowRate(FieldSpacecraftState<T> s, T[] parameters);
+    <T extends CalculusFieldElement<T>> T getFlowRate(FieldSpacecraftState<T> s, T[] parameters);
 
     /** {@inheritDoc}
      * Acceleration is computed here using the thrust vector in S/C frame.
@@ -124,7 +124,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * Acceleration is computed here using the thrust vector in S/C frame.
      */
     @Override
-    default <T extends RealFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
+    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
                                                                             final FieldAttitude<T> maneuverAttitude,
                                                                             T[] parameters) {
         // Extract thrust & direction from thrust vector
@@ -152,7 +152,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * Mass derivatives are directly extracted here from the flow rate value.
      */
     @Override
-    default <T extends RealFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s, T[] parameters) {
+    default <T extends CalculusFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s, T[] parameters) {
         return getFlowRate(s, parameters);
     }
 

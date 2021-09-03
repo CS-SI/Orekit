@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -50,7 +51,7 @@ public class NegateDetectorTest {
 
         //verify
         Mockito.verify(a).init(s, t);
-        Mockito.verify(c).init(s, t);
+        Mockito.verify(c).init(s, t, detector);
     }
 
     /**
@@ -65,10 +66,10 @@ public class NegateDetectorTest {
 
         // verify + to -
         Mockito.when(a.g(s)).thenReturn(1.0);
-        Assert.assertThat(detector.g(s), CoreMatchers.is(-1.0));
+        MatcherAssert.assertThat(detector.g(s), CoreMatchers.is(-1.0));
         // verify - to +
         Mockito.when(a.g(s)).thenReturn(-1.0);
-        Assert.assertThat(detector.g(s), CoreMatchers.is(1.0));
+        MatcherAssert.assertThat(detector.g(s), CoreMatchers.is(1.0));
     }
 
     /** Check a with___ method. */
@@ -82,7 +83,7 @@ public class NegateDetectorTest {
         NegateDetector actual = detector.withMaxCheck(100);
 
         //verify
-        Assert.assertThat(actual.getMaxCheckInterval(), CoreMatchers.is(100.0));
+        MatcherAssert.assertThat(actual.getMaxCheckInterval(), CoreMatchers.is(100.0));
         Assert.assertTrue(actual.getOriginal() == a);
     }
 }

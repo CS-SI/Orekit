@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,11 +37,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * later retrieval.
  *
  * <p>
- * Instances of this class are built and then must be fed with the results
- * provided by {@link org.orekit.propagation.Propagator Propagator} objects
- * configured in {@link org.orekit.propagation.Propagator#setEphemerisMode()
- * ephemeris generation mode}. Once propagation is o, random access to any
- * intermediate state of the orbit throughout the propagation range is possible.
+ * Instances of this class are built automatically when the {@link
+ * org.orekit.propagation.Propagator#getEphemerisGenerator()
+ * getEphemerisGenerator} method has been called. They are created when propagation is over.
+ * Random access to any intermediate state of the orbit throughout the propagation range is
+ * possible afterwards through this object.
  * </p>
  * <p>
  * A typical use case is for numerically integrated orbits, which can be used by
@@ -144,11 +144,15 @@ public class IntegratedEphemeris
 
         // compare using double precision instead of AbsoluteDate.compareTo(...)
         // because time is expressed as a double when searching for events
-        if (date.compareTo(minDate.shiftedBy(-EXTRAPOLATION_TOLERANCE)) < 0 ||
-                date.compareTo(maxDate.shiftedBy(EXTRAPOLATION_TOLERANCE)) > 0 ) {
+        if (date.compareTo(minDate.shiftedBy(-EXTRAPOLATION_TOLERANCE)) < 0) {
             // date is outside of supported range
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
-                                           date, minDate, maxDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                    date, minDate, maxDate, minDate.durationFrom(date));
+        }
+        if (date.compareTo(maxDate.shiftedBy(EXTRAPOLATION_TOLERANCE)) > 0) {
+            // date is outside of supported range
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                    date, minDate, maxDate, date.durationFrom(maxDate));
         }
 
         return model.getInterpolatedState(date.durationFrom(startDate));

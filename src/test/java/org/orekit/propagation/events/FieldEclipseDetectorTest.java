@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -98,7 +98,7 @@ public class FieldEclipseDetectorTest {
 
 
 
-    private <T extends RealFieldElement<T>> void doTestEclipse(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEclipse(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -127,7 +127,7 @@ public class FieldEclipseDetectorTest {
         Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate).getReal(), 1.0e-3);
     }
 
-    private <T extends RealFieldElement<T>> void doTestPenumbra(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPenumbra(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -143,7 +143,7 @@ public class FieldEclipseDetectorTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60.));
+        integrator.setInitialStepSize(60.);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
@@ -161,7 +161,7 @@ public class FieldEclipseDetectorTest {
         Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate).getReal(), 2.0e-6);
     }
 
-    private <T extends RealFieldElement<T>> void doTestWithMethods(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestWithMethods(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -177,7 +177,7 @@ public class FieldEclipseDetectorTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
@@ -202,7 +202,7 @@ public class FieldEclipseDetectorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInsideOcculting(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInsideOcculting(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -218,7 +218,7 @@ public class FieldEclipseDetectorTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
@@ -242,7 +242,7 @@ public class FieldEclipseDetectorTest {
         Assert.assertEquals(-FastMath.PI, e.g(s).getReal(), 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void doTestInsideOcculted(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInsideOcculted(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -258,7 +258,7 @@ public class FieldEclipseDetectorTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
@@ -284,7 +284,7 @@ public class FieldEclipseDetectorTest {
         Assert.assertEquals(FastMath.PI, e.g(s).getReal(), 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void testTooSmallMaxIterationCount(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void testTooSmallMaxIterationCount(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -300,7 +300,7 @@ public class FieldEclipseDetectorTest {
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);

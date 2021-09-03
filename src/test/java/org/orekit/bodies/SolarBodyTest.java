@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,10 +23,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
@@ -50,7 +52,6 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -392,15 +393,12 @@ public class SolarBodyTest {
         propag.addForceModel(new BodyAttraction(pluto));
 
         // checks are done within the step handler
-        propag.setMasterMode(1000.0, new OrekitFixedStepHandler() {
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-                {
+        propag.setStepHandler(1000.0, currentState -> {
                 // propagated position should remain within 1400m of ephemeris for one month
                 Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
                 Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();
                 Assert.assertEquals(0, Vector3D.distance(propagatedP, ephemerisP), 1400.0);
-            }
-        });
+            });
 
         propag.propagate(startingDate, endDate);
 
@@ -411,8 +409,8 @@ public class SolarBodyTest {
         /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
         public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
 
-        /** Drivers for force model parameters. */
-        private final ParameterDriver[] parametersDrivers;
+        /** Driver for force model parameter. */
+        private final ParameterDriver parameterDriver;
 
         /** The body to consider. */
         private final CelestialBody body;
@@ -423,10 +421,9 @@ public class SolarBodyTest {
          * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
          */
         public BodyAttraction(final CelestialBody body) {
-            this.parametersDrivers = new ParameterDriver[1];
-            parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                       body.getGM(), 1.0e-5 * body.getGM(),
-                                                       0.0, Double.POSITIVE_INFINITY);
+            parameterDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
+                                                    body.getGM(), 1.0e-5 * body.getGM(),
+                                                    0.0, Double.POSITIVE_INFINITY);
             this.body = body;
         }
 
@@ -455,7 +452,7 @@ public class SolarBodyTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
 
@@ -479,14 +476,14 @@ public class SolarBodyTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
             return Stream.empty();
         }
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return parametersDrivers.clone();
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.singletonList(parameterDriver);
         }
 
     }

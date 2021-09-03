@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -272,7 +272,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      * @param frequency frequency of the signal in Hz
      * @return the path delay due to the ionosphere in m
      */
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final GeodeticPoint geo,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final GeodeticPoint geo,
                                                        final T elevation, final double frequency) {
         // TEC in TECUnits
         final T tec = getTEC(date, geo);
@@ -294,7 +294,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
     }
 
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
 
         // Elevation in radians
@@ -357,7 +357,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      * @param recPoint geodetic point of receiver/station
      * @return the TEC after a temporal interpolation, in TECUnits
      */
-    public <T extends RealFieldElement<T>> T getTEC(final FieldAbsoluteDate<T> date, final GeodeticPoint recPoint) {
+    public <T extends CalculusFieldElement<T>> T getTEC(final FieldAbsoluteDate<T> date, final GeodeticPoint recPoint) {
 
         // Load TEC data only if needed
         loadsIfNeeded(recPoint);
@@ -414,9 +414,9 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      * @param elevation the elevation of the satellite in radians
      * @return the mapping function
      */
-    private <T extends RealFieldElement<T>> T mappingFunction(final T elevation) {
+    private <T extends CalculusFieldElement<T>> T mappingFunction(final T elevation) {
         // Calculate the zenith angle from the elevation
-        final T z = FastMath.abs(elevation.negate().add(0.5 * FastMath.PI));
+        final T z = FastMath.abs(elevation.getPi().multiply(0.5).subtract(elevation));
         // Distance ratio
         final double ratio = r0 / (r0 + h);
         // Mapping function

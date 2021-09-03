@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
@@ -36,7 +36,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
+public class FieldDSSTThirdBodyContext<T extends CalculusFieldElement <T>> extends FieldForceModelContext<T> {
 
     /** Max power for summation. */
     private static final int    MAX_POWER = 22;
@@ -189,7 +189,7 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
 
         // Truncation tolerance.
         final T aoR3 = auxiliaryElements.getSma().divide(R3);
-        final double tol = ( aoR3.getReal() > .3 || (aoR3.getReal() > .15  && auxiliaryElements.getEcc().getReal() > .25) ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
+        final double tol = ( aoR3.getReal() > .3 || aoR3.getReal() > .15  && auxiliaryElements.getEcc().getReal() > .25)  ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
 
         // Utilities for truncation
         // Set a lower bound for eccentricity
@@ -389,7 +389,7 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
      * @return aoR3Pow
      */
     public T[] getAoR3Pow() {
-        return aoR3Pow;
+        return aoR3Pow.clone();
     }
 
    /** Get the value of max frequency of F.
@@ -412,7 +412,7 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
      * @return Qns
      */
     public T[][] getQns() {
-        return Qns;
+        return Qns.clone();
     }
 
 }

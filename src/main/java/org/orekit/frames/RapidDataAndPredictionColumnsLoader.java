@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hipparchus.util.MathUtils;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -38,6 +37,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
+import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for IERS rapid data and prediction files in columns format (finals file).
  * <p>Rapid data and prediction files contain {@link EOPEntry
@@ -65,15 +65,6 @@ import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
  */
 class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
         implements EOPHistoryLoader {
-
-    /** Conversion factor. */
-    private static final double  ARC_SECONDS_TO_RADIANS       = MathUtils.TWO_PI / 1296000;
-
-    /** Conversion factor. */
-    private static final double  MILLI_ARC_SECONDS_TO_RADIANS = ARC_SECONDS_TO_RADIANS / 1000;
-
-    /** Conversion factor. */
-    private static final double  MILLI_SECONDS_TO_SECONDS     = 1.0e-3;
 
     /** Field for year, month and day parsing. */
     private static final String  INTEGER2_FIELD               = "((?:\\p{Blank}|\\p{Digit})\\p{Digit})";
@@ -240,8 +231,8 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     } else {
                         final Matcher poleMatcher = POLE_PATTERN.matcher(polePart);
                         if (poleMatcher.matches()) {
-                            x = ARC_SECONDS_TO_RADIANS * Double.parseDouble(poleMatcher.group(1));
-                            y = ARC_SECONDS_TO_RADIANS * Double.parseDouble(poleMatcher.group(3));
+                            x = UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(poleMatcher.group(1)));
+                            y = UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(poleMatcher.group(3)));
                         } else {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, name, line);
@@ -271,7 +262,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     } else {
                         final Matcher lodMatcher = LOD_PATTERN.matcher(lodPart);
                         if (lodMatcher.matches()) {
-                            lod = MILLI_SECONDS_TO_SECONDS * Double.parseDouble(lodMatcher.group(1));
+                            lod = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(lodMatcher.group(1)));
                         } else {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, name, line);
@@ -293,14 +284,14 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                         if (nutationMatcher.matches()) {
                             if (isNonRotatingOrigin) {
                                 nro = new double[] {
-                                    MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
-                                    MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
+                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationMatcher.group(1))),
+                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationMatcher.group(3)))
                                 };
                                 equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                             } else {
                                 equinox = new double[] {
-                                    MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
-                                    MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
+                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationMatcher.group(1))),
+                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationMatcher.group(3)))
                                 };
                                 nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                             }

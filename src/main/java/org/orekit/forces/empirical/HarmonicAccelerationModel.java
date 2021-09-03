@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,11 @@
  */
 package org.orekit.forces.empirical;
 
-import org.hipparchus.RealFieldElement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -55,7 +59,7 @@ public class HarmonicAccelerationModel implements AccelerationModel {
     private static final double PHASE_SCALE = FastMath.scalb(1.0, -23);
 
     /** Drivers for the parameters. */
-    private final ParameterDriver[] drivers;
+    private final List<ParameterDriver> drivers;
 
     /** Reference date for computing phase. */
     private AbsoluteDate referenceDate;
@@ -76,12 +80,11 @@ public class HarmonicAccelerationModel implements AccelerationModel {
                                      final double fundamentalPeriod, final int harmonicMultiplier) {
         this.referenceDate = referenceDate;
         this.omega         = harmonicMultiplier * MathUtils.TWO_PI / fundamentalPeriod;
-        this.drivers = new ParameterDriver[] {
-            new ParameterDriver(prefix + " γ",
-                                0.0, AMPLITUDE_SCALE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
-            new ParameterDriver(prefix + " φ",
-                                0.0, PHASE_SCALE, -MathUtils.TWO_PI, MathUtils.TWO_PI),
-            };
+        this.drivers       = new ArrayList<>(2);
+        drivers.add(new ParameterDriver(prefix + " γ",
+                                        0.0, AMPLITUDE_SCALE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+        drivers.add(new ParameterDriver(prefix + " φ",
+                                        0.0, PHASE_SCALE, -MathUtils.TWO_PI, MathUtils.TWO_PI));
     }
 
     /** {@inheritDoc} */
@@ -102,7 +105,7 @@ public class HarmonicAccelerationModel implements AccelerationModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T signedAmplitude(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> T signedAmplitude(final FieldSpacecraftState<T> state,
                                                              final T[] parameters) {
         final T dt = state.getDate().durationFrom(referenceDate);
         return parameters[0].multiply(dt.multiply(omega).add(parameters[1]).sin());
@@ -110,8 +113,8 @@ public class HarmonicAccelerationModel implements AccelerationModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return drivers.clone();
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.unmodifiableList(drivers);
     }
 
 }

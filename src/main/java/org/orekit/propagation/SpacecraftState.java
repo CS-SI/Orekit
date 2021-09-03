@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -109,7 +109,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, null);
     }
 
@@ -132,7 +132,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final double mass) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
     }
 
@@ -155,7 +155,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, additional);
     }
 
@@ -180,7 +180,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final double mass, final Map<String, double[]> additional) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
     }
 
@@ -218,7 +218,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, null);
     }
 
@@ -241,7 +241,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, null);
     }
 
@@ -264,7 +264,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Map<String, double[]> additional) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, additional);
     }
 
@@ -289,7 +289,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final Map<String, double[]> additional) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
     }
 
@@ -421,15 +421,15 @@ public class SpacecraftState
      * Sun and Moon third bodies attractions, drag and solar radiation pressure.
      * Beware that these results will be different for other orbits.
      * </p>
-     * <table border="1" cellpadding="5">
+     * <table border="1">
      * <caption>Extrapolation Error</caption>
-     * <tr style="background-color: #ccccff;"><th>interpolation time (s)</th>
+     * <tr style="background-color: #ccccff"><th>interpolation time (s)</th>
      * <th>position error without derivatives (m)</th><th>position error with derivatives (m)</th></tr>
-     * <tr><td style="background-color: #eeeeff;"> 60</td><td>  18</td><td> 1.1</td></tr>
-     * <tr><td style="background-color: #eeeeff;">120</td><td>  72</td><td> 9.1</td></tr>
-     * <tr><td style="background-color: #eeeeff;">300</td><td> 447</td><td> 140</td></tr>
-     * <tr><td style="background-color: #eeeeff;">600</td><td>1601</td><td>1067</td></tr>
-     * <tr><td style="background-color: #eeeeff;">900</td><td>3141</td><td>3307</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px"> 60</td><td>  18</td><td> 1.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">120</td><td>  72</td><td> 9.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">300</td><td> 447</td><td> 140</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">600</td><td>1601</td><td>1067</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">900</td><td>3141</td><td>3307</td></tr>
      * </table>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)

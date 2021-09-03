@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,8 @@
 package org.orekit.estimation.sequential;
 
 import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -119,12 +117,6 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         this.lofCartesianOrbitalParametersEvolution  = lofCartesianOrbitalParametersEvolution.clone();
         this.propagationParametersEvolution = propagationParametersEvolution.clone();
         this.measurementsParametersEvolution = measurementsParametersEvolution.clone();
-
-        // Ensure that the orbital evolution array size is 6
-        if (lofCartesianOrbitalParametersEvolution.length != 6) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                      lofCartesianOrbitalParametersEvolution, 6);
-        }
     }
 
     /** Getter for the lofType.
@@ -168,29 +160,33 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
                                             final SpacecraftState current) {
 
         // Number of estimated parameters
+        final int nbOrb    = lofCartesianOrbitalParametersEvolution.length;
         final int nbPropag = propagationParametersEvolution.length;
         final int nbMeas   = measurementsParametersEvolution.length;
 
         // Initialize process noise matrix
-        final RealMatrix processNoiseMatrix = MatrixUtils.createRealMatrix(6 + nbPropag + nbMeas,
-                                                                           6 + nbPropag + nbMeas);
+        final RealMatrix processNoiseMatrix = MatrixUtils.createRealMatrix(nbOrb + nbPropag + nbMeas,
+                                                                           nbOrb + nbPropag + nbMeas);
 
-        // Orbital parameters process noise matrix in inertial frame and current orbit type
-        final RealMatrix inertialOrbitalProcessNoiseMatrix = getInertialOrbitalProcessNoiseMatrix(previous, current);
-        processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
+        // Orbital parameters
+        if (nbOrb != 0) {
+            // Orbital parameters process noise matrix in inertial frame and current orbit type
+            final RealMatrix inertialOrbitalProcessNoiseMatrix = getInertialOrbitalProcessNoiseMatrix(previous, current);
+            processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
+        }
 
         // Propagation parameters
         if (nbPropag != 0) {
             // Propagation parameters process noise matrix
             final RealMatrix propagationProcessNoiseMatrix = getPropagationProcessNoiseMatrix(previous, current);
-            processNoiseMatrix.setSubMatrix(propagationProcessNoiseMatrix.getData(), 6, 6);
+            processNoiseMatrix.setSubMatrix(propagationProcessNoiseMatrix.getData(), nbOrb, nbOrb);
         }
 
         // Measurement parameters
         if (nbMeas != 0) {
             // Measurement parameters process noise matrix
             final RealMatrix measurementsProcessNoiseMatrix = getMeasurementsProcessNoiseMatrix(previous, current);
-            processNoiseMatrix.setSubMatrix(measurementsProcessNoiseMatrix.getData(), 6 + nbPropag, 6 + nbPropag);
+            processNoiseMatrix.setSubMatrix(measurementsProcessNoiseMatrix.getData(), nbOrb + nbPropag, nbOrb + nbPropag);
         }
 
         return processNoiseMatrix;

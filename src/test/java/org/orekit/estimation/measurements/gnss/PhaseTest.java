@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,14 +28,19 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.PhaseIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.PhaseTroposphericDelayModifier;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
@@ -46,10 +51,10 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
@@ -173,9 +178,8 @@ public class PhaseTest {
         final List<Double> absoluteErrors = new ArrayList<>();
         final List<Double> relativeErrors = new ArrayList<>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -304,9 +308,8 @@ public class PhaseTest {
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -454,9 +457,8 @@ public class PhaseTest {
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -604,9 +606,8 @@ public class PhaseTest {
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -614,14 +615,10 @@ public class PhaseTest {
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
-                    // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Phase) measurement).getStation();
-
                     String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
 
                     // Add modifier
-                    final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
                     final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
                     final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(tropoModel);
                     final List<ParameterDriver> parameters = modifier.getParametersDrivers();
@@ -778,9 +775,8 @@ public class PhaseTest {
         final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -895,6 +891,43 @@ public class PhaseTest {
         Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
         Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
         Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+    }
+
+    @Test
+    public void testIssue734() {
+
+        Utils.setDataRoot("regular-data");
+
+        // Create a ground station
+        final OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+                                                           FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final TopocentricFrame topo = new TopocentricFrame(body,
+                                                           new GeodeticPoint(FastMath.toRadians(51.8), FastMath.toRadians(102.2), 811.2),
+                                                           "BADG");
+        final GroundStation station = new GroundStation(topo);
+
+        // Create a phase measurement
+        final Phase phase = new Phase(station, AbsoluteDate.J2000_EPOCH, 119866527.060, Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
+
+        // First check
+        Assert.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assert.assertFalse(phase.getAmbiguityDriver().isSelected());
+
+        // Perform some changes in ambiguity driver
+        phase.getAmbiguityDriver().setValue(1234.0);
+        phase.getAmbiguityDriver().setSelected(true);
+
+        // Second check
+        Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
+        for (ParameterDriver driver : phase.getParametersDrivers()) {
+            // Verify if the current driver corresponds to the phase ambiguity
+            if (driver.getName() == Phase.AMBIGUITY_NAME) {
+                Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+                Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
+            }
+        }
+
     }
 
 }

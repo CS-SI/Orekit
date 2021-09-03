@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class AngularRaDecTest {
                                                                new AngularRaDecMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Prepare statistics for right-ascension/declination values difference
         final StreamingStatistics raDiffStat  = new StreamingStatistics();
@@ -107,7 +107,7 @@ public class AngularRaDecTest {
                                                                new AngularRaDecMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Compute measurements.
         double[] RaerrorsP = new double[3 * measurements.size()];
@@ -216,7 +216,7 @@ public class AngularRaDecTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularRaDecMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,6 +42,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
+import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for bulletin B files.
  * <p>Bulletin B files contain {@link EOPEntry
@@ -81,12 +82,6 @@ import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
  * @author Luc Maisonobe
  */
 class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
-
-    /** Conversion factor. */
-    private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000;
-
-    /** Conversion factor. */
-    private static final double MILLI_SECONDS_TO_SECONDS = 1.e-3;
 
     /** Section 1 header pattern. */
     private static final Pattern SECTION_1_HEADER;
@@ -435,7 +430,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                     final double x     = Double.parseDouble(matcher.group(2)) * Constants.ARC_SECONDS_TO_RADIANS;
                     final double y     = Double.parseDouble(matcher.group(3)) * Constants.ARC_SECONDS_TO_RADIANS;
                     final double dtu1  = Double.parseDouble(matcher.group(4));
-                    final double lod   = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
+                    final double lod   = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(matcher.group(5)));
                     if (mjd >= mjdMin) {
                         final AbsoluteDate mjdDate =
                                 new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
@@ -444,14 +439,14 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                         final double[] nro;
                         if (isNonRotatingOrigin) {
                             nro = new double[] {
-                                Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS,
-                                Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS
+                                UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(6))),
+                                UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(7)))
                             };
                             equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
-                                Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS,
-                                Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS
+                                UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(6))),
+                                UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(7)))
                             };
                             nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
@@ -503,11 +498,11 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                         }
                         mjdMin = FastMath.min(mjdMin, mjd);
                         mjdMax = FastMath.max(mjdMax, mjd);
-                        final double x    = Double.parseDouble(matcher.group(5)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                        final double y    = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                        final double dtu1 = Double.parseDouble(matcher.group(7)) * MILLI_SECONDS_TO_SECONDS;
-                        final double dx   = Double.parseDouble(matcher.group(8)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                        final double dy   = Double.parseDouble(matcher.group(9)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                        final double x    = UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(5)));
+                        final double y    = UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(6)));
+                        final double dtu1 = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(matcher.group(7)));
+                        final double dx   = UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(8)));
+                        final double dy   = UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(9)));
                         fieldsMap.put(mjd,
                                       new double[] {
                                           dtu1, Double.NaN, x, y, dx, dy
@@ -538,7 +533,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                     // this is a data line, build an entry from the extracted fields
                     final int    mjd = Integer.parseInt(matcher.group(1));
                     if (mjd >= mjdMin) {
-                        final double lod = Double.parseDouble(matcher.group(2)) * MILLI_SECONDS_TO_SECONDS;
+                        final double lod = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(matcher.group(2)));
                         final double[] array = fieldsMap.get(mjd);
                         if (array == null) {
                             throw notifyUnexpectedErrorEncountered(name);

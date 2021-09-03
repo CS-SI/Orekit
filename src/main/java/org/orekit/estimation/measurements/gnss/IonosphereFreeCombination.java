@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,7 +81,7 @@ public class IonosphereFreeCombination extends AbstractDualFrequencyCombination 
         final int ratioF1Int = (int) ratioF1;
         final int ratioF2Int = (int) ratioF2;
         // Multiplication factor used to compute the combined frequency
-        final int k = ((ratioF1 - ratioF1Int > 0.0) || (ratioF2 - ratioF2Int > 0.0)) ? 1 : ArithmeticUtils.gcd(ratioF1Int, ratioF2Int);
+        final int k = (ratioF1 - ratioF1Int > 0.0 || ratioF2 - ratioF2Int > 0.0) ? 1 : ArithmeticUtils.gcd(ratioF1Int, ratioF2Int);
         // Combined frequency
         return MathArrays.linearCombination(ratioF1, ratioF1, -ratioF2, ratioF2) * (Frequency.F0 / k);
     }

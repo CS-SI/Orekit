@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,14 @@
 package org.orekit.propagation.numerical;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -96,8 +98,8 @@ public class PartialDerivativesEquationsTest {
         pde.computeDerivatives(state, pdot);
 
         //verify
-        assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
-        assertThat(forceModel.accelerationDerivativesVelocity.toVector3D(), is(pv.getVelocity()));
+        MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
+        MatcherAssert.assertThat(forceModel.accelerationDerivativesVelocity.toVector3D(), is(pv.getVelocity()));
 
     }
 
@@ -122,7 +124,7 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> void
+        public <T extends CalculusFieldElement<T>> void
             addContribution(FieldSpacecraftState<T> s,
                             FieldTimeDerivativesEquations<T> adder) {
         }
@@ -135,7 +137,7 @@ public class PartialDerivativesEquationsTest {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
             this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
@@ -149,12 +151,12 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[0];
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
 
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

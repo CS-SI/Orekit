@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.data;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.utils.Constants;
 
 /**
@@ -77,7 +77,7 @@ public class PolynomialNutation implements Serializable {
      * @param <T> type of the filed elements
      * @return value of the polynomial
      */
-    public <T extends RealFieldElement<T>> T value(final T tc) {
+    public <T extends CalculusFieldElement<T>> T value(final T tc) {
 
         T p = tc.getField().getZero();
         for (int i = coefficients.length - 1; i >= 0; --i) {
@@ -93,7 +93,7 @@ public class PolynomialNutation implements Serializable {
      * @param <T> type of the filed elements
      * @return time derivative of the polynomial
      */
-    public <T extends RealFieldElement<T>> T derivative(final T tc) {
+    public <T extends CalculusFieldElement<T>> T derivative(final T tc) {
 
         T p = tc.getField().getZero();
         for (int i = coefficients.length - 1; i > 0; --i) {

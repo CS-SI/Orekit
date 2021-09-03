@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -107,49 +107,49 @@ public class HelmertTransformation implements TransformProvider {
                                 0.1, 0.1,    -1.9, 0.00, 0.00, 0.00),
 
         /** Transformation from ITRF 2014 To ITRF 97. */
-        ITRF_2014_TO_ITRF_97  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_97, 2010,
-                                7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
-                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+        ITRF_2014_TO_ITRF_1997(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_1997, 2010,
+                               7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
+                               0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 96. */
-        ITRF_2014_TO_ITRF_96  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_96, 2010,
-                                7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
-                                0.1, -0.5,  -3.3, 0.00, 0.00, 0.02),
+        ITRF_2014_TO_ITRF_1996(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_1996, 2010,
+                               7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
+                               0.1, -0.5,  -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 94. */
-        ITRF_2014_TO_ITRF_94  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_94, 2010,
-                                7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
-                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+        ITRF_2014_TO_ITRF_1994(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_1994, 2010,
+                               7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
+                               0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 93. */
-        ITRF_2014_TO_ITRF_93  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_93, 2010,
-                              -50.4,  3.3,  -60.2, -2.81, -3.38, 0.40,
+        ITRF_2014_TO_ITRF_1993(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_1993, 2010,
+                               -50.4,  3.3,  -60.2, -2.81, -3.38, 0.40,
                                -2.8, -0.1,   -2.5, -0.11, -0.19, 0.07),
 
         /** Transformation from ITRF 2014 To ITRF 92. */
-        ITRF_2014_TO_ITRF_92  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_92, 2010,
+        ITRF_2014_TO_ITRF_1992(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_1992, 2010,
                                15.4,  1.5,  -70.8, 0.00, 0.00, 0.26,
-                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+                               0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 91. */
-        ITRF_2014_TO_ITRF_91  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_91, 2010,
+        ITRF_2014_TO_ITRF_1991(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_1991, 2010,
                                27.4, 15.5,  -76.8, 0.00, 0.00, 0.26,
-                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+                               0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 90. */
-        ITRF_2014_TO_ITRF_90  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_90, 2010,
+        ITRF_2014_TO_ITRF_1990(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_1990, 2010,
                                25.4, 11.5,  -92.8, 0.00, 0.00, 0.26,
-                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+                               0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 89. */
-        ITRF_2014_TO_ITRF_89  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_89, 2010,
+        ITRF_2014_TO_ITRF_1989(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_1989, 2010,
                                30.4, 35.5, -130.8, 0.00, 0.00, 0.26,
-                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+                               0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 88. */
-        ITRF_2014_TO_ITRF_88  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_88, 2010,
+        ITRF_2014_TO_ITRF_1988(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_1988, 2010,
                                25.4, -0.5, -154.8, 0.10, 0.00, 0.26,
-                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+                               0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         // see http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2008_ITRFs.txt
         // SOLUTION         Tx       Ty       Tz        D        Rx        Ry        Rz      EPOCH
@@ -193,49 +193,49 @@ public class HelmertTransformation implements TransformProvider {
                                 0.1,  0.1,   -1.8,  0.00,  0.00,  0.00),
 
         /** Transformation from ITRF 2008 To ITRF 97. */
-        ITRF_2008_TO_ITRF_97  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_97, 2000,
-                                4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
-                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+        ITRF_2008_TO_ITRF_1997(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_1997, 2000,
+                               4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
+                               0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 96. */
-        ITRF_2008_TO_ITRF_96  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_96, 2000,
-                                4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
-                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+        ITRF_2008_TO_ITRF_1996(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_1996, 2000,
+                               4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
+                               0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 94. */
-        ITRF_2008_TO_ITRF_94  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_94, 2000,
-                                4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
-                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+        ITRF_2008_TO_ITRF_1994(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_1994, 2000,
+                               4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
+                               0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 93. */
-        ITRF_2008_TO_ITRF_93  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_93, 2000,
-                              -24.0,  2.4,  -38.6, -1.71, -1.48, -0.30,
+        ITRF_2008_TO_ITRF_1993(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_1993, 2000,
+                               -24.0,  2.4,  -38.6, -1.71, -1.48, -0.30,
                                -2.8, -0.1,   -2.4, -0.11, -0.19,  0.07),
 
         /** Transformation from ITRF 2008 To ITRF 92. */
-        ITRF_2008_TO_ITRF_92  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_92, 2000,
+        ITRF_2008_TO_ITRF_1992(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_1992, 2000,
                                12.8,  4.6,  -41.2,  0.00,  0.00,  0.06,
-                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                               0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 91. */
-        ITRF_2008_TO_ITRF_91  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_91, 2000,
+        ITRF_2008_TO_ITRF_1991(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_1991, 2000,
                                24.8, 18.6,  -47.2,  0.00,  0.00,  0.06,
-                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                               0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 90. */
-        ITRF_2008_TO_ITRF_90  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_90, 2000,
+        ITRF_2008_TO_ITRF_1990(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_1990, 2000,
                                22.8, 14.6,  -63.2,  0.00,  0.00,  0.06,
-                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                               0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 89. */
-        ITRF_2008_TO_ITRF_89  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_89, 2000,
+        ITRF_2008_TO_ITRF_1989(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_1989, 2000,
                                27.8, 38.6, -101.2,  0.00,  0.00,  0.06,
-                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                               0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 88. */
-        ITRF_2008_TO_ITRF_88  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_88, 2000,
+        ITRF_2008_TO_ITRF_1988(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_1988, 2000,
                                22.8,  2.6, -125.2,  0.10,  0.00,  0.06,
-                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02);
+                               0.1, -0.5,   -3.2,  0.00,  0.00,  0.02);
 
         /** Origin ITRF. */
         private final ITRFVersion origin;
@@ -522,7 +522,7 @@ public class HelmertTransformation implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute parameters evolution since reference epoch
         final T dt = date.durationFrom(epoch);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,8 +66,8 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -502,7 +502,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -569,7 +569,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
@@ -833,7 +833,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                                                                                                                  c, s)));
 
         // let the step handler perform the test
-        propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
+        propagator.setStepHandler(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.propagate(date.shiftedBy(7 * Constants.JULIAN_DAY));
         Assert.assertTrue(propagator.getCalls() < 9200);
@@ -849,8 +849,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         private PVCoordinatesProvider sun;
         private double previous;
-        public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+        public void handleStep(SpacecraftState currentState) {
 
 
             AbsoluteDate current = currentState.getDate();
@@ -867,8 +866,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     // test the difference with the analytical extrapolator Eckstein Hechler
     @Test
-    public void testEcksteinHechlerReference()
-        {
+    public void testEcksteinHechlerReference() {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -898,9 +896,9 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         // let the step handler perform the test
         propagator.setInitialState(new SpacecraftState(initialOrbit));
-        propagator.setMasterMode(20, new EckStepHandler(initialOrbit, ae,
-                                                        unnormalizedC20, unnormalizedC30, unnormalizedC40,
-                                                        unnormalizedC50, unnormalizedC60));
+        propagator.setStepHandler(20, new EckStepHandler(initialOrbit, ae,
+                                                         unnormalizedC20, unnormalizedC30, unnormalizedC40,
+                                                         unnormalizedC50, unnormalizedC60));
         propagator.propagate(date.shiftedBy(50000));
         Assert.assertTrue(propagator.getCalls() < 1100);
 
@@ -920,7 +918,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         }
 
         private EcksteinHechlerPropagator referencePropagator;
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
 
             SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
             Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
@@ -1043,12 +1041,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         AbstractIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 120.0, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.setOrbitType(OrbitType.CARTESIAN);
         propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider));
         propagator.setInitialState(initialState);
         propagator.propagate(initialState.getDate().shiftedBy(duration));
-        return propagator.getGeneratedEphemeris();
+        return generator.getGeneratedEphemeris();
     }
 
     @Test
@@ -1107,7 +1105,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         SpacecraftState state = new SpacecraftState(orbit);
 
         checkStateJacobianVs80Implementation(state, hfModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -1135,7 +1133,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         SpacecraftState state = new SpacecraftState(orbit);
 
         checkStateJacobianVs80ImplementationGradient(state, hfModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -1162,7 +1160,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
-        checkStateJacobianVsFiniteDifferences(state, hfModel, Propagator.DEFAULT_LAW,
+        checkStateJacobianVsFiniteDifferences(state, hfModel, Utils.defaultLaw(),
                                               10.0, 2.0e-10, false);
 
     }
@@ -1189,7 +1187,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
-        checkStateJacobianVsFiniteDifferencesGradient(state, hfModel, Propagator.DEFAULT_LAW,
+        checkStateJacobianVsFiniteDifferencesGradient(state, hfModel, Utils.defaultLaw(),
                                               10.0, 2.0e-10, false);
 
     }

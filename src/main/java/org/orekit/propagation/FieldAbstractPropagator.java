@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,22 +17,18 @@
 package org.orekit.propagation;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
-import org.orekit.propagation.sampling.FieldOrekitStepHandler;
-import org.orekit.propagation.sampling.FieldOrekitStepNormalizer;
+import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
@@ -44,18 +40,13 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * methods, including all propagation modes support and discrete events support for
  * any simple propagation method.
  * </p>
+ * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> implements FieldPropagator<T> {
+public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>> implements FieldPropagator<T> {
 
-    /** Propagation mode. */
-    private int mode;
-
-    /** Fixed step size. */
-    private T fixedStepSize;
-
-    /** Step handler. */
-    private FieldOrekitStepHandler<T> stepHandler;
+    /** Multiplexer for step handlers. */
+    private FieldStepHandlerMultiplexer<T> multiplexer;
 
     /** Start date. */
     private FieldAbsoluteDate<T> startDate;
@@ -79,10 +70,8 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
      * @param field setting the field
      */
     protected FieldAbstractPropagator(final Field<T> field) {
-        mode                     = SLAVE_MODE;
-        stepHandler              = null;
         this.field               = field;
-        fixedStepSize            = field.getZero().add(Double.NaN);
+        multiplexer              = new FieldStepHandlerMultiplexer<>();
         additionalStateProviders = new ArrayList<>();
         unmanagedStates          = new HashMap<>();
     }
@@ -123,11 +112,6 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     }
 
     /** {@inheritDoc} */
-    public int getMode() {
-        return mode;
-    }
-
-    /** {@inheritDoc} */
     public Frame getFrame() {
         return initialState.getFrame();
     }
@@ -139,31 +123,8 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     }
 
     /** {@inheritDoc} */
-    public void setSlaveMode() {
-        mode          = SLAVE_MODE;
-        stepHandler   = null;
-        fixedStepSize = field.getZero().add(Double.NaN);
-    }
-
-    /** {@inheritDoc} */
-    public void setMasterMode(final T h,
-                              final FieldOrekitFixedStepHandler<T> handler) {
-        setMasterMode(new FieldOrekitStepNormalizer<>(h, handler));
-        fixedStepSize = h;
-    }
-
-    /** {@inheritDoc} */
-    public void setMasterMode(final FieldOrekitStepHandler<T> handler) {
-        mode          = MASTER_MODE;
-        stepHandler   = handler;
-        fixedStepSize = field.getZero().add(Double.NaN);
-    }
-
-    /** {@inheritDoc} */
-    public void setEphemerisMode() {
-        mode          = EPHEMERIS_GENERATION_MODE;
-        stepHandler   = null;
-        fixedStepSize = field.getZero().add(Double.NaN);
+    public FieldStepHandlerMultiplexer<T> getMultiplexer() {
+        return multiplexer;
     }
 
     /** {@inheritDoc} */
@@ -232,32 +193,6 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
         }
         return managed;
     }
-
-    /** Get the fixed step size.
-     * @return fixed step size (or NaN if there are no fixed step size).
-     */
-    protected T getFixedStepSize() {
-        return fixedStepSize;
-    }
-
-    /** Get the step handler.
-     * @return step handler
-     */
-    protected FieldOrekitStepHandler<T> getStepHandler() {
-        return stepHandler;
-    }
-
-    /** {@inheritDoc} */
-    public abstract FieldBoundedPropagator<T> getGeneratedEphemeris();
-
-    /** {@inheritDoc} */
-    public abstract <D extends FieldEventDetector<T>> void addEventDetector(D detector);
-
-    /** {@inheritDoc} */
-    public abstract Collection<FieldEventDetector<T>> getEventsDetectors();
-
-    /** {@inheritDoc} */
-    public abstract void clearEventsDetectors();
 
     /** {@inheritDoc} */
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> target) {

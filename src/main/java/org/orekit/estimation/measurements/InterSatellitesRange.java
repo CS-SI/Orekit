@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -199,6 +199,14 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final double[] derivatives = range.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0,  6));
         estimated.setStateDerivatives(1, Arrays.copyOfRange(derivatives, 6, 12));
+
+        // Set partial derivatives with respect to parameters
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index]);
+            }
+        }
 
         return estimated;
 

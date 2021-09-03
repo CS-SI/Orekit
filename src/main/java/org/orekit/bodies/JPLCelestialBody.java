@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -127,7 +127,7 @@ class JPLCelestialBody implements CelestialBody {
      * @param <T> type fo the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
      */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
                                                                                              final Frame frame) {
 
         // apply the scale factor to raw position-velocity
@@ -220,7 +220,7 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
                     // compute translation from parent frame to self
                     final FieldPVCoordinates<T> pv = getPVCoordinates(date, definingFrame);
@@ -298,7 +298,7 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                     final double dt = 10.0;
                     final T w0 = iauPole.getPrimeMeridianAngle(date);
                     final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,6 @@ import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
 
 public class DSSTKalmanEstimatorTest {
 
@@ -108,7 +107,6 @@ public class DSSTKalmanEstimatorTest {
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
         
         // Filter the measurements and check the results
@@ -185,7 +183,6 @@ public class DSSTKalmanEstimatorTest {
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
         
         // Filter the measurements and check the results
@@ -271,7 +268,6 @@ public class DSSTKalmanEstimatorTest {
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
         
         // Filter the measurements and check the results
@@ -315,7 +311,7 @@ public class DSSTKalmanEstimatorTest {
 
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, false),
+                                                               new DSSTRangeRateMeasurementCreator(context, false, 3.2e-10),
                                                                1.0, 3.0, 300.0);
 
         // Concatenate measurements
@@ -398,7 +394,6 @@ public class DSSTKalmanEstimatorTest {
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder,
                                                   new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6)));
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         final KalmanEstimator kalman = kalmanBuilder.build();
         kalman.setObserver(estimation -> {
                 throw new DummyException();

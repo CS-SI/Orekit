@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -41,7 +40,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
@@ -212,9 +210,9 @@ public class RangeTest {
         final List<Double> absoluteErrors = new ArrayList<Double>();
         final List<Double> relativeErrors = new ArrayList<Double>();
 
-        // Set master mode
+        // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -339,9 +337,9 @@ public class RangeTest {
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
 
-        // Set master mode
+        // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -488,9 +486,9 @@ public class RangeTest {
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
 
-        // Set master mode
+        // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -624,9 +622,9 @@ public class RangeTest {
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
 
-        // Set master mode
+        // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -635,14 +633,10 @@ public class RangeTest {
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
                    ) {
 
-                    // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Range) measurement).getStation();
-
                     String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
 
                     // Add modifiers if test implies it
-                    final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
                     final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
                     
                     final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();

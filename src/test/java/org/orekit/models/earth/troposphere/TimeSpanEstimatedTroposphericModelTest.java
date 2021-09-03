@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.models.earth.troposphere;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -71,13 +72,14 @@ public class TimeSpanEstimatedTroposphericModelTest {
     @Test
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
-        MappingFunction mapping = new NiellMappingFunctionModel(FastMath.toRadians(45.0));
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
+        MappingFunction mapping = new NiellMappingFunctionModel();
         EstimatedTroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
         DiscreteTroposphericModel  timeSpanModel = new TimeSpanEstimatedTroposphericModel(model);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = timeSpanModel.pathDelay(FastMath.toRadians(elev), 350, timeSpanModel.getParameters(), date);
+            final double delay = timeSpanModel.pathDelay(FastMath.toRadians(elev), point, timeSpanModel.getParameters(), date);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
             lastDelay = delay;
         }
@@ -88,10 +90,11 @@ public class TimeSpanEstimatedTroposphericModelTest {
         final double elevation = 10d;
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
-        MappingFunction mapping = new NiellMappingFunctionModel(FastMath.toRadians(45.0));
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
+        MappingFunction mapping = new NiellMappingFunctionModel();
         EstimatedTroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
         DiscreteTroposphericModel  timeSpanModel = new TimeSpanEstimatedTroposphericModel(model);
-        final double path = timeSpanModel.pathDelay(FastMath.toRadians(elevation), height, timeSpanModel.getParameters(), date);
+        final double path = timeSpanModel.pathDelay(FastMath.toRadians(elevation), point, timeSpanModel.getParameters(), date);
         Assert.assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
     }
@@ -100,24 +103,22 @@ public class TimeSpanEstimatedTroposphericModelTest {
     public void testStateDerivativesGMF() {
         final double latitude     = FastMath.toRadians(45.0);
         final double longitude    = FastMath.toRadians(45.0);
-        final MappingFunction gmf = new GlobalMappingFunctionModel(latitude, longitude);
-        doTestDelayStateDerivatives(gmf, latitude, longitude, 4.7e-9);
+        GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
+        final MappingFunction gmf = new GlobalMappingFunctionModel();
+        doTestDelayStateDerivatives(gmf, point, 4.7e-9);
     }
 
     @Test
     public void testStateDerivativesNMF() {
         final double latitude     = FastMath.toRadians(45.0);
         final double longitude    = FastMath.toRadians(45.0);
-        final MappingFunction nmf = new NiellMappingFunctionModel(latitude);
-        doTestDelayStateDerivatives(nmf, latitude, longitude, 4.4e-9);
+        GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
+        final MappingFunction nmf = new NiellMappingFunctionModel();
+        doTestDelayStateDerivatives(nmf, point, 4.4e-9);
     }
 
-    private void doTestDelayStateDerivatives(final MappingFunction func, final double latitude,
-                                             final double longitude, final double tolerance) {
+    private void doTestDelayStateDerivatives(final MappingFunction func, final GeodeticPoint point, final double tolerance) {
 
-        // Geodetic point
-        final double height       = 0.0;
-        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
         // Body: earth
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -163,7 +164,8 @@ public class TimeSpanEstimatedTroposphericModelTest {
         }
 
         // Compute Delay with state derivatives
-        final DerivativeStructure delay = timeSpanModel.pathDelay(dsElevation, zero, timeSpanModel.getParameters(field), dsDate);
+        final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(point.getLatitude()), zero.add(point.getLongitude()), zero.add(point.getAltitude()));
+        final DerivativeStructure delay = timeSpanModel.pathDelay(dsElevation, dsPoint, timeSpanModel.getParameters(field), dsDate);
 
         final double[] compDeriv = delay.getAllDerivatives();
 
@@ -181,42 +183,42 @@ public class TimeSpanEstimatedTroposphericModelTest {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
             final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
             final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
-            double  delayM4 = timeSpanModel.pathDelay(elevationM4, height, timeSpanModel.getParameters(), stateM4.getDate());
+            double  delayM4 = timeSpanModel.pathDelay(elevationM4, point, timeSpanModel.getParameters(), stateM4.getDate());
             
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
             final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
             final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
-            double  delayM3 = timeSpanModel.pathDelay(elevationM3, height, timeSpanModel.getParameters(), stateM3.getDate());
+            double  delayM3 = timeSpanModel.pathDelay(elevationM3, point, timeSpanModel.getParameters(), stateM3.getDate());
             
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
             final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
             final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
-            double  delayM2 = timeSpanModel.pathDelay(elevationM2, height, timeSpanModel.getParameters(), stateM2.getDate());
+            double  delayM2 = timeSpanModel.pathDelay(elevationM2, point, timeSpanModel.getParameters(), stateM2.getDate());
  
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
             final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
             final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
-            double  delayM1 = timeSpanModel.pathDelay(elevationM1, height, timeSpanModel.getParameters(), stateM1.getDate());
+            double  delayM1 = timeSpanModel.pathDelay(elevationM1, point, timeSpanModel.getParameters(), stateM1.getDate());
            
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
             final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
             final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
-            double  delayP1 = timeSpanModel.pathDelay(elevationP1, height, timeSpanModel.getParameters(), stateP1.getDate());
+            double  delayP1 = timeSpanModel.pathDelay(elevationP1, point, timeSpanModel.getParameters(), stateP1.getDate());
             
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
             final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
             final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
-            double  delayP2 = timeSpanModel.pathDelay(elevationP2, height, timeSpanModel.getParameters(), stateP2.getDate());
+            double  delayP2 = timeSpanModel.pathDelay(elevationP2, point, timeSpanModel.getParameters(), stateP2.getDate());
             
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
             final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
             final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
-            double  delayP3 = timeSpanModel.pathDelay(elevationP3, height, timeSpanModel.getParameters(), stateP3.getDate());
+            double  delayP3 = timeSpanModel.pathDelay(elevationP3, point, timeSpanModel.getParameters(), stateP3.getDate());
             
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
             final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
             final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
-            double  delayP4 = timeSpanModel.pathDelay(elevationP4, height, timeSpanModel.getParameters(), stateP4.getDate());
+            double  delayP4 = timeSpanModel.pathDelay(elevationP4, point, timeSpanModel.getParameters(), stateP4.getDate());
             
             fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
@@ -248,7 +250,7 @@ public class TimeSpanEstimatedTroposphericModelTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
         
         // Tropospheric model
-        final MappingFunction gmf = new GlobalMappingFunctionModel(latitude, longitude);
+        final MappingFunction gmf = new GlobalMappingFunctionModel();
         final DiscreteTroposphericModel model = new EstimatedTroposphericModel(gmf, 5.0);
 
         // Set Parameter Driver
@@ -309,7 +311,8 @@ public class TimeSpanEstimatedTroposphericModelTest {
         }
 
         // Compute delay state derivatives
-        final DerivativeStructure delay = model.pathDelay(dsElevation, zero, parameters, dsState.getDate());
+        final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(point.getLatitude()), zero.add(point.getLongitude()), zero.add(point.getAltitude()));
+        final DerivativeStructure delay = model.pathDelay(dsElevation, dsPoint, parameters, dsState.getDate());
 
         final double[] compDeriv = delay.getAllDerivatives(); 
 
@@ -336,28 +339,28 @@ public class TimeSpanEstimatedTroposphericModelTest {
         final PositionAngle angleType = PositionAngle.MEAN;
 
         selected.setValue(p0 - 4 * h);
-        double  delayM4 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        double  delayM4 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
         
         selected.setValue(p0 - 3 * h);
-        double  delayM3 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        double  delayM3 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
         
         selected.setValue(p0 - 2 * h);
-        double  delayM2 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        double  delayM2 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
 
         selected.setValue(p0 - 1 * h);
-        double  delayM1 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        double  delayM1 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
 
         selected.setValue(p0 + 1 * h);
-        double  delayP1 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        double  delayP1 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
 
         selected.setValue(p0 + 2 * h);
-        double  delayP2 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        double  delayP2 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
 
         selected.setValue(p0 + 3 * h);
-        double  delayP3 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        double  delayP3 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
 
         selected.setValue(p0 + 4 * h);
-        double  delayP4 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        double  delayP4 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
             
         fillJacobianColumn(refDeriv, 0, orbitType, angleType, h,
                            delayM4, delayM3, delayM2, delayM1,
@@ -370,21 +373,17 @@ public class TimeSpanEstimatedTroposphericModelTest {
     @Test
     public void testComparisonWithEstimatedModel() {
         final AbsoluteDate date = new AbsoluteDate();
-        MappingFunction mapping = new NiellMappingFunctionModel(FastMath.toRadians(45.0));
+        MappingFunction mapping = new NiellMappingFunctionModel();
         EstimatedTroposphericModel estimatedModel = new EstimatedTroposphericModel(mapping, 2.0);
         DiscreteTroposphericModel  timeSpanModel  = new TimeSpanEstimatedTroposphericModel(estimatedModel);
         final double elevation = 45.0;
         final double height    = 100.0;
         final double[] estimatedParameters = estimatedModel.getParameters();
         final double[] timeSpanParameters = estimatedModel.getParameters();
-        Assert.assertEquals(estimatedModel.pathDelay(elevation, height, estimatedParameters, date),
-                            timeSpanModel.pathDelay(elevation, height, timeSpanParameters, date),
-                            Double.MIN_VALUE);
-        Assert.assertEquals(estimatedModel.computeZenithDelay(height, estimatedParameters, date)[0],
-                            timeSpanModel.computeZenithDelay(height, timeSpanParameters, date)[0],
-                            Double.MIN_VALUE);
-        Assert.assertEquals(estimatedModel.mappingFactors(elevation, height, estimatedParameters, date)[0],
-                            timeSpanModel.mappingFactors(elevation, height, timeSpanParameters, date)[0],
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
+
+        Assert.assertEquals(estimatedModel.pathDelay(elevation, point, estimatedParameters, date),
+                            timeSpanModel.pathDelay(elevation, point, timeSpanParameters, date),
                             Double.MIN_VALUE);
     }
 
@@ -393,24 +392,20 @@ public class TimeSpanEstimatedTroposphericModelTest {
         doTestFieldComparisonWithEstimatedModel(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldComparisonWithEstimatedModel(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldComparisonWithEstimatedModel(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        MappingFunction mapping = new NiellMappingFunctionModel(FastMath.toRadians(45.0));
+        MappingFunction mapping = new NiellMappingFunctionModel();
         EstimatedTroposphericModel estimatedModel = new EstimatedTroposphericModel(mapping, 2.0);
         DiscreteTroposphericModel  timeSpanModel  = new TimeSpanEstimatedTroposphericModel(estimatedModel);
         final T elevation = zero.add(45.0);
         final T height    = zero.add(100.0);
         final T[] estimatedParameters = estimatedModel.getParameters(field);
         final T[] timeSpanParameters = estimatedModel.getParameters(field);
-        Assert.assertEquals(estimatedModel.pathDelay(elevation, height, estimatedParameters, date).getReal(),
-                            timeSpanModel.pathDelay(elevation, height, timeSpanParameters, date).getReal(),
-                            Double.MIN_VALUE);
-        Assert.assertEquals(estimatedModel.computeZenithDelay(height, estimatedParameters, date)[0].getReal(),
-                            timeSpanModel.computeZenithDelay(height, timeSpanParameters, date)[0].getReal(),
-                            Double.MIN_VALUE);
-        Assert.assertEquals(estimatedModel.mappingFactors(elevation, height, estimatedParameters, date)[0].getReal(),
-                            timeSpanModel.mappingFactors(elevation, height, timeSpanParameters, date)[0].getReal(),
+        final FieldGeodeticPoint<T> dsPoint = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), height);
+
+        Assert.assertEquals(estimatedModel.pathDelay(elevation, dsPoint, estimatedParameters, date).getReal(),
+                            timeSpanModel.pathDelay(elevation, dsPoint, timeSpanParameters, date).getReal(),
                             Double.MIN_VALUE);
     }
 

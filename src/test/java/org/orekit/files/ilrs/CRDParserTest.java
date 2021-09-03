@@ -17,22 +17,24 @@
 package org.orekit.files.ilrs;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ilrs.CRD.AnglesMeasurement;
+import org.orekit.files.ilrs.CRD.CRDDataBlock;
+import org.orekit.files.ilrs.CRD.Meteo;
+import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
+import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRDConfiguration.TransponderConfiguration;
-import org.orekit.files.ilrs.CRDFile.AnglesMeasurement;
-import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
-import org.orekit.files.ilrs.CRDFile.MeteorologicalMeasurement;
-import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -43,8 +45,7 @@ public class CRDParserTest {
         try {
             final String ex = "/ilrs/crd_invalid_format.v2C";
             final CRDParser parser = new CRDParser();
-            final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-            parser.parse(fileName);
+            parser.parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNEXPECTED_FORMAT_FOR_ILRS_FILE,
@@ -60,7 +61,7 @@ public class CRDParserTest {
             final String ex = "/ilrs/crd_unexpected_end_of_file.v2C";
             final CRDParser parser = new CRDParser();
             final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-            parser.parse(fileName);
+            parser.parse(new DataSource(fileName));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CRD_UNEXPECTED_END_OF_FILE,
@@ -75,8 +76,7 @@ public class CRDParserTest {
         try {
             final String ex = "/ilrs/crd_corrupted_data.v2C";
             final CRDParser parser = new CRDParser();
-            final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-            parser.parse(fileName);
+            parser.parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
@@ -91,8 +91,7 @@ public class CRDParserTest {
         try {
             final String ex = "/ilrs/crd_invalid_range_type.v2C";
             final CRDParser parser = new CRDParser();
-            final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-            parser.parse(fileName);
+            parser.parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.INVALID_RANGE_INDICATOR_IN_CRD_FILE,
@@ -109,8 +108,7 @@ public class CRDParserTest {
         final String ex = "/ilrs/lageos2_201802.npt.v2C";
 
         final CRDParser parser = new CRDParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CRDFile file = (CRDFile) parser.parse(fileName);
+        final CRD file = parser.parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify first data block
         final CRDDataBlock first = file.getDataBlocks().get(0);
@@ -349,8 +347,7 @@ public class CRDParserTest {
         final String ex = "/ilrs/champ_201709-small.frd";
 
         final CRDParser parser = new CRDParser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final CRDFile file = (CRDFile) parser.parse(inEntry);
+        final CRD file = parser.parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Data block
         final CRDDataBlock block = file.getDataBlocks().get(0);
@@ -451,9 +448,7 @@ public class CRDParserTest {
 
         final String ex = "/ilrs/crd_all_fields.frd";
 
-        final CRDParser parser = new CRDParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CRDFile file = (CRDFile) parser.parse(fileName);
+        final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         final CRDDataBlock block = file.getDataBlocks().get(0);
         Assert.assertEquals(0, file.getComments().size());
@@ -519,6 +514,29 @@ public class CRDParserTest {
         Assert.assertEquals(274.0,                       data2.getTemperature(), 1.0e-15);
         Assert.assertEquals(60.0,                        data2.getHumidity(),    1.0e-15);
 
+    }
+
+    @Test
+    public void testIssue801() throws URISyntaxException, IOException {
+
+        final String ex = "/ilrs/crd_all_fields.frd";
+
+        final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        final CRDDataBlock block = file.getDataBlocks().get(0);
+        Assert.assertEquals(0, file.getComments().size());
+        Assert.assertEquals(4, block.getRangeData().size());
+        Assert.assertEquals(4, block.getAnglesData().size());
+
+        final Meteo meteo = block.getMeteoData();
+        final List<MeteorologicalMeasurement> data = meteo.getData();
+        Assert.assertEquals(1, data.size());
+
+        final MeteorologicalMeasurement measurement = data.get(0);
+        Assert.assertEquals(0.92374, measurement.getPressure(),    0.00001);
+        Assert.assertEquals(289.42,  measurement.getTemperature(), 0.01);
+        Assert.assertEquals(28.1,    measurement.getHumidity(),    0.01);
+        
     }
 
     @Before

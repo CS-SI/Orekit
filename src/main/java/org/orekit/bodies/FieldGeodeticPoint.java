@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,20 +18,21 @@ package org.orekit.bodies;
 
 import java.text.NumberFormat;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.CompositeFormat;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 
-/** Point location relative to a 2D body surface, using {@link RealFieldElement}.
+/** Point location relative to a 2D body surface, using {@link CalculusFieldElement}.
  * <p>Instance of this class are guaranteed to be immutable.</p>
  * @param <T> the type of the field elements
  * @since 7.1
  * @see BodyShape
  * @author Luc Maisonobe
  */
-public class FieldGeodeticPoint<T extends RealFieldElement<T>> {
+public class FieldGeodeticPoint<T extends CalculusFieldElement<T>> {
 
     /** Latitude of the point (rad). */
     private final T latitude;
@@ -70,17 +71,17 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> {
      */
     public FieldGeodeticPoint(final T latitude, final T longitude,
                               final T altitude) {
-        double lat = MathUtils.normalizeAngle(latitude.getReal(), FastMath.PI / 2);
-        double lon = MathUtils.normalizeAngle(longitude.getReal(), 0);
-        if (lat > FastMath.PI / 2.0) {
+        final T zero = latitude.getField().getZero();
+        final T pi   = zero.getPi();
+        T lat = MathUtils.normalizeAngle(latitude,  pi.multiply(0.5));
+        T lon = MathUtils.normalizeAngle(longitude, zero);
+        if (lat.getReal() > pi.multiply(0.5).getReal()) {
             // latitude is beyond the pole -> add 180 to longitude
-            lat = FastMath.PI - lat;
-            lon = MathUtils.normalizeAngle(longitude.getReal() + FastMath.PI, 0);
+            lat = pi.subtract(lat);
+            lon = MathUtils.normalizeAngle(longitude.add(pi), zero);
         }
-        final double deltaLat = lat - latitude.getReal();
-        final double deltaLon = lon - longitude.getReal();
-        this.latitude  = latitude.add(deltaLat);
-        this.longitude = longitude.add(deltaLon);
+        this.latitude  = lat;
+        this.longitude = lon;
         this.altitude  = altitude;
     }
 
@@ -112,13 +113,11 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> {
      */
     public FieldVector3D<T> getZenith() {
         if (zenith == null) {
-            final T cosLat = latitude.cos();
-            final T sinLat = latitude.sin();
-            final T cosLon = longitude.cos();
-            final T sinLon = longitude.sin();
-            zenith = new FieldVector3D<>(cosLon.multiply(cosLat),
-                                         sinLon.multiply(cosLat),
-                                         sinLat);
+            final FieldSinCos<T> scLat = FastMath.sinCos(latitude);
+            final FieldSinCos<T> scLon = FastMath.sinCos(longitude);
+            zenith = new FieldVector3D<>(scLon.cos().multiply(scLat.cos()),
+                                         scLon.sin().multiply(scLat.cos()),
+                                         scLat.sin());
         }
         return zenith;
     }
@@ -143,13 +142,11 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> {
      */
     public FieldVector3D<T> getNorth() {
         if (north == null) {
-            final T cosLat = latitude.cos();
-            final T sinLat = latitude.sin();
-            final T cosLon = longitude.cos();
-            final T sinLon = longitude.sin();
-            north = new FieldVector3D<>(cosLon.multiply(sinLat).negate(),
-                                        sinLon.multiply(sinLat).negate(),
-                                        cosLat);
+            final FieldSinCos<T> scLat = FastMath.sinCos(latitude);
+            final FieldSinCos<T> scLon = FastMath.sinCos(longitude);
+            north = new FieldVector3D<>(scLon.cos().multiply(scLat.sin()).negate(),
+                                        scLon.sin().multiply(scLat.sin()).negate(),
+                                        scLat.cos());
         }
         return north;
     }
@@ -174,8 +171,9 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> {
      */
     public FieldVector3D<T> getEast() {
         if (east == null) {
-            east = new FieldVector3D<>(longitude.sin().negate(),
-                                       longitude.cos(),
+            final FieldSinCos<T> scLon = FastMath.sinCos(longitude);
+            east = new FieldVector3D<>(scLon.sin().negate(),
+                                       scLon.cos(),
                                        longitude.getField().getZero());
         }
         return east;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,7 +91,7 @@ public class FootprintOverlapDetectorTest {
     @Test
     public void testRightForwardView() throws IOException {
 
-        propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+        propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                       RotationOrder.XYZ,
                                                       FastMath.toRadians(-20.0),
                                                       FastMath.toRadians(+20.0),
@@ -105,87 +105,6 @@ public class FootprintOverlapDetectorTest {
                                                          DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                                          Vector3D.PLUS_I,
                                                          FastMath.toRadians(2.5), 4, 0.0);
-        final FootprintOverlapDetector detector =
-                new FootprintOverlapDetector(fov, earth, france, 50000.0).
-                withMaxCheck(1.0).
-                withThreshold(1.0e-6).
-                withHandler(new ContinueOnEvent<FootprintOverlapDetector>());
-        final EventsLogger logger = new EventsLogger();
-        propagator.addEventDetector(logger.monitorDetector(detector));
-
-        // Extrapolate from the initial to the final date
-        propagator.propagate(initialOrbit.getDate().shiftedBy(635000),
-                             initialOrbit.getDate().shiftedBy(735000));
-
-        List<LoggedEvent> events = logger.getLoggedEvents();
-        Assert.assertEquals(8, events.size());
-
-        // the first two consecutive close events occur during the same ascending orbit
-        // we first see Corsica, then lose visibility over the sea, then see continental France
-
-        // above Mediterranean sea, between Illes Balears and Sardigna,
-        // pointing to Corsica towards North-East
-        checkEventPair(events.get(0),  events.get(1),
-                       639010.0775,  34.1551, 39.2231,  6.5960, 42.0734,  9.0526);
-
-        // above Saint-Chamond (Loire), pointing near Saint-Dié-des-Vosges (Vosges) towards North-East
-        checkEventPair(events.get(2),  events.get(3),
-                       639113.0751,  38.8681, 45.5212,  4.4866, 48.4066,  7.1546);
-
-        // event is on a descending orbit, so the pointing direction,
-        // taking roll and pitch offsets, is towards South-West with respect to spacecraft
-        // above English Channel, pointing near Hanvec (Finistère) towards South-West
-        checkEventPair(events.get(4),  events.get(5),
-                       687772.4531,  27.0852, 50.2693,  0.0493, 48.3243, -4.1510);
-
-        // event on an ascending orbit
-        // above Atlantic ocean, pointing near to île d'Oléron (Charente-Maritime) towards North-East
-        checkEventPair(events.get(6),  events.get(7),
-                       727696.1034, 112.8867, 42.9486, -4.0325, 45.8192, -1.4565);
-
-    }
-
-    @Test
-    public void testSampleAroundPoleDeprecated() throws NoSuchFieldException, IllegalAccessException {
-        S2Point[] polygon = new S2Point[] {
-            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
-        };
-        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, polygon);
-        @SuppressWarnings("deprecation")
-        org.orekit.propagation.events.FieldOfView fov = new org.orekit.propagation.events.FieldOfView(Vector3D.PLUS_J,
-                                          Vector3D.PLUS_I, FastMath.toRadians(5.),
-                                          Vector3D.PLUS_K, FastMath.toRadians(5.),
-                                          0.);
-        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, itrf);
-        @SuppressWarnings("deprecation")
-        FootprintOverlapDetector detector = new FootprintOverlapDetector(fov, earth, aoi, 20000.);
-        Assert.assertEquals(9.91475183e-3, detector.getZone().getSize(), 1.0e-10);
-        Field sampledZoneField = FootprintOverlapDetector.class.getDeclaredField("sampledZone");
-        sampledZoneField.setAccessible(true);
-        List<?> sampledZone = (List<?>) sampledZoneField.get(detector);
-        Assert.assertEquals(1140, sampledZone.size());
-    }
-
-    @Test
-    public void testRightForwardViewDeprecated() throws IOException {
-
-        propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
-                                                      RotationOrder.XYZ,
-                                                      FastMath.toRadians(-20.0),
-                                                      FastMath.toRadians(+20.0),
-                                                      0.0));
-
-        // observe continental France plus Corsica
-        final SphericalPolygonsSet france = buildFrance();
-
-        // square field of view along Z axis (which is pointing sideways), aperture 5°, 0° margin
-        @SuppressWarnings("deprecation")
-        final org.orekit.propagation.events.FieldOfView fov = new org.orekit.propagation.events.FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
-                                                FastMath.toRadians(2.5), 4, 0.0);
-        @SuppressWarnings("deprecation")
         final FootprintOverlapDetector detector =
                 new FootprintOverlapDetector(fov, earth, france, 50000.0).
                 withMaxCheck(1.0).

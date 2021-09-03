@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.models.earth.ionosphere;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -118,7 +118,7 @@ public class EstimatedIonosphericModel implements IonosphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
         // Elevation and azimuth in radians
         final FieldVector3D<T> position = state.getPVCoordinates(baseFrame).getPosition();
@@ -144,7 +144,7 @@ public class EstimatedIonosphericModel implements IonosphericModel {
      * @param parameters ionospheric model parameters
      * @return the path delay due to the ionosphere in m
      */
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final double frequency, final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final double frequency, final T[] parameters) {
         // Square of the frequency
         final double freq2 = frequency * frequency;
         // Mapping factor

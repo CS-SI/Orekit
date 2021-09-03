@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,10 +47,6 @@
  *  </li>
  *  <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
  *  detects apside crossing (and by default stop at perigee)
- *  </li>
- *  <li>{@link org.orekit.propagation.events.CircularFieldOfViewDetector CircularFieldOfViewDetector}
- *  detects moving target entering/exiting satellite sensor Field Of View with a
- *  circular shaped boundary (and by default continue on entry and stop on exit)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.DateDetector DateDetector}
  *  detects occurrence of a predefine instant (and by default stop there)

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** GLONASS time scale.
  * <p>By convention, TGLONASS = UTC + 3 hours.</p>
@@ -56,7 +56,7 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
         return utc.offsetFromTAI(date).add(OFFSET);
     }
 
@@ -76,7 +76,7 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
         return utc.insideLeap(date);
     }
 
@@ -88,7 +88,7 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
         return utc.minuteDuration(date);
     }
 
@@ -100,7 +100,7 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
         return utc.getLeap(date);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,7 +63,7 @@ public class InterSatDirectViewDetectorTest {
         final EventsLogger logger = new EventsLogger();
         p.addEventDetector(logger.monitorDetector(new InterSatDirectViewDetector(earth, o2).
                                                   withMaxCheck(60.0)));
-        p.setMasterMode(10.0, (state, isLast) -> {
+        p.setStepHandler(10.0, state -> {
             Vector3D pos1 = state.getPVCoordinates().getPosition();
             Vector3D pos2 = o2.getPVCoordinates(state.getDate(), state.getFrame()).getPosition();
             Assert.assertTrue(Vector3D.distance(pos1, pos2) >  8100.0);
@@ -90,7 +90,7 @@ public class InterSatDirectViewDetectorTest {
                                                    o1.getDate(),
                                                    Constants.EIGEN5C_EARTH_MU);
 
-        // LEO as master, MEO as slave
+        // LEO as primary, MEO as secondary
         Propagator pA = new KeplerianPropagator(o1);
         EventsLogger loggerA = new EventsLogger();
         pA.addEventDetector(loggerA.monitorDetector(new InterSatDirectViewDetector(earth, o2).
@@ -99,7 +99,7 @@ public class InterSatDirectViewDetectorTest {
         pA.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
         Assert.assertEquals(7, loggerA.getLoggedEvents().size());
 
-        // LEO as slave, MEO as master
+        // LEO as secondary, MEO as primary
         Propagator pB = new KeplerianPropagator(o2);
         EventsLogger loggerB = new EventsLogger();
         pB.addEventDetector(loggerB.monitorDetector(new InterSatDirectViewDetector(earth, o1).
@@ -113,25 +113,25 @@ public class InterSatDirectViewDetectorTest {
     private static class GrazingHandler implements EventHandler<InterSatDirectViewDetector> {
         public Action eventOccurred(SpacecraftState s, InterSatDirectViewDetector detector, boolean increasing) {
             // just before increasing events and just after decreasing events,
-            // the master/slave line intersects Earth limb
+            // the primary/secondary line intersects Earth limb
             final OneAxisEllipsoid earth       = detector.getCentralBody();
             final Frame            frame       = earth.getBodyFrame();
             final double           dt          = increasing ? -1.0e-8 : +1.0e-8;
             final AbsoluteDate     grazingDate = s.getDate().shiftedBy(dt);
-            final Vector3D pMaster = s.shiftedBy(dt).
+            final Vector3D pPrimary = s.shiftedBy(dt).
                                      getPVCoordinates(frame).
                                      getPosition();
-            final Vector3D pSlave  = detector.getSlave().getPVCoordinates(grazingDate, frame).
+            final Vector3D psecondary  = detector.getSecondary().getPVCoordinates(grazingDate, frame).
                                      getPosition();
-            final Vector3D grazing = earth.getCartesianIntersectionPoint(new Line(pMaster,  pSlave, 1.0),
-                                                                         pMaster, frame, grazingDate);
+            final Vector3D grazing = earth.getCartesianIntersectionPoint(new Line(pPrimary,  psecondary, 1.0),
+                                                                         pPrimary, frame, grazingDate);
             final TopocentricFrame topo = new TopocentricFrame(earth, earth.transform(grazing, frame, grazingDate),
                                                                "grazing");
-            Assert.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(pMaster, frame, grazingDate)), 2.0e-4);
-            Assert.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(pSlave,  frame, grazingDate)), 2.0e-4);
+            Assert.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(pPrimary, frame, grazingDate)), 2.0e-4);
+            Assert.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(psecondary,  frame, grazingDate)), 2.0e-4);
             Assert.assertEquals(180.0,
-                                FastMath.abs(FastMath.toDegrees(topo.getAzimuth(pSlave,  frame, grazingDate) -
-                                                                topo.getAzimuth(pMaster, frame, grazingDate))),
+                                FastMath.abs(FastMath.toDegrees(topo.getAzimuth(psecondary,  frame, grazingDate) -
+                                                                topo.getAzimuth(pPrimary, frame, grazingDate))),
                                 6.0e-14);
             return Action.CONTINUE;
         }

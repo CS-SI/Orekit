@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,6 @@ package org.orekit.files.ilrs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -30,8 +25,13 @@ import java.util.stream.Stream;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ilrs.CRD.AnglesMeasurement;
+import org.orekit.files.ilrs.CRD.CRDDataBlock;
+import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
+import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRDConfiguration.DetectorConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.LaserConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.MeteorologicalConfiguration;
@@ -39,14 +39,12 @@ import org.orekit.files.ilrs.CRDConfiguration.SoftwareConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.SystemConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.TimingSystemConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.TransponderConfiguration;
-import org.orekit.files.ilrs.CRDFile.AnglesMeasurement;
-import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
-import org.orekit.files.ilrs.CRDFile.MeteorologicalMeasurement;
-import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.units.Unit;
+import org.orekit.utils.units.UnitsConverter;
 
 /**
  * A parser for the CRD data file format.
@@ -65,17 +63,17 @@ public class CRDParser {
     /** Default supported files name pattern for CRD files. */
     public static final String DEFAULT_CRD_SUPPORTED_NAMES = "^(?!0+$)\\w{1,12}\\_\\d{6,8}.\\w{3}$";
 
-    /** Nanometers to meters converter. */
-    private static final double NM_TO_M = 1.0e-9;
+    /** Nanometers units. */
+    private static final Unit NM = Unit.parse("nm");
 
-    /** Kilohertz to hertz converter. */
-    private static final double KHZ_TO_HZ = 1.0e3;
+    /** Kilohertz units. */
+    private static final Unit KHZ = Unit.parse("kHz");
 
-    /** Microseconds to seconds converter. */
-    private static final double US_TO_S = 1.0e-6;
+    /** Microseconds units. */
+    private static final Unit US = Unit.parse("µs");
 
-    /** Milli to none converter. */
-    private static final double MILLI_TO_NONE = 1.0e-3;
+    /** mbar to bar converter. */
+    private static final UnitsConverter MBAR_TO_BAR = new UnitsConverter(Unit.parse("mbar"), Unit.parse("bar"));
 
     /** File format. */
     private static final String FILE_FORMAT = "CRD";
@@ -116,69 +114,37 @@ public class CRDParser {
     }
 
     /**
-     * Parse a CRD file from an input stream using the UTF-8 charset.
-     *
-     * <p> This method creates a {@link BufferedReader} from the stream and as such this
-     * method may read more data than necessary from {@code stream} and the additional
-     * data will be lost. The other parse methods do not have this issue.
-     *
-     * @param stream to read the CRD file from.
-     * @return a parsed CRD file.
-     * @throws IOException if {@code stream} throws one.
-     * @see #parse(String)
-     * @see #parse(BufferedReader, String)
-     */
-    public CRDFile parse(final InputStream stream) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            return parse(reader, stream.toString());
-        }
-    }
-
-    /**
-     * Parse an CRD file from a file on the local file system.
-     * @param fileName path to the CRD file.
-     * @return parsed CRD file.
-     * @throws IOException if one is thrown while opening or reading from {@code fileName}
-     */
-    public CRDFile parse(final String fileName) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
-                                                             StandardCharsets.UTF_8)) {
-            return parse(reader, fileName);
-        }
-    }
-
-    /**
-     * Parse a CRD file from a stream.
-     * @param reader   containing the CRD file.
-     * @param fileName to use in error messages.
+     * Parse a CRD file.
+     * @param source data source containing the CRD file.
      * @return a parsed CRD file.
      * @throws IOException if {@code reader} throws one.
      */
-    public CRDFile parse(final BufferedReader reader,
-                         final String fileName) throws IOException {
+    public CRD parse(final DataSource source) throws IOException {
 
         // Initialize internal data structures
         final ParseInfo pi = new ParseInfo();
 
         int lineNumber = 0;
         Stream<LineParser> cdrParsers = Stream.of(LineParser.H1);
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++lineNumber;
-            final String l = line;
-            final Optional<LineParser> selected = cdrParsers.filter(p -> p.canHandle(l)).findFirst();
-            if (selected.isPresent()) {
-                try {
-                    selected.get().parse(line, pi);
-                } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
-                    throw new OrekitException(e,
-                                              OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, fileName, line);
+        try (BufferedReader reader = new BufferedReader(source.getOpener().openReaderOnce())) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                ++lineNumber;
+                final String l = line;
+                final Optional<LineParser> selected = cdrParsers.filter(p -> p.canHandle(l)).findFirst();
+                if (selected.isPresent()) {
+                    try {
+                        selected.get().parse(line, pi);
+                    } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                        throw new OrekitException(e,
+                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, source.getName(), line);
+                    }
+                    cdrParsers = selected.get().allowedNext();
                 }
-                cdrParsers = selected.get().allowedNext();
-            }
-            if (pi.done) {
-                // Return file
-                return pi.file;
+                if (pi.done) {
+                    // Return file
+                    return pi.file;
+                }
             }
         }
 
@@ -195,7 +161,7 @@ public class CRDParser {
     private class ParseInfo {
 
         /** The corresponding CDR file. */
-        private CRDFile file;
+        private CRD file;
 
         /** Version. */
         private int version;
@@ -229,7 +195,7 @@ public class CRDParser {
             this.startEpoch = DateComponents.J2000_EPOCH;
 
             // Initialise empty object
-            this.file                 = new CRDFile();
+            this.file                 = new CRD();
             this.header               = new CRDHeader();
             this.configurationRecords = new CRDConfiguration();
             this.dataBlock            = new CRDDataBlock();
@@ -465,7 +431,7 @@ public class CRDParser {
                 final String[] values = SEPARATOR.split(line);
 
                 // Wavelength
-                systemRecord.setWavelength(Double.parseDouble(values[2]) * NM_TO_M);
+                systemRecord.setWavelength(NM.toSI(Double.parseDouble(values[2])));
 
                 // System ID
                 systemRecord.setSystemId(values[3]);
@@ -500,7 +466,7 @@ public class CRDParser {
                 // Fill values
                 laserRecord.setLaserId(values[2]);
                 laserRecord.setLaserType(values[3]);
-                laserRecord.setPrimaryWavelength(Double.parseDouble(values[4]) * NM_TO_M);
+                laserRecord.setPrimaryWavelength(NM.toSI(Double.parseDouble(values[4])));
                 laserRecord.setNominalFireRate(Double.parseDouble(values[5]));
                 laserRecord.setPulseEnergy(Double.parseDouble(values[6]));
                 laserRecord.setPulseWidth(Double.parseDouble(values[7]));
@@ -536,13 +502,13 @@ public class CRDParser {
                 // Fill values
                 detectorRecord.setDetectorId(values[2]);
                 detectorRecord.setDetectorType(values[3]);
-                detectorRecord.setApplicableWavelength(Double.parseDouble(values[4]) * NM_TO_M);
+                detectorRecord.setApplicableWavelength(NM.toSI(Double.parseDouble(values[4])));
                 detectorRecord.setQuantumEfficiency(Double.parseDouble(values[5]));
                 detectorRecord.setAppliedVoltage(Double.parseDouble(values[6]));
-                detectorRecord.setDarkCount(Double.parseDouble(values[7]) * KHZ_TO_HZ);
+                detectorRecord.setDarkCount(KHZ.toSI(Double.parseDouble(values[7])));
                 detectorRecord.setOutputPulseType(values[8]);
                 detectorRecord.setOutputPulseWidth(Double.parseDouble(values[9]));
-                detectorRecord.setSpectralFilter(Double.parseDouble(values[10]) * NM_TO_M);
+                detectorRecord.setSpectralFilter(NM.toSI(Double.parseDouble(values[10])));
                 detectorRecord.setTransmissionOfSpectralFilter(Double.parseDouble(values[11]));
                 detectorRecord.setSpatialFilter(Double.parseDouble(values[12]));
                 detectorRecord.setExternalSignalProcessing(values[13]);
@@ -550,7 +516,7 @@ public class CRDParser {
                 // Check file version for additional data
                 if (pi.version == 2) {
                     detectorRecord.setAmplifierGain(Double.parseDouble(values[14]));
-                    detectorRecord.setAmplifierBandwidth(Double.parseDouble(values[15]) * KHZ_TO_HZ);
+                    detectorRecord.setAmplifierBandwidth(KHZ.toSI(Double.parseDouble(values[15])));
                     detectorRecord.setAmplifierInUse(values[16]);
                 }
 
@@ -586,7 +552,7 @@ public class CRDParser {
                 timingRecord.setFrequencySource(values[4]);
                 timingRecord.setTimer(values[5]);
                 timingRecord.setTimerSerialNumber(values[6]);
-                timingRecord.setEpochDelayCorrection(Double.parseDouble(values[7]) * US_TO_S);
+                timingRecord.setEpochDelayCorrection(US.toSI(Double.parseDouble(values[7])));
 
                 // Set the timing system configuration record
                 pi.configurationRecords.setTimingRecord(timingRecord);
@@ -616,9 +582,9 @@ public class CRDParser {
 
                 // Estimated offsets and drifts
                 transponderRecord.setTransponderId(values[2]);
-                transponderRecord.setStationUTCOffset(Double.parseDouble(values[3]) * NM_TO_M);
+                transponderRecord.setStationUTCOffset(NM.toSI(Double.parseDouble(values[3])));
                 transponderRecord.setStationOscDrift(Double.parseDouble(values[4]));
-                transponderRecord.setTranspUTCOffset(Double.parseDouble(values[5]) * NM_TO_M);
+                transponderRecord.setTranspUTCOffset(NM.toSI(Double.parseDouble(values[5])));
                 transponderRecord.setTranspOscDrift(Double.parseDouble(values[6]));
 
                 // Transponder clock reference time
@@ -822,7 +788,7 @@ public class CRDParser {
 
                 // Read data
                 final double secOfDay    = Double.parseDouble(values[1]);
-                final double pressure    = Double.parseDouble(values[2]) * MILLI_TO_NONE;
+                final double pressure    = MBAR_TO_BAR.convert(Double.parseDouble(values[2]));
                 final double temperature = Double.parseDouble(values[3]);
                 final double humidity    = Double.parseDouble(values[4]);
 

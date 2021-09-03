@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,14 @@
 package org.orekit.propagation.semianalytical.dsst;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.util.MathArrays;
@@ -107,12 +108,12 @@ public class DSSTPartialDerivativesEquationsTest {
         pde.computeDerivatives(state, pdot);
 
         //verify
-        assertThat(forceModel.sma.getReal(), is(state.getA()));
-        assertThat(forceModel.ex.getReal(),  is(state.getEquinoctialEx()));
-        assertThat(forceModel.ey.getReal(),  is(state.getEquinoctialEy()));
-        assertThat(forceModel.hx.getReal(),  is(state.getHx()));
-        assertThat(forceModel.hy.getReal(),  is(state.getHy()));
-        assertThat(forceModel.l.getReal(),   is(state.getLv()));
+        MatcherAssert.assertThat(forceModel.sma.getReal(), is(state.getA()));
+        MatcherAssert.assertThat(forceModel.ex.getReal(),  is(state.getEquinoctialEx()));
+        MatcherAssert.assertThat(forceModel.ey.getReal(),  is(state.getEquinoctialEy()));
+        MatcherAssert.assertThat(forceModel.hx.getReal(),  is(state.getHx()));
+        MatcherAssert.assertThat(forceModel.hy.getReal(),  is(state.getHy()));
+        MatcherAssert.assertThat(forceModel.l.getReal(),   is(state.getLv()));
 
     }
 
@@ -138,14 +139,14 @@ public class DSSTPartialDerivativesEquationsTest {
         public Gradient l;
 
         @Override
-        public List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
+        public List<ShortPeriodTerms> initializeShortPeriodTerms(AuxiliaryElements auxiliaryElements,
                                                  PropagationType type,
                                                  double[] parameters) {
             return new ArrayList<ShortPeriodTerms>();
         }
 
         @Override
-        public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
+        public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                          PropagationType type,
                                                                                          T[] parameters) {
             return new ArrayList<FieldShortPeriodTerms<T>>();
@@ -164,7 +165,7 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
+        public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
                                                                       FieldAuxiliaryElements<T> auxiliaryElements,
                                                                       T[] parameters) {
             
@@ -195,7 +196,7 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field) {
+        public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field) {
             return null;
         }
 
@@ -209,13 +210,13 @@ public class DSSTPartialDerivativesEquationsTest {
         
         @Override
         @SuppressWarnings("unchecked")
-        public <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters,
+        public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(T[] parameters,
                                                                            FieldSpacecraftState<T>... meanStates) {
         }
 
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[0];
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
 
     }

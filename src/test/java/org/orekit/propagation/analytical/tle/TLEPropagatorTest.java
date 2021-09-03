@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.tle;
 
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -24,6 +25,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -31,6 +33,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -46,7 +49,7 @@ public class TLEPropagatorTest {
     private double period;
 
     @Test
-    public void testSlaveMode() {
+    public void testsecondaryMode() {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         AbsoluteDate initDate = tle.getDate();
@@ -70,7 +73,7 @@ public class TLEPropagatorTest {
     public void testEphemerisMode() {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
 
         AbsoluteDate initDate = tle.getDate();
         SpacecraftState initialState = propagator.getInitialState();
@@ -81,7 +84,7 @@ public class TLEPropagatorTest {
         propagator.propagate(endDate);
 
         // get the ephemeris
-        BoundedPropagator boundedProp = propagator.getGeneratedEphemeris();
+        BoundedPropagator boundedProp = generator.getGeneratedEphemeris();
 
         // get the initial state from the ephemeris and check if it is the same as
         // the initial state from the TLE
@@ -123,15 +126,16 @@ public class TLEPropagatorTest {
                 TLEPropagator.selectExtrapolator(tle,
                                                  new BodyCenterPointing(FramesFactory.getTEME(), earth),
                                                  Propagator.DEFAULT_MASS);
-        propagator.setMasterMode(900.0, checker);
+        propagator.setStepHandler(900.0, checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
         Assert.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
 
         // with default attitude mode, distance should be large
         propagator = TLEPropagator.selectExtrapolator(tle);
-        propagator.setMasterMode(900.0, checker);
+        propagator.setStepHandler(900.0, checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
-        Assert.assertEquals(1.5219e7, checker.getMinDistance(), 1000.0);
+        MatcherAssert.assertThat(checker.getMinDistance(),
+                OrekitMatchers.greaterThan(1.5218e7));
         Assert.assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
 
     }
@@ -159,8 +163,7 @@ public class TLEPropagatorTest {
             maxDistance = Double.NEGATIVE_INFINITY;
         }
 
-        public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+        public void handleStep(SpacecraftState currentState) {
             // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
             Rotation rotSat = currentState.getAttitude().getRotation();
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -55,7 +56,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -73,7 +73,9 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class ECOM2Test extends AbstractForceModelTest {
-    
+
+    private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("potential/shm-format:regular-data");
@@ -425,8 +427,8 @@ public class ECOM2Test extends AbstractForceModelTest {
         final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
 
         SpacecraftState state = new SpacecraftState(orbit,
-                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.0e-6, false);
+                                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferences(state, forceModel, DEFAULT_LAW, 1.0, 5.0e-6, false);
 
     }
 
@@ -447,8 +449,8 @@ public class ECOM2Test extends AbstractForceModelTest {
         final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
 
         SpacecraftState state = new SpacecraftState(orbit,
-                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.0e-6, false);
+                                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, DEFAULT_LAW, 1.0, 5.0e-6, false);
 
     }
 
@@ -487,7 +489,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         calc.addForceModel(SRP);
 
         // Step Handler
-        calc.setMasterMode(FastMath.floor(period), new SolarStepHandler());
+        calc.setStepHandler(FastMath.floor(period), new SolarStepHandler());
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
@@ -496,7 +498,7 @@ public class ECOM2Test extends AbstractForceModelTest {
 
     private static class SolarStepHandler implements OrekitFixedStepHandler {
 
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));

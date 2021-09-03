@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -27,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
-public interface FieldOrekitStepHandler<T extends RealFieldElement<T>> {
+public interface FieldOrekitStepHandler<T extends CalculusFieldElement<T>> {
 
     /** Initialize step handler at the start of a propagation.
      * <p>
@@ -38,12 +38,22 @@ public interface FieldOrekitStepHandler<T extends RealFieldElement<T>> {
      * @param s0 initial state
      * @param t target time for the integration
      */
-    void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t);
+    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+        // do nothing by default
+    }
 
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
-     * @param isLast if true, this is the last integration step
      */
-    void handleStep(FieldOrekitStepInterpolator<T> interpolator, boolean isLast);
+    void handleStep(FieldOrekitStepInterpolator<T> interpolator);
+
+    /**
+     * Finalize propagation.
+     * @param finalState state at propagation end
+     * @since 11.0
+     */
+    default void finish(FieldSpacecraftState<T> finalState) {
+        // nothing by default
+    }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,11 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.gnss.Frequency;
 import org.orekit.orbits.CartesianOrbit;
@@ -39,10 +41,10 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
@@ -135,9 +137,9 @@ public class OneWayGNSSPhaseTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
 
@@ -154,9 +156,8 @@ public class OneWayGNSSPhaseTest {
         final List<Double> absoluteErrors = new ArrayList<Double>();
         final List<Double> relativeErrors = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -265,9 +266,9 @@ public class OneWayGNSSPhaseTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
 
@@ -284,9 +285,8 @@ public class OneWayGNSSPhaseTest {
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -420,9 +420,9 @@ public class OneWayGNSSPhaseTest {
                                                     context.initialOrbit.getFrame(),
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit, propagatorBuilder);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // Create perfect phase measurements
         final int    ambiguity         = 1234;
@@ -439,9 +439,8 @@ public class OneWayGNSSPhaseTest {
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -536,6 +535,36 @@ public class OneWayGNSSPhaseTest {
         Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
         Assert.assertEquals(0.0, relErrorsMean, refErrorsMean);
         Assert.assertEquals(0.0, relErrorsMax, refErrorsMax);
+
+    }
+
+    @Test
+    public void testIssue734() {
+
+        Utils.setDataRoot("regular-data");
+
+        // Create a phase measurement. Remote is set to null since it not used by the test
+        final OneWayGNSSPhase phase = new OneWayGNSSPhase(null, 635.0e-6, AbsoluteDate.J2000_EPOCH, 467614.701,
+                                                          Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
+
+        // First check
+        Assert.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assert.assertFalse(phase.getAmbiguityDriver().isSelected());
+
+        // Perform some changes in ambiguity driver
+        phase.getAmbiguityDriver().setValue(1234.0);
+        phase.getAmbiguityDriver().setSelected(true);
+
+        // Second check
+        Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
+        for (ParameterDriver driver : phase.getParametersDrivers()) {
+            // Verify if the current driver corresponds to the phase ambiguity
+            if (driver.getName() == Phase.AMBIGUITY_NAME) {
+                Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+                Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
+            }
+        }
 
     }
 

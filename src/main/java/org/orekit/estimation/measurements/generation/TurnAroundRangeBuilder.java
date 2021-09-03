@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,27 +32,27 @@ import org.orekit.utils.ParameterDriver;
  */
 public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroundRange> {
 
-    /** Master ground station from which measurement is performed. */
-    private final GroundStation masterStation;
+    /** Primary ground station from which measurement is performed. */
+    private final GroundStation primaryStation;
 
-    /** Slave ground station reflecting the signal. */
-    private final GroundStation slaveStation;
+    /** Secondary ground station reflecting the signal. */
+    private final GroundStation secondaryStation;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param masterStation ground station from which measurement is performed
-     * @param slaveStation ground station reflecting the signal
+     * @param primaryStation ground station from which measurement is performed
+     * @param secondaryStation ground station reflecting the signal
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
     public TurnAroundRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                  final GroundStation masterStation, final GroundStation slaveStation,
+                                  final GroundStation primaryStation, final GroundStation secondaryStation,
                                   final double sigma, final double baseWeight,
                                   final ObservableSatellite satellite) {
         super(noiseSource, sigma, baseWeight, satellite);
-        this.masterStation = masterStation;
-        this.slaveStation  = slaveStation;
+        this.primaryStation   = primaryStation;
+        this.secondaryStation = secondaryStation;
     }
 
     /** {@inheritDoc} */
@@ -65,7 +65,7 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
         final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
 
         // create a dummy measurement
-        final TurnAroundRange dummy = new TurnAroundRange(masterStation, slaveStation, relevant[0].getDate(),
+        final TurnAroundRange dummy = new TurnAroundRange(primaryStation, secondaryStation, relevant[0].getDate(),
                                                           Double.NaN, sigma, baseWeight, satellite);
         for (final EstimationModifier<TurnAroundRange> modifier : getModifiers()) {
             dummy.addModifier(modifier);
@@ -90,7 +90,7 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
         }
 
         // generate measurement
-        final TurnAroundRange measurement = new TurnAroundRange(masterStation, slaveStation, relevant[0].getDate(),
+        final TurnAroundRange measurement = new TurnAroundRange(primaryStation, secondaryStation, relevant[0].getDate(),
                                                                 range, sigma, baseWeight, satellite);
         for (final EstimationModifier<TurnAroundRange> modifier : getModifiers()) {
             measurement.addModifier(modifier);

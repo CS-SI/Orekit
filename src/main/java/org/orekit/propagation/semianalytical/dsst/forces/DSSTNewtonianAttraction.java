@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
@@ -77,7 +77,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
+    public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements,
                                              final PropagationType type,
                                              final double[] parameters) {
         return Collections.emptyList();
@@ -85,7 +85,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
+    public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
                                                                                      final T[] parameters) {
         return Collections.emptyList();
@@ -112,7 +112,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return new force model context
      */
-    private <T extends RealFieldElement<T>> FieldDSSTNewtonianAttractionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
+    private <T extends CalculusFieldElement<T>> FieldDSSTNewtonianAttractionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                                   final T[] parameters) {
         return new FieldDSSTNewtonianAttractionContext<>(auxiliaryElements, parameters);
     }
@@ -136,7 +136,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
                                                                   final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                   final T[] parameters) {
 
@@ -160,7 +160,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
         return null;
     }
 
@@ -179,16 +179,14 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
                                                                        final FieldSpacecraftState<T>... meanStates) {
     }
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            gmParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(gmParameterDriver);
     }
 
 }

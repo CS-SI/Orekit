@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -31,7 +31,7 @@ import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
  * @author Evan Ward
  * @since 9.3
  */
-public class FieldLatitudeCrossingDetector <T extends RealFieldElement<T>>
+public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldLatitudeCrossingDetector<T>, T> {
 
     /** Body on which the latitude is defined. */

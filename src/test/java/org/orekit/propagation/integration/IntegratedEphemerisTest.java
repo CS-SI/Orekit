@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.JacobiansMapper;
@@ -57,11 +58,11 @@ public class IntegratedEphemerisTest {
 
         // Propagation
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
-        numericalPropagator.setEphemerisMode();
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
-        BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // tests
         for (int i = 1; i <= Constants.JULIAN_DAY; i++) {
@@ -78,9 +79,9 @@ public class IntegratedEphemerisTest {
         SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
         SpacecraftState state = keplerEx.propagate(finalDate);
         numericalPropagator.setInitialState(state);
-        numericalPropagator.setEphemerisMode();
+        final EphemerisGenerator generator2 = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.propagate(initialOrbit.getDate());
-        BoundedPropagator invEphemeris = numericalPropagator.getGeneratedEphemeris();
+        BoundedPropagator invEphemeris = generator2.getGeneratedEphemeris();
         SpacecraftState numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
         Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
         Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
@@ -92,7 +93,7 @@ public class IntegratedEphemerisTest {
     public void testPartialDerivativesIssue16() {
 
         final String eqName = "derivatives";
-        numericalPropagator.setEphemerisMode();
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
         final PartialDerivativesEquations derivatives =
             new PartialDerivativesEquations(eqName, numericalPropagator);
@@ -101,13 +102,12 @@ public class IntegratedEphemerisTest {
         final JacobiansMapper mapper = derivatives.getMapper();
         numericalPropagator.setInitialState(initialState);
         numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
-        BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
-        ephemeris.setMasterMode(new OrekitStepHandler() {
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        ephemeris.setStepHandler(new OrekitStepHandler() {
 
             private final Array2DRowRealMatrix dYdY0 = new Array2DRowRealMatrix(6, 6);
 
-            public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-                {
+            public void handleStep(OrekitStepInterpolator interpolator) {
                 SpacecraftState state = interpolator.getCurrentState();
                 Assert.assertEquals(mapper.getAdditionalStateDimension(),
                                     state.getAdditionalState(eqName).length);
@@ -128,11 +128,11 @@ public class IntegratedEphemerisTest {
     public void testGetFrame() {
         // setup
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
-        numericalPropagator.setEphemerisMode();
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
-        BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //action
         Assert.assertNotNull(ephemeris.getFrame());

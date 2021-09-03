@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,10 +41,10 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriver;
@@ -64,7 +64,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class BatchLSEstimator {
 
     /** Builders for propagator. */
-    private final IntegratedPropagatorBuilder[] builders;
+    private final OrbitDeterminationPropagatorBuilder[] builders;
 
     /** Measurements. */
     private final List<ObservedMeasurement<?>> measurements;
@@ -116,7 +116,7 @@ public class BatchLSEstimator {
      * @param propagatorBuilder builders to use for propagation
      */
     public BatchLSEstimator(final LeastSquaresOptimizer optimizer,
-                            final IntegratedPropagatorBuilder... propagatorBuilder) {
+                            final OrbitDeterminationPropagatorBuilder... propagatorBuilder) {
 
         this.builders                       = propagatorBuilder;
         this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
@@ -253,7 +253,7 @@ public class BatchLSEstimator {
         final ParameterDriversList parameters =  new ParameterDriversList();
         for (final  ObservedMeasurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
-                if ((!estimatedOnly) || driver.isSelected()) {
+                if (!estimatedOnly || driver.isSelected()) {
                     parameters.add(driver);
                 }
             }
@@ -351,7 +351,7 @@ public class BatchLSEstimator {
      * @return propagators configured with estimated orbits as initial states, and all
      * propagators estimated parameters also set
      */
-    public AbstractIntegratedPropagator[] estimate() {
+    public Propagator[] estimate() {
 
         // set reference date for all parameters that lack one (including the not estimated parameters)
         for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {
@@ -411,9 +411,8 @@ public class BatchLSEstimator {
                 BatchLSEstimator.this.estimations = newEstimations;
             }
         };
-        final BatchLSODModel model = builders[0].buildLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
-        //final Model model = new Model(builders, measurements, estimatedMeasurementsParameters,
-                                      //modelObserver);
+        final AbstractBatchLSModel model = builders[0].buildLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+
         lsBuilder.model(model);
 
         // add a validator for orbital parameters
@@ -536,7 +535,7 @@ public class BatchLSEstimator {
         private final LeastSquaresProblem problem;
 
         /** Multivariate function model. */
-        private final BatchLSODModel model;
+        private final AbstractBatchLSModel model;
 
         /** Estimated orbital parameters. */
         private final ParameterDriversList estimatedOrbitalParameters;
@@ -555,7 +554,7 @@ public class BatchLSEstimator {
          * @param estimatedMeasurementsParameters estimated measurements parameters
          */
         TappedLSProblem(final LeastSquaresProblem problem,
-                        final BatchLSODModel model,
+                        final AbstractBatchLSModel model,
                         final ParameterDriversList estimatedOrbitalParameters,
                         final ParameterDriversList estimatedPropagatorParameters,
                         final ParameterDriversList estimatedMeasurementsParameters) {

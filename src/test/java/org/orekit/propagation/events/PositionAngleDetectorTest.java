@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,6 +40,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -223,13 +224,13 @@ public class PositionAngleDetectorTest {
                                            withHandler(new ContinueOnEvent<>());
 
         // detect events with numerical propagator (and generate ephemeris)
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.setInitialState(initialState);
         EventsLogger logger1 = new EventsLogger();
         propagator.addEventDetector(logger1.monitorDetector(detector01));
         propagator.addEventDetector(logger1.monitorDetector(detector90));
         final AbsoluteDate finalDate = propagator.propagate(new AbsoluteDate(initialDate, Constants.JULIAN_DAY)).getDate();
-        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Assert.assertEquals(6, logger1.getLoggedEvents().size());
 
         // detect events with generated ephemeris
@@ -290,6 +291,7 @@ public class PositionAngleDetectorTest {
             SpacecraftState state = e.getState();
             orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array, null);
             Assert.assertEquals(angle, MathUtils.normalizeAngle(array[5], angle), 1.0e-10);
+            Assert.assertEquals(state.getDate(), e.getDate());
         }
         Assert.assertEquals(expectedCrossings, logger.getLoggedEvents().size());
 

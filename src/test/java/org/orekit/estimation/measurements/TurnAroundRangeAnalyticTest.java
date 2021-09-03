@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -238,7 +238,7 @@ public class TurnAroundRangeAnalyticTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] absoluteErrors = new double[measurements.size()];
         double[] relativeErrors = new double[measurements.size()];
@@ -247,7 +247,7 @@ public class TurnAroundRangeAnalyticTest {
         // Print the results ? Header
         if (printResults) {
            System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17s  %17s  %13s %13s%n",
-                              "Master Station", "Slave Station",
+                              "Primary Station", "secondary Station",
                               "Measurement Date", "State Date",
                               "TAR observed [m]", "TAR estimated [m]",
                               "|ΔTAR| [m]", "rel |ΔTAR|");
@@ -273,10 +273,10 @@ public class TurnAroundRangeAnalyticTest {
             if (printResults) {
                 final AbsoluteDate measurementDate = measurement.getDate();
 
-                String masterStationName = ((TurnAroundRange) measurement).getMasterStation().getBaseFrame().getName();
-                String slaveStationName = ((TurnAroundRange) measurement).getSlaveStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
+                String secondaryStationName = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17.6f  %17.6f  %13.6e %13.6e%n",
-                                  masterStationName, slaveStationName, measurementDate, date,
+                                  primaryStationName, secondaryStationName, measurementDate, date,
                                  TARobserved, TARestimated,
                                  FastMath.abs(TARestimated-TARobserved),
                                  FastMath.abs((TARestimated-TARobserved)/TARobserved));
@@ -335,7 +335,7 @@ public class TurnAroundRangeAnalyticTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] errorsP = new double[3 * measurements.size()];
         double[] errorsV = new double[3 * measurements.size()];
@@ -349,7 +349,7 @@ public class TurnAroundRangeAnalyticTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Master Station", "Slave Station",
+                            "Primary Station", "secondary Station",
                             "Measurement Date", "State Date",
                             "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
                             "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
@@ -425,14 +425,14 @@ public class TurnAroundRangeAnalyticTest {
             }
             // Print results on the console ? Print the Jacobian
             if (printResults) {
-                String masterStationName = ((TurnAroundRange) measurement).getMasterStation().getBaseFrame().getName();
-                String slaveStationName  = ((TurnAroundRange) measurement).getSlaveStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
+                String secondaryStationName  = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
                                 "%10.3e  %10.3e  %10.3e  " +
                                 "%10.3e  %10.3e  %10.3e  " +
                                 "%10.3e  %10.3e  %10.3e  " +
                                 "%10.3e  %10.3e  %10.3e%n",
-                                masterStationName, slaveStationName, measurement.getDate(), date,
+                                primaryStationName, secondaryStationName, measurement.getDate(), date,
                                 dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
                                 dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
                                 dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
@@ -487,16 +487,16 @@ public class TurnAroundRangeAnalyticTest {
 
         // Create perfect TAR measurements
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
-            final GroundStation    masterStation = entry.getKey();
-            final GroundStation    slaveStation  = entry.getValue();
-            masterStation.getClockOffsetDriver().setSelected(false);
-            masterStation.getEastOffsetDriver().setSelected(true);
-            masterStation.getNorthOffsetDriver().setSelected(true);
-            masterStation.getZenithOffsetDriver().setSelected(true);
-            slaveStation.getClockOffsetDriver().setSelected(false);
-            slaveStation.getEastOffsetDriver().setSelected(true);
-            slaveStation.getNorthOffsetDriver().setSelected(true);
-            slaveStation.getZenithOffsetDriver().setSelected(true);
+            final GroundStation    primaryStation = entry.getKey();
+            final GroundStation    secondaryStation  = entry.getValue();
+            primaryStation.getClockOffsetDriver().setSelected(false);
+            primaryStation.getEastOffsetDriver().setSelected(true);
+            primaryStation.getNorthOffsetDriver().setSelected(true);
+            primaryStation.getZenithOffsetDriver().setSelected(true);
+            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getEastOffsetDriver().setSelected(true);
+            secondaryStation.getNorthOffsetDriver().setSelected(true);
+            secondaryStation.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -504,7 +504,7 @@ public class TurnAroundRangeAnalyticTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Print results on console ? Header
         if (printResults) {
@@ -513,7 +513,7 @@ public class TurnAroundRangeAnalyticTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Master Station", "Slave Station",
+                            "Primary Station", "secondary Station",
                             "Measurement Date", "State Date",
                             "ΔdQMx", "rel ΔdQMx",
                             "ΔdQMy", "rel ΔdQMy",
@@ -523,7 +523,7 @@ public class TurnAroundRangeAnalyticTest {
                             "ΔdQSz", "rel ΔdQSz");
          }
 
-        // List to store the results for master and slave station
+        // List to store the results for primary and secondary station
         final List<Double> relErrorQMList = new ArrayList<Double>();
         final List<Double> relErrorQSList = new ArrayList<Double>();
 
@@ -537,8 +537,8 @@ public class TurnAroundRangeAnalyticTest {
             }
 
             // parameter corresponding to station position offset
-            final GroundStation masterStationParameter = ((TurnAroundRange) measurement).getMasterStation();
-            final GroundStation slaveStationParameter = ((TurnAroundRange) measurement).getSlaveStation();
+            final GroundStation primaryStationParameter = ((TurnAroundRange) measurement).getPrimaryStation();
+            final GroundStation secondaryStationParameter = ((TurnAroundRange) measurement).getSecondaryStation();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -551,20 +551,20 @@ public class TurnAroundRangeAnalyticTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
-                                                                     masterStationParameter.getEastOffsetDriver(),
-                                                                     masterStationParameter.getNorthOffsetDriver(),
-                                                                     masterStationParameter.getZenithOffsetDriver(),
-                                                                     slaveStationParameter.getEastOffsetDriver(),
-                                                                     slaveStationParameter.getNorthOffsetDriver(),
-                                                                     slaveStationParameter.getZenithOffsetDriver(),
+                                                                     primaryStationParameter.getEastOffsetDriver(),
+                                                                     primaryStationParameter.getNorthOffsetDriver(),
+                                                                     primaryStationParameter.getZenithOffsetDriver(),
+                                                                     secondaryStationParameter.getEastOffsetDriver(),
+                                                                     secondaryStationParameter.getNorthOffsetDriver(),
+                                                                     secondaryStationParameter.getZenithOffsetDriver(),
             };
 
             // Print results on console ? Stations' names
             if (printResults) {
-                String masterStationName  = masterStationParameter.getBaseFrame().getName();
-                String slaveStationName  = slaveStationParameter.getBaseFrame().getName();
+                String primaryStationName  = primaryStationParameter.getBaseFrame().getName();
+                String secondaryStationName  = secondaryStationParameter.getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s %-15s %-23s  %-23s  ",
-                                  masterStationName, slaveStationName, measurement.getDate(), date);
+                                  primaryStationName, secondaryStationName, measurement.getDate(), date);
             }
 
             // Loop on the parameters
@@ -636,9 +636,9 @@ public class TurnAroundRangeAnalyticTest {
         // Print the results on console ?
         if (printResults) {
             System.out.println();
-            System.out.format(Locale.US, "Relative errors dR/dQ master station -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dQ primary station -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsQMMedian, relErrorsQMMean, relErrorsQMMax);
-            System.out.format(Locale.US, "Relative errors dR/dQ slave station  -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dQ secondary station  -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsQSMedian, relErrorsQSMean, relErrorsQSMax);
         }
 

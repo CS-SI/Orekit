@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,19 +17,20 @@
 
 package org.orekit.utils;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
 ** Interface for PV coordinates providers.
+ * @param <T> the type of the field elements
  * @author Veronique Pommier
  * <p>The PV coordinates provider interface can be used by any class used for position/velocity
  * computation, for example celestial bodies or spacecraft position/velocity propagators,
  * and many others...
  * </p>
  */
-public interface FieldPVCoordinatesProvider<T extends RealFieldElement<T>> {
+public interface FieldPVCoordinatesProvider<T extends CalculusFieldElement<T>> {
 
     /** Get the {@link FieldPVCoordinates} of the body in the selected frame.
      * @param date current date

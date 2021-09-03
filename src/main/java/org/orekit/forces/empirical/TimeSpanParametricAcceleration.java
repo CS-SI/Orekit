@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,13 @@
 package org.orekit.forces.empirical;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
@@ -266,7 +267,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> state,
                                                                          final T[] parameters) {
 
         // Date
@@ -305,7 +306,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
@@ -316,7 +317,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
      * </p>
      */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
 
         // Get all transitions from the TimeSpanMap
         final List<ParameterDriver> listParameterDrivers = new ArrayList<>();
@@ -342,7 +343,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
         }
 
         // Return an array of parameter drivers with no duplicated name
-        return listParameterDrivers.toArray(new ParameterDriver[0]);
+        return Collections.unmodifiableList(listParameterDrivers);
 
     }
 
@@ -356,14 +357,14 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
     public double[] extractParameters(final double[] parameters, final AbsoluteDate date) {
 
         // Get the acceleration model parameter drivers of the date
-        final ParameterDriver[] empiricalParameterDriver = getAccelerationModel(date).getParametersDrivers();
+        final List<ParameterDriver> empiricalParameterDriver = getAccelerationModel(date).getParametersDrivers();
 
         // Find out the indexes of the parameters in the whole array of parameters
-        final ParameterDriver[] allParameters = getParametersDrivers();
-        final double[] outParameters = new double[empiricalParameterDriver.length];
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final double[] outParameters = new double[empiricalParameterDriver.size()];
         int index = 0;
-        for (int i = 0; i < allParameters.length; i++) {
-            final String driverName = allParameters[i].getName();
+        for (int i = 0; i < allParameters.size(); i++) {
+            final String driverName = allParameters.get(i).getName();
             for (ParameterDriver accDriver : empiricalParameterDriver) {
                 if (accDriver.getName().equals(driverName)) {
                     outParameters[index++] = parameters[i];
@@ -374,25 +375,25 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #acceleration(FieldSpacecraftState, RealFieldElement[]) acceleration} method.
+     * {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[]) acceleration} method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return the parameters given the date
      */
-    public <T extends RealFieldElement<T>> T[] extractParameters(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
                                                                  final FieldAbsoluteDate<T> date) {
 
         // Get the acceleration parameter drivers of the date
-        final ParameterDriver[] empiricalParameterDriver = getAccelerationModel(date.toAbsoluteDate()).getParametersDrivers();
+        final List<ParameterDriver> empiricalParameterDriver = getAccelerationModel(date.toAbsoluteDate()).getParametersDrivers();
 
         // Find out the indexes of the parameters in the whole array of parameters
-        final ParameterDriver[] allParameters = getParametersDrivers();
-        final T[] outParameters = MathArrays.buildArray(date.getField(), empiricalParameterDriver.length);
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final T[] outParameters = MathArrays.buildArray(date.getField(), empiricalParameterDriver.size());
         int index = 0;
-        for (int i = 0; i < allParameters.length; i++) {
-            final String driverName = allParameters[i].getName();
+        for (int i = 0; i < allParameters.size(); i++) {
+            final String driverName = allParameters.get(i).getName();
             for (ParameterDriver accDriver : empiricalParameterDriver) {
                 if (accDriver.getName().equals(driverName)) {
                     outParameters[index++] = parameters[i];

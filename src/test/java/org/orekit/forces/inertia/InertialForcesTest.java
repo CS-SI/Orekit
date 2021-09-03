@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,6 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -157,7 +156,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         final InertialForces forceModel = new InertialForces(pva.getFrame());
         assertFalse(forceModel.dependsOnPositionOnly());
         checkStateJacobianVs80Implementation(new SpacecraftState(pva), forceModel,
-                                             Propagator.DEFAULT_LAW,
+                                             Utils.defaultLaw(),
                                              1.0e-50, false);
     }
 
@@ -177,7 +176,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         final InertialForces forceModel = new InertialForces(pva.getFrame());
         assertFalse(forceModel.dependsOnPositionOnly());
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(pva), forceModel,
-                                             Propagator.DEFAULT_LAW,
+                                             Utils.defaultLaw(),
                                              1.0e-50, false);
     }
 
@@ -199,7 +198,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         final double maxstep = 3600.0;
         
         Field<DerivativeStructure> field = fpx.getField();
-        DerivativeStructure zero = field.getZero();
+
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         Frame EME = FramesFactory.getEME2000();
@@ -229,7 +228,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
                         new DormandPrince853FieldIntegrator<>(field,minStep, maxstep,
                                         vecAbsoluteTolerances,
                                         vecRelativeTolerances);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(minStep, maxstep,
                                                        vecAbsoluteTolerances,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,9 @@
  */
 package org.orekit.forces.drag;
 
-import org.hipparchus.RealFieldElement;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -53,7 +55,7 @@ public interface DragSensitive {
      * @return parameters drivers
      * @since 8.0
      */
-    ParameterDriver[] getDragParametersDrivers();
+    List<ParameterDriver> getDragParametersDrivers();
 
     /** Compute the acceleration due to drag.
      * <p>
@@ -90,11 +92,11 @@ public interface DragSensitive {
      * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
      * in the same inertial frame as spacecraft orbit (m/s)
      * @param parameters values of the force model parameters
-     * @param <T> instance of a RealFieldElement
+     * @param <T> instance of a CalculusFieldElement
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> dragAcceleration(FieldAbsoluteDate<T> date, Frame frame,
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> dragAcceleration(FieldAbsoluteDate<T> date, Frame frame,
                                                                       FieldVector3D<T> position,
                                                                       FieldRotation<T> rotation, T mass,
                                                                       T density, FieldVector3D<T> relativeVelocity,

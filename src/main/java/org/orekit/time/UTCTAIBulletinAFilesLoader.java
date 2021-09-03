@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -223,58 +223,58 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
                               STORED_REAL_FIELD  + IGNORED_REAL_FIELD +
                               LINE_END_REGEXP),
 
-           /** Earth Orientation Parameters final values. */
-           // the first bulletin A of each month also includes final values for the
-           // period covering from day 2 of month m-2 to day 1 of month m-1.
-           //                                IERS Final Values
-           //                                 MJD        x        y      UT1-UTC
-           //                                            "        "         s
-           //             13  7  2           56475    0.1441   0.3901   0.05717
-           //             13  7  3           56476    0.1457   0.3895   0.05716
-           //             13  7  4           56477    0.1467   0.3887   0.05728
-           //             13  7  5           56478    0.1477   0.3875   0.05755
-           //             13  7  6           56479    0.1490   0.3862   0.05793
-           //             13  7  7           56480    0.1504   0.3849   0.05832
-           //             13  7  8           56481    0.1516   0.3835   0.05858
-           //             13  7  9           56482    0.1530   0.3822   0.05877
-           EOP_FINAL_VALUES("^ *IERS Final Values *$",
-                            LINE_START_REGEXP +
-                            STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
-                            STORED_MJD_FIELD +
-                            IGNORED_REAL_FIELD +
-                            IGNORED_REAL_FIELD +
-                            STORED_REAL_FIELD +
-                            LINE_END_REGEXP),
+            /** Earth Orientation Parameters final values. */
+            // the first bulletin A of each month also includes final values for the
+            // period covering from day 2 of month m-2 to day 1 of month m-1.
+            //                                IERS Final Values
+            //                                 MJD        x        y      UT1-UTC
+            //                                            "        "         s
+            //             13  7  2           56475    0.1441   0.3901   0.05717
+            //             13  7  3           56476    0.1457   0.3895   0.05716
+            //             13  7  4           56477    0.1467   0.3887   0.05728
+            //             13  7  5           56478    0.1477   0.3875   0.05755
+            //             13  7  6           56479    0.1490   0.3862   0.05793
+            //             13  7  7           56480    0.1504   0.3849   0.05832
+            //             13  7  8           56481    0.1516   0.3835   0.05858
+            //             13  7  9           56482    0.1530   0.3822   0.05877
+            EOP_FINAL_VALUES("^ *IERS Final Values *$",
+                             LINE_START_REGEXP +
+                             STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
+                             STORED_MJD_FIELD +
+                             IGNORED_REAL_FIELD +
+                             IGNORED_REAL_FIELD +
+                             STORED_REAL_FIELD +
+                             LINE_END_REGEXP),
 
-           /** TAI-UTC part of the Earth Orientation Parameters prediction.. */
-           // section 3 always contain prediction data without error fields
-           //
-           //         PREDICTIONS:
-           //         The following formulas will not reproduce the predictions given below,
-           //         but may be used to extend the predictions beyond the end of this table.
-           //
-           //         x =  0.0969 + 0.1110 cos A - 0.0103 sin A - 0.0435 cos C - 0.0171 sin C
-           //         y =  0.3457 - 0.0061 cos A - 0.1001 sin A - 0.0171 cos C + 0.0435 sin C
-           //            UT1-UTC = -0.0052 - 0.00104 (MJD - 56548) - (UT2-UT1)
-           //
-           //         where A = 2*pi*(MJD-56540)/365.25 and C = 2*pi*(MJD-56540)/435.
-           //
-           //            TAI-UTC(MJD 56541) = 35.0
-           //         The accuracy may be estimated from the expressions:
-           //         S x,y = 0.00068 (MJD-56540)**0.80   S t = 0.00025 (MJD-56540)**0.75
-           //         Estimated accuracies are:  Predictions     10 d   20 d   30 d   40 d
-           //                                    Polar coord's  0.004  0.007  0.010  0.013
-           //                                    UT1-UTC        0.0014 0.0024 0.0032 0.0040
-           //
-           //                       MJD      x(arcsec)   y(arcsec)   UT1-UTC(sec)
-           //          2013  9  6  56541       0.1638      0.3185      0.03517
-           //          2013  9  7  56542       0.1633      0.3175      0.03420
-           //          2013  9  8  56543       0.1628      0.3164      0.03322
-           //          2013  9  9  56544       0.1623      0.3153      0.03229
-           //          2013  9 10  56545       0.1618      0.3142      0.03144
-           //          2013  9 11  56546       0.1612      0.3131      0.03071
-           //          2013  9 12  56547       0.1607      0.3119      0.03008
-           TAI_UTC("^ *PREDICTIONS: *$",
+            /** TAI-UTC part of the Earth Orientation Parameters prediction.. */
+            // section 3 always contain prediction data without error fields
+            //
+            //         PREDICTIONS:
+            //         The following formulas will not reproduce the predictions given below,
+            //         but may be used to extend the predictions beyond the end of this table.
+            //
+            //         x =  0.0969 + 0.1110 cos A - 0.0103 sin A - 0.0435 cos C - 0.0171 sin C
+            //         y =  0.3457 - 0.0061 cos A - 0.1001 sin A - 0.0171 cos C + 0.0435 sin C
+            //            UT1-UTC = -0.0052 - 0.00104 (MJD - 56548) - (UT2-UT1)
+            //
+            //         where A = 2*pi*(MJD-56540)/365.25 and C = 2*pi*(MJD-56540)/435.
+            //
+            //            TAI-UTC(MJD 56541) = 35.0
+            //         The accuracy may be estimated from the expressions:
+            //         S x,y = 0.00068 (MJD-56540)**0.80   S t = 0.00025 (MJD-56540)**0.75
+            //         Estimated accuracies are:  Predictions     10 d   20 d   30 d   40 d
+            //                                    Polar coord's  0.004  0.007  0.010  0.013
+            //                                    UT1-UTC        0.0014 0.0024 0.0032 0.0040
+            //
+            //                       MJD      x(arcsec)   y(arcsec)   UT1-UTC(sec)
+            //          2013  9  6  56541       0.1638      0.3185      0.03517
+            //          2013  9  7  56542       0.1633      0.3175      0.03420
+            //          2013  9  8  56543       0.1628      0.3164      0.03322
+            //          2013  9  9  56544       0.1623      0.3153      0.03229
+            //          2013  9 10  56545       0.1618      0.3142      0.03144
+            //          2013  9 11  56546       0.1612      0.3131      0.03071
+            //          2013  9 12  56547       0.1607      0.3119      0.03008
+            TAI_UTC("^ *PREDICTIONS: *$",
                     LINE_START_REGEXP +
                     "TAI-UTC\\(MJD *" +
                     STORED_MJD_FIELD +

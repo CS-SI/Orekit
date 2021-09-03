@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,7 +86,7 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
 
         // Loop on observation data to fill lists
         for (final CombinedObservationData cod : cods.getObservationData()) {
-            if (!Double.isNaN(cod.getValue()) && (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE)) {
+            if (!Double.isNaN(cod.getValue()) && cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
                 phasesGF.add(cod);
             }
         }

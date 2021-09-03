@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,14 @@ package org.orekit.models.earth.atmosphere;
 import java.util.Arrays;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -1151,8 +1153,7 @@ public class NRLMSISE00 implements Atmosphere {
                              final Frame frame) {
 
         // check if data are available :
-        if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
-            (date.compareTo(inputParams.getMinDate()) < 0)) {
+        if (!date.isBetweenOrEqualTo(inputParams.getMinDate(), inputParams.getMaxDate())) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       date, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -1183,13 +1184,12 @@ public class NRLMSISE00 implements Atmosphere {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
                                                         final Frame frame) {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
-        if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
-            (dateD.compareTo(inputParams.getMinDate()) < 0)) {
+        if (!dateD.isBetweenOrEqualTo(inputParams.getMinDate(), inputParams.getMaxDate())) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       dateD, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -1202,8 +1202,8 @@ public class NRLMSISE00 implements Atmosphere {
         // compute geodetic position (km and °)
         final FieldGeodeticPoint<T> inBody = earth.transform(position, frame, date);
         final T alt = inBody.getAltitude().divide(1000.);
-        final T lon = inBody.getLongitude().multiply(180.0 / FastMath.PI);
-        final T lat = inBody.getLatitude().multiply(180.0 / FastMath.PI);
+        final T lon = FastMath.toDegrees(inBody.getLongitude());
+        final T lat = FastMath.toDegrees(inBody.getLatitude());
 
         // compute local solar time
         final T lst = localSolarTime(dateD, position, frame);
@@ -1242,15 +1242,15 @@ public class NRLMSISE00 implements Atmosphere {
      * @param <T> type of the filed elements
      * @return the local solar time (hour in [0, 24[)
      */
-    private <T extends RealFieldElement<T>> T localSolarTime(final AbsoluteDate date,
+    private <T extends CalculusFieldElement<T>> T localSolarTime(final AbsoluteDate date,
                                                              final FieldVector3D<T> position,
                                                              final Frame frame) {
         final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
         final T y  = position.getY().multiply(sunPos.getX()).subtract(position.getX().multiply(sunPos.getY()));
         final T x  = position.getX().multiply(sunPos.getX()).add(position.getY().multiply(sunPos.getY()));
-        final T hl = y.atan2(x).add(FastMath.PI);
+        final T hl = y.atan2(x).add(y.getPi());
 
-        return hl.multiply(12. / FastMath.PI);
+        return hl.divide(y.getPi()).multiply(12.);
 
     }
 
@@ -1432,8 +1432,9 @@ public class NRLMSISE00 implements Atmosphere {
             final double latr = DEG_TO_RAD * lat;
 
             // Calculate legendre polynomials
-            final double c = FastMath.sin(latr);
-            final double s = FastMath.cos(latr);
+            final SinCos scLatr = FastMath.sinCos(latr);
+            final double c      = scLatr.sin();
+            final double s      = scLatr.cos();
 
             plg[0][1] = c;
             plg[0][2] = ( 3.0 * c * plg[0][1] - 1.0) / 2.0;
@@ -1464,14 +1465,15 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculate additional data
             if (!(sw[7] == 0 && sw[8] == 0 && sw[14] == 0)) {
                 final double tloc = HOUR_TO_RAD * hl;
-                final double tlx2 = tloc + tloc;
-                final double tlx3 = tloc + tlx2;
-                stloc  = FastMath.sin(tloc);
-                ctloc  = FastMath.cos(tloc);
-                s2tloc = FastMath.sin(tlx2);
-                c2tloc = FastMath.cos(tlx2);
-                s3tloc = FastMath.sin(tlx3);
-                c3tloc = FastMath.cos(tlx3);
+                final SinCos sc  = FastMath.sinCos(tloc);
+                final SinCos sc2 = SinCos.sum(sc, sc);
+                final SinCos sc3 = SinCos.sum(sc, sc2);
+                stloc  = sc.sin();
+                ctloc  = sc.cos();
+                s2tloc = sc2.sin();
+                c2tloc = sc2.cos();
+                s3tloc = sc3.sin();
+                c3tloc = sc3.cos();
             } else {
                 stloc  = 0;
                 ctloc  = 0;
@@ -1833,7 +1835,7 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculates for lower stratosphere and troposphere (below ZN3[0])
             // Temperature at nodes and gradients at end nodes
             // Inverse temperature a linear function of spherical harmonics
-            if (alt < ZN3[0]) {
+            if (alt <= ZN3[0]) {
                 final double q = PMA[6][0] * PAVGM[6];
                 meso_tgn3[0] = meso_tgn2[1];
                 meso_tn3[1]  = PMA[3][0] * PAVGM[3] / (1.0 - sw[22] * glob7s(PMA[3]));
@@ -2062,18 +2064,19 @@ public class NRLMSISE00 implements Atmosphere {
             }
 
             if (sw[10] != 0) {
-                final double lonr = DEG_TO_RAD * lon;
+                final double lonr   = DEG_TO_RAD * lon;
+                final SinCos scLonr = FastMath.sinCos(lonr);
                 // Longitudinal
                 if (sw[11] != 0) {
                     t[10] = (1.0 + p[80] * dfa * swc[1]) *
                             ((p[64]  * plg[1][2] + p[65]  * plg[1][4] + p[66]  * plg[1][6] +
                               p[103] * plg[1][1] + p[104] * plg[1][3] + p[105] * plg[1][5] +
                              (p[109] * plg[1][1] + p[110] * plg[1][3] + p[111] * plg[1][5]) * swc[5] * cd14) *
-                             FastMath.cos(lonr) +
+                             scLonr.cos() +
                              (p[90]  * plg[1][2] + p[91]  * plg[1][4] + p[92]  * plg[1][6] +
                               p[106] * plg[1][1] + p[107] * plg[1][3] + p[108] * plg[1][5] +
                              (p[112] * plg[1][1] + p[113] * plg[1][3] + p[114] * plg[1][5]) * swc[5] * cd14) *
-                             FastMath.sin(lonr));
+                             scLonr.sin());
                 }
 
                 // ut and mixed ut, longitude
@@ -2187,15 +2190,16 @@ public class NRLMSISE00 implements Atmosphere {
 
             // Longitudinal
             if (!(sw[10] == 0 || sw[11] == 0)) {
-                final double lonr = DEG_TO_RAD * lon;
+                final double lonr   = DEG_TO_RAD * lon;
+                final SinCos scLonr = FastMath.sinCos(lonr);
                 t[10] = (1.0 + plg[0][1] * (p[80] * swc[5] * FastMath.cos(DAY_TO_RAD * (doy - p[81])) +
                                             p[85] * swc[6] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[86]))) +
                                p[83] * swc[3] * FastMath.cos(DAY_TO_RAD * (doy - p[84])) +
                                p[87] * swc[4] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[88]))) *
                         ((p[64] * plg[1][2] + p[65] * plg[1][4] + p[66] * plg[1][6] +
-                          p[74] * plg[1][1] + p[75] * plg[1][3] + p[76] * plg[1][5]) * FastMath.cos(lonr) +
+                          p[74] * plg[1][1] + p[75] * plg[1][3] + p[76] * plg[1][5]) * scLonr.cos() +
                          (p[90] * plg[1][2] + p[91] * plg[1][4] + p[92] * plg[1][6] +
-                          p[77] * plg[1][1] + p[78] * plg[1][3] + p[79] * plg[1][5]) * FastMath.sin(lonr));
+                          p[77] * plg[1][1] + p[78] * plg[1][3] + p[79] * plg[1][5]) * scLonr.sin());
             }
 
             // Sum all effects
@@ -2276,9 +2280,9 @@ public class NRLMSISE00 implements Atmosphere {
                              final double h1, final double zh, final double h2) {
             final double e1 = (alt - zh) / h1;
             final double e2 = (alt - zh) / h2;
-            if ((e1 > 70.) || (e2 > 70.)) {
+            if (e1 > 70. || e2 > 70.) {
                 return 1.;
-            } else if ((e1 < -70.) && (e2 < -70.)) {
+            } else if (e1 < -70. && e2 < -70.) {
                 return FastMath.exp(r);
             } else {
                 final double ex1 = FastMath.exp(e1);
@@ -2677,7 +2681,7 @@ public class NRLMSISE00 implements Atmosphere {
      * @param <T> type of the field elements
      * @since 9.0
      */
-    public class FieldOutput<T extends RealFieldElement<T>> {
+    public class FieldOutput<T extends CalculusFieldElement<T>> {
 
         /** Type of the field elements. */
         private final Field<T> field;
@@ -2830,8 +2834,9 @@ public class NRLMSISE00 implements Atmosphere {
             final T latr = lat.multiply(DEG_TO_RAD);
 
             // Calculate legendre polynomials
-            final T c = latr.sin();
-            final T s = latr.cos();
+            final FieldSinCos<T> scLatr = FastMath.sinCos(latr);
+            final T c = scLatr.sin();
+            final T s = scLatr.cos();
 
             plg[0][1] = c;
             plg[0][2] = c.multiply( 3.0).multiply(plg[0][1]).subtract(1.0).divide(2.0);
@@ -2862,14 +2867,15 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculate additional data
             if (!(sw[7] == 0 && sw[8] == 0 && sw[14] == 0)) {
                 final T tloc = hl.multiply(HOUR_TO_RAD);
-                final T tlx2 = tloc.add(tloc);
-                final T tlx3 = tloc.add(tlx2);
-                stloc  = tloc.sin();
-                ctloc  = tloc.cos();
-                s2tloc = tlx2.sin();
-                c2tloc = tlx2.cos();
-                s3tloc = tlx3.sin();
-                c3tloc = tlx3.cos();
+                final FieldSinCos<T> sc  = FastMath.sinCos(tloc);
+                final FieldSinCos<T> sc2 = FieldSinCos.sum(sc, sc);
+                final FieldSinCos<T> sc3 = FieldSinCos.sum(sc, sc2);
+                stloc  = sc.sin();
+                ctloc  = sc.cos();
+                s2tloc = sc2.sin();
+                c2tloc = sc2.cos();
+                s3tloc = sc3.sin();
+                c3tloc = sc3.cos();
             } else {
                 stloc  = zero;
                 ctloc  = zero;
@@ -3235,7 +3241,7 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculates for lower stratosphere and troposphere (below ZN3[0])
             // Temperature at nodes and gradients at end nodes
             // Inverse temperature a linear function of spherical harmonics
-            if (alt.getReal() < ZN3[0]) {
+            if (alt.getReal() <= ZN3[0]) {
                 final double q = PMA[6][0] * PAVGM[6];
                 meso_tgn3[0] = meso_tgn2[1];
                 meso_tn3[1]  = glob7s(PMA[3]).multiply(sw[22]).negate().add(1).reciprocal().multiply(PMA[3][0] * PAVGM[3]);
@@ -3478,16 +3484,17 @@ public class NRLMSISE00 implements Atmosphere {
 
             if (sw[10] != 0) {
                 final T lonr = lon.multiply(DEG_TO_RAD);
+                final FieldSinCos<T> scLonr = FastMath.sinCos(lonr);
                 // Longitudinal
                 if (sw[11] != 0) {
                     t[10] =         plg[1][2].multiply(p[ 64]) .add(plg[1][4].multiply(p[ 65])).add(plg[1][6].multiply(p[ 66])).
                                 add(plg[1][1].multiply(p[103])).add(plg[1][3].multiply(p[104])).add(plg[1][5].multiply(p[105])).
                                 add((plg[1][1].multiply(p[109])).add(plg[1][3].multiply(p[110])).add(plg[1][5].multiply(p[111])).multiply(swc[5] * cd14)).
-                                multiply(lonr.cos()).
+                                multiply(scLonr.cos()).
                             add(    plg[1][2].multiply(p[ 90]) .add(plg[1][4].multiply(p[ 91])).add(plg[1][6].multiply(p[ 92])).
                                 add(plg[1][1].multiply(p[106])).add(plg[1][3].multiply(p[107])).add(plg[1][5].multiply(p[108])).
                                 add((plg[1][1].multiply(p[112])).add(plg[1][3].multiply(p[113])).add(plg[1][5].multiply(p[114])).multiply(swc[5] * cd14)).
-                                multiply(lonr.sin())).
+                                multiply(scLonr.sin())).
                             multiply(1.0 + p[80] * dfa * swc[1]);
                 }
 
@@ -3608,6 +3615,7 @@ public class NRLMSISE00 implements Atmosphere {
             // Longitudinal
             if (!(sw[10] == 0 || sw[11] == 0)) {
                 final T lonr = lon.multiply(DEG_TO_RAD);
+                final FieldSinCos<T> scLonr = FastMath.sinCos(lonr);
                 t[10] = plg[0][1].multiply(p[80] * swc[5] * FastMath.cos(DAY_TO_RAD * (doy - p[81])) +
                                            p[85] * swc[6] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[86]))).
                        add(1.0 +
@@ -3618,13 +3626,13 @@ public class NRLMSISE00 implements Atmosphere {
                                 add(plg[1][6].multiply(p[66])).
                                 add(plg[1][1].multiply(p[74])).
                                 add(plg[1][3].multiply(p[75])).
-                                add(plg[1][5].multiply(p[76])).multiply(lonr.cos()).
+                                add(plg[1][5].multiply(p[76])).multiply(scLonr.cos()).
                           add(      plg[1][2].multiply(p[90]).
                                 add(plg[1][4].multiply(p[91])).
                                 add(plg[1][6].multiply(p[92])).
                                 add(plg[1][1].multiply(p[77])).
                                 add(plg[1][3].multiply(p[78])).
-                                add(plg[1][5].multiply(p[79])).multiply(lonr.sin())));
+                                add(plg[1][5].multiply(p[79])).multiply(scLonr.sin())));
             }
 
             // Sum all effects
@@ -3704,9 +3712,9 @@ public class NRLMSISE00 implements Atmosphere {
         private T ccor2(final T alt, final double r, final double h1, final double zh, final double h2) {
             final T e1 = alt.subtract(zh).divide(h1);
             final T e2 = alt.subtract(zh).divide(h2);
-            if ((e1.getReal() > 70.) || (e2.getReal() > 70.)) {
+            if (e1.getReal() > 70. || e2.getReal() > 70.) {
                 return field.getOne();
-            } else if ((e1.getReal() < -70.) && (e2.getReal() < -70.)) {
+            } else if (e1.getReal() < -70. && e2.getReal() < -70.) {
                 return zero.add(FastMath.exp(r));
             } else {
                 final T ex1 = e1.exp();

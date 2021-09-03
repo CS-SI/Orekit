@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.io.Serializable;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.utils.Constants;
 
 /**
@@ -181,7 +181,7 @@ public class GLONASSDate implements Serializable, TimeStamped {
     private double computeGMST() {
         final double ref = 2451545.0;
         // Earth's rotation angle in radians
-        final double era = 2. * GLONASSOrbitalElements.GLONASS_PI *
+        final double era = 2. * GNSSConstants.GLONASS_PI *
                         (0.7790572732640 + 1.00273781191135448 * (jd0 - ref));
         // Time from Epoch 2000 (1st January, 00:00 UTC) till current Epoch in Julian centuries
         final double time = (jd0 - ref) / Constants.JULIAN_CENTURY;

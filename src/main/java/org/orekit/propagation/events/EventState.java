@@ -24,7 +24,9 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -149,8 +151,8 @@ public class EventState<T extends EventDetector> {
      */
     private double g(final SpacecraftState s) {
         if (!s.getDate().equals(lastT)) {
-            lastT = s.getDate();
             lastG = detector.g(s);
+            lastT = s.getDate();
         }
         return lastG;
     }
@@ -250,7 +252,7 @@ public class EventState<T extends EventDetector> {
                              final AbsoluteDate ta, final double ga,
                              final AbsoluteDate tb, final double gb) {
         // check there appears to be a root in [ta, tb]
-        check(ga == 0.0 || gb == 0.0 || (ga > 0.0 && gb < 0.0) || (ga < 0.0 && gb > 0.0));
+        check(ga == 0.0 || gb == 0.0 || ga > 0.0 && gb < 0.0 || ga < 0.0 && gb > 0.0);
 
         final double convergence = detector.getThreshold();
         final int maxIterationCount = detector.getMaxIterationCount();
@@ -316,19 +318,33 @@ public class EventState<T extends EventDetector> {
                 // tb as a double for use in f
                 final double tbDouble = tb.durationFrom(fT0);
                 if (forward) {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, 0, tbDouble);
-                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    beforeRootG = interval.getLeftValue();
-                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    afterRootG = interval.getRightValue();
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, 0, tbDouble);
+                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        beforeRootG = interval.getLeftValue();
+                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        afterRootG = interval.getRightValue();
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, loopT, loopG, tb, gb, lastT, lastG);
+                    }
                 } else {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, tbDouble, 0);
-                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    beforeRootG = interval.getRightValue();
-                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    afterRootG = interval.getLeftValue();
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, tbDouble, 0);
+                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        beforeRootG = interval.getRightValue();
+                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        afterRootG = interval.getLeftValue();
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, tb, gb, loopT, loopG, lastT, lastG);
+                    }
                 }
             }
             // tolerance is set to less than 1 ulp
@@ -338,8 +354,8 @@ public class EventState<T extends EventDetector> {
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
             // check loop is making some progress
-            check((forward && afterRootT.compareTo(beforeRootT) > 0) ||
-                  (!forward && afterRootT.compareTo(beforeRootT) < 0));
+            check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
+                  !forward && afterRootT.compareTo(beforeRootT) < 0);
             // setup next iteration
             loopT = afterRootT;
             loopG = afterRootG;
@@ -474,7 +490,7 @@ public class EventState<T extends EventDetector> {
         g0 = afterG;
         g0Positive = increasing;
         // check g0Positive set correctly
-        check(g0 == 0.0 || g0Positive == (g0 > 0));
+        check(g0 == 0.0 || g0Positive == g0 > 0);
         return new EventOccurrence(action, newState, stopTime);
     }
 

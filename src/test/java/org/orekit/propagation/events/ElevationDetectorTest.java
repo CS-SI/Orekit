@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -100,7 +100,7 @@ public class ElevationDetectorTest {
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 12, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
-        propagator.setMasterMode(10.0, checking);
+        propagator.setStepHandler(10.0, checking);
         propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
 
     }
@@ -120,7 +120,7 @@ public class ElevationDetectorTest {
             return Action.CONTINUE;
         }
 
-        public void handleStep(SpacecraftState currentState, boolean isLast)
+        public void handleStep(SpacecraftState currentState)
             {
             BodyShape shape = topo.getParentShape();
             GeodeticPoint p =
