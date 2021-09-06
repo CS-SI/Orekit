@@ -78,7 +78,7 @@ The user can retrieve them using various static methods: `getGCRF()`, `getEME200
 `getICRF()`, `getCIRF(IERSConventions, boolean)`, `getTIRF(IERSConventions, boolean)`,
 `getITRF(IERSConventions, boolean)`, `getMOD(IERSConventions)`, `getTOD(IERSConventions)`,
 `getGTOD(IERSConventions)`, `getITRFEquinox(IERSConventions, boolean)`, `getTEME()`,
-and `getVeis1950()`.
+`getPZ9011(IERSConventions, boolean)`, and `getVeis1950()`.
 One of these reference frames has been arbitrarily chosen as the root of the frames tree:
 the `Geocentric Celestial Reference Frame` (GCRF) which is an inertial reference defined by IERS.
 
@@ -117,8 +117,8 @@ very small, slightly time-dependent transformations.
 The precession-nutation models for Non-Rotating Origin paradigm available in Orekit are those
 defined in either IERS 1996 conventions, IERS 2003 conventions or IERS 2010 conventions.
 
-In summary, four frames are involved along this path, with various precession-nutation
-models: GCRF, CIRF, TIRF and ITRF.
+In summary, five frames are involved along this path, with various precession-nutation
+models: GCRF, CIRF, TIRF, ITRF and PZ-90.11.
 
 ### Classical paradigm: equinox-based transformations
 

@@ -78,14 +78,14 @@ Several file formats are supported in Orekit.
 ![gnss antenna class diagram](../images/design/gnss-antenna-class-diagram.png)
 
 * SEMParser, which represents a loader for SEM almanac files. This class provides
-  the `GPSAlmanac` used to build the `GPSPropagator`.
+  the `GPSAlmanac` used to build the `GNSSPropagator`.
 
 * YUMAParser, which represents a loader for YUMA almanac files. Such as for the SEMParser,
-  this class provides the `GPSAlmanac` used to build the `GPSPropagator`.
+  this class provides the `GPSAlmanac` used to build the `GNSSPropagator`.
 
 * RinexClockParser for loading station and satellite clock solutions.
 
-* NavigationFileParser, which represents a loader for Rinex navigation files.
+* RinexNavigationParser, which represents a loader for Rinex navigation files.
   The supported versions are from 3.00 to 3.05, all the GNSS constellations are supported.
 
 ### IGS SSR Format
@@ -109,5 +109,5 @@ the image below.
 
 Several classes have been implemented to provide a link between navigation files
 and the specialized orbit propagators for GNSS constellations. These classes,
-are the base classes to build the specialized GNSS orbit propagators.
+are the base classes to build the `GNSSPropagator`.
 

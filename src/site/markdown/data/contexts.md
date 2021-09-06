@@ -168,7 +168,7 @@ before any other code that uses Orekit:
 ```java
 // Force initialization of classes with static fields that use the default data context
 Object o = AbsoluteDate.ARBITRARY_DATE;
-o = InertialProvider.EME2000_ALIGNED;
+o = InertialProvider.of(Frame);
 // Prevent further use of the default data context
 DataContext.setDefault(new ExceptionalDataContext());
 ```

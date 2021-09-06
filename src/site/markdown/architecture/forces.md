@@ -59,11 +59,16 @@ The force models implemented are as follows:
   penumbra and no force at all during complete eclipse, and taking attitude
   into account if spacecraft shape is defined,
 
+* Earth Albedo and IR emission force model. Our implementation is based on
+  paper: _EARTH RADIATION PRESSURE EFFECTS ON SATELLITES", 1988, by
+  P. C. Knocke, J. C. Ries, and B. D. Tapley_.
+
 * solid tides, with or without solid pole tide,
 
 * ocean tides, with or without ocean pole tide,
 
-* post-Newtonian correction due to general relativity,
+* post-Newtonian correction due to general relativity with
+  De Sitter and Lense-Thirring terms,
 
 * forces induced by maneuvers. At present, only constant thrust maneuvers 
   are implemented, with the possibility to define an impulse maneuver, thanks 

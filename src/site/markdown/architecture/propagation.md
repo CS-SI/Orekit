@@ -57,7 +57,7 @@ Each propagator contains a multiplexer that can accept several step handlers.
 Step handlers can be either of `OrekitFixedStepHandler` type, which will be called at regular time
 intervals and fed with a single `SpacecraftState`, or they can be of `OrekitStepHandler` type,
 which will be called when the propagator accepts one step according to its internal time loop
-(time steps durection can vary in this case) and fed with an `OrekitStepInterpolator` that is valid
+(time steps duration can vary in this case) and fed with an `OrekitStepInterpolator` that is valid
 throughout the step, hence providing dense output. The following class diagram shows this architecture.
 
 ![sampling class diagram](../images/design/sampling-class-diagram.png)

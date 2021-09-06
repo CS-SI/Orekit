@@ -129,5 +129,3 @@ order):
         ...
 
     }
-
-In this example, the l
