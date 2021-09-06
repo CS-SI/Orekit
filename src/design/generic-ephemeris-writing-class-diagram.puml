@@ -43,15 +43,17 @@
     package files #DDEBD8 {
 
        package sp3 #CBDBC8 {
-          class SP3File
+          class SP3
           class SP3Coordinate
-          SP3File --> SP3Coordinate
+          SP3 --> SP3Coordinate
        }
 
        package ilrs #CBDBC8 {
-         class CPFFile
+         class CPF
+         class CPFWriter
+         class StreamingCpfWriter
          class CPFCoordinate
-         CPFFile --> CPFCoordinate
+         CPF --> CPFCoordinate
        }
 
       package general #CBDBC8 {
@@ -92,8 +94,10 @@
           +getPropagator()
         }
 
-        SP3File ..|> EphemerisFile
-        CPFFile ..|> EphemerisFile
+        SP3 ..|> EphemerisFile
+        CPF ..|> EphemerisFile
+        CPFWriter <--o StreamingCpfWriter
+        EphemerisFileWriter <|.. CPFWriter
         EphemerisFile.SatelliteEphemeris <--* EphemerisFile
         EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
 

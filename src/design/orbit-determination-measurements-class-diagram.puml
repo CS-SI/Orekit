@@ -46,11 +46,11 @@
     
       class EstimatedMeasurement {
         +getObservedMeasurement()
+        +getStateSize()
         +getIteration()
-        +getState()
+        +getStates()
         +getTimeOffset()
-        +[get|set]Value()
-        +[get|set]CurrentWeight()
+        +[get|set]EstimatedValue()
         +[get|set]StateDerivatives()
         +[get|set]ParameterDerivatives()
       }
@@ -59,7 +59,7 @@
         +getParametersDrivers()
         +modify(estimated)
       }
-    
+
       class "On-board antenna" as Onboard
       ObservedMeasurement *--> "*" EstimationModifier
       ObservedMeasurement --> EstimatedMeasurement : create

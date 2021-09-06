@@ -55,8 +55,8 @@
       	package forces #CCCCC7 {
 
         	interface DSSTForceModel {
-          	   +void initialize()
-        	   +DerivativeStructure[] getMeanElementRate()
+          	   +void init(SpacecraftState initialState, AbsoluteDate target)
+        	   +Gradient[] getMeanElementRate()
                +void updateShortPeriodTerms()
         	}
 
@@ -71,13 +71,15 @@
        }
 
        class DSSTPartialDerivativesEquations {
-          +List<String> getAvailableParameters()
-          +void selectParameters(String ... parameters)
-          +void selectParamAndStep(String parameter, double hP)
-          +void setInitialJacobians()
+          +void freezeParametersSelection()
+          +void setInitialJacobians(SpacecraftState s0)
+          +DSSTJacobiansMapper getMapper()
        }
 
-       class DSSTJacobiansMapper
+       class DSSTJacobiansMapper {
+          +void getStateJacobian(SpacecraftState state, double[][] dYdY0)
+          +void getParametersJacobian(SpacecraftState state, double[][] dYdP)
+       }
 
        AdditionalEquations         <|..     DSSTPartialDerivativesEquations
        DSSTPartialDerivativesEquations *-->     DSSTForceModel

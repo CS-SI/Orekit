@@ -53,6 +53,7 @@
         +setMass(mass)
       }
 
+      class DSSTPropagatorBuilder
       class KeplerianPropagatorBuilder
       class TLEPropagatorBuilder
       class EcksteinHechlerPropagatorBuilder
@@ -85,6 +86,7 @@
       PropagatorBuilder <|.. NumericalPropagatorBuilder
       PropagatorBuilder <|.. KeplerianPropagatorBuilder
       PropagatorBuilder <|.. TLEPropagatorBuilder
+      PropagatorBuilder <|.. DSSTPropagatorBuilder
       PropagatorBuilder <|.right. EcksteinHechlerPropagatorBuilder
 
       PropagatorConverter <|.. AbstractPropagatorConverter

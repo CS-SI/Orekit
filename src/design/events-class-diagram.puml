@@ -40,7 +40,7 @@
       package handlers #CBDBC8 {
 
         interface "EventHandler<T extends EventDetector>" as EventHandler_T_ {
-          +init(SpacecraftState s0, AbsoluteDate target)
+          +init(SpacecraftState s0, AbsoluteDate target, T detector)
           +Action eventOccurred(SpacecraftState s, T detector, boolean increasing)
           +SpacecraftState resetState(T detector, SpacecraftState oldState)
         }

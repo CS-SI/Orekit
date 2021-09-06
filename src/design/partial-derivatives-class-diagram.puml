@@ -33,7 +33,7 @@
 
       interface ForceModel {
         +void addContribution()
-        +FieldVector3D<DerivativeStructure> accelerationDerivatives()
+        +FieldVector3D<Gradient> acceleration()
         +EventDetector[] getEventsDetectors()
       }
 
@@ -68,8 +68,7 @@
 
         interface TimeDerivativesEquations {
           +void addKeplerContribution()
-          +void addXYZAcceleration()
-          +void addAcceleration()
+          +void addNonKeplerianAcceleration()
           +void addMassDerivative()
         }
 
@@ -78,10 +77,9 @@
        }
 
         class PartialDerivativesEquations {
-          +List<String> getAvailableParameters()
-          +void selectParameters(String ... parameters)
-          +void selectParamAndStep(String parameter, double hP)
-          +void setInitialJacobians()
+          +void freezeParametersSelection()
+          +void setInitialJacobians(SpacecraftState s0)
+          +JacobiansMapper getMapper()
        }
       class Jacobianizer
 

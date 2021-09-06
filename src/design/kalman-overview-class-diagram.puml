@@ -54,7 +54,7 @@
 
       package sequential #CBDBC8 {
 
-        interface ProcessNoiseMatrixProvider
+        interface CovarianceMatrixProvider
 
         class KalmanEstimator {
           +getOrbitalParametersDrivers()
@@ -64,29 +64,35 @@
           +estimationStep(measurement)
         }
 
-        class Model {
-          +estimationStep(measurement)
+        abstract AbstractKalmanModel {
+          #updateReferenceTrajectories(propagators, pType, sType)
+          #analyticalDerivativeComputations(mapper, state)
+          +ProcessEstimate getEstimate()
+          +EstimatedMeasurement<?> getCorrectedMeasurement()
+          +SpacecraftState[] getCorrectedSpacecraftStates()
         }
 
-        Model <-left-* KalmanEstimator
+        class KalmanModel
+        class DSSTKalmanModel
+        class TLEKalmanModel
+
+        AbstractKalmanModel <-left-* KalmanEstimator
         KalmanEstimator *-right-> ExtendedKalmanFilter_T
-        Model *--> ProcessNoiseMatrixProvider
-        EstimatedMeasurement <-- Model
+        AbstractKalmanModel *--> CovarianceMatrixProvider
+        EstimatedMeasurement <-- AbstractKalmanModel
+        KalmanModel     --|> AbstractKalmanModel
+        DSSTKalmanModel --|> AbstractKalmanModel
+        TLEKalmanModel  --|> AbstractKalmanModel
 
       }
 
-    }
-
-    package propagation #DDEBD8 {
-      interface Propagator
-      Propagator <-- Model : run
     }
 
   }
 
   package user.application #F3EDF7 {
     class MyProcessNoiseMatrixProvider #EAE6F7/B9B3D2
-    ProcessNoiseMatrixProvider <|-- MyProcessNoiseMatrixProvider
+    CovarianceMatrixProvider <|-- MyProcessNoiseMatrixProvider
   }
 
 @enduml

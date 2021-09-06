@@ -54,7 +54,7 @@
       class AuxiliaryElements
 
       interface DSSTForceModel {
-        +void initialize(AuxiliaryElements auxiliary, PropagationType type, double[] parameters)
+        +void initializeShortPeriodTerms(AuxiliaryElements auxiliary, PropagationType type, double[] parameters)
         +double[] getMeanElementRate(SpacecraftState state, AuxiliaryElements auxiliary, double[] parameters)
         +void updateShortPeriodTerms(double[] parameters, SpacecraftState ... meanStates)
         +EventDetector[] getEventsDetectors()
