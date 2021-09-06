@@ -78,8 +78,8 @@ public enum ParsedUnitsBehavior {
         @Override
         public Unit select(final Unit message, final Unit standard) {
             if (message == Unit.NONE ||
-                (Precision.equals(message.getScale(), standard.getScale(), 1) &&
-                 message.sameDimension(standard))) {
+                Precision.equals(message.getScale(), standard.getScale(), 1) &&
+                message.sameDimension(standard)) {
                 return standard;
             } else {
                 throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,

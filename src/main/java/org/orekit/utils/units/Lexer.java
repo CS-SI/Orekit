@@ -115,7 +115,7 @@ class Lexer {
         }
 
         // look for power
-        if ((start < end - 1) &&
+        if (start < end - 1 &&
             unitSpecification.charAt(start)     == '*' &&
             unitSpecification.charAt(start + 1) == '*') {
             // power indicator as **
@@ -152,7 +152,7 @@ class Lexer {
         }
 
         // look for special case "0.5" (used by CCSDS for square roots)
-        if ((start < end - 2) &&
+        if (start < end - 2 &&
              unitSpecification.charAt(start)     == '0' &&
              unitSpecification.charAt(start + 1) == '.' &&
              unitSpecification.charAt(start + 2) == '5') {
@@ -222,7 +222,7 @@ class Lexer {
         int value = 0;
         while (current < end) {
             final int c = converter.convert(current);
-            if ((c >= '0') && (c <= '9')) {
+            if (c >= '0' && c <= '9') {
                 value = value * 10 + (c - '0');
                 ++current;
             } else {

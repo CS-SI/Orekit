@@ -246,7 +246,7 @@ public enum ManeuverFieldType {
      */
     public void checkUnit(final Unit parsedUnit) {
         if ((unit == Unit.NONE) ^ (parsedUnit == Unit.NONE) ||
-            (!(unit.sameDimension(parsedUnit) && Precision.equals(unit.getScale(), parsedUnit.getScale(), 1)))) {
+            !(unit.sameDimension(parsedUnit) && Precision.equals(unit.getScale(), parsedUnit.getScale(), 1))) {
             throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
                                       unit.getName(), parsedUnit.getName());
         }
