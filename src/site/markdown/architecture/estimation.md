@@ -11,8 +11,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-Orbit Determination
-===================
+
+# Orbit Determination
 
 The `org.orekit.estimation` package provides classes to manage orbit determination.
     
