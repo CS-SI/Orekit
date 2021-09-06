@@ -218,10 +218,10 @@ public enum ManeuverFieldType {
     private final Unit unit;
 
     /** Processing method. */
-    private final FieldProcessor processor;
+    private final transient FieldProcessor processor;
 
     /** Writing method. */
-    private final FieldWriter writer;
+    private final transient FieldWriter writer;
 
     /** Simple constructor.
      * @param unitSpecifications field unit specifications
