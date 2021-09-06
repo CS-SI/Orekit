@@ -58,8 +58,11 @@
               +estimate()
            }
 
+           class SequentialBatchLSEstimator
+
             ODProblem *--> MeasurementHandler
 
+          SequentialBatchLSEstimator -right-|> BatchLSEstimator
           BatchLSEstimator *-right-> ODProblem
           LeastSquaresProblem <|.. ODProblem
           ODProblem --> EstimatedMeasurement
