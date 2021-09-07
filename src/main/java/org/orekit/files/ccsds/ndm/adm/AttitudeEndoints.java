@@ -48,7 +48,6 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  *   <li>{@link Attitude Orekit attitude} view: attitude is always from external to
  *   spacecraft body</li>
  * </ul>
- * </p>
  * @author Luc Maisonobe
  * @since 11.0
  */

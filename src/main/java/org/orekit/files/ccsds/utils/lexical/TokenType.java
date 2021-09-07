@@ -24,7 +24,6 @@ package org.orekit.files.ccsds.utils.lexical;
  *   <li>entry content</li>
  *   <li>bloc end</li>
  * </ul>
- * </p>
  * @see ParseToken
  * @author Luc Maisonobe
  * @since 11.0

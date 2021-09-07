@@ -53,7 +53,6 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
      *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
      * </ul>
-     * </p>
      */
     @DefaultDataContext
     public WriterBuilder() {
@@ -69,7 +68,6 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
      *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
      * </ul>
-     * </p>
      * @param dataContext data context used to retrieve frames, time scales, etc.
      */
     public WriterBuilder(final DataContext dataContext) {

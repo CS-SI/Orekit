@@ -22,46 +22,46 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
  */
 public enum OrbitCategory {
 
-    /** Extended Geostationary Orbit, 37948 < a < 46380 km, e < 0.25, i < 25°. */
+    /** Extended Geostationary Orbit, 37948 &lt; a &lt; 46380 km, e &lt; 0.25, i &lt; 25°. */
     EGO("Extended Geostationary Orbit"),
 
     /** Escape Orbit. */
     ESO("Escape Orbit"),
 
-    /** GEO-superGEO, Crossing Orbit 31570 < hp < 40002 km, 40002 km < ha. */
+    /** GEO-superGEO, Crossing Orbit 31570 &lt; hp &lt; 40002 km, 40002 km &lt; ha. */
     GHO("GEO-superGEO, Crossing Orbit"),
 
-    /** Geosynchronous Earth Orbit, with i > 3°, 35586 < hp < 35986 km, 35586 < ha < 35986 km. */
+    /** Geosynchronous Earth Orbit, with i &gt; 3°, 35586 &lt; hp &lt; 35986 km, 35586 &lt; ha &lt; 35986 km. */
     GEO("Geosynchronous Earth Orbit"),
 
-    /** GeoStationary Orbit, with 3° < i < 25°, 35586 < hp < 35986 km, 35586 < ha < 35986 km. */
+    /** GeoStationary Orbit, with 3° &lt; i &lt; 25°, 35586 &lt; hp &lt; 35986 km, 35586 &lt; ha &lt; 35986 km. */
     GSO("GeoStationary Orbit"),
 
-    /** Geosynchronous Transfer Orbit, i < 90°, hp < 2000 km, 31570 < ha < 40002 km. */
+    /** Geosynchronous Transfer Orbit, i &lt; 90°, hp &lt; 2000 km, 31570 &lt; ha &lt; 40002 km. */
     GTO("Geosynchronous Transfer Orbit"),
 
-    /** High Altitude Earth Orbit, 40002 km < hp, 40002 km < ha. */
+    /** High Altitude Earth Orbit, 40002 km &lt; hp, 40002 km &lt; ha. */
     HAO("High Altitude Earth Orbit"),
 
-    /** Highly Eccentric Earth Orbit, hp < 31570 km, 40002 km < ha. */
+    /** Highly Eccentric Earth Orbit, hp &lt; 31570 km, 40002 km &lt; ha. */
     HEO("Highly Eccentric Earth Orbit"),
 
-    /** Inclined Geosynchronous Orbit, 37948 < a < 46380 km, e < 0.25, 25° < i < 180°. */
+    /** Inclined Geosynchronous Orbit, 37948 &lt; a &lt; 46380 km, e &lt; 0.25, 25° &lt; i &lt; 180°. */
     IGO("Inclined Geosynchronous Orbit"),
 
-    /** Low Earth Orbit, hp < 2000 km, ha < 2000 km. */
+    /** Low Earth Orbit, hp &lt; 2000 km, ha &lt; 2000 km. */
     LEO("Low Earth Orbit"),
 
-    /** LEO-MEO Crossing Orbit, hp < 2000 km, 2000 < ha < 31570 km. */
+    /** LEO-MEO Crossing Orbit, hp &lt; 2000 km, 2000 &lt; ha &lt; 31570 km. */
     LMO("LEO-MEO Crossing Orbit"),
 
-    /** Medium Earth Orbit, 2000 < hp < 31570 km, 2000 < ha < 31570 km. */
+    /** Medium Earth Orbit, 2000 &lt; hp &lt; 31570 km, 2000 &lt; ha &lt; 31570 km. */
     MEO("Medium Earth Orbit"),
 
-    /** MEO-GEO Crossing Orbit, 2000 < hp < 31570 km, 31570 < ha < 40002 km. */
+    /** MEO-GEO Crossing Orbit, 2000 &lt; hp &lt; 31570 km, 31570 &lt; ha &lt; 40002 km. */
     MGO("MEO-GEO Crossing Orbit"),
 
-    /** Navigation Satellites Orbit 50° < i < 70°, 18100 < hp < 24300 km, 18100 < ha < 4300 km. */
+    /** Navigation Satellites Orbit 50° &lt; i &lt; 70°, 18100 &lt; hp &lt; 24300 km, 18100 &lt; ha &lt; 4300 km. */
     NSO("Navigation Satellites Orbit"),
 
     /** UFO: Undefined Orbit. */

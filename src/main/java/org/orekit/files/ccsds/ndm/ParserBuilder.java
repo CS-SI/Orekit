@@ -73,7 +73,6 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      *   <li>{@link #getParsedUnitsBehavior() parsed unit behavior} set to {@link ParsedUnitsBehavior#CONVERT_COMPATIBLE}</li>
      *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
      * </ul>
-     * </p>
      */
     @DefaultDataContext
     public ParserBuilder() {
@@ -94,7 +93,6 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      *   <li>{@link #getParsedUnitsBehavior() parsed unit behavior} set to {@link ParsedUnitsBehavior#CONVERT_COMPATIBLE}</li>
      *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
      * </ul>
-     * </p>
      * @param dataContext data context used to retrieve frames, time scales, etc.
      */
     public ParserBuilder(final DataContext dataContext) {

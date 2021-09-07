@@ -260,7 +260,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @param minuteDuration 60, 61, or 62 seconds depending on the date being close to a
      *                       leap second introduction and the magnitude of the leap
      *                       second.
-     * @return string representation of this date, time, & UTC offset
+     * @return string representation of this date, time, and UTC offset
      * @see #toString(int, int)
      */
     public String toString(final int minuteDuration) {
@@ -276,10 +276,10 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      *                       to a leap second introduction and the magnitude of the leap
      *                       second.
      * @param fractionDigits the number of digits to include after the decimal point in
-     *                       the string representation of the seconds. The date & time is
-     *                       first rounded as necessary. {@code fractionDigits} must be
-     *                       greater than or equal to {@code 0}.
-     * @return string representation of this date, time, & UTC offset
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must
+     *                       be greater than or equal to {@code 0}.
+     * @return string representation of this date, time, and UTC offset
      * @see #toStringRfc3339()
      * @see #toStringWithoutUtcOffset()
      * @since 11.0

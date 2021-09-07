@@ -77,7 +77,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
      * as new segments are written (with at least the segment start and stop will change,
      * but some other parts may change too). The {@code template} argument itself is not
      * changed.
-     * </>
+     * </p>
      * @param writer underlying writer
      * @param header file header (may be null)
      * @param template template for metadata
