@@ -584,7 +584,7 @@ NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
 IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>
 
 # invalid satellite system {0}
-INVALID_SATELLITE_SYSTEM = ugyldigt satellitsystem
+INVALID_SATELLITE_SYSTEM = ugyldigt satellitsystem {0}
 
 # IONEX file {0} does not contain TEC data for date {1}
 NO_TEC_DATA_IN_FILE_FOR_DATE = <MISSING TRANSLATION>
@@ -616,7 +616,7 @@ MODIP_GRID_NOT_LOADED = <MISSING TRANSLATION>
 NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
 
 # file {0} is not a supported Hatanaka-compressed file
-NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = filen {0] er ikke en understøttet Hatanaka-komprimeret fil
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = filen {0} er ikke en understøttet Hatanaka-komprimeret fil
 
 # Cannot compute around {0}
 CANNOT_COMPUTE_LAGRANGIAN = <MISSING TRANSLATION>
