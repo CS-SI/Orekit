@@ -21,7 +21,7 @@
   </properties>
   <body>
     <release version="11.0" date="2021-09-13"
-             description="Orekit 10.0 is a major new release.
+             description="Orekit 11.0 is a major new release.
              It includes both new features and bug fixes. New features introduced
              in 11.0 are: orbit determination using SGP4/SDP4 models, a sequential
              batch least squares estimator using initial covariance and state vector,
