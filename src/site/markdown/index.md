@@ -100,7 +100,14 @@
         * serialization mechanism to store complete results on persistent storage for
           later use
         * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
-    * semi-analytical propagation model (DSST) with customizable force models
+    * semi-analytical propagation model (DSST)
+        * central attraction
+        * gravity models
+        * atmospheric drag
+        * third body attraction
+        * radiation pressure with eclipses
+        * computation of Jacobians with respect to orbital parameters and selected
+          force models parameters
     * trajectories around Lagragian points using CR3BP model
     * tabulated ephemerides
         * file based
@@ -182,6 +189,10 @@
         * optimizers choice (Levenberg-Marquardt or Gauss-Newton)
         * decomposition algorithms choice (QR, LU, SVD, Cholesky)
         * choice between forming normal equations or not
+    * sequential batch least squares fitting
+        * sequential Gauss-Newton optimizer
+        * decomposition algorithms choice (QR, LU, SVD, Cholesky)
+        * possibility to use an initial covariance matrix
     *  Kalman filtering
         * customizable process noise matrices providers
         * time dependent process noise provider
@@ -242,10 +253,12 @@
     * computation of Dilution Of Precision
     * loading of ANTEX antenna models file
     * loading of RINEX observation files (version 2 and version 3)
+    * loading of RINEX navigation files (version 3)
     * support for Hatanaka compact RINEX format
     * loading of SINEX station file
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
+    * parsing of RTCM messages
     * implementation of Ntrip protocol
 
   * Orbit file handling

@@ -2,51 +2,51 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="11.0-SNAPSHOT" />
+  <property name="project.version"            value="11.0" />
 
-  <property name="src.dir"                 location="src"                    />
-  <property name="main.src.dir"            value="${src.dir}/main/java"      />
-  <property name="main.resources.dir"      value="${src.dir}/main/resources" />
-  <property name="test.src.dir"            value="${src.dir}/test/java"      />
-  <property name="test.resources.dir"      value="${src.dir}/test/resources" />
+  <property name="src.dir"                    location="src"                    />
+  <property name="main.src.dir"               value="${src.dir}/main/java"      />
+  <property name="main.resources.dir"         value="${src.dir}/main/resources" />
+  <property name="test.src.dir"               value="${src.dir}/test/java"      />
+  <property name="test.resources.dir"         value="${src.dir}/test/resources" />
 
-  <property name="build.dir"               location="build"                  />
-  <property name="main.classes.dir"        value="${build.dir}/classes"      />
-  <property name="test.classes.dir"        value="${build.dir}/test-classes" />
-  <property name="javadoc.dir"             value="${build.dir}/javadoc"      />
-  <property name="tests.reports"           value="${build.dir}/test-reports" />
+  <property name="build.dir"                  location="build"                  />
+  <property name="main.classes.dir"           value="${build.dir}/classes"      />
+  <property name="test.classes.dir"           value="${build.dir}/test-classes" />
+  <property name="javadoc.dir"                value="${build.dir}/javadoc"      />
+  <property name="tests.reports"              value="${build.dir}/test-reports" />
 
-  <property name="lib.dir"                 location="lib"                    />
+  <property name="lib.dir"                    location="lib"                    />
 
-  <property name="hipparchus.version"       value="2.0-SNAPSHOT"                                            />
-  <property name="hipparchus.core.jar"      value="hipparchus-core-${hipparchus.version}.jar"      />
-  <property name="hipparchus.geometry.jar"  value="hipparchus-geometry-${hipparchus.version}.jar"  />
-  <property name="hipparchus.ode.jar"       value="hipparchus-ode-${hipparchus.version}.jar"       />
-  <property name="hipparchus.fitting.jar"   value="hipparchus-fitting-${hipparchus.version}.jar"   />
-  <property name="hipparchus.optim.jar"     value="hipparchus-optim-${hipparchus.version}.jar"     />
-  <property name="hipparchus.filtering.jar" value="hipparchus-filtering-${hipparchus.version}.jar" />
-  <property name="hipparchus.stat.jar"      value="hipparchus-stat-${hipparchus.version}.jar"      />
-  <property name="hipparchus.maven.path"    value="org/hipparchus"                                 />
-  <property name="junit.version"            value="4.13.1"                                           />
-  <property name="junit.jar"                value="junit-${junit.version}.jar"                     />
-  <property name="junit.maven.path"         value="junit/junit"                                    />
-  <property name="mockito.version"          value="3.6.28"                                         />
-  <property name="mockito.jar"              value="mockito-core-${mockito.version}.jar"            />
-  <property name="mockito.maven.path"       value="org/mockito/mockito-core"                       />
-  <property name="bytebuddy.version"        value="1.9.10"                                         />
-  <property name="bytebuddy.jar"            value="byte-buddy-${bytebuddy.version}.jar"            />
-  <property name="bytebuddy.maven.path"     value="net/bytebuddy/byte-buddy"                       />
-  <property name="bytebuddy.agent.jar"      value="byte-buddy-agent-${bytebuddy.version}.jar"      />
+  <property name="hipparchus.version"         value="2.0"                                            />
+  <property name="hipparchus.core.jar"        value="hipparchus-core-${hipparchus.version}.jar"      />
+  <property name="hipparchus.geometry.jar"    value="hipparchus-geometry-${hipparchus.version}.jar"  />
+  <property name="hipparchus.ode.jar"         value="hipparchus-ode-${hipparchus.version}.jar"       />
+  <property name="hipparchus.fitting.jar"     value="hipparchus-fitting-${hipparchus.version}.jar"   />
+  <property name="hipparchus.optim.jar"       value="hipparchus-optim-${hipparchus.version}.jar"     />
+  <property name="hipparchus.filtering.jar"   value="hipparchus-filtering-${hipparchus.version}.jar" />
+  <property name="hipparchus.stat.jar"        value="hipparchus-stat-${hipparchus.version}.jar"      />
+  <property name="hipparchus.maven.path"      value="org/hipparchus"                                 />
+  <property name="junit.version"              value="4.13.2"                                         />
+  <property name="junit.jar"                  value="junit-${junit.version}.jar"                     />
+  <property name="junit.maven.path"           value="junit/junit"                                    />
+  <property name="mockito.version"            value="3.12.4"                                         />
+  <property name="mockito.jar"                value="mockito-core-${mockito.version}.jar"            />
+  <property name="mockito.maven.path"         value="org/mockito/mockito-core"                       />
+  <property name="bytebuddy.version"          value="1.9.10"                                         />
+  <property name="bytebuddy.jar"              value="byte-buddy-${bytebuddy.version}.jar"            />
+  <property name="bytebuddy.maven.path"       value="net/bytebuddy/byte-buddy"                       />
+  <property name="bytebuddy.agent.jar"        value="byte-buddy-agent-${bytebuddy.version}.jar"      />
   <property name="bytebuddy.agent.maven.path" value="net/bytebuddy/byte-buddy-agent"               />
-  <property name="objenesis.version"        value="2.6"                                            />
-  <property name="objenesis.jar"            value="objenesis-${objenesis.version}.jar"             />
-  <property name="objenesis.maven.path"     value="org/objenesis/objenesis"                        />
-  <property name="hamcrest.version"         value="1.3"                                            />
-  <property name="hamcrest.core.jar"        value="hamcrest-core-${hamcrest.version}.jar"          />
-  <property name="hamcrest.maven.path"      value="org/hamcrest"                                   />
-  <property name="maven.repository"         value="https://repo1.maven.org/maven2"                 />
+  <property name="objenesis.version"          value="2.6"                                            />
+  <property name="objenesis.jar"              value="objenesis-${objenesis.version}.jar"             />
+  <property name="objenesis.maven.path"       value="org/objenesis/objenesis"                        />
+  <property name="hamcrest.version"           value="1.3"                                            />
+  <property name="hamcrest.core.jar"          value="hamcrest-core-${hamcrest.version}.jar"          />
+  <property name="hamcrest.maven.path"        value="org/hamcrest"                                   />
+  <property name="maven.repository"           value="https://repo1.maven.org/maven2"                 />
 
-  <property name="copyright"               value="2002-2021 CS GROUP" />
+  <property name="copyright"                  value="2002-2021 CS GROUP" />
 
   <available file="${lib.dir}/${hipparchus.core.jar}" property="libs.present" />
 
