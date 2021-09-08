@@ -212,7 +212,7 @@ NON_EXISTENT_TIME = hora inexistente {0}
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = número de segundos fuera de rango : {0}
 
-# out of range seconds number: {0} is not in [{1}, {2})
+# out of range seconds number: {0} is not in [{1}, {2}]
 OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
 
 # angle type not supported, supported angles: {0}, {1} and {2}

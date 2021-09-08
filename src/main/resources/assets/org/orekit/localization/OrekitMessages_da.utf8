@@ -212,8 +212,8 @@ NON_EXISTENT_TIME = klokkeslettet {0} eksisterer ikke
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = sekundnummer {0} udenfor intervallet
 
-# out of range seconds number: {0} is not in [{1}, {2})
-OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = sekundnummer {0} udenfor intervallet: er ikke i [{1}, {2})
+# out of range seconds number: {0} is not in [{1}, {2}]
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = sekundnummer {0} udenfor intervallet: er ikke i [{1}, {2}]
 
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = vinkeltypen er ikke understøttet, understøttede vinkler: {0}, {1} og {2}
