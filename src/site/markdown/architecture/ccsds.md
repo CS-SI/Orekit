@@ -53,7 +53,7 @@ vector block, Keplerian elements block, maneuvers block in OPM), then
 there is one dedicated class for each logical block.
 
 The top-level message also contains some Orekit-specific data that are mandatory
-for building some objects but is not present in the CCSDS messages. This
+for building some objects but are not present in the CCSDS messages. This
 includes for example IERS conventions, data context, and gravitational
 coefficient for ODM as it is sometimes optional in these messages.
 
@@ -63,7 +63,7 @@ but a flat structure was used.
 
 This organization implies that users wishing to access raw internal entries must
 walk through the hierarchy. For message types that allow only one segment, there
-are shortcuts to use `message.getMetadata()` and `message.getData()` instead of
+are shortcuts to use `message.getMetadata()` and `message.getData()` in addtion to
 `message.getSegments().get(0).getMetadata()` and `message.getSegments().get(0).getData()`
 respectively. Where it is relevant, other shortcuts are provided to access
 Orekit-compatible objects as shown in the following code snippet:
@@ -76,7 +76,7 @@ Orekit-compatible objects as shown in the following code snippet:
     AbsoluteDate    orbitDate    = opm.getSegments().get(0).get(Data).getStateVectorBlock().getEpoch();
 
 Messages can be obtained by parsing an existing message or by using
-the setters to create it from scratch, bottom up starting from the
+the setters to create them from scratch, bottom up starting from the
 raw elements and building up through logical blocks, data, metadata,
 segments, header and finally message.
 
@@ -84,12 +84,12 @@ segments, header and finally message.
 
 Parsing a text message to build some kind of `Ndm` object is performed
 by setting up a parser. Each message type has its own parser, but a single
-`ParserBuilder` can build all of them. Once created, the parser `parseMessage`
+`ParserBuilder` can build all parsers type. Once created, the parser `parseMessage`
 method is called with a data source. It will return the parsed message as a
 hierarchical container as depicted in the previous section.
 
 The Orekit-specific data that are mandatory for building some objects but are
-not present in the CCSDS messages are set up when building the `ParserBuilder`.
+not present in the CCSDS messages are set up beforehand when building the `ParserBuilder`.
 This includes for example IERS conventions, data context, and gravitational
 coefficient for ODM as it is sometimes optional in these messages.
 
@@ -113,7 +113,7 @@ even that "listing of units via the [insert keyword here] keyword does
 not override the mandatory units specified in the selected [insert type here]".
 This would mean that `IGNORE_PARSE` should be used for compliance with the
 standard and messages specifying wrong units should be accepted silently. Other
-places set that the tables specify "the units to be used" and that "If units
+places state that the tables specify "the units to be used" and that "If units
 are displayed, they must exactly match the units  (including lower/upper case)
 as specified in tables". This would mean that `STRICT_COMPLIANCE` should be used
 for compliance with the standard and messages specifying wrong units should be
@@ -124,9 +124,9 @@ were really used for producing the message, we consider that `CONVERT_COMPATIBLE
 is a good trade-off for leniency. The default setting is therefore to set the
 `ParseBuilder` behavior to `CONVERT_COMPATIBLE`, but users can configure
 their builder differently to suit their needs. The units parser used in
-Orekit is also feature-rich and known how to handle units written with
+Orekit is also feature-rich and knows how to handle units written with
 human-friendly unicode characters, like for example km/s² or √km (whereas
-CCSDS standard would use km/s**2 or km**0.5).
+CCSDS standard would use km/s\*\*2 or km\*\*0.5).
 
 One change introduced in Orekit 11.0 is that the progressive set up of
 parsers using the fluent API (methods `withXxx()`) has been moved to the top-level
@@ -137,7 +137,9 @@ to use parsers is then to set up one `ParserBuilder` and to call its `buildXymPa
 methods from within each thread to dedicate one parser for each message and drop it
 afterwards. In single-threaded cases, parsers used from within a loop can be reused
 safely after the `parseMethod` has returned, but building a new parser from the
-builder is simple.
+builder is simple and has little overhead, so asking the existing `ParseBuilder` to
+build a new parser for each message is still the recommended way in single-threaded
+applications.
 
 Parsers automatically recognize if the message is in Key-Value Notation (KVN) or in
 eXtended Markup Language (XML) format and adapt accordingly. This is
@@ -157,8 +159,8 @@ The `EphemerisFileParser` interface defines a `parse(dataSource)` method that
 is similar to the CCSDS-specific `parseMessage(dataSource)` method.
 
 As the parsers are parameterized with the type of the parsed message, the `parseMessage`
-and `parse` methods in all parsers already have the specific type. There is no need
-to cast the returned value as in pre-11.0 versions of Orekit.
+and `parse` methods in all parsers already return an object with the proper specific message
+type. There is no need to cast the returned value as was done in pre-11.0 versions of Orekit.
 
 The following code snippet shows how to parse an OEM, in this case using a file
 name to create the data source, and using the default values for the parser builder:
@@ -172,10 +174,10 @@ type and using a low level generator corresponding to the desired message format
 `KvnGenerator` for Key-Value Notation or `XmlGenerator` for eXtended Markup Language.
 
 All CCSDS messages have a corresponding writer that implements the CCSDS-specific
-`MessageWriter` interface. This interface allows to writer either an already built
+`MessageWriter` interface. This interface allows to write either an already built
 message, or separately the header first and then looping to write the segments.
 
-Ephemeris-type messages (AEM, OEM and OCM) implement the generic ephemeris writer
+Ephemeris-type messages (AEM, OEM and OCM) also implement the generic ephemeris writer
 interfaces (`AttitudeEphemerisFileWriter` and `EphemerisFileWriter`) in addition
 to the CCSDS-specific interface, so they can be used in a more general
 way when ephemerides data is built from non-CCSDS data. The generic `write` methods
@@ -184,12 +186,12 @@ in these interfaces take as arguments objects that implement the generic
 interfaces. As these interfaces do not provide access to header and metadata informations
 that CCSDS writers need, these informations must be provided beforehand to the
 writers. This is done by providing directly the header and a metadata template in
-the constructor of the writer. Of course, non-CCSDS writers would use different
-strategies to get their specific metadata. The metadata provided is only a template that
-is incomplete: the frame, start time and stop time will be filled later on when
-the data to be written is available, as they will change for each segment. The
-argument used as the template is not modified when building a writer, its content
-is copied in an internal object that is modified by adding the proper frame and
+the constructor of the writer. Of course, writers for non-CCSDS message formats would use
+different strategies to get their specific metadata. In the CCCSDS case, the metadata
+provided is only a template that is incomplete: the frame, start time and stop time will
+be filled later on when the data to be written is available, as they will change for each
+segment. The argument used as the template is not modified when building a writer, its
+content is copied in an internal object that is modified by adding the proper frame and
 time data when each segment is created.
 
 Ephemeris-type messages can also be used in a streaming way (with specific
@@ -198,9 +200,11 @@ on-the-fly by a propagator. These specific writers provide a `newSegment()` meth
 returns a fixed step handler to register to the propagator. If ephemerides must be split
 into different segments, in order to prevent interpolation between two time ranges
 separated by a discrete event like a maneuver, then a new step handler must be retrieved
-using the `newSegment()` method at discrete event time and a new propagator must be used.
+using the `newSegment()` method at discrete event time and a new propagator must be used
+(or `propagator.getMultiplexer().remove(oldSegmentHandler)` and
+`propagator.getMultiplexer().add(newSegmentHandler)` must be called appropriately).
 All segments will be gathered properly in the generated CCSDS message. Using the same
-propagator and same event handler would not work as expected. The propagator would run
+propagator and same event handler would not work as expected: the propagator would run
 just fine through the discrete event that would reset the state, but the ephemeris would
 not be aware of the change and would just continue the same segment. Upon reading the
 message produced this way, the reader would not be aware that interpolation should not be
@@ -232,7 +236,7 @@ start of the XML declaration ("<?xml ...>") is found, then `XmlLexicalAnalyzer` 
 selected, otherwise `KvnLexicalAnalyzer` is selected. Detection works for UCS-4,
 UTF-16 and UTF-8 encodings, with or without a Byte Order Mark, and regardless of
 endianness. This XML declaration is optional in general-purpose XML documents
-(at least for XML 1.0) but CCSDS messages and XML 1.1 spec both require it to be
+(at least for XML 1.0) but CCSDS messages and XML 1.1 specification both require it to be
 present. After the first few bytes allowing selection have been read, the characters
 stream is reset to beginning so the selected lexical analyzer will see these
 characters again. This works even if the `DataSource` is a network stream, thanks to
@@ -250,7 +254,7 @@ The dynamic view of lexical analysis is depicted in the following sequence diagr
 
 ![general parsing sequence diagram diagram](../images/design/ccsds-lexical-analysis-sequence-diagram.png)
 
-The second level of parsing is message parsing is semantic analysis. Its aim is
+The second level of parsing in message parsing is semantic analysis. Its aim is
 to read the stream of `ParseToken` objects and to progressively build the CCSDS message
 from them. Semantic analysis of primitive entries like `EPOCH_TZERO = 1998-12-18T14:28:15.1172`
 in KVN or `<EPOCH_TZERO>1998-12-18T14:28:15.1172</EPOCH_TZERO>` in XML is independent
@@ -270,7 +274,7 @@ manage (i.e. a lot of different names a `ParseToken` can have). Prior to version
 used a single big enumerate class for all these keys, but it proved unmanageable as more
 message types were supported. The framework set up with version 11.0 is based on the fact
 these numerous keys belong to a smaller set of logical blocks that are always parsed as a
-whole (header, metadata, state vector, covariance...). Parsing can be performed with the
+whole (header, metadata, state vector, covariance...). Parsing is therefore performed with the
 parser switching between a small number of well-known states. When one state is active,
 say metadata parsing, then lookup is limited to the keys allowed in metadata. If an
 unknown token arrives, then the parser assumes the current section is finished, and
@@ -311,7 +315,7 @@ upcoming tokens one after the other. Each processing state may adopt a different
 strategy for this, depending on the section it handles. Processing states are
 always quite small. Some processing states that can be reused from message type
 to message type (like `HeaderProcessingState`, `KvnStructureProcessingState` or
-`XmlStructureProcessingstate`) are implemented as separate classes. Other processing
+`XmlStructureProcessingstate`) and are implemented as separate classes. Other processing
 states that are specific to one message type (and hence to one parser), are
 implemented as a single private method within the parser. Method references
 are used to point directly to these methods. This allows one parser class to
@@ -319,7 +323,7 @@ provide simultaneously several implementations of the `ProcessingState` interfac
 The following example is extracted from the `TdmParser`, it shows that when a
 `DATA_START` key is seen in a KVN message or when a `<data>` start element is
 seen in an XML message, then `prepareData` is called and an `ObservationsBlock`
-is allocated to hold the upcoming observations, and the fallback processing
+is allocated to hold the upcoming observations. Then the fallback processing
 state is set to the private method `processDataToken` so that the next token,
 which at this stage is expected to be a data token representing an observation,
 can be processed properly:
@@ -330,7 +334,7 @@ can be processed properly:
         return true;
     }
 
-In many cases, the keys that are allowed in a section are fixed so they are defined
+In most cases, the keys that are allowed in a section are fixed so they are defined
 in an enumerate. The processing state (in this case often a private method within
 the parser) then simply selects the constant corresponding to the token name using
 the standard `valueOf` method from the enumerate class and delegates to it the processing
@@ -341,7 +345,8 @@ section and add their own keys, several enumerate types can be checked in row. A
 example of this design is the `processMetadataToken` method in `OemParser`, which is a single
 private method acting as a `ProcessingState` and tries the enumerates `MetadataKey`,
 `OdmMetadataKey`, `CommonMetadataKey` and finally `OemMetadataKey` to fill up the metadata
-section.
+section. There are a few cases when this design using an enumerate does not work, for
+example with user-defined data and keywords. In such cases an ad-hoc implementation is used.
 
 Adding a new message type (lets name it XYZ message) involves:
 
@@ -370,14 +375,14 @@ The following class diagram presents the implementation of writing:
 
 ![writing class diagram](../images/design/ccsds-writing-class-diagram.png)
 
-In this diagram, only `OpmWrite` and `OemWriter` are shown, but other writers
+In this diagram, only `OpmWriter` and `OemWriter` are shown, but other writers
 exist for the remaining formats, with similar structures.
 
 When the top level writers are built, they are configured with references to
 header and metadata containers. This is what allows `OemWriter` to implement
 `EphemerisFileWriter` and thus to be able to write any ephemeris as an OEM,
 even if the ephemeris itself has none of the CCSDS specific metadata and
-header. The ephemeris can be created from scratch using a propagator (and it
+header. The ephemeris can be created from scratch using a propagator, and it
 can even be written on the fly as it is computed, if one embeds an `OemWriter`
 in a `StreamingOemWriter`.
 

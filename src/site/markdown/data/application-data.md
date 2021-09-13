@@ -26,7 +26,7 @@ like separation between [data storage](./default-configuration.html#Data_storage
 [data formats](./default-configuration.html#Data_formats) or [filtering](./filtering.html)
 may be used for application data too.
 
-The simplest way do reuse all mechanisms transparently is to merge application data
+The simplest way to reuse all mechanisms transparently is to merge application data
 and library data using the [default configuration](./default-configuration.html) with
 the `DataProvidersManager` and put the files to be read either at the same location
 as the library (for example an `orekit-data` folder in home directory) or at an
