@@ -39,14 +39,14 @@ public abstract class StateMapper {
     /** Position angle type. */
     private final PositionAngle angleType;
 
-    /** Attitude provider. */
-    private final AttitudeProvider attitudeProvider;
-
     /** Central attraction coefficient. */
     private final double mu;
 
     /** Inertial frame. */
     private final Frame frame;
+
+    /** Attitude provider. */
+    private AttitudeProvider attitudeProvider;
 
     /** Simple constructor.
      * <p>
@@ -89,11 +89,6 @@ public abstract class StateMapper {
         return orbitType;
     }
 
-    /** Set position angle type.
-     */
-    public void setPositionAngleType() {
-    }
-
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
@@ -120,6 +115,13 @@ public abstract class StateMapper {
      */
     public AttitudeProvider getAttitudeProvider() {
         return attitudeProvider;
+    }
+
+    /** Set the attitude provider.
+     * @param attitudeProvider the provider to set
+     */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** Map the raw double time offset to a date.

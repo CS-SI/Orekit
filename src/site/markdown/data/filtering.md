@@ -31,7 +31,8 @@ Upon load time, all filters that can be applied to a set of data will
 be applied. If for example a file is both encrypted and compressed
 (in any order) and filters exist for uncompression and for deciphering,
 then both filters will be applied in the right order to the data retrieved
-by the `DataProvider` before being fed to the `DataLoader`.
+by the `DataProvider` before being fed to the `DataLoader` (or the parsers set up by
+users in [explicit loading](./application-data#Explicit_loading) of application data).
 
 The following class diagrams shows the main classes and interfaces involved
 in this feature.
@@ -44,16 +45,16 @@ The filtering principle is based on a stack of `DataSource` instances, with at t
 an instance (created by a `DataProvider` when using `DataProvidersManager`, or created
 manually when loading data explicitly). The instance at the bottom of the stack will read
 bytes or characters directly from storage. Upwards in the stack, one will find instances added
-by the `FiltersManager.applyRelevantFilters` method, each one reading data from the underlying
-stack element and providing filtered data to the next element upward.
+by the `FiltersManager.applyRelevantFilters` method as needed, each one reading data from the
+underlying stack element and providing filtered data to the next element upward.
 
 In the `DataProvidersManager` case, if at the end the name part of the `DataSource` matches the
 name that the`DataLoader` instance expects, then the data stream of the top of the stack is opened.
 This is were the lazy opening occurs, and it generally ends up with all the intermediate bytes or
 characters streams being opened as well. The opened stream is then passed to the `DataLoader` to be
 parsed. If on the other hand the name part of the `DataSource` does not match the name that the
-`DataLoader` instance expects, then the full stack is discarded and the next resource/file from the
-`DataProvider` is considered for filtering and loading.
+`DataLoader` instance expects, then neither the data stream is *not* opened, the full stack is discarded
+and the next resource/file from the `DataProvider` is considered for filtering and loading.
 
 In the explicit loading case, application can decide on its own to open or discard the top
 level `DataSource`, or select the appropriate parser based on the source name without having
@@ -64,26 +65,27 @@ filters.
 
 One example will explain this method more clearly. Consider a `DirectoryCrawler`
 configured to look into a directories tree containing files `tai-utc.dat` and
-`MSAFE/may2019f10_prd.txt.gz`, one of the defaults filters: `GzipFilter` that uncompress files
-with the `.gz` extension (the defaults filters also include `UnixCompressFilter` and
-`HatanakaCompressFilter`, they are omitted for clarity), and consider
-`MarshallSolarActivityFutureEstimation` which implements `DataLoader` and can
+`MSAFE/may2019f10_prd.txt.gz`, consider one of the defaults filters: `GzipFilter`
+that uncompresses files with the `.gz` extension (the defaults filters also include
+`UnixCompressFilter` and `HatanakaCompressFilter`, they are omitted for clarity), and
+consider `MarshallSolarActivityFutureEstimation` which implements `DataLoader` and can
 load files whose name follow a pattern mmmyyyyf10_prd.txt (among others).
 
 ![data filtering sequence diagram](../images/design/data-filtering-sequence-diagram.png)
 
-When the `tai-utc.dat` file is considered, a `DataSource` is created for it. Then the
-filters are checked (only one filter shown in the diagram), and all of them decline to act
-on the file, so they all return the same `DataSource` that was created for the raw file.
-At the end of the filters loop, the name (which is still `tai-utc.dat`) is checked against the
-expected pattern. As it does not match, the stack composed of only one `DataSource` is discarded.
-During all checks, the file has not been opened at all, only its name has been considered.
+When the `tai-utc.dat` file is considered by the `DirectoryCrawler`, a `DataSource` is created
+for it. Then the filters are checked (only one filter shown in the diagram), and all of them
+decline to act on the file, so they all return the same `DataSource` that was created for the
+raw file. At the end of the filters loop, the name (which is still `tai-utc.dat`) is checked
+against the pattern expected by the data loader. As it does not match, the stack composed of
+only one `DataSource` is discarded. During all checks, the file has not been opened at all,
+only its name has been considered.
 
 The `DirectoryCrawler` then considers the next directory, and in this directory the next
 file which is `may2019f10_prd.txt.gz`. A new `DataSource` is created for it and the filters are
 checked. As the extension is `.gz`, the `GzipFilter` filter considers it can act on the file
-and it create and returns a new `DataSource`, with name set to `may2019f10_prd.txt` and lazy
-stream opener set to insert an uncompressing algorithm between the raw file bytes
+and it creates and returns a new `DataSource`, with name set to `may2019f10_prd.txt` (it has removed
+the `.gz` extension) and lazy stream opener set to insert an uncompressing algorithm between the raw file bytes
 stream and the uncompressed bytes stream it will provide. The loop is restarted, but no other
 filter applies so at the end the stack contains two `DataSource`, the bottom one reading from
 storage and providing gzip compressed data, and the top one reading the gzip compressed data,

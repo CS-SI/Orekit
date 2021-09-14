@@ -54,9 +54,7 @@ import java.nio.file.Paths;
  * Some implementations may fail if the {@link #getOpener() opener}'s
  * {@link Opener#openStreamOnce() openStreamOnce} or {@link Opener#openReaderOnce() openReaderOnce}
  * methods are called several times or are both called separately. This is particularly
- * true in network-based streams.
- * <p>
- * This class is a simple container without any processing methods.
+ * true for network-based streams.
  * </p>
  * @see DataFilter
  * @author Luc Maisonobe
@@ -134,7 +132,7 @@ public class DataSource {
          * stream, i.e. to delay this opening (or not open the stream at all).
          * It is <em>not</em> intended to open the stream several times. Some
          * implementations may fail if an attempt to open a stream several
-         * times is made. This is particularly true in network-based streams.
+         * times is made. This is particularly true for network-based streams.
          * </p>
          * @return opened stream
          * @exception IOException if stream cannot be opened
@@ -151,7 +149,7 @@ public class DataSource {
          * stream, i.e. to delay this opening (or not open the stream at all).
          * It is <em>not</em> intended to open the stream several times. Some
          * implementations may fail if an attempt to open a stream several
-         * times is made. This is particularly true in network-based streams.
+         * times is made. This is particularly true for network-based streams.
          * </p>
          * @return opened stream
          * @exception IOException if stream cannot be opened
@@ -187,7 +185,7 @@ public class DataSource {
          * the {@link #openReaderOnce() characters stream} separately (but opening
          * the reader may be implemented by opening the binary stream or vice-versa).
          * Implementations may fail if an attempt to open a stream several times is
-         * made. This is particularly true in network-based streams.
+         * made. This is particularly true for network-based streams.
          * </p>
          * @return opened stream or null if there are no data streams at all
          * @exception IOException if stream cannot be opened
@@ -203,7 +201,7 @@ public class DataSource {
          * the {@link #openReaderOnce() characters stream} separately (but opening
          * the reader may be implemented by opening the binary stream or vice-versa).
          * Implementations may fail if an attempt to open a stream several times is
-         * made. This is particularly true in network-based streams.
+         * made. This is particularly true for network-based streams.
          * </p>
          * @return opened reader or null if there are no data streams at all
          * @exception IOException if stream cannot be opened
