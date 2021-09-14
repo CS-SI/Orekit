@@ -1,5 +1,5 @@
 # internal error, please notify development team by creating a new topic at {0}
-INTERNAL_ERROR = <MISSING TRANSLATION>
+INTERNAL_ERROR = eroare internă, vă rugăm să informați echipa de dezvoltare prin adăugarea unui tichet la {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitudinea ({0} m) este sub limita permisă de {1} m 
@@ -68,7 +68,7 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = niciun Parametru de Orientare al Pămâ
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametrii de Orientare ai Pământului lipsesc între {0} și {1}
 
 # missing Earth Orientation Parameters between {0} and {1}, gap is {2,number,0.0##############E0} s
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = <MISSING TRANSLATION>
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = Parametrii de Orientare ai Pământului lipsesc între {0} și {1}, decalajul este de {2,number,0.0##############E0} s
 
 # missing Earth Orientation Parameters
 NO_EARTH_ORIENTATION_PARAMETERS = Parametrii de Orientare ai Pământului lipsesc
@@ -83,7 +83,7 @@ INCONSISTENT_DATES_IN_IERS_FILE = datele {1}-{2}-{3} și MJD {4} sunt inconsiste
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = date neașteptate după linia {0} din fișierul {1}: {2}
 
 # unexpected data at line {0} in file {1}
-UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
+UNEXPECTED_DATA_AT_LINE_IN_FILE = date neașteptate la linia {0} din fișierul {1}
 
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = date necronologice în fișierul {0}, linia {1}
@@ -107,7 +107,7 @@ UNEXPECTED_END_OF_FILE_AFTER_LINE = final neașteptat de fișier {0} (după lini
 UNABLE_TO_PARSE_LINE_IN_FILE = imposibil de analizat linia {0} din fișierul {1}:\n{2}
 
 # unable to parse element {0} at line {1}, file {2}
-UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
+UNABLE_TO_PARSE_ELEMENT_IN_FILE = imposibil de analizat elementul {0} de la linia {1}, fișierul {2}
 
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = imposibil de găsit fișierul {0}
@@ -152,8 +152,7 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grad prea mare (n = {0}, gradul maxim al po
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordin prea mare (n = {0}, ordinul maxim al potențialului este {1})
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
-# SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = mai multe date de referință ({0} and {1}) descoperite în fișierul de câmp gravitațional {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = mai multe date de referință ({0} and {1} separate de {3,number,0.0##############E0} s) descoperite în fișierul de câmp gravitațional {2}
 
 # no TLE data available for object {0}
 NO_TLE_FOR_OBJECT = nu sunt disponibile date TLE pentru obiectul {0}
@@ -237,8 +236,7 @@ FRAMES_MISMATCH = sistemul de referință {0} nu corespunde sistemului de referi
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = stare inițială nespecificată pentru propagarea orbitală
 
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
-# EVENT_DATE_TOO_CLOSE = data evenimentului {0}, mai mare decât {1} minus {3} secunde și mai mică decât {2} plus {3} secunde, nu poate fi adăugată
-EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION>
+EVENT_DATE_TOO_CLOSE = data evenimentului țintă trebuie să fie înainte de {1} cu {3,number,0.0##############E0} secunde sau după [2} cu {3,number,0.0##############E0} secunde, dar data evenimentului țintă {0} este cu {4,number,0.0##############E0} secunde înainte de {1} și {5,number,0.0##############E0} sende după {2} deci nu poate fi adăugată
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = imposibil de citit antetul fișierului de efemeride JPL {0}
@@ -268,10 +266,10 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = dată în afara domeniului de valabilitate 
 OUT_OF_RANGE_EPHEMERIDES_DATE = dată în afara domeniului de valabilitate al efemeridelor : {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = <MISSING TRANSLATION>
+OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = dată în afara domeniului de valabilitate al efemeridelor : {0} este cu {3,number,0.0##############E0} s înainte de [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = <MISSING TRANSLATION>
+OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = dată în afara domeniului de valabilitate al efemeridelor : {0} este cu {3,number,0.0##############E0} s după [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
 UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = date neașteptate, două valori ale elevației: {0} and {1}, pentru o singură valoare a azimutului: {2}
@@ -322,10 +320,10 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lungime nevalidă pentru câmpul timp din
 CCSDS_DATE_MISSING_AGENCY_EPOCH = epocă de referință specifică agenției lipsă din data CCSDS
 
 # missing mandatory key {0} in CCSDS file {1}
-CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
+CCSDS_MISSING_KEYWORD = cheia esențială {0} lipsește din fișierul CCSDS {1}
 
 # key {0} is not allowed in format version {1}
-CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = cheia {0} nu este păermisă în versiunea {1}
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = cuvânt cheie neașteptat la linia {0} din fișierul CCSDS {1}:\n{2}
@@ -349,10 +347,10 @@ CCSDS_INCONSISTENT_TIME_SYSTEMS = sisteme de timp incoerente : {0} ≠ {1}
 CCSDS_TDM_KEYWORD_NOT_FOUND = Niciun cuvânt cheie CCSDS TDM nu a fost găsit la linia {0} din fișierul {1}:\n{2}
 
 # no Range Units converter configured for parsing Tracking Data Message
-CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
+CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = niciun convertor de unitate pseudo-distanță configurat pentru citirea „Tracking Data Message”
 
 # Time system should have already been set before line {0} of file {1}
-CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
+CCSDS_TIME_SYSTEM_NOT_READ_YET = Sistemul de timp ar fi trebuit deja configurat înaintea liniei {0} din fișierul {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = numele "{0}" este deja folosit pentru o stare adițională
@@ -373,19 +371,19 @@ DSST_SPR_SHADOW_INCONSISTENT = inconsistență în calculul umbrei: intrare = {0
 DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Orbita curentă are o eccentricitate {0} > 0.5 care necesită pentru calculul ratelor medii o metodă numerică cu dependență de timp neimplementată încă
 
 # unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = versiunea fișierului sp3 {0} nesuportată
+SP3_UNSUPPORTED_VERSION = versiune neacceptată a fișierului sp3 {0}
 
 # found {0} epochs in file {1}, expected {2}
-SP3_NUMBER_OF_EPOCH_MISMATCH = găsite {0} date de referință în fișierul {1}, așteptate {2}
+SP3_NUMBER_OF_EPOCH_MISMATCH = au fost găsite {0} date de referință în fișierul {1}, așteptate {2}
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = sfârșit neașteptat al fișierului sp3 (după linia {0})
 
 # unsupported clock file version {0}
-CLOCK_FILE_UNSUPPORTED_VERSION = versiunea fișierului de ceas {0} nesuportată
+CLOCK_FILE_UNSUPPORTED_VERSION = versiune neacceptată a fișierului de ceas {0}
 
 # unsupported navigation messages file version {0}
-NAVIGATION_FILE_UNSUPPORTED_VERSION = <MISSING TRANSLATION>
+NAVIGATION_FILE_UNSUPPORTED_VERSION = versiune neacceptată a fișierului cu mesaje de navigație {0}
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = fișierul de model geomagnetic {0} inexistent pentru anul {1}
@@ -406,19 +404,16 @@ NOT_ENOUGH_CACHED_NEIGHBORS =  numărul de vecini din cache este prea mic: {0} (
 NO_CACHED_ENTRIES = nu există înregistrări în cache
 
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
-# NON_CHRONOLOGICALLY_SORTED_ENTRIES = înregistrările generate nu sunt în ordine cronologică: {0} > {1}
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = înregistrările generate nu sunt în ordine cronologică: {0} > {1} cu {2,number,0.0##############E0} s
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = nu există informații generate în jurul datei: {0}
 
 # unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before
-# UNABLE_TO_GENERATE_NEW_DATA_BEFORE = imposibil de generat noi date înainte de {0}, date solicitate pentru {1}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = imposibil de generat noi date înainte de {0}, dar există date solicitate pentru {1} care este anterior cu {2,number,0.0##############E0} s
 
 # unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
-# UNABLE_TO_GENERATE_NEW_DATA_AFTER = imposibil de generat noi date după {0}, date solicitate pentru {1}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = imposibil de generat noi date înainte de {0}, dar există date solicitate pentru {1} care este ulterior cu {2,number,0.0##############E0} s
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = imposibil de calculat anomalia excentrică hiperbolică pornind de la anomalia medie după {0} iterații
@@ -475,22 +470,22 @@ CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = sisteme de timp inconsistente în blocuril
 CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = tipul de atitudine {0} din fișierele CCSDS AEM nu este implementat în Orekit
 
 # invalid rotation sequence {0} at line {1} of file {2}
-CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+CCSDS_INVALID_ROTATION_SEQUENCE = secvență de rotație {0} invalidă la linia {1} din fișierul {2}
 
 # element set type {0} ({1}) is not supported yet
-CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = <MISSING TRANSLATION>
+CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = tipul de set de elemente {0} ({1}) nu este încă permis
 
 # retrograde factor not supported in element set {0}
-CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = factorul retrograd nu este permis în setul de elemente {0}
 
 # element set type {0} ({1}) expects {2} elements
-CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = tipul de set de elemente {0} ({1}) așteaptă {2} elemente
 
 # wrong number of units for maneuver {0}
-CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = număr greșit al unităților pentru manevra {0}
 
 # missing time field for maneuver {0}
-CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
+CCSDS_MANEUVER_MISSING_TIME = lipsește câmpul de timp  pentru manevra {0}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Crearea unui propagator combinator necesită cel puțin un propagator, dar nici unul nu a fost definit.
@@ -636,15 +631,13 @@ INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = tipurile de măsuri 
 INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = frecvențele {0} și {1} sunt incompatibile pentru combinația {2}
 
 # observations are not in chronological order: {0} is {2,number,0.0##############E0} s after {1}
-# NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = observațiile de la datele {0} și {1} nu sunt în ordine cronologică
-NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = observațiile nu sunt în ordine cronologică: {0} este cu {2,number,0.0##############E0} s după {1}
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = a fost detectată o utilizare a ExceptionalDataContext. Acest mecanism este utilizat în general pentru detectarea unei erori de dezvoltare
 
 # Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
-# NON_DIFFERENT_DATES_FOR_OBSERVATIONS = observațiile {0}, {1} și {2} trebuie să aibă date diferite
-NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = Observațiile trebuie să aibă date diferite: {0}, {1} ({3,number,0.0##############E0} s de la prima observație), și {2} ({4,number,0.0##############E0} s de la prima observație, {5,number,0.0##############E0} s de la a doua observație)
 
 # observations are not in the same plane
 NON_COPLANAR_POINTS = observațiile nu sunt în același plan
@@ -677,73 +670,73 @@ INVALID_RANGE_INDICATOR_IN_CRD_FILE = Indicatorul de interval {0} este nevalid �
 CRD_UNEXPECTED_END_OF_FILE = Sfârșit neașteptat al fișierului CRD (după linia {0})
 
 # end of encoded message reached
-END_OF_ENCODED_MESSAGE = <MISSING TRANSLATION>
+END_OF_ENCODED_MESSAGE = sfârșitul mesajului codificat a fost atins
 
 # too large data type ({0} bits)
-TOO_LARGE_DATA_TYPE = <MISSING TRANSLATION>
+TOO_LARGE_DATA_TYPE = tip de date prea mare ({0} biți)
 
 # unknown encoded message number {0}
-UNKNOWN_ENCODED_MESSAGE_NUMBER = <MISSING TRANSLATION>
+UNKNOWN_ENCODED_MESSAGE_NUMBER = număr {0} necunoscut pentru mesajului codificat
 
 # unknown authentication method: {0}
-UNKNOWN_AUTHENTICATION_METHOD = <MISSING TRANSLATION>
+UNKNOWN_AUTHENTICATION_METHOD = metodă de autentificare necunoscută: {0}
 
 # unknown carrier phase code: {0}
-UNKNOWN_CARRIER_PHASE_CODE = <MISSING TRANSLATION>
+UNKNOWN_CARRIER_PHASE_CODE = cod de fază purtător necunoscut: {0}
 
 # unknown data format: {0}
-UNKNOWN_DATA_FORMAT = <MISSING TRANSLATION>
+UNKNOWN_DATA_FORMAT = format al datelor necunoscut: {0}
 
 # unknown navigation system: {0}
-UNKNOWN_NAVIGATION_SYSTEM = <MISSING TRANSLATION>
+UNKNOWN_NAVIGATION_SYSTEM = sistem de navigație necunoscut: {0}
 
 # data stream {0} requires a NMEA fix data
-STREAM_REQUIRES_NMEA_FIX = <MISSING TRANSLATION>
+STREAM_REQUIRES_NMEA_FIX = fluxul de date {0} necesită o data NMEA fixă
 
 # failed authentication for mountpoint {0}
-FAILED_AUTHENTICATION = <MISSING TRANSLATION>
+FAILED_AUTHENTICATION = autentificare eșuată pentru punctul de montare {0}
 
 # error connecting to {0}: {1}
-CONNECTION_ERROR = <MISSING TRANSLATION>
+CONNECTION_ERROR = eroare de conectare la {0}: {1}
 
 # unexpected content type {0}
-UNEXPECTED_CONTENT_TYPE = <MISSING TRANSLATION>
+UNEXPECTED_CONTENT_TYPE = tip de conținut {0} neașteptat
 
 # cannot parse GNSS data from {0}
-CANNOT_PARSE_GNSS_DATA = <MISSING TRANSLATION>
+CANNOT_PARSE_GNSS_DATA = imposibil de analizat datele GNSS de la {0}
 
 # unknown host {0}
-UNKNOWN_HOST = <MISSING TRANSLATION>
+UNKNOWN_HOST = mașina gazdă {0} este necunoscută
 
 # error parsing sourcetable line {0} from {1}: {2}
-SOURCETABLE_PARSE_ERROR = <MISSING TRANSLATION>
+SOURCETABLE_PARSE_ERROR = eroare la citirea liniei {0} din tabelul sursă {1}: {2}
 
 # cannot parse sourcetable from {0}
-CANNOT_PARSE_SOURCETABLE = <MISSING TRANSLATION>
+CANNOT_PARSE_SOURCETABLE =  eroare la citirea tabelului sursă de la {0}
 
 # mount point {0} is already connected
-MOUNPOINT_ALREADY_CONNECTED = <MISSING TRANSLATION>
+MOUNPOINT_ALREADY_CONNECTED = punctul de montare {0} este deja conectat
 
 # missing header from {0}: {1}
-MISSING_HEADER = <MISSING TRANSLATION>
+MISSING_HEADER = lipsă antet de la {0}: {1}
 
 # {0} is not a valid international designator
-NOT_VALID_INTERNATIONAL_DESIGNATOR = <MISSING TRANSLATION>
+NOT_VALID_INTERNATIONAL_DESIGNATOR = {0} nu este un identificator internațional valid 
 
 # value for key {0} has not been initialized
-UNINITIALIZED_VALUE_FOR_KEY = <MISSING TRANSLATION>
+UNINITIALIZED_VALUE_FOR_KEY = valoarea pentru cheia {0} nu a fost inițializată
 
 # unknown unit {0}
-UNKNOWN_UNIT = <MISSING TRANSLATION>
+UNKNOWN_UNIT = unitatea {0} este necunoscută
 
 # units {0} and {1} are not compatible
-INCOMPATIBLE_UNITS = <MISSING TRANSLATION>
+INCOMPATIBLE_UNITS = unitățile {0} și {1} sunt incompatibile
 
 # missing velocity data
-MISSING_VELOCITY = <MISSING TRANSLATION>
+MISSING_VELOCITY = lipsesc informații referitoare la viteză
 
 # attempt to generate file {0} with a formatting error
-ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = încercare de generare a fișierului {0} ce conține o eroare de formatare
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
-FIND_ROOT = <MISSING TRANSLATION>
+FIND_ROOT = {0} nu a găsit rădăcina între {1} (g={2,number,0.0##############E0}) și {3} (g={4,number,0.0##############E0})\nUltima iterație la {5} (g={6,number,0.0##############E0})
