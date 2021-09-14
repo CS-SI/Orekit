@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+   	  <action dev="bryan" type="fix" issue="835">
+        Fixed format symbols for year, month, day in DateComponents#toString().
+      </action>
    	  <action dev="thomas" type="fix" issue="668">
         Added a new event detector for angular separation as seen from the spacecraft.
       </action>

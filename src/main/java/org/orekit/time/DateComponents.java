@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -119,11 +121,14 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Factory for non-leap years. */
     private static final MonthDayFactory COMMON_YEAR_FACTORY  = new CommonYearFactory();
 
+    /** Formatting symbols used in {@link #toString()}. */
+    private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
+
     /** Format for years. */
-    private static final DecimalFormat FOUR_DIGITS = new DecimalFormat("0000");
+    private static final DecimalFormat FOUR_DIGITS = new DecimalFormat("0000", US_SYMBOLS);
 
     /** Format for months and days. */
-    private static final DecimalFormat TWO_DIGITS  = new DecimalFormat("00");
+    private static final DecimalFormat TWO_DIGITS  = new DecimalFormat("00", US_SYMBOLS);
 
     /** Offset between J2000 epoch and modified julian day epoch. */
     private static final int MJD_TO_J2000 = 51544;
