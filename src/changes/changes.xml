@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+   	  <action dev="bryan" type="update" issue="766" due-to="Gowtham Sivaraman">
+        Allowed setting of AttitudeProvider to the BoundedPropagator
+        generated via propagation.
+      </action>
    	  <action dev="bryan" type="fix" issue="835">
         Fixed format symbols for year, month, day in DateComponents#toString().
       </action>

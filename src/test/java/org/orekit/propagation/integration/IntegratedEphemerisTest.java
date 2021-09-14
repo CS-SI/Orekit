@@ -26,6 +26,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.CelestialBodyPointed;
+import org.orekit.attitudes.InertialProvider;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.FramesFactory;
@@ -44,6 +47,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 public class IntegratedEphemerisTest {
@@ -137,6 +141,28 @@ public class IntegratedEphemerisTest {
         //action
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
+    }
+
+    @Test
+    public void testIssue766() {
+
+        // setup
+        AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
+        numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
+        numericalPropagator.propagate(finalDate);
+        Assert.assertTrue(numericalPropagator.getCalls() < 3200);
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+
+        // verify
+        Assert.assertTrue(ephemeris.getAttitudeProvider() instanceof InertialProvider);
+
+        // action
+        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ephemeris.setAttitudeProvider(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
+                                                               Vector3D.PLUS_I, Vector3D.PLUS_K));
+        Assert.assertTrue(ephemeris.getAttitudeProvider() instanceof CelestialBodyPointed);
+
     }
 
     @Before

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ODEStateAndDerivative;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -214,6 +215,17 @@ public class IntegratedEphemeris
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        super.setAttitudeProvider(attitudeProvider);
+        if (mapper != null) {
+            // At the construction, the mapper is not set yet
+            // However, if the attitude provider is changed afterwards, it must be changed in the mapper too
+            mapper.setAttitudeProvider(attitudeProvider);
+        }
     }
 
     /** {@inheritDoc} */
