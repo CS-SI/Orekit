@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -99,7 +99,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final RangeIonosphericDelayModifier modifier = new RangeIonosphericDelayModifier(model, frequency);
@@ -170,7 +170,7 @@ public class IonoModifierTest {
                                                                new PhaseMeasurementCreator(context, Frequency.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
@@ -241,7 +241,7 @@ public class IonoModifierTest {
                                                                new PhaseMeasurementCreator(context, Frequency.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final IonosphericModel mockModel = new MockIonosphericModel(12.0);
@@ -296,16 +296,16 @@ public class IonoModifierTest {
 
         // Create perfect turn-around measurements
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
-            final GroundStation    masterStation = entry.getKey();
-            final GroundStation    slaveStation  = entry.getValue();
-            masterStation.getClockOffsetDriver().setSelected(true);
-            masterStation.getEastOffsetDriver().setSelected(true);
-            masterStation.getNorthOffsetDriver().setSelected(true);
-            masterStation.getZenithOffsetDriver().setSelected(true);
-            slaveStation.getClockOffsetDriver().setSelected(false);
-            slaveStation.getEastOffsetDriver().setSelected(true);
-            slaveStation.getNorthOffsetDriver().setSelected(true);
-            slaveStation.getZenithOffsetDriver().setSelected(true);
+            final GroundStation    primaryStation = entry.getKey();
+            final GroundStation    secondaryStation  = entry.getValue();
+            primaryStation.getClockOffsetDriver().setSelected(true);
+            primaryStation.getEastOffsetDriver().setSelected(true);
+            primaryStation.getNorthOffsetDriver().setSelected(true);
+            primaryStation.getZenithOffsetDriver().setSelected(true);
+            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getEastOffsetDriver().setSelected(true);
+            secondaryStation.getNorthOffsetDriver().setSelected(true);
+            secondaryStation.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -313,7 +313,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final TurnAroundRangeIonosphericDelayModifier modifier = new TurnAroundRangeIonosphericDelayModifier(model, frequency);
@@ -379,7 +379,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         final RangeRateIonosphericDelayModifier modifier = new RangeRateIonosphericDelayModifier(model, frequency, true);
 
@@ -426,7 +426,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final AngularIonosphericDelayModifier modifier = new AngularIonosphericDelayModifier(model, frequency);
@@ -473,7 +473,7 @@ public class IonoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             // parameter corresponding to station position offset
@@ -513,7 +513,7 @@ public class IonoModifierTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+        public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                            final double frequency, final  T[] parameters) {
             return parameters[0];
         }

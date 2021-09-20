@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -481,7 +481,7 @@ public class Transform
      * @param <T> the type of the field elements
      * @return transformed position
      */
-    public <T extends RealFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
         return FieldRotation.applyTo(angular.getRotation(), position.add(cartesian.getPosition()));
     }
 
@@ -498,7 +498,7 @@ public class Transform
      * @param <T> the type of the field elements
      * @return transformed vector
      */
-    public <T extends RealFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
         return FieldRotation.applyTo(angular.getRotation(), vector);
     }
 
@@ -541,7 +541,7 @@ public class Transform
      * @param <T> type of the field elements
      * @return transformed position-velocity
      */
-    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
+    public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
         return angular.applyTo(new FieldPVCoordinates<>(pv.getPosition().add(cartesian.getPosition()),
                                                         pv.getVelocity().add(cartesian.getVelocity()),
                                                         pv.getAcceleration().add(cartesian.getAcceleration())));
@@ -560,7 +560,7 @@ public class Transform
      * @return transformed time-stamped position-velocity
      * @since 7.0
      */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
+    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
         return angular.applyTo(new TimeStampedFieldPVCoordinates<>(pv.getDate(),
                                                                    pv.getPosition().add(cartesian.getPosition()),
                                                                    pv.getVelocity().add(cartesian.getVelocity()),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,13 +26,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.RinexLoader.Parser.AppliedDCBS;
-import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -48,24 +46,23 @@ public class RinexLoaderTest {
     @Test
     public void testDefaultLoadRinex2() {
         Utils.setDataRoot("rinex");
-        Assert.assertEquals(51, new RinexLoader("^aaaa0000\\.00o$").getObservationDataSets().size());
+        Assert.assertEquals(51, new RinexObservationLoader("^aaaa0000\\.00o$").getObservationDataSets().size());
     }
 
     @Test
     public void testDefaultLoadRinex3() {
         Utils.setDataRoot("rinex");
-        Assert.assertEquals(5, new RinexLoader("^brca083\\.06o$").getObservationDataSets().size());
+        Assert.assertEquals(5, new RinexObservationLoader("^brca083\\.06o$").getObservationDataSets().size());
     }
 
     @Test
     public void testReadError() {
         try {
-            final InputStream failingStream = new InputStream() {
+            new RinexObservationLoader(new DataSource("read-error", () -> new InputStream() {
                 public int read() throws IOException {
                     throw new IOException("boo!");
                 }
-            };
-            new RinexLoader(failingStream, "read-error");
+            }));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals("boo!", oe.getSpecifier().getSourceString());
@@ -114,8 +111,8 @@ public class RinexLoaderTest {
 
     @Test
     public void testRinex2OptionalRecords() {
-        final RinexLoader  loader = load("rinex/cccc0000.07o");
-        final RinexHeader  header = loader.getObservationDataSets().get(0).getHeader();
+        final RinexObservationLoader  loader = load("rinex/cccc0000.07o");
+        final RinexObservationHeader  header = loader.getObservationDataSets().get(0).getHeader();
         Assert.assertEquals(0.0,
                             Vector3D.distance(new Vector3D(1.1111, 2.2222,  3.3333),
                                               header.getAntennaReferencePoint()),
@@ -140,8 +137,8 @@ public class RinexLoaderTest {
 
     @Test
     public void testRinex3OptionalRecords() {
-        final RinexLoader  loader = load("rinex/dddd0000.01o");
-        final RinexHeader  header = loader.getObservationDataSets().get(0).getHeader();
+        final RinexObservationLoader  loader = load("rinex/dddd0000.01o");
+        final RinexObservationHeader  header = loader.getObservationDataSets().get(0).getHeader();
         Assert.assertEquals(0.0,
                             Vector3D.distance(new Vector3D(1.1111, 2.2222,  3.3333),
                                               header.getAntennaReferencePoint()),
@@ -179,10 +176,10 @@ public class RinexLoaderTest {
     public void testRinex2Header() {
 
         //Tests Rinex 2 with only GPS Constellation
-        RinexLoader  loader = load("rinex/jnu10110.17o");
+        RinexObservationLoader  loader = load("rinex/jnu10110.17o");
         Assert.assertEquals(44, loader.getObservationDataSets().size());
         for (ObservationDataSet dataSet : loader.getObservationDataSets()) {
-            RinexHeader header = dataSet.getHeader();
+            RinexObservationHeader header = dataSet.getHeader();
 
             Assert.assertEquals(2.11, header.getRinexVersion(), 1.0e-15);
             Assert.assertEquals(SatelliteSystem.GPS,    header.getSatelliteSystem());
@@ -214,9 +211,9 @@ public class RinexLoaderTest {
     public void testRinex3Header() {
 
         //Tests Rinex 3 with Multiple Constellations
-        RinexLoader  loader = load("rinex/aaaa0000.00o");
+        RinexObservationLoader  loader = load("rinex/aaaa0000.00o");
         for (ObservationDataSet dataSet : loader.getObservationDataSets()) {
-            RinexHeader header = dataSet.getHeader();
+            RinexObservationHeader header = dataSet.getHeader();
 
             Assert.assertEquals(3.02, header.getRinexVersion(), 1.0e-15);
             Assert.assertEquals(SatelliteSystem.MIXED,  header.getSatelliteSystem());
@@ -271,7 +268,7 @@ public class RinexLoaderTest {
     public void testGPSFile() {
 
         //Tests Rinex 2 with only GPS Constellation
-        RinexLoader  loader = load("rinex/jnu10110.17o");
+        RinexObservationLoader  loader = load("rinex/jnu10110.17o");
         String[] typesobs = {"L1","L2","P1","P2","C1","S1","S2"};
 
         List<ObservationDataSet> list = loader.getObservationDataSets();
@@ -310,7 +307,7 @@ public class RinexLoaderTest {
 
     @Test
     public void testMoreThan12Sats() {
-        RinexLoader  loader = loadCompressed("rinex/bogi1210.09d.Z");
+        RinexObservationLoader  loader = loadCompressed("rinex/bogi1210.09d.Z");
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(135, ods.size());
         AbsoluteDate lastEpoch = null;
@@ -333,7 +330,7 @@ public class RinexLoaderTest {
     @Test
     public void testGPSGlonassFile() {
         //Tests Rinex 2 with GPS and GLONASS Constellations
-        RinexLoader  loader = load("rinex/aiub0000.00o");
+        RinexObservationLoader  loader = load("rinex/aiub0000.00o");
         String[] typesobs2 = {"P1","L1","L2","P2"};
 
         List<ObservationDataSet> list = loader.getObservationDataSets();
@@ -373,7 +370,7 @@ public class RinexLoaderTest {
     @Test
     public void testMultipleConstellationsFile() {
         //Tests Rinex 3 with Multiple Constellations
-        RinexLoader  loader = load("rinex/aaaa0000.00o");
+        RinexObservationLoader  loader = load("rinex/aaaa0000.00o");
 
         String[] typesobsG = {"C1C","L1C","S1C","C2W","L2W","S2W","C2X","L2X","S2X","C5X","L5X","S5X"};
         String[] typesobsR = {"C1C","L1C","S1C","C1P","L1P","S1P","C2C","L2C","S2C","C2P","L2P","S2P"};
@@ -414,7 +411,7 @@ public class RinexLoaderTest {
     @Test
     public void testMultipleConstellationsGlonassScaleFactorFile() {
         //Tests Rinex 3 with Multiple Constellations and Scale Factor for some GLONASS Observations
-        RinexLoader  loader = load("rinex/bbbb0000.00o");
+        RinexObservationLoader  loader = load("rinex/bbbb0000.00o");
         String[] typesobsG2 = {"C1C","L1C","S1C","C1W","S1W","C2W","L2W","S2W","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
         String[] typesobsR2 = {"C1C","L1C","S1C","C2C","L2C","S2C"};
         String[] typesobsE2 = {"C1C","L1C","S1C","C6C","L6C","S6C","C5Q","L5Q","S5Q","C7Q","L7Q","S7Q","C8Q","L8Q","S8Q"};
@@ -469,7 +466,7 @@ public class RinexLoaderTest {
     @Test
     public void testMultipleConstellationsGalileoScaleFactorFile() {
         //Tests Rinex 3 with Multiple Constellations and Scale Factor for all GALILEO Observations
-        RinexLoader  loader = load("rinex/bbbb0000.01o");
+        RinexObservationLoader  loader = load("rinex/bbbb0000.01o");
         String[] typesobsG4 = {"C1C","L1C","S1C","C1W","S1W","C2W","L2W","S2W","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
         String[] typesobsR4 = {"C1C","L1C","S1C","C2C","L2C","S2C"};
         String[] typesobsE4 = {"C1C","L1C","S1C","C6C","L6C","S6C","C5Q","L5Q","S5Q","C7Q","L7Q","S7Q","C8Q","L8Q","S8Q"};
@@ -580,11 +577,11 @@ public class RinexLoaderTest {
 
     @Test
     public void testDCBSApplied() {
-        RinexLoader  loader = load("rinex/dcbs.00o");
+        RinexObservationLoader  loader = load("rinex/dcbs.00o");
         List<ObservationDataSet> l = loader.getObservationDataSets();
         Assert.assertEquals(51, l.size());
         for (ObservationDataSet dataSet : l) {
-            RinexHeader header = dataSet.getHeader();
+            RinexObservationHeader header = dataSet.getHeader();
             List<AppliedDCBS> list = header.getListAppliedDCBS();
             Assert.assertEquals(2, list.size());
             Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
@@ -598,11 +595,11 @@ public class RinexLoaderTest {
 
     @Test
     public void testPCVSApplied() {
-        RinexLoader loader = load("rinex/pcvs.00o");
+        RinexObservationLoader loader = load("rinex/pcvs.00o");
         List<ObservationDataSet> l = loader.getObservationDataSets();
         Assert.assertEquals(51, l.size());
         for (ObservationDataSet dataSet : l) {
-            RinexHeader header = dataSet.getHeader();
+            RinexObservationHeader header = dataSet.getHeader();
             List<AppliedPCVS> list = header.getListAppliedPCVS();
             Assert.assertEquals(2, list.size());
             Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
@@ -616,7 +613,7 @@ public class RinexLoaderTest {
 
     @Test
     public void testRinex220Spaceborne() {
-        RinexLoader loader = load("rinex/ice12720.07o");
+        RinexObservationLoader loader = load("rinex/ice12720.07o");
         List<ObservationDataSet> l = loader.getObservationDataSets();
         Assert.assertEquals(4 * 7, l.size());
         for (int i = 0; i < l.size(); ++i) {
@@ -692,7 +689,7 @@ public class RinexLoaderTest {
     @Test
     public void testIssue608() {
         //Tests Rinex 3.04 with GPS, GLONASS, Galileo and SBAS Constellations
-        RinexLoader  loader = load("rinex/brca083.06o");
+        RinexObservationLoader  loader = load("rinex/brca083.06o");
         AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(5, ods.size());
@@ -717,7 +714,7 @@ public class RinexLoaderTest {
     @Test
     public void testIssue605() {
         // Test observation type C0, L0, S0 and D0
-        RinexLoader  loader = load("rinex/embe083.06o");
+        RinexObservationLoader  loader = load("rinex/embe083.06o");
         AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(5, ods.size());
@@ -764,21 +761,16 @@ public class RinexLoaderTest {
 
     }
 
-    private RinexLoader load(final String name) {
-        return new RinexLoader(Utils.class.getClassLoader().getResourceAsStream(name), name);
+    private RinexObservationLoader load(final String name) {
+        return new RinexObservationLoader(new DataSource(name,
+                                              () -> Utils.class.getClassLoader().getResourceAsStream(name)));
      }
 
-    private RinexLoader loadCompressed(final String name) {
-        RinexLoader loader = null;
-        try {
-            final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
-                                                () -> Utils.class.getClassLoader().getResourceAsStream(name));
-            NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-            loader = new RinexLoader(filtered.getStreamOpener().openStream(), filtered.getName());
-        } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
-        }
-        return loader;
+    private RinexObservationLoader loadCompressed(final String name) {
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
+                                              () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        return new RinexObservationLoader(filtered);
      }
 
 }

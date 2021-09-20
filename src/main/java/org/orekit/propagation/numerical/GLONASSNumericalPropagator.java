@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,22 +24,20 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.GLONASSEphemeris;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
@@ -145,139 +143,29 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
     private final DataContext dataContext;
 
     /**
-     * This nested class aims at building a GLONASSNumericalPropagator.
-     * <p>It implements the classical builder pattern.</p>
-     *
-     */
-    public static class Builder {
-
-        // Required parameter
-        /** The GLONASS orbital elements. */
-        private final GLONASSEphemeris orbit;
-
-        /** The 4th order Runge-Kutta integrator. */
-        private final ClassicalRungeKuttaIntegrator integrator;
-
-        /** Flag for availability of projections of acceleration transmitted within the navigation message. */
-        private final boolean isAccAvailable;
-
-        // Optional parameters
-        /** The attitude provider. */
-        private AttitudeProvider attitudeProvider;
-
-        /** The mass. */
-        private double mass = DEFAULT_MASS;
-
-        /** The ECI frame. */
-        private Frame eci  = null;
-
-        /** Data context for the propagator. */
-        private DataContext dataContext;
-
-        /**
-         * Initializes the builder.
-         * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
-         *  default data context.<br>
-         * The mass is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-         * The data context is by default to the
-         *  {@link DataContext#getDefault() default data context}.<br>
-         * The ECI frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-         *  context.<br>
-         * </p>
-         *
-         * @param integrator 4th order Runge-Kutta as recommended by GLONASS ICD
-         * @param glonassOrbElt the GLONASS orbital elements to be used by the GLONASSNumericalPropagator.
-         * @param isAccAvailable flag for availability of the projections of accelerations transmitted within
-         *        the navigation message
-         * @see #attitudeProvider(AttitudeProvider provider)
-         * @see #mass(double mass)
-         * @see #eci(Frame inertial)
-         */
-        @DefaultDataContext
-        public Builder(final ClassicalRungeKuttaIntegrator integrator,
-                       final GLONASSEphemeris glonassOrbElt,
-                       final boolean isAccAvailable) {
-            this.isAccAvailable = isAccAvailable;
-            this.integrator     = integrator;
-            this.orbit          = glonassOrbElt;
-            this.dataContext    = DataContext.getDefault();
-            this.eci            = dataContext.getFrames().getEME2000();
-            attitudeProvider = Propagator.getDefaultLaw(dataContext.getFrames());
-        }
-
-        /**
-         * Sets the attitude provider.
-         *
-         * @param userProvider the attitude provider
-         * @return the updated builder
-         */
-        public Builder attitudeProvider(final AttitudeProvider userProvider) {
-            this.attitudeProvider = userProvider;
-            return this;
-        }
-
-        /**
-         * Sets the mass.
-         *
-         * @param userMass the mass (in kg)
-         * @return the updated builder
-         */
-        public Builder mass(final double userMass) {
-            this.mass = userMass;
-            return this;
-        }
-
-        /**
-         * Sets the Earth Centered Inertial frame used for propagation.
-         *
-         * @param inertial the ECI frame
-         * @return the updated builder
-         */
-        public Builder eci(final Frame inertial) {
-            this.eci = inertial;
-            return this;
-        }
-
-        /**
-         * Sets the data context used by the propagator. Does not update the ECI frame
-         * which must be done separately using {@link #eci(Frame)}.
-         *
-         * @param context used for propagation.
-         * @return the updated builder.
-         */
-        public Builder dataContext(final DataContext context) {
-            this.dataContext = context;
-            return this;
-        }
-
-        /**
-         * Finalizes the build.
-         *
-         * @return the built GPSPropagator
-         */
-        public GLONASSNumericalPropagator build() {
-            return new GLONASSNumericalPropagator(this);
-        }
-    }
-
-    /**
      * Private constructor.
-     *
-     * @param builder the builder
+     * @param integrator Runge-Kutta integrator
+     * @param glonassOrbit Glonass orbital elements
+     * @param eci Earth Centered Inertial frame
+     * @param provider Attitude provider
+     * @param mass Satellite mass (kg)
+     * @param context Data context
+     * @param isAccAvailable true if the acceleration  is transmitted within the navigation message
      */
-    public GLONASSNumericalPropagator(final Builder builder) {
-        super(builder.integrator, PropagationType.MEAN);
-        this.dataContext = builder.dataContext;
-        this.isAccAvailable = builder.isAccAvailable;
+    public GLONASSNumericalPropagator(final ClassicalRungeKuttaIntegrator integrator,
+                                      final GLONASSOrbitalElements glonassOrbit,
+                                      final Frame eci, final AttitudeProvider provider,
+                                      final double mass, final DataContext context,
+                                      final boolean isAccAvailable) {
+        super(integrator, PropagationType.MEAN);
+        this.dataContext = context;
+        this.isAccAvailable = isAccAvailable;
         // Stores the GLONASS orbital elements
-        this.glonassOrbit = builder.orbit;
+        this.glonassOrbit = glonassOrbit;
         // Sets the Earth Centered Inertial frame
-        this.eci = builder.eci;
+        this.eci = eci;
         // Sets the mass
-        this.mass = builder.mass;
+        this.mass = mass;
         this.initDate = new GLONASSDate(
                 glonassOrbit.getDate(),
                 dataContext.getTimeScales().getGLONASS());
@@ -285,11 +173,11 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         // Initialize state mapper
         initMapper();
         setInitialState();
-        setAttitudeProvider(builder.attitudeProvider);
+        setAttitudeProvider(provider);
         setOrbitType(OrbitType.CARTESIAN);
         // It is not meaningful for propagation in Cartesian parameters
         setPositionAngleType(PositionAngle.TRUE);
-        setMu(GLONASSOrbitalElements.GLONASS_MU);
+        setMu(GNSSConstants.GLONASS_MU);
 
         // As recommended by GLONASS ICD (2016), the direction cosines and distance
         // of perturbing body are calculated one time (at tb).
@@ -320,7 +208,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                 dataContext.getFrames().getPZ9011(IERSConventions.IERS_2010, true),
                 stateInInertial.getDate(), pvInPZ90);
         final TimeStampedPVCoordinates pvInInertial = absPV.getPVCoordinates(eci);
-        final SpacecraftState transformedState = new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GLONASSOrbitalElements.GLONASS_MU),
+        final SpacecraftState transformedState = new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GNSSConstants.GLONASS_MU),
                                                                 stateInInertial.getAttitude(),
                                                                 stateInInertial.getMass(), stateInInertial.getAdditionalStates());
 
@@ -342,7 +230,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         // Create a new orbit
         final Orbit orbit = new CartesianOrbit(pvInInertial,
                                                eci, initDate.getDate(),
-                                               GLONASSOrbitalElements.GLONASS_MU);
+                                               GNSSConstants.GLONASS_MU);
 
         // Reset the initial state to apply the transformation
         resetInitialState(new SpacecraftState(orbit, mass));
@@ -598,7 +486,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
      * @param state spacecraft state after integration
      * @return the PV coordinates in the ECEF PZ-90.
      */
-    public PVCoordinates getPVInPZ90(final SpacecraftState state) {
+    private PVCoordinates getPVInPZ90(final SpacecraftState state) {
 
         // Compute time difference between start date and end date
         final double dt = state.getDate().durationFrom(initDate.getDate());
@@ -777,7 +665,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             final double x = x0 * oor;
             final double y = y0 * oor;
             final double z = z0 * oor;
-            final double g = GLONASSOrbitalElements.GLONASS_MU * oor2;
+            final double g = GNSSConstants.GLONASS_MU * oor2;
             final double ro = GLONASS_EARTH_EQUATORIAL_RADIUS * oor;
 
             yDot[3] += x * (-g + (-1.5 * GLONASS_J20 * g * ro * ro * (1. - 5. * z * z)));

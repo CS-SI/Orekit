@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.HatanakaCompressFilter;
@@ -37,7 +36,7 @@ import org.orekit.gnss.HatanakaCompressFilter;
  * <p>
  * This class is the primary point of access for all data loading features. It
  * is used for example to load Earth Orientation Parameters used by IERS frames,
- * to load UTC leap seconds used by time scales, to load planetary ephemerides ...
+ * to load UTC leap seconds used by time scales, to load planetary ephemerides...
  *
  * <p>
  * It is user-customizable: users can add their own data providers at will. This
@@ -61,10 +60,11 @@ import org.orekit.gnss.HatanakaCompressFilter;
  *
  * <p>
  * The default configuration uses a predefined set of {@link DataFilter data filters}
- * that already handled gzip-compressed files (recognized by the {@code .gz} suffix)
- * and Unix-compressed files (recognized by the {@code .Z} suffix).
- * Users can {@link #addFilter(DataFilter) add} custom filters for handling specific
- * types of filters (decompression, deciphering...).
+ * that already handled gzip-compressed files (recognized by the {@code .gz} suffix),
+ * Unix-compressed files (recognized by the {@code .Z} suffix) and Hatanaka compressed
+ * RINEX files. Users can access the {@link #getFiltersManager() filters manager} to
+ * set up custom filters for handling specific types of filters (decompression,
+ * deciphering...).
  * </p>
  *
  * @author Luc Maisonobe
@@ -79,46 +79,49 @@ public class DataProvidersManager {
     /** Supported data providers. */
     private final List<DataProvider> providers;
 
-    /** Supported filters.
-     * @since 9.2
+    /** Manager for filters.
+     * @since 11.0
      */
-    private final List<DataFilter> filters;
-
-    /** Number of predefined filters. */
-    private final int predefinedFilters;
+    private final FiltersManager filtersManager;
 
     /** Loaded data. */
     private final Set<String> loaded;
 
     /** Build an instance with default configuration. */
     public DataProvidersManager() {
-        providers = new ArrayList<>();
-        filters   = new ArrayList<>();
-        loaded    = new LinkedHashSet<>();
-
-        // set up predefined filters
-        addFilter(new GzipFilter());
-        addFilter(new UnixCompressFilter());
-        addFilter(new HatanakaCompressFilter());
-
-        predefinedFilters = filters.size();
-
+        providers      = new ArrayList<>();
+        filtersManager = new FiltersManager();
+        loaded         = new LinkedHashSet<>();
+        resetFiltersToDefault();
     }
 
-    /**
-     * Get the default instance.
-     *
-     * @return default instance of the manager.
-     * @see DataContext
-     * @deprecated This class is no longer a singleton. In order to support loading
-     * multiple data sets code should be updated to accept an instance of this class. If
-     * you need to maintain compatibility with Orekit 10.0's behavior use the default data
-     * context: {@code DataContext.getDefault().getDataProvidersManager()}.
+    /** Get the manager for filters.
+     * @return filters manager
+     * @since 11.0
      */
-    @Deprecated
-    @DefaultDataContext
-    public static DataProvidersManager getInstance() {
-        return DataContext.getDefault().getDataProvidersManager();
+    public FiltersManager getFiltersManager() {
+        return filtersManager;
+    }
+
+    /** Reset all filters to default.
+     * <p>
+     * This method {@link FiltersManager#clearFilters() clears} the
+     * {@link #getFiltersManager() filter manager} and then
+     * {@link FiltersManager#addFilter(DataFilter) adds} back the
+     * default filters
+     * </p>
+     * @since 11.0
+     */
+    public void resetFiltersToDefault() {
+
+        // clear the existing filters
+        filtersManager.clearFilters();
+
+        // set up predefined filters
+        filtersManager.addFilter(new GzipFilter());
+        filtersManager.addFilter(new UnixCompressFilter());
+        filtersManager.addFilter(new HatanakaCompressFilter());
+
     }
 
     /** Add the default providers configuration.
@@ -147,7 +150,7 @@ public class DataProvidersManager {
 
         // get the path containing all components
         final String path = System.getProperty(OREKIT_DATA_PATH);
-        if ((path != null) && !"".equals(path)) {
+        if (path != null && !"".equals(path)) {
 
             // extract the various components
             for (final String name : path.split(System.getProperty("path.separator"))) {
@@ -217,59 +220,6 @@ public class DataProvidersManager {
      */
     public void clearProviders() {
         providers.clear();
-    }
-
-    /** Add a data filter.
-     * @param filter filter to add
-     * @see #applyAllFilters(NamedData)
-     * @see #clearFilters()
-     * @since 9.2
-     */
-    public void addFilter(final DataFilter filter) {
-        filters.add(filter);
-    }
-
-    /** Remove all data filters, except the predefined ones.
-     * @see #addFilter(DataFilter)
-     * @since 9.2
-     */
-    public void clearFilters() {
-        filters.subList(predefinedFilters, filters.size()).clear();
-    }
-
-    /** Apply all the relevant data filters, taking care of layers.
-     * <p>
-     * If several filters can be applied, they will all be applied
-     * as a stack, even recursively if required. This means that if
-     * filter A applies to files with names of the form base.ext.a
-     * and filter B applies to files with names of the form base.ext.b,
-     * then providing base.ext.a.b.a will result in filter A being
-     * applied on top of filter B which itself is applied on top of
-     * another instance of filter A.
-     * </p>
-     * @param original original named data
-     * @return fully filtered named data
-     * @exception IOException if some data stream cannot be filtered
-     * @see #addFilter(DataFilter)
-     * @see #clearFilters()
-     * @since 9.2
-     */
-    public NamedData applyAllFilters(final NamedData original)
-        throws IOException {
-        NamedData top = original;
-        for (boolean filtering = true; filtering;) {
-            filtering = false;
-            for (final DataFilter filter : filters) {
-                final NamedData filtered = filter.filter(top);
-                if (filtered != top) {
-                    // the filter has been applied, we need to restart the loop
-                    top       = filtered;
-                    filtering = true;
-                    break;
-                }
-            }
-        }
-        return top;
     }
 
     /** Check if some provider is supported.

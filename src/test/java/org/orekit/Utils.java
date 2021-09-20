@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,8 @@ import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
@@ -93,7 +95,7 @@ public class Utils {
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.clearOceanTidesReaders();
         DataContext.getDefault().getDataProvidersManager().clearProviders();
-        DataContext.getDefault().getDataProvidersManager().clearFilters();
+        DataContext.getDefault().getDataProvidersManager().resetFiltersToDefault();
         DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
         
     }
@@ -214,6 +216,16 @@ public class Utils {
             }
         });
 
+    }
+
+    /**
+     * An attitude law compatible with the old Propagator.DEFAULT_LAW. This is used so as
+     * not to change the results of tests written against the old implementation.
+     *
+     * @return an attitude law.
+     */
+    public static AttitudeProvider defaultLaw() {
+        return InertialProvider.of(FramesFactory.getEME2000());
     }
 
 }

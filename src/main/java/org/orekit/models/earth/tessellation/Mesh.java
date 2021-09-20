@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -426,7 +426,7 @@ class Mesh {
                 final Node next     = boundary.get((i + 1)     % n);
                 final int  nl       = next.getAlongIndex();
                 final int  nc       = next.getAcrossIndex();
-                if ((pl == cl && cl == nl) || (pc == cc && cc == nc)) {
+                if (pl == cl && cl == nl || pc == cc && cc == nc) {
                     // the current point is a spurious intermediate in a straight line, remove it
                     boundary.remove(i--);
                 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,7 +61,7 @@ public class PVTest {
                                                                new PVMeasurementCreator(),
                                                                1.0, 3.0, 300.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Prepare statistics for PV values difference
         final StreamingStatistics[] pvDiffStat = new StreamingStatistics[6];
@@ -115,7 +115,7 @@ public class PVTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] errorsP = new double[3 * 6 * measurements.size()];
         double[] errorsV = new double[3 * 6 * measurements.size()];

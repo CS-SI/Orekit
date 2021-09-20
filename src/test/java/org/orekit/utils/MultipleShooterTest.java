@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -367,7 +367,7 @@ public class MultipleShooterTest {
 
             propagator.addForceModel(new NewtonianAttraction(primary.getGM()));
             final ForceModel model = new ThirdBodyAttractionEpoch(secondary);
-            model.getParametersDrivers()[0].setSelected(true);
+            model.getParametersDrivers().get(0).setSelected(true);
             propagator.addForceModel(model);
 
             propagator.setOrbitType(null);

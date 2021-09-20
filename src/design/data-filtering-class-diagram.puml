@@ -1,4 +1,4 @@
-' Copyright 2002-2020 CS GROUP
+' Copyright 2002-2021 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,55 +25,53 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
     package data #DDEBD8 {
 
-      interface DataLoader
-
-      interface DataProvider
-
-      class DataProvidersManager {
+      class FiltersManager {
         +addFilter(final DataFilter filter)
         +void clearFilters()
-        +NamedData applyAllFilters(final NamedData original)
+        +DataSource applyRelevantFilters(final DataSource original)
       }
 
-      class NamedData {
+      class DataSource {
       	+String getName()
-      	+NamedData.StreamOpener getStreamOpener()
+      	+DataSource.Opener getOpener()
       }
 
       interface DataFilter {
-         NamedData filter(NamedData original)
+         DataSource filter(DataSource original)
       }
 
-      interface NamedData.StreamOpener {
-        +InputStream openStream()
+      interface DataSource.Opener {
+        +boolean rawDataIsBinary()
+        +InputStream openStreamOnce()
+        +Reader      openReaderOnce()
       }
-      note right
-        allows lazy opening of stream
+      note left
+        allows lazy opening of stream or reader
+        beware it may fail if called more than once
+        especially with network-based streams
       end note
 
-      DataProvider "*" -- "1" DataProvidersManager
-      DataProvider --> NamedData : create
-      DataLoader <-left- DataProvider : feeds
-      DataProvidersManager "1" o--> "*" DataFilter: applies
-      NamedData <-down- DataFilter : filters
-      NamedData --> NamedData.StreamOpener
+      FiltersManager "1" o--> "*" DataFilter: applies
+      DataSource <-down- DataFilter : filters
+      DataSource --> DataSource.Opener
       DataFilter <|-- GzipFilter
       DataFilter <|-- UnixFilter
 
-      UnixFilter --> NamedData.StreamOpener : creates
-      GzipFilter --> NamedData.StreamOpener : creates
+      UnixFilter --> DataSource.Opener : creates
+      GzipFilter --> DataSource.Opener : creates
  
     }
 
     package gnss #DDEBD8 {
       class HatanakaCompressFilter
-      HatanakaCompressFilter -right-|> DataFilter
-      HatanakaCompressFilter --> NamedData.StreamOpener : creates
+      DataFilter <|-- HatanakaCompressFilter
+      DataSource.Opener <-left- HatanakaCompressFilter : creates
    }
 
   }

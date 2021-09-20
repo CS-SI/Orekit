@@ -40,12 +40,12 @@ import org.orekit.utils.ImmutableTimeStampedCache;
  * models: F107 solar flux, Ap and Kp indexes.
  * The {@link org.orekit.data.DataLoader} implementation and the parsing is handled by the class {@link CssiSpaceWeatherDataLoader}.
  * <p>
- * The data are retrieved through space weather files offered by CSSI/AGI. The
- * data can be retrieved on the AGI
- * <a href="ftp://ftp.agi.com/pub/DynamicEarthData/SpaceWeather-All-v1.2.txt">
- * FTP</a>. This file is updated several times a day by using several sources
- * mentioned in the <a href="http://celestrak.com/SpaceData/SpaceWx-format.php">
- * Celestrak space weather data documentation</a>.
+ * The data are retrieved through space weather files offered by AGI/CSSI on the AGI
+ * <a href="ftp://ftp.agi.com/pub/DynamicEarthData/SpaceWeather-All-v1.2.txt">FTP</a> as
+ * well as on the CelesTrack <a href="http://celestrak.com/SpaceData/">website</a>.
+ * These files are updated several times a day by using several sources mentioned in the
+ * <a href="http://celestrak.com/SpaceData/SpaceWx-format.php">Celestrak space
+ * weather data documentation</a>.
  * </p>
  *
  * @author Clément Jonglez
@@ -53,6 +53,9 @@ import org.orekit.utils.ImmutableTimeStampedCache;
  */
 public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         implements DTM2000InputParameters, NRLMSISE00InputParameters {
+
+    /** Default regular expression for supported names that works with all officially published files. */
+    public static final String DEFAULT_SUPPORTED_NAMES = "^S(?:pace)?W(?:eather)?-(?:All)?.*\\.txt$";
 
     /** Serializable UID. */
     private static final long serialVersionUID = 4249411710645968978L;
@@ -86,30 +89,40 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
 
     /**
      * Simple constructor. This constructor uses the default data context.
+     * <p>
+     * The original file names provided by AGI/CSSI are of the form:
+     * SpaceWeather-All-v1.2.txt (AGI's ftp) or SW-Last5Years.txt (CelesTrak's website).
+     * So a recommended regular expression for the supported names that works
+     * with all published files is: {@link #DEFAULT_SUPPORTED_NAMES}.
+     * </p>
      *
-     * @param fileName name of the CSSI space weather file.
+     * @param supportedNames regular expression for supported AGI/CSSI space weather files names
      */
     @DefaultDataContext
-    public CssiSpaceWeatherData(final String fileName) {
-        this(fileName, DataContext.getDefault().getDataProvidersManager(),
-                DataContext.getDefault().getTimeScales().getUTC());
+    public CssiSpaceWeatherData(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
+             DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
-     * Constructor that allows specifying the source of the CSSI space weather file.
+     * Constructor that allows specifying the source of the CSSI space weather
+     * file.
      *
-     * @param fileName             name of the CSSI space weather file.
+     * @param supportedNames       regular expression for supported AGI/CSSI space weather files names
      * @param dataProvidersManager provides access to auxiliary data files.
      * @param utc                  UTC time scale.
      */
-    public CssiSpaceWeatherData(final String fileName, final DataProvidersManager dataProvidersManager,
-            final TimeScale utc) {
-        super(fileName, dataProvidersManager);
+    public CssiSpaceWeatherData(final String supportedNames,
+                                final DataProvidersManager dataProvidersManager,
+                                final TimeScale utc) {
+        super(supportedNames, dataProvidersManager);
 
         this.utc = utc;
-        final CssiSpaceWeatherDataLoader loader = new CssiSpaceWeatherDataLoader(utc);
+        final CssiSpaceWeatherDataLoader loader =
+            new CssiSpaceWeatherDataLoader(utc);
         this.feed(loader);
-        data = new ImmutableTimeStampedCache<>(N_NEIGHBORS, loader.getDataSet());
+        data =
+            new ImmutableTimeStampedCache<>(N_NEIGHBORS, loader.getDataSet());
         firstDate = loader.getMinDate();
         lastDate = loader.getMaxDate();
         lastObservedDate = loader.getLastObservedDate();
@@ -132,20 +145,25 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
      * @param date date to bracket
      */
     private void bracketDate(final AbsoluteDate date) {
-        if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > 0)) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
+        if (date.durationFrom(firstDate) < 0) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                    date, firstDate, lastDate, firstDate.durationFrom(date));
+        }
+        if (date.durationFrom(lastDate) > 0) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                    date, firstDate, lastDate, date.durationFrom(lastDate));
         }
 
         // don't search if the cached selection is fine
-        if ((previousParam != null) && (date.durationFrom(previousParam.getDate()) > 0) &&
-                        (date.durationFrom(nextParam.getDate()) <= 0)) {
+        if (previousParam != null && date.durationFrom(previousParam.getDate()) > 0 &&
+                        date.durationFrom(nextParam.getDate()) <= 0) {
             return;
         }
 
         final List<TimeStamped> neigbors = data.getNeighbors(date).collect(Collectors.toList());
         previousParam = (LineParameters) neigbors.get(0);
         nextParam = (LineParameters) neigbors.get(1);
-        if (previousParam.getDate().compareTo(date) > 0) {
+        if (previousParam.getDate().compareTo(date) > 0) { // TODO delete dead code
             /**
              * Throwing exception if neighbors are unbalanced because we are at the
              * beginning of the data set
@@ -180,13 +198,10 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         // Interpolating two neighboring daily fluxes
         // get the neighboring dates
         bracketDate(date);
-        return getLinearInterpolation(date, previousParam.getF107Adj(), nextParam.getF107Adj());
+        return getLinearInterpolation(date, previousParam.getF107Obs(), nextParam.getF107Obs());
     }
 
-    /** {@inheritDoc}
-     * FIXME not sure if the mean flux for DTM2000 should be computed differently
-     * than the average flux for NRLMSISE00
-     */
+    /** {@inheritDoc} */
     public double getMeanFlux(final AbsoluteDate date) {
         return getAverageFlux(date);
     }
@@ -241,18 +256,18 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
      * Gets the daily flux on the current day.
      *
      * @param date the current date
-     * @return the daily F10.7 flux (adjusted)
+     * @return the daily F10.7 flux (observed)
      */
     private double getDailyFluxOnDay(final AbsoluteDate date) {
         if (date.compareTo(lastDailyPredictedDate) <= 0) {
             // Getting the value for the previous day
             bracketDate(date);
-            return previousParam.getF107Adj();
+            return previousParam.getF107Obs();
         } else {
             // Only monthly data is available, better interpolate between two months
             // get the neighboring dates
             bracketDate(date);
-            return getLinearInterpolation(date, previousParam.getF107Adj(), nextParam.getF107Adj());
+            return getLinearInterpolation(date, previousParam.getF107Obs(), nextParam.getF107Obs());
         }
     }
 
@@ -260,12 +275,12 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     public double getAverageFlux(final AbsoluteDate date) {
         if (date.compareTo(lastDailyPredictedDate) <= 0) {
             bracketDate(date);
-            return previousParam.getCtr81Adj();
+            return previousParam.getCtr81Obs();
         } else {
             // Only monthly data is available, better interpolate between two months
             // get the neighboring dates
             bracketDate(date);
-            return getLinearInterpolation(date, previousParam.getCtr81Adj(), nextParam.getCtr81Adj());
+            return getLinearInterpolation(date, previousParam.getCtr81Obs(), nextParam.getCtr81Obs());
         }
     }
 

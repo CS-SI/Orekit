@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.MathUtils.SumAndResidual;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -309,21 +311,11 @@ public class AbsoluteDate
         final double seconds  = time.getSecond();
         final double tsOffset = timeScale.offsetToTAI(date, time);
 
-        // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
-        // at the end, the EXACT result of addition seconds + tsOffset
-        // is sum + residual, where sum is the closest representable number to the exact
-        // result and residual is the missing part that does not fit in the first number
-        final double sum      = seconds + tsOffset;
-        final double sPrime   = sum - tsOffset;
-        final double tPrime   = sum - sPrime;
-        final double deltaS   = seconds  - sPrime;
-        final double deltaT   = tsOffset - tPrime;
-        final double residual = deltaS   + deltaT;
-        final long   dl       = (long) FastMath.floor(sum);
+        // Use 2Sum for high precision.
+        final SumAndResidual sumAndResidual = MathUtils.twoSum(seconds, tsOffset);
+        final long dl = (long) FastMath.floor(sumAndResidual.getSum());
 
-        offset = (sum - dl) + residual;
+        offset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
         epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
                         time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
 
@@ -430,26 +422,15 @@ public class AbsoluteDate
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
-
-        final double sum = since.offset + elapsedDuration;
-        if (Double.isInfinite(sum)) {
-            offset = sum;
-            epoch  = (sum < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+        // Use 2Sum for high precision.
+        final SumAndResidual sumAndResidual = MathUtils.twoSum(since.offset, elapsedDuration);
+        if (Double.isInfinite(sumAndResidual.getSum())) {
+            offset = sumAndResidual.getSum();
+            epoch  = (sumAndResidual.getSum() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
-            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-            // the following statements must NOT be simplified, they rely on floating point
-            // arithmetic properties (rounding and representable numbers)
-            // at the end, the EXACT result of addition since.offset + elapsedDuration
-            // is sum + residual, where sum is the closest representable number to the exact
-            // result and residual is the missing part that does not fit in the first number
-            final double oPrime   = sum - elapsedDuration;
-            final double dPrime   = sum - oPrime;
-            final double deltaO   = since.offset - oPrime;
-            final double deltaD   = elapsedDuration - dPrime;
-            final double residual = deltaO + deltaD;
-            final long   dl       = (long) FastMath.floor(sum);
-            offset = (sum - dl) + residual;
-            epoch  = since.epoch  + dl;
+            final long dl = (long) FastMath.floor(sumAndResidual.getSum());
+            offset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
+            epoch  = since.epoch + dl;
         }
     }
 
@@ -1057,24 +1038,14 @@ public class AbsoluteDate
             }
         }
 
-        // compute offset from 2000-01-01T00:00:00 in specified time scale exactly,
-        // using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
-        // at the end, the EXACT result of addition offset + timeScale.offsetFromTAI(this)
-        // is sum + residual, where sum is the closest representable number to the exact
-        // result and residual is the missing part that does not fit in the first number
+        // Compute offset from 2000-01-01T00:00:00 in specified time scale.
+        // Use 2Sum for high precision.
         final double taiOffset = timeScale.offsetFromTAI(this);
-        final double sum       = offset + taiOffset;
-        final double oPrime    = sum - taiOffset;
-        final double dPrime    = sum - oPrime;
-        final double deltaO    = offset - oPrime;
-        final double deltaD    = taiOffset - dPrime;
-        final double residual  = deltaO + deltaD;
+        final SumAndResidual sumAndResidual = MathUtils.twoSum(offset, taiOffset);
 
         // split date and time
-        final long   carry = (long) FastMath.floor(sum);
-        double offset2000B = (sum - carry) + residual;
+        final long   carry = (long) FastMath.floor(sumAndResidual.getSum());
+        double offset2000B = (sumAndResidual.getSum() - carry) + sumAndResidual.getResidual();
         long   offset2000A = epoch + carry + 43200l;
         if (offset2000B < 0) {
             offset2000A -= 1;
@@ -1221,7 +1192,7 @@ public class AbsoluteDate
             return true;
         }
 
-        if ((date != null) && (date instanceof AbsoluteDate)) {
+        if (date instanceof AbsoluteDate) {
             return durationFrom((AbsoluteDate) date) == 0;
         }
 
@@ -1336,26 +1307,63 @@ public class AbsoluteDate
         return (int) (l ^ (l >>> 32));
     }
 
-    /** Get a String representation of the instant location in UTC time scale.
+    /**
+     * Get a String representation of the instant location with up to 16 digits of
+     * precision for the seconds value.
+     *
+     * <p> Since this method is used in exception messages and error handling every
+     * effort is made to return some representation of the instant. If UTC is available
+     * from the default data context then it is used to format the string in UTC. If not
+     * then TAI is used. Finally if the prior attempts fail this method falls back to
+     * converting this class's internal representation to a string.
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
-     * @return a string representation of the instance,
-     * in ISO-8601 format with milliseconds accuracy
+     * @return a string representation of the instance, in ISO-8601 format if UTC is
+     * available from the default data context.
      * @see #toString(TimeScale)
+     * @see #toStringRfc3339(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
      */
     @DefaultDataContext
     public String toString() {
-        return toString(DataContext.getDefault().getTimeScales().getUTC());
+        // CHECKSTYLE: stop IllegalCatch check
+        try {
+            // try to use UTC first at that is likely most familiar to the user.
+            return toString(DataContext.getDefault().getTimeScales().getUTC()) + "Z";
+        } catch (RuntimeException e1) {
+            // catch OrekitException, OrekitIllegalStateException, etc.
+            try {
+                // UTC failed, try to use TAI
+                return toString(new TAIScale()) + " TAI";
+            } catch (RuntimeException e2) {
+                // catch OrekitException, OrekitIllegalStateException, etc.
+                // Likely failed to convert to ymdhms.
+                // Give user some indication of what time it is.
+                try {
+                    return "(" + this.epoch + " + " + this.offset + ") seconds past epoch";
+                } catch (RuntimeException e3) {
+                    // give up and throw an exception
+                    e2.addSuppressed(e3);
+                    e1.addSuppressed(e2);
+                    throw e1;
+                }
+            }
+        }
+        // CHECKSTYLE: resume IllegalCatch check
     }
 
-    /** Get a String representation of the instant location.
+    /**
+     * Get a String representation of the instant location in ISO-8601 format without the
+     * UTC offset and with up to 16 digits of precision for the seconds value.
+     *
      * @param timeScale time scale to use
-     * @return a string representation of the instance,
-     * in ISO-8601 format with milliseconds accuracy
+     * @return a string representation of the instance.
+     * @see #toStringRfc3339(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
      */
     public String toString(final TimeScale timeScale) {
-        return getComponents(timeScale).toString(timeScale.minuteDuration(this));
+        return getComponents(timeScale).toStringWithoutUtcOffset();
     }
 
     /** Get a String representation of the instant location for a local time.
@@ -1384,6 +1392,8 @@ public class AbsoluteDate
      * @return string representation of the instance, in ISO-8601 format with milliseconds
      * accuracy
      * @since 10.1
+     * @see #getComponents(int, TimeScale)
+     * @see DateTimeComponents#toString(int, int)
      */
     public String toString(final int minutesFromUTC, final TimeScale utc) {
         final int minuteDuration = utc.minuteDuration(this);
@@ -1413,6 +1423,8 @@ public class AbsoluteDate
      * @return string representation of the instance, in ISO-8601 format with milliseconds
      * accuracy
      * @since 10.1
+     * @see #getComponents(TimeZone, TimeScale)
+     * @see DateTimeComponents#toString(int, int)
      */
     public String toString(final TimeZone timeZone, final TimeScale utc) {
         final int minuteDuration = utc.minuteDuration(this);
@@ -1421,7 +1433,8 @@ public class AbsoluteDate
 
     /**
      * Represent the given date as a string according to the format in RFC 3339. RFC3339
-     * is a restricted subset of ISO 8601 with a well defined grammar.
+     * is a restricted subset of ISO 8601 with a well defined grammar. Enough digits are
+     * included in the seconds value to avoid rounding up to the next minute.
      *
      * <p>This method is different than {@link AbsoluteDate#toString(TimeScale)} in that
      * it includes a {@code "Z"} at the end to indicate the time zone and enough precision

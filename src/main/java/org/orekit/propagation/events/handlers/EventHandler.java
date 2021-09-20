@@ -47,9 +47,10 @@ public interface EventHandler<T extends EventDetector> {
      * </p>
      * @param initialState initial state
      * @param target target date for the propagation
+     * @param detector event detector related to the event handler
      *
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    default void init(SpacecraftState initialState, AbsoluteDate target, final T detector) {
         // nothing by default
     }
 

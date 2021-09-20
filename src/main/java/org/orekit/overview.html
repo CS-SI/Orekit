@@ -125,15 +125,24 @@ discrete events. Here is a short list of the features offered by the library:</p
       </li>
       <li>unified interface above analytical/numerical/tabulated propagators for easy
           switch from coarse analysis to fine simulation with one line change</li>
-      <li>all propagators can be used in several different modes
+      <li>all propagators can manage the time loop by themselves and handle callback
+      functions (called step handlers) from the calling application at each time step.
         <ul>
-          <li>slave mode: propagator is driven by calling application</li>
-          <li>master mode: propagator drives application callback functions</li>
-          <li>ephemeris generation mode: all intermediate results are stored during
-              propagation and provided back to the application which can navigate at will
-              through them, effectively using the propagated orbit as if it was an
-              analytical model, even if it really is a numerically propagated one, which
-              is ideal for search and iterative algorithms</li>
+          <li>step handlers can be called at discrete time at regular time steps, which are
+          independent of propagator time steps</li>
+          <li>step handlers can be called with interpolators valid throughout one propagator
+          time step, which can have varying sizes</li>
+          <li>step handlers can be switched off completely, when only final state is desired</li>
+          <li>special step handlers are provided for a posteriori ephemeris generation: all
+               intermediate results are stored during propagation and provided back to the application
+               which can navigate at will through them, effectively using the propagated orbit as if
+               it was analytical model, even if it really is a numerically propagated one, which
+               is ideal for search and iterative algorithms</li>
+          <li>several step handlers can be used simultaneously, so it is possible to have a fine
+              grained fixed time step to log state in a huge file, and have at the same time a
+              coarse grained time step to display progress for user at a more human-friendly rate,
+              this feature can also be used for debugging purpose, by setting up a temporary
+              step handler alongside the operational ones</li>
         </ul>
       </li>
       <li>handling of discrete events during integration
@@ -192,7 +201,7 @@ discrete events. Here is a short list of the features offered by the library:</p
               GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)</li>
         </ul>
       </li>
-      <li>loading of CCSDS Attitude Data Messages (both AEM, and APM types are supported)</li>
+      <li>loading and writing of CCSDS Attitude Data Messages (both AEM, and APM types are supported, in both KVN and XML formats, standalone or in combined NDM)</li>
     </ul>
   </li>
   <li>Orbit determination
@@ -220,7 +229,7 @@ discrete events. Here is a short list of the features offered by the library:</p
               zenith delay in tropospheric correction)</li>
         </ul>
       </li>
-      <li>can be used with both numerical and DSST orbit propagators</li>
+      <li>can be used with both numerical, DSST, or SGP4/SDP4 orbit propagators</li>
       <li>multi-satellites orbit determination</li>
       <li>ground stations displacements due to solid tides</li>
       <li>ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)</li>
@@ -241,6 +250,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       </li>
       <li>possibility to add custom measurements</li>
       <li>loading of ILRS CRD laser ranging measurements file</li>
+      <li>loading and writing of CCSDS Tracking Data Messages (in both KVN and XML formats, standalone or in combined NDM)</li>
       <li>several predefined modifiers
         <ul>
           <li>tropospheric effects</li>
@@ -280,12 +290,15 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>loading of RINEX observation files (version 2 and version 3)</li>
       <li>support for Hatanaka compact RINEX format</li>
       <li>loading of SINEX station file</li>
+      <li>loading of RINEX clock files (version 2 and version 3)</li>
+      <li>parsing of IGS SSR messages for all constellations (version 1)</li>
+      <li>implementation of Ntrip protocol</li>
     </ul>
   </li>
   <li>Orbit file handling
     <ul>
       <li>loading of SP3 orbit files (from versions a to d)</li>
-      <li>loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)</li>
+      <li>loading and writing of CCSDS Orbit Data Messages (both OPM, OEM, OMM, OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)</li>
       <li>loading of SEM and YUMA files for GPS constellation</li>
       <li>exporting of ephemeris in CCSDS OEM file format</li>
       <li>loading of ILRS CPF orbit files</li>

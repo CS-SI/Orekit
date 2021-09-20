@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
@@ -42,6 +42,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -216,6 +217,13 @@ public class NRLMSISE00Test {
         final Vector3D pos = earth.transform(point);
 
         // Run
+        try {
+            atm.getDensity(date.shiftedBy(2 * Constants.JULIAN_YEAR), pos, itrf);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE, oe.getSpecifier());
+        }
+
         final double rho = atm.getDensity(date, pos, itrf);
         final double lst = 29000. / 3600. - 70. / 15.;
         final double[] ap  = {4., 100., 100., 100., 100., 100., 100.};
@@ -269,6 +277,15 @@ public class NRLMSISE00Test {
         Field<Decimal64> field = Decimal64Field.getInstance();
 
         // Run
+        try {
+            atm.getDensity(new FieldAbsoluteDate<>(field, date).shiftedBy(2 * Constants.JULIAN_YEAR),
+                           new FieldVector3D<>(field.getOne(), pos),
+                           itrf);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE, oe.getSpecifier());
+        }
+
         final double    rho = atm.getDensity(date, pos, itrf);
         final Decimal64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
                                                new FieldVector3D<>(field.getOne(), pos),
@@ -562,7 +579,7 @@ public class NRLMSISE00Test {
                     p[k] = random.nextDouble();
                 }
                 double resDouble = ((Double) methodD.invoke(output, p)).doubleValue();
-                double resField  = ((RealFieldElement<?>) methodF.invoke(fieldOutput, p)).getReal();
+                double resField  = ((CalculusFieldElement<?>) methodF.invoke(fieldOutput, p)).getReal();
                 maxAbsoluteError = FastMath.max(maxAbsoluteError, FastMath.abs(resDouble - resField));
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((resDouble - resField) / resDouble));
             }
@@ -595,7 +612,7 @@ public class NRLMSISE00Test {
             Method methodD = getOutputClass().getDeclaredMethod(methodName, Double.TYPE);
             methodD.setAccessible(true);
 
-            Method methodF = getFieldOutputClass().getDeclaredMethod(methodName, RealFieldElement.class);
+            Method methodF = getFieldOutputClass().getDeclaredMethod(methodName, CalculusFieldElement.class);
             methodF.setAccessible(true);
 
             Object output = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
@@ -708,7 +725,7 @@ public class NRLMSISE00Test {
         return null;
     }
 
-    private <T extends RealFieldElement<T>> Object createFieldOutput(Field<T>field,
+    private <T extends CalculusFieldElement<T>> Object createFieldOutput(Field<T>field,
                                                                      final NRLMSISE00 atm,
                                                                      final int doy, final double sec,
                                                                      final double lat, final double lon,
@@ -719,10 +736,10 @@ public class NRLMSISE00Test {
             Class<?> fieldOutputClass = getFieldOutputClass();
             Constructor<?> cons = fieldOutputClass.getDeclaredConstructor(NRLMSISE00.class,
                                                                           Integer.TYPE,
-                                                                          RealFieldElement.class,
-                                                                          RealFieldElement.class,
-                                                                          RealFieldElement.class,
-                                                                          RealFieldElement.class,
+                                                                          CalculusFieldElement.class,
+                                                                          CalculusFieldElement.class,
+                                                                          CalculusFieldElement.class,
+                                                                          CalculusFieldElement.class,
                                                                           Double.TYPE,
                                                                           Double.TYPE,
                                                                           double[].class);
@@ -746,7 +763,7 @@ public class NRLMSISE00Test {
             Method getDensity = getFieldOutputClass().
                                     getDeclaredMethod("getDensity", Integer.TYPE);
             getDensity.setAccessible(true);
-            return ((RealFieldElement<?>) getDensity.invoke(o, index)).getReal();
+            return ((CalculusFieldElement<?>) getDensity.invoke(o, index)).getReal();
         } catch (NoSuchMethodException | SecurityException |
                  IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
@@ -759,7 +776,7 @@ public class NRLMSISE00Test {
         try {
             java.lang.reflect.Field temperaturesField = getFieldOutputClass().getDeclaredField("temperatures");
             temperaturesField.setAccessible(true);
-            return ((RealFieldElement[]) temperaturesField.get(o))[index].getReal();
+            return ((CalculusFieldElement[]) temperaturesField.get(o))[index].getReal();
         } catch (NoSuchFieldException | SecurityException |
                  IllegalAccessException | IllegalArgumentException e) {
             Assert.fail(e.getLocalizedMessage());

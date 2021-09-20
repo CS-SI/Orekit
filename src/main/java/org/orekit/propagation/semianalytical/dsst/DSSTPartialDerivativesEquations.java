@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -164,7 +164,6 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * </p>
      * @param s0 initial state
      * @return state with initial Jacobians added
-     * @see #getSelectedParameters()
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
@@ -194,7 +193,6 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * @param dY1dP Jacobian of current state at time t₁ with respect
      * to parameters (may be null if no parameters are selected)
      * @return state with initial Jacobians added
-     * @see #getSelectedParameters()
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
                                                final double[][] dY1dY0, final double[][] dY1dP) {
@@ -211,8 +209,8 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
                                       stateDim, dY1dP.length);
         }
-        if ((dY1dP == null && selected.getNbParams() != 0) ||
-            (dY1dP != null && selected.getNbParams() != dY1dP[0].length)) {
+        if (dY1dP == null && selected.getNbParams() != 0 ||
+            dY1dP != null && selected.getNbParams() != dY1dP[0].length) {
             throw new OrekitException(new OrekitException(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
                                                           dY1dP == null ? 0 : dY1dP[0].length, selected.getNbParams()));
         }
@@ -241,20 +239,6 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         return new DSSTJacobiansMapper(name, selected, propagator, map, propagationType);
     }
 
-    /** Get the selected parameters, in Jacobian matrix column order.
-     * <p>
-     * The force models parameters for which partial derivatives are desired,
-     * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
-     * before this method is called, so the proper list is returned.
-     * </p>
-     * @return selected parameters, in Jacobian matrix column order which
-     * is lexicographic order
-     */
-    public ParameterDriversList getSelectedParameters() {
-        freezeParametersSelection();
-        return selected;
-    }
-
     /** {@inheritDoc} */
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
 
@@ -273,7 +257,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             // "field" initialization of the force model if it was not done before
-            forceModel.initialize(auxiliaryElements, propagationType, parameters);
+            forceModel.initializeShortPeriodTerms(auxiliaryElements, propagationType, parameters);
             final Gradient[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
             final double[] derivativesA  = meanElementRate[0].getGradient();
             final double[] derivativesEx = meanElementRate[1].getGradient();

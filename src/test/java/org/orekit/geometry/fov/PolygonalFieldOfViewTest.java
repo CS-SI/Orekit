@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -125,7 +125,7 @@ public class PolygonalFieldOfViewTest {
                                         DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                         Vector3D.PLUS_I,
                                         FastMath.toRadians(3.0), 6, 0.0),
-               new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
+               new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                              FastMath.toRadians(10),
                              FastMath.toRadians(20),
                              FastMath.toRadians(5)),

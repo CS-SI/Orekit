@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** This interface represents providers for additional state data beyond {@link SpacecraftState}.
  * <p>
@@ -29,7 +29,7 @@ import org.hipparchus.RealFieldElement;
  * @see org.orekit.propagation.integration.AdditionalEquations
  * @author Luc Maisonobe
  */
-public interface FieldAdditionalStateProvider<T extends RealFieldElement<T>> {
+public interface FieldAdditionalStateProvider<T extends CalculusFieldElement<T>> {
 
     /** Get the name of the additional state.
      * @return name of the additional state

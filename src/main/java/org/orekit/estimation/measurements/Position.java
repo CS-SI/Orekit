@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -107,7 +107,7 @@ public class Position extends AbstractMeasurement<Position> {
               }, extractSigmas(covarianceMatrix),
               new double[] {
                   baseWeight, baseWeight, baseWeight
-              }, Arrays.asList(satellite));
+              }, Collections.singletonList(satellite));
         this.covarianceMatrix = covarianceMatrix.clone();
     }
 

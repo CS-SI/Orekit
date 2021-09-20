@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -52,7 +52,7 @@ public class FieldTransformTest {
         doTestIdentityTranslation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIdentityTranslation(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIdentityTranslation(Field<T> field) {
         checkNoTransform(FieldTransform.getIdentity(field).shiftedBy(12345.0),
                          new Well19937a(0xfd118eac6b5ec136l));
     }
@@ -62,7 +62,7 @@ public class FieldTransformTest {
         doTestIdentityRotation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIdentityRotation(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIdentityRotation(Field<T> field) {
         checkNoTransform(FieldTransform.getIdentity(field),
                          new Well19937a(0xfd118eac6b5ec136l));
     }
@@ -72,7 +72,7 @@ public class FieldTransformTest {
         doTestIdentityLine(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIdentityLine(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIdentityLine(Field<T> field) {
         RandomGenerator random = new Well19937a(0x98603025df70db7cl);
         FieldVector3D<T> p1 = randomVector(field, 100.0, random);
         FieldVector3D<T> p2 = randomVector(field, 100.0, random);
@@ -86,7 +86,7 @@ public class FieldTransformTest {
         doTestSimpleComposition(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestSimpleComposition(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSimpleComposition(Field<T> field) {
         FieldTransform<T> transform =
             new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field),
                                  new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field),
@@ -104,7 +104,7 @@ public class FieldTransformTest {
         doTestAcceleration(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestAcceleration(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAcceleration(Field<T> field) {
 
         FieldPVCoordinates<T> initPV = new FieldPVCoordinates<>(createVector(field, 9, 8, 7),
                                                                 createVector(field, 6, 5, 4),
@@ -138,7 +138,7 @@ public class FieldTransformTest {
         doTestAccelerationComposition(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestAccelerationComposition(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAccelerationComposition(Field<T> field) {
         RandomGenerator random = new Well19937a(0x41fdd07d6c9e9f65l);
 
         FieldVector3D<T>  p1 = randomVector(field, 1.0e3,  random);
@@ -192,7 +192,7 @@ public class FieldTransformTest {
         doTestRandomComposition(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestRandomComposition(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestRandomComposition(Field<T> field) {
 
         RandomGenerator random = new Well19937a(0x171c79e323a1123l);
         for (int i = 0; i < 20; ++i) {
@@ -242,7 +242,7 @@ public class FieldTransformTest {
         doTestReverse(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestReverse(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestReverse(Field<T> field) {
         RandomGenerator random = new Well19937a(0x9f82ba2b2c98dac5l);
         for (int i = 0; i < 20; ++i) {
             FieldTransform<T> combined = randomTransform(field, random);
@@ -258,7 +258,7 @@ public class FieldTransformTest {
         doTestIdentityJacobianP(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIdentityJacobianP(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIdentityJacobianP(Field<T> field) {
         doTestIdentityJacobian(field, 3, CartesianDerivativesFilter.USE_P);
     }
 
@@ -267,7 +267,7 @@ public class FieldTransformTest {
         doTestIdentityJacobianPV(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIdentityJacobianPV(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIdentityJacobianPV(Field<T> field) {
         doTestIdentityJacobian(field, 6, CartesianDerivativesFilter.USE_PV);
     }
 
@@ -276,11 +276,11 @@ public class FieldTransformTest {
         doTestIdentityJacobianPVA(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIdentityJacobianPVA(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIdentityJacobianPVA(Field<T> field) {
         doTestIdentityJacobian(field, 9, CartesianDerivativesFilter.USE_PVA);
     }
 
-    private <T extends RealFieldElement<T>> void doTestIdentityJacobian(Field<T> field, int n, CartesianDerivativesFilter filter) {
+    private <T extends CalculusFieldElement<T>> void doTestIdentityJacobian(Field<T> field, int n, CartesianDerivativesFilter filter) {
         T[][] jacobian = MathArrays.buildArray(field, n, n);
         FieldTransform.getIdentity(field).getJacobian(filter, jacobian);
         for (int i = 0; i < n; ++i) {
@@ -295,7 +295,7 @@ public class FieldTransformTest {
         doTestDecomposeAndRebuild(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDecomposeAndRebuild(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDecomposeAndRebuild(Field<T> field) {
         RandomGenerator random = new Well19937a(0xb8ee9da1b05198c9l);
         for (int i = 0; i < 20; ++i) {
             FieldTransform<T> combined = randomTransform(field, random);
@@ -316,7 +316,7 @@ public class FieldTransformTest {
         doTestTranslation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestTranslation(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestTranslation(Field<T> field) {
         RandomGenerator rnd = new Well19937a(0x7e9d737ba4147787l);
         for (int i = 0; i < 10; ++i) {
             FieldVector3D<T> delta = randomVector(field, 1.0e3, rnd);
@@ -338,7 +338,7 @@ public class FieldTransformTest {
         doTestTranslationDouble(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestTranslationDouble(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestTranslationDouble(Field<T> field) {
         RandomGenerator rnd = new Well19937a(0x7e9d737ba4147787l);
         for (int i = 0; i < 10; ++i) {
             FieldVector3D<T> delta = randomVector(field, 1.0e3, rnd);
@@ -360,7 +360,7 @@ public class FieldTransformTest {
         doTestRoughTransPV(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestRoughTransPV(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestRoughTransPV(Field<T> field) {
 
         FieldPVCoordinates<T> pointP1 = new FieldPVCoordinates<>(FieldVector3D.getPlusI(field), FieldVector3D.getPlusI(field), FieldVector3D.getPlusI(field));
 
@@ -452,7 +452,7 @@ public class FieldTransformTest {
         doTestRotPV(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestRotPV(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestRotPV(Field<T> field) {
 
         RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
 
@@ -499,7 +499,7 @@ public class FieldTransformTest {
         doTestTransPV(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestTransPV(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestTransPV(Field<T> field) {
 
         RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
 
@@ -543,7 +543,7 @@ public class FieldTransformTest {
         doTestTransPVDouble(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestTransPVDouble(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestTransPVDouble(Field<T> field) {
 
         RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
 
@@ -587,7 +587,7 @@ public class FieldTransformTest {
         doTestRotation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestRotation(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestRotation(Field<T> field) {
         RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
         for (int i = 0; i < 10; ++i) {
 
@@ -615,7 +615,7 @@ public class FieldTransformTest {
         doTestJacobianP(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianP(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestJacobianP(Field<T> field) {
 
         // base directions for finite differences
         @SuppressWarnings("unchecked")
@@ -694,7 +694,7 @@ public class FieldTransformTest {
         doTestJacobianPV(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianPV(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestJacobianPV(Field<T> field) {
 
         // base directions for finite differences
         @SuppressWarnings("unchecked")
@@ -780,7 +780,7 @@ public class FieldTransformTest {
         doTestJacobianPVA(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianPVA(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestJacobianPVA(Field<T> field) {
 
         // base directions for finite differences
         @SuppressWarnings("unchecked")
@@ -861,7 +861,7 @@ public class FieldTransformTest {
         doTestLine(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestLine(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestLine(Field<T> field) {
         RandomGenerator random = new Well19937a(0x4a5ff67426c5731fl);
         for (int i = 0; i < 100; ++i) {
             FieldTransform<T> transform = randomTransform(field, random);
@@ -883,7 +883,7 @@ public class FieldTransformTest {
         doTestLineDouble(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestLineDouble(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestLineDouble(Field<T> field) {
         RandomGenerator random = new Well19937a(0x4a5ff67426c5731fl);
         for (int i = 0; i < 100; ++i) {
             FieldTransform<T> transform = randomTransform(field, random);
@@ -905,7 +905,7 @@ public class FieldTransformTest {
         doTestLinear(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestLinear(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestLinear(final Field<T> field) {
 
         RandomGenerator random = new Well19937a(0x14f6411217b148d8l);
         for (int n = 0; n < 100; ++n) {
@@ -981,7 +981,7 @@ public class FieldTransformTest {
         doTestShift(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShift(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShift(Field<T> field) {
 
         // the following transform corresponds to a frame moving along the line x=1 and rotating around its -z axis
         // the linear motion velocity is (0, +1, 0), the angular rate is PI/2
@@ -1041,7 +1041,7 @@ public class FieldTransformTest {
         doTestShiftDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftDerivatives(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShiftDerivatives(Field<T> field) {
 
         RandomGenerator random = new Well19937a(0x5acda4f605aadce7l);
         for (int i = 0; i < 10; ++i) {
@@ -1179,7 +1179,7 @@ public class FieldTransformTest {
         doTestInterpolation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field) {
         FieldAbsoluteDate<T> t0 = FieldAbsoluteDate.getGalileoEpoch(field);
         List<FieldTransform<T>> sample = new ArrayList<FieldTransform<T>>();
         for (int i = 0; i < 5; ++i) {
@@ -1201,7 +1201,7 @@ public class FieldTransformTest {
 
     }
 
-    private <T extends RealFieldElement<T>> FieldTransform<T> evolvingTransform(final FieldAbsoluteDate<T> t0, final double dt) {
+    private <T extends CalculusFieldElement<T>> FieldTransform<T> evolvingTransform(final FieldAbsoluteDate<T> t0, final double dt) {
         // the following transform corresponds to a frame moving along the circle r = 1
         // with its x axis always pointing to the reference frame center
         final Field<T> field = t0.getField();
@@ -1221,7 +1221,7 @@ public class FieldTransformTest {
                                                          new FieldVector3D<>(omega, FieldVector3D.getPlusK(field))));
     }
 
-    private <T extends RealFieldElement<T>> T derivative(T h,
+    private <T extends CalculusFieldElement<T>> T derivative(T h,
                                                          T ym4h, T ym3h, T ym2h, T ym1h,
                                                          T yp1h, T yp2h, T yp3h, T yp4h) {
         return     yp4h.subtract(ym4h).multiply(  -3).
@@ -1231,7 +1231,7 @@ public class FieldTransformTest {
                divide(h.multiply(840));
     }
 
-    private <T extends RealFieldElement<T>> FieldTransform<T> randomTransform(Field<T> field, RandomGenerator random) {
+    private <T extends CalculusFieldElement<T>> FieldTransform<T> randomTransform(Field<T> field, RandomGenerator random) {
         // generate a random transform
         FieldTransform<T> combined = FieldTransform.getIdentity(field);
         for (int k = 0; k < 20; ++k) {
@@ -1249,14 +1249,14 @@ public class FieldTransformTest {
         return combined;
     }
 
-    private <T extends RealFieldElement<T>> FieldVector3D<T> randomVector(Field<T> field, double scale, RandomGenerator random) {
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> randomVector(Field<T> field, double scale, RandomGenerator random) {
         return createVector(field,
                             random.nextDouble() * scale,
                             random.nextDouble() * scale,
                             random.nextDouble() * scale);
     }
 
-    private <T extends RealFieldElement<T>> FieldRotation<T> randomRotation(Field<T> field, RandomGenerator random) {
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> randomRotation(Field<T> field, RandomGenerator random) {
         double q0 = random.nextDouble() * 2 - 1;
         double q1 = random.nextDouble() * 2 - 1;
         double q2 = random.nextDouble() * 2 - 1;
@@ -1264,7 +1264,7 @@ public class FieldTransformTest {
         return createRotation(field, q0, q1, q2, q3, true);
     }
 
-    private <T extends RealFieldElement<T>> void checkNoTransform(FieldTransform<T> transform,
+    private <T extends CalculusFieldElement<T>> void checkNoTransform(FieldTransform<T> transform,
                                                                   RandomGenerator random) {
         for (int i = 0; i < 100; ++i) {
             FieldVector3D<T> a = randomVector(transform.getFieldDate().getField(), 1.0e3, random);
@@ -1283,7 +1283,7 @@ public class FieldTransformTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void checkVector(FieldVector3D<T> reference, FieldVector3D<T> result,
+    private <T extends CalculusFieldElement<T>> void checkVector(FieldVector3D<T> reference, FieldVector3D<T> result,
                                                              double relativeTolerance) {
         T refNorm = reference.getNorm();
         T resNorm = result.getNorm();
@@ -1293,14 +1293,14 @@ public class FieldTransformTest {
                             0, FieldVector3D.distance(reference, result).getReal(), tolerance);
     }
 
-    private <T extends RealFieldElement<T>> FieldVector3D<T> createVector(Field<T> field,
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> createVector(Field<T> field,
                                                                           double x, double y, double z) {
         return new FieldVector3D<>(field.getZero().add(x),
                                    field.getZero().add(y),
                                    field.getZero().add(z));
     }
 
-    private <T extends RealFieldElement<T>> FieldRotation<T> createRotation(Field<T> field,
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> createRotation(Field<T> field,
                                                                            double q0, double q1,
                                                                            double q2, double q3,
                                                                            boolean needsNormalization) {

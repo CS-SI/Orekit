@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,6 @@ import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
 
 public class DSSTKalmanEstimatorTest {
 
@@ -108,69 +107,6 @@ public class DSSTKalmanEstimatorTest {
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        build();
-        
-        // Filter the measurements and check the results
-        final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.1e-7; // With numerical propagator: 5.80e-8;
-        final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 4.3e-11; // With numerical propagator: 2.28e-11;
-        DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps);
-    }
-
-    /**
-     * Perfect PV measurements with a perfect start Keplerian formalism
-     * It uses the deprecated API of Kalman filter
-     */
-    @Test
-    @Deprecated
-    public void testKeplerianPVDeprecated() {
-
-        // Create context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
-
-        // Create initial orbit and propagator builder
-        final PositionAngle positionAngle = PositionAngle.MEAN;
-        final boolean       perfectStart  = true;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
-        final double        dP            = 1.;
-        final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart,
-                                                                      minStep, maxStep, dP);
-
-        // Create perfect PV measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-        final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new PVMeasurementCreator(),
-                                                               0.0, 3.0, 300.0);
-        // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
-        // Reference position/velocity at last measurement date
-        final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
-        // Covariance matrix initialization
-        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
-        });        
-
-        // Process noise matrix
-        RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
-        });
-  
-
-        // Build the Kalman filter
-        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
         
         // Filter the measurements and check the results

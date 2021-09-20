@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2002-2020 CS GROUP
+  Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -16,8 +16,8 @@
 <project name="Orekit">
   <bannerLeft>
     <name>CS GROUP</name>
-    <src>/images/logo_cs_2008_ang.jpg</src>
-    <href>http://uk.c-s.fr/</href>
+    <src>/images/logo_cs_group.png</src>
+    <href>https://www.csgroup.eu/en/</href>
   </bannerLeft>
   <bannerRight>
     <name>Orekit</name>
@@ -38,13 +38,15 @@
     <menu name="Data">
       <item name="Contexts"               href="/data/contexts.html"              />
       <item name="Default configuration"  href="/data/default-configuration.html" />
+      <item name="Application data"       href="/data/application-data.html"      />
       <item name="Filtering"              href="/data/filtering.html"             />
-      <item name="Custom formats"         href="/data/custom-formats.html"        />
       <item name="Custom filters"         href="/data/custom-filters.html"        />
+      <item name="Supported data types"   href="/data/supported-data-types.html"  />
     </menu>
     <menu name="Architecture">
       <item name="Attitudes"     href="/architecture/attitudes.html"     />
       <item name="Bodies"        href="/architecture/bodies.html"        />
+      <item name="CCSDS"         href="/architecture/ccsds.html"         />
       <item name="Errors"        href="/architecture/errors.html"        />
       <item name="Estimation"    href="/architecture/estimation.html"    />
       <item name="Forces"        href="/architecture/forces.html"        />

@@ -1,4 +1,4 @@
-' Copyright 2002-2020 CS GROUP
+' Copyright 2002-2021 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
@@ -32,11 +33,11 @@
 
       interface ForceModel {
         +void addContribution()
-        +FieldVector3D<DerivativeStructure> accelerationDerivatives()
+        +FieldVector3D<Gradient> acceleration()
         +EventDetector[] getEventsDetectors()
       }
 
-      package radiation #EAECE6 {
+      package radiation #CBDBC8 {
         class SolarRadiationPressure
         ForceModel <|.. SolarRadiationPressure
       }
@@ -51,7 +52,7 @@
 
       Propagator <|.. AbstractPropagator
 
-      package integration #EAECE6 {
+      package integration #CBDBC8 {
         interface AdditionalEquations {
           +String getName()
           +void computeDerivatives()
@@ -63,12 +64,11 @@
         AdditionalEquations <---o AbstractIntegratedPropagator : additional
       }
 
-      package numerical #EAECE6 {
+      package numerical #CBDBC8 {
 
         interface TimeDerivativesEquations {
           +void addKeplerContribution()
-          +void addXYZAcceleration()
-          +void addAcceleration()
+          +void addNonKeplerianAcceleration()
           +void addMassDerivative()
         }
 
@@ -77,10 +77,9 @@
        }
 
         class PartialDerivativesEquations {
-          +List<String> getAvailableParameters()
-          +void selectParameters(String ... parameters)
-          +void selectParamAndStep(String parameter, double hP)
-          +void setInitialJacobians()
+          +void freezeParametersSelection()
+          +void setInitialJacobians(SpacecraftState s0)
+          +JacobiansMapper getMapper()
        }
       class Jacobianizer
 

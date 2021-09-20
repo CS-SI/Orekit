@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,12 +20,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 
 public class CR3BPFactoryTest {
     
     @Test
     public void getSunJupiterCR3BP() {
-    	CR3BPSystem sunJupiterCR3BP = CR3BPFactory.getSunJupiterCR3BP();
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        TimeScale timeScale = TimeScalesFactory.getUTC();
+    	CR3BPSystem sunJupiterCR3BP = CR3BPFactory.getSunJupiterCR3BP(date, timeScale);
     	Assert.assertNotNull(sunJupiterCR3BP);
     }
     
@@ -37,7 +42,9 @@ public class CR3BPFactoryTest {
     
     @Test
     public void getSunEarthCR3BP() {
-    	CR3BPSystem sunEarthCR3BP = CR3BPFactory.getSunEarthCR3BP();
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        TimeScale timeScale = TimeScalesFactory.getUTC();
+    	CR3BPSystem sunEarthCR3BP = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
     	Assert.assertNotNull(sunEarthCR3BP);
     }
 

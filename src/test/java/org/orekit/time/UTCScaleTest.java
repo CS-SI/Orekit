@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.Decimal64Field;
@@ -50,7 +51,7 @@ public class UTCScaleTest {
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(2020, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        Assert.assertEquals("2020-12-31T23:59:59.000", d1.toString());
+        Assert.assertEquals("2020-12-31T23:59:59.000Z", d1.toString());
     }
 
     @Test
@@ -129,7 +130,8 @@ public class UTCScaleTest {
     @Test
     public void testWrapBeforeLeap() {
         AbsoluteDate t = new AbsoluteDate("2015-06-30T23:59:59.999999", utc);
-        Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
+        Assert.assertEquals("2015-06-30T23:59:60.000+00:00",
+                t.getComponents(utc).toString(utc.minuteDuration(t)));
     }
 
     @Test
@@ -187,7 +189,7 @@ public class UTCScaleTest {
             Assert.assertTrue(leap > (excess - 1));
             Assert.assertEquals(excess, newExcess);
             Assert.assertEquals(leap, newLeap, 0.0);
-            Assert.assertThat("" + offset.getValidityStart(), leap,
+            MatcherAssert.assertThat("" + offset.getValidityStart(), leap,
                     OrekitMatchers.numberCloseTo(end.durationFrom(start), 1e-16, 1));
         }
     }
@@ -451,6 +453,16 @@ public class UTCScaleTest {
         //AbsoluteDate d = new AbsoluteDate(1961, 1, 1, utc);
         Assert.assertEquals(new AbsoluteDate(2015, 6, 30, 23, 59, 60, utc), last);
         Assert.assertEquals(new AbsoluteDate(1960, 12, 31, 23, 59, 60, utc), first);
+    }
+
+    @Test
+    public void testGetUTCTAIOffsets() {
+        final List<UTCTAIOffset> offsets = utc.getUTCTAIOffsets();
+        Assert.assertEquals(40, offsets.size());
+        final UTCTAIOffset firstOffset = offsets.get(0);
+        final UTCTAIOffset lastOffset = offsets.get(offsets.size() - 1);
+        Assert.assertEquals(37300, firstOffset.getMJD()); // 1961-01-01
+        Assert.assertEquals(57204, lastOffset.getMJD()); // 2015-07-01
     }
 
     @Before

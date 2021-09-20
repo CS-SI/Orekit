@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -66,9 +66,9 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
     /** Field caches for sample points. */
     // we use Object as the value of fieldCaches because despite numerous attempts,
-    // we could not find a way to use GenericTimeStampedCache<FieldTransform<? extends RealFieldElement<?>>
+    // we could not find a way to use GenericTimeStampedCache<FieldTransform<? extends CalculusFieldElement<?>>
     // without the compiler complaining
-    private final transient Map<Field<? extends RealFieldElement<?>>, Object> fieldCaches;
+    private final transient Map<Field<? extends CalculusFieldElement<?>>, Object> fieldCaches;
 
     /** Simple constructor.
      * @param rawProvider provider for raw (non-interpolated) transforms
@@ -133,7 +133,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         @SuppressWarnings("unchecked")
         GenericTimeStampedCache<FieldTransform<T>> fieldCache =
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());

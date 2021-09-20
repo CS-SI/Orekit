@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -47,7 +47,7 @@ public class FieldApsideDetectorTest {
         doTestSimple(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestSimple(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSimple(Field<T> field) {
         final T zero = field.getZero();
 
         final TimeScale utc = TimeScalesFactory.getUTC();

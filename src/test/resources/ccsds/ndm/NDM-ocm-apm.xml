@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ndm>
+  <COMMENT>NDM with two constituents: an OCM and an APM</COMMENT>
+  <ocm  id="CCSDS_OCM_VERS" version="3.0">
+    <header>
+      <CREATION_DATE>1998-11-06T09:23:57</CREATION_DATE>
+      <ORIGINATOR>JAXA</ORIGINATOR>
+      <MESSAGE_ID> OCM 201113719185</MESSAGE_ID> </header>
+    <body>
+      <segment>
+        <metadata>
+          <INTERNATIONAL_DESIGNATOR>1998-999A</INTERNATIONAL_DESIGNATOR>
+          <TIME_SYSTEM>UT1</TIME_SYSTEM>
+          <EPOCH_TZERO>1998-12-18T00:00:00.0000</EPOCH_TZERO>
+          <TAIMUTC_AT_TZERO units="s">36</TAIMUTC_AT_TZERO>
+          <UT1MUTC_AT_TZERO units="s">.357</UT1MUTC_AT_TZERO> 
+        </metadata>
+        <data>
+          <traj>
+             <COMMENT>GEOCENTRIC, CARTESIAN, EARTH FIXED</COMMENT>
+             <TRAJ_BASIS>PREDICTED</TRAJ_BASIS >
+             <TRAJ_REF_FRAME>EFG</TRAJ_REF_FRAME>
+             <TRAJ_TYPE>CARTPVA</TRAJ_TYPE>
+             <trajLine>0.0  2854.5 -2916.2 -5360.7 5.90 4.86 0.52 0.0037 -0.0038 -0.0070</trajLine>
+          </traj>
+          <userDef>
+             <USER_DEFINED parameter="EARTH_MODEL">WGS-84</USER_DEFINED>
+          </userDef>
+        </data>
+      </segment>
+    </body>
+  </ocm>
+  <apm id="CCSDS_APM_VERS" version="1.0">
+    <header>
+      <CREATION_DATE>2004-02-14T19:23:57</CREATION_DATE>
+      <ORIGINATOR>JPL</ORIGINATOR>
+    </header>
+    <body>
+      <segment>
+        <metadata>
+          <OBJECT_NAME>MARS SPIRIT</OBJECT_NAME>
+          <OBJECT_ID>2004-003A</OBJECT_ID>
+          <CENTER_NAME>EARTH</CENTER_NAME>
+          <TIME_SYSTEM>UTC</TIME_SYSTEM>
+        </metadata>
+        <data>
+          <COMMENT>Attitude state quaternion</COMMENT>
+          <quaternionState>
+            <EPOCH>2004-02-14T14:28:15.1172</EPOCH>
+            <Q_FRAME_A>INSTRUMENT_A</Q_FRAME_A>
+            <Q_FRAME_B>ITRF-97</Q_FRAME_B>
+            <Q_DIR>A2B</Q_DIR>
+            <quaternion>
+              <Q1>0.03123</Q1>
+              <Q2>0.78543</Q2>
+              <Q3>0.39158</Q3>
+              <QC>0.47832</QC>
+            </quaternion>
+          </quaternionState>
+        </data>
+      </segment>
+    </body>
+  </apm>
+</ndm>

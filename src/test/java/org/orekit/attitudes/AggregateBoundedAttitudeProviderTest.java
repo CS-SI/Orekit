@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,10 @@
  */
 package org.orekit.attitudes;
 
-import java.io.InputStream;
 import java.util.Collections;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.Decimal64Field;
@@ -28,16 +27,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.AEMFile;
-import org.orekit.files.ccsds.AEMFile.AemSatelliteEphemeris;
-import org.orekit.files.ccsds.AEMParser;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.adm.aem.Aem;
+import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.IERSConventions;
 
 public class AggregateBoundedAttitudeProviderTest {
 
@@ -58,12 +56,9 @@ public class AggregateBoundedAttitudeProviderTest {
     @Test
     public void testAEM() {
 
-        final String ex = "/ccsds/AEMExample10.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
-        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
+        final String ex = "/ccsds/adm/aem/AEMExample10.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -89,14 +84,11 @@ public class AggregateBoundedAttitudeProviderTest {
         doTestFieldAEM(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldAEM(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldAEM(final Field<T> field) {
 
-        final String ex = "/ccsds/AEMExample10.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
-        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
+        final String ex = "/ccsds/adm/aem/AEMExample10.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -120,12 +112,9 @@ public class AggregateBoundedAttitudeProviderTest {
     @Test
     public void testOutsideBounds() throws Exception {
 
-        final String ex = "/ccsds/AEMExample10.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
-        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
+        final String ex = "/ccsds/adm/aem/AEMExample10.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final Aem file = new ParserBuilder().withSimpleEOP(true).buildAemParser().parseMessage(source);
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -151,14 +140,11 @@ public class AggregateBoundedAttitudeProviderTest {
         doTestFieldOutsideBounds(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {
+    private <T extends CalculusFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {
 
-        final String ex = "/ccsds/AEMExample10.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
-        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
+        final String ex = "/ccsds/adm/aem/AEMExample10.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final Aem file = new ParserBuilder().withSimpleEOP(true).buildAemParser().parseMessage(source);
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();

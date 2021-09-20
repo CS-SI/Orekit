@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -256,6 +255,24 @@ public class NumericalConverterTest {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
     }
+    
+    @Test
+    public void testDeselectOrbitals() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
+                                                       dp54Builder,
+                                                       PositionAngle.TRUE, 1.0);
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertTrue(driver.isSelected());
+        }
+        builder.deselectDynamicParameters();
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertFalse(driver.isSelected());
+        }
+    }
 
     protected void checkFit(final Orbit orbit, final double duration,
                             final double stepSize, final double threshold,
@@ -342,7 +359,7 @@ public class NumericalConverterTest {
 
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
-        builder.setAttitudeProvider(InertialProvider.EME2000_ALIGNED);
+        builder.setAttitudeProvider(Utils.defaultLaw());
         builder.setMass(1000.0);
 
         JacobianPropagatorConverter fitter = new JacobianPropagatorConverter(builder, 1.0, 500);

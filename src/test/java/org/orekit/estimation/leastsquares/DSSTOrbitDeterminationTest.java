@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -106,8 +105,8 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setGravity(final DSSTPropagatorBuilder propagatorBuilder,
-                                           final OneAxisEllipsoid body) {
+    protected List<ParameterDriver> setGravity(final DSSTPropagatorBuilder propagatorBuilder,
+                                               final OneAxisEllipsoid body) {
 
         // tesseral terms
         final DSSTForceModel tesseral = new DSSTTesseral(body.getBodyFrame(),
@@ -123,36 +122,36 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         // gather all drivers
         final List<ParameterDriver> drivers = new ArrayList<>();
-        drivers.addAll(Arrays.asList(tesseral.getParametersDrivers()));
-        drivers.addAll(Arrays.asList(tesseral.getParametersDrivers()));
-        return drivers.toArray(new ParameterDriver[0]);
+        drivers.addAll(tesseral.getParametersDrivers());
+        drivers.addAll(zonal.getParametersDrivers());
+        return drivers;
 
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setOceanTides(final DSSTPropagatorBuilder propagatorBuilder,
-                                              final IERSConventions conventions,
-                                              final OneAxisEllipsoid body,
-                                              final int degree, final int order) {
+    protected List<ParameterDriver> setOceanTides(final DSSTPropagatorBuilder propagatorBuilder,
+                                                  final IERSConventions conventions,
+                                                  final OneAxisEllipsoid body,
+                                                  final int degree, final int order) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Ocean tides not implemented in DSST");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setSolidTides(final DSSTPropagatorBuilder propagatorBuilder,
-                                              final IERSConventions conventions,
-                                              final OneAxisEllipsoid body,
-                                              final CelestialBody[] solidTidesBodies) {
+    protected List<ParameterDriver> setSolidTides(final DSSTPropagatorBuilder propagatorBuilder,
+                                                  final IERSConventions conventions,
+                                                  final OneAxisEllipsoid body,
+                                                  final CelestialBody[] solidTidesBodies) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                   "Solid tides not implemented in DSST");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setThirdBody(final DSSTPropagatorBuilder propagatorBuilder,
-                                             final CelestialBody thirdBody) {
+    protected List<ParameterDriver> setThirdBody(final DSSTPropagatorBuilder propagatorBuilder,
+                                                 final CelestialBody thirdBody) {
         final DSSTForceModel thirdBodyModel = new DSSTThirdBody(thirdBody, gravityField.getMu());
         propagatorBuilder.addForceModel(thirdBodyModel);
         return thirdBodyModel.getParametersDrivers();
@@ -160,8 +159,8 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setDrag(final DSSTPropagatorBuilder propagatorBuilder,
-                                        final Atmosphere atmosphere, final DragSensitive spacecraft) {
+    protected List<ParameterDriver> setDrag(final DSSTPropagatorBuilder propagatorBuilder,
+                                            final Atmosphere atmosphere, final DragSensitive spacecraft) {
         final DSSTForceModel dragModel = new DSSTAtmosphericDrag(atmosphere, spacecraft, gravityField.getMu());
         propagatorBuilder.addForceModel(dragModel);
         return dragModel.getParametersDrivers();
@@ -169,8 +168,8 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setSolarRadiationPressure(final DSSTPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                          final double equatorialRadius, final RadiationSensitive spacecraft) {
+    protected List<ParameterDriver> setSolarRadiationPressure(final DSSTPropagatorBuilder propagatorBuilder, final CelestialBody sun,
+                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
         final DSSTForceModel srpModel = new DSSTSolarRadiationPressure(sun, equatorialRadius,
                                                                        spacecraft, gravityField.getMu());
         propagatorBuilder.addForceModel(srpModel);
@@ -179,25 +178,25 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setAlbedoInfrared(final DSSTPropagatorBuilder propagatorBuilder,
-                                                  final CelestialBody sun, final double equatorialRadius,
-                                                  final double angularResolution,
-                                                  final RadiationSensitive spacecraft) {
-        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        "Relativity not implemented in DSST");
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected ParameterDriver[] setRelativity(final DSSTPropagatorBuilder propagatorBuilder) {
+    protected List<ParameterDriver> setAlbedoInfrared(final DSSTPropagatorBuilder propagatorBuilder,
+                                                      final CelestialBody sun, final double equatorialRadius,
+                                                      final double angularResolution,
+                                                      final RadiationSensitive spacecraft) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Albedo and infrared not implemented in DSST");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setPolynomialAcceleration(final DSSTPropagatorBuilder propagatorBuilder,
-                                                          final String name, final Vector3D direction, final int degree) {
+    protected List<ParameterDriver> setRelativity(final DSSTPropagatorBuilder propagatorBuilder) {
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        "Albedo and infrared not implemented in DSST");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected List<ParameterDriver> setPolynomialAcceleration(final DSSTPropagatorBuilder propagatorBuilder,
+                                                              final String name, final Vector3D direction, final int degree) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Polynomial acceleration not implemented in DSST");
     }
@@ -266,6 +265,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
+
 
     }
 

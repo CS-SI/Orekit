@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -98,8 +97,8 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                                                                      FastMath.toRadians(30));
 
         SpacecraftState state = new SpacecraftState(orbit,
-                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.5e-9, false);
+                                                    Utils.defaultLaw().getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferences(state, forceModel, Utils.defaultLaw(), 1.0, 5.5e-9, false);
 
     }
     
@@ -381,7 +380,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         propagator.setInitialState(initState);
         propagator.addForceModel(knockeModel);
-        propagator.setMasterMode(handlerStep, new KnockeStepHandler(knockeModel));
+        propagator.setStepHandler(handlerStep, new KnockeStepHandler(knockeModel));
         
         final SpacecraftState finalState = propagator.propagate(date0.shiftedBy(duration));
         
@@ -402,7 +401,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         }
         
         @Override
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState) {
             
             // Get Knocke model acceleration
             final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters());

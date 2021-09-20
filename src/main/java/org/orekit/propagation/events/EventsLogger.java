@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /** This class logs events detectors events during propagation.
  *
@@ -102,7 +103,7 @@ public class EventsLogger {
     }
 
     /** Class for logged events entries. */
-    public static class LoggedEvent {
+    public static class LoggedEvent implements TimeStamped {
 
         /** Event detector triggered. */
         private final EventDetector detector;
@@ -130,6 +131,12 @@ public class EventsLogger {
          */
         public EventDetector getEventDetector() {
             return detector;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AbsoluteDate getDate() {
+            return state.getDate();
         }
 
         /** Get the triggering state.

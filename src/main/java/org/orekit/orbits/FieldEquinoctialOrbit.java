@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -76,7 +76,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
  */
-public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
+public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 
     /** Semi-major axis (m). */
     private final T a;
@@ -245,7 +245,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvCoordinates the position, velocity and acceleration
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
@@ -349,7 +349,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvCoordinates the position end velocity
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
@@ -528,7 +528,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param <T> Type of the field elements
      * @return the true longitude argument
      */
-    public static <T extends RealFieldElement<T>> T eccentricToTrue(final T lE, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T eccentricToTrue(final T lE, final T ex, final T ey) {
         final T epsilon           = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
         final FieldSinCos<T> scLE = FastMath.sinCos(lE);
         final T cosLE             = scLE.cos();
@@ -545,7 +545,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param <T> Type of the field elements
      * @return the eccentric longitude argument
      */
-    public static <T extends RealFieldElement<T>> T trueToEccentric(final T lv, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T trueToEccentric(final T lv, final T ex, final T ey) {
         final T epsilon           = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
         final FieldSinCos<T> scLv = FastMath.sinCos(lv);
         final T cosLv             = scLv.cos();
@@ -562,7 +562,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param <T> Type of the field elements
      * @return the eccentric longitude argument
      */
-    public static <T extends RealFieldElement<T>> T meanToEccentric(final T lM, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T meanToEccentric(final T lM, final T ex, final T ey) {
         // Generalization of Kepler equation to equinoctial parameters
         // with lE = PA + RAAN + E and
         //      lM = PA + RAAN + M = lE - ex.sin(lE) + ey.cos(lE)
@@ -583,7 +583,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             lE     = lM.add(lEmlM);
             scLE = FastMath.sinCos(lE);
 
-        } while ((++iter < 50) && (FastMath.abs(shift.getReal()) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift.getReal()) > 1.0e-12);
 
         return lE;
 
@@ -596,7 +596,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param <T> Type of the field elements
      * @return the mean longitude argument
      */
-    public static <T extends RealFieldElement<T>> T eccentricToMean(final T lE, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T eccentricToMean(final T lE, final T ex, final T ey) {
         final FieldSinCos<T> scLE = FastMath.sinCos(lE);
         return lE.subtract(ex.multiply(scLE.sin())).add(ey.multiply(scLE.cos()));
     }
@@ -1073,31 +1073,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
                                   append(";}").toString();
     }
 
-    /**
-     * Normalize an angle in a 2&pi; wide interval around a center value.
-     * <p>This method has three main uses:</p>
-     * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br>
-     *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br>
-     *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
-     *   <li>compute the angle between two defining angular positions:<br>
-     *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
-     * </ul>
-     * <p>Note that due to numerical accuracy and since &pi; cannot be represented
-     * exactly, the result interval is <em>closed</em>, it cannot be half-closed
-     * as would be more satisfactory in a purely mathematical view.</p>
-     * @param a angle to normalize
-     * @param center center of the desired 2&pi; interval for the result
-     * @param <T> the type of the field elements
-     * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
-        return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
-    }
-
+    /** {@inheritDoc} */
     @Override
     public EquinoctialOrbit toOrbit() {
         if (hasDerivatives()) {

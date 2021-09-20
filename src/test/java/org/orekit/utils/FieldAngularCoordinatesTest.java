@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +21,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -110,11 +111,12 @@ public class FieldAngularCoordinatesTest {
         Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
         Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
         Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
+
     }
 
     @Test
     public void testUnivariateDerivative1() {
-        RandomGenerator random = new Well1024a(0x1633878dddac047dl);
+        RandomGenerator random = new Well1024a(0x6de8cce747539904l);
 
         FieldRotation<Decimal64> r    = randomRotation64(random);
         FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
@@ -130,6 +132,41 @@ public class FieldAngularCoordinatesTest {
         Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(1).getReal(), rotationUD.getQ1().getFirstDerivative().getReal(), 1.0e-15);
         Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(1).getReal(), rotationUD.getQ2().getFirstDerivative().getReal(), 1.0e-15);
         Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(1).getReal(), rotationUD.getQ3().getFirstDerivative().getReal(), 1.0e-15);
+
+        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(rotationUD);
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
+
+    }
+
+    @Test
+    public void testUnivariateDerivative2() {
+        RandomGenerator random = new Well1024a(0x255710c8fa2247ecl);
+
+        FieldRotation<Decimal64> r    = randomRotation64(random);
+        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
+        FieldAngularCoordinates<Decimal64> ac = new FieldAngularCoordinates<>(r, o, oDot);
+        FieldRotation<FieldUnivariateDerivative2<Decimal64>> rotationUD = ac.toUnivariateDerivative2Rotation();
+        FieldRotation<FieldDerivativeStructure<Decimal64>>   rotationDS = ac.toDerivativeStructureRotation(2);
+        Assert.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ0().getPartialDerivative(1).getReal(), rotationUD.getQ0().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(1).getReal(), rotationUD.getQ1().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(1).getReal(), rotationUD.getQ2().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(1).getReal(), rotationUD.getQ3().getFirstDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ0().getPartialDerivative(2).getReal(), rotationUD.getQ0().getSecondDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(2).getReal(), rotationUD.getQ1().getSecondDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(2).getReal(), rotationUD.getQ2().getSecondDerivative().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(2).getReal(), rotationUD.getQ3().getSecondDerivative().getReal(), 1.0e-15);
+
+        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(rotationUD);
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
+
     }
 
     @Test
@@ -570,14 +607,14 @@ public class FieldAngularCoordinatesTest {
         Assert.assertEquals(0, Vector3D.distance(v2.getAcceleration(), v2Computed.getAcceleration()), 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void checkInverse(FieldVector3D<T> omega, FieldVector3D<T> v1, FieldVector3D<T> v2)
+    private <T extends CalculusFieldElement<T>> void checkInverse(FieldVector3D<T> omega, FieldVector3D<T> v1, FieldVector3D<T> v2)
         {
         checkInverse(omega,
                      v1, FieldVector3D.crossProduct(omega, v1),
                      v2, FieldVector3D.crossProduct(omega, v2));
     }
 
-    private <T extends RealFieldElement<T>> void checkInverseFailure(FieldVector3D<T> omega,
+    private <T extends CalculusFieldElement<T>> void checkInverseFailure(FieldVector3D<T> omega,
                                                                      FieldVector3D<T> v1, FieldVector3D<T> c1,
                                                                      FieldVector3D<T> v2, FieldVector3D<T> c2) {
         try {
@@ -588,7 +625,7 @@ public class FieldAngularCoordinatesTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void checkInverse(FieldVector3D<T> omega,
+    private <T extends CalculusFieldElement<T>> void checkInverse(FieldVector3D<T> omega,
                                                               FieldVector3D<T> v1, FieldVector3D<T> c1,
                                                               FieldVector3D<T> v2, FieldVector3D<T> c2)
         throws MathIllegalArgumentException {

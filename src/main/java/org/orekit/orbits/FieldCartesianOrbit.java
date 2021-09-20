@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -76,7 +76,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
  */
-public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
+public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 
     /** Indicator for non-Keplerian acceleration. */
     private final transient boolean hasNonKeplerianAcceleration;
@@ -98,7 +98,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position, velocity and acceleration of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
@@ -123,7 +123,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
@@ -303,7 +303,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final double x = w.getX().getReal();
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
-        if (((x * x + y * y) == 0) && z < 0) {
+        if ((x * x + y * y) == 0 && z < 0) {
             return zero.add(Double.NaN);
         }
         return w.getY().negate().divide(w.getZ().add(1));
@@ -319,7 +319,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final double x = w.getX().getValue().getReal();
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return zero.add(Double.NaN);
             }
             final FieldUnivariateDerivative2<T> hx = w.getY().negate().divide(w.getZ().add(1));
@@ -336,7 +336,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final double x = w.getX().getReal();
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
-        if (((x * x + y * y) == 0) && z < 0) {
+        if ((x * x + y * y) == 0 && z < 0) {
             return zero.add(Double.NaN);
         }
         return  w.getX().divide(w.getZ().add(1));
@@ -352,7 +352,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final double x = w.getX().getValue().getReal();
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return zero.add(Double.NaN);
             }
             final FieldUnivariateDerivative2<T> hy = w.getX().divide(w.getZ().add(1));
@@ -646,16 +646,19 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
+        // Field value of pi
+        final T pi = ecc.getPi();
+
         // Initial guess
         T H;
         if (ecc.getReal() < 1.6) {
-            if ((-FastMath.PI < M.getReal() && M.getReal() < 0.) || M.getReal() > FastMath.PI) {
+            if (-pi.getReal() < M.getReal() && M.getReal() < 0. || M.getReal() > pi.getReal()) {
                 H = M.subtract(ecc);
             } else {
                 H = M.add(ecc);
             }
         } else {
-            if (ecc.getReal() < 3.6 && FastMath.abs(M.getReal()) > FastMath.PI) {
+            if (ecc.getReal() < 3.6 && FastMath.abs(M.getReal()) > pi.getReal()) {
                 H = M.subtract(ecc.copySign(M));
             } else {
                 H = M.divide(ecc.subtract(1.));

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -39,7 +39,7 @@ public class FixedTransformProvider implements TransformProvider {
     private final Transform transform;
 
     /** Cached field-based transforms. */
-    private final transient Map<Field<? extends RealFieldElement<?>>, FieldTransform<? extends RealFieldElement<?>>> cached;
+    private final transient Map<Field<? extends CalculusFieldElement<?>>, FieldTransform<? extends CalculusFieldElement<?>>> cached;
 
     /** Simple constructor.
      * @param transform fixed transform
@@ -56,7 +56,7 @@ public class FixedTransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         @SuppressWarnings("unchecked")
         FieldTransform<T> ft = (FieldTransform<T>) cached.get(date.getField());

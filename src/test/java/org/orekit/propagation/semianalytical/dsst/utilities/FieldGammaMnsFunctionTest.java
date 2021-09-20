@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -55,7 +55,7 @@ public class FieldGammaMnsFunctionTest {
         doTestPrecomputedRatios(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestPrecomputedRatios(Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestPrecomputedRatios(Field<T> field)
         throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         final T zero = field.getZero();
         java.lang.reflect.Field precomputedF = FieldGammaMnsFunction.class.getDeclaredField("PRECOMPUTED_RATIOS");
@@ -80,7 +80,7 @@ public class FieldGammaMnsFunctionTest {
         doTestReallocate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestReallocate(Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestReallocate(Field<T> field)
         throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         final T zero = field.getZero();
         java.lang.reflect.Field precomputedF = FieldGammaMnsFunction.class.getDeclaredField("PRECOMPUTED_RATIOS");
@@ -104,7 +104,7 @@ public class FieldGammaMnsFunctionTest {
         doTestValue(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestValue(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestValue(Field<T> field) {
         final T zero = field.getZero();
         for (int bigI : new int[] { -1, +1 }) {
             for (T gamma = zero; gamma.getReal() <= 1; gamma = gamma.add(1.0 / 64.0)) {
@@ -128,7 +128,7 @@ public class FieldGammaMnsFunctionTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> T naiveValue(final int bigI, final T gamma,
+    private <T extends CalculusFieldElement<T>> T naiveValue(final int bigI, final T gamma,
                                        final int m, final int n, final int s,
                                        final Field<T> field) {
         final T zero = field.getZero();

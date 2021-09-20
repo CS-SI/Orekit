@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.time.TimeStamped;
 public class CombinedObservationDataSet implements TimeStamped {
 
     /** Rinex header associated with this data set. */
-    private final RinexHeader header;
+    private final RinexObservationHeader header;
 
     /** Satellite System. */
     private final SatelliteSystem satelliteSystem;
@@ -56,7 +56,7 @@ public class CombinedObservationDataSet implements TimeStamped {
      * @param rcvrClkOffset Receiver clock offset (optional, 0 by default)
      * @param observationData List of combined observation data
      */
-    public CombinedObservationDataSet(final RinexHeader header, final SatelliteSystem satelliteSystem,
+    public CombinedObservationDataSet(final RinexObservationHeader header, final SatelliteSystem satelliteSystem,
                                       final int prnNumber, final AbsoluteDate tObs,
                                       final double rcvrClkOffset, final List<CombinedObservationData> observationData) {
         this.header          = header;
@@ -71,7 +71,7 @@ public class CombinedObservationDataSet implements TimeStamped {
      * @return Rinex header associated with this data set
      * @since 9.3
      */
-    public RinexHeader getHeader() {
+    public RinexObservationHeader getHeader() {
         return header;
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -85,7 +85,7 @@ public class GlobalIonosphereMapModelTest {
         doTestFieldTEC(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldTEC(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldTEC(final Field<T> field) {
         final double latitude  = FastMath.toRadians(30.0);
         final double longitude = FastMath.toRadians(-130.0);
         final T tec = model.getTEC(new FieldAbsoluteDate<>(field, 2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
@@ -108,7 +108,7 @@ public class GlobalIonosphereMapModelTest {
         doTestFieldDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
         final T zero = field.getZero();
         final double latitude  = FastMath.toRadians(30.0);
         final double longitude = FastMath.toRadians(-130.0);
@@ -187,7 +187,7 @@ public class GlobalIonosphereMapModelTest {
         doTestFieldEarlierDate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldEarlierDate(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldEarlierDate(final Field<T> field) {
         final double latitude  = FastMath.toRadians(60.0);
         final double longitude = FastMath.toRadians(-130.0);
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
@@ -224,7 +224,7 @@ public class GlobalIonosphereMapModelTest {
         doTestFieldLaterDate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldLaterDate(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldLaterDate(final Field<T> field) {
         final double latitude  = FastMath.toRadians(60.0);
         final double longitude = FastMath.toRadians(-130.0);
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);

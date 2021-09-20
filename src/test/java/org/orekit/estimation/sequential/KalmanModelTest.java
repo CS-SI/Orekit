@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.estimation.sequential;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -281,8 +281,8 @@ public class KalmanModelTest {
     private void checkModelAtT0() {
 
         // Instantiate a Model from attributes
-        final KalmanModel model = new KalmanModel(Arrays.asList(propagatorBuilder),
-                                                  Arrays.asList(covMatrixProvider),
+        final KalmanModel model = new KalmanModel(Collections.singletonList(propagatorBuilder),
+                                                  Collections.singletonList(covMatrixProvider),
                                                   estimatedMeasurementsParameters,
                                                   null);
 
@@ -361,7 +361,7 @@ public class KalmanModelTest {
                                       new SpacecraftState[] {new SpacecraftState(expOrbitPred)}).getEstimatedValue();
 
         // Process PV measurement in Kalman and get model
-        kalman.processMeasurements(Arrays.asList(meas));
+        kalman.processMeasurements(Collections.singletonList(meas));
         KalmanEstimation model = modelLogger.estimation;
         
         // Measurement size

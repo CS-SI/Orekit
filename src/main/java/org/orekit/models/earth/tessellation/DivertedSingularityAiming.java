@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth.tessellation;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -48,7 +48,7 @@ public class DivertedSingularityAiming implements TileAiming {
     private final Vector3D moment;
 
     /** Simple constructor.
-     * @param forbiddenZone zone out of which singulariry should be diverted
+     * @param forbiddenZone zone out of which singularity should be diverted
      */
     public DivertedSingularityAiming(final SphericalPolygonsSet forbiddenZone) {
         final S2Point outside = forbiddenZone.getEnclosingCap().getCenter().negate();
@@ -60,7 +60,7 @@ public class DivertedSingularityAiming implements TileAiming {
     /** {@inheritDoc} */
     @Override
     public List<GeodeticPoint> getSingularPoints() {
-        return Arrays.asList(singularityGP);
+        return Collections.singletonList(singularityGP);
     }
 
     /** {@inheritDoc} */

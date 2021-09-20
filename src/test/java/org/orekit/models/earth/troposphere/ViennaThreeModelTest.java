@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -66,9 +67,10 @@ public class ViennaThreeModelTest {
 
         final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
         
-        final double latitude    = FastMath.toRadians(37.5);
-        final double longitude   = FastMath.toRadians(277.5);
-        final double height      = 824.0;
+        final double latitude     = FastMath.toRadians(37.5);
+        final double longitude    = FastMath.toRadians(277.5);
+        final double height       = 824.0;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
         final double elevation     = FastMath.toRadians(38.0);
         final double expectedHydro = 1.621024;
@@ -77,9 +79,9 @@ public class ViennaThreeModelTest {
         final double[] a = {0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
         
-        final ViennaThreeModel model = new ViennaThreeModel(a, z, latitude, longitude);
+        final ViennaThreeModel model = new ViennaThreeModel(a, z);
         
-        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
@@ -110,9 +112,10 @@ public class ViennaThreeModelTest {
 
         final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
         
-        final double latitude    = FastMath.toRadians(37.5);
-        final double longitude   = FastMath.toRadians(277.5);
-        final double height      = 824.0;
+        final double latitude     = FastMath.toRadians(37.5);
+        final double longitude    = FastMath.toRadians(277.5);
+        final double height       = 824.0;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
         final double elevation     = FastMath.toRadians(5.0);
         final double expectedHydro = 10.132802;
@@ -121,9 +124,9 @@ public class ViennaThreeModelTest {
         final double[] a = {0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
         
-        final ViennaThreeModel model = new ViennaThreeModel(a, z, latitude, longitude);
+        final ViennaThreeModel model = new ViennaThreeModel(a, z);
         
-        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
@@ -154,9 +157,10 @@ public class ViennaThreeModelTest {
 
         final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
         
-        final double latitude    = FastMath.toRadians(37.5);
-        final double longitude   = FastMath.toRadians(277.5);
-        final double height      = 824.0;
+        final double latitude     = FastMath.toRadians(37.5);
+        final double longitude    = FastMath.toRadians(277.5);
+        final double height       = 824.0;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
         final double elevation     = FastMath.toRadians(85.0);
         final double expectedHydro = 1.003810;
@@ -165,9 +169,9 @@ public class ViennaThreeModelTest {
         final double[] a = {0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
         
-        final ViennaThreeModel model = new ViennaThreeModel(a, z, latitude, longitude);
+        final ViennaThreeModel model = new ViennaThreeModel(a, z);
         
-        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
@@ -180,8 +184,9 @@ public class ViennaThreeModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         final double[] a = { 0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
-        ViennaThreeModel model = new ViennaThreeModel(a, z, FastMath.toRadians(37.5), FastMath.toRadians(277.5));
-        final double path = model.pathDelay(FastMath.toRadians(elevation), height, model.getParameters(), date);
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), height);
+        ViennaThreeModel model = new ViennaThreeModel(a, z);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
         Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
@@ -191,11 +196,12 @@ public class ViennaThreeModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         final double[] a = { 0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
-        ViennaThreeModel model = new ViennaThreeModel(a, z, FastMath.toRadians(37.5), FastMath.toRadians(277.5));
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), 350.0);
+        ViennaThreeModel model = new ViennaThreeModel(a, z);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), 350, model.getParameters(), date);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), point, model.getParameters(), date);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }

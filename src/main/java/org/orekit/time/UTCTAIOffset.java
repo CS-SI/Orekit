@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.utils.Constants;
 
 /** Offset between {@link UTCScale UTC} and  {@link TAIScale TAI} time scales.
@@ -35,7 +35,7 @@ import org.orekit.utils.Constants;
  * @see UTCScale
  * @see UTCTAIHistoryFilesLoader
  */
-class UTCTAIOffset implements TimeStamped, Serializable {
+public class UTCTAIOffset implements TimeStamped, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 4742190573136348054L;
@@ -144,7 +144,7 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * @return TAI - UTC offset in seconds.
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
         if (slopeTAI == 0) {
             // we use an if statement here so the offset computation returns
             // a finite value when date is FieldAbsoluteDate.getFutureInfinity(field)

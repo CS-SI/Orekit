@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -108,7 +108,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return surface point defining the origin of the frame
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getPoint(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getPoint(final Field<T> field) {
         final T zero = field.getZero();
         return new FieldGeodeticPoint<>(zero.add(point.getLatitude()),
                                         zero.add(point.getLongitude()),
@@ -200,7 +200,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return elevation of the point
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> T getElevation(final FieldVector3D<T> extPoint, final Frame frame,
+    public <T extends CalculusFieldElement<T>> T getElevation(final FieldVector3D<T> extPoint, final Frame frame,
                                                           final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
@@ -247,7 +247,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return azimuth of the point
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> T getAzimuth(final FieldVector3D<T> extPoint, final Frame frame,
+    public <T extends CalculusFieldElement<T>> T getAzimuth(final FieldVector3D<T> extPoint, final Frame frame,
                                                         final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
@@ -289,7 +289,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return range (distance) of the point
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> T getRange(final FieldVector3D<T> extPoint, final Frame frame,
+    public <T extends CalculusFieldElement<T>> T getRange(final FieldVector3D<T> extPoint, final Frame frame,
                                                       final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
@@ -328,7 +328,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return range rate of the point (positive if point departs from frame)
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> T getRangeRate(final FieldPVCoordinates<T> extPV, final Frame frame,
+    public <T extends CalculusFieldElement<T>> T getRangeRate(final FieldPVCoordinates<T> extPV, final Frame frame,
                                                           final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame

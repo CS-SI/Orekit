@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -79,7 +79,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @author Vincent Mouraux
  */
-public class FieldSpacecraftState <T extends RealFieldElement<T>>
+public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     implements FieldTimeStamped<T>, FieldTimeShiftable<FieldSpacecraftState<T>, T>, FieldTimeInterpolable<FieldSpacecraftState<T>, T> {
 
     /** Default mass. */
@@ -112,7 +112,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), null);
     }
 
@@ -135,7 +135,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
     }
 
@@ -158,7 +158,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
@@ -183,7 +183,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
     }
 
@@ -300,7 +300,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              absPva.getDate().getField().getZero().add(DEFAULT_MASS), null);
     }
 
@@ -323,7 +323,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, null);
     }
 
@@ -346,7 +346,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final Map<String, T[]> additional) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              absPva.getDate().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
@@ -371,7 +371,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass, final Map<String, T[]> additional) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
     }
 
@@ -474,7 +474,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * @param <T>      the type of the field elements
      * @exception IllegalArgumentException if orbit and attitude dates are not equal
      */
-    private static <T extends RealFieldElement<T>> void checkConsistency(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
+    private static <T extends CalculusFieldElement<T>> void checkConsistency(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
         throws IllegalArgumentException {
         if (FastMath.abs(absPva.getDate().durationFrom(attitude.getDate())).getReal() >
             DATE_INCONSISTENCY_THRESHOLD) {
@@ -622,7 +622,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
                 absPvas.add(state.getAbsPVA());
             }
             attitudes.add(state.getAttitude());
-            final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
+            final T[] mm = MathArrays.buildArray(date.getField(), 1);
             mm[0] = state.getMass();
             massInterpolator.addSamplePoint(deltaT,
                                             mm);
@@ -642,14 +642,14 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
             interpolatedAbsPva = absPva.interpolate(date, absPvas);
         }
         final FieldAttitude<T> interpolatedAttitude = attitude.interpolate(date, attitudes);
-        final T interpolatedMass       = massInterpolator.value(orbit.getA().getField().getZero())[0];
+        final T interpolatedMass       = massInterpolator.value(date.getField().getZero())[0];
         final Map<String, T[]> interpolatedAdditional;
         if (additional.isEmpty()) {
             interpolatedAdditional = null;
         } else {
             interpolatedAdditional = new HashMap<String, T[]>(additional.size());
             for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
-                interpolatedAdditional.put(entry.getKey(), entry.getValue().value(orbit.getA().getField().getZero()));
+                interpolatedAdditional.put(entry.getKey(), entry.getValue().value(date.getField().getZero()));
             }
         }
 
@@ -721,7 +721,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     /** Check if an additional state is available.
      * @param name name of the additional state
      * @return true if the additional state is available
-     * @see #addAdditionalState(String, RealFieldElement...)
+     * @see #addAdditionalState(String, CalculusFieldElement...)
      * @see #getAdditionalState(String)
      * @see #getAdditionalStates()
      */
@@ -769,7 +769,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     /** Get an additional state.
      * @param name name of the additional state
      * @return value of the additional state
-          * @see #addAdditionalState(String, RealFieldElement...)
+          * @see #addAdditionalState(String, CalculusFieldElement...)
      * @see #hasAdditionalState(String)
      * @see #getAdditionalStates()
      */
@@ -782,7 +782,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
 
     /** Get an unmodifiable map of additional states.
      * @return unmodifiable map of additional states
-     * @see #addAdditionalState(String, RealFieldElement...)
+     * @see #addAdditionalState(String, CalculusFieldElement...)
      * @see #hasAdditionalState(String)
      * @see #getAdditionalState(String)
      */

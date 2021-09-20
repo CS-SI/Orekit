@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,8 +31,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class IntegerBootstrappingTest {
-    
-    
+
+
     /** test the resolution for the tiberius example. */
     @Test
     public void testJoostenTiberiusFAQ() {
@@ -47,31 +47,44 @@ public class IntegerBootstrappingTest {
             { 5.978, 6.292, 2.340 },
             { 0.544, 2.340, 6.288 }
         });
-        
+
         final IntegerBootstrapping bootstrap = new IntegerBootstrapping(0.8);
         IntegerLeastSquareSolution[] solutions = bootstrap.solveILS(1, floatAmbiguities, indirection, covariance);
         if (solutions.length != 0) {
             Assert.assertTrue(solutions.length == 1);
         }
     }
-    
+
     @Test
     public void testRandomProblems() throws FileNotFoundException, UnsupportedEncodingException {
         RandomGenerator random = new Well19937a(0x1c68f36088a9133al);
-        for (int k = 0; k < 1000000; ++k) {
+        int[] count = new int[3];
+        for (int k = 0; k < 10000; ++k) {
             // generate random test data
             final int        n           = FastMath.max(2, 1 + random.nextInt(20));
             final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
             final int[]      indirection = createRandomIndirectionArray(n, random);
-            
+
             // perform decomposition test
-            doTestILS(random, indirection, covariance);
+            ++ count[doTestILS(random, indirection, covariance)];
         }
-        
+
+        Assert.assertEquals(  50, count[0]);
+        Assert.assertEquals(9950, count[1]);
+
     }
-    
+
+    @Test
+    public void testEquals() {
+        // Initialize comparator
+        final IntegerLeastSquareComparator comparator = new IntegerLeastSquareComparator();
+        // Verify
+        Assert.assertEquals(0,  comparator.compare(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0), new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 4.0)));
+        Assert.assertEquals(-1, comparator.compare(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0), new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 9.0)));
+    }
+
     private int doTestILS(final RandomGenerator random,
-                           final int[] indirection, final RealMatrix covariance) {
+                          final int[] indirection, final RealMatrix covariance) {
         final double[] floatAmbiguities = new double[indirection.length];
         for (int i = 0; i < floatAmbiguities.length; ++i) {
             floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
@@ -79,27 +92,26 @@ public class IntegerBootstrappingTest {
         IntegerBootstrapping bootstrap = new IntegerBootstrapping(0.3);
         final IntegerLeastSquareSolution[] solutions =
                         bootstrap.solveILS(1, floatAmbiguities, indirection, covariance);
-        
+
         // check solution exist if and only if its probability great enough
-        if(solutions.length != 0) {
-            Assert.assertTrue(1/(solutions[0].getSquaredDistance())>0.3);
-            return 1;
+        if (solutions.length != 0) {
+            Assert.assertTrue(1 / (solutions[0].getSquaredDistance()) > 0.3);
         }
-        else {
-            return 0;
-        }
+
+        return solutions.length;
+
     }
-    
+
     protected RealMatrix createRandomSymmetricPositiveDefiniteMatrix(final int n, final RandomGenerator random) {
         final RealMatrix matrix = MatrixUtils.createRealMatrix(n, n);
-        for (int i = 0; i < n; ++i) {                
+        for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
                 matrix.setEntry(i, j, 20 * random.nextDouble() - 10);
             }
         }
         return matrix.transposeMultiply(matrix);
     }
-    
+
     RealMatrix filterCovariance(final RealMatrix covariance, int[] indirection) {
         RealMatrix filtered = MatrixUtils.createRealMatrix(indirection.length, indirection.length);
         for (int i = 0; i < indirection.length; ++i) {
@@ -110,7 +122,7 @@ public class IntegerBootstrappingTest {
         }
         return filtered;
     }
-    
+
     protected int[] createRandomIndirectionArray(final int n, final RandomGenerator random) {
         final int[] all = new int[n];
         for (int i = 0; i < all.length; ++i) {
@@ -121,5 +133,5 @@ public class IntegerBootstrappingTest {
     }
 
 
-       
+
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -76,7 +76,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @since 9.0
  */
 
-public  class FieldCircularOrbit<T extends RealFieldElement<T>>
+public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     extends FieldOrbit<T> {
 
     /** Semi-major axis (m). */
@@ -243,7 +243,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvCoordinates the {@link FieldPVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
@@ -358,7 +358,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param PVCoordinates the {@link FieldPVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
@@ -508,7 +508,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     /** {@inheritDoc} */
     public T getHx() {
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return zero.add(Double.NaN);
         }
         return raan.cos().multiply(i.divide(2).tan());
@@ -522,7 +522,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         }
 
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return zero.add(Double.NaN);
         }
 
@@ -536,7 +536,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     /** {@inheritDoc} */
     public T getHy() {
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return zero.add(Double.NaN);
         }
         return raan.sin().multiply(i.divide(2).tan());
@@ -550,7 +550,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         }
 
         // Check for equatorial retrograde orbit
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+        if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return zero.add(Double.NaN);
         }
 
@@ -650,7 +650,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * @param <T> Type of the field elements
      * @return the true latitude argument.
      */
-    public static <T extends RealFieldElement<T>> T eccentricToTrue(final T alphaE, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T eccentricToTrue(final T alphaE, final T ex, final T ey) {
         final T epsilon               = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
         final FieldSinCos<T> scAlphaE = FastMath.sinCos(alphaE);
         return alphaE.add(ex.multiply(scAlphaE.sin()).subtract(ey.multiply(scAlphaE.cos())).divide(
@@ -665,7 +665,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * @param <T> Type of the field elements
      * @return the eccentric latitude argument.
      */
-    public static <T extends RealFieldElement<T>> T trueToEccentric(final T alphaV, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T trueToEccentric(final T alphaV, final T ex, final T ey) {
         final T epsilon               = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
         final FieldSinCos<T> scAlphaV = FastMath.sinCos(alphaV);
         return alphaV.add(ey.multiply(scAlphaV.cos()).subtract(ex.multiply(scAlphaV.sin())).divide
@@ -679,7 +679,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * @param <T> Type of the field elements
      * @return the eccentric latitude argument.
      */
-    public static <T extends RealFieldElement<T>> T meanToEccentric(final T alphaM, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T meanToEccentric(final T alphaM, final T ex, final T ey) {
         // Generalization of Kepler equation to circular parameters
         // with alphaE = PA + E and
         //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
@@ -700,7 +700,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             alphaEMalphaM  = alphaEMalphaM.subtract(shift);
             alphaE         = alphaM.add(alphaEMalphaM);
             scAlphaE       = FastMath.sinCos(alphaE);
-        } while ((++iter < 50) && (FastMath.abs(shift.getReal()) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift.getReal()) > 1.0e-12);
         return alphaE;
 
     }
@@ -712,7 +712,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * @param <T> Type of the field elements
      * @return the mean latitude argument.
      */
-    public static <T extends RealFieldElement<T>> T eccentricToMean(final T alphaE, final T ex, final T ey) {
+    public static <T extends CalculusFieldElement<T>> T eccentricToMean(final T alphaE, final T ex, final T ey) {
         final FieldSinCos<T> scAlphaE = FastMath.sinCos(alphaE);
         return alphaE.subtract(ex.multiply(scAlphaE.sin()).subtract(ey.multiply(scAlphaE.cos())));
     }
@@ -1309,33 +1309,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
                                   append(";}").toString();
     }
 
-
-
-    /**
-     * Normalize an angle in a 2&pi; wide interval around a center value.
-     * <p>This method has three main uses:</p>
-     * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br>
-     *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br>
-     *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
-     *   <li>compute the angle between two defining angular positions:<br>
-     *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
-     * </ul>
-     * <p>Note that due to numerical accuracy and since &pi; cannot be represented
-     * exactly, the result interval is <em>closed</em>, it cannot be half-closed
-     * as would be more satisfactory in a purely mathematical view.</p>
-     * @param a angle to normalize
-     * @param center center of the desired 2&pi; interval for the result
-     * @param <T> the type of the field elements
-     * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
-        return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
-    }
-
+    /** {@inheritDoc} */
     @Override
     public CircularOrbit toOrbit() {
         if (hasDerivatives()) {

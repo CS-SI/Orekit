@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,11 +19,8 @@ package org.orekit.propagation.integration;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 
-/** Converter for states and parameters arrays
- *  for both {@link NumericalPropagator numerical} and {@link DSSTPropagator semi-analytical} propagators.
+/** Converter for states and parameters arrays.
  *  @author Luc Maisonobe
  *  @author Bryan Cazabonne
  *  @since 10.2

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -30,7 +31,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -68,7 +68,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** Initial state. */
-    protected final TLE tle;
+    protected TLE tle;
 
     /** UTC time scale. */
     protected final TimeScale utc;
@@ -203,6 +203,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         this.teme = teme;
         this.mass = mass;
         this.utc = initialTLE.getUtc();
+
         initializeCommons();
         sxpInitialize();
         // set the initial state
@@ -233,7 +234,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public static TLEPropagator selectExtrapolator(final TLE tle, final Frames frames) {
         return selectExtrapolator(
                 tle,
-                Propagator.getDefaultLaw(frames),
+                InertialProvider.of(frames.getTEME()),
                 DEFAULT_MASS,
                 frames.getTEME());
     }
@@ -536,9 +537,21 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     protected abstract void sxpPropagate(double t);
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * For TLE propagator, calling this method is only recommended
+     * for covariance propagation when the new <code>state</code>
+     * differs from the previous one by only adding the additional
+     * state containing the derivatives.
+     * </p>
+     */
     public void resetInitialState(final SpacecraftState state) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+        super.resetInitialState(state);
+        super.setStartDate(state.getDate());
+        final TLE newTLE = TLE.stateToTLE(state, tle, utc, teme);
+        this.tle = newTLE;
+        initializeCommons();
+        sxpInitialize();
     }
 
     /** {@inheritDoc} */

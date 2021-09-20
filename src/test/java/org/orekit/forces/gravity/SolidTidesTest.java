@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -46,7 +47,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -61,6 +61,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
 public class SolidTidesTest extends AbstractLegacyForceModelTest {
+
+    private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
@@ -229,7 +231,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngle.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
-        doTestTideEffect(orbit, IERSConventions.IERS_2010, 24.02815, 30.92816);
+        doTestTideEffect(orbit, IERSConventions.IERS_2010, 24.02815, 30.37047);
     }
 
     @Test
@@ -256,7 +258,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Assert.assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -285,7 +287,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Assert.assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -313,7 +315,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getMoon());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -341,7 +343,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getMoon());
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -368,7 +370,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
 
-        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, Propagator.DEFAULT_LAW,
+        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, DEFAULT_LAW,
                                               10.0, 2.0e-10, false);
 
     }
@@ -395,7 +397,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
 
-        checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit), forceModel, Propagator.DEFAULT_LAW,
+        checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit), forceModel, DEFAULT_LAW,
                                               10.0, 2.0e-10, false);
 
     }
@@ -422,7 +424,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
 
-        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, Propagator.DEFAULT_LAW,
+        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, DEFAULT_LAW,
                                               10.0, 2.0e-10, false);
 
     }
@@ -449,7 +451,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
 
-        checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit), forceModel, Propagator.DEFAULT_LAW,
+        checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit), forceModel, DEFAULT_LAW,
                                               10.0, 2.0e-10, false);
 
     }

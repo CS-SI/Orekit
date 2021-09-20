@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,9 +28,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.analysis.UnivariateVectorFunction;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -1266,51 +1266,6 @@ public class GroundStationTest {
     }
 
     @Test
-    @Deprecated
-    public void testNoReferenceDate() {
-        Utils.setDataRoot("regular-data");
-        final Frame eme2000 = FramesFactory.getEME2000();
-        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        final OneAxisEllipsoid earth =
-                        new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                             Constants.WGS84_EARTH_FLATTENING,
-                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        final GroundStation station = new GroundStation(new TopocentricFrame(earth,
-                                                                             new GeodeticPoint(0.1, 0.2, 100),
-                                                                             "dummy"));
-        try {
-            station.getOffsetToInertial(eme2000, date);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
-        }
-        
-        try {
-            DSFactory factory = new DSFactory(9,  1);
-            Map<String, Integer> indices = new HashMap<>();
-            for (final ParameterDriver driver : Arrays.asList(station.getPrimeMeridianOffsetDriver(),
-                                                              station.getPrimeMeridianDriftDriver(),
-                                                              station.getPolarOffsetXDriver(),
-                                                              station.getPolarDriftXDriver(),
-                                                              station.getPolarOffsetYDriver(),
-                                                              station.getPolarDriftYDriver(),
-                                                              station.getClockOffsetDriver(),
-                                                              station.getEastOffsetDriver(),
-                                                              station.getNorthOffsetDriver(),
-                                                              station.getZenithOffsetDriver())) {
-                indices.put(driver.getName(), indices.size());
-            }
-            station.getOffsetToInertial(eme2000, date, factory, indices);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
-        }
-        
-    }
-
-    @Test
     public void testNoReferenceDateGradient() {
         Utils.setDataRoot("regular-data");
         final Frame eme2000 = FramesFactory.getEME2000();
@@ -1354,7 +1309,6 @@ public class GroundStationTest {
         
     }
 
-    @Deprecated
     private void doTestCartesianDerivatives(double latitude, double longitude, double altitude, double stepFactor,
                                             double relativeTolerancePositionValue, double relativeTolerancePositionDerivative,
                                             double relativeToleranceVelocityValue, double relativeToleranceVelocityDerivative,
@@ -1370,7 +1324,7 @@ public class GroundStationTest {
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
                                                                              "dummy"));
-        final DSFactory factory = new DSFactory(parameterPattern.length, 1);
+        final GradientField gradientField = GradientField.getField(parameterPattern.length);
         ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
         UnivariateDifferentiableVectorFunction[] dFCartesian = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
         final ParameterDriver[] allDrivers = selectAllDrivers(station);
@@ -1387,7 +1341,6 @@ public class GroundStationTest {
                 }
             }
         };
-        DSFactory factory11 = new DSFactory(1, 1);
 
         RandomGenerator generator = new Well19937a(0x084d58a19c498a54l);
 
@@ -1402,12 +1355,12 @@ public class GroundStationTest {
             changed.setNormalizedValue(2 * generator.nextDouble() - 1);
 
             // transform to check
-            FieldTransform<DerivativeStructure> t = station.getOffsetToInertial(eme2000, date, factory, indices);
-            FieldPVCoordinates<DerivativeStructure> pv = t.transformPVCoordinates(FieldPVCoordinates.getZero(factory.getDerivativeField()));
+            FieldTransform<Gradient> t = station.getOffsetToInertial(eme2000, date, parameterPattern.length, indices);
+            FieldPVCoordinates<Gradient> pv = t.transformPVCoordinates(FieldPVCoordinates.getZero(gradientField));
             for (int k = 0; k < dFCartesian.length; ++k) {
 
                 // reference values and derivatives computed using finite differences
-                DerivativeStructure[] refCartesian = dFCartesian[k].value(factory11.variable(0, selectedDrivers[k].getValue()));
+                Gradient[] refCartesian = dFCartesian[k].value(Gradient.variable(1, 0, selectedDrivers[k].getValue()));
 
                 // position
                 final Vector3D refP = new Vector3D(refCartesian[0].getValue(),
@@ -1418,12 +1371,12 @@ public class GroundStationTest {
                                                    pv.getPosition().getZ().getValue());
                 maxPositionValueRelativeError =
                                 FastMath.max(maxPositionValueRelativeError, Vector3D.distance(refP, resP) / refP.getNorm());
-                final Vector3D refPD = new Vector3D(refCartesian[0].getPartialDerivative(1),
-                                                    refCartesian[1].getPartialDerivative(1),
-                                                    refCartesian[2].getPartialDerivative(1));
-                final Vector3D resPD = new Vector3D(pv.getPosition().getX().getAllDerivatives()[k + 1],
-                                                    pv.getPosition().getY().getAllDerivatives()[k + 1],
-                                                    pv.getPosition().getZ().getAllDerivatives()[k + 1]);
+                final Vector3D refPD = new Vector3D(refCartesian[0].getPartialDerivative(0),
+                                                    refCartesian[1].getPartialDerivative(0),
+                                                    refCartesian[2].getPartialDerivative(0));
+                final Vector3D resPD = new Vector3D(pv.getPosition().getX().getPartialDerivative(k),
+                                                    pv.getPosition().getY().getPartialDerivative(k),
+                                                    pv.getPosition().getZ().getPartialDerivative(k));
                 maxPositionDerivativeRelativeError =
                                 FastMath.max(maxPositionDerivativeRelativeError, Vector3D.distance(refPD, resPD) / refPD.getNorm());
 
@@ -1436,12 +1389,12 @@ public class GroundStationTest {
                                                    pv.getVelocity().getZ().getValue());
                 maxVelocityValueRelativeError =
                                 FastMath.max(maxVelocityValueRelativeError, Vector3D.distance(refV, resV) / refV.getNorm());
-                final Vector3D refVD = new Vector3D(refCartesian[3].getPartialDerivative(1),
-                                                    refCartesian[4].getPartialDerivative(1),
-                                                    refCartesian[5].getPartialDerivative(1));
-                final Vector3D resVD = new Vector3D(pv.getVelocity().getX().getAllDerivatives()[k + 1],
-                                                    pv.getVelocity().getY().getAllDerivatives()[k + 1],
-                                                    pv.getVelocity().getZ().getAllDerivatives()[k + 1]);
+                final Vector3D refVD = new Vector3D(refCartesian[3].getPartialDerivative(0),
+                                                    refCartesian[4].getPartialDerivative(0),
+                                                    refCartesian[5].getPartialDerivative(0));
+                final Vector3D resVD = new Vector3D(pv.getVelocity().getX().getPartialDerivative(k),
+                                                    pv.getVelocity().getY().getPartialDerivative(k),
+                                                    pv.getVelocity().getZ().getPartialDerivative(k));
                 maxVelocityDerivativeRelativeError =
                                 FastMath.max(maxVelocityDerivativeRelativeError, Vector3D.distance(refVD, resVD) / refVD.getNorm());
 
@@ -1465,7 +1418,6 @@ public class GroundStationTest {
 
     }
 
-    @Deprecated
     private void doTestAngularDerivatives(double latitude, double longitude, double altitude, double stepFactor,
                                           double toleranceRotationValue,     double toleranceRotationDerivative,
                                           double toleranceRotationRateValue, double toleranceRotationRateDerivative,
@@ -1481,7 +1433,6 @@ public class GroundStationTest {
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
                                                                              "dummy"));
-        final DSFactory factory = new DSFactory(parameterPattern.length, 1);
         ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
         UnivariateDifferentiableVectorFunction[] dFAngular   = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
         final ParameterDriver[] allDrivers = selectAllDrivers(station);
@@ -1498,7 +1449,6 @@ public class GroundStationTest {
                 }
             }
         };
-        DSFactory factory11 = new DSFactory(1, 1);
         RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7l);
 
         double maxRotationValueError          = 0;
@@ -1512,11 +1462,11 @@ public class GroundStationTest {
             changed.setNormalizedValue(2 * generator.nextDouble() - 1);
 
             // transform to check
-            FieldTransform<DerivativeStructure> t = station.getOffsetToInertial(eme2000, date, factory, indices);
+            FieldTransform<Gradient> t = station.getOffsetToInertial(eme2000, date, parameterPattern.length, indices);
             for (int k = 0; k < dFAngular.length; ++k) {
 
                 // reference values and derivatives computed using finite differences
-                DerivativeStructure[] refAngular = dFAngular[k].value(factory11.variable(0, selectedDrivers[k].getValue()));
+                Gradient[] refAngular = dFAngular[k].value(Gradient.variable(1, 0, selectedDrivers[k].getValue()));
 
                 // rotation
                 final Rotation refQ = new Rotation(refAngular[0].getValue(),
@@ -1532,27 +1482,27 @@ public class GroundStationTest {
                                                 refAngular[2].getValue() * t.getRotation().getQ2().getValue() +
                                                 refAngular[3].getValue() * t.getRotation().getQ3().getValue());
                 maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError,
-                                                          FastMath.abs(sign * refAngular[0].getPartialDerivative(1) -
-                                                                       t.getRotation().getQ0().getAllDerivatives()[k + 1]));
+                                                          FastMath.abs(sign * refAngular[0].getPartialDerivative(0) -
+                                                                       t.getRotation().getQ0().getPartialDerivative(k)));
                 maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError,
-                                                          FastMath.abs(sign * refAngular[1].getPartialDerivative(1) -
-                                                                       t.getRotation().getQ1().getAllDerivatives()[k + 1]));
+                                                          FastMath.abs(sign * refAngular[1].getPartialDerivative(0) -
+                                                                       t.getRotation().getQ1().getPartialDerivative(k)));
                 maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError,
-                                                          FastMath.abs(sign * refAngular[2].getPartialDerivative(1) -
-                                                                       t.getRotation().getQ2().getAllDerivatives()[k + 1]));
+                                                          FastMath.abs(sign * refAngular[2].getPartialDerivative(0) -
+                                                                       t.getRotation().getQ2().getPartialDerivative(k)));
                 maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError,
-                                                          FastMath.abs(sign * refAngular[3].getPartialDerivative(1) -
-                                                                       t.getRotation().getQ3().getAllDerivatives()[k + 1]));
+                                                          FastMath.abs(sign * refAngular[3].getPartialDerivative(0) -
+                                                                       t.getRotation().getQ3().getPartialDerivative(k)));
 
                 // rotation rate
                 final Vector3D refRate  = new Vector3D(refAngular[4].getValue(), refAngular[5].getValue(), refAngular[6].getValue());
                 final Vector3D resRate  = t.getRotationRate().toVector3D();
-                final Vector3D refRateD = new Vector3D(refAngular[4].getPartialDerivative(1),
-                                                       refAngular[5].getPartialDerivative(1),
-                                                       refAngular[6].getPartialDerivative(1));
-                final Vector3D resRateD = new Vector3D(t.getRotationRate().getX().getAllDerivatives()[k + 1],
-                                                       t.getRotationRate().getY().getAllDerivatives()[k + 1],
-                                                       t.getRotationRate().getZ().getAllDerivatives()[k + 1]);
+                final Vector3D refRateD = new Vector3D(refAngular[4].getPartialDerivative(0),
+                                                       refAngular[5].getPartialDerivative(0),
+                                                       refAngular[6].getPartialDerivative(0));
+                final Vector3D resRateD = new Vector3D(t.getRotationRate().getX().getPartialDerivative(k),
+                                                       t.getRotationRate().getY().getPartialDerivative(k),
+                                                       t.getRotationRate().getZ().getPartialDerivative(k));
                 maxRotationRateValueError      = FastMath.max(maxRotationRateValueError, Vector3D.distance(refRate, resRate));
                 maxRotationRateDerivativeError = FastMath.max(maxRotationRateDerivativeError, Vector3D.distance(refRateD, resRateD));
 

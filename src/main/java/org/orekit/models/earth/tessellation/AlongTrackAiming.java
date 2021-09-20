@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -151,7 +151,7 @@ public class AlongTrackAiming implements TileAiming {
         // sample the half track
         propagator.clearEventsDetectors();
         final HalfTrackSampler sampler = new HalfTrackSampler(ellipsoid);
-        propagator.setMasterMode(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
+        propagator.setStepHandler(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
         propagator.propagate(handler.getStart(), handler.getEnd());
 
         return sampler.getHalfTrack();

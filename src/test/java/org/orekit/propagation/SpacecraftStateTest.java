@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -334,7 +334,7 @@ public class SpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(0.125, (s, isFinal) -> {
+        propagator.setStepHandler(0.125, s -> {
             if (s.getDate().durationFrom(changeDate) < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0], 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate) > +0.001) {
@@ -384,7 +384,7 @@ public class SpacecraftStateTest {
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(0.125, (s, isFinal) -> {
+        propagator.setStepHandler(0.125, s -> {
             if (s.getDate().durationFrom(changeDate) < -0.001) {
                 Assert.assertEquals(-1, s.getAdditionalState(name)[0], 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate) > +0.001) {

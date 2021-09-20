@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.models.earth.ionosphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -36,7 +36,7 @@ import org.orekit.time.TimeComponents;
  *
  * @since 10.1
  */
-class FieldNeQuickParameters <T extends RealFieldElement<T>> {
+class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
 
     /** Solar zenith angle at day night transition, degrees. */
     private static final double X0 = 86.23292796211615;

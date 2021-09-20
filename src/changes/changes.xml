@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2020 CS GROUP
+<!-- Copyright 2002-2021 CS GROUP
   Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -20,12 +20,325 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.0" date="2021-09-20"
+             description="Orekit 11.0 is a major new release.
+             It includes both new features and bug fixes. New features introduced
+             in 11.0 are: orbit determination using SGP4/SDP4 models, a sequential
+             batch least squares estimator using initial covariance and state vector,
+             writer and parser for all CCSDS Navigation Data Messages in both KVN
+             and XML formats, version 2 of CCSDS Tracking Data Messages, version 3
+             of CCSDS Orbit Data Messages, support for Rinex navigation files,
+             support for IGS clock correction files, support for IGS real time
+             data including both SSR and RTCM messages, NTrip protocole, eclipses
+             by Moon in solar radiation pressure force, a new API for analytical
+             GNSS orbit propagators, removal of propagation modes, possibility
+             to add several step handlers for the same orbit propagation, a new
+             event detector for angular separation as seen from the spacecraft.
+             See the list below for a full description of the changes.">
+   	  <action dev="bryan" type="update" issue="766" due-to="Gowtham Sivaraman">
+        Allowed setting of AttitudeProvider to the BoundedPropagator
+        generated via propagation.
+      </action>
+   	  <action dev="bryan" type="fix" issue="835">
+        Fixed format symbols for year, month, day in DateComponents#toString().
+      </action>
+   	  <action dev="thomas" type="fix" issue="668">
+        Added a new event detector for angular separation as seen from the spacecraft.
+      </action>
+      <action dev="maxime" type="fix" issue="829">
+        Fixed DataSourceTest.testFileName for Windows users.
+      </action>
+      <action dev="bryan" type="fix" issue="818">
+        Use observed solar flux instead of adjusted in DTM2000 model.
+      </action>
+      <action dev="evan" type="fix" issue="798">
+        Allow DSST event detection when propagating backwards.
+      </action>
+      <action dev="bryan" type="fix" issue="717" due-to="evan">
+        Fixed DSST orbit determination when propagating backwards.
+      </action>
+      <action dev="evan" type="remove" issue="586">
+        Remove InertialProvider.EME2000_ALIGNED, Propagator.DEFAULT_LAW. Use
+        InertialProvider.of(Frame).
+      </action>
+      <action dev="evan" type="update" issue="586">
+        Change default attitude provider to be aligned with propagation frame for all
+        analytic propagators and GLONASS propagator. Backward incompatible.
+      </action>
+      <action dev="evan" type="update" issue="586">
+        Improve performance of IntertialProvider(Frame)
+      </action>
+      <action dev="anne-laure" type="update" issue="797">
+        Add information if a detector failed during propagation
+      </action>
+      <action dev="bryan" type="fix" issue="788" due-to="luc">
+        Fixed missing call to setMuCreated() in OemParser.
+      </action>
+      <action dev="evan" type="update" issue="618">
+        Fix supportedNames matching in ClasspathCrawler. Backwards incompatible.
+      </action>
+      <action dev="bryan" type="fix" issue="828">
+        Fixed missing file types in SP3Parser.
+      </action>
+      <action dev="bryan" type="fix" issue="827">
+        Fixed time system used in SP3 files.
+      </action>
+      <action dev="evan" type="fix" issue="685">
+        Fix AnalyticalPropagator RESET_STATE when new state is null.
+      </action>
+      <action dev="bryan" type="fix" issue="803">
+        Fixed parsing of clock values in SP3 files.
+      </action>
+      <action dev="bryan" type="fix" issue="820">
+        TLE Jacobians are now calculated in cartesian elements.
+      </action>
+      <action dev="evan" type="update" issue="825">
+        Improve exception messages with two AbsoluteDates by including duration between
+        them.
+      </action>
+      <action dev="evan" type="update" issue="637" due-to="Piotr">
+        Add trailing "Z" to AbsoluteDate.toString() to indicate UTC.
+        Backwards incompatible.
+      </action>
+      <action dev="evan" type="update" issue="825">
+        In AbsoluteDate.toString() fallback to TAI when no leap seconds are loaded.
+      </action>
+      <action dev="evan" type="update" issue="591">
+        Fix TimeComponents.toString(): correct ISO 8601 with UTC offset, rounding issues.
+        Backwards incompatible.
+      </action>
+      <action dev="evan" type="update" issue="590">
+        Fix DateTimeComponents.toString(): correct ISO 8601, leap second, rounding issues.
+        Backwards incompatible.
+      </action>
+      <action dev="evan" type="update" issue="637" due-to="Piotr">
+        Fix AbsoluteDate.toString(timeZone) and toString(minutesFromUtc) to include the
+        UTC offset when it is zero.
+      </action>
+      <action dev="evan" type="add">
+        Add DateTimeComponents.toString(...) method with correct rounding for user
+        specified precision.
+      </action>
+      <action dev="bryan" type="update" issue="626">
+        Used a separate Comparator for sorting integer least square solutions.
+      </action>
+      <action dev="bryan" type="update" issue="799">
+        Used the field-specific value of π.
+      </action>
+      <action dev="evan" type="update" issue="830" due-to="skyrex">
+        Remove step size limitations in analytic propagators. Backwards incompatible.
+      </action>
+      <action dev="evan" type="fix">
+        Fix part of step passed to the step handler twice in analytic propagators with
+        event handlers.
+      </action>
+      <action dev="bryan" type="fix" issue="795" due-to="guylaine">
+        Fixed output of NRLMSISE00 for altitude at 32.5 km.
+      </action>
+      <action dev="luc" type="add" issue="821">
+        Added support for CCSDS TDM V2.0.
+      </action>
+      <action dev="luc" type="add" issue="819">
+        Allow data filtering upon loading to be used for explicit loading by applications.
+      </action>
+      <action dev="julie" type="add" issue="745">
+        Added sequential batch least squares estimator.
+      </action>
+      <action dev="luc" type="add" issue="814" due-to="Valerian">
+        Fixed additional states handling in ephemeris generated by analytical propagator.
+      </action>
+      <action dev="luc" type="add" issue="809">
+        Dropped master/slave/ephemeris generation propagation modes, replaced by a
+        versatile step handler multiplexer fulfilling all these needs
+        simultaneously during a single propagation run
+      </action>
+      <action dev="luc" type="add" issue="812">
+        Dropped master/slave terminology in turn-around and inter-satellite measurements.
+      </action>
+      <action dev="luc" type="add" issue="813">
+        Fixed derivatives with respect to secondary station in turn-around modifiers.
+      </action>
+      <action dev="luc" type="add" issue="811">
+        Allow on-the-fly add/remove/clean for step handlers.
+      </action>
+      <action dev="luc" type="add" issue="810">
+        Merged multiplexers for fixed steps and variable steps.
+      </action>
+      <action dev="luc" type="fix" issue="808">
+        Moved isLast argument in step handler handleStep method to a separate method.
+      </action>
+      <action dev="luc" type="fix" issue="807">
+        Fixed scheduling between calls to step handlers and events handlers.
+      </action>
+      <action dev="luc" type="fix" issue="806">
+        Added restrictStep method to FieldOrekitStepInterpolator interface.
+      </action>
+      <action dev="bryan" type="fix" issue="801">
+        Added getter for meteorological data used in CRD data block.
+      </action>
+      <action dev="bryan" type="fix" issue="796">
+        Fixed writing of line H2 in CPF file header.
+      </action>
+      <action dev="thomas" type="fix" issue="702">
+        Added possibility to take in account several bodies while computing SRP perturbation.
+      </action>
+      <action dev="bryan" type="update" issue="793">
+        Updated SP3File visibility to public.
+      </action>
+      <action dev="bryan" type="update" issue="784">
+        Updated architecture of GNSS orbit propagators.
+      </action>
+      <action dev="bryan" type="update" issue="782">
+        Updated error message of Orekit internal error exception.
+      </action>
+      <action dev="luc" type="add">
+        Added support for reading and writing CCSDS NDM composite messages.
+      </action>
+      <action dev="afossa" type="fix" issue="781">
+        Fixed parsing in buildLine2() method of FieldTLE.
+      </action>
+      <action dev="luc" type="fix" issue="776">
+        Fixed associativity in units parsing.
+      </action>
+      <action dev="bryan" type="update" issue="773">
+        TimeStampedFieldAngularCoordinates now implements FieldTimeStamped.
+      </action>
+      <action dev="bryan" type="update" issue="774">
+        TimeStampedFieldPVCoordinates now implements FieldTimeStamped.
+      </action>
+      <action dev="nfialton" type="fix" issue="775">
+        Fixed NullPointerException in FieldSpacecraftState when orbit is not defined.
+      </action>
+      <action dev="bryan" type="add" issue="763">
+        Added support for RTCM ephemeris messages.
+      </action>
+      <action dev="bryan" type="add" issue="769">
+        Added ionospheric model based on IM201 SSR message.
+      </action>
+      <action dev="bryan" type="add" issue="763">
+        Added support for Ntrip protocol.
+      </action>
+      <action dev="bryan" type="add" issue="763">
+        Added support for IGS SSR messages.
+      </action>
+      <action dev="afossa" type="fix" issue="772">
+        Fixed computation of velocity derivative in FieldNumericalPropagator.Main.addKeplerContribution()
+        with superGetOrbitType() == null.
+      </action>
+      <action dev="luc" type="add" >
+        Added AccurateFormatter to output double numbers and dates
+        with adaptive number of digits, preserving one ULP accuracy.
+      </action>
+      <action dev="luc" type="add" >
+        Added a units converter.
+      </action>
+      <action dev="luc" type="update" >
+        INCOMPATIBLE CHANGE! Now observations parsed from TDM files are in SI units.
+      </action>
+      <action dev="luc" type="update" issue="768">
+        Allow parsing several variations of ITRF specifications (like itrf-97, ITRF2000, ITRF_2014…).
+      </action>
+      <action dev="luc" type="add" >
+        Added a time scale for drifting on-board clocks.
+      </action>
+      <action dev="bryan" type="add" issue="523">
+        Added support for RINEX 3.X navigation files.
+      </action>
+      <action dev="bryan" type="update" issue="691">
+        Improved consistency between getParametersDrivers() method signatures.
+      </action>
+      <action dev="andrewsgoetz" type="add" issue="764">
+        Added new method to UTCScale which exposes the raw UTC-TAI offset data.
+      </action>
+      <action dev="bryan" type="fix" issue="670">
+        Fixed call to ForceModel.init() in AbstractGaussianContribution class.
+      </action>
+   	  <action dev="thomas" type="add" issue="712">
+      	Added IGS clock file support.
+      </action>
+      <action dev="bryan" type="update" issue="650">
+        Methods computeMeanState() and computeOsculatingState()
+        of FieldDSSTPropagator are now statics.
+      </action>
+      <action dev="bryan" type="update" issue="762">
+        TabulatelofOffset now implements BoundedAttitudeProvider.
+      </action>
+      <action dev="luc" type="update" issue="761">
+        TabulateProvider now implements BoundedAttitudeProvider.
+      </action>
+      <action dev="luc" type="fix" issue="760">
+        Fixed reference frame in tabulated attitude provider.
+      </action>
+      <action dev="luc" type="update" >
+      	Renamed SINEXLoader into SinexLoader.
+      </action>
+      <action dev="luc" type="update" >
+        Use DataSource in RinexLoader and SinexLoader.
+      </action>
+      <action dev="luc" type="update" >
+        Renamed NamedData into DataSource.
+      </action>
+      <action dev="luc" type="add" issue="474">
+        Added support for CCSDS ODM V3, with the new
+        Orbit Comprehensive Message format.
+      </action>
+      <action dev="luc" type="update">
+        Overhauled generic Ephemeris and AttitudeEphemeris writing.
+      </action>
+      <action dev="luc" type="update">
+        Overhauled CCSDS messages handling, both parsing and writing.
+      </action>
+      <action dev="amir" type="fix" issue="746">
+        Fixed combination of measurements using GNSS phase measurements.
+      </action>
+      <action dev="bryan" type="add" issue="756">
+        Added new method signature in IodGooding using AngularRaDec measurement.
+      </action>
+      <action dev="thomas" type="fix" issue="688">
+        Fixed ignored fields from TLE template in TLEPropagatorBuilder.
+      </action>
+      <action dev="thomas" type="fix" issue="372">
+        Added TLE generation.
+      </action>
+      <action dev="bryan" type="fix" issue="624">
+        Allowed dynamic station coordinates when calculating tropospheric delay.
+      </action>
+      <action dev="bryan" type="update" issue="755">
+        Modified IodGooding constructor to be consistent with other IOD methods.
+      </action>
+      <action dev="bryan" type="add" issue="753">
+        Added new method signature in IodLaplace using AngularRaDec measurement.
+      </action>
+      <action dev="bryan" type="add" issue="752">
+        Added new method signature in IodLambert using Position measurement.
+      </action>
+      <action dev="bryan" type="add" issue="751">
+        Added new method signature in IodGibbs using Position measurement.
+      </action>
+      <action dev="luc" type="fix" issue="749">
+        Allow building PVCoordinates and AngularCoordinates (as well as their Field,
+        Absolute and TimeStamped variations) to be build from UnivariateDerivative1
+        and UnivariateDerivative2 in addition to DerivativeStructure.
+      </action>
+      <action dev="bryan" type="fix" issue="736">
+        Fixed NullPointerException in DSSTTesseral Hansen object.
+      </action>
+      <action dev="bryan" type="update" issue="601">
+      	Changed getPVInPZ90() method to private.
+      </action>
+      <action dev="bryan" type="fix" issue="744">
+      	Fixed calculation of CR3BP constants.
+      </action>
+      <action dev="bryan" type="update" issue="743">
+      	Updated JUnit version to 4.13.1.
+      </action>
+    </release>
     <release version="10.3.1" date="2021-06-16"
              description="Version 10.3.1 is a patch release of Orekit.
              It fixes one critical bug that could cause potential infinite loops in tesselation
              in very rare cases due to numerical noise.">
-   	  <action dev="luc" type="fix" issue="792">
-      	Fixed potential infinite loops in tesselation in very rare cases due to numerical noise.
+      <action dev="luc" type="fix" issue="792">
+        Fixed potential infinite loops in tesselation in very rare cases due to numerical noise.
       </action>
     </release>
     <release version="10.3" date="2020-12-21"

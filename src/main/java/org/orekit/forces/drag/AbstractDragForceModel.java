@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.drag;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -62,7 +62,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
      * @param <T> type of the field elements
      * @return true if state corresponds to derivatives with respect to state
      */
-    protected <T extends RealFieldElement<T>> boolean isDSStateDerivative(final FieldSpacecraftState<T> state) {
+    protected <T extends CalculusFieldElement<T>> boolean isDSStateDerivative(final FieldSpacecraftState<T> state) {
         try {
             final DerivativeStructure dsMass = (DerivativeStructure) state.getMass();
             final int o = dsMass.getOrder();
@@ -71,7 +71,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
             // To be in the desired case:
             // Order must be 1 (first order derivatives only)
             // Number of parameters must be 6 (PV), 7 (PV + drag coefficient) or 8 (PV + drag coefficient + lift ratio)
-            if (o != 1 || (p != 6 && p != 7 && p != 8)) {
+            if (o != 1 || p != 6 && p != 7 && p != 8) {
                 return false;
             }
 
@@ -94,7 +94,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
      * @param <T> type of the field elements
      * @return true if state corresponds to derivatives with respect to state
      */
-    protected <T extends RealFieldElement<T>> boolean isGradientStateDerivative(final FieldSpacecraftState<T> state) {
+    protected <T extends CalculusFieldElement<T>> boolean isGradientStateDerivative(final FieldSpacecraftState<T> state) {
         try {
             final Gradient gMass = (Gradient) state.getMass();
             final int p = gMass.getFreeParameters();

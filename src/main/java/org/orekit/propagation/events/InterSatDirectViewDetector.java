@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,26 +31,26 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** Detector for inter-satellites direct view (i.e. no masking by central body limb).
  * <p>
  * As this detector needs two satellites, it embeds one {@link
- * PVCoordinatesProvider coordinates provider} for the slave satellite
- * and is registered as an event detector in the propagator of the master
- * satellite. The slave satellite provider will therefore be driven by this
+ * PVCoordinatesProvider coordinates provider} for the secondary satellite
+ * and is registered as an event detector in the propagator of the primary
+ * satellite. The secondary satellite provider will therefore be driven by this
  * detector (and hence by the propagator in which this detector is registered).
  * </p>
  * <p>
- * In order to avoid infinite recursion, care must be taken to have the slave
+ * In order to avoid infinite recursion, care must be taken to have the secondary
  * satellite provider being <em>completely independent</em> from anything else.
  * In particular, if the provider is a propagator, it should <em>not</em> be run
  * together in a {@link PropagatorsParallelizer propagators parallelizer} with
  * the propagator this detector is registered in. It is fine however to configure
- * two separate propagators PsA and PsB with similar settings for the slave satellite
- * and one propagator Pm for the master satellite and then use Psa in this detector
+ * two separate propagators PsA and PsB with similar settings for the secondary satellite
+ * and one propagator Pm for the primary satellite and then use Psa in this detector
  * registered within Pm while Pm and Psb are run in the context of a {@link
  * PropagatorsParallelizer propagators parallelizer}.
  * </p>
  * <p>
  * For efficiency reason during the event search loop, it is recommended to have
- * the slave provider be an analytical propagator or an ephemeris. A numerical propagator
- * as a slave propagator works but is expected to be computationally costly.
+ * the secondary provider be an analytical propagator or an ephemeris. A numerical propagator
+ * as a secondary propagator works but is expected to be computationally costly.
  * </p>
  * <p>
  * The {@code g} function of this detector is positive when satellites can see
@@ -78,29 +78,29 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     /** 1 minus flatness squared. */
     private final double g2;
 
-    /** Coordinates provider for the slave satellite. */
-    private final PVCoordinatesProvider slave;
+    /** Coordinates provider for the secondary satellite. */
+    private final PVCoordinatesProvider secondary;
 
     /** simple constructor.
      *
      * @param body central body
-     * @param slave provider for the slave satellite
+     * @param secondary provider for the secondary satellite
      */
-    public InterSatDirectViewDetector(final OneAxisEllipsoid body, final PVCoordinatesProvider slave) {
-        this(body, slave, DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+    public InterSatDirectViewDetector(final OneAxisEllipsoid body, final PVCoordinatesProvider secondary) {
+        this(body, secondary, DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new ContinueOnEvent<>());
     }
 
     /** Private constructor.
      * @param body central body
-     * @param slave provider for the slave satellite
+     * @param secondary provider for the secondary satellite
      * @param maxCheck  maximum checking interval (s)
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      */
     private InterSatDirectViewDetector(final OneAxisEllipsoid body,
-                                       final PVCoordinatesProvider slave,
+                                       final PVCoordinatesProvider secondary,
                                        final double maxCheck,
                                        final double threshold,
                                        final int maxIter,
@@ -109,7 +109,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
         this.body  = body;
         this.ae2   = body.getEquatorialRadius() * body.getEquatorialRadius();
         this.g2    = (1.0 - body.getFlattening()) * (1.0 - body.getFlattening());
-        this.slave = slave;
+        this.secondary = secondary;
     }
 
     /** Get the central body.
@@ -119,11 +119,11 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
         return body;
     }
 
-    /** Get the provider for the slave satellite.
-     * @return provider for the slave satellite
+    /** Get the provider for the secondary satellite.
+     * @return provider for the secondary satellite
      */
-    public PVCoordinatesProvider getSlave() {
-        return slave;
+    public PVCoordinatesProvider getSecondary() {
+        return secondary;
     }
 
     /** {@inheritDoc} */
@@ -132,7 +132,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
                                                 final double newThreshold,
                                                 final int newMaxIter,
                                                 final EventHandler<? super InterSatDirectViewDetector> newHandler) {
-        return new InterSatDirectViewDetector(body, slave, newMaxCheck, newThreshold, newMaxIter, newHandler);
+        return new InterSatDirectViewDetector(body, secondary, newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
     /** {@inheritDoc}
@@ -145,21 +145,21 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     @Override
     public double g(final SpacecraftState state) {
 
-        // get the line between master and slave in body frame
+        // get the line between primary and secondary in body frame
         final AbsoluteDate date    = state.getDate();
         final Frame        frame   = body.getBodyFrame();
-        final Vector3D     pMaster = state.getPVCoordinates(frame).getPosition();
-        final Vector3D     pSlave  = slave.getPVCoordinates(date, frame).getPosition();
+        final Vector3D     pPrimary = state.getPVCoordinates(frame).getPosition();
+        final Vector3D     pSecondary  = secondary.getPVCoordinates(date, frame).getPosition();
 
-        // points along the master/slave lines are defined as
+        // points along the primary/secondary lines are defined as
         // xk = x + k * dx, yk = y + k * dy, zk = z + k * dz
-        // so k is 0 at master and 1 at slave
-        final double x  = pMaster.getX();
-        final double y  = pMaster.getY();
-        final double z  = pMaster.getZ();
-        final double dx = pSlave.getX() - x;
-        final double dy = pSlave.getY() - y;
-        final double dz = pSlave.getZ() - z;
+        // so k is 0 at primary and 1 at secondary
+        final double x  = pPrimary.getX();
+        final double y  = pPrimary.getY();
+        final double z  = pPrimary.getZ();
+        final double dx = pSecondary.getX() - x;
+        final double dy = pSecondary.getY() - y;
+        final double dz = pSecondary.getZ() - z;
 
         // intersection between line and central body surface
         // is a root of a 2nd degree polynomial :
@@ -169,7 +169,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
         final double c =   g2 * (x * x + y * y - ae2) + z * z;
         final double s = b * b - a * c;
         if (s < 0) {
-            // the quadratic has no solution, the line between master and slave
+            // the quadratic has no solution, the line between primary and secondary
             // doesn't crosses central body limb, direct view is possible
             // return a positive value, preserving continuity across zero crossing
             return -s;
@@ -180,13 +180,13 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
         final double k1 = (b < 0) ? (b - FastMath.sqrt(s)) / a : c / (b + FastMath.sqrt(s));
         final double k2 = c / (a * k1);
         if (FastMath.max(k1, k2) < 0.0 || FastMath.min(k1, k2) > 1.0) {
-            // the intersections are either behind master or farther away than slave
+            // the intersections are either behind primary or farther away than secondary
             // along the line, direct view is possible
             // return a positive value, preserving continuity across zero crossing
             return s;
         } else {
-            // part of the central body is between master and slave
-            // this includes unrealistic cases where master, slave or both are inside the central body ;-)
+            // part of the central body is between primary and secondary
+            // this includes unrealistic cases where primary, secondary or both are inside the central body ;-)
             // in all these cases, direct view is blocked
             // return a negative value, preserving continuity across zero crossing
             return -s;

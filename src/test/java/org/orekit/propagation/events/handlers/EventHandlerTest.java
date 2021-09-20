@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,9 @@ package org.orekit.propagation.events.handlers;
 import org.hipparchus.ode.events.Action;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.time.AbsoluteDate;
 
 public class EventHandlerTest {
 
@@ -35,5 +38,77 @@ public class EventHandlerTest {
 
     }
 
+    @Test
+    public void testIssue721() {
+
+        // Create detector
+        final Detector detector = new Detector();
+        Assert.assertFalse(detector.isInitialized());
+
+        // Create handler
+        final Handler handler = new Handler();
+        handler.init(null, null, detector);
+        Assert.assertTrue(detector.isInitialized());
+
+    }
+
+    private static class Detector implements EventDetector {
+
+        private boolean initialized;
+
+        public Detector() {
+            this.initialized = false;
+        }
+ 
+        public boolean isInitialized() {
+            return initialized;
+        }
+
+        @Override
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            initialized = true;
+        }
+
+        @Override
+        public double g(SpacecraftState s) {
+            return 0;
+        }
+
+        @Override
+        public double getThreshold() {
+            return 0;
+        }
+
+        @Override
+        public double getMaxCheckInterval() {
+            return 0;
+        }
+
+        @Override
+        public int getMaxIterationCount() {
+            return 0;
+        }
+
+        @Override
+        public Action eventOccurred(SpacecraftState s, boolean increasing) {
+            return Action.CONTINUE;
+        }
+    }
+
+    private static class Handler implements EventHandler<Detector> {
+
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate target,
+                         Detector detector) {
+            detector.init(initialState, target);
+        }
+
+        @Override
+        public Action eventOccurred(SpacecraftState s, Detector detector,
+                                    boolean increasing) {
+            return detector.eventOccurred(s, increasing);
+        }
+
+    }
 }
 

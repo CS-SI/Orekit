@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
 /**
@@ -27,7 +27,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class FieldDSSTNewtonianAttractionContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
+public class FieldDSSTNewtonianAttractionContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     /** Standard gravitational parameter μ for the body in m³/s². */
     private final T gm;
@@ -36,7 +36,7 @@ class FieldDSSTNewtonianAttractionContext<T extends RealFieldElement <T>> extend
      * Simple constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param parameters values of the force model parameters
+     * @param parameters        values of the force model parameters
      */
     FieldDSSTNewtonianAttractionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
 
@@ -45,7 +45,7 @@ class FieldDSSTNewtonianAttractionContext<T extends RealFieldElement <T>> extend
     }
 
     /** Get standard gravitational parameter μ for the body in m³/s².
-     *  @return gm
+     * @return gm
      */
     public T getGM() {
         return gm;

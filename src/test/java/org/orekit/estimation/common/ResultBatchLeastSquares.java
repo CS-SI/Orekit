@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.estimation.common;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -62,7 +61,7 @@ public class ResultBatchLeastSquares {
         return numberOfEvaluation;
     }
 
-    public PVCoordinates getEstimatedPV() {
+    public TimeStampedPVCoordinates getEstimatedPV() {
         return estimatedPV;
     }
 

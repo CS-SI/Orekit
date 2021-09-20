@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,12 +27,17 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for target entry/exit events with respect to a satellite sensor
  * {@link FieldOfView Field Of View}.
+ * <p>Beware that this detector is unaware of any bodies occluding line-of-sight to
+ * the target. It can be therefore used for many contexts from Earth Observation to
+ * interplanetary mission design. For instance, in an Earth Observation context,
+ * it can be easily combined to an {@link ElevationDetector} using
+ * {@link BooleanDetector#andCombine(java.util.Collection)} to calculate station
+ * visibility opportunities within the satellite's field of view.
  * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
  * propagation at FOV entry and to {@link Action#STOP stop} propagation
  * at FOV exit. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
- * @see CircularFieldOfViewDetector
  * @see FootprintOverlapDetector
  * @see VisibilityTrigger
  * @author Luc Maisonobe
@@ -58,19 +63,6 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * otherwise some short passes could be missed.</p>
      * @param pvTarget Position/velocity provider of the considered target
      * @param fov Field Of View
-     * @deprecated as of 10.1, replaced by {@link #FieldOfViewDetector(PVCoordinatesProvider, FieldOfView)}
-     */
-    @Deprecated
-    public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final org.orekit.propagation.events.FieldOfView fov) {
-        this(pvTarget, 0.0, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV, fov);
-    }
-
-    /** Build a new instance.
-     * <p>The maximal interval between distance to FOV boundary checks should
-     * be smaller than the half duration of the minimal pass to handle,
-     * otherwise some short passes could be missed.</p>
-     * @param pvTarget Position/velocity provider of the considered target
-     * @param fov Field Of View
      * @since 10.1
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final FieldOfView fov) {
@@ -89,25 +81,6 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                final VisibilityTrigger trigger, final FieldOfView fov) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<FieldOfViewDetector>(),
-             pvTarget, radiusTarget, trigger, fov);
-    }
-
-    /** Build a new instance.
-     * <p>The maximal interval between distance to FOV boundary checks should
-     * be smaller than the half duration of the minimal pass to handle,
-     * otherwise some short passes could be missed.</p>
-     * @param pvTarget Position/velocity provider of the considered target
-     * @param radiusTarget radius of the target, considered to be a spherical body (m)
-     * @param trigger visibility trigger for spherical bodies
-     * @param fov Field Of View
-     * @since 10.0
-     * @deprecated as of 10.1, replaced by {@link #FieldOfViewDetector(PVCoordinatesProvider, double, VisibilityTrigger, FieldOfView)}
-     */
-    @Deprecated
-    public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
-                               final VisibilityTrigger trigger, final org.orekit.propagation.events.FieldOfView fov) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing<FieldOfViewDetector>(),
              pvTarget, radiusTarget, trigger, fov);
@@ -161,19 +134,6 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      */
     public FieldOfView getFOV() {
         return fov;
-    }
-
-    /** Get the Field Of View.
-     * @return Field Of View, if detector has been built from a
-     * {@link org.orekit.propagation.events.FieldOfView}, or null of the
-     * detector was built from another implementation of {@link FieldOfView}
-     * @deprecated as of 10.1, replaced by {@link #getFOV()}
-     */
-    @Deprecated
-    public org.orekit.propagation.events.FieldOfView getFieldOfView() {
-        return fov instanceof org.orekit.propagation.events.FieldOfView ?
-               (org.orekit.propagation.events.FieldOfView) fov :
-               null;
     }
 
     /** {@inheritDoc}

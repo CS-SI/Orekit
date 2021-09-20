@@ -1,4 +1,4 @@
-' Copyright 2002-2020 CS GROUP
+' Copyright 2002-2021 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.hipparchus #ECEBD8 {
       interface RandomVectorGenerator
@@ -44,7 +45,7 @@
     }
     package estimation.measurements #DDEBD8 {
 
-      package generation #CEEBD8 {
+      package generation #CBDBC8 {
 
         interface "MeasurementBuilder<T>" as MeasurementBuilder_T_ {
           +addModifier(estimationModifier)

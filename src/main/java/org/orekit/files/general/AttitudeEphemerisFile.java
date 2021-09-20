@@ -20,12 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.attitudes.AggregateBoundedAttitudeProvider;
 import org.orekit.attitudes.BoundedAttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -39,12 +37,15 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * via this interface. In those cases it is recommended that the parser return a subclass
  * of this interface to provide access to the additional information.
  *
+ * @param <C> type of the angular coordinates
+ * @param <S> type of the segment
  * @author Raphaël Fermé
  * @see SatelliteAttitudeEphemeris
  * @see AttitudeEphemerisSegment
  * @since 10.3
  */
-public interface AttitudeEphemerisFile {
+public interface AttitudeEphemerisFile<C extends TimeStampedAngularCoordinates,
+                                       S extends AttitudeEphemerisFile.AttitudeEphemerisSegment<C>> {
 
     /**
      * Get the loaded ephemeris for each satellite in the file.
@@ -52,20 +53,22 @@ public interface AttitudeEphemerisFile {
      * @return a map from the satellite's ID to the information about that satellite
      * contained in the file.
      */
-    Map<String, ? extends SatelliteAttitudeEphemeris> getSatellites();
+    Map<String, ? extends SatelliteAttitudeEphemeris<C, S>> getSatellites();
 
     /**
      * Contains the information about a single satellite from an {@link AttitudeEphemerisFile}.
      *
      * <p> A satellite ephemeris consists of one or more {@link AttitudeEphemerisSegment}.
      * Segments are typically used to split up an ephemeris at discontinuous events.
-     *
+     * @param <C> type of the angular coordinates
+     * @param <S> type of the segment
      * @author Raphaël Fermé
      * @see AttitudeEphemerisFile
      * @see AttitudeEphemerisSegment
      * @since 10.3
      */
-    interface SatelliteAttitudeEphemeris {
+    interface SatelliteAttitudeEphemeris<C extends TimeStampedAngularCoordinates,
+                                         S extends AttitudeEphemerisSegment<C>> {
 
         /**
          * Get the satellite ID. The satellite ID is unique only within the same ephemeris
@@ -83,7 +86,7 @@ public interface AttitudeEphemerisFile {
          *
          * @return the segments contained in the attitude ephemeris file for this satellite.
          */
-        List<? extends AttitudeEphemerisSegment> getSegments();
+        List<S> getSegments();
 
         /**
          * Get the start date of the ephemeris.
@@ -107,7 +110,7 @@ public interface AttitudeEphemerisFile {
          */
         default BoundedAttitudeProvider getAttitudeProvider() {
             final List<BoundedAttitudeProvider> providers = new ArrayList<>();
-            for (final AttitudeEphemerisSegment attitudeSegment : this.getSegments()) {
+            for (final AttitudeEphemerisSegment<C> attitudeSegment : this.getSegments()) {
                 providers.add(attitudeSegment.getAttitudeProvider());
             }
             return new AggregateBoundedAttitudeProvider(providers);
@@ -120,43 +123,20 @@ public interface AttitudeEphemerisFile {
      *
      * <p> Segments are typically used to split an ephemeris around discontinuous events
      * such as maneuvers.
-     *
+     * @param <C> type of the angular coordinates
      * @author Raphaël Fermé
      * @see AttitudeEphemerisFile
      * @see SatelliteAttitudeEphemeris
      * @since 10.3
      */
-    interface AttitudeEphemerisSegment {
+    interface AttitudeEphemerisSegment<C extends TimeStampedAngularCoordinates> {
 
         /**
          * Get an unmodifiable list of attitude data lines.
          *
          * @return a list of attitude data
          */
-        List<? extends TimeStampedAngularCoordinates> getAngularCoordinates();
-
-        /**
-         * Get the name of the center of the coordinate system the ephemeris is provided
-         * in. This may be a natural origin, such as the center of the Earth, another
-         * satellite, etc.
-         *
-         * @return the name of the frame center
-         */
-        String getFrameCenterString();
-
-        /**
-         * Get the reference frame A specifier as it appeared in the file.
-         *
-         * @return the frame name as it appeared in the file (A).
-         */
-        String getRefFrameAString();
-
-        /**
-         * Get the reference frame B specifier as it appeared in the file.
-         *
-         * @return the frame name as it appeared in the file (B).
-         */
-        String getRefFrameBString();
+        List<C> getAngularCoordinates();
 
         /**
          * Get the reference frame from which attitude is defined.
@@ -164,49 +144,6 @@ public interface AttitudeEphemerisFile {
          * @return the reference frame from which attitude is defined
          */
         Frame getReferenceFrame();
-
-        /**
-         * Get the rotation direction of the attitude.
-         *
-         * @return the rotation direction of the attitude
-         */
-        String getAttitudeDirection();
-
-        /**
-         * Get the format of the data lines in the message.
-         *
-         * @return the format of the data lines in the message
-         */
-        String getAttitudeType();
-
-        /**
-         * Get the flag for the placement of the quaternion QC in the attitude data.
-         *
-         * @return true if QC is the first element in the attitude data
-         */
-        boolean isFirst();
-
-        /**
-         * Get the rotation order for Euler angles.
-         *
-         * @return rotation order
-         */
-        RotationOrder getRotationOrder();
-
-        /**
-         * Get the time scale for this ephemeris segment.
-         *
-         * @return the time scale identifier, as specified in the ephemeris file, or
-         * {@code null} if the ephemeris file does not specify a time scale.
-         */
-        String getTimeScaleString();
-
-        /**
-         * Get the time scale for this ephemeris segment.
-         *
-         * @return the time scale for this segment. Never {@code null}.
-         */
-        TimeScale getTimeScale();
 
         /**
          * Get the start date of this ephemeris segment.
@@ -249,9 +186,7 @@ public interface AttitudeEphemerisFile {
          *
          * @return the attitude provider for this attitude ephemeris segment.
          */
-        default BoundedAttitudeProvider getAttitudeProvider() {
-            return new EphemerisSegmentAttitudeProvider(this);
-        }
+        BoundedAttitudeProvider getAttitudeProvider();
 
     }
 

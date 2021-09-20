@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,10 +80,7 @@ import org.orekit.utils.ParameterObserver;
  * <li>the discrete events that should be triggered during propagation (
  * {@link #addEventDetector(org.orekit.propagation.events.EventDetector)},
  * {@link #clearEventsDetectors()})</li>
- * <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- * {@link #setMasterMode(double, org.orekit.propagation.sampling.OrekitFixedStepHandler)},
- * {@link #setMasterMode(org.orekit.propagation.sampling.OrekitStepHandler)},
- * {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
+ * <li>the binding logic with the rest of the application ({@link #getMultiplexer()})</li>
  * </ul>
  * <p>
  * From these configuration parameters, only the initial state is mandatory.
@@ -374,7 +371,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // we want to add the central attraction force model
 
             // ensure we are notified of any mu change
-            force.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+            force.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver) {
@@ -476,7 +473,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters()));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
             force.updateShortPeriodTerms(force.getParameters(), mean);
         }
 
@@ -592,7 +589,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // initialize all perturbing forces
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initialize(aux, type, force.getParameters()));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters()));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -684,7 +681,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // Set the force models
             final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
             for (final DSSTForceModel force : forceModels) {
-                shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters()));
+                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
                 force.updateShortPeriodTerms(force.getParameters(), meanState);
             }
 
@@ -965,6 +962,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+            for (final DSSTForceModel forceModel : forceModels) {
+                forceModel.init(initialState, target);
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public double[] computeDerivatives(final SpacecraftState state) {
 
             Arrays.fill(yDot, 0.0);
@@ -1073,7 +1078,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
+        public void handleStep(final ODEStateInterpolator interpolator) {
 
             // Get the grid points to compute
             final double[] interpolationPoints =

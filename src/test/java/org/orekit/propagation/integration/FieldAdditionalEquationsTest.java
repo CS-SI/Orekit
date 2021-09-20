@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
@@ -56,7 +56,7 @@ public class FieldAdditionalEquationsTest {
         doTestInitNumerical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestInitNumerical(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInitNumerical(Field<T> field) {
         // setup
         final double reference = 1.25;
         InitCheckerEquations<T> checker = new InitCheckerEquations<>(reference);
@@ -65,7 +65,7 @@ public class FieldAdditionalEquationsTest {
         // action
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
                                                                                               tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(field.getZero().add(60));
+        integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
                                             addAdditionalState(checker.getName(), field.getZero().add(reference)));
@@ -98,7 +98,7 @@ public class FieldAdditionalEquationsTest {
         tolerance    = null;
     }
 
-    public static class InitCheckerEquations<T extends RealFieldElement<T>> implements FieldAdditionalEquations<T> {
+    public static class InitCheckerEquations<T extends CalculusFieldElement<T>> implements FieldAdditionalEquations<T> {
 
         private double expected;
         private boolean called;

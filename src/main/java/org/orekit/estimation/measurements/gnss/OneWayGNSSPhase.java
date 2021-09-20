@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -85,7 +86,7 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
                            final double phase, final double wavelength, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(date, phase, sigma, baseWeight, Arrays.asList(local));
+        super(date, phase, sigma, baseWeight, Collections.singletonList(local));
 
         // Initialize phase ambiguity driver
         ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME, 0.0, 1.0,

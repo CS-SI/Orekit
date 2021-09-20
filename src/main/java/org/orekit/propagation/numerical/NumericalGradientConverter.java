@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -176,13 +176,14 @@ class NumericalGradientConverter extends AbstractGradientConverter {
     public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state,
                                     final ForceModel forceModel) {
         final int freeParameters = state.getMass().getFreeParameters();
-        final ParameterDriver[] drivers = forceModel.getParametersDrivers();
-        final Gradient[] parameters = new Gradient[drivers.length];
+        final List<ParameterDriver> drivers = forceModel.getParametersDrivers();
+        final Gradient[] parameters = new Gradient[drivers.size()];
         int index = freeStateParameters;
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].isSelected() ?
-                            Gradient.variable(freeParameters, index++, drivers[i].getValue()) :
-                            Gradient.constant(freeParameters, drivers[i].getValue());
+        int i = 0;
+        for (ParameterDriver driver : drivers) {
+            parameters[i++] = driver.isSelected() ?
+                              Gradient.variable(freeParameters, index++, driver.getValue()) :
+                              Gradient.constant(freeParameters, driver.getValue());
         }
         return parameters;
     }

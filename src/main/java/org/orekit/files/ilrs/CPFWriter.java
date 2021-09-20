@@ -1,8 +1,8 @@
-/* Copyright 2016 Applied Defense Solutions (ADS)
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * ADS licenses this file to You under the Apache License, Version 2.0
+ * CS licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -22,7 +22,7 @@ import java.util.List;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile;
-import org.orekit.files.general.EphemerisFile.EphemerisSegment;
+import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.files.ilrs.StreamingCpfWriter.Segment;
 import org.orekit.time.TimeScale;
@@ -48,18 +48,24 @@ public class CPFWriter implements EphemerisFileWriter {
     /** Container for header data. */
     private final CPFHeader header;
 
+    /** Time scale for dates. */
+    private final TimeScale timescale;
+
     /**
      * Constructor.
      * @param header container for header data
+     * @param timescale time scale for dates
      */
-    public CPFWriter(final CPFHeader header) {
-        this.header = header;
+    public CPFWriter(final CPFHeader header, final TimeScale timescale) {
+        this.header    = header;
+        this.timescale = timescale;
     }
 
 
     /** {@inheritDoc} */
     @Override
-    public void write(final Appendable writer, final EphemerisFile ephemerisFile)
+    public <C extends TimeStampedPVCoordinates, S extends EphemerisFile.EphemerisSegment<C>>
+        void write(final Appendable writer, final EphemerisFile<C, S> ephemerisFile)
         throws IOException {
 
         // Verify if writer is not a null object
@@ -73,23 +79,19 @@ public class CPFWriter implements EphemerisFileWriter {
         }
 
         // Get satellite and ephemeris segments to output.
-        final EphemerisFile.SatelliteEphemeris satEphem = ephemerisFile.getSatellites().get(header.getIlrsSatelliteId());
-        final List<? extends EphemerisSegment> segments = satEphem.getSegments();
-        final EphemerisSegment firstSegment = segments.get(0);
-
-        // Time scale
-        final TimeScale timeScale = firstSegment.getTimeScale();
+        final SatelliteEphemeris<C, S> satEphem = ephemerisFile.getSatellites().get(header.getIlrsSatelliteId());
+        final List<S> segments = satEphem.getSegments();
 
         // Writer
         final StreamingCpfWriter cpfWriter =
-                        new StreamingCpfWriter(writer, timeScale, header);
+                        new StreamingCpfWriter(writer, timescale, header);
         // Write header
         cpfWriter.writeHeader();
 
         // Loop on ephemeris segments
-        for (final EphemerisSegment segment : segments) {
+        for (final S segment : segments) {
             final Segment segmentWriter = cpfWriter.newSegment(header.getRefFrame());
-            // Loop on coordiates
+            // Loop on coordinates
             for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
                 segmentWriter.writeEphemerisLine(coordinates);
             }

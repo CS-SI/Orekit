@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -242,7 +242,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * not intersect the surface
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> FieldVector3D<T> getCartesianIntersectionPoint(final FieldLine<T> line,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getCartesianIntersectionPoint(final FieldLine<T> line,
                                                                                           final FieldVector3D<T> close,
                                                                                           final Frame frame,
                                                                                           final FieldAbsoluteDate<T> date) {
@@ -288,7 +288,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
                                                                                       final FieldVector3D<T> close,
                                                                                       final Frame frame,
                                                                                       final FieldAbsoluteDate<T> date) {
@@ -320,7 +320,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
 
         final T latitude  = point.getLatitude();
         final T longitude = point.getLongitude();
@@ -539,7 +539,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      *   <li>in order to handle very flat ellipsoids</li>
      * </ul>
      */
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point,
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point,
                                                                            final Frame frame,
                                                                            final FieldAbsoluteDate<T> date) {
 
@@ -561,7 +561,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
             final double evoluteCuspZ     = FastMath.copySign(getA() * e2 / g, -z.getReal());
             final T      deltaZ           = z.subtract(evoluteCuspZ);
             // we use π/2 - atan(r/Δz) instead of atan(Δz/r) for accuracy purposes, as r is much smaller than Δz
-            phi = r.divide(deltaZ.abs()).atan().negate().add(0.5 * FastMath.PI).copySign(deltaZ);
+            phi = r.divide(deltaZ.abs()).atan().negate().add(r.getPi().multiply(0.5)).copySign(deltaZ);
             h   = deltaZ.hypot(r).subtract(osculatingRadius);
         } else if (FastMath.abs(z.getReal()) <= ANGULAR_THRESHOLD * r.getReal()) {
             // the point is almost on the major axis

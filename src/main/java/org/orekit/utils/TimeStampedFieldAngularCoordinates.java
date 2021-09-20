@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,8 @@ package org.orekit.utils;
 import java.util.Collection;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -31,6 +32,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link FieldAngularCoordinates}.
@@ -39,8 +41,8 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 7.0
  */
-public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
-    extends FieldAngularCoordinates<T> {
+public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T>>
+    extends FieldAngularCoordinates<T> implements FieldTimeStamped<T> {
 
     /** The date. */
     private final FieldAbsoluteDate<T> date;
@@ -157,10 +159,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * </p>
      * @param date coordinates date
      * @param r rotation with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      * @since 9.2
      */
-    public TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
-                                              final FieldRotation<FieldDerivativeStructure<T>> r) {
+    public <U extends FieldDerivative<T, U>> TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
+                                                                                final FieldRotation<U> r) {
         super(r);
         this.date = date;
     }
@@ -177,9 +180,8 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                                                         getRotation().applyInverseTo(getRotationAcceleration().negate()));
     }
 
-    /** Get the date.
-     * @return date
-     */
+    /** {@inheritDoc} */
+    @Override
     public FieldAbsoluteDate<T> getDate() {
         return date;
     }
@@ -296,7 +298,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         TimeStampedFieldAngularCoordinates<T> interpolate(final AbsoluteDate date,
                                                           final AngularDerivativesFilter filter,
                                                           final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {
@@ -334,7 +336,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         TimeStampedFieldAngularCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                           final AngularDerivativesFilter filter,
                                                           final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {

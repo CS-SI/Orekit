@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="http://sanaregistry.org/r/ndmxml/ndmxml-1.0-master.xsd"
+  id="CCSDS_AEM_VERS" version="1.0">
+  <header>
+    <COMMENT>This example shows an AEM with a rotation</COMMENT>
+    <CREATION_DATE>2008-071T17:09:49</CREATION_DATE>
+    <ORIGINATOR>NASA</ORIGINATOR>
+  </header>
+  <body>
+    <segment>
+      <metadata>
+        <COMMENT>The relative accuracy of these</COMMENT>
+        <COMMENT>attitudes is 0.1 degrees per axis.</COMMENT>
+        <OBJECT_NAME>FICTITIOUS</OBJECT_NAME>
+        <OBJECT_ID>2020-224A</OBJECT_ID>
+        <CENTER_NAME>EARTH</CENTER_NAME>
+        <REF_FRAME_A>J2000</REF_FRAME_A>
+        <REF_FRAME_B>SC_BODY_1</REF_FRAME_B>
+        <ATTITUDE_DIR>A2B</ATTITUDE_DIR>
+        <TIME_SYSTEM>UTC</TIME_SYSTEM>
+        <START_TIME>2020-090T05:00:00.071</START_TIME>
+        <STOP_TIME>2020-090T05:00:00.946</STOP_TIME>
+        <ATTITUDE_TYPE>EULER_ANGLE/RATE</ATTITUDE_TYPE>
+        <EULER_ROT_SEQ>123</EULER_ROT_SEQ>
+        <RATE_FRAME>REF_FRAME_B</RATE_FRAME>
+      </metadata>
+      <data>
+        <attitudeState>
+          <eulerAngleRate>
+            <EPOCH>2020-090T05:00:00.071</EPOCH>
+            <rotationAngles>
+              <rotation1 angle="X_ANGLE" units="deg">45</rotation1>
+              <rotation2 angle="Y_ANGLE" units="deg">0.9</rotation2>
+              <rotation3 angle="Z_ANGLE" units="deg">15</rotation3>
+            </rotationAngles>
+            <rotationRates>
+              <rotation1 rate="X_RATE">4.5</rotation1>
+              <rotation2 rate="Y_RATE">0.123</rotation2>
+              <rotation3 rate="Z_RATE">15</rotation3>
+            </rotationRates>
+          </eulerAngleRate>
+        </attitudeState>
+        <attitudeState>
+          <eulerAngleRate>
+            <EPOCH>2020-090T05:00:00.946</EPOCH>
+            <rotationAngles>
+              <rotation1 angle="X_ANGLE" units="deg">50</rotation1>
+              <rotation2 angle="Y_ANGLE" units="deg">1.9</rotation2>
+              <rotation3 angle="Z_ANGLE" units="deg">1.5</rotation3>
+            </rotationAngles>
+            <rotationRates>
+              <rotation1 rate="X_RATE">1.0</rotation1>
+              <rotation2 rate="Y_RATE">0.123</rotation2>
+              <rotation3 rate="Z_RATE">1.5</rotation3>
+            </rotationRates>
+          </eulerAngleRate>
+        </attitudeState>
+      </data>
+    </segment>
+  </body>
+</aem>

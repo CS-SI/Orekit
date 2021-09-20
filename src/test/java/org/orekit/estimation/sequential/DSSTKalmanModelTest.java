@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.estimation.sequential;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -216,12 +216,12 @@ public class DSSTKalmanModelTest {
     private void checkModelAtT0() {
 
         // Instantiate a Model from attributes
-        final DSSTKalmanModel model = new DSSTKalmanModel(Arrays.asList(propagatorBuilder),
-                                                  Arrays.asList(covMatrixProvider),
-                                                  estimatedMeasurementsParameters,
-                                                  null,
-                                                  PropagationType.MEAN,
-                                                  PropagationType.MEAN);
+        final DSSTKalmanModel model = new DSSTKalmanModel(Collections.singletonList(propagatorBuilder),
+                                                          Collections.singletonList(covMatrixProvider),
+                                                          estimatedMeasurementsParameters,
+                                                          null,
+                                                          PropagationType.MEAN,
+                                                          PropagationType.MEAN);
 
         // Evaluate at t0
         // --------------
@@ -289,7 +289,7 @@ public class DSSTKalmanModelTest {
                                       new SpacecraftState[] {new SpacecraftState(expOrbitPred)}).getEstimatedValue();
 
         // Process PV measurement in Kalman and get model
-        kalman.processMeasurements(Arrays.asList(meas));
+        kalman.processMeasurements(Collections.singletonList(meas));
         KalmanEstimation model = modelLogger.estimation;
         
         // Time

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
@@ -55,7 +55,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @since 9.2
  */
-class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTimeStamped<T> {
+class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
 
     /** Derivation order. */
     private static final int ORDER = 2;
@@ -158,7 +158,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         final FieldDerivativeStructure<T> absDelta;
         if (svbCos.getValue().getReal() <= 0) {
             // in eclipse turn mode
-            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(FastMath.PI));
+            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(svbCos.getPi()));
         } else {
             // in noon turn mode
             absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos());
@@ -209,7 +209,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(d, inertialFrame);
         return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum()).
                negate().
-               add(0.5 * FastMath.PI);
+               add(svPV.getPosition().getX().getPi().multiply(0.5));
     }
 
     /** Compute Sun elevation.
@@ -222,7 +222,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
                         toDerivativeStructurePV(d.getField().getZero().getOrder());
         return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum()).
                negate().
-               add(0.5 * FastMath.PI);
+               add(svPV.getPosition().getX().getPi().multiply(0.5));
     }
 
     /** Compute Sun elevation.
@@ -343,7 +343,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return orbit angle since solar midnight
      */
     public T getOrbitAngleSinceMidnight() {
-        final T absAngle = inOrbitPlaneAbsoluteAngle(FastMath.acos(svbCos.getValue()).negate().add(FastMath.PI));
+        final T absAngle = inOrbitPlaneAbsoluteAngle(FastMath.acos(svbCos.getValue()).negate().add(svbCos.getValue().getPi()));
         return morning ? absAngle : absAngle.negate();
     }
 
@@ -507,7 +507,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return Orbit Normal yaw, using inertial frame as reference
      */
     public TimeStampedFieldAngularCoordinates<T> orbitNormalYaw() {
-        final FieldTransform<T> t = LOFType.VVLH.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
+        final FieldTransform<T> t = LOFType.LVLH_CCSDS.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
         return new TimeStampedFieldAngularCoordinates<>(date,
                                                         t.getRotation(),
                                                         t.getRotationRate(),

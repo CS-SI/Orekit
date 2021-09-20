@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.orbits;
 
 import java.util.Arrays;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -95,13 +95,13 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldCartesianOrbit<T> convertType(final FieldOrbit<T> orbit) {
+        public <T extends CalculusFieldElement<T>> FieldCartesianOrbit<T> convertType(final FieldOrbit<T> orbit) {
             return (orbit.getType() == this) ? (FieldCartesianOrbit<T>) orbit : new FieldCartesianOrbit<>(orbit);
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
+        public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
                                                                     final PositionAngle type,
                                                                     final T[] stateVector,
                                                                     final T[] stateVectorDot) {
@@ -131,7 +131,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldCartesianOrbit<T> mapArrayToOrbit(final T[] stateVector,
+        public <T extends CalculusFieldElement<T>> FieldCartesianOrbit<T> mapArrayToOrbit(final T[] stateVector,
                                                                                       final T[] stateVectorDot,
                                                                                       final PositionAngle type,
                                                                                       final FieldAbsoluteDate<T> date,
@@ -227,13 +227,13 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldCircularOrbit<T> convertType(final FieldOrbit<T> orbit) {
+        public <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> convertType(final FieldOrbit<T> orbit) {
             return (orbit.getType() == this) ? (FieldCircularOrbit<T>) orbit : new FieldCircularOrbit<>(orbit);
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
+        public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
                                                                     final PositionAngle type,
                                                                     final T[] stateVector,
                                                                     final T[] stateVectorDot) {
@@ -264,7 +264,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldCircularOrbit<T> mapArrayToOrbit(final T[] stateVector,
+        public <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> mapArrayToOrbit(final T[] stateVector,
                                                                                      final T[] stateVectorDot, final PositionAngle type,
                                                                                      final FieldAbsoluteDate<T> date,
                                                                                      final T mu, final Frame frame) {
@@ -315,8 +315,8 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-       public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                   final double[] stateVector, final double[] stateVectorDot) {
+        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
+                                    final double[] stateVector, final double[] stateVectorDot) {
 
             final EquinoctialOrbit equinoctialOrbit =
                 (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
@@ -364,13 +364,13 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldEquinoctialOrbit<T> convertType(final FieldOrbit<T> orbit) {
+        public <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convertType(final FieldOrbit<T> orbit) {
             return (orbit.getType() == this) ? (FieldEquinoctialOrbit<T>) orbit : new FieldEquinoctialOrbit<>(orbit);
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
+        public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
                                                                     final PositionAngle type,
                                                                     final T[] stateVector,
                                                                     final T[] stateVectorDot) {
@@ -402,7 +402,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldEquinoctialOrbit<T> mapArrayToOrbit(final T[] stateVector,
+        public <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> mapArrayToOrbit(final T[] stateVector,
                                                                                         final T[] stateVectorDot,
                                                                                         final PositionAngle type,
                                                                                         final FieldAbsoluteDate<T> date,
@@ -504,13 +504,13 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldKeplerianOrbit<T> convertType(final FieldOrbit<T> orbit) {
+        public <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> convertType(final FieldOrbit<T> orbit) {
             return (orbit.getType() == this) ? (FieldKeplerianOrbit<T>) orbit : new FieldKeplerianOrbit<>(orbit);
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
+        public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
                                                                     final PositionAngle type,
                                                                     final T[] stateVector,
                                                                     final T[] stateVectorDot) {
@@ -541,7 +541,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldKeplerianOrbit<T> mapArrayToOrbit(final T[] stateVector,
+        public <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> mapArrayToOrbit(final T[] stateVector,
                                                                                       final T[] stateVectorDot,
                                                                                       final PositionAngle type,
                                                                                       final FieldAbsoluteDate<T> date,
@@ -706,11 +706,11 @@ public enum OrbitType {
      * The returned orbit is the specified instance itself if its type already matches,
      * otherwise, a new orbit of the proper type created
      * </p>
-     * @param <T> RealFieldElement used
+     * @param <T> CalculusFieldElement used
      * @param orbit orbit to convert
      * @return converted orbit with type guaranteed to match (so it can be cast safely)
      */
-    public abstract <T extends RealFieldElement<T>> FieldOrbit<T> convertType(FieldOrbit<T> orbit);
+    public abstract <T extends CalculusFieldElement<T>> FieldOrbit<T> convertType(FieldOrbit<T> orbit);
 
     /** Convert orbit to state array.
      * <p>
@@ -719,7 +719,7 @@ public enum OrbitType {
      * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
      * method for the corresponding orbit type in terms of parameters order and meaning.
      * </p>
-     * @param <T> RealFieldElement used
+     * @param <T> CalculusFieldElement used
      * @param orbit orbit to map
      * @param type type of the angle
      * @param stateVector flat array into which the state vector should be mapped
@@ -727,7 +727,7 @@ public enum OrbitType {
      * @param stateVectorDot flat array into which the state vector derivative should be mapped
      * (it can be null if derivatives are not desired, and it can have more than 6 elements, extra elements are untouched)
      */
-    public abstract <T extends RealFieldElement<T>>void mapOrbitToArray(FieldOrbit<T> orbit, PositionAngle type,
+    public abstract <T extends CalculusFieldElement<T>>void mapOrbitToArray(FieldOrbit<T> orbit, PositionAngle type,
                                                                         T[] stateVector, T[] stateVectorDot);
 
 
@@ -738,7 +738,7 @@ public enum OrbitType {
      * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
      * method for the corresponding orbit type in terms of parameters order and meaning.
      * </p>
-     * @param <T> RealFieldElement used
+     * @param <T> CalculusFieldElement used
      * @param array state as a flat array
      * (it can have more than 6 elements, extra elements are ignored)
      * @param arrayDot state derivative as a flat array
@@ -749,7 +749,7 @@ public enum OrbitType {
      * @param frame frame in which integration is performed
      * @return orbit corresponding to the flat array as a space dynamics object
      */
-    public abstract <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(T[] array,
+    public abstract <T extends CalculusFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(T[] array,
                                                                                   T[] arrayDot,
                                                                                   PositionAngle type,
                                                                                   FieldAbsoluteDate<T> date,

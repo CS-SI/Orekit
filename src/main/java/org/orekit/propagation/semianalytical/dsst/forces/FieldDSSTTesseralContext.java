@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -37,7 +34,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     /** Retrograde factor I.
      *  <p>
@@ -53,16 +50,6 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
      *  </p>
      */
     private static final int I = 1;
-
-    /** Minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in seconds.
-     */
-    private static final double MIN_PERIOD_IN_SECONDS = 864000.;
-
-    /** Minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in satellite revolutions.
-     */
-    private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
     /** A = sqrt(μ * a). */
     private T A;
@@ -108,14 +95,8 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
     /** Keplerian period. */
     private T period;
 
-    /** Maximum power of the eccentricity to use in summation over s. */
-    private int maxEccPow;
-
     /** Ratio of satellite period to central body rotation period. */
     private T ratio;
-
-    /** List of resonant orders. */
-    private final List<Integer> resOrders;
 
     /**
      * Simple constructor.
@@ -139,9 +120,6 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
         final Field<T> field = auxiliaryElements.getDate().getField();
         final T zero = field.getZero();
 
-        this.maxEccPow = 0;
-        this.resOrders = new ArrayList<Integer>();
-
         final T mu = parameters[0];
 
         // Keplerian mean motion
@@ -150,7 +128,7 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
 
         // Keplerian period
         final T a = auxiliaryElements.getSma();
-        period = (a.getReal() < 0) ? zero.add(Double.POSITIVE_INFINITY) : a.multiply(2.0 * FastMath.PI).multiply(a.divide(mu).sqrt());
+        period = (a.getReal() < 0) ? zero.add(Double.POSITIVE_INFINITY) : a.multiply(a.getPi().multiply(2.0)).multiply(a.divide(mu).sqrt());
 
         A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
 
@@ -184,51 +162,9 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
         chi  = auxiliaryElements.getB().reciprocal();
         chi2 = chi.multiply(chi);
 
-        // Set the highest power of the eccentricity in the analytical power
-        // series expansion for the averaged high order resonant central body
-        // spherical harmonic perturbation
-        final T e = auxiliaryElements.getEcc();
-        if (e.getReal() <= 0.005) {
-            maxEccPow = 3;
-        } else if (e.getReal() <= 0.02) {
-            maxEccPow = 4;
-        } else if (e.getReal() <= 0.1) {
-            maxEccPow = 7;
-        } else if (e.getReal() <= 0.2) {
-            maxEccPow = 10;
-        } else if (e.getReal() <= 0.3) {
-            maxEccPow = 12;
-        } else if (e.getReal() <= 0.4) {
-            maxEccPow = 15;
-        } else {
-            maxEccPow = 20;
-        }
-
         // Ratio of satellite to central body periods to define resonant terms
         ratio = period.divide(bodyPeriod);
 
-        // Compute natural resonant terms
-        final T tolerance = FastMath.max(zero.add(MIN_PERIOD_IN_SAT_REV),
-                                                   period.divide(MIN_PERIOD_IN_SECONDS).reciprocal()).reciprocal();
-
-        // Search the resonant orders in the tesseral harmonic field
-        resOrders.clear();
-        for (int m = 1; m <= provider.getMaxOrder(); m++) {
-            final T resonance = ratio.multiply(m);
-            final int jComputedRes = (int) FastMath.round(resonance);
-            if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance.subtract(jComputedRes)).getReal() <= tolerance.getReal()) {
-                // Store each resonant index and order
-                this.resOrders.add(m);
-            }
-        }
-
-    }
-
-    /** Get the list of resonant orders.
-     * @return resOrders
-     */
-    public List<Integer> getResOrders() {
-        return resOrders;
     }
 
     /** Get ecc².
@@ -306,13 +242,6 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
      */
     public T getRoa() {
         return roa;
-    }
-
-    /** Get the maximum power of the eccentricity to use in summation over s.
-     * @return roa
-     */
-    public int getMaxEccPow() {
-        return maxEccPow;
     }
 
     /** Get the Keplerian period.

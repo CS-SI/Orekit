@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -270,7 +270,7 @@ public class DTM2000 implements Atmosphere {
      * @return the local density (kg/m³)
           * @since 9.0
      */
-    public <T extends RealFieldElement<T>> T getDensity(final int day,
+    public <T extends CalculusFieldElement<T>> T getDensity(final int day,
                                                         final T alti, final T lon, final T lat,
                                                         final T hl, final double f, final double fbar,
                                                         final double akp3, final double akp24) {
@@ -346,8 +346,8 @@ public class DTM2000 implements Atmosphere {
                              final Frame frame) {
 
         // check if data are available :
-        if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
-            (date.compareTo(inputParams.getMinDate()) < 0)) {
+        if (date.compareTo(inputParams.getMaxDate()) > 0 ||
+            date.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       date, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -379,13 +379,13 @@ public class DTM2000 implements Atmosphere {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T
+    public <T extends CalculusFieldElement<T>> T
         getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
                    final Frame frame) {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
-        if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
-            (dateD.compareTo(inputParams.getMinDate()) < 0)) {
+        if (dateD.compareTo(inputParams.getMaxDate()) > 0 ||
+            dateD.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       dateD, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -405,7 +405,7 @@ public class DTM2000 implements Atmosphere {
         final Vector3D sunPos = sun.getPVCoordinates(dateD, ecef).getPosition();
         final T y  = pEcef.getY().multiply(sunPos.getX()).subtract(pEcef.getX().multiply(sunPos.getY()));
         final T x  = pEcef.getX().multiply(sunPos.getX()).add(pEcef.getY().multiply(sunPos.getY()));
-        final T hl = y.atan2(x).add(FastMath.PI);
+        final T hl = y.atan2(x).add(y.getPi());
 
         // get current solar activity data and compute
         return getDensity(day, alti, lon, lat, hl, inputParams.getInstantFlux(dateD),
@@ -591,10 +591,10 @@ public class DTM2000 implements Atmosphere {
 
             kleq = 0; // equinox
 
-            if ((day < 59) || (day > 284)) {
+            if (day < 59 || day > 284) {
                 kleq = -1; // north winter
             }
-            if ((day > 99) && (day < 244)) {
+            if (day > 99 && day < 244) {
                 kleq = 1; // north summer
             }
 
@@ -902,7 +902,7 @@ public class DTM2000 implements Atmosphere {
     /** Local holder for intermediate results ensuring the model is reentrant.
      * @param <T> type of the field elements
      */
-    private static class FieldComputation<T extends RealFieldElement<T>> {
+    private static class FieldComputation<T extends CalculusFieldElement<T>> {
 
         /** Number of days in current year. */
         private int day;
@@ -1055,10 +1055,10 @@ public class DTM2000 implements Atmosphere {
 
             kleq = 0; // equinox
 
-            if ((day < 59) || (day > 284)) {
+            if (day < 59 || day > 284) {
                 kleq = -1; // north winter
             }
-            if ((day > 99) && (day < 244)) {
+            if (day > 99 && day < 244) {
                 kleq = 1; // north summer
             }
 

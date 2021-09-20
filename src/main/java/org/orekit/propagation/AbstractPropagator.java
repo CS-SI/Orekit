@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.propagation;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,10 +26,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
-import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.OrekitStepNormalizer;
+import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -45,14 +41,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public abstract class AbstractPropagator implements Propagator {
 
-    /** Propagation mode. */
-    private int mode;
-
-    /** Fixed step size. */
-    private double fixedStepSize;
-
-    /** Step handler. */
-    private OrekitStepHandler stepHandler;
+    /** Multiplexer for step handlers. */
+    private StepHandlerMultiplexer multiplexer;
 
     /** Start date. */
     private AbsoluteDate startDate;
@@ -72,9 +62,7 @@ public abstract class AbstractPropagator implements Propagator {
     /** Build a new instance.
      */
     protected AbstractPropagator() {
-        mode                     = SLAVE_MODE;
-        stepHandler              = null;
-        fixedStepSize            = Double.NaN;
+        multiplexer              = new StepHandlerMultiplexer();
         additionalStateProviders = new ArrayList<AdditionalStateProvider>();
         unmanagedStates          = new HashMap<>();
     }
@@ -109,11 +97,6 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public int getMode() {
-        return mode;
-    }
-
-    /** {@inheritDoc} */
     public Frame getFrame() {
         return initialState.getFrame();
     }
@@ -125,39 +108,8 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public void setSlaveMode() {
-        mode          = SLAVE_MODE;
-        stepHandler   = null;
-        fixedStepSize = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    public void setMasterMode(final double h,
-                              final OrekitFixedStepHandler handler) {
-        setMasterMode(new OrekitStepNormalizer(h, handler));
-        fixedStepSize = h;
-    }
-
-    /** {@inheritDoc} */
-    public void setMasterMode(final OrekitStepHandler handler) {
-        mode          = MASTER_MODE;
-        stepHandler   = handler;
-        fixedStepSize = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    public void setEphemerisMode() {
-        mode          = EPHEMERIS_GENERATION_MODE;
-        stepHandler   = null;
-        fixedStepSize = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setEphemerisMode(final OrekitStepHandler handler) {
-        mode          = EPHEMERIS_GENERATION_MODE;
-        stepHandler   = handler;
-        fixedStepSize = Double.NaN;
+    public StepHandlerMultiplexer getMultiplexer() {
+        return multiplexer;
     }
 
     /** {@inheritDoc} */
@@ -225,32 +177,6 @@ public abstract class AbstractPropagator implements Propagator {
         }
         return managed;
     }
-
-    /** Get the fixed step size.
-     * @return fixed step size (or NaN if there are no fixed step size).
-     */
-    protected double getFixedStepSize() {
-        return fixedStepSize;
-    }
-
-    /** Get the step handler.
-     * @return step handler
-     */
-    protected OrekitStepHandler getStepHandler() {
-        return stepHandler;
-    }
-
-    /** {@inheritDoc} */
-    public abstract BoundedPropagator getGeneratedEphemeris();
-
-    /** {@inheritDoc} */
-    public abstract <T extends EventDetector> void addEventDetector(T detector);
-
-    /** {@inheritDoc} */
-    public abstract Collection<EventDetector> getEventsDetectors();
-
-    /** {@inheritDoc} */
-    public abstract void clearEventsDetectors();
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target) {

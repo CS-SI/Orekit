@@ -1,0 +1,7 @@
+     9.99           N: GNSS NAV DATA    C: BEIDOU           RINEX VERSION / TYPE
+Converto v3.5.5     IGN                 20210224 012052 UTC PGM / RUN BY / DATE
+     4     4   573     6                                    LEAP SECONDS
+BDSA   1.3970E-08  0.0000E+00 -3.5763E-07  7.1526E-07       IONOSPHERIC CORR
+BDSB   1.3926E+05 -4.2598E+05  1.5073E+06 -7.8643E+05       IONOSPHERIC CORR
+BDUT  5.5879354477E-09 9.769962617E-15 159414  790          TIME SYSTEM CORR
+                                                            END OF HEADER

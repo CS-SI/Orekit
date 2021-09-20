@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
 import org.hipparchus.complex.Complex;
@@ -104,6 +104,19 @@ public class CoefficientFactoryTest {
         CoefficientsFactory.getVmns(3, 2, 1);
     }
 
+    @Test
+    public void testKey() {
+        // test cases mostly written to improve coverage and make SonarQube happy...
+        NSKey key21 = new NSKey(2, 1);
+        Assert.assertEquals(key21, key21);
+        Assert.assertEquals(key21, new NSKey(2, 1));
+        Assert.assertNotEquals(key21, null);
+        Assert.assertNotEquals(key21, new NSKey(2, 0));
+        Assert.assertNotEquals(key21, new NSKey(3, 1));
+        Assert.assertEquals(-1719365209, key21.hashCode());
+        Assert.assertEquals(-1719365465, new NSKey(3, 1).hashCode());
+    }
+
     /**
      * Qns test based on two computation method. As methods are independent, if they give the same
      * results, we assume them to be consistent.
@@ -137,7 +150,7 @@ public class CoefficientFactoryTest {
      * Qns test based on two computation method. As methods are independent, if they give the same
      * results, we assume them to be consistent.
      */
-    private <T extends RealFieldElement<T>> void doTestQnsField(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestQnsField(Field<T> field) {
         final T zero = field.getZero();
         Assert.assertEquals(1., getQnsPolynomialValue(0, 0, 0), 0.);
         // Method comparison :
@@ -186,7 +199,7 @@ public class CoefficientFactoryTest {
     /** Gs and Hs computation test based on 2 independent methods.
      *  If they give same results, we assume them to be consistent.
      */
-    private <T extends RealFieldElement<T>> void doTestGsHsField(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGsHsField(Field<T> field) {
         final T zero = field.getZero();
         final int s = 50;
         final MersenneTwister random = new MersenneTwister(123456789);
@@ -261,7 +274,7 @@ public class CoefficientFactoryTest {
      * @param s s value
      * @return the polynomial value evaluated at γ
      */
-    private static <T extends RealFieldElement<T>> T getQnsPolynomialValue(final T gamma, final int n, final int s) {
+    private static <T extends CalculusFieldElement<T>> T getQnsPolynomialValue(final T gamma, final int n, final int s) {
         PolynomialFunction derivative;
         if (QNS_MAP.containsKey(new NSKey(n, s))) {
             derivative = QNS_MAP.get(new NSKey(n, s));
@@ -293,7 +306,7 @@ public class CoefficientFactoryTest {
         final Complex asbs = as.multiply(bs);
         return new double[] {asbs.getReal(), asbs.getImaginary()};
     }
-    
+
     /** Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4).
      * @param k x-component of the eccentricity vector
      * @param h y-component of the eccentricity vector
@@ -304,7 +317,7 @@ public class CoefficientFactoryTest {
      *         The 1st element contains the G<sub>s</sub> value.
      *         The 2nd element contains the H<sub>s</sub> value.
      */
-    private static <T extends RealFieldElement<T>> T[] getGsHs(final T k, final T h,
+    private static <T extends CalculusFieldElement<T>> T[] getGsHs(final T k, final T h,
                                     final T a, final T b, final int s,
                                     final Field<T> field) {
         final FieldComplex<T> as   = new FieldComplex<>(k, h).pow(s);
@@ -315,15 +328,15 @@ public class CoefficientFactoryTest {
         values[1] = asbs.getImaginary();
         return values;
     }
-    
-    private static class FieldComplex <T extends RealFieldElement<T>> {
+
+    private static class FieldComplex <T extends CalculusFieldElement<T>> {
 
         /** The imaginary part. */
         private final T imaginary;
 
         /** The real part. */
         private final T real;
-       
+
         /**
          * Create a complex number given the real and imaginary parts.
          *
@@ -385,7 +398,7 @@ public class CoefficientFactoryTest {
             return createComplex(real.multiply(factor.real).subtract(imaginary.multiply(factor.imaginary)),
                                  real.multiply(factor.imaginary).add(imaginary.multiply(factor.real)));
         }
-        
+
         /**
          * Returns a {@code Complex} whose value is {@code this * factor}, with {@code factor}
          * interpreted as a integer number.
@@ -408,7 +421,7 @@ public class CoefficientFactoryTest {
          public FieldComplex<T> pow(int x) {
             return this.log().multiply(x).exp();
         }
-         
+
          /**
           * Compute the
           * <a href="http://mathworld.wolfram.com/NaturalLogarithm.html" TARGET="_top">

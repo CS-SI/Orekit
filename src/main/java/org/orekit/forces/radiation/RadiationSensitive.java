@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,9 @@
  */
 package org.orekit.forces.radiation;
 
-import org.hipparchus.RealFieldElement;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -44,7 +46,7 @@ public interface RadiationSensitive {
      * @return parameters drivers
      * @since 8.0
      */
-    ParameterDriver[] getRadiationParametersDrivers();
+    List<ParameterDriver> getRadiationParametersDrivers();
 
     /** Compute the acceleration due to radiation pressure.
      * @param date current date
@@ -68,10 +70,10 @@ public interface RadiationSensitive {
      * @param mass current mass
      * @param flux radiation flux in the same inertial frame as spacecraft orbit
      * @param parameters values of the force model parameters
-     * @param <T> extends RealFieldElement
+     * @param <T> extends CalculusFieldElement
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> radiationPressureAcceleration(FieldAbsoluteDate<T> date, Frame frame, FieldVector3D<T> position,
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> radiationPressureAcceleration(FieldAbsoluteDate<T> date, Frame frame, FieldVector3D<T> position,
                                                                                    FieldRotation<T> rotation, T mass, FieldVector3D<T> flux,
                                                                                    T[] parameters);
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.cs.examples.gnss;
+package eu.csgroup.examples.gnss;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,9 +38,10 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.data.DirectoryCrawler;
-import org.orekit.data.NamedData;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -138,8 +139,9 @@ public class GenerateBaseSamples {
                                           metadataFile + " does not exist or is a directory");
             }
 
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(orekitDataDir));
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(antexDir));
+            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+            manager.addProvider(new DirectoryCrawler(orekitDataDir));
+            manager.addProvider(new DirectoryCrawler(antexDir));
             final AntexLoader loader = new AntexLoader(antexName);
             final CelestialBody sun = CelestialBodyFactory.getSun();
             final TimeScale gps = TimeScalesFactory.getGPS();
@@ -174,12 +176,11 @@ public class GenerateBaseSamples {
                     final List<BoundedPropagator> propagators = new ArrayList<>(fields.length - 6);
                     for (int i = 6; i < fields.length; ++i) {
                         final File f = new File(sp3Dir, fields[i]);
-                        final NamedData compressed = new NamedData(f.getName(), ()-> new FileInputStream(f));
-                        try (InputStream s = new UnixCompressFilter().filter(compressed).getStreamOpener().openStream()) {
-                            final SP3File sp3 = new SP3Parser().parse(s);
-                            final SP3Ephemeris ephemeris = sp3.getSatellites().get(id);
-                            propagators.add(ephemeris.getPropagator());
-                        }
+                        final DataSource   compressed   = new DataSource(f.getName(), () -> new FileInputStream(f));
+                        final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
+                        final SP3File      sp3          = new SP3Parser().parse(uncompressed);
+                        final SP3Ephemeris ephemeris    = sp3.getSatellites().get(id);
+                        propagators.add(ephemeris.getPropagator());
                     }
                     BoundedPropagator propagator = new AggregateBoundedPropagator(propagators);
 

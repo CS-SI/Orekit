@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -725,7 +725,7 @@ public class KeplerianOrbit extends Orbit {
         // Initial guess
         double H;
         if (ecc < 1.6) {
-            if ((-FastMath.PI < M && M < 0.) || M > FastMath.PI) {
+            if (-FastMath.PI < M && M < 0. || M > FastMath.PI) {
                 H = M - ecc;
             } else {
                 H = M + ecc;
@@ -1619,7 +1619,7 @@ public class KeplerianOrbit extends Orbit {
      */
     private void checkParameterRangeInclusive(final String parameterName, final double parameter,
                                               final double lowerBound, final double upperBound) {
-        if ((parameter < lowerBound) || (parameter > upperBound)) {
+        if (parameter < lowerBound || parameter > upperBound) {
             throw new OrekitException(OrekitMessages.INVALID_PARAMETER_RANGE, parameterName,
                                       parameter, lowerBound, upperBound);
         }

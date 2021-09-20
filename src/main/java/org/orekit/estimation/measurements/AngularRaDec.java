@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,7 +65,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final ObservableSatellite satellite) {
-        super(date, angular, sigma, baseWeight, Arrays.asList(satellite));
+        super(date, angular, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getEastOffsetDriver());
         addParameterDriver(station.getNorthOffsetDriver());

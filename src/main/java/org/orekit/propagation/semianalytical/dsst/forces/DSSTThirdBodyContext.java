@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class DSSTThirdBodyContext extends ForceModelContext {
+public class DSSTThirdBodyContext extends ForceModelContext {
 
     /** Max power for summation. */
     private static final int    MAX_POWER = 22;
@@ -180,7 +180,7 @@ class DSSTThirdBodyContext extends ForceModelContext {
 
         // Truncation tolerance.
         final double aoR3 = auxiliaryElements.getSma() / R3;
-        final double tol = ( aoR3 > .3 || (aoR3 > .15  && auxiliaryElements.getEcc() > .25) ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
+        final double tol = ( aoR3 > .3 || aoR3 > .15  && auxiliaryElements.getEcc() > .25 ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
 
         // Utilities for truncation
         // Set a lower bound for eccentricity
@@ -383,7 +383,7 @@ class DSSTThirdBodyContext extends ForceModelContext {
      * @return aoR3Pow
      */
     public double[] getAoR3Pow() {
-        return aoR3Pow;
+        return aoR3Pow.clone();
     }
 
    /** Get the value of max frequency of F.
@@ -406,7 +406,7 @@ class DSSTThirdBodyContext extends ForceModelContext {
      * @return Qns
      */
     public double[][] getQns() {
-        return Qns;
+        return Qns.clone();
     }
 
 }

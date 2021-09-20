@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,13 +26,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.exception.DummyLocalizable;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 
 
 /** Provider for data files defined in a list.
  * <p>
- * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * All {@link FiltersManager#addFilter(DataFilter) registered}
  * {@link DataFilter filters} are applied.
  * </p>
  * <p>
@@ -97,13 +96,6 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
      */
     protected abstract InputStream getStream(T input) throws IOException;
 
-    @Override
-    @Deprecated
-    @DefaultDataContext
-    public boolean feed(final Pattern supported, final DataLoader visitor) {
-        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
-    }
-
     /** {@inheritDoc} */
     @Override
     public boolean feed(final Pattern supported,
@@ -128,12 +120,12 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
                         } else {
 
                             // apply all registered filters
-                            NamedData data = new NamedData(fileName, () -> getStream(input));
-                            data = manager.applyAllFilters(data);
+                            DataSource data = new DataSource(fileName, () -> getStream(input));
+                            data = manager.getFiltersManager().applyRelevantFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file
-                                try (InputStream is = data.getStreamOpener().openStream()) {
+                                try (InputStream is = data.getOpener().openStreamOnce()) {
                                     visitor.loadData(is, name);
                                     loaded = true;
                                 }

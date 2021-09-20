@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -70,14 +71,14 @@ public class NodeDetectorTest {
         propagator.addEventDetector(node2);
 
         // First propagation
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(finalDate);
         Assert.assertEquals(2, logger1.getLoggedEvents().size());
         Assert.assertEquals(2, logger2.getLoggedEvents().size());
         logger1.clearLoggedEvents();
         logger2.clearLoggedEvents();
 
-        BoundedPropagator postpro = propagator.getGeneratedEphemeris();
+        BoundedPropagator postpro = generator.getGeneratedEphemeris();
 
         // Post-processing
         postpro.addEventDetector(node1);

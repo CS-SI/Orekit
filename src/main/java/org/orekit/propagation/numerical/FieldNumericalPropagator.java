@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,10 +22,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
@@ -69,7 +68,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * <p>The configuration parameters that can be set are:</p>
  * <ul>
  *   <li>the initial spacecraft state ({@link #setInitialState(FieldSpacecraftState)})</li>
- *   <li>the central attraction coefficient ({@link #setMu(RealFieldElement)})</li>
+ *   <li>the central attraction coefficient ({@link #setMu(CalculusFieldElement)})</li>
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
  *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
@@ -83,10 +82,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(FieldEventDetector)},
  *   {@link #clearEventsDetectors()})</li>
- *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- *   {@link #setMasterMode(RealFieldElement, org.orekit.propagation.sampling.FieldOrekitFixedStepHandler)},
- *   {@link #setMasterMode(org.orekit.propagation.sampling.FieldOrekitStepHandler)},
- *   {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
+ *   <li>the binding logic with the rest of the application ({@link #getMultiplexer()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
  * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
@@ -148,7 +144,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends FieldAbstractIntegratedPropagator<T> {
+public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractIntegratedPropagator<T> {
 
     /** Force models used during the extrapolation of the FieldOrbit<T>, without Jacobians. */
     private final List<ForceModel> forceModels;
@@ -203,7 +199,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         initMapper(field);
         setAttitudeProvider(attitudeProvider);
         setMu(field.getZero().add(Double.NaN));
-        setSlaveMode();
+        clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }
@@ -257,7 +253,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * a Keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
      * @see #removeForceModels()
-     * @see #setMu(RealFieldElement)
+     * @see #setMu(CalculusFieldElement)
      */
     public void addForceModel(final ForceModel model) {
 
@@ -266,7 +262,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
             try {
                 // ensure we are notified of any mu change
-                model.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+                model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver) {
@@ -313,7 +309,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @return list of perturbing force models, with Newtonian attraction being the
      * last one
      * @see #addForceModel(ForceModel)
-     * @see #setMu(RealFieldElement)
+     * @see #setMu(CalculusFieldElement)
      * @since 9.1
      */
     public List<ForceModel> getAllForceModels() {
@@ -556,11 +552,11 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
                 if (mu.getReal() > 0) {
                     // velocity derivative is Newtonian acceleration
                     final FieldVector3D<T> position = currentState.getPVCoordinates().getPosition();
-                    final double r2         = position.getNormSq().getReal();
-                    final double coeff      = -mu.getReal() / (r2 * FastMath.sqrt(r2));
-                    yDot[3] = yDot[3].add(coeff * position.getX().getReal());
-                    yDot[4] = yDot[4].add(coeff * position.getY().getReal());
-                    yDot[5] = yDot[5].add(coeff * position.getZ().getReal());
+                    final T r2         = position.getNormSq();
+                    final T coeff      = r2.multiply(r2.sqrt()).reciprocal().negate().multiply(mu);
+                    yDot[3] = yDot[3].add(coeff.multiply(position.getX()));
+                    yDot[4] = yDot[4].add(coeff.multiply(position.getY()));
+                    yDot[5] = yDot[5].add(coeff.multiply(position.getZ()));
                 }
 
             } else {
@@ -617,7 +613,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * being the relative tolerance error
      * @param <T> elements type
      */
-    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type) {
+    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type) {
 
         // estimate the scalar velocity error
         final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
@@ -649,7 +645,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * being the relative tolerance error
      * @since 10.3
      */
-    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final T dV,
+    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
                                                                         final FieldOrbit<T> orbit, final OrbitType type) {
 
         final double[] absTol = new double[7];

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,7 +79,7 @@ public class Phase extends AbstractMeasurement<Phase> {
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final ObservableSatellite satellite) {
-        super(date, phase, sigma, baseWeight, Arrays.asList(satellite));
+        super(date, phase, sigma, baseWeight, Collections.singletonList(satellite));
         ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME,
                                                0.0, 1.0,
                                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);

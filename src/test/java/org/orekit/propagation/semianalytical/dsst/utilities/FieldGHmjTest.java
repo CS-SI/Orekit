@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.hipparchus.random.MersenneTwister;
@@ -39,7 +39,7 @@ public class FieldGHmjTest {
     /** Gmsj and Hmsj computation test based on 2 independent methods.
      *  If they give same results, we assume them to be consistent.
      */
-    private <T extends RealFieldElement<T>> void doTestGHmsj(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGHmsj(Field<T> field) {
         final T zero = field.getZero();
         final int sMax = 30;
         final int mMax = 20;
@@ -70,7 +70,7 @@ public class FieldGHmjTest {
     /** dG/dk and dH/dk computations test based on 2 independent methods.
      *  If they give same results, we assume them to be consistent.
      */
-    private <T extends RealFieldElement<T>> void doTestdGHdk(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestdGHdk(Field<T> field) {
         final T zero = field.getZero();
         final int sMax = 30;
         final int mMax = 20;
@@ -100,7 +100,7 @@ public class FieldGHmjTest {
     /** dG/dh computation test based on 2 independent methods.
      *  If they give same results, we assume them to be consistent.
      */
-    private <T extends RealFieldElement<T>> void doTestdGHdh(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestdGHdh(Field<T> field) {
         final T zero = field.getZero();
         final int sMax = 30;
         final int mMax = 20;
@@ -130,7 +130,7 @@ public class FieldGHmjTest {
     /** dG/dα and dH/dα computations test based on 2 independent methods.
      *  If they give same results, we assume them to be consistent.
      */
-    private <T extends RealFieldElement<T>> void doTestdGHdAlpha(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestdGHdAlpha(Field<T> field) {
         final T zero = field.getZero();
         final int sMax = 30;
         final int mMax = 20;
@@ -160,7 +160,7 @@ public class FieldGHmjTest {
     /** dG/dβ and dH/dβ computations test based on 2 independent methods.
      *  If they give same results, we assume them to be consistent.
      */
-    private <T extends RealFieldElement<T>> void doTestdGHdBeta(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestdGHdBeta(Field<T> field) {
         final T zero = field.getZero();
         final int sMax = 30;
         final int mMax = 20;
@@ -192,7 +192,7 @@ public class FieldGHmjTest {
      * @param j index
      * @return G<sub>ms</sub><sup>j</sup> and H<sup>j</sup><sub>ms</sub> values
      */
-    private static <T extends RealFieldElement<T>> T[] getGHmsj(final T k, final T h,
+    private static <T extends CalculusFieldElement<T>> T[] getGHmsj(final T k, final T h,
                                      final T a, final T b,
                                      final int m, final int s, final int j,
                                      final Field<T> field) {
@@ -221,7 +221,7 @@ public class FieldGHmjTest {
      * @param j index
      * @return dG/dk and dH/dk values
      */
-    private static <T extends RealFieldElement<T>> T[] getdGHdk(final T k, final T h,
+    private static <T extends CalculusFieldElement<T>> T[] getdGHdk(final T k, final T h,
                                      final T a, final T b,
                                      final int m, final int s, final int j,
                                      final Field<T> field) {
@@ -250,7 +250,7 @@ public class FieldGHmjTest {
      * @param j index
      * @return dG/dh and dH/dh values
      */
-    private static <T extends RealFieldElement<T>> T[] getdGHdh(final T k, final T h,
+    private static <T extends CalculusFieldElement<T>> T[] getdGHdh(final T k, final T h,
                                      final T a, final T b,
                                      final int m, final int s, final int j,
                                      final Field<T> field) {
@@ -282,7 +282,7 @@ public class FieldGHmjTest {
      * @param j index
      * @return dG/dα and dH/dα values
      */
-    private static <T extends RealFieldElement<T>> T[] getdGHda(final T k, final T h,
+    private static <T extends CalculusFieldElement<T>> T[] getdGHda(final T k, final T h,
                                      final T a, final T b,
                                      final int m, final int s, final int j,
                                      final Field<T> field) {
@@ -311,7 +311,7 @@ public class FieldGHmjTest {
      * @param j index
      * @return dG/dβ and dH/dβ values
      */
-    private static <T extends RealFieldElement<T>> T[] getdGHdb(final T k, final T h,
+    private static <T extends CalculusFieldElement<T>> T[] getdGHdb(final T k, final T h,
                                      final T a, final T b,
                                      final int m, final int s, final int j,
                                      final Field<T> field) {
@@ -343,7 +343,7 @@ public class FieldGHmjTest {
         return (i < 0) ? -1 : 1;
     }
     
-    private static class FieldComplex <T extends RealFieldElement<T>> {
+    private static class FieldComplex <T extends CalculusFieldElement<T>> {
 
         /** The imaginary part. */
         private final T imaginary;

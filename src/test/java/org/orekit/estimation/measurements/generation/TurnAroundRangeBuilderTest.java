@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,15 +54,15 @@ public class TurnAroundRangeBuilderTest {
     private static final double BIAS  = -7.0;
 
     private MeasurementBuilder<TurnAroundRange> getBuilder(final RandomGenerator random,
-                                                           final GroundStation master,
-                                                           final GroundStation slave,
+                                                           final GroundStation primary,
+                                                           final GroundStation secondary,
                                                            final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<TurnAroundRange> rb =
                         new TurnAroundRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                                1.0e-10,
                                                                                                                new GaussianRandomGenerator(random)),
-                                                   master, slave, SIGMA, 1.0, satellite);
+                                                   primary, secondary, SIGMA, 1.0, satellite);
         rb.addModifier(new Bias<>(new String[] { "bias" },
                         new double[] { BIAS },
                         new double[] { 1.0 },
@@ -89,18 +89,18 @@ public class TurnAroundRangeBuilderTest {
         Generator generator = new Generator();
         final double step = 60.0;
         final Map.Entry<GroundStation, GroundStation> entry = context.TARstations.entrySet().iterator().next();
-        final GroundStation master = entry.getKey();
-        final GroundStation slave  = entry.getValue();
+        final GroundStation primary = entry.getKey();
+        final GroundStation secondary  = entry.getValue();
         generator.addPropagator(buildPropagator()); // dummy first propagator
         generator.addPropagator(buildPropagator()); // dummy second propagator
         ObservableSatellite satellite = generator.addPropagator(buildPropagator()); // useful third propagator
         generator.addPropagator(buildPropagator()); // dummy fourth propagator
-        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), master, slave, satellite),
+        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), primary, secondary, satellite),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
                                                          generator.getPropagator(satellite),
-                                                         BooleanDetector.andCombine(new ElevationDetector(master.getBaseFrame()).
+                                                         BooleanDetector.andCombine(new ElevationDetector(primary.getBaseFrame()).
                                                                                     withConstantElevation(FastMath.toRadians(5.0)),
-                                                                                    new ElevationDetector(slave.getBaseFrame()).
+                                                                                    new ElevationDetector(secondary.getBaseFrame()).
                                                                                     withConstantElevation(FastMath.toRadians(5.0))),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
         final double period = context.initialOrbit.getKeplerianPeriod();

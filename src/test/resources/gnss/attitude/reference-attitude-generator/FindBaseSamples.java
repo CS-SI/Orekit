@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.cs.examples.gnss;
+package eu.csgroup.examples.gnss;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -36,9 +35,10 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.data.DirectoryCrawler;
-import org.orekit.data.NamedData;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -121,8 +121,9 @@ public class FindBaseSamples {
                 }
             }
 
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(orekitDataDir));
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(antexDir));
+            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+            manager.addProvider(new DirectoryCrawler(orekitDataDir));
+            manager.addProvider(new DirectoryCrawler(antexDir));
             final AntexLoader loader = new AntexLoader(antexName);
             final CelestialBody sun = CelestialBodyFactory.getSun();
 
@@ -139,57 +140,56 @@ public class FindBaseSamples {
             for (String sp3Name : sp3Names) {
                 System.out.println("     " + sp3Name);
                 final File f = new File(sp3Dir, sp3Name);
-                final NamedData compressed = new NamedData(sp3Name, ()-> new FileInputStream(f));
+                final DataSource compressed   = new DataSource(sp3Name, () -> new FileInputStream(f));
+                final DataSource uncompressed = new UnixCompressFilter().filter(compressed);
 
-                try (InputStream is = new UnixCompressFilter().filter(compressed).getStreamOpener().openStream()) {
-                    final SP3File sp3 = new SP3Parser().parse(is);
-                    sp3ByDate.addValidAfter(f, sp3.getEpoch());
-                    for (final Map.Entry<String, SP3Ephemeris> entry : sp3.getSatellites().entrySet()) {
-                        final String sat = entry.getKey();
-                        try {
-                            final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(sat.substring(0, 1));
-                            final TimeSpanMap<SatelliteAntenna> map =
-                                            loader.findSatelliteAntenna(system, Integer.parseInt(sat.substring(1)));
-                            final SatelliteAntenna antenna = map.get(sp3.getEpoch());
-                            final BoundedPropagator propagator = entry.getValue().getPropagator();
-                            if ("BEIDOU-2M".equals(antenna.getType()) || "BEIDOU-2I".equals(antenna.getType())) {
-                                // for Beidou MEO and IGSO, we are only interested in large β and (more importantly) in β = ±4°
-                                propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, -19.0).
-                                                            withHandler(new Handler<>(sun, antenna, -19.0, samples,
-                                                                                      sat, "β≪0", 6 * Constants.JULIAN_DAY)));
-                                propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, -4.0).
-                                                            withHandler(new Handler<>(sun, antenna, -4.0, samples,
-                                                                                      sat, "β<0", 6 * Constants.JULIAN_DAY)));
-                                propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, +4.0).
-                                                            withHandler(new Handler<>(sun, antenna, +4.0, samples,
-                                                                                      sat, "β>0", 6 * Constants.JULIAN_DAY)));
-                                propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, +30.0).
-                                                            withHandler(new Handler<>(sun, antenna, +30.0, samples,
-                                                                                      sat, "β≫0", 6 * Constants.JULIAN_DAY)));
-                            } else {
-                                // for other satellites, we are interested in noon/midnight turns
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new Handler<>(sun, antenna, -19.0, samples,
-                                                                                      sat, "β≪0", 90 * 60.0)));
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new Handler<>(sun, antenna, -1.5,  samples,
-                                                                                      sat, "β<0", 90 * 60.0)));
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new Handler<>(sun, antenna, 0.0,   samples,
-                                                                                      sat, "β≈0", 90 * 60.0)));
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new Handler<>(sun, antenna, +1.5,  samples,
-                                                                                      sat, "β>0", 90 * 60.0)));
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new Handler<>(sun, antenna, +30.0, samples,
-                                                                                      sat, "β≫0", 90 * 60.0)));
-                            }
-                            propagator.propagate(propagator.getMinDate().shiftedBy( 10),
-                                                 propagator.getMaxDate().shiftedBy(-10));
-                        } catch (OrekitException oe) {
-                            if (oe.getSpecifier() != OrekitMessages.CANNOT_FIND_SATELLITE_IN_SYSTEM) {
-                                System.err.println("# unable to propagate " + sat);
-                            }
+                final SP3File sp3 = new SP3Parser().parse(uncompressed);
+                sp3ByDate.addValidAfter(f, sp3.getEpoch());
+                for (final Map.Entry<String, SP3Ephemeris> entry : sp3.getSatellites().entrySet()) {
+                    final String sat = entry.getKey();
+                    try {
+                        final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(sat.substring(0, 1));
+                        final TimeSpanMap<SatelliteAntenna> map =
+                                        loader.findSatelliteAntenna(system, Integer.parseInt(sat.substring(1)));
+                        final SatelliteAntenna antenna = map.get(sp3.getEpoch());
+                        final BoundedPropagator propagator = entry.getValue().getPropagator();
+                        if ("BEIDOU-2M".equals(antenna.getType()) || "BEIDOU-2I".equals(antenna.getType())) {
+                            // for Beidou MEO and IGSO, we are only interested in large β and (more importantly) in β = ±4°
+                            propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, -19.0).
+                                                        withHandler(new Handler<>(sun, antenna, -19.0, samples,
+                                                                        sat, "β≪0", 6 * Constants.JULIAN_DAY)));
+                            propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, -4.0).
+                                                        withHandler(new Handler<>(sun, antenna, -4.0, samples,
+                                                                        sat, "β<0", 6 * Constants.JULIAN_DAY)));
+                            propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, +4.0).
+                                                        withHandler(new Handler<>(sun, antenna, +4.0, samples,
+                                                                        sat, "β>0", 6 * Constants.JULIAN_DAY)));
+                            propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, +30.0).
+                                                        withHandler(new Handler<>(sun, antenna, +30.0, samples,
+                                                                        sat, "β≫0", 6 * Constants.JULIAN_DAY)));
+                        } else {
+                            // for other satellites, we are interested in noon/midnight turns
+                            propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                        withHandler(new Handler<>(sun, antenna, -19.0, samples,
+                                                                        sat, "β≪0", 90 * 60.0)));
+                            propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                        withHandler(new Handler<>(sun, antenna, -1.5,  samples,
+                                                                        sat, "β<0", 90 * 60.0)));
+                            propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                        withHandler(new Handler<>(sun, antenna, 0.0,   samples,
+                                                                        sat, "β≈0", 90 * 60.0)));
+                            propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                        withHandler(new Handler<>(sun, antenna, +1.5,  samples,
+                                                                        sat, "β>0", 90 * 60.0)));
+                            propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                        withHandler(new Handler<>(sun, antenna, +30.0, samples,
+                                                                        sat, "β≫0", 90 * 60.0)));
+                        }
+                        propagator.propagate(propagator.getMinDate().shiftedBy( 10),
+                                             propagator.getMaxDate().shiftedBy(-10));
+                    } catch (OrekitException oe) {
+                        if (oe.getSpecifier() != OrekitMessages.CANNOT_FIND_SATELLITE_IN_SYSTEM) {
+                            System.err.println("# unable to propagate " + sat);
                         }
                     }
                 }

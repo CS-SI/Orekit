@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -28,6 +29,7 @@ import org.hipparchus.analysis.solvers.BaseUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -499,8 +501,9 @@ public class SecularAndHarmonicTest {
                 return sc.cos() * cosCoeff + sc.sin() * sinCoeff;
             }
 
-            public DerivativeStructure value(final DerivativeStructure x) {
-                final FieldSinCos<DerivativeStructure> sc = FastMath.sinCos(x.multiply(omega));
+            @Override
+            public <T extends Derivative<T>> T value(T x) throws MathIllegalArgumentException {
+                final FieldSinCos<T> sc = FastMath.sinCos(x.multiply(omega));
                 return sc.cos().multiply(cosCoeff).add(sc.sin().multiply(sinCoeff));
             }
 

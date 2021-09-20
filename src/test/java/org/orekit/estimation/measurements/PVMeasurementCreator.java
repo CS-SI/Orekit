@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ public class PVMeasurementCreator extends MeasurementCreator {
         this.satellite = new ObservableSatellite(0);
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState) {
         final Vector3D p = currentState.getPVCoordinates().getPosition();
         final Vector3D v = currentState.getPVCoordinates().getVelocity();
         final PV measurement = new PV(currentState.getDate(), p, v, 1.0, 0.001, 1.0, satellite);

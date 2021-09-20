@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.attitudes;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
@@ -117,7 +117,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date,
                                                                                         final Frame frame) {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
@@ -142,7 +142,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      * @return satellite base attitude state, i.e without compensation.
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
                                                                          final FieldAbsoluteDate<T> date, final Frame frame) {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
@@ -175,7 +175,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
 
         final Field<T>              field = date.getField();

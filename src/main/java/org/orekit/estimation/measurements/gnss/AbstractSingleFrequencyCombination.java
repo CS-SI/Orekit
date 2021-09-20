@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.RinexHeader;
+import org.orekit.gnss.RinexObservationHeader;
 import org.orekit.gnss.SatelliteSystem;
 
 /** Base class for single frequency combination of measurements.
@@ -65,7 +65,7 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
     public CombinedObservationDataSet combine(final ObservationDataSet observations) {
 
         // Rinex file header
-        final RinexHeader header = observations.getHeader();
+        final RinexObservationHeader header = observations.getHeader();
         // Rinex version to integer
         final int version = (int) header.getRinexVersion();
 

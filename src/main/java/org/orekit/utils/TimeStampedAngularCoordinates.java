@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.utils;
 
 import java.util.Collection;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -108,16 +108,17 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
         this.date = date;
     }
 
-    /** Builds a TimeStampedAngularCoordinates from  a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a TimeStampedAngularCoordinates from  a {@link FieldRotation}&lt;{@link Derivative}&gt;.
      * <p>
      * The rotation components must have time as their only derivation parameter and
      * have consistent derivation orders.
      * </p>
      * @param date coordinates date
      * @param r rotation with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public TimeStampedAngularCoordinates(final AbsoluteDate date,
-                                         final FieldRotation<DerivativeStructure> r) {
+    public <U extends Derivative<U>>TimeStampedAngularCoordinates(final AbsoluteDate date,
+                                                                  final FieldRotation<U> r) {
         super(r);
         this.date = date;
     }

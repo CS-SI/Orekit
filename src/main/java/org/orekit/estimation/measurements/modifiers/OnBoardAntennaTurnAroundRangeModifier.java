@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,14 +55,14 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
     @Override
     public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {
 
-        // the participants are master station at emission, spacecraft during leg 1,
-        // slave station at rebound, spacecraft during leg 2, master station at reception
-        final TimeStampedPVCoordinates[] participants     = estimated.getParticipants();
-        final Vector3D                   pMasterEmission  = participants[0].getPosition();
-        final AbsoluteDate               transitDateLeg1  = participants[1].getDate();
-        final Vector3D                   pSlaveRebound    = participants[2].getPosition();
-        final AbsoluteDate               transitDateLeg2  = participants[3].getDate();
-        final Vector3D                   pMasterReception = participants[4].getPosition();
+        // the participants are primary station at emission, spacecraft during leg 1,
+        // secondary station at rebound, spacecraft during leg 2, primary station at reception
+        final TimeStampedPVCoordinates[] participants      = estimated.getParticipants();
+        final Vector3D                   pPrimaryEmission  = participants[0].getPosition();
+        final AbsoluteDate               transitDateLeg1   = participants[1].getDate();
+        final Vector3D                   pSecondaryRebound = participants[2].getPosition();
+        final AbsoluteDate               transitDateLeg2   = participants[3].getDate();
+        final Vector3D                   pPrimaryReception = participants[4].getPosition();
 
         // transforms from spacecraft to inertial frame at transit dates
         final SpacecraftState refState              = estimated.getStates()[0];
@@ -77,20 +77,20 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
         final Vector3D pSpacecraftLeg1 = spacecraftToInertLeg1.transformPosition(Vector3D.ZERO);
         final Vector3D pSpacecraftLeg2 = spacecraftToInertLeg2.transformPosition(Vector3D.ZERO);
         final double turnAroundRangeUsingSpacecraftCenter =
-                        0.5 * (Vector3D.distance(pMasterEmission, pSpacecraftLeg1) +
-                               Vector3D.distance(pSpacecraftLeg1, pSlaveRebound)   +
-                               Vector3D.distance(pSlaveRebound,   pSpacecraftLeg2) +
-                               Vector3D.distance(pSpacecraftLeg2, pMasterReception));
+                        0.5 * (Vector3D.distance(pPrimaryEmission,  pSpacecraftLeg1) +
+                               Vector3D.distance(pSpacecraftLeg1,   pSecondaryRebound)   +
+                               Vector3D.distance(pSecondaryRebound, pSpacecraftLeg2) +
+                               Vector3D.distance(pSpacecraftLeg2,   pPrimaryReception));
 
         // compute the geometrical value of the range replacing
         // the spacecraft positions with antenna phase center positions
         final Vector3D pAPCLeg1 = spacecraftToInertLeg1.transformPosition(antennaPhaseCenter);
         final Vector3D pAPCLeg2 = spacecraftToInertLeg2.transformPosition(antennaPhaseCenter);
         final double turnAroundRangeUsingAntennaPhaseCenter =
-                        0.5 * (Vector3D.distance(pMasterEmission, pAPCLeg1)      +
-                               Vector3D.distance(pAPCLeg1,        pSlaveRebound) +
-                               Vector3D.distance(pSlaveRebound,   pAPCLeg2)      +
-                               Vector3D.distance(pAPCLeg2,        pMasterReception));
+                        0.5 * (Vector3D.distance(pPrimaryEmission,  pAPCLeg1)          +
+                               Vector3D.distance(pAPCLeg1,          pSecondaryRebound) +
+                               Vector3D.distance(pSecondaryRebound, pAPCLeg2)          +
+                               Vector3D.distance(pAPCLeg2,          pPrimaryReception));
 
         // get the estimated value before this modifier is applied
         final double[] value = estimated.getEstimatedValue();

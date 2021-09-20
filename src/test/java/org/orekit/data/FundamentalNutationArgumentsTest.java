@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.Function;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -268,7 +268,7 @@ public class FundamentalNutationArgumentsTest {
         Assert.assertEquals(0, maxErrorPa,     3.0e-20);
     }
 
-    private <T extends RealFieldElement<T>> UnivariateDifferentiableFunction differentiate(final FundamentalNutationArguments fna, final FieldAbsoluteDate<T> t0,
+    private <T extends CalculusFieldElement<T>> UnivariateDifferentiableFunction differentiate(final FundamentalNutationArguments fna, final FieldAbsoluteDate<T> t0,
                                                                                            final Function<FieldBodiesElements<T>, T> f) {
         return new FiniteDifferencesDifferentiator(8, 10.0).differentiate(new UnivariateFunction() {
             double angle = 0;

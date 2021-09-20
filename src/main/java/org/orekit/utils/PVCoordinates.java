@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.utils;
 import java.io.Serializable;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
@@ -172,14 +173,15 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                     a3, pv3.acceleration, a4, pv4.acceleration);
     }
 
-    /** Builds a PVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a PVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link Derivative}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.
      * </p>
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public PVCoordinates(final FieldVector3D<DerivativeStructure> p) {
+    public <U extends Derivative<U>> PVCoordinates(final FieldVector3D<U> p) {
         position = new Vector3D(p.getX().getReal(), p.getY().getReal(), p.getZ().getReal());
         if (p.getX().getOrder() >= 1) {
             velocity = new Vector3D(p.getX().getPartialDerivative(1),
