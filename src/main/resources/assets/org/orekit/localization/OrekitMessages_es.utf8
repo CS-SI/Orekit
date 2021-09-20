@@ -1,5 +1,5 @@
 # internal error, please notify development team by creating a new topic at {0}
-INTERNAL_ERROR = <MISSING TRANSLATION>
+INTERNAL_ERROR = error interno, por favor, informe de este problema abriento un nuevo debate en {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitud ({0} m) inferior al umbral permitido {1} m
@@ -41,7 +41,7 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = el sistema de referencia {0} no es ancestro ni
 FRAME_NO_NTH_ANCESTOR = el sistema de referencia {0} está a una profundidad {1}, no puede tener un ancestro {2} niveles por encima
 
 # ITRF frame {0} not found
-NO_SUCH_ITRF_FRAME = <MISSING TRANSLATION>
+NO_SUCH_ITRF_FRAME = no se ha encontrado el sistema de referencia ITRF {0}
 
 # unsupported local orbital frame {0}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local no reconocido {0}
@@ -68,7 +68,7 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = los parámetros de orientación de la T
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = faltan parámetros de orientación de la Tierra entre {0} y {1}
 
 # missing Earth Orientation Parameters between {0} and {1}, gap is {2,number,0.0##############E0} s
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = <MISSING TRANSLATION>
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = faltan parámetros de orientación de la Tierra entre {0} y {1}, la diferencia es {2,number,0.0##############E0} s
 
 # missing Earth Orientation Parameters
 NO_EARTH_ORIENTATION_PARAMETERS = faltan los parámetros de orientación de la Tierra
@@ -83,7 +83,7 @@ INCONSISTENT_DATES_IN_IERS_FILE = fechas {1}-{2}-{3} y MJD {4} incoherentes en e
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = datos imprevistos en la línea {0} del fichero {1} : {2}
 
 # unexpected data at line {0} in file {1}
-UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
+UNEXPECTED_DATA_AT_LINE_IN_FILE = datos imprevistos en la línea {0} del fichero {1}
 
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = fechas no cronológicas en el fichero {0} en la línea {1}
@@ -107,7 +107,7 @@ UNEXPECTED_END_OF_FILE_AFTER_LINE = fin imprevisto del fichero {0} (después de 
 UNABLE_TO_PARSE_LINE_IN_FILE = imposible de analizar la línea {0} del fichero {1} :\n{2}
 
 # unable to parse element {0} at line {1}, file {2}
-UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
+UNABLE_TO_PARSE_ELEMENT_IN_FILE = imposible de analizar el elemento {0} de la línea {1} del fichero {2}
 
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = imposible de encontrar el fichero {0}
@@ -152,8 +152,7 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grado demasiado alto (n = {0}, el grado de 
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = orden demasiado alto (n = {0}, el orden de potencial máximo es {1})
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
-# SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = se han encontrado varias fechas de referencia ({0} y {1}) en el fichero de campo de gravedad {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = se han encontrado varias fechas de referencia ({0} y {1} difieren de {3,number,0.0##############E0} s) en el fichero de campo gravitacional {2}
 
 # no TLE data available for object {0}
 NO_TLE_FOR_OBJECT = no hay datos TLE disponibles para el objeto {0}
@@ -213,7 +212,7 @@ NON_EXISTENT_TIME = hora inexistente {0}
 OUT_OF_RANGE_SECONDS_NUMBER = número de segundos fuera de rango : {0}
 
 # out of range seconds number: {0} is not in [{1}, {2}]
-OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = número de segundos fuera de rango : {0} no se encuentra entre [{1}, {2}]
 
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = tipo de ángulo no reconocido, ángulos reconocidos : {0}, {1} y {2}
@@ -237,8 +236,7 @@ FRAMES_MISMATCH = el sistema de referencia ({0}) no corresponde al sistema de re
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estado inicial no especificado para la extrapolación de órbita
 
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
-# EVENT_DATE_TOO_CLOSE = la fecha acontecimiento {0}, más grande que {1} menos {3} segundos y más pequeña que {2} más {3} segundos, no puede ser añadida
-EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION>
+EVENT_DATE_TOO_CLOSE = la fecha objetivo del evento debe ser anterior a {1} de {3,number,0.0##############E0} segundos o posterior a {2} de {3,number,0.0##############E0} segundos; sin embargo, la fecha objetivo {0} es {4,number,0.0##############E0} segundos antes de {1} y {5,number,0.0##############E0} segundos después de {2}, por lo que no puede añadirse
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = imposible de leer el encabezado del fichero binario de efemérides del JPL {0}
@@ -268,10 +266,10 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = fecha fuera del rango de validez de las efe
 OUT_OF_RANGE_EPHEMERIDES_DATE = fecha fuera del rango de validez de las efemérides : {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = <MISSING TRANSLATION>
+OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = fecha fuera del rango de validez de las efemérides: {0} es {3,number,0.0##############E0} segundos anterior a [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = <MISSING TRANSLATION>
+OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = fecha fuera del rango de validez de las efemérides: {0} es {3,number,0.0##############E0} segundos posterior a [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
 UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = datos inesperados, dos valores de elevación: {0} y {1}, para un acimut : {2}
@@ -322,10 +320,10 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = longitud inválida para el campo fecha en
 CCSDS_DATE_MISSING_AGENCY_EPOCH = falta época de referencia específica agencia en una fecha CCSDS
 
 # missing mandatory key {0} in CCSDS file {1}
-CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
+CCSDS_MISSING_KEYWORD = falta palabra clave {0} en el fichero CCSDS {1}
 
 # key {0} is not allowed in format version {1}
-CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = la palabra clave {0} no está permitida en la versión {1} del formato
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = palabra clave inesperada en la línea {0} del fichero CCSDS {1}:\n{2}
@@ -349,10 +347,10 @@ CCSDS_INCONSISTENT_TIME_SYSTEMS = sistemas temporales inconsistentes: {0} ≠ {1
 CCSDS_TDM_KEYWORD_NOT_FOUND = no se encontró palabra clave para CCSDS TDM en la línea {0} del fichero {1}:\n{2}
 
 # no Range Units converter configured for parsing Tracking Data Message
-CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
+CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = no se ha encontrado ningún convertidor de unidades de pseudo-distancia configurado para la lectura de los mensajes de seguimiento de datos (« Tracking Data Message »)
 
 # Time system should have already been set before line {0} of file {1}
-CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
+CCSDS_TIME_SYSTEM_NOT_READ_YET = el sistema temporal tendría que haber sido inicializado antes de la línea {0} del fichero {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE =  el nombre "{0}" ya está utilizado para un estado adicional
@@ -376,7 +374,7 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = la órbita tiene una excentricidad ({0}
 SP3_UNSUPPORTED_VERSION = versión de formato sp3 {0} no reconocida
 
 # found {0} epochs in file {1}, expected {2}
-SP3_NUMBER_OF_EPOCH_MISMATCH = <MISSING TRANSLATION>
+SP3_NUMBER_OF_EPOCH_MISMATCH = se han encontrado {0} épocas en el fichero {1} en vez de {2}
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = final inesperado de un fichero sp3 (después de la línea {0})
@@ -406,19 +404,16 @@ NOT_ENOUGH_CACHED_NEIGHBORS = número de vecinos almacenados demasiado pequeño 
 NO_CACHED_ENTRIES = ninguna entrada almacenada
 
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
-# NON_CHRONOLOGICALLY_SORTED_ENTRIES = las entradas generadas no están ordenadas: {0} > {1}
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = las entradas generadas no están ordenadas: {0} > {1} de {2,number,0.0##############E0} segundos
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = ningún dato generado alrededor de la fecha: {0}
 
 # unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before
-# UNABLE_TO_GENERATE_NEW_DATA_BEFORE = no se pueden generar datos antes de {0}, los datos solicitados para {1}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = no se pueden generar nuevos datos antes de {0}, los datos solicitados para {1} son de {2,number,0.0##############E0} segundos antes
 
 # unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
-# UNABLE_TO_GENERATE_NEW_DATA_AFTER = no se pueden generar datos después de {0}, los datos solicitados para {1}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = no se pueden generar nuevos datos después de {0}, los datos solicitados para {1} son de {2,number,0.0##############E0} segundos después
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = después de {0} iteraciones no se ha conseguido calcular la anomalía excéntrica hiperbólica a partir de la anomalía media
@@ -433,22 +428,22 @@ OUT_OF_RANGE_DERIVATION_ORDER = el orden de derivación {0} está fuera de rango
 ORBIT_TYPE_NOT_ALLOWED = tipo de órbita {0} no permitida, los tipos permitidos son: {1}
 
 # non pseudo-inertial frame {0} is not suitable as reference for inertial forces
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = <MISSING TRANSLATION>
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = sistema de referencia no pseudo-inercial {0} no es apropiado como referencia para las fuerzas inerciales
 
 # method not available in the absence of a central body
-METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = <MISSING TRANSLATION>
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = método no disponible en ausencia de un cuerpo central
 
 # operation not available between frames {0} and {1}
-INCOMPATIBLE_FRAMES = <MISSING TRANSLATION>
+INCOMPATIBLE_FRAMES = operación no disponible entre los sistemas de referencia {0} y {1}
 
 # orbit not defined, state rather contains an absolute position-velocity-acceleration
-UNDEFINED_ORBIT = <MISSING TRANSLATION>
+UNDEFINED_ORBIT = órbita no definida, el estado contiene más bien una posición-velocidad-aceleración absoluta
 
 # absolute position-velocity-acceleration not defined, state rather contains an orbit
-UNDEFINED_ABSOLUTE_PVCOORDINATES = <MISSING TRANSLATION>
+UNDEFINED_ABSOLUTE_PVCOORDINATES = posición-velocidad-aceleración absoluta no definida, el estado contiene más bien una órbita
 
 # an inertial force model has to be used when propagating in non-inertial frame {0}
-INERTIAL_FORCE_MODEL_MISSING = <MISSING TRANSLATION>
+INERTIAL_FORCE_MODEL_MISSING = es necesario un modelo de fuerza inercial para propagar en un sistema de referencia no inercial {0}
 
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = no se encontró fichero de almanaque SEM
@@ -469,34 +464,34 @@ NOT_ENOUGH_GNSS_FOR_DOP = sólo se han especificado {0} órbitas GNSS y se neces
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = para utilizar el sistema temporal {0} en los ficheros CCSDS se requiere un ICD adicional y no está disponible en Orekit
 
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
-CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = sistemas temporales incoherentes en los bloques de actitud : {0} ≠ {1}
 
 # attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = el modo de actitud {0} de los ficheros CCSDS AEM no está todavía implementado en Orekit
 
 # invalid rotation sequence {0} at line {1} of file {2}
-CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+CCSDS_INVALID_ROTATION_SEQUENCE = secuencia de rotación {0} inválida en la línea {1} del fichero {2}
 
 # element set type {0} ({1}) is not supported yet
-CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = <MISSING TRANSLATION>
+CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = todavía no hay soporte para el tipo de elementos {0} ({1})
 
 # retrograde factor not supported in element set {0}
-CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = factor retrógrado sin soporte en el tipo de elementos {0}
 
 # element set type {0} ({1}) expects {2} elements
-CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = el tipo de elementos {0} ({1}) necesita {2} elementos
 
 # wrong number of units for maneuver {0}
-CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = número incorrecto de unidades para la maniobra {0}
 
 # missing time field for maneuver {0}
-CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
+CCSDS_MANEUVER_MISSING_TIME = falta campo temporal para la maniobra {0}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = para crear un propagador combinado se necesita al menos un propagador, pero no se ha especificado ninguno
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
-NOT_ENOUGH_ATTITUDE_PROVIDERS = <MISSING TRANSLATION>
+NOT_ENOUGH_ATTITUDE_PROVIDERS = la creación de un proveedor de actitud agregado necesita al menos un proveedor de actitud, pero ninguno ha sido previsto
 
 # argument {0} cannot be null
 NULL_ARGUMENT = la entrada {0} no puede ser nula
@@ -520,7 +515,7 @@ NO_REFERENCE_DATE_FOR_PARAMETER = la fecha de referencia para el parámetro {0} 
 STATION_NOT_FOUND = no se encontró la estación {0}, estaciones conocidas: {1}
 
 # unknown satellite system {0}
-UNKNOWN_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+UNKNOWN_SATELLITE_SYSTEM = sistema de satélites desconocido {0}
 
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = sistema de tiempo desconocido {0}
@@ -529,219 +524,219 @@ UNKNOWN_TIME_SYSTEM = sistema de tiempo desconocido {0}
 UNKNOWN_CLOCK_DATA_TYPE = tipo de datos de reloj desconocido {0}
 
 # unknown satellite antenna code {0}
-UNKNOWN_SATELLITE_ANTENNA_CODE = <MISSING TRANSLATION>
+UNKNOWN_SATELLITE_ANTENNA_CODE = código de antena de satélite desconocido {0}
 
 # frequency {0} is not supported by antenna {1}
-UNSUPPORTED_FREQUENCY_FOR_ANTENNA = <MISSING TRANSLATION>
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frecuencia {0} no tenida en cuenta por la antena {1}
 
 # cannot find satellite {0} in satellite system {1}
-CANNOT_FIND_SATELLITE_IN_SYSTEM = <MISSING TRANSLATION>
+CANNOT_FIND_SATELLITE_IN_SYSTEM = no puede encontrarse el satélite {0} en el sistema de satélites {1}
 
 # unknown RINEX frequency {0} in file {1}, line {2}
-UNKNOWN_RINEX_FREQUENCY = <MISSING TRANSLATION>
+UNKNOWN_RINEX_FREQUENCY = frecuencia RINEX desconocida en el fichero {1}, línea {2}
 
 # mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
-MISMATCHED_FREQUENCIES = <MISSING TRANSLATION>
+MISMATCHED_FREQUENCIES = frecuencias incoherentes en el fichero {0}, línea {1} (se esperaba {2} y se encontró {3})
 
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
-WRONG_COLUMNS_NUMBER = <MISSING TRANSLATION>
+WRONG_COLUMNS_NUMBER = número de columnas erróneo en el fichero {0}, línea {1} (se esperaban {2} columnas y se encontraron {3})
 
 # unsupported format for file {0}
-UNSUPPORTED_FILE_FORMAT = <MISSING TRANSLATION>
+UNSUPPORTED_FILE_FORMAT = formato no reconocido para el fichero {0}
 
 # incomplete header in file {0}
-INCOMPLETE_HEADER = <MISSING TRANSLATION>
+INCOMPLETE_HEADER = encabezado incompleto en el fichero {0}
 
 # inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}
-INCONSISTENT_NUMBER_OF_SATS = <MISSING TRANSLATION>
+INCONSISTENT_NUMBER_OF_SATS = número incoherente de satélites en la línea {0}, fichero {1}: observación con {2} satélites, sin embargo el número máximo de satélites es {3}
 
 # the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header
-INCONSISTENT_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+INCONSISTENT_SATELLITE_SYSTEM = el sistema de satélites {3} en la línea {0}, fichero {1} no es coherente con el Sistema de Satélites Rinex {2} en el encabezado
 
 # no propagator configured
-NO_PROPAGATOR_CONFIGURED = <MISSING TRANSLATION>
+NO_PROPAGATOR_CONFIGURED = ningún propagador ha sido configurado
 
 # dimension {0} is inconsistent with parameters list: {1}
-DIMENSION_INCONSISTENT_WITH_PARAMETERS = <MISSING TRANSLATION>
+DIMENSION_INCONSISTENT_WITH_PARAMETERS = la dimensión {0} no es coherente con la lista de parámetros: {1}
 
 # file {0} is not a supported Unix-compressed file
-NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE = <MISSING TRANSLATION>
+NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE = el fichero {0} no respeta el formato Unix-compressed reconocido
 
 # unexpected end of file {0}
-UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>
+UNEXPECTED_END_OF_FILE = fin inesperado del fichero {0}
 
 # file {0} is corrupted
-CORRUPTED_FILE = <MISSING TRANSLATION>
+CORRUPTED_FILE = el archivo {0} está dañado
 
 # Vienna coefficients ah or aw or zh or zw could not be loaded from {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = <MISSING TRANSLATION>
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = los coeficientes ah o aw o zh o zw del modelo de Viena no han podido cargarse desde {0}
 
 # Vienna coefficients ah or aw or zh or zw not available for date {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = los coeficientes ah o aw o zh o zw del modelo de Viena no están disponibles para la fecha {0}
 
 # file {0} does not contain Vienna coefficients ah, aw, zh or zw
-NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
+NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = el fichero {0} no contiene los coeficientes ah o aw o zh o zw del modelo de Viena
 
 # irregular or incomplete grid in file {0}
-IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>
+IRREGULAR_OR_INCOMPLETE_GRID = cuadrícula irregular o incompleta en el fichero {0}
 
 # invalid satellite system {0}
-INVALID_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+INVALID_SATELLITE_SYSTEM = el sistema de satélites {0} no es válido
 
 # IONEX file {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILE_FOR_DATE = <MISSING TRANSLATION>
+NO_TEC_DATA_IN_FILE_FOR_DATE = el fichero IONEX {0} no contiene datos TEC para la fecha {1}
 
 # number of maps {0} is inconsistent with header specification: {1}
-INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = <MISSING TRANSLATION>
+INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = el número de mapas {0} no es coherente con la especificación del encabezado {1}
 
 # file {0} does not contain latitude or longitude bondaries in its header section
-NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = <MISSING TRANSLATION>
+NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = el fichero {0} no contiene límites de latitud o longitud en la sección del encabezado
 
 # file {0} does not contain epoch of first or last map in its header section
-NO_EPOCH_IN_IONEX_HEADER = <MISSING TRANSLATION>
+NO_EPOCH_IN_IONEX_HEADER = el fichero {0} no contiene épocas del primer o último mapa en la sección del encabezado
 
 # The first column of itrf-versions.conf is a plain prefix that is matched against the
 # name of each loaded file. It should not contain any regular expression syntax or
 # directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".
-ITRF_VERSIONS_PREFIX_ONLY = <MISSING TRANSLATION>
+ITRF_VERSIONS_PREFIX_ONLY = la primera columna del fichero itrf-versions.conf es un prefijo simple que se compara a los nombres de cada uno de los ficheros cargados. No debería contener ninguna expresión racional ni ningún separador de directorio, por ejemplo: \"/\" o \"\\\". El valor real es: \"{0}\".
 
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
-CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = <MISSING TRANSLATION>
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = no puede calcular la dirección objetivo en el punto singular latitud = {0}, longitud = {1}
 
 # STEC integration did not converge
-STEC_INTEGRATION_DID_NOT_CONVERGE = <MISSING TRANSLATION>
+STEC_INTEGRATION_DID_NOT_CONVERGE = la intefración STEC no ha llegado a convergencia
 
 # MODIP grid not be loaded from {0}
-MODIP_GRID_NOT_LOADED = <MISSING TRANSLATION>
+MODIP_GRID_NOT_LOADED = no se ha podido cargar la cuadrícula MODIP desde {0}
 
 # NeQuick coefficient f2 or fm3 not be loaded from {0}
-NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
+NEQUICK_F2_FM3_NOT_LOADED = imposible de cargar los coeficientes NeQuick f2 y fm3 desde {0}
 
 # file {0} is not a supported Hatanaka-compressed file
-NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = no se reconoce el fichero {0} como fichero comprimido por el método de Hatanaka
 
 # Cannot compute around {0}
-CANNOT_COMPUTE_LAGRANGIAN = <MISSING TRANSLATION>
+CANNOT_COMPUTE_LAGRANGIAN = no se pueden realizar los cálculos alrededor de {0}
 
 # The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
-TRAJECTORY_NOT_CROSSING_XZPLANE = <MISSING TRANSLATION>
+TRAJECTORY_NOT_CROSSING_XZPLANE = la trayectoria no intersecciona con el Plano XZ, no puede derivar en una órbita Halo
 
 # The multiple shooting problem is underconstrained : {0} free variables, {1} constraints
-MULTIPLE_SHOOTING_UNDERCONSTRAINED = <MISSING TRANSLATION>
+MULTIPLE_SHOOTING_UNDERCONSTRAINED = el problema multiple-shooting no tiene suficientes restricciones: {0} variables libres, {1} restricciones
 
 # invalid measurement types {0} and {1} for the combination of measurements {2}
-INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = tipos de medida {0} y {1} incompatibles para la combinación de medidas {2}
 
 # frequencies {0} and {1} are incompatibles for the {2} combination
-INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = las frecuencias {0} y {1} son incompatibles para  la combinación {2}
 
 # observations are not in chronological order: {0} is {2} s after {1}
-NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = las observaciones no se encuentran en orden cronológico: {0} es {2} s después de {1}
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
-EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
+EXCEPTIONAL_DATA_CONTEXT = se ha detectado una utilización de ExceptionalDataContext. Esto se utiliza normalmente para detectar errores del desarrollador
 
 # Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
-NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = las observaciones deben tener fechas diferentes: {0}, {1} ({3,number,0.0##############E0} s desde la primera observación), y {2} ({4,number,0.0##############E0} desde la primera observación, {5,number,0.0##############E0} desde la segunda observación)
 
 # observations are not in the same plane
-NON_COPLANAR_POINTS = <MISSING TRANSLATION>
+NON_COPLANAR_POINTS = las observaciones no están en el mismo plano
 
 # invalid parameter {0}: {1} not in range [{2}, {3}]
-INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+INVALID_PARAMETER_RANGE = invalidez del parámetro {0}: {1} fuera del rango [{2}, {3}]
 
 # The parameter {0} should not be null in {1}
-PARAMETER_NOT_SET = <MISSING TRANSLATION>
+PARAMETER_NOT_SET = el parámetro {0} no debería ser nulo en {1}
 
 # {0} is not implemented
-FUNCTION_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+FUNCTION_NOT_IMPLEMENTED = {0} no está implementado
 
 # Impossible to execute {0} with {1} set to {2}
-INVALID_TYPE_FOR_FUNCTION = <MISSING TRANSLATION>
+INVALID_TYPE_FOR_FUNCTION = imposible ejecutar {0} con {1} establecido a {2} 
 
 # No data could be parsed from file {0}
-NO_DATA_IN_FILE = <MISSING TRANSLATION>
+NO_DATA_IN_FILE = ningún dato ha podido leerse desde el fichero {0}
 
 # Unexpected end of CPF file (after line {0})
-CPF_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>
+CPF_UNEXPECTED_END_OF_FILE = fin inesperado del fichero CPF (después de la línea {0})
 
 # Unexpected file format. Must be {0} but is {1}
-UNEXPECTED_FORMAT_FOR_ILRS_FILE = <MISSING TRANSLATION>
+UNEXPECTED_FORMAT_FOR_ILRS_FILE = Formato de fichero inesperado. Debe ser {0} pero es {1}
 
 # Invalid range indicator {0} in CRD file header
-INVALID_RANGE_INDICATOR_IN_CRD_FILE = <MISSING TRANSLATION>
+INVALID_RANGE_INDICATOR_IN_CRD_FILE = Indicador de rango inválido {0} en el encabezado del fichero CRD
 
 # Unexpected end of CRD file (after line {0})
-CRD_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>
+CRD_UNEXPECTED_END_OF_FILE = fin inesperado del fichero CRD (después de la línea {0})
 
 # end of encoded message reached
-END_OF_ENCODED_MESSAGE = <MISSING TRANSLATION>
+END_OF_ENCODED_MESSAGE = se ha alcanzado el final del mensaje codificado
 
 # too large data type ({0} bits)
-TOO_LARGE_DATA_TYPE = <MISSING TRANSLATION>
+TOO_LARGE_DATA_TYPE = tipo de datos demasiado grande ({0} bits)
 
 # unknown encoded message number {0}
-UNKNOWN_ENCODED_MESSAGE_NUMBER = <MISSING TRANSLATION>
+UNKNOWN_ENCODED_MESSAGE_NUMBER = número de mensaje codificado {0} desconocido 
 
 # unknown authentication method: {0}
-UNKNOWN_AUTHENTICATION_METHOD = <MISSING TRANSLATION>
+UNKNOWN_AUTHENTICATION_METHOD = el método de autentificación es desconocido: {0}
 
 # unknown carrier phase code: {0}
-UNKNOWN_CARRIER_PHASE_CODE = <MISSING TRANSLATION>
+UNKNOWN_CARRIER_PHASE_CODE = el código de la fase portadora {0} es desconocido
 
 # unknown data format: {0}
-UNKNOWN_DATA_FORMAT = <MISSING TRANSLATION>
+UNKNOWN_DATA_FORMAT = el formato de datos {0} es desconocido
 
 # unknown navigation system: {0}
-UNKNOWN_NAVIGATION_SYSTEM = <MISSING TRANSLATION>
+UNKNOWN_NAVIGATION_SYSTEM = sistema de navegación {0} desconocido 
 
 # data stream {0} requires a NMEA fix data
-STREAM_REQUIRES_NMEA_FIX = <MISSING TRANSLATION>
+STREAM_REQUIRES_NMEA_FIX = el flujo de datos {0} requiere un dato fijo NMEA
 
 # failed authentication for mountpoint {0}
-FAILED_AUTHENTICATION = <MISSING TRANSLATION>
+FAILED_AUTHENTICATION = fallo de la autentificación para el punto de montaje {0}
 
 # error connecting to {0}: {1}
-CONNECTION_ERROR = <MISSING TRANSLATION>
+CONNECTION_ERROR = error de conexión a {0}: {1}
 
 # unexpected content type {0}
-UNEXPECTED_CONTENT_TYPE = <MISSING TRANSLATION>
+UNEXPECTED_CONTENT_TYPE = tipo de contenido {0} inesperado
 
 # cannot parse GNSS data from {0}
-CANNOT_PARSE_GNSS_DATA = <MISSING TRANSLATION>
+CANNOT_PARSE_GNSS_DATA = no se pueden analizar los datos GNSS de {0}
 
 # unknown host {0}
-UNKNOWN_HOST = <MISSING TRANSLATION>
+UNKNOWN_HOST = anfitrión {0} desconocido
 
 # error parsing sourcetable line {0} from {1}: {2}
-SOURCETABLE_PARSE_ERROR = <MISSING TRANSLATION>
+SOURCETABLE_PARSE_ERROR = error de análisis de la línea {0} de la tabla de origen {1}: {2}
 
 # cannot parse sourcetable from {0}
-CANNOT_PARSE_SOURCETABLE = <MISSING TRANSLATION>
+CANNOT_PARSE_SOURCETABLE = no se puede analizar la tabla de origen desde {0} 
 
 # mount point {0} is already connected
-MOUNPOINT_ALREADY_CONNECTED = <MISSING TRANSLATION>
+MOUNPOINT_ALREADY_CONNECTED = el punto de montaje {0} ya está conectado
 
 # missing header from {0}: {1}
-MISSING_HEADER = <MISSING TRANSLATION>
+MISSING_HEADER = falta encabezado de {0}: {1}
 
 # {0} is not a valid international designator
-NOT_VALID_INTERNATIONAL_DESIGNATOR = <MISSING TRANSLATION>
+NOT_VALID_INTERNATIONAL_DESIGNATOR = {0} no es un designador internacional válido  
 
 # value for key {0} has not been initialized
-UNINITIALIZED_VALUE_FOR_KEY = <MISSING TRANSLATION>
+UNINITIALIZED_VALUE_FOR_KEY = el valor no se ha inicializado para la clave {0}
 
 # unknown unit {0}
-UNKNOWN_UNIT = <MISSING TRANSLATION>
+UNKNOWN_UNIT = unidad {0} desconocida
 
 # units {0} and {1} are not compatible
-INCOMPATIBLE_UNITS = <MISSING TRANSLATION>
+INCOMPATIBLE_UNITS = las unidades {0} y {1} no son compatibles
 
 # missing velocity data
-MISSING_VELOCITY = <MISSING TRANSLATION>
+MISSING_VELOCITY = faltan datos de velocidad
 
 # attempt to generate file {0} with a formatting error
-ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentativa de generar el fichero {0} con un error de formato
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = {0} ha fallado buscando una solución entre {1} (g={2,number,0.0##############E0}) y {3} (g={4,number,0.0##############E0})\nÚltima iteración en {5} (g={6,number,0.0##############E0})
