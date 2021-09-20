@@ -58,7 +58,7 @@ public class SBASNavigationMessage extends AbstractEphemerisMessage implements S
 
     /**
      * Setter for the reference time of the SBAS orbit in GPS seconds of the week.
-     * @param time
+     * @param time the time to set
      */
     public void setTime(final double time) {
         this.time = time;

@@ -58,7 +58,7 @@ public class TabulatedProvider implements BoundedAttitudeProvider {
     /** Creates new instance.
      * <p>
      * This constructor uses the first and last point samples as the min and max dates.
-     * </>
+     * </p>
      * @param referenceFrame reference frame for tabulated attitudes
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation

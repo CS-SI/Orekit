@@ -47,7 +47,6 @@ import java.nio.file.Paths;
  *   to return the already open stream so a {@code try with resources} clause
  *   elsewhere works properly for closing the stream</li>
  * </ul>
- * </p>
  * <p>
  * Beware that the purpose of this class is only to delay this opening (or not open
  * the stream or reader at all), it is <em>not</em> intended to open the stream several

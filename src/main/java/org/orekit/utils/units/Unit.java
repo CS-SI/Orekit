@@ -467,7 +467,6 @@ public class Unit implements Serializable {
      * digits if implicit exponentiation (i.e. no markers at all) is used. Unicode superscripts
      * are not allowed for fractional exponents because unicode does not provide a superscript solidus.
      * Negative exponents can be used too.
-     * </p>
      * <p>
      * These rules mean all the following (silly) examples are parsed properly:
      * MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s), km**0.5, 2rev/d²

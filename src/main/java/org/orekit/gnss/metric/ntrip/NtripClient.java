@@ -49,8 +49,8 @@ import org.orekit.gnss.metric.messages.ParsedMessage;
 /** Source table for ntrip streams retrieval.
  * <p>
  * Note that all authentication is performed automatically by just
- * calling the standard {@link java.net.AuthenticatorAuthenticator#setDefault(Authenticator)
- * Authenticator.setDefault(someAuthenticator)} method to set up an authenticator.
+ * calling the standard {@link Authenticator#setDefault(Authenticator)}
+ * method to set up an authenticator.
  * </p>
  * @author Luc Maisonobe
  * @since 11.0

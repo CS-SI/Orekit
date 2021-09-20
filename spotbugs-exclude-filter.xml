@@ -298,5 +298,15 @@
     <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
   </Match>
 
+  <!-- The following is intentional.
+       At the construction, the mapper is not set yet However, if the attitude provider is
+       changed afterwards, it must be changed in the mapper too
+    -->
+  <Match>
+    <Class name="~.*\.IntegratedEphemeris$"/>
+    <Method name="setAttitudeProvider" />
+    <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR" />
+  </Match>
+
 </FindBugsFilter>
 

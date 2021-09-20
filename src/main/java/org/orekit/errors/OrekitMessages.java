@@ -122,7 +122,7 @@ public enum OrekitMessages implements Localizable {
     NON_EXISTENT_HMS_TIME("non-existent time {0}:{1}:{2}"),
     NON_EXISTENT_TIME("non-existent time {0}"),
     OUT_OF_RANGE_SECONDS_NUMBER("out of range seconds number: {0}"),
-    OUT_OF_RANGE_SECONDS_NUMBER_DETAIL("out of range seconds number: {0} is not in [{1}, {2})"),
+    OUT_OF_RANGE_SECONDS_NUMBER_DETAIL("out of range seconds number: {0} is not in [{1}, {2}]"),
     ANGLE_TYPE_NOT_SUPPORTED("angle type not supported, supported angles: {0}, {1} and {2}"),
     SATELLITE_COLLIDED_WITH_TARGET("satellite collided with target"),
     ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND("attitude pointing law misses ground"),

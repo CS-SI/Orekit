@@ -50,7 +50,6 @@ import org.orekit.utils.units.Unit;
  *   <li>bloc or entry end</li>
  *   <li>raw lines</li>
  * </ul>
- * </p>
  * @see MessageParser
  * @author Luc Maisonobe
  * @since 11.0
@@ -688,7 +687,7 @@ public class ParseToken {
     }
 
     /** Interface representing instance methods that consume enum values.
-     * <T> type of the enum
+     * @param <T> type of the enum
      */
     public interface EnumConsumer<T extends Enum<T>> {
         /** Consume an enum.
@@ -698,7 +697,7 @@ public class ParseToken {
     }
 
     /** Interface representing instance methods that consume lists of enum values.
-     * <T> type of the enum
+     * @param <T> type of the enum
      */
     public interface EnumListConsumer<T extends Enum<T>> {
         /** Consume an enum.

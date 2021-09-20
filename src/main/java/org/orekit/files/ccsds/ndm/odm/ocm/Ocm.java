@@ -90,14 +90,12 @@ public class Ocm extends NdmConstituent<Header, Segment<OcmMetadata, OcmData>>
      * The metadata entries checked for use as the key are the following ones,
      * the first non-null being used. The map from OCM files always contains only
      * one object.
-     * <p>
      * <ul>
      *   <li>{@link org.orekit.files.ccsds.ndm.odm.OdmMetadata#getObjectName() OBJECT_NAME}</li>
      *   <li>{@link OcmMetadata#getInternationalDesignator() INTERNATIONAL_DESIGNATOR}</li>
      *   <li>{@link OcmMetadata#getObjectDesignator() OBJECT_DESIGNATOR}</li>
      *   <li>the default name {@link #UNKNOWN_OBJECT} for unknown objects</li>
      * </ul>
-     * </p>
      */
     @Override
     public Map<String, OcmSatelliteEphemeris> getSatellites() {

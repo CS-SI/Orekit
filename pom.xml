@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>11.0-SNAPSHOT</version>
+  <version>11.0</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -21,19 +21,19 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <orekit.spotbugs-maven-plugin.version>4.1.4</orekit.spotbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.8.6</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-bundle-plugin.version>5.1.1</orekit.maven-bundle-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.8.7</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-bundle-plugin.version>5.1.2</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>3.1.2</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>8.41</orekit.checkstyle.version>
+    <orekit.checkstyle.version>9.0</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.8.1</orekit.maven-compiler-plugin.version>
-    <orekit.maven-javadoc-plugin.version>3.2.0</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-javadoc-plugin.version>3.3.0</orekit.maven-javadoc-plugin.version>
     <orekit.maven-jar-plugin.version>3.2.0</orekit.maven-jar-plugin.version>
-    <orekit.maven-jxr-plugin.version>3.0.0</orekit.maven-jxr-plugin.version>
+    <orekit.maven-jxr-plugin.version>3.1.1</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
-    <orekit.plantuml.version>1.2020.14</orekit.plantuml.version>
-    <orekit.maven-project-info-reports-plugin.version>3.1.1</orekit.maven-project-info-reports-plugin.version>
+    <orekit.plantuml.version>1.2021.10</orekit.plantuml.version>
+    <orekit.maven-project-info-reports-plugin.version>3.1.2</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>3.2.0</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.9.1</orekit.maven-site-plugin.version>
     <orekit.maven-wagon-ssh-plugin.version>3.4.1</orekit.maven-wagon-ssh-plugin.version>
@@ -42,16 +42,16 @@
          https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
     <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>3.0.0-M5</orekit.maven-surefire-report-plugin.version>
-    <orekit.mockito-core.version>3.6.28</orekit.mockito-core.version>
+    <orekit.mockito-core.version>3.12.4</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
     <orekit.build-helper-maven-plugin.version>3.2.0</orekit.build-helper-maven-plugin.version>
     <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
-    <orekit.maven-gpg-plugin.version>1.6</orekit.maven-gpg-plugin.version>
+    <orekit.maven-gpg-plugin.version>3.0.1</orekit.maven-gpg-plugin.version>
     <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
     <orekit.hipparchus.version>2.0</orekit.hipparchus.version>
-    <orekit.junit.version>4.13.1</orekit.junit.version>
+    <orekit.junit.version>4.13.2</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>

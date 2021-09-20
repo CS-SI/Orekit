@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 import org.orekit.time.AbsoluteDate;
 
 
-/** The Observation class contains the data from an observation line.<p>
+/** The Observation class contains the data from an observation line.
  * <p>
  * It is not an Orekit object yet. It is a simple container holding:
  * </p>

@@ -42,7 +42,6 @@ public enum LOFType {
      *   <li>Y<sub>TNW</sub> = -Z<sub>VNC</sub> = -X<sub>NTW</sub></li>
      *   <li>Z<sub>TNW</sub> =  Y<sub>VNC</sub> =  Z<sub>NTW</sub></li>
      * </ul>
-     * </p>
      *
      * @see #VNC
      * @see #NTW
@@ -77,7 +76,6 @@ public enum LOFType {
      *   <li>Y<sub>QSW/LVLH</sub> =  X<sub>VVLH</sub></li>
      *   <li>Z<sub>QSW/LVLH</sub> = -Y<sub>VVLH</sub></li>
      * </ul>
-     * </p>
      *
      * @see #LVLH
      * @see #VVLH
@@ -118,7 +116,6 @@ public enum LOFType {
      *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>LVLH_CCSDS</sub></li>
      *   <li>Z<sub>LVLH/QSW</sub> = -Y<sub>LVLH_CCSDS</sub></li>
      * </ul>
-     * </p>
      *
      * @see #QSW
      * @see #VVLH
@@ -156,7 +153,6 @@ public enum LOFType {
      *   <li>Y<sub>LVLH_CCSDS/VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
      *   <li>Z<sub>LVLH_CCSDS/VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
      * </ul>
-     * </p>
      *
      * @see #QSW
      * @see #LVLH
@@ -224,7 +220,6 @@ public enum LOFType {
      *   <li>Y<sub>VNC</sub> =  Z<sub>TNW</sub> = Z<sub>NTW</sub></li>
      *   <li>Z<sub>VNC</sub> = -Y<sub>TNW</sub> = X<sub>NTW</sub></li>
      * </ul>
-     * </p>
      *
      * @see #TNW
      * @see #NTW
@@ -282,7 +277,6 @@ public enum LOFType {
      *   <li>Y<sub>NTW</sub> =  X<sub>TNW</sub> = X<sub>VNC</sub></li>
      *   <li>Z<sub>NTW</sub> =  Z<sub>TNW</sub> = Y<sub>VNC</sub></li>
      * </ul>
-     * </p>
      * @see #TNW
      * @see #VNC
      * @since 11.0

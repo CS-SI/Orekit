@@ -147,7 +147,7 @@ public class Rtcm1044Data extends RtcmEphemerisData {
 
     /**
      * Set the QZSS fit interval.
-     * @param qzssFitInterval
+     * @param qzssFitInterval the QZSS fit interval to set
      */
     public void setQzssFitInterval(final int qzssFitInterval) {
         this.qzssFitInterval = qzssFitInterval;

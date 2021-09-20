@@ -20,7 +20,21 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.0" date="TBD" description="TBD">
+    <release version="11.0" date="2021-09-20"
+             description="Orekit 11.0 is a major new release.
+             It includes both new features and bug fixes. New features introduced
+             in 11.0 are: orbit determination using SGP4/SDP4 models, a sequential
+             batch least squares estimator using initial covariance and state vector,
+             writer and parser for all CCSDS Navigation Data Messages in both KVN
+             and XML formats, version 2 of CCSDS Tracking Data Messages, version 3
+             of CCSDS Orbit Data Messages, support for Rinex navigation files,
+             support for IGS clock correction files, support for IGS real time
+             data including both SSR and RTCM messages, NTrip protocole, eclipses
+             by Moon in solar radiation pressure force, a new API for analytical
+             GNSS orbit propagators, removal of propagation modes, possibility
+             to add several step handlers for the same orbit propagation, a new
+             event detector for angular separation as seen from the spacecraft.
+             See the list below for a full description of the changes.">
    	  <action dev="bryan" type="update" issue="766" due-to="Gowtham Sivaraman">
         Allowed setting of AttitudeProvider to the BoundedPropagator
         generated via propagation.

@@ -172,7 +172,7 @@ public class Rtcm1019Data extends RtcmEphemerisData {
 
     /**
      * Set the GPS fit interval.
-     * @param gpsFitInterval
+     * @param gpsFitInterval the GPS fit interval to set
      */
     public void setGpsFitInterval(final int gpsFitInterval) {
         this.gpsFitInterval = gpsFitInterval;

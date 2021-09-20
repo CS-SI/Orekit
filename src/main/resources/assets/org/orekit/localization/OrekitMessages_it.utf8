@@ -212,7 +212,7 @@ NON_EXISTENT_TIME = ora inesistente {0}
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = numero di secondi fuori dell''intervallo: {0}
 
-# out of range seconds number: {0} is not in [{1}, {2})
+# out of range seconds number: {0} is not in [{1}, {2}]
 OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = numero di secondi fuori dell''intervallo: {0} non appartiene all'' intervallo [{1}, {2}]
 
 # angle type not supported, supported angles: {0}, {1} and {2}
