@@ -276,6 +276,16 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, Oem> {
         // add an empty line for presentation
         generator.newLine();
 
+        final ContextBinding oldContext = getContext();
+        setContext(new ContextBinding(oldContext::getConventions,
+                                      oldContext::isSimpleEOP,
+                                      oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
+                                      oldContext::getReferenceDate,
+                                      metadata::getTimeSystem,
+                                      oldContext::getClockCount,
+                                      oldContext::getClockRate));
+
         // Start metadata
         generator.enterSection(generator.getFormat() == FileFormat.KVN ?
                                KvnStructureKey.META.name() :
