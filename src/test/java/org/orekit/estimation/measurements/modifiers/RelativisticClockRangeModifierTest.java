@@ -94,7 +94,7 @@ public class RelativisticClockRangeModifierTest {
         Assert.assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify
-        Assert.assertEquals(6.87, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assert.assertEquals(-6.87, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
 
     }
 

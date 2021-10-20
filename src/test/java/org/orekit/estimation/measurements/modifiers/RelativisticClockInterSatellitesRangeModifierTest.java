@@ -58,7 +58,7 @@ public class RelativisticClockInterSatellitesRangeModifierTest {
         final EstimatedMeasurement<InterSatellitesRange> estimatedAfter = range.estimate(0, 0, states);
 
         // Verify
-        Assert.assertEquals(10.57, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-2);
+        Assert.assertEquals(-10.57, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-2);
         Assert.assertEquals(0, modifier.getParametersDrivers().size());
 
     }
