@@ -850,7 +850,24 @@ public class ClockFileParserTest {
         Assert.assertEquals(TimeScalesFactory.getIRNSS(),   TimeSystem.IRNSS.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assert.assertEquals(TimeScalesFactory.getGPS(),     TimeSystem.UNKNOWN.getTimeScale(DataContext.getDefault().getTimeScales()));
     }
+
+    /** Test parsing file of issue #845 (https://gitlab.orekit.org/orekit/orekit/-/issues/845). */
+    @Test
+    public void testIssue845() throws URISyntaxException, IOException {
+        
+        // Parse file
+        final String ex = "/gnss/clock/issue845.clk";
     
+        final RinexClockParser parser = new RinexClockParser();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final RinexClock file = parser.parse(fileName);
+
+        Assert.assertEquals(3.0, file.getFormatVersion(), 1.0e-3);
+        Assert.assertEquals("GeoForschungsZentrum Potsdam", file.getAnalysisCenterName());
+        Assert.assertEquals("GFZ", file.getAgencyName());
+        Assert.assertEquals("IGS14", file.getFrameName());
+    }
+
     /** Check the content of a clock file. */
     private void checkClockFileContent(final RinexClock file,
                                        final double version, final SatelliteSystem satelliteSystem, final TimeSystem timeSystem,
