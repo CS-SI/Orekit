@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.1" date="TBD" description="TBD">
+    </release>
     <release version="11.0" date="2021-09-20"
              description="Orekit 11.0 is a major new release.
              It includes both new features and bug fixes. New features introduced
