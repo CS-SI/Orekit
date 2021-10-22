@@ -20,7 +20,33 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.1" date="TBD" description="TBD">
+    <release version="11.0.1" date="2021-10-22"
+             description="Version 11.0.1 is a patch release of Orekit.
+             It fixes an important issue related to the calculation of the relativistic
+             clock correction for GNSS measurements. It also fixes bugs in OEM and CPF
+             files writing. Finally it includes some improvements in the class documentation">
+   	  <action dev="bryan" type="fix" issue="846">
+        Fixed wrong computation of relativistic clock correction for GNSS measurements.
+      </action>
+   	  <action dev="bryan" type="fix" issue="845">
+        Fixed parsing of Rinex clock files.
+      </action>
+   	  <action dev="bryan" type="fix" issue="844">
+        Fixed null pointer exception when constructing CPF from coordinates.
+      </action>
+   	  <action dev="bryan" type="update" issue="843">
+        Improved documentation of solar radiation pressure class to include
+        additional information about osculating bodies.
+      </action>
+   	  <action dev="sdinot" type="update" issue="842">
+        Used the latest version of Maven available in RedHat 8.
+      </action>
+   	  <action dev="pascal" type="fix" issue="839">
+        Fixed handling of time system in OemWriter.
+      </action>
+   	  <action dev="bryan" type="update" issue="838" due-to="Kendra Hale">
+        Improved documentation of ImpulseManeuver class.
+      </action>
     </release>
     <release version="11.0" date="2021-09-20"
              description="Orekit 11.0 is a major new release.
