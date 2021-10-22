@@ -112,7 +112,7 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      * If the header has not been read, the {@link #DEFAULT_ID} is used.
      * </p>
      * @param coord the P/V coordinate of the satellite
-     * @deprecated as of 11.0.1, replaced by {@link #addSatelliteCoordinates(String, CPFCoordinate)}
+     * @deprecated as of 11.0.1, replaced by {@link CPF#addSatelliteCoordinate(String, CPFCoordinate)}
      */
     @Deprecated
     public void addSatelliteCoordinate(final CPFCoordinate coord) {
