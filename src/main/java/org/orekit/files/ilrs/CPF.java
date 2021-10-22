@@ -39,6 +39,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
+    /** Default satellite ID, used if header is null when initializing the ephemeris. */
+    public static final String DEFAULT_ID = "9999999";
+
     /** Gravitational coefficient. */
     private double mu;
 
@@ -105,14 +108,15 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
     /**
      * Adds a new P/V coordinate to the satellite.
+     * <p>
+     * If the header has not been read, the {@link #DEFAULT_ID} is used.
+     * </p>
      * @param coord the P/V coordinate of the satellite
      * @deprecated as of 11.0.1, replaced by {@link #addSatelliteCoordinates(String, CPFCoordinate)}
      */
     @Deprecated
     public void addSatelliteCoordinate(final CPFCoordinate coord) {
-        final String id = header.getIlrsSatelliteId();
-        createIfNeeded(id);
-        ephemeris.get(id).coordinates.add(coord);
+        addSatelliteCoordinate(DEFAULT_ID, coord);
     }
 
     /**
@@ -236,7 +240,7 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
         /** {@inheritDoc} */
         @Override
         public String getId() {
-            return id == null ? header.getIlrsSatelliteId() : id;
+            return id == null ? DEFAULT_ID : id;
         }
 
         /** {@inheritDoc} */
