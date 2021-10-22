@@ -95,7 +95,7 @@ public class RelativisticClockPhaseModifierTest {
         Assert.assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify
-        Assert.assertEquals(6.87 / Frequency.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assert.assertEquals(-6.87 / Frequency.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
 
     }
 
