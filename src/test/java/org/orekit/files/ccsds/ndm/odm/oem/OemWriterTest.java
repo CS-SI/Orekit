@@ -37,7 +37,9 @@ public class OemWriterTest extends AbstractWriterTest<Header, OemSegment, Oem> {
     }
 
     protected OemWriter getWriter() {
-        return new WriterBuilder().buildOemWriter();
+        return new WriterBuilder().
+                   withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000", TimeScalesFactory.getUTC())).
+                   buildOemWriter();
     }
 
     @Test
@@ -78,6 +80,11 @@ public class OemWriterTest extends AbstractWriterTest<Header, OemSegment, Oem> {
     @Test
     public void testWriteExample8() {
         doTest("/ccsds/odm/oem/OEMExample8.txt");
+    }
+
+    @Test
+    public void testIssue839() {
+        doTest("/ccsds/odm/oem/OEM-Issue839.txt");
     }
 
 }

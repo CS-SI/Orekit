@@ -28,8 +28,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,6 +43,8 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
 
 public class CPFWriterTest {
@@ -134,6 +138,136 @@ public class CPFWriterTest {
             }
             assertEquals(0, count);
         }
+    }
+
+    /** Test for issue #844 (https://gitlab.orekit.org/orekit/orekit/-/issues/844). */
+    @Test
+    public void testIssue844() throws IOException {
+
+        // Create header
+        final CPFHeader header = new CPFHeader();
+        header.setSource("orekit");
+        header.setStep(300);
+        header.setStartEpoch(AbsoluteDate.J2000_EPOCH.shiftedBy(-300.0));
+        header.setEndEpoch(AbsoluteDate.J2000_EPOCH.shiftedBy(300.0));
+        header.setIlrsSatelliteId("070595");
+        header.setName("tag");
+        header.setNoradId("0705");
+        header.setProductionEpoch(new DateComponents(2000, 1, 2));
+        header.setProductionHour(12);
+        header.setSequenceNumber(0705);
+        header.setSic("0705");
+        final CPFHeader headerV1 = header;
+        headerV1.setVersion(1);
+
+        // Writer
+        final CPFWriter writer = new CPFWriter(headerV1, TimeScalesFactory.getUTC());
+
+        // Create an empty CPF file
+        final CPF cpf = new CPF();
+
+        // Fast check
+        assertEquals(0, cpf.getSatellites().size());
+
+        // Add coordinates
+        final int leap = 0;
+        cpf.addSatelliteCoordinate(header.getIlrsSatelliteId(), new CPFCoordinate(AbsoluteDate.J2000_EPOCH.shiftedBy(-300.0), Vector3D.PLUS_I, leap));
+        cpf.addSatelliteCoordinate(header.getIlrsSatelliteId(), new CPFCoordinate(AbsoluteDate.J2000_EPOCH,                   Vector3D.PLUS_J, leap));
+        cpf.addSatelliteCoordinate(header.getIlrsSatelliteId(), new CPFCoordinate(AbsoluteDate.J2000_EPOCH.shiftedBy(300.0),  Vector3D.PLUS_K, leap));
+
+        // Write the file
+        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        writer.write(tempCPFFilePath, cpf);
+
+        // Verify
+        final List<CPFCoordinate> coordinatesInFile = cpf.getSatellites().get(header.getIlrsSatelliteId()).getCoordinates();
+        assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.get(0).getPosition()), 1.0e-10);
+        assertEquals(0.0, Vector3D.PLUS_J.distance(coordinatesInFile.get(1).getPosition()), 1.0e-10);
+        assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
+
+    }
+
+    /** Test for issue #844 (https://gitlab.orekit.org/orekit/orekit/-/issues/844). */
+    @Test
+    public void testIssue844Bis() throws IOException {
+
+        // Create header
+        final CPFHeader header = new CPFHeader();
+        header.setSource("orekit");
+        header.setStep(300);
+        header.setStartEpoch(AbsoluteDate.J2000_EPOCH.shiftedBy(-300.0));
+        header.setEndEpoch(AbsoluteDate.J2000_EPOCH.shiftedBy(300.0));
+        header.setIlrsSatelliteId("070595");
+        header.setName("tag");
+        header.setNoradId("0705");
+        header.setProductionEpoch(new DateComponents(2000, 1, 2));
+        header.setProductionHour(12);
+        header.setSequenceNumber(0705);
+        header.setSic("0705");
+        final CPFHeader headerV1 = header;
+        headerV1.setVersion(1);
+
+        // Writer
+        final CPFWriter writer = new CPFWriter(headerV1, TimeScalesFactory.getUTC());
+
+        // Create an empty CPF file
+        final CPF cpf = new CPF();
+
+        // Fast check
+        assertEquals(0, cpf.getSatellites().size());
+
+        // Add coordinates
+        final int leap = 0;
+        final List<CPFCoordinate> coordinates = new ArrayList<>();
+        coordinates.add(new CPFCoordinate(AbsoluteDate.J2000_EPOCH.shiftedBy(-300.0), Vector3D.PLUS_I, leap));
+        coordinates.add(new CPFCoordinate(AbsoluteDate.J2000_EPOCH,                   Vector3D.PLUS_J, leap));
+        coordinates.add(new CPFCoordinate(AbsoluteDate.J2000_EPOCH.shiftedBy(300.0),  Vector3D.PLUS_K, leap));
+        cpf.addSatelliteCoordinates(header.getIlrsSatelliteId(), coordinates);
+
+        // Write the file
+        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        writer.write(tempCPFFilePath, cpf);
+
+        // Verify
+        final List<CPFCoordinate> coordinatesInFile = cpf.getSatellites().get(header.getIlrsSatelliteId()).getCoordinates();
+        assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.get(0).getPosition()), 1.0e-10);
+        assertEquals(0.0, Vector3D.PLUS_J.distance(coordinatesInFile.get(1).getPosition()), 1.0e-10);
+        assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
+
+    }
+
+    @Test
+    @Deprecated
+    public void testDefaultId() throws IOException {
+
+        // Initialize
+        final CPF cpf = new CPF();
+
+        // Fast check
+        assertEquals(0, cpf.getSatellites().size());
+
+        // Add coordinates
+        final int leap = 0;
+        cpf.addSatelliteCoordinate(new CPFCoordinate(AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, leap));
+
+        // Verify
+        assertEquals(1, cpf.getSatellites().size());
+
+    }
+
+    @Test
+    @Deprecated
+    public void testOldConstructor() throws IOException {
+
+        // Initialize
+        // Create an empty CPF file
+        final CPF cpf = new CPF();
+        final CPFEphemeris ephemeris = cpf.new CPFEphemeris();
+
+        // Fast check
+        assertEquals(0, ephemeris.getCoordinates().size());
+        assertEquals(CPF.DEFAULT_ID, ephemeris.getId());
+
     }
 
     public static void compareCpfFiles(CPF file1, CPF file2) {

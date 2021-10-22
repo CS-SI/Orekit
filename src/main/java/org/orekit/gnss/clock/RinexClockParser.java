@@ -330,11 +330,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PROGRAM);
-            }
         },
 
         /** Parser for generating program and emiting agency. */
@@ -371,12 +366,6 @@ public class RinexClockParser {
 
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_DCBS, HEADER_PCVS,
-                                 HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
-            }
         },
 
         /** Parser for comments. */
@@ -393,11 +382,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_TYPES_OF_DATA, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_END);
-            }
         },
 
         /** Parser for satellite system and related observation types. */
@@ -427,12 +411,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SYSTEM_OBS, HEADER_COMMENT, HEADER_SYSTEM_OBS_CONTINUATION,
-                                 HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
-            }
         },
 
         /** Parser for continuation of satellite system and related observation types. */
@@ -456,11 +434,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM, HEADER_COMMENT, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
-            }
         },
 
         /** Parser for data time system. */
@@ -481,11 +454,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_COMMENT, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA);
-            }
         },
 
         /** Parser for leap seconds. */
@@ -504,11 +472,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_COMMENT, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF);
-            }
         },
 
         /** Parser for leap seconds GNSS. */
@@ -527,11 +490,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_COMMENT, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF);
-            }
         },
 
         /** Parser for applied differencial code bias corrections. */
@@ -561,11 +519,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_COMMENT, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF, HEADER_END);
-            }
         },
 
         /** Parser for applied phase center variation corrections. */
@@ -595,11 +548,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_COMMENT, HEADER_NUMBER_OF_CLOCK_REF, HEADER_TYPES_OF_DATA, HEADER_END);
-            }
         },
 
         /** Parser for the different clock data types that are stored in the file. */
@@ -623,11 +571,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_STATIONS_NAME, HEADER_COMMENT, HEADER_ANALYSIS_CENTER, HEADER_END);
-            }
         },
 
         /** Parser for the station with reference clock. */
@@ -650,11 +593,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_STATION_CLOCK_REF, HEADER_COMMENT, HEADER_ANALYSIS_CENTER, HEADER_END);
-            }
         },
 
         /** Parser for the reference clock in case of calibration data. */
@@ -670,11 +608,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_ANALYSIS_CENTER, HEADER_COMMENT, HEADER_END);
-            }
         },
 
         /** Parser for the analysis center. */
@@ -698,12 +631,6 @@ public class RinexClockParser {
                 pi.file.setAnalysisCenterName(analysisCenterName);
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_NUMBER_OF_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS, HEADER_DCBS, HEADER_PCVS,
-                                 HEADER_COMMENT, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_END);
-            }
         },
 
         /** Parser for the number of reference clocks over a period. */
@@ -758,11 +685,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_ANALYSIS_CLOCK_REF, HEADER_COMMENT, HEADER_NUMBER_OF_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS, HEADER_END);
-            }
         },
 
         /** Parser for the reference clock over a period. */
@@ -797,12 +719,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_NUMBER_OF_CLOCK_REF, HEADER_ANALYSIS_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS,
-                                 HEADER_COMMENT, HEADER_END);
-            }
         },
 
         /** Parser for the number of stations embedded in the file and the related frame. */
@@ -824,11 +740,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SOLN_STATIONS, HEADER_COMMENT, HEADER_NUMBER_OF_SOLN_SATS, HEADER_END);
-            }
         },
 
         /** Parser for the stations embedded in the file and the related positions. */
@@ -876,11 +787,6 @@ public class RinexClockParser {
 
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SOLN_STATIONS, HEADER_COMMENT, HEADER_NUMBER_OF_SOLN_SATS, HEADER_END);
-            }
         },
 
         /** Parser for the number of satellites embedded in the file. */
@@ -894,11 +800,6 @@ public class RinexClockParser {
                     // Do nothing...
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PRN_LIST, HEADER_COMMENT, HEADER_END);
-            }
         },
 
         /** Parser for the satellites embedded in the file. */
@@ -923,11 +824,6 @@ public class RinexClockParser {
                 }
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PRN_LIST, HEADER_COMMENT, HEADER_DCBS, HEADER_PCVS, HEADER_END);
-            }
         },
 
         /** Parser for the end of header. */
@@ -1066,9 +962,19 @@ public class RinexClockParser {
         public abstract void parse(String line, ParseInfo pi);
 
         /** Get the allowed parsers for next line.
+         * <p>
+         * Because the standard only recommends an order for header keys,
+         * the default implementation of the method returns all the
+         * header keys. Specific implementations must overrides the method.
+         * </p>
          * @return allowed parsers for next line
          */
-        public abstract Stream<LineParser> allowedNext();
+        public Stream<LineParser> allowedNext() {
+            return Stream.of(HEADER_PROGRAM, HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_SYSTEM_OBS_CONTINUATION, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS,
+                             HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_STATIONS_NAME, HEADER_STATION_CLOCK_REF,
+                             HEADER_ANALYSIS_CENTER, HEADER_NUMBER_OF_CLOCK_REF, HEADER_ANALYSIS_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS,
+                             HEADER_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS, HEADER_PRN_LIST, HEADER_END);
+        }
 
         /** Check if parser can handle line.
          * @param line line to parse

@@ -5,7 +5,7 @@ stages:
 
 default:
   # Default image
-  image: registry.orekit.org/orekit/ci-utils/maven:3.3.9-jdk-8
+  image: registry.orekit.org/orekit/ci-utils/maven:3.6.2-jdk-8-slim
   # Cache downloaded dependencies and plugins between builds.
   # To keep cache across branches add 'key: "$CI_JOB_REF_NAME"'
   cache:
