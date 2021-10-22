@@ -478,7 +478,7 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
                 // CPF coordinate
                 final CPF.CPFCoordinate coordinate = new CPF.CPFCoordinate(date, position, leap);
-                pi.file.addSatelliteCoordinate(coordinate);
+                pi.file.addSatelliteCoordinate(pi.file.getHeader().getIlrsSatelliteId(), coordinate);
 
             }
 

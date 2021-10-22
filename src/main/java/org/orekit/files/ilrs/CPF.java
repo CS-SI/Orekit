@@ -18,9 +18,9 @@ package org.orekit.files.ilrs;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.files.general.EphemerisFile;
@@ -39,6 +39,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
+    /** Default satellite ID, used if header is null when initializing the ephemeris. */
+    public static final String DEFAULT_ID = "9999999";
+
     /** Gravitational coefficient. */
     private double mu;
 
@@ -54,8 +57,8 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
     /** CPF file header. */
     private CPFHeader header;
 
-    /** List containing satellite information. */
-    private CPFEphemeris ephemeris;
+    /** Map containing satellite information. */
+    private Map<String, CPFEphemeris> ephemeris;
 
     /** List of comments contained in the file. */
     private List<String> comments;
@@ -65,7 +68,7 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      */
     public CPF() {
         this.mu        = Double.NaN;
-        this.ephemeris = new CPFEphemeris();
+        this.ephemeris = new ConcurrentHashMap<>();
         this.header    = new CPFHeader();
         this.comments  = new ArrayList<>();
     }
@@ -75,12 +78,8 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      */
     @Override
     public Map<String, CPFEphemeris> getSatellites() {
-        // Initialise an empty map
-        final Map<String, CPFEphemeris> satellites = new HashMap<>();
-        // Add the value
-        satellites.put(ephemeris.getId(), ephemeris);
         // Return the map
-        return Collections.unmodifiableMap(satellites);
+        return Collections.unmodifiableMap(ephemeris);
     }
 
     /**
@@ -109,10 +108,37 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
     /**
      * Adds a new P/V coordinate to the satellite.
+     * <p>
+     * If the header has not been read, the {@link #DEFAULT_ID} is used.
+     * </p>
      * @param coord the P/V coordinate of the satellite
+     * @deprecated as of 11.0.1, replaced by {@link CPF#addSatelliteCoordinate(String, CPFCoordinate)}
      */
+    @Deprecated
     public void addSatelliteCoordinate(final CPFCoordinate coord) {
-        ephemeris.coordinates.add(coord);
+        addSatelliteCoordinate(DEFAULT_ID, coord);
+    }
+
+    /**
+     * Adds a set of P/V coordinates to the satellite.
+     * @param id satellite ILRS identifier
+     * @param coord set of coordinates
+     * @since 11.0.1
+     */
+    public void addSatelliteCoordinates(final String id, final List<CPFCoordinate> coord) {
+        createIfNeeded(id);
+        ephemeris.get(id).coordinates.addAll(coord);
+    }
+
+    /**
+     * Add a new P/V coordinates to the satellite.
+     * @param id satellite ILRS identifier
+     * @param coord the P/V coordinate of the satellite
+     * @since 11.0.1
+     */
+    public void addSatelliteCoordinate(final String id, final CPFCoordinate coord) {
+        createIfNeeded(id);
+        ephemeris.get(id).coordinates.add(coord);
     }
 
     /**
@@ -147,18 +173,45 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
         this.filter = filter;
     }
 
+    /**
+     * Create the satellite ephemeris corresponding to the given ID (if needed).
+     * @param id satellite ILRS identifier
+     */
+    private void createIfNeeded(final String id) {
+        if (ephemeris.get(id) == null) {
+            ephemeris.put(id, new CPFEphemeris(id));
+        }
+    }
+
     /** An ephemeris entry  for a single satellite contains in a CPF file. */
     public class CPFEphemeris
         implements EphemerisFile.SatelliteEphemeris<CPFCoordinate, CPFEphemeris>,
                    EphemerisFile.EphemerisSegment<CPFCoordinate> {
 
+        /** Satellite ID. */
+        private final String id;
+
         /** Ephemeris Data. */
         private final List<CPFCoordinate> coordinates;
 
-        /** Constructor. */
+        /**
+         * Constructor.
+         * @deprecated as of 11.0.1, replaced by
+         */
+        @Deprecated
         public CPFEphemeris() {
+            this(null);
+        }
+
+        /**
+         * Constructor.
+         * @param id satellite ID
+         */
+        public CPFEphemeris(final String id) {
+            this.id          = id;
             this.coordinates = new ArrayList<>();
         }
+
 
         /** {@inheritDoc} */
         @Override
@@ -187,7 +240,7 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
         /** {@inheritDoc} */
         @Override
         public String getId() {
-            return header.getIlrsSatelliteId();
+            return id == null ? DEFAULT_ID : id;
         }
 
         /** {@inheritDoc} */
