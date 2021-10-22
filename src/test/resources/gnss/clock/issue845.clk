@@ -1,0 +1,8 @@
+     3.00           C                                       RINEX VERSION / TYPE
+EPOS-8              GFZ                 20190702 075449 LCL PGM / RUN BY / DATE
+     2    AS    AR                                          # / TYPES OF DATA
+GFZ  GeoForschungsZentrum Potsdam                           ANALYSIS CENTER
+     1                                                      # OF CLK REF
+kour 97301M210                                              ANALYSIS CLK REF
+Clocks are re-aligned to broadcast GPS time                 COMMENT
+   119    IGS14                                             # OF SOLN STA / TRF
