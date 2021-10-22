@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.1" date="TBD" description="TBD">
+    </release>
     <release version="11.0.1" date="2021-10-22"
              description="Version 11.0.1 is a patch release of Orekit.
              It fixes an important issue related to the calculation of the relativistic
