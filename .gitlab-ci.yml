@@ -130,3 +130,20 @@ performance:
   trigger: evanward1/orekit-performance
   only:
     - develop@orekit/orekit
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  release:
+    tag_name: $CI_COMMIT_TAG
+    description: './CHANGELOG.md'
+    assets:
+      links:
+        - name: orekit-${CI_COMMIT_TAG}.jar
+          url: https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}.jar
+        - name: orekit-${CI_COMMIT_TAG}-javadoc.jar
+          url: https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}-javadoc.jar
+        - name: orekit-${CI_COMMIT_TAG}-sources.jar
+          url: https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}-sources.jar
+  only:
+    - /^release-[.0-9]+$/@orekit/orekit
