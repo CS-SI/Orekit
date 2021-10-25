@@ -2,6 +2,7 @@ stages:
   - verify
   - visualize
   - deploy
+  - release
 
 default:
   # Default image
