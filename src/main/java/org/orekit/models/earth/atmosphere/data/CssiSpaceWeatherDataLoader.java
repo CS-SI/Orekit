@@ -24,7 +24,9 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -355,7 +357,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
     private AbsoluteDate lastDate;
 
     /** Data set. */
-    private SortedSet<TimeStamped> set;
+    private SortedSet<LineParameters> set;
 
     /**
      * Constructor.
@@ -374,7 +376,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
      * Getter for the data set.
      * @return the data set
      */
-    public SortedSet<TimeStamped> getDataSet() {
+    public SortedSet<LineParameters> getDataSet() {
         return set;
     }
 
@@ -435,6 +437,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         // read the data
         int lineNumber = 0;
         String line = null;
+        final Set<AbsoluteDate> parsedEpochs = new HashSet<>();
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
@@ -461,7 +464,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
                         final int day = Integer.parseInt(line.substring(8, 10));
                         final AbsoluteDate date = new AbsoluteDate(year, month, day, this.utc);
 
-                        if (!set.contains(date)) { // Checking if entry doesn't exist yet
+                        if (parsedEpochs.add(date)) { // Checking if entry doesn't exist yet
                             final double[] threeHourlyKp = new double[8];
                             /**
                              * Kp is written as an integer where a unit equals 0.1, the conversion is
