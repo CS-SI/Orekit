@@ -77,6 +77,17 @@ coverage-import:
       cobertura: target/site/cobertura.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
+changelog:
+  stage: verify
+  image: alpine:latest
+  before_script:
+    - apk add libxslt
+  script:
+    - xsltproc .CI/changes2release.xsl src/changes/changes.xml > CHANGELOG.md
+  artifacts:
+    paths:
+      - CHANGELOG.md
+
 # On main branches (develop, release-*, master) the produced artifacts are
 # deployed on the Nexus of the project (https://packages.orekit.org/)
 deploy:artifacts:
