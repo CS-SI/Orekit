@@ -224,14 +224,6 @@ Remove `orekit-X.Y.source-jar*` since they are duplicates of the
 `orekit-X.Y-sources.jar*` artifacts. (We can’t figure out how to make maven
 stop producing these duplicate artifacts). Then click the “Close” button.
 
-## Update Orekit in Orekit test site
-
-One edit need to be made to the Orekit website before calling the vote. Fetch the current code:
-
-    git clone https://gitlab.orekit.org/orekit/website-2015
-
-Switch to `develop` branch and edit `_data/orekit/versions.yml` by adding the new version X.Y to the list.
-
 ## Calling for the vote
 
 Everything is now ready so the developers and PMC can vote for the release.
@@ -313,7 +305,7 @@ file for new changes. Then commit and push.
 ## Publish maven artifacts
 
 The maven artifacts must be published using OSS site to release the repository.
-Select the Orekit repository in "Staging Repositories" and click the “Release”
+Select the Orekit repository in “Staging Repositories” and click the “Release”
 button in [Nexus Repository Manager](https://oss.sonatype.org/).
 
 ## Upload to Gitlab
@@ -331,14 +323,18 @@ Navigate to Projects > Orekit > Releases and make sure it looks nice.
 
 ## Synchronize the Github mirror
 
-To enhance the visibility of the project, [a mirror](https://github.com/CS-SI/Orekit) is maintained on Github. The releases created on Gitlab are not automatically pushed on this mirror. They have to be declared manually to make visible the vitality of Orekit.
+To enhance the visibility of the project,
+[a mirror](https://github.com/CS-SI/Orekit) is maintained on Github. The
+releases created on Gitlab are not automatically pushed on this mirror. They
+have to be declared manually to make visible the vitality of Orekit.
 
 1. Login to Github
 2. Go to the [Orekit releases](https://github.com/CS-SI/Orekit/releases) page
 3. Click on the [Draft a new release](https://github.com/CS-SI/Orekit/releases) button
-4. In the "Tag version" field of the form and in the "Release title" field, enter the tag of the release to be declared
+4. In the “Tag version” field of the form and in the “Release title” field,
+   enter the tag of the release to be declared
 5. Describe the release as it has been done on Gitlab
-6. Click on "Publish release"
+6. Click on “Publish releaes”
 
 Github automically adds two assets (zip and tarball archives of the tagged source code)
 
@@ -346,15 +342,8 @@ Github automically adds two assets (zip and tarball archives of the tagged sourc
 
 Several edits need to be made to the Orekit website after the vote.
 
-Edit `download/.htaccess` and replace the URLs of the 3 Orekit artifacts
-with the ones used to create the release notes.
-
-Edit `_data/orekit/versions.yml` and update the versions list.
-
-Edit `_layouts/home_orekit.html` and update the text of the big button to use the new version.
-
 Edit `overview.html` with the new Hipparchus version. Don't forget to update the
-overview.png image with the new dependencies.
+`overview.png` image with the new dependencies.
 
 Create a new post for the release in `_post/`.
 
@@ -378,8 +367,9 @@ announcements category of the forum with a subject line of the form:
 
 and content of the form:
 
-    The Orekit team is pleased to announce the release of Orekit version X.Y. This is a minor/major 
-    version, including both new features and bug fixes. The main changes are:
+    The Orekit team is pleased to announce the release of Orekit version X.Y.
+    This is a minor/major version, including both new features and bug fixes.
+    The main changes are:
 
       - feature 1 description
       ...
