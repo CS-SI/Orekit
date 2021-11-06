@@ -224,14 +224,6 @@ Remove `orekit-X.Y.source-jar*` since they are duplicates of the
 `orekit-X.Y-sources.jar*` artifacts. (We can’t figure out how to make maven
 stop producing these duplicate artifacts). Then click the “Close” button.
 
-## Update Orekit in Orekit test site
-
-One edit need to be made to the Orekit website before calling the vote. Fetch the current code:
-
-    git clone https://gitlab.orekit.org/orekit/website-2015
-
-Switch to `develop` branch and edit `_data/orekit/versions.yml` by adding the new version X.Y to the list.
-
 ## Calling for the vote
 
 Everything is now ready so the developers and PMC can vote for the release.
@@ -346,15 +338,8 @@ Github automically adds two assets (zip and tarball archives of the tagged sourc
 
 Several edits need to be made to the Orekit website after the vote.
 
-Edit `download/.htaccess` and replace the URLs of the 3 Orekit artifacts
-with the ones used to create the release notes.
-
-Edit `_data/orekit/versions.yml` and update the versions list.
-
-Edit `_layouts/home_orekit.html` and update the text of the big button to use the new version.
-
 Edit `overview.html` with the new Hipparchus version. Don't forget to update the
-overview.png image with the new dependencies.
+`overview.png` image with the new dependencies.
 
 Create a new post for the release in `_post/`.
 
