@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-package org.orekit.forces.maneuvers;
+package org.orekit.forces.maneuvers.triggers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -26,6 +25,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -43,7 +45,9 @@ import org.orekit.utils.Constants;
  *
  * @author Greg Carbott
  */
-public class ConstantThrustManeuverInitializationTest {
+public abstract class AbstractManeuverTriggersInitializationTest<T extends AbstractManeuverTriggers> {
+
+    protected abstract T createTrigger(AbsoluteDate start, AbsoluteDate stop);
 
     private NumericalPropagator propagator;
     private AbsoluteDate startDate;
@@ -63,8 +67,11 @@ public class ConstantThrustManeuverInitializationTest {
     /** Mass of Spacecraft in kilograms */
     private double mass = 2e3;
 
-    /** Tolerance of deltaV (m/s) and mass (kg) difference */
-    private double tolerance = 1e-8;
+    /** Tolerance of deltaV (m/s) difference */
+    private double dvTolerance = 3e-6;
+
+    /** Tolerance of mass (kg) difference */
+    private double massTolerance = 5e-6;
 
     /** Direction of Maneuver */
     private Vector3D direction = new Vector3D(1, 0, 1);
@@ -102,15 +109,17 @@ public class ConstantThrustManeuverInitializationTest {
         initialState = new SpacecraftState(orbit, mass);
 
         //Numerical Propagator
-        double minStep = 0.001;
+        double minStep = 1.0e-5;
         double maxStep = 1000.0;
-        double positionTolerance = 10.;
+        double positionTolerance = 1.0e-4;
         OrbitType propagationType = OrbitType.KEPLERIAN;
         double[][] tolerances =
                 NumericalPropagator.tolerances(positionTolerance, orbit, propagationType);
-        AdaptiveStepsizeIntegrator integrator =
+        DormandPrince853Integrator integrator =
                 new DormandPrince853Integrator(minStep, maxStep,
                         tolerances[0], tolerances[1]);
+        integrator.setInitialStepSize(10.0);
+        integrator.setMaxGrowth(2.0);
         //Set up propagator
         propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(propagationType);
@@ -138,9 +147,10 @@ public class ConstantThrustManeuverInitializationTest {
     @Test
     public void testInBetween() {
         //Create test Thrust Maneuver
-        ConstantThrustManeuver ctm = new ConstantThrustManeuver(
-                startDate.shiftedBy(-(duration / 2)),
-                duration, thrust, isp, direction);
+        Maneuver ctm = new Maneuver(null,
+                                    createTrigger(startDate.shiftedBy(-(duration / 2)),
+                                                  startDate.shiftedBy( (duration / 2))),
+                                    new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
         propagator.addForceModel(ctm);
@@ -148,16 +158,17 @@ public class ConstantThrustManeuverInitializationTest {
         SpacecraftState finalStateTest =
                 propagator.propagate(startDate.shiftedBy(propDuration));
 
-        Assert.assertEquals(massControlHalfForward, finalStateTest.getMass(), tolerance);
+        Assert.assertEquals(massControlHalfForward, finalStateTest.getMass(), massTolerance);
 
     }
 
     @Test
     public void testOnStart() {
         //Create test Thrust Maneuver
-        ConstantThrustManeuver ctm = new ConstantThrustManeuver(
-                startDate.shiftedBy(0.0),
-                duration, thrust, isp, direction);
+        Maneuver ctm = new Maneuver(null,
+                                    createTrigger(startDate,
+                                                  startDate.shiftedBy(duration)),
+                                    new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
         propagator.addForceModel(ctm);
@@ -168,17 +179,18 @@ public class ConstantThrustManeuverInitializationTest {
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(mass / finalStateTest.getMass());
 
-        Assert.assertEquals(deltaVControlFullForward, deltaVTest, tolerance);
-        Assert.assertEquals(massControlFullForward, finalStateTest.getMass(), tolerance);
+        Assert.assertEquals(deltaVControlFullForward, deltaVTest, dvTolerance);
+        Assert.assertEquals(massControlFullForward, finalStateTest.getMass(), massTolerance);
 
     }
 
     @Test
     public void testOnEnd() {
         //Create test Thrust Maneuver
-        ConstantThrustManeuver ctm = new ConstantThrustManeuver(
-                startDate.shiftedBy(0.0 - duration),
-                duration, thrust, isp, direction);
+        Maneuver ctm = new Maneuver(null,
+                                    createTrigger(startDate.shiftedBy(-duration),
+                                                  startDate),
+                                    new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
         propagator.addForceModel(ctm);
@@ -197,9 +209,10 @@ public class ConstantThrustManeuverInitializationTest {
     @Test
     public void testOnEndReverse() {
         //Create test Thrust Maneuver
-        ConstantThrustManeuver ctm = new ConstantThrustManeuver(
-                startDate.shiftedBy(0.0),
-                -duration, thrust, isp, direction);
+        Maneuver ctm = new Maneuver(null,
+                                    createTrigger(startDate.shiftedBy(-duration),
+                                                  startDate),
+                                    new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
         propagator.addForceModel(ctm);
@@ -210,17 +223,18 @@ public class ConstantThrustManeuverInitializationTest {
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(finalStateTest.getMass() / mass);
 
-        Assert.assertEquals(deltaVControlFullReverse, deltaVTest, tolerance);
-        Assert.assertEquals(massControlFullReverse, finalStateTest.getMass(), tolerance);
+        Assert.assertEquals(deltaVControlFullReverse, deltaVTest, dvTolerance);
+        Assert.assertEquals(massControlFullReverse, finalStateTest.getMass(), massTolerance);
 
     }
 
     @Test
     public void testOnStartReverse() {
         //Create test Thrust Maneuver
-        ConstantThrustManeuver ctm = new ConstantThrustManeuver(
-                startDate.shiftedBy(0.0),
-                duration, thrust, isp, direction);
+        Maneuver ctm = new Maneuver(null,
+                                    createTrigger(startDate,
+                                                  startDate.shiftedBy(duration)),
+                                    new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
         propagator.addForceModel(ctm);
@@ -239,9 +253,10 @@ public class ConstantThrustManeuverInitializationTest {
     @Test
     public void testInBetweenReverse() {
         //Create test Thrust Maneuver
-        ConstantThrustManeuver ctm = new ConstantThrustManeuver(
-                startDate.shiftedBy(duration / 2),
-                -duration, thrust, isp, direction);
+        Maneuver ctm = new Maneuver(null,
+                                    createTrigger(startDate.shiftedBy(-duration / 2),
+                                                  startDate.shiftedBy( duration / 2)),
+                                    new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
         propagator.addForceModel(ctm);
@@ -252,17 +267,18 @@ public class ConstantThrustManeuverInitializationTest {
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(finalStateTest.getMass() / mass);
 
-        Assert.assertEquals(deltaVControlHalfReverse, deltaVTest, tolerance);
-        Assert.assertEquals(massControlHalfReverse, finalStateTest.getMass(), tolerance);
+        Assert.assertEquals(deltaVControlHalfReverse, deltaVTest, dvTolerance);
+        Assert.assertEquals(massControlHalfReverse, finalStateTest.getMass(), massTolerance);
 
     }
 
     @Test
     public void testControlForward() {
         //Create test Thrust Maneuver
-        ConstantThrustManeuver ctm = new ConstantThrustManeuver(
-                startDate.shiftedBy(1.0),
-                duration, thrust, isp, direction);
+        Maneuver ctm = new Maneuver(null,
+                                    createTrigger(startDate.shiftedBy(1.0),
+                                                  startDate.shiftedBy(1.0 + duration)),
+                                    new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
         propagator.addForceModel(ctm);
@@ -273,17 +289,18 @@ public class ConstantThrustManeuverInitializationTest {
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(mass / finalStateTest.getMass());
 
-        Assert.assertEquals(deltaVControlFullForward, deltaVTest, tolerance);
-        Assert.assertEquals(massControlFullForward, finalStateTest.getMass(), tolerance);
+        Assert.assertEquals(deltaVControlFullForward, deltaVTest, dvTolerance);
+        Assert.assertEquals(massControlFullForward, finalStateTest.getMass(), massTolerance);
 
     }
 
     @Test
     public void testControlReverse() {
         //Create test Thrust Maneuver
-        ConstantThrustManeuver ctm = new ConstantThrustManeuver(
-                startDate.shiftedBy(-1.0),
-                -duration, thrust, isp, direction);
+        Maneuver ctm = new Maneuver(null,
+                                    createTrigger(startDate.shiftedBy(-1.0 - duration),
+                                                  startDate.shiftedBy(-1.0)),
+                                    new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
         propagator.addForceModel(ctm);
@@ -294,8 +311,8 @@ public class ConstantThrustManeuverInitializationTest {
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(finalStateTest.getMass() / mass);
 
-        Assert.assertEquals(deltaVControlFullReverse, deltaVTest, tolerance);
-        Assert.assertEquals(massControlFullReverse, finalStateTest.getMass(), tolerance);
+        Assert.assertEquals(deltaVControlFullReverse, deltaVTest, dvTolerance);
+        Assert.assertEquals(massControlFullReverse, finalStateTest.getMass(), massTolerance);
 
     }
 }

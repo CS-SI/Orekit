@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added IntervalEventTrigger and StartStopEventsTrigger to streamline
+        several ways to trigger maneuvers.
+      </action>
     </release>
     <release version="11.0.1" date="2021-10-22"
              description="Version 11.0.1 is a patch release of Orekit.
