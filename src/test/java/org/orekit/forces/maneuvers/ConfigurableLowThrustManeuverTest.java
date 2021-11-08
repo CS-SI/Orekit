@@ -27,7 +27,9 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider;
+import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -46,6 +48,8 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -283,16 +287,14 @@ public class ConfigurableLowThrustManeuverTest {
     }
 
     public static NumericalPropagator buildNumericalPropagator(final Orbit initialOrbit) {
-        final double minStep = 1e-2;
+        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+        final double minStep = 1e-6;
         final double maxStep = 100;
 
-        final double[] vecAbsoluteTolerance = { 1e-5, 1e-5, 1e-5, 1e-8, 1e-8, 1e-8, 1e-5 };
-        final double[] vecRelativeTolerance = { 1e-10, 1e-10, 1e-10, 1e-10, 1e-10, 1e-10, 1e-10 };
-
-        final DormandPrince54Integrator integrator = new DormandPrince54Integrator(minStep, maxStep,
-                vecAbsoluteTolerance, vecRelativeTolerance);
-
+        final double[][] tol = NumericalPropagator.tolerances(1.0e-5, initialOrbit, orbitType);
+        final DormandPrince54Integrator integrator = new DormandPrince54Integrator(minStep, maxStep, tol[0], tol[1]);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setOrbitType(orbitType);
         propagator.setAttitudeProvider(buildVelocityAttitudeProvider(initialOrbit.getFrame()));
         return propagator;
     }
@@ -372,7 +374,7 @@ public class ConfigurableLowThrustManeuverTest {
         Assert.assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void testBackwardPropagationDisabled() {
         /////////////////// initial conditions /////////////////////////////////
         final KeplerianOrbit initOrbit = buildInitOrbit();
@@ -386,7 +388,57 @@ public class ConfigurableLowThrustManeuverTest {
         final NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(initOrbit);
         numericalPropagatorForward.addForceModel(buildApogeeManeuver());
         numericalPropagatorForward.setInitialState(initialState);
-        numericalPropagatorForward.propagate(finalDate);
+        try {
+            numericalPropagatorForward.propagate(finalDate);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.BACKWARD_PROPAGATION_NOT_ALLOWED, oe.getSpecifier());
+        }
+
+    }
+
+    @Test
+    public void testBackwardPropagationEnabled() {
+
+        final double f = 0.1;
+        final double isp = 2000;
+        final double duration = 3000.0;
+ 
+        final Orbit orbit =
+            new KeplerianOrbit(24396159, 0.72831215, FastMath.toRadians(7),
+                               FastMath.toRadians(180), FastMath.toRadians(261),
+                               FastMath.toRadians(0.0), PositionAngle.MEAN,
+                               FramesFactory.getEME2000(),
+                               new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                new TimeComponents(23, 30, 00.000),
+                                                TimeScalesFactory.getUTC()),
+                               Constants.EIGEN5C_EARTH_MU);
+        final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
+        final SpacecraftState initialState =
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), 2500.0);
+        final AbsoluteDate startDate = orbit.getDate().shiftedBy(17461.084);
+
+        // forward propagation
+        final NumericalPropagator forwardPropagator = buildNumericalPropagator(orbit);
+        forwardPropagator.addForceModel(new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
+                                                                          new DateBasedManeuverTriggers(startDate, duration),
+                                                                          f, isp, false));
+        forwardPropagator.setInitialState(initialState);
+        final SpacecraftState finalStateNumerical = forwardPropagator.propagate(startDate.shiftedBy(duration + 900.0));
+
+        // backward propagation
+        final NumericalPropagator backwardPropagator = buildNumericalPropagator(finalStateNumerical.getOrbit());
+        backwardPropagator.addForceModel(new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
+                                                                           new DateBasedManeuverTriggers(startDate, duration),
+                                                                           f, isp, true));
+        backwardPropagator.setInitialState(finalStateNumerical);
+        final SpacecraftState recoveredStateNumerical = backwardPropagator.propagate(orbit.getDate());
+
+        /////////////////// results check /////////////////////////////////
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(orbit.getPVCoordinates().getPosition(),
+                                              recoveredStateNumerical.getPVCoordinates().getPosition()),
+                            0.015);
 
     }
 
