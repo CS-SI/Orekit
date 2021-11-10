@@ -644,7 +644,7 @@ public class SpacecraftState
     /** Get an additional state.
      * @param name name of the additional state
      * @return value of the additional state
-          * @see #addAdditionalState(String, double[])
+     * @see #addAdditionalState(String, double[])
      * @see #hasAdditionalState(String)
      * @see #getAdditionalStates()
      */
