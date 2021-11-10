@@ -16,25 +16,26 @@
  */
 package org.orekit.forces.maneuvers.trigger;
 
-import java.lang.reflect.Array;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
+import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeStamped;
 
 /** Maneuver triggers based on a start and end date, with no parameter drivers.
  * @author Maxime Journot
  * @since 10.2
  */
-public class DateBasedManeuverTriggers extends IntervalEventTrigger<DateDetector> {
+public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDrivenDateIntervalDetector> {
+
+    /** Default name for trigger. */
+    public static final String DEFAULT_NAME = "";
+
+    /** Name of the trigger (used as prefix for start and stop parameters drivers). */
+    private final String name;
 
     /** Simple constructor.
      * @param date start (or end) data of the maneuver
@@ -42,36 +43,55 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<DateDetector
      * if negative, maneuver will be from date - duration to date)
      */
     public DateBasedManeuverTriggers(final AbsoluteDate date, final double duration) {
-        super(createDetector(date, duration).withHandler(new ContinueOnEvent<>()));
+        this(DEFAULT_NAME, date, duration);
+    }
+
+    /** Simple constructor.
+     * @param name name of the trigger (used as prefix for start and stop parameters drivers)
+     * @param date start (or end) data of the maneuver
+     * @param duration maneuver duration (if positive, maneuver is from date to date + duration,
+     * if negative, maneuver will be from date - duration to date)
+     * @since 11.1
+     */
+    public DateBasedManeuverTriggers(final String name, final AbsoluteDate date, final double duration) {
+        super(createDetector(name, date, duration).withHandler(new ContinueOnEvent<>()));
+        this.name = name;
     }
 
     /** Create a date detector from one boundary and signed duration.
+     * @param prefix for start and stop parameters drivers
      * @param date start (or end) data of the maneuver
      * @param duration maneuver duration (if positive, maneuver is from date to date + duration,
      * if negative, maneuver will be from date - duration to date)
      * @return date detector
      * @since 11.1
      */
-    private static DateDetector createDetector(final AbsoluteDate date, final double duration) {
+    private static ParameterDrivenDateIntervalDetector createDetector(final String prefix, final AbsoluteDate date, final double duration) {
         if (duration >= 0) {
-            return new DateDetector( 0.5 * duration, 1.0e-10, date, date.shiftedBy(duration));
+            return new ParameterDrivenDateIntervalDetector(prefix, date, date.shiftedBy(duration));
         } else {
-            return new DateDetector(-0.5 * duration, 1.0e-10, date.shiftedBy(duration), date);
+            return new ParameterDrivenDateIntervalDetector(prefix, date.shiftedBy(duration), date);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return name;
     }
 
     /** Get the start date.
      * @return the start date
      */
     public AbsoluteDate getStartDate() {
-        return getFiringIntervalDetector().getDates().get(0).getDate();
+        return getFiringIntervalDetector().getStartDriver().getDate();
     }
 
     /** Get the end date.
      * @return the end date
      */
     public AbsoluteDate getEndDate() {
-        return getFiringIntervalDetector().getDates().get(1).getDate();
+        return getFiringIntervalDetector().getStopDriver().getDate();
     }
 
     /** Get the duration of the maneuver (s).
@@ -85,22 +105,17 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<DateDetector
     /** {@inheritDoc} */
     @Override
     protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
-        FieldAbstractDetector<D, S> convertIntervalDetector(final Field<S> field, final DateDetector detector) {
+        FieldAbstractDetector<D, S> convertIntervalDetector(final Field<S> field, final ParameterDrivenDateIntervalDetector detector) {
 
-        // here, we must set maxCheckInterval, otherwise we will get an exception when adding the second date,
-        // because the it must be more than maxCheckInterval after the first,
-        // and the default maxCheckInterval is 1.0e10 seconds…
-        final S maxCheck = field.getZero().newInstance(detector.getMaxCheckInterval());
-
-        final List<TimeStamped> dates = detector.getDates();
-        @SuppressWarnings("unchecked")
-        final FieldAbsoluteDate<S>[] fDates =  (FieldAbsoluteDate<S>[]) Array.newInstance(FieldAbsoluteDate.class, dates.size());
-        for (int i = 0; i < dates.size(); ++i) {
-            fDates[i] = new FieldAbsoluteDate<>(field, dates.get(i).getDate());
-        }
+        final FieldParameterDrivenDateIntervalDetector<S> fd =
+                        new FieldParameterDrivenDateIntervalDetector<S>(field, "",
+                                                                        detector.getStartDriver().getReferenceDate(),
+                                                                        detector.getStopDriver().getReferenceDate());
+        fd.getStartDriver().setName(detector.getStartDriver().getName());
+        fd.getStopDriver().setName(detector.getStopDriver().getName());
 
         @SuppressWarnings("unchecked")
-        final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldDateDetector<S>(maxCheck, null, fDates);
+        final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) fd;
         return converted;
 
     }

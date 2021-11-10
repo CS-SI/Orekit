@@ -163,7 +163,9 @@ public class ConstantThrustManeuver extends Maneuver {
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final AttitudeProvider attitudeOverride,
                                   final AbstractConstantThrustPropulsionModel constantThrustPropulsionModel) {
-        this(attitudeOverride, new DateBasedManeuverTriggers(date, duration), constantThrustPropulsionModel);
+        this(attitudeOverride,
+             new DateBasedManeuverTriggers(constantThrustPropulsionModel.getName(), date, duration),
+             constantThrustPropulsionModel);
     }
 
     /** Simple constructor for a constant direction and constant thrust.
