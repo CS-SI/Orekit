@@ -76,7 +76,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
      * <p>
      * For DSST and TLE propagators, state parameters and parameters used for derivatives are the same,
-     * so the Jocabian is simply the identity.
+     * so the Jacobian is simply the identity.
      * </p>
      * <p>
      * For Numerical propagator, parameters used for derivatives are cartesian
