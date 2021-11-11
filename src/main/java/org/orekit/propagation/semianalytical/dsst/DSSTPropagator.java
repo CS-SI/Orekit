@@ -963,9 +963,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-            for (final DSSTForceModel forceModel : forceModels) {
-                forceModel.init(initialState, target);
-            }
+            forceModels.forEach(fm -> fm.init(initialState, target));
         }
 
         /** {@inheritDoc} */

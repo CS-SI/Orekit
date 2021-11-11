@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
@@ -62,7 +62,6 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldFixedNumberInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldMaxGapInterpolationGrid;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -1019,11 +1018,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         /** {@inheritDoc} */
         @Override
         public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
-            final SpacecraftState stateD  = initialState.toSpacecraftState();
-            final AbsoluteDate    targetD = target.toAbsoluteDate();
-            for (final DSSTForceModel forceModel : forceModels) {
-                forceModel.init(stateD, targetD);
-            }
+            forceModels.forEach(fm -> fm.init(initialState, target));
         }
 
         /** {@inheritDoc} */
