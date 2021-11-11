@@ -502,9 +502,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-            for (final ForceModel forceModel : forceModels) {
-                forceModel.init(initialState, target);
-            }
+            forceModels.forEach(fm -> fm.init(initialState, target));
         }
 
         /** {@inheritDoc} */

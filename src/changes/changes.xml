@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="853">
+        Added field-based init method in ForceModel and DSSTForceModel.
+      </action>
       <action dev="luc" type="fix" >
         Added ParameterDrivenDateIntervalDetector and FieldParameterDrivenDateIntervalDetector.
       </action>
