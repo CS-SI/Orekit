@@ -20,13 +20,13 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** Observer for maneuver triggers.
+/** Resetter for maneuver triggers.
  * @param <T> type of the field elements
  * @see AbstractManeuverTriggers
  * @author Luc Maisonobe
  * @since 11.1
  */
-public interface FieldManeuverTriggersObserver<T extends CalculusFieldElement<T>> {
+public interface FieldManeuverTriggersResetter<T extends CalculusFieldElement<T>> {
 
     /** Initialization method called at propagation start.
      * <p>
@@ -39,7 +39,7 @@ public interface FieldManeuverTriggersObserver<T extends CalculusFieldElement<T>
         // nothing by default
     }
 
-    /** Observe a maneuver trigger.
+    /** Reset state as a maneuver triggers.
      * <p>
      * The {@code start} parameter corresponds to physical flow of time
      * from past to future, not to propagation direction which can be backward.
@@ -51,7 +51,8 @@ public interface FieldManeuverTriggersObserver<T extends CalculusFieldElement<T>
      * </p>
      * @param state spacecraft state at trigger date
      * @param start if true, the trigger is the start of the maneuver
+     * @return reset state taking into account maneuver start/stop
      */
-    void maneuverTriggered(FieldSpacecraftState<T> state, boolean start);
+    FieldSpacecraftState<T> resetState(FieldSpacecraftState<T> state, boolean start);
 
 }

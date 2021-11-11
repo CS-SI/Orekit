@@ -109,8 +109,8 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
 
         final FieldParameterDrivenDateIntervalDetector<S> fd =
                         new FieldParameterDrivenDateIntervalDetector<S>(field, "",
-                                                                        detector.getStartDriver().getReferenceDate(),
-                                                                        detector.getStopDriver().getReferenceDate());
+                                                                        detector.getStartDriver().getBaseDate(),
+                                                                        detector.getStopDriver().getBaseDate());
         fd.getStartDriver().setName(detector.getStartDriver().getName());
         fd.getStopDriver().setName(detector.getStopDriver().getName());
 

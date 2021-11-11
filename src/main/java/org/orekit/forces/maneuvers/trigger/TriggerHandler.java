@@ -32,7 +32,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 11.1
  */
-public class TriggerHandler<T extends AbstractDetector<T>> implements EventHandler<T> {
+class TriggerHandler<T extends AbstractDetector<T>> implements EventHandler<T> {
 
     /** Prototype detector. */
     private final T prototypeDetector;

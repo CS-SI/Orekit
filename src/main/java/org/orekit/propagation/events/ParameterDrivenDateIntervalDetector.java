@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DateDriver;
 
@@ -50,7 +50,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     public ParameterDrivenDateIntervalDetector(final String prefix,
                                                final AbsoluteDate refStart, final AbsoluteDate refStop) {
         this(0.5 * refStop.durationFrom(refStart), 1.0e-10, DEFAULT_MAX_ITER,
-             new StopOnEvent<ParameterDrivenDateIntervalDetector>(),
+             new StopOnDecreasing<ParameterDrivenDateIntervalDetector>(),
              new DateDriver(refStart, prefix + START_SUFFIX),
              new DateDriver(refStop, prefix + STOP_SUFFIX));
     }

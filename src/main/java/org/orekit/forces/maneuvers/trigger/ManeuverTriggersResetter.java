@@ -19,12 +19,12 @@ package org.orekit.forces.maneuvers.trigger;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-/** Observer for maneuver triggers.
+/** Resetter for maneuver triggers.
  * @see AbstractManeuverTriggers
  * @author Luc Maisonobe
  * @since 11.1
  */
-public interface ManeuverTriggersObserver {
+public interface ManeuverTriggersResetter {
 
     /** Initialization method called at propagation start.
      * <p>
@@ -37,7 +37,7 @@ public interface ManeuverTriggersObserver {
         // nothing by default
     }
 
-    /** Observe a maneuver trigger.
+    /** Reset state as a maneuver triggers.
      * <p>
      * The {@code start} parameter corresponds to physical flow of time
      * from past to future, not to propagation direction which can be backward.
@@ -49,7 +49,8 @@ public interface ManeuverTriggersObserver {
      * </p>
      * @param state spacecraft state at trigger date
      * @param start if true, the trigger is the start of the maneuver
+     * @return reset state taking into account maneuver start/stop
      */
-    void maneuverTriggered(SpacecraftState state, boolean start);
+    SpacecraftState resetState(SpacecraftState state, boolean start);
 
 }

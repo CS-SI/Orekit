@@ -41,8 +41,8 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
-import org.orekit.forces.maneuvers.trigger.FieldManeuverTriggersObserver;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggersObserver;
+import org.orekit.forces.maneuvers.trigger.FieldManeuverTriggersResetter;
+import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -74,9 +74,8 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     private T configureTrigger(final AbsoluteDate start, final AbsoluteDate stop, final Action action) {
         T trigger = createTrigger(start, stop, action);
         // set up separate detectors, to check lists of observers are handled properly
-        trigger.addObserver(new Obs());
-//        trigger.addObserver((state, isStart) -> { if (isStart)  { triggerStart = state.getDate(); } });
-        trigger.addObserver((state, isStart) -> { if (!isStart) { triggerStop  = state.getDate(); } });
+        trigger.addResetter(new Resetter());
+        trigger.addResetter(new Resetter());
         return trigger;
     }
 
@@ -84,27 +83,31 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
                                                                    final AbsoluteDate start, final AbsoluteDate stop, final Action action) {
         T trigger = createTrigger(start, stop, action);
         // set up separate detectors, to check lists of observers are handled properly
-        trigger.addObserver(field, new Fobs<>());
-//        trigger.addObserver(field, (state, isStart) -> { if (isStart)  { triggerStart = state.getDate().toAbsoluteDate(); } });
-        trigger.addObserver(field, (state, isStart) -> { if (!isStart) { triggerStop  = state.getDate().toAbsoluteDate(); } });
+        trigger.addResetter(field, new FieldResetter<>());
+        trigger.addResetter(field, new FieldResetter<>());
         return trigger;
     }
 
-    private class Obs implements ManeuverTriggersObserver {
-        public void maneuverTriggered(SpacecraftState state, boolean start) {
+    private class Resetter implements ManeuverTriggersResetter {
+        public SpacecraftState resetState(SpacecraftState state, boolean start) {
             if (start)  {
                 triggerStart = state.getDate();
+            } else {
+                triggerStop  = state.getDate();
             }
+            return state;
         }
     }
-    private class Fobs<S extends CalculusFieldElement<S>> implements FieldManeuverTriggersObserver<S> {
-        public void maneuverTriggered(FieldSpacecraftState<S> state, boolean start) {
+    private class FieldResetter<S extends CalculusFieldElement<S>> implements FieldManeuverTriggersResetter<S> {
+        public FieldSpacecraftState<S> resetState(FieldSpacecraftState<S> state, boolean start) {
             if (start)  {
                 triggerStart = state.getDate().toAbsoluteDate();
+            } else {
+                triggerStop = state.getDate().toAbsoluteDate();
             }
+            return state;
         }
     }
-
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

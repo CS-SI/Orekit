@@ -42,18 +42,18 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
     /** Propagation direction. */
     private boolean forward;
 
-    /** Observers for the maneuver triggers. */
-    private final List<ManeuverTriggersObserver> observers;
+    /** Resetters for the maneuver triggers. */
+    private final List<ManeuverTriggersResetter> resetters;
 
-    /** Cached field-based observers. */
-    private final transient Map<Field<? extends CalculusFieldElement<?>>, List<FieldManeuverTriggersObserver<?>>> cached;
+    /** Cached field-based resetters. */
+    private final transient Map<Field<? extends CalculusFieldElement<?>>, List<FieldManeuverTriggersResetter<?>>> fieldResetters;
 
     /** Simple constructor.
      */
     protected AbstractManeuverTriggers() {
-        this.firings   = new TimeSpanMap<>(Boolean.FALSE);
-        this.observers = new ArrayList<>();
-        this.cached    = new HashMap<>();
+        this.firings        = new TimeSpanMap<>(Boolean.FALSE);
+        this.resetters      = new ArrayList<>();
+        this.fieldResetters = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -62,8 +62,8 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
         forward = target.isAfterOrEqualTo(initialState);
         firings = new TimeSpanMap<>(Boolean.FALSE);
-        for (final ManeuverTriggersObserver o : observers) {
-            o.init(initialState, target);
+        for (final ManeuverTriggersResetter r : resetters) {
+            r.init(initialState, target);
         }
 
         if (isFiringOnInitialState(initialState, forward)) {
@@ -83,11 +83,11 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
         forward = target.isAfterOrEqualTo(initialState);
         firings = new TimeSpanMap<>(Boolean.FALSE);
-        // check if we already have observers for this field
-        final List<FieldManeuverTriggersObserver<?>> list = cached.get(initialState.getDate().getField());
+        // check if we already have resetters for this field
+        final List<FieldManeuverTriggersResetter<?>> list = fieldResetters.get(initialState.getDate().getField());
         if (list != null) {
-            for (FieldManeuverTriggersObserver<?> o : list) {
-                ((FieldManeuverTriggersObserver<T>) o).init(initialState, target);
+            for (FieldManeuverTriggersResetter<?> r : list) {
+                ((FieldManeuverTriggersResetter<T>) r).init(initialState, target);
             }
         }
 
@@ -130,51 +130,63 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
         return firings;
     }
 
-    /** Add an observer.
-     * @param observer observer to add
+    /** Add a resetter.
+     * @param resetter resetter to add
      */
-    public void addObserver(final ManeuverTriggersObserver observer) {
-        observers.add(observer);
+    public void addResetter(final ManeuverTriggersResetter resetter) {
+        resetters.add(resetter);
     }
 
-    /** Add an observer.
+    /** Add a resetter.
      * @param field field to which the state belongs
-     * @param observer observer to add
+     * @param resetter resetter to add
      * @param <T> type of the field elements
      */
-    public <T extends CalculusFieldElement<T>> void addObserver(final Field<T> field, final FieldManeuverTriggersObserver<T> observer) {
+    public <T extends CalculusFieldElement<T>> void addResetter(final Field<T> field, final FieldManeuverTriggersResetter<T> resetter) {
 
-        // check if we already have observers for this field
-        List<FieldManeuverTriggersObserver<?>> list = cached.get(field);
+        // check if we already have resetters for this field
+        List<FieldManeuverTriggersResetter<?>> list = fieldResetters.get(field);
         if (list == null) {
             list = new ArrayList<>();
-            cached.put(field, list);
+            fieldResetters.put(field, list);
         }
 
-        // add the observer to the list
-        list.add(observer);
+        // add the resetter to the list
+        list.add(resetter);
 
     }
 
-    /** Notify observers.
+    /** Apply resetters.
      * @param state spacecraft state at trigger date
      * @param start if true, the trigger is the start of the maneuver
+     * @return reset state
      */
-    protected void notifyObservers(final SpacecraftState state, final boolean start) {
-        observers.forEach(o -> o.maneuverTriggered(state, start));
+    protected SpacecraftState applyResetters(final SpacecraftState state, final boolean start) {
+        SpacecraftState reset = state;
+        for (final ManeuverTriggersResetter r : resetters) {
+            reset = r.resetState(reset, start);
+        }
+        return reset;
     }
 
-    /** Notify observers.
+    /** Apply resetters.
      * @param state spacecraft state at trigger date
      * @param start if true, the trigger is the start of the maneuver
      * @param <T> type of the field elements
+     * @return reset state
      */
-    @SuppressWarnings("unchecked")
-    protected <T extends CalculusFieldElement<T>> void notifyObservers(final FieldSpacecraftState<T> state, final boolean start) {
-        final List<FieldManeuverTriggersObserver<?>> list = cached.get(state.getDate().getField());
+    protected <T extends CalculusFieldElement<T>> FieldSpacecraftState<T>
+        applyResetters(final FieldSpacecraftState<T> state, final boolean start) {
+        FieldSpacecraftState<T> reset = state;
+        final List<FieldManeuverTriggersResetter<?>> list = fieldResetters.get(state.getDate().getField());
         if (list != null) {
-            list.forEach(o -> ((FieldManeuverTriggersObserver<T>) o).maneuverTriggered(state, start));
+            for (final FieldManeuverTriggersResetter<?> r : list) {
+                @SuppressWarnings("unchecked")
+                final FieldManeuverTriggersResetter<T> tr = (FieldManeuverTriggersResetter<T>) r;
+                reset = tr.resetState(reset, start);
+            }
         }
+        return reset;
     }
 
 }

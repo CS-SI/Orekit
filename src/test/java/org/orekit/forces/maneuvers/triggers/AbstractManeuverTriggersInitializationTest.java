@@ -91,12 +91,13 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
 
     private T configureTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
         T trigger = createTrigger(start, stop);
-        trigger.addObserver((state, isStart) -> {
+        trigger.addResetter((state, isStart) -> {
             if (isStart) {
                 triggerStart = state.getDate();
             } else {
                 triggerStop  = state.getDate();
             }
+            return state;
         });
         return trigger;
     }
