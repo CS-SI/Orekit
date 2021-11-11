@@ -67,7 +67,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     public TLEJacobiansMapper(final String name,
                               final ParameterDriversList parameters,
                               final TLEPropagator propagator) {
-        super(name, parameters);
+        super(name, parameters.getNbParams());
 
         // Initialize fields
         this.parameters      = parameters;

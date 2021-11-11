@@ -86,7 +86,7 @@ public class AbsolutePartialDerivativesEquations extends PartialDerivativesEquat
         if (!isInitialize()) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new AbsoluteJacobiansMapper(name, getSelectedParameters());
+        return new AbsoluteJacobiansMapper(name, getSelectedParameters().getNbParams());
     }
 
 }

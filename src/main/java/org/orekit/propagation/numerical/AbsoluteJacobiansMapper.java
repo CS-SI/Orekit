@@ -17,7 +17,6 @@
 package org.orekit.propagation.numerical;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriversList;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
@@ -39,11 +38,11 @@ public class AbsoluteJacobiansMapper extends JacobiansMapper {
 
     /** Simple constructor.
      * @param name name of the Jacobians
-     * @param parameters selected parameters for Jacobian computation
+     * @param nbParams number of selected parameters for Jacobian computation
      */
-    public AbsoluteJacobiansMapper(final String name, final ParameterDriversList parameters) {
+    public AbsoluteJacobiansMapper(final String name, final int nbParams) {
         // orbit type and angle type are not used here
-        super(name, parameters, null, null);
+        super(name, nbParams, null, null);
     }
 
     /** {@inheritDoc} */

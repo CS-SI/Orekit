@@ -242,7 +242,7 @@ public class EpochDerivativesEquations implements AdditionalEquations {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new AbsoluteJacobiansMapper(name, selected);
+        return new AbsoluteJacobiansMapper(name, selected.getNbParams());
     }
 
     /** {@inheritDoc} */

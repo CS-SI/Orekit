@@ -36,16 +36,28 @@ public abstract class AbstractJacobiansMapper {
     /** Name. */
     private String name;
 
-    /** Selected parameters for Jacobian computation. */
-    private final ParameterDriversList parameters;
+    /** Number of selected parameters for Jacobian computation.
+     * @since 11.1
+     */
+    private final int nbParams;
 
     /** Simple constructor.
      * @param name name of the Jacobians
      * @param parameters selected parameters for Jacobian computation
+     * @deprecated since 11.1 replaced by {@link #AbstractJacobiansMapper(String, int)}
      */
+    @Deprecated
     protected AbstractJacobiansMapper(final String name, final ParameterDriversList parameters) {
+        this(name, parameters.getNbParams());
+    }
+
+    /** Simple constructor.
+     * @param name name of the Jacobians
+     * @param nbParams number of selected parameters for Jacobian computation
+     */
+    protected AbstractJacobiansMapper(final String name, final int nbParams) {
         this.name = name;
-        this.parameters = parameters;
+        this.nbParams = nbParams;
     }
 
     /** Get the name of the partial Jacobians.
@@ -59,14 +71,14 @@ public abstract class AbstractJacobiansMapper {
      * @return number of parameters
      */
     public int getParameters() {
-        return parameters.getNbParams();
+        return nbParams;
     }
 
     /** Compute the length of the one-dimensional additional state array needed.
      * @return length of the one-dimensional additional state array
      */
     public int getAdditionalStateDimension() {
-        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
+        return STATE_DIMENSION * (STATE_DIMENSION + nbParams);
     }
 
     /** Compute the derivatives needed by analytical orbit determination methods.

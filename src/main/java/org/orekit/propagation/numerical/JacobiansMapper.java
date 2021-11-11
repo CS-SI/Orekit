@@ -25,7 +25,6 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
-import org.orekit.utils.ParameterDriversList;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
@@ -46,9 +45,6 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
      */
     public static final int STATE_DIMENSION = 6;
 
-    /** Selected parameters for Jacobian computation. */
-    private final ParameterDriversList parameters;
-
     /** Name. */
     private String name;
 
@@ -60,16 +56,15 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
 
     /** Simple constructor.
      * @param name name of the Jacobians
-     * @param parameters selected parameters for Jacobian computation
+     * @param nbParams number of selected parameters for Jacobian computation
      * @param orbitType orbit type
      * @param angleType position angle type
      */
-    JacobiansMapper(final String name, final ParameterDriversList parameters,
+    JacobiansMapper(final String name, final int nbParams,
                     final OrbitType orbitType, final PositionAngle angleType) {
-        super(name, parameters);
+        super(name, nbParams);
         this.orbitType  = orbitType;
         this.angleType  = angleType;
-        this.parameters = parameters;
         this.name = name;
     }
 
@@ -124,13 +119,13 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
             }
         }
 
-        if (parameters.getNbParams() != 0) {
+        if (getParameters() != 0) {
             // convert the provided state Jacobian
             final RealMatrix dC1dP = solver.solve(new Array2DRowRealMatrix(dY1dP, false));
 
             // map the converted parameters Jacobian to one-dimensional array
             for (int i = 0; i < STATE_DIMENSION; ++i) {
-                for (int j = 0; j < parameters.getNbParams(); ++j) {
+                for (int j = 0; j < getParameters(); ++j) {
                     p[index++] = dC1dP.getEntry(i, j);
                 }
             }
@@ -167,7 +162,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     /** {@inheritDoc} */
     public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
 
-        if (parameters.getNbParams() != 0) {
+        if (getParameters() != 0) {
 
             // get the conversion Jacobian
             final double[][] dYdC = getConversionJacobian(state);
@@ -179,12 +174,12 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
             for (int i = 0; i < STATE_DIMENSION; i++) {
                 final double[] rowC = dYdC[i];
                 final double[] rowD = dYdP[i];
-                for (int j = 0; j < parameters.getNbParams(); ++j) {
+                for (int j = 0; j < getParameters(); ++j) {
                     double sum = 0;
                     int pIndex = j + STATE_DIMENSION * STATE_DIMENSION;
                     for (int k = 0; k < STATE_DIMENSION; ++k) {
                         sum += rowC[k] * p[pIndex];
-                        pIndex += parameters.getNbParams();
+                        pIndex += getParameters();
                     }
                     rowD[j] = sum;
                 }

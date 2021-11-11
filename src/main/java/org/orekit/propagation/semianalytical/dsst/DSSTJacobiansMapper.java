@@ -99,7 +99,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                         final Map<ParameterDriver, Integer> map,
                         final PropagationType propagationType) {
 
-        super(name, parameters);
+        super(name, parameters.getNbParams());
 
         shortPeriodDerivatives = null;
 
