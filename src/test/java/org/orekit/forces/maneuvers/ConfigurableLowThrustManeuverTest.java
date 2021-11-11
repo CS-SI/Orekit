@@ -16,8 +16,12 @@
  */
 package org.orekit.forces.maneuvers;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -34,10 +38,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.BooleanDetector;
@@ -46,12 +52,15 @@ import org.orekit.propagation.events.NegateDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 
 public class ConfigurableLowThrustManeuverTest {
@@ -393,6 +402,45 @@ public class ConfigurableLowThrustManeuverTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.BACKWARD_PROPAGATION_NOT_ALLOWED, oe.getSpecifier());
+        }
+
+    }
+
+    @Test
+    public void testFielddPropagationDisabled() {
+        doTestFielddPropagationDisabled(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestFielddPropagationDisabled(Field<T> field) {
+        /////////////////// initial conditions /////////////////////////////////
+        final KeplerianOrbit o = buildInitOrbit();
+        final FieldKeplerianOrbit<T> initOrbit = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(field, o.getPVCoordinates()),
+                                                                           o.getFrame(), new FieldAbsoluteDate<>(field, o.getDate()),
+                                                                           field.getZero().newInstance(o.getMu()));
+        final double initMass = 20;
+        final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initOrbit, field.getZero().newInstance(initMass));
+        final FieldAbsoluteDate<T> initialDate = initOrbit.getDate();
+        final double simulationDuration = -2 * 86400; // backward
+        final FieldAbsoluteDate<T> finalDate = initialDate.shiftedBy(simulationDuration);
+
+        /////////////////// propagation /////////////////////////////////
+        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+        final double minStep = 1e-6;
+        final double maxStep = 100;
+
+        final double[][] tol = FieldNumericalPropagator.tolerances(field.getZero().newInstance(1.0e-5), initOrbit, orbitType);
+        final DormandPrince54FieldIntegrator<T> integrator = new DormandPrince54FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(orbitType);
+        propagator.setAttitudeProvider(buildVelocityAttitudeProvider(o.getFrame()));
+        propagator.addForceModel(buildApogeeManeuver());
+        propagator.setInitialState(initialState);
+        try {
+            propagator.propagate(finalDate);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, oe.getSpecifier());
+            Assert.assertEquals("EventBasedManeuverTriggers.getFieldEventsDetectors", oe.getParts()[0]);
         }
 
     }
