@@ -16,7 +16,14 @@
  */
 package org.orekit.forces.maneuvers.trigger;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -35,10 +42,18 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
     /** Propagation direction. */
     private boolean forward;
 
+    /** Observers for the maneuver triggers. */
+    private final List<ManeuverTriggersObserver> observers;
+
+    /** Cached field-based observers. */
+    private final transient Map<Field<? extends CalculusFieldElement<?>>, List<FieldManeuverTriggersObserver<?>>> cached;
+
     /** Simple constructor.
      */
     protected AbstractManeuverTriggers() {
-        this.firings = new TimeSpanMap<>(Boolean.FALSE);
+        this.firings   = new TimeSpanMap<>(Boolean.FALSE);
+        this.observers = new ArrayList<>();
+        this.cached    = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -47,6 +62,9 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
         forward = target.isAfterOrEqualTo(initialState);
         firings = new TimeSpanMap<>(Boolean.FALSE);
+        for (final ManeuverTriggersObserver o : observers) {
+            o.init(initialState, target);
+        }
 
         if (isFiringOnInitialState(initialState, forward)) {
             if (forward) {
@@ -58,13 +76,38 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
     }
 
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
+
+        forward = target.isAfterOrEqualTo(initialState);
+        firings = new TimeSpanMap<>(Boolean.FALSE);
+        // check if we already have observers for this field
+        final List<FieldManeuverTriggersObserver<?>> list = cached.get(initialState.getDate().getField());
+        if (list != null) {
+            for (FieldManeuverTriggersObserver<?> o : list) {
+                ((FieldManeuverTriggersObserver<T>) o).init(initialState, target);
+            }
+        }
+
+        if (isFiringOnInitialState(initialState.toSpacecraftState(), forward)) {
+            if (forward) {
+                firings.addValidAfter(Boolean.TRUE, initialState.getDate().toAbsoluteDate());
+            } else {
+                firings.addValidBefore(Boolean.TRUE, initialState.getDate().toAbsoluteDate());
+            }
+        }
+
+    }
+
     /**
      * Method to check if the thruster is firing on initialization. can be called by
      * sub classes
      *
      * @param initialState initial spacecraft state
      * @param isForward if true, propagation will be in the forward direction
-     * @return true if firing
+     * @return true if firing in propagation direction
      */
     protected abstract boolean isFiringOnInitialState(SpacecraftState initialState, boolean isForward);
 
@@ -85,6 +128,53 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
      */
     public TimeSpanMap<Boolean> getFirings() {
         return firings;
+    }
+
+    /** Add an observer.
+     * @param observer observer to add
+     */
+    public void addObserver(final ManeuverTriggersObserver observer) {
+        observers.add(observer);
+    }
+
+    /** Add an observer.
+     * @param field field to which the state belongs
+     * @param observer observer to add
+     * @param <T> type of the field elements
+     */
+    public <T extends CalculusFieldElement<T>> void addObserver(final Field<T> field, final FieldManeuverTriggersObserver<T> observer) {
+
+        // check if we already have observers for this field
+        List<FieldManeuverTriggersObserver<?>> list = cached.get(field);
+        if (list == null) {
+            list = new ArrayList<>();
+            cached.put(field, list);
+        }
+
+        // add the observer to the list
+        list.add(observer);
+
+    }
+
+    /** Notify observers.
+     * @param state spacecraft state at trigger date
+     * @param start if true, the trigger is the start of the maneuver
+     */
+    protected void notifyObservers(final SpacecraftState state, final boolean start) {
+        observers.forEach(o -> o.maneuverTriggered(state, start));
+    }
+
+    /** Notify observers.
+     * @param state spacecraft state at trigger date
+     * @param start if true, the trigger is the start of the maneuver
+     * @param <T> type of the field elements
+     */
+    @SuppressWarnings("unchecked")
+    protected <T extends CalculusFieldElement<T>> void notifyObservers(final FieldSpacecraftState<T> state, final boolean start) {
+        final List<FieldManeuverTriggersObserver<?>> list = cached.get(state.getDate().getField());
+        if (list != null) {
+            list.forEach(o -> ((FieldManeuverTriggersObserver<T>) o).maneuverTriggered(state, start));
+        }
     }
 
 }

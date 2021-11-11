@@ -135,9 +135,16 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
         final double startG = startDetector.g(initialState);
         if (startG == 0) {
-            // check if we are going to start firing
-            final boolean increasing = startDetector.g(initialState.shiftedBy(startDetector.getThreshold())) > 0;
-            return increasing && isForward;
+            final boolean increasing = startDetector.g(initialState.shiftedBy(2 * startDetector.getThreshold())) > 0;
+            if (increasing) {
+                // we are at maneuver start
+                notifyObservers(initialState, true);
+                // if propagating forward, we start firing
+                return isForward;
+            } else {
+                // not a meaningful crossing
+                return false;
+            }
         } else if (startG < 0) {
             // we are before start
             return false;
@@ -145,9 +152,16 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
             // we are after start
             final double stopG = stopDetector.g(initialState);
             if (stopG == 0) {
-                // check if we are going to stop firing
-                final boolean increasing = stopDetector.g(initialState.shiftedBy(stopDetector.getThreshold())) > 0;
-                return !(increasing && isForward);
+                final boolean increasing = stopDetector.g(initialState.shiftedBy(2 * stopDetector.getThreshold())) > 0;
+                if (increasing) {
+                    // we are at maneuver end
+                    notifyObservers(initialState, false);
+                    // if propagating backward, we start firing
+                    return !isForward;
+                } else {
+                    // not a meaningful crossing
+                    return false;
+                }
             } else if (stopG > 0) {
                 // we are after stop
                 return false;
@@ -302,6 +316,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
                                      final boolean increasing, final boolean forward) {
         if (increasing) {
             // the event is meaningful for maneuver firing
+            notifyObservers(state, true);
             final Action action = prototypeAction == Action.CONTINUE ? Action.RESET_DERIVATIVES : prototypeAction;
             if (forward) {
                 getFirings().addValidAfter(true, state.getDate());
@@ -326,6 +341,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
                                     final boolean increasing, final boolean forward) {
         if (increasing) {
             // the event is meaningful for maneuver firing
+            notifyObservers(state, false);
             final Action action = prototypeAction == Action.CONTINUE ? Action.RESET_DERIVATIVES : prototypeAction;
             if (forward) {
                 getFirings().addValidAfter(false, state.getDate());
@@ -351,6 +367,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
                                                                          final boolean increasing, final boolean forward) {
         if (increasing) {
             // the event is meaningful for maneuver firing
+            notifyObservers(state, true);
             final Action action = prototypeAction == Action.CONTINUE ? Action.RESET_DERIVATIVES : prototypeAction;
             if (forward) {
                 getFirings().addValidAfter(true, state.getDate().toAbsoluteDate());
@@ -376,6 +393,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
                                                                         final boolean increasing, final boolean forward) {
         if (increasing) {
             // the event is meaningful for maneuver firing
+            notifyObservers(state, false);
             final Action action = prototypeAction == Action.CONTINUE ? Action.RESET_DERIVATIVES : prototypeAction;
             if (forward) {
                 getFirings().addValidAfter(false, state.getDate().toAbsoluteDate());

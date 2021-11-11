@@ -85,6 +85,21 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     private double massControlFullReverse;
     private double massControlHalfReverse;
 
+    /** trigger dates. */
+    private AbsoluteDate triggerStart;
+    private AbsoluteDate triggerStop;
+
+    private T configureTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
+        T trigger = createTrigger(start, stop);
+        trigger.addObserver((state, isStart) -> {
+            if (isStart) {
+                triggerStart = state.getDate();
+            } else {
+                triggerStop  = state.getDate();
+            }
+        });
+        return trigger;
+    }
 
     /** set orekit data */
     @BeforeClass
@@ -140,17 +155,18 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         deltaVControlHalfReverse = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(massControlHalfReverse / mass);
 
-
+        triggerStart = null;
+        triggerStop  = null;
     }
-
 
     @Test
     public void testInBetween() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
-                                    createTrigger(startDate.shiftedBy(-(duration / 2)),
-                                                  startDate.shiftedBy( (duration / 2))),
+                                    configureTrigger(startDate.shiftedBy(-(duration / 2)),
+                                                     startDate.shiftedBy( (duration / 2))),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
+
         //Reset and populate propagator
         propagator.removeForceModels();
         propagator.addForceModel(ctm);
@@ -160,14 +176,17 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
 
         Assert.assertEquals(massControlHalfForward, finalStateTest.getMass(), massTolerance);
 
+        Assert.assertNull(triggerStart);
+        Assert.assertEquals(duration / 2, triggerStop.durationFrom(startDate), 1.0e-10);
+
     }
 
     @Test
     public void testOnStart() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
-                                    createTrigger(startDate,
-                                                  startDate.shiftedBy(duration)),
+                                    configureTrigger(startDate,
+                                                     startDate.shiftedBy(duration)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
@@ -182,14 +201,17 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         Assert.assertEquals(deltaVControlFullForward, deltaVTest, dvTolerance);
         Assert.assertEquals(massControlFullForward, finalStateTest.getMass(), massTolerance);
 
+        Assert.assertEquals(0.0,      triggerStart.durationFrom(startDate), 1.0e-10);
+        Assert.assertEquals(duration, triggerStop.durationFrom(startDate),  1.0e-10);
+
     }
 
     @Test
     public void testOnEnd() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
-                                    createTrigger(startDate.shiftedBy(-duration),
-                                                  startDate),
+                                    configureTrigger(startDate.shiftedBy(-duration),
+                                                     startDate),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
@@ -204,14 +226,17 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         Assert.assertTrue(deltaVTest == 0.0);
         Assert.assertTrue(finalStateTest.getMass() == mass);
 
+        Assert.assertNull(triggerStart);
+        Assert.assertEquals(0.0, triggerStop.durationFrom(startDate), 1.0e-10);
+
     }
 
     @Test
     public void testOnEndReverse() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
-                                    createTrigger(startDate.shiftedBy(-duration),
-                                                  startDate),
+                                    configureTrigger(startDate.shiftedBy(-duration),
+                                                     startDate),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
@@ -226,14 +251,17 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         Assert.assertEquals(deltaVControlFullReverse, deltaVTest, dvTolerance);
         Assert.assertEquals(massControlFullReverse, finalStateTest.getMass(), massTolerance);
 
+        Assert.assertEquals(-duration, triggerStart.durationFrom(startDate), 1.0e-10);
+        Assert.assertEquals(0.0,       triggerStop.durationFrom(startDate),  1.0e-10);
+
     }
 
     @Test
     public void testOnStartReverse() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
-                                    createTrigger(startDate,
-                                                  startDate.shiftedBy(duration)),
+                                    configureTrigger(startDate,
+                                                     startDate.shiftedBy(duration)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
@@ -248,14 +276,16 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         Assert.assertTrue(deltaVTest == 0.0);
         Assert.assertTrue(finalStateTest.getMass() == mass);
 
+        Assert.assertEquals(0.0, triggerStart.durationFrom(startDate), 1.0e-10);
+        Assert.assertNull(triggerStop);
     }
 
     @Test
     public void testInBetweenReverse() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
-                                    createTrigger(startDate.shiftedBy(-duration / 2),
-                                                  startDate.shiftedBy( duration / 2)),
+                                    configureTrigger(startDate.shiftedBy(-duration / 2),
+                                                     startDate.shiftedBy( duration / 2)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
@@ -270,14 +300,17 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         Assert.assertEquals(deltaVControlHalfReverse, deltaVTest, dvTolerance);
         Assert.assertEquals(massControlHalfReverse, finalStateTest.getMass(), massTolerance);
 
+        Assert.assertEquals(-0.5 * duration, triggerStart.durationFrom(startDate), 1.0e-10);
+        Assert.assertNull(triggerStop);
+
     }
 
     @Test
     public void testControlForward() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
-                                    createTrigger(startDate.shiftedBy(1.0),
-                                                  startDate.shiftedBy(1.0 + duration)),
+                                    configureTrigger(startDate.shiftedBy(1.0),
+                                                     startDate.shiftedBy(1.0 + duration)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
@@ -292,14 +325,16 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         Assert.assertEquals(deltaVControlFullForward, deltaVTest, dvTolerance);
         Assert.assertEquals(massControlFullForward, finalStateTest.getMass(), massTolerance);
 
+        Assert.assertEquals(1.0,            triggerStart.durationFrom(startDate), 1.0e-10);
+        Assert.assertEquals(1.0 + duration, triggerStop.durationFrom(startDate),  1.0e-10);
     }
 
     @Test
     public void testControlReverse() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
-                                    createTrigger(startDate.shiftedBy(-1.0 - duration),
-                                                  startDate.shiftedBy(-1.0)),
+                                    configureTrigger(startDate.shiftedBy(-1.0 - duration),
+                                                     startDate.shiftedBy(-1.0)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
         //Reset and populate propagator
         propagator.removeForceModels();
@@ -314,5 +349,9 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         Assert.assertEquals(deltaVControlFullReverse, deltaVTest, dvTolerance);
         Assert.assertEquals(massControlFullReverse, finalStateTest.getMass(), massTolerance);
 
+        Assert.assertEquals(-1.0 - duration, triggerStart.durationFrom(startDate), 1.0e-10);
+        Assert.assertEquals(-1.0,            triggerStop.durationFrom(startDate),  1.0e-10);
+
     }
+
 }

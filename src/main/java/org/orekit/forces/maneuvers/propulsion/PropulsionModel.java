@@ -29,6 +29,7 @@ import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Generic interface for a propulsion model used in a {@link Maneuver}.
@@ -43,6 +44,17 @@ public interface PropulsionModel {
      * @param target date of propagation. Not equal to {@code initialState.getDate()}.
      */
     default void init(SpacecraftState initialState, AbsoluteDate target) {
+    }
+
+    /** Initialization method.
+     *  Called in when Maneuver.init(...) is called (from ForceModel.init(...))
+     * @param initialState initial spacecraft state (at the start of propagation).
+     * @param target date of propagation. Not equal to {@code initialState.getDate()}.
+     * @param <T> type of the elements
+     * @since 11.1
+     */
+    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+        init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
     /** Get the acceleration of the spacecraft during maneuver and in maneuver frame.

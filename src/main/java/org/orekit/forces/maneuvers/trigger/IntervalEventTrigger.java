@@ -108,7 +108,15 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
             // bound of arc
             // check state for the upcoming times
             final double shift = (isForward ? 2 : -2) * firingIntervalDetector.getThreshold();
-            return firingIntervalDetector.g(initialState.shiftedBy(shift)) > 0;
+            if (firingIntervalDetector.g(initialState.shiftedBy(shift)) > 0) {
+                // we are entering the firing interval, from start if forward, from end if backward
+                notifyObservers(initialState, isForward);
+                return true;
+            } else {
+                // we are leaving the firing interval, from end if forward, from start if backward
+                notifyObservers(initialState, !isForward);
+                return false;
+            }
         } else {
             return insideThrustArcG > 0;
         }
@@ -195,6 +203,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      */
     private Action handleIntervalFiring(final Action prototypeAction, final SpacecraftState state,
                                         final boolean increasing, final boolean forward) {
+        notifyObservers(state, increasing);
         final Action action = prototypeAction == Action.CONTINUE ? Action.RESET_DERIVATIVES : prototypeAction;
         if (forward) {
             getFirings().addValidAfter(increasing, state.getDate());
@@ -214,6 +223,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      */
     private <S extends CalculusFieldElement<S>> Action handleIntervalFiring(final Action prototypeAction, final FieldSpacecraftState<S> state,
                                                                             final boolean increasing, final boolean forward) {
+        notifyObservers(state, increasing);
         final Action action = prototypeAction == Action.CONTINUE ? Action.RESET_DERIVATIVES : prototypeAction;
         if (forward) {
             getFirings().addValidAfter(increasing, state.getDate().toAbsoluteDate());
