@@ -16,16 +16,21 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -69,6 +74,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** Selected parameters for Jacobian computation. */
     private ParameterDriversList selected;
 
+    /** Parameters corresponding to maneuvers trigger dates.
+     * @since 11.1
+     */
+    private Set<ParameterDriver> triggersParameters;
+
     /** Parameters map. */
     private Map<ParameterDriver, Integer> map;
 
@@ -91,6 +101,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     public PartialDerivativesEquations(final String name, final NumericalPropagator propagator) {
         this.name                   = name;
         this.selected               = null;
+        this.triggersParameters     = null;
         this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
@@ -126,14 +137,32 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             map = new IdentityHashMap<>();
             int parameterIndex = 0;
             for (final ParameterDriver selectedDriver : selected.getDrivers()) {
-                for (final ForceModel provider : propagator.getAllForceModels()) {
-                    for (final ParameterDriver driver : provider.getParametersDrivers()) {
+                for (final ForceModel forceModel : propagator.getAllForceModels()) {
+                    for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
                         if (driver.getName().equals(selectedDriver.getName())) {
                             map.put(driver, parameterIndex);
                         }
                     }
                 }
                 ++parameterIndex;
+            }
+
+            // fifth pass: single-out the very specific drivers used by maneuvers trigger dates
+            triggersParameters = new HashSet<>(selected.getNbParams());
+            for (final ForceModel forceModel : propagator.getAllForceModels()) {
+                if (forceModel instanceof Maneuver) {
+                    final ManeuverTriggers maneuverTriggers = ((Maneuver) forceModel).getManeuverTriggers();
+                    maneuverTriggers.
+                        getEventsDetectors().
+                        filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
+                        map (d -> (ParameterDrivenDateIntervalDetector) d).
+                        forEach(d -> {
+                            final ParameterDriver startDriver = selected.findByName(d.getStartDriver().getName());
+                            if (startDriver != null) {
+                                triggersParameters.add(startDriver);
+                            }
+                        });
+                }
             }
 
         }

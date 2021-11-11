@@ -23,7 +23,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.StartStopDriver;
+import org.orekit.utils.DateDriver;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -40,10 +40,10 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     public static final String STOP_SUFFIX = "_STOP";
 
     /** Reference interval start driver. */
-    private StartStopDriver start;
+    private DateDriver start;
 
     /** Reference interval stop driver. */
-    private StartStopDriver stop;
+    private DateDriver stop;
 
     /** Build a new instance.
      * @param field field to which the elements belong
@@ -57,10 +57,8 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
              field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER,
              new FieldStopOnEvent<FieldParameterDrivenDateIntervalDetector<T>, T>(),
-             new StartStopDriver(refStart, true, prefix + START_SUFFIX, 0.0, 1.0,
-                                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
-             new StartStopDriver(refStop, false, prefix + STOP_SUFFIX, 0.0, 1.0,
-                                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+             new DateDriver(refStart, prefix + START_SUFFIX),
+             new DateDriver(refStop, prefix + STOP_SUFFIX));
     }
 
     /** Private constructor with full parameters.
@@ -78,7 +76,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
      */
     private FieldParameterDrivenDateIntervalDetector(final T maxCheck, final T threshold, final int maxIter,
                                                      final FieldEventHandler<? super FieldParameterDrivenDateIntervalDetector<T>, T> handler,
-                                                     final StartStopDriver start, final StartStopDriver stop) {
+                                                     final DateDriver start, final DateDriver stop) {
         super(maxCheck, threshold, maxIter, handler);
         this.start = start;
         this.stop  = stop;
@@ -95,14 +93,14 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     /** Get the driver for start date.
      * @return driver for start date
      */
-    public StartStopDriver getStartDriver() {
+    public DateDriver getStartDriver() {
         return start;
     }
 
     /** Get the driver for stop date.
      * @return driver for stop date
      */
-    public StartStopDriver getStopDriver() {
+    public DateDriver getStopDriver() {
         return stop;
     }
 

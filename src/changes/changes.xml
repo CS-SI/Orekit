@@ -30,6 +30,9 @@
       <action dev="luc" type="fix" >
         Added ParameterDrivenDateIntervalDetector and FieldParameterDrivenDateIntervalDetector.
       </action>
+      <action dev="luc" type="add" >
+        Added DateDriver to drive dates using a ParameterDriver.
+      </action>
       <action dev="luc" type="fix" issue="848">
         Allow backward propagation in EventBasedManeuverTriggers.
       </action>

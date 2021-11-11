@@ -21,30 +21,19 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.time.AbsoluteDate;
 
-public class StartStopDriverTest {
+public class DateDriverTest {
 
     @Test
-    public void testStart() {
-        StartStopDriver driver = new StartStopDriver(AbsoluteDate.J2000_EPOCH, true,
-                                                     "start", 0.0, 0.001,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        Assert.assertTrue(driver.isStart());
+    public void testBase() {
+        DateDriver driver = new DateDriver(AbsoluteDate.J2000_EPOCH, "start");
+        Assert.assertEquals("start", driver.getName());
         Assert.assertFalse(driver.isSelected());
         Assert.assertEquals(0.0,   driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
-        driver.setNormalizedValue(1.0);
+        Assert.assertNull(driver.getReferenceDate());
+        driver.setNormalizedValue(0.001);
         Assert.assertEquals(0.001, driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
-    }
-
-    @Test
-    public void testStop() {
-        StartStopDriver driver = new StartStopDriver(AbsoluteDate.J2000_EPOCH, false,
-                                                     "stop", 0.0, 0.001,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        Assert.assertFalse(driver.isStart());
-        Assert.assertFalse(driver.isSelected());
-        Assert.assertEquals(0.0,   driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
-        driver.setNormalizedValue(1.0);
-        Assert.assertEquals(0.001, driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
+        Assert.assertEquals(Double.NEGATIVE_INFINITY, driver.getMinValue(), 1.0);
+        Assert.assertEquals(Double.POSITIVE_INFINITY, driver.getMaxValue(), 1.0);
     }
 
 }

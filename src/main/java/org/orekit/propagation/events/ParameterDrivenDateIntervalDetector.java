@@ -21,7 +21,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.StartStopDriver;
+import org.orekit.utils.DateDriver;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -37,10 +37,10 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     public static final String STOP_SUFFIX = "_STOP";
 
     /** Reference interval start driver. */
-    private StartStopDriver start;
+    private DateDriver start;
 
     /** Reference interval stop driver. */
-    private StartStopDriver stop;
+    private DateDriver stop;
 
     /** Build a new instance.
      * @param prefix prefix to use for parameter drivers names
@@ -51,10 +51,8 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
                                                final AbsoluteDate refStart, final AbsoluteDate refStop) {
         this(0.5 * refStop.durationFrom(refStart), 1.0e-10, DEFAULT_MAX_ITER,
              new StopOnEvent<ParameterDrivenDateIntervalDetector>(),
-             new StartStopDriver(refStart, true, prefix + START_SUFFIX, 0.0, 1.0,
-                                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
-             new StartStopDriver(refStop, false, prefix + STOP_SUFFIX, 0.0, 1.0,
-                                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+             new DateDriver(refStart, prefix + START_SUFFIX),
+             new DateDriver(refStop, prefix + STOP_SUFFIX));
     }
 
     /** Private constructor with full parameters.
@@ -72,7 +70,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      */
     private ParameterDrivenDateIntervalDetector(final double maxCheck, final double threshold, final int maxIter,
                                                 final EventHandler<? super ParameterDrivenDateIntervalDetector> handler,
-                                                final StartStopDriver start, final StartStopDriver stop) {
+                                                final DateDriver start, final DateDriver stop) {
         super(maxCheck, threshold, maxIter, handler);
         this.start = start;
         this.stop  = stop;
@@ -89,14 +87,14 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     /** Get the driver for start date.
      * @return driver for start date
      */
-    public StartStopDriver getStartDriver() {
+    public DateDriver getStartDriver() {
         return start;
     }
 
     /** Get the driver for stop date.
      * @return driver for stop date
      */
-    public StartStopDriver getStopDriver() {
+    public DateDriver getStopDriver() {
         return stop;
     }
 
