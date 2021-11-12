@@ -17,7 +17,6 @@
 package org.orekit.forces.maneuvers.triggers;
 
 
-import org.hipparchus.ode.events.Action;
 import org.orekit.forces.maneuvers.trigger.StartStopEventsTrigger;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.time.AbsoluteDate;
@@ -25,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
 public class StartStopEventTriggerInitializationTest extends AbstractManeuverTriggersInitializationTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
 
     protected StartStopEventsTrigger<DateDetector, DateDetector> createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
-        return new StartStopEventTriggerTest.StartStopDates(start, stop, Action.CONTINUE);
+        return new StartStopEventTriggerTest.StartStopDates(start, stop);
     }
 
 }

@@ -17,7 +17,6 @@
 package org.orekit.forces.maneuvers.triggers;
 
 
-import org.hipparchus.ode.events.Action;
 import org.orekit.forces.maneuvers.trigger.IntervalEventTrigger;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.time.AbsoluteDate;
@@ -25,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
 public class IntervalEventTriggerInitializationTest extends AbstractManeuverTriggersInitializationTest<IntervalEventTrigger<DateDetector>> {
 
     protected IntervalEventTriggerTest.IntervalDates createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
-        return new IntervalEventTriggerTest.IntervalDates(start, stop, Action.CONTINUE);
+        return new IntervalEventTriggerTest.IntervalDates(start, stop);
     }
 
 }

@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,6 +29,7 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -38,9 +38,9 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
 
     public static class IntervalDates extends IntervalEventTrigger<DateDetector> {
 
-        public IntervalDates(final AbsoluteDate start, final AbsoluteDate stop, final Action action) {
+        public IntervalDates(final AbsoluteDate start, final AbsoluteDate stop) {
             super(new DateDetector(0.5 * stop.durationFrom(start), 1.0e-10, start, stop).
-                  withHandler((state, detector, increasing) -> action));
+                  withHandler(new StopOnEvent<DateDetector>()));
         }
 
         @Override
@@ -56,15 +56,14 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
 
     }
 
-    protected IntervalDates createTrigger(final AbsoluteDate start, final AbsoluteDate stop, Action action) {
-        return new IntervalDates(start, stop, action);
+    protected IntervalDates createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
+        return new IntervalDates(start, stop);
     }
 
     @Test
     public void testComponents() {
         IntervalDates trigger = createTrigger(AbsoluteDate.J2000_EPOCH,
-                                              AbsoluteDate.J2000_EPOCH.shiftedBy(100.0),
-                                              Action.CONTINUE);
+                                              AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    dates = trigger.getFiringIntervalDetector().getDates();
         Assert.assertEquals(1,     trigger.getEventsDetectors().count());
         Assert.assertEquals(1,     trigger.getFieldEventsDetectors(Decimal64Field.getInstance()).count());

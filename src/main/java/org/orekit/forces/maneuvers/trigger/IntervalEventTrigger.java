@@ -32,6 +32,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * Maneuver triggers based on a single event detector that defines firing intervals.
@@ -46,9 +47,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extends AbstractManeuverTriggers {
 
-    /** Prototype intervals detector. */
-    private final T prototypeDetector;
-
     /** Intervals detector. */
     private final T firingIntervalDetector;
 
@@ -60,18 +58,8 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * Note that the {@code intervalDetector} passed as an argument is used only
      * as a <em>prototype</em> from which a new detector will be built using its
      * {@link AbstractDetector#withHandler(EventHandler) withHandler} method to
-     * set up an internal handler. This implies that the {@link #getFiringIntervalDetector()}
-     * will <em>not</em> return the object that was passed as an argument. However,
-     * the {@link EventHandler#init(SpacecraftState, AbsoluteDate, EventDetector)
-     * init}; {@link EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
-     * eventOccurred}, and {@link EventHandler#resetState(EventDetector, SpacecraftState)
-     * resetState} methods from the prototype event handler will be called too by
-     * the internal handler corresponding methods. If the prototype {@link
-     * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred}
-     * returns {@link Action#CONTINUE}, it will be replaced by {@link Action#RESET_DERIVATIVES,
-     * otherwise the prototype return will be used as is. This could be used for example to
-     * set up a trigger that would generate several firing intervals and stop propagation
-     * after a predefined number of maneuvers have been performed by returning {@link Action#STOP}.
+     * set up an internal handler. The original event handler from the prototype
+     * will be <em>ignored</em> and never called.
      * </p>
      * <p>
      * If the trigger is used in a {@link org.orekit.propagation.FieldPropagator field-based propagation},
@@ -83,10 +71,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * @param prototypeFiringIntervalDetector prototype detector for firing interval
      */
     public IntervalEventTrigger(final T prototypeFiringIntervalDetector) {
-        this.prototypeDetector      = prototypeFiringIntervalDetector;
-        this.firingIntervalDetector = prototypeFiringIntervalDetector.
-                                      withHandler(new TriggerHandler<>(prototypeFiringIntervalDetector,
-                                                                       this::handleIntervalFiring));
+        this.firingIntervalDetector = prototypeFiringIntervalDetector.withHandler(new Handler());
         this.cached                 = new HashMap<>();
     }
 
@@ -110,11 +95,11 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
             final double shift = (isForward ? 2 : -2) * firingIntervalDetector.getThreshold();
             if (firingIntervalDetector.g(initialState.shiftedBy(shift)) > 0) {
                 // we are entering the firing interval, from start if forward, from end if backward
-                applyResetters(initialState, isForward);
+                notifyResetters(initialState, isForward);
                 return true;
             } else {
                 // we are leaving the firing interval, from end if forward, from start if backward
-                applyResetters(initialState, !isForward);
+                notifyResetters(initialState, !isForward);
                 return false;
             }
         } else {
@@ -154,11 +139,11 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * @return converted firing intervals detector
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpHandler(final Field<S> field) {
-        final FieldAbstractDetector<D, S> converted = convertIntervalDetector(field, prototypeDetector);
+        final FieldAbstractDetector<D, S> converted = convertIntervalDetector(field, firingIntervalDetector);
         return converted.
-               withMaxCheck(field.getZero().newInstance(prototypeDetector.getMaxCheckInterval())).
-               withThreshold(field.getZero().newInstance(prototypeDetector.getThreshold())).
-               withHandler(new FieldTriggerHandler<>(prototypeDetector, this::handleIntervalFiring));
+               withMaxCheck(field.getZero().newInstance(firingIntervalDetector.getMaxCheckInterval())).
+               withThreshold(field.getZero().newInstance(firingIntervalDetector.getThreshold())).
+               withHandler(new FieldHandler<>());
     }
 
     /** Convert a primitive firing intervals detector into a field firing intervals detector.
@@ -194,43 +179,70 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
     protected abstract <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
         FieldAbstractDetector<D, S> convertIntervalDetector(Field<S> field, T detector);
 
-    /** Handler firing at either boundaries of the firing interval.
-     * @param prototypeAction action from the prototype event handler
-     * @param state SpaceCraft state to be used in the evaluation
-     * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
-     * @param forward indicator for forward propagation
-     * @return the Action that the calling detector should pass back to the evaluation system
-     */
-    private Action handleIntervalFiring(final Action prototypeAction, final SpacecraftState state,
-                                        final boolean increasing, final boolean forward) {
-        applyResetters(state, increasing);
-        final Action action = prototypeAction == Action.CONTINUE ? Action.RESET_DERIVATIVES : prototypeAction;
-        if (forward) {
-            getFirings().addValidAfter(increasing, state.getDate());
-        } else {
-            getFirings().addValidBefore(!increasing, state.getDate());
+    /** Local handler for both start and stop triggers. */
+    private class Handler implements EventHandler<T> {
+
+        /** Propagation direction. */
+        private boolean forward;
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target, final T detector) {
+            forward = target.isAfterOrEqualTo(initialState);
         }
-        return action;
+
+        /** {@inheritDoc} */
+        @Override
+        public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
+            if (forward) {
+                getFirings().addValidAfter(increasing, s.getDate());
+            } else {
+                getFirings().addValidBefore(!increasing, s.getDate());
+            }
+            notifyResetters(s, increasing);
+            return Action.RESET_STATE;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public SpacecraftState resetState(final T detector, final SpacecraftState oldState) {
+            return applyResetters(oldState);
+        }
+
     }
 
-    /** Handler firing at either boundaries of the firing interval.
-     * @param prototypeAction action from the prototype event handler
-     * @param state SpaceCraft state to be used in the evaluation
-     * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
-     * @param forward indicator for forward propagation
+    /** Local handler for both start and stop triggers.
      * @param <S> type of the field elements
-     * @return the Action that the calling detector should pass back to the evaluation system
      */
-    private <S extends CalculusFieldElement<S>> Action handleIntervalFiring(final Action prototypeAction, final FieldSpacecraftState<S> state,
-                                                                            final boolean increasing, final boolean forward) {
-        applyResetters(state, increasing);
-        final Action action = prototypeAction == Action.CONTINUE ? Action.RESET_DERIVATIVES : prototypeAction;
-        if (forward) {
-            getFirings().addValidAfter(increasing, state.getDate().toAbsoluteDate());
-        } else {
-            getFirings().addValidBefore(!increasing, state.getDate().toAbsoluteDate());
+    private class FieldHandler<D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> implements FieldEventHandler<D, S> {
+
+        /** Propagation direction. */
+        private boolean forward;
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final FieldSpacecraftState<S> initialState, final FieldAbsoluteDate<S> target) {
+            forward = target.isAfterOrEqualTo(initialState);
         }
-        return action;
+
+        /** {@inheritDoc} */
+        @Override
+        public Action eventOccurred(final FieldSpacecraftState<S> s, final D detector, final boolean increasing) {
+            if (forward) {
+                getFirings().addValidAfter(increasing, s.getDate().toAbsoluteDate());
+            } else {
+                getFirings().addValidBefore(!increasing, s.getDate().toAbsoluteDate());
+            }
+            notifyResetters(s, increasing);
+            return Action.RESET_STATE;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public FieldSpacecraftState<S> resetState(final D detector, final FieldSpacecraftState<S> oldState) {
+            return applyResetters(oldState);
+        }
+
     }
 
 }

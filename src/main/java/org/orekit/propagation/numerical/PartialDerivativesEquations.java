@@ -16,21 +16,16 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.maneuvers.Maneuver;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -43,8 +38,7 @@ import org.orekit.utils.ParameterDriversList;
  * useful for example in orbit determination applications.
  * </p>
  * <p>
- * The partial derivatives with respect to initial state can be either dimension 6
- * (orbit only) or 7 (orbit and mass).
+ * The partial derivatives with respect to initial state is dimension 6.
  * </p>
  * <p>
  * The partial derivatives with respect to force models parameters has a dimension
@@ -74,13 +68,13 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** Selected parameters for Jacobian computation. */
     private ParameterDriversList selected;
 
-    /** Parameters corresponding to maneuvers trigger dates.
+    /** Helper for computing derivatives with respect to trigger dates.
      * @since 11.1
      */
-    private Set<ParameterDriver> triggersParameters;
+    private TriggersDerivatives triggersDerivatives;
 
-    /** Parameters map. */
-    private Map<ParameterDriver, Integer> map;
+    /** Parameters to columns numbers map. */
+    private Map<String, Integer> map;
 
     /** Name. */
     private final String name;
@@ -99,12 +93,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @param propagator the propagator that will handle the orbit propagation
      */
     public PartialDerivativesEquations(final String name, final NumericalPropagator propagator) {
-        this.name                   = name;
-        this.selected               = null;
-        this.triggersParameters     = null;
-        this.map                    = null;
-        this.propagator             = propagator;
-        this.initialized            = false;
+        this.name                = name;
+        this.selected            = null;
+        this.triggersDerivatives = null;
+        this.map                 = null;
+        this.propagator          = propagator;
+        this.initialized         = false;
         propagator.addAdditionalEquations(this);
     }
 
@@ -118,10 +112,10 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     private void freezeParametersSelection() {
         if (selected == null) {
 
-            // first pass: gather all parameters, binding similar names together
+            // first pass: gather all remaining parameters, binding similar names together
             selected = new ParameterDriversList();
-            for (final ForceModel provider : propagator.getAllForceModels()) {
-                for (final ParameterDriver driver : provider.getParametersDrivers()) {
+            for (final ForceModel forceModel : propagator.getAllForceModels()) {
+                for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
                     selected.add(driver);
                 }
             }
@@ -137,33 +131,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             map = new IdentityHashMap<>();
             int parameterIndex = 0;
             for (final ParameterDriver selectedDriver : selected.getDrivers()) {
-                for (final ForceModel forceModel : propagator.getAllForceModels()) {
-                    for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                        if (driver.getName().equals(selectedDriver.getName())) {
-                            map.put(driver, parameterIndex);
-                        }
-                    }
-                }
-                ++parameterIndex;
+                map.put(selectedDriver.getName(), parameterIndex++);
             }
 
-            // fifth pass: single-out the very specific drivers used by maneuvers trigger dates
-            triggersParameters = new HashSet<>(selected.getNbParams());
-            for (final ForceModel forceModel : propagator.getAllForceModels()) {
-                if (forceModel instanceof Maneuver) {
-                    final ManeuverTriggers maneuverTriggers = ((Maneuver) forceModel).getManeuverTriggers();
-                    maneuverTriggers.
-                        getEventsDetectors().
-                        filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
-                        map (d -> (ParameterDrivenDateIntervalDetector) d).
-                        forEach(d -> {
-                            final ParameterDriver startDriver = selected.findByName(d.getStartDriver().getName());
-                            if (startDriver != null) {
-                                triggersParameters.add(startDriver);
-                            }
-                        });
-                }
-            }
+            // fifth pass: single-out the triggers dates
+            triggersDerivatives = new TriggersDerivatives(getName(), map, propagator.getAllForceModels());
 
         }
     }
@@ -270,7 +242,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new JacobiansMapper(name, selected,
+        return new JacobiansMapper(name, selected.getNbParams(),
                                    propagator.getOrbitType(),
                                    propagator.getPositionAngleType());
     }
@@ -307,8 +279,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
             int index = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
-                if (driver.isSelected()) {
-                    final int parameterIndex = map.get(driver);
+                if (driver.isSelected() && !triggersDerivatives.isTriggerParameter(driver.getName())) {
+                    final int parameterIndex = map.get(driver.getName());
                     dAccdParam[0][parameterIndex] += derivativesX[index];
                     dAccdParam[1][parameterIndex] += derivativesY[index];
                     dAccdParam[2][parameterIndex] += derivativesZ[index];
@@ -359,42 +331,46 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         }
 
         for (int k = 0; k < paramDim; ++k) {
-            // the variational equations of the parameters Jacobian matrix are computed
-            // one column at a time, they have the following form:
-            // [      ]   [                 |                  ]   [   ]   [                  ]
-            // [ Edot ]   [  dVel/dPos = 0  |  dVel/dVel = Id  ]   [ E ]   [  dVel/dParam = 0 ]
-            // [      ]   [                 |                  ]   [   ]   [                  ]
-            // --------   ------------------+------------------- * ----- + --------------------
-            // [      ]   [                 |                  ]   [   ]   [                  ]
-            // [ Fdot ] = [    dAcc/dPos    |     dAcc/dVel    ]   [ F ]   [    dAcc/dParam   ]
-            // [      ]   [                 |                  ]   [   ]   [                  ]
+            if (triggersDerivatives.isTriggerParameter(selected.getDrivers().get(k).getName())) {
+                // TODO
+            } else {
+                // the variational equations of the parameters Jacobian matrix are computed
+                // one column at a time, they have the following form:
+                // [      ]   [                 |                  ]   [   ]   [                  ]
+                // [ Edot ]   [  dVel/dPos = 0  |  dVel/dVel = Id  ]   [ E ]   [  dVel/dParam = 0 ]
+                // [      ]   [                 |                  ]   [   ]   [                  ]
+                // --------   ------------------+------------------- * ----- + --------------------
+                // [      ]   [                 |                  ]   [   ]   [                  ]
+                // [ Fdot ] = [    dAcc/dPos    |     dAcc/dVel    ]   [ F ]   [    dAcc/dParam   ]
+                // [      ]   [                 |                  ]   [   ]   [                  ]
 
-            // The E and F sub-columns and their derivatives (Edot, Fdot) are 3 elements columns.
+                // The E and F sub-columns and their derivatives (Edot, Fdot) are 3 elements columns.
 
-            // The expanded multiplication and addition above can be rewritten to take into
-            // account the fixed values found in the sub-matrices in the left factor. This leads to:
+                // The expanded multiplication and addition above can be rewritten to take into
+                // account the fixed values found in the sub-matrices in the left factor. This leads to:
 
-            //     [ Edot ] = [ F ]
-            //     [ Fdot ] = [ dAcc/dPos ] * [ E ] + [ dAcc/dVel ] * [ F ] + [ dAcc/dParam ]
+                //     [ Edot ] = [ F ]
+                //     [ Fdot ] = [ dAcc/dPos ] * [ E ] + [ dAcc/dVel ] * [ F ] + [ dAcc/dParam ]
 
-            // The following loops compute these expressions taking care of the mapping of the
-            // (E, F) columns into the single dimension array p and of the mapping of the
-            // (Edot, Fdot) columns into the single dimension array pDot.
+                // The following loops compute these expressions taking care of the mapping of the
+                // (E, F) columns into the single dimension array p and of the mapping of the
+                // (Edot, Fdot) columns into the single dimension array pDot.
 
-            // copy F into Edot
-            final int columnTop = stateDim * stateDim + k;
-            pDot[columnTop]                = p[columnTop + 3 * paramDim];
-            pDot[columnTop +     paramDim] = p[columnTop + 4 * paramDim];
-            pDot[columnTop + 2 * paramDim] = p[columnTop + 5 * paramDim];
+                // copy F into Edot
+                final int columnTop = stateDim * stateDim + k;
+                pDot[columnTop]                = p[columnTop + 3 * paramDim];
+                pDot[columnTop +     paramDim] = p[columnTop + 4 * paramDim];
+                pDot[columnTop + 2 * paramDim] = p[columnTop + 5 * paramDim];
 
-            // compute Fdot
-            for (int i = 0; i < dim; ++i) {
-                final double[] dAdPi = dAccdPos[i];
-                final double[] dAdVi = dAccdVel[i];
-                pDot[columnTop + (dim + i) * paramDim] =
-                    dAccdParam[i][k] +
-                    dAdPi[0] * p[columnTop]                + dAdPi[1] * p[columnTop +     paramDim] + dAdPi[2] * p[columnTop + 2 * paramDim] +
-                    dAdVi[0] * p[columnTop + 3 * paramDim] + dAdVi[1] * p[columnTop + 4 * paramDim] + dAdVi[2] * p[columnTop + 5 * paramDim];
+                // compute Fdot
+                for (int i = 0; i < dim; ++i) {
+                    final double[] dAdPi = dAccdPos[i];
+                    final double[] dAdVi = dAccdVel[i];
+                    pDot[columnTop + (dim + i) * paramDim] =
+                                    dAccdParam[i][k] +
+                                    dAdPi[0] * p[columnTop]                + dAdPi[1] * p[columnTop +     paramDim] + dAdPi[2] * p[columnTop + 2 * paramDim] +
+                                    dAdVi[0] * p[columnTop + 3 * paramDim] + dAdVi[1] * p[columnTop + 4 * paramDim] + dAdVi[2] * p[columnTop + 5 * paramDim];
+                }
             }
 
         }

@@ -24,7 +24,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
@@ -69,10 +68,10 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     private AbsoluteDate triggerStart;
     private AbsoluteDate triggerStop;
 
-    protected abstract T createTrigger(AbsoluteDate start, AbsoluteDate stop, Action action);
+    protected abstract T createTrigger(AbsoluteDate start, AbsoluteDate stop);
 
-    private T configureTrigger(final AbsoluteDate start, final AbsoluteDate stop, final Action action) {
-        T trigger = createTrigger(start, stop, action);
+    private T configureTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
+        T trigger = createTrigger(start, stop);
         // set up separate detectors, to check lists of observers are handled properly
         trigger.addResetter(new Resetter());
         trigger.addResetter(new Resetter());
@@ -80,8 +79,8 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     private <S extends CalculusFieldElement<S>> T configureTrigger(final Field<S> field,
-                                                                   final AbsoluteDate start, final AbsoluteDate stop, final Action action) {
-        T trigger = createTrigger(start, stop, action);
+                                                                   final AbsoluteDate start, final AbsoluteDate stop) {
+        T trigger = createTrigger(start, stop);
         // set up separate detectors, to check lists of observers are handled properly
         trigger.addResetter(field, new FieldResetter<>());
         trigger.addResetter(field, new FieldResetter<>());
@@ -89,22 +88,26 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     private class Resetter implements ManeuverTriggersResetter {
-        public SpacecraftState resetState(SpacecraftState state, boolean start) {
+        public void maneuverTriggered(SpacecraftState state, boolean start) {
             if (start)  {
                 triggerStart = state.getDate();
             } else {
                 triggerStop  = state.getDate();
             }
+        }
+        public SpacecraftState resetState(SpacecraftState state) {
             return state;
         }
     }
     private class FieldResetter<S extends CalculusFieldElement<S>> implements FieldManeuverTriggersResetter<S> {
-        public FieldSpacecraftState<S> resetState(FieldSpacecraftState<S> state, boolean start) {
+        public void maneuverTriggered(FieldSpacecraftState<S> state, boolean start) {
             if (start)  {
                 triggerStart = state.getDate().toAbsoluteDate();
             } else {
                 triggerStop = state.getDate().toAbsoluteDate();
             }
+        }
+        public FieldSpacecraftState<S> resetState(FieldSpacecraftState<S> state) {
             return state;
         }
     }
@@ -113,35 +116,6 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         Utils.setDataRoot("regular-data");
         triggerStart = null;
         triggerStop  = null;
-    }
-
-    @Test
-    public void testStop() {
-        final AttitudeProvider attitudeProvider = buildAttitudeProvider();
-        final SpacecraftState initialState = buildInitialState(attitudeProvider);
-
-        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
-                                                       new TimeComponents(04, 15, 34.080),
-                                                       TimeScalesFactory.getUTC());
-        final double isp = 318;
-        final double duration = 3653.99;
-        final double f = 420;
-        final Maneuver maneuver = new Maneuver(null,
-                                               configureTrigger(fireDate, fireDate.shiftedBy(duration), Action.STOP),
-                                               new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assert.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
-        Assert.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
-
-        final SpacecraftState finalorb = buildPropagator(attitudeProvider, initialState, maneuver).
-                                         propagate(fireDate.shiftedBy(3800));
-
-        // maneuver should not have been performed as the trigger was built with Action.STOP
-        Assert.assertEquals(0.0, finalorb.getDate().durationFrom(fireDate), 1.0e-9);
-        Assert.assertEquals(initialState.getA(), finalorb.getA(), 1e-6);
-
-        Assert.assertEquals(0.0, triggerStart.durationFrom(fireDate), 1.0e-10);
-        Assert.assertNull(triggerStop);
-
     }
 
     @Test
@@ -157,7 +131,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final double duration = 3653.99;
         final double f = 420;
         final Maneuver maneuver = new Maneuver(null,
-                                               configureTrigger(fireDate, fireDate.shiftedBy(duration), Action.CONTINUE),
+                                               configureTrigger(fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
         Assert.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
         Assert.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
@@ -196,7 +170,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final double duration = 30;
         final double f = 420;
         final Maneuver maneuver = new Maneuver(null,
-                                               configureTrigger(fireDate, fireDate.shiftedBy(duration), Action.CONTINUE),
+                                               configureTrigger(fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
         Assert.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
         Assert.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
@@ -210,40 +184,6 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
 
         Assert.assertEquals(0.0,      triggerStart.durationFrom(fireDate), 1.0e-10);
         Assert.assertEquals(duration, triggerStop.durationFrom(fireDate),  1.0e-10);
-
-    }
-
-    @Test
-    public void testStopField() {
-        doTestStopField(Decimal64Field.getInstance());
-    }
-
-    private <S extends CalculusFieldElement<S>> void doTestStopField(Field<S> field) {
-        final AttitudeProvider attitudeProvider = buildAttitudeProvider();
-        final FieldSpacecraftState<S> initialState = buildInitialState(field, attitudeProvider);
-
-
-        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
-                                                       new TimeComponents(04, 15, 34.080),
-                                                       TimeScalesFactory.getUTC());
-        final double isp = 318;
-        final double duration = 3653.99;
-        final double f = 420;
-        final Maneuver maneuver = new Maneuver(null,
-                                               configureTrigger(field, fireDate, fireDate.shiftedBy(duration), Action.STOP),
-                                               new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assert.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
-        Assert.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
-
-        final FieldSpacecraftState<S> finalorb = buildPropagator(field, attitudeProvider, initialState, maneuver).
-                                                 propagate(new FieldAbsoluteDate<>(field, fireDate).shiftedBy(3800));
-
-        // maneuver should not have been performed as the trigger was built with Action.STOP
-        Assert.assertEquals(0.0, finalorb.getDate().durationFrom(fireDate).getReal(), 1.0e-9);
-        Assert.assertEquals(initialState.getA().getReal(), finalorb.getA().getReal(), 1e-6);
-
-        Assert.assertEquals(0.0, triggerStart.durationFrom(fireDate), 1.0e-10);
-        Assert.assertNull(triggerStop);
 
     }
 
@@ -264,7 +204,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final double duration = 3653.99;
         final double f = 420;
         final Maneuver maneuver = new Maneuver(null,
-                                               configureTrigger(field, fireDate, fireDate.shiftedBy(duration), Action.CONTINUE),
+                                               configureTrigger(field, fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
         Assert.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
         Assert.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
@@ -307,7 +247,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final double duration = 30;
         final double f = 420;
         final Maneuver maneuver = new Maneuver(null,
-                                               configureTrigger(field, fireDate, fireDate.shiftedBy(duration), Action.CONTINUE),
+                                               configureTrigger(field, fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
         Assert.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
         Assert.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);

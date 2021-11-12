@@ -39,7 +39,7 @@ public interface FieldManeuverTriggersResetter<T extends CalculusFieldElement<T>
         // nothing by default
     }
 
-    /** Reset state as a maneuver triggers.
+    /** Observe a maneuver trigger.
      * <p>
      * The {@code start} parameter corresponds to physical flow of time
      * from past to future, not to propagation direction which can be backward.
@@ -49,10 +49,15 @@ public interface FieldManeuverTriggersResetter<T extends CalculusFieldElement<T>
      * the first call will have {@code start} set to {@code false} and the second
      * call will have {@code start} set to {@code true}.
      * </p>
-     * @param state spacecraft state at trigger date
+     * @param state spacecraft state at trigger date (before applying the maneuver)
      * @param start if true, the trigger is the start of the maneuver
+     */
+    void maneuverTriggered(FieldSpacecraftState<T> state, boolean start);
+
+    /** Reset state as a maneuver triggers.
+     * @param state spacecraft state at trigger date
      * @return reset state taking into account maneuver start/stop
      */
-    FieldSpacecraftState<T> resetState(FieldSpacecraftState<T> state, boolean start);
+    FieldSpacecraftState<T> resetState(FieldSpacecraftState<T> state);
 
 }

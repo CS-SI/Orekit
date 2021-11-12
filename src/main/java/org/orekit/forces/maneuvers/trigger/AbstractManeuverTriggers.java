@@ -29,8 +29,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
-/**
- * Base class for triggers.
+/** Base class for triggers.
  * @author Luc Maisonobe
  * @since 11.1
  */
@@ -156,34 +155,58 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
     }
 
-    /** Apply resetters.
-     * @param state spacecraft state at trigger date
+    /** Notify resetters.
+     * @param state spacecraft state at trigger date (before applying the maneuver)
      * @param start if true, the trigger is the start of the maneuver
-     * @return reset state
      */
-    protected SpacecraftState applyResetters(final SpacecraftState state, final boolean start) {
-        SpacecraftState reset = state;
+    protected void notifyResetters(final SpacecraftState state, final boolean start) {
         for (final ManeuverTriggersResetter r : resetters) {
-            reset = r.resetState(reset, start);
+            r.maneuverTriggered(state, start);
         }
-        return reset;
     }
 
     /** Apply resetters.
      * @param state spacecraft state at trigger date
+     * @return reset state
+     */
+    protected SpacecraftState applyResetters(final SpacecraftState state) {
+        SpacecraftState reset = state;
+        for (final ManeuverTriggersResetter r : resetters) {
+            reset = r.resetState(reset);
+        }
+        return reset;
+    }
+
+    /** Notify resetters.
+     * @param state spacecraft state at trigger date (before applying the maneuver)
      * @param start if true, the trigger is the start of the maneuver
+     * @param <T> type of the field elements
+     */
+    protected <T extends CalculusFieldElement<T>> void notifyResetters(final FieldSpacecraftState<T> state, final boolean start) {
+        final List<FieldManeuverTriggersResetter<?>> list = fieldResetters.get(state.getDate().getField());
+        if (list != null) {
+            for (final FieldManeuverTriggersResetter<?> r : list) {
+                @SuppressWarnings("unchecked")
+                final FieldManeuverTriggersResetter<T> tr = (FieldManeuverTriggersResetter<T>) r;
+                tr.maneuverTriggered(state, start);
+            }
+        }
+    }
+
+    /** Apply resetters.
+     * @param state spacecraft state at trigger date
      * @param <T> type of the field elements
      * @return reset state
      */
     protected <T extends CalculusFieldElement<T>> FieldSpacecraftState<T>
-        applyResetters(final FieldSpacecraftState<T> state, final boolean start) {
+        applyResetters(final FieldSpacecraftState<T> state) {
         FieldSpacecraftState<T> reset = state;
         final List<FieldManeuverTriggersResetter<?>> list = fieldResetters.get(state.getDate().getField());
         if (list != null) {
             for (final FieldManeuverTriggersResetter<?> r : list) {
                 @SuppressWarnings("unchecked")
                 final FieldManeuverTriggersResetter<T> tr = (FieldManeuverTriggersResetter<T>) r;
-                reset = tr.resetState(reset, start);
+                reset = tr.resetState(reset);
             }
         }
         return reset;

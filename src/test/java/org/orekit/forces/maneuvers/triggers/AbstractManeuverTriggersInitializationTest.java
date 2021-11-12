@@ -28,6 +28,7 @@ import org.orekit.Utils;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
+import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -91,13 +92,20 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
 
     private T configureTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
         T trigger = createTrigger(start, stop);
-        trigger.addResetter((state, isStart) -> {
-            if (isStart) {
-                triggerStart = state.getDate();
-            } else {
-                triggerStop  = state.getDate();
+        trigger.addResetter(new ManeuverTriggersResetter() {
+            @Override
+            public void maneuverTriggered(SpacecraftState state, boolean start) {
+                if (start) {
+                    triggerStart = state.getDate();
+                } else {
+                    triggerStop  = state.getDate();
+                }
             }
-            return state;
+            @Override
+            public SpacecraftState resetState(SpacecraftState state) {
+                return state;
+            }
+            
         });
         return trigger;
     }
@@ -274,7 +282,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(finalStateTest.getMass() / mass);
 
-        Assert.assertTrue(deltaVTest == 0.0);
+        Assert.assertEquals(0.0, deltaVTest, dvTolerance);
         Assert.assertTrue(finalStateTest.getMass() == mass);
 
         Assert.assertEquals(0.0, triggerStart.durationFrom(startDate), 1.0e-10);

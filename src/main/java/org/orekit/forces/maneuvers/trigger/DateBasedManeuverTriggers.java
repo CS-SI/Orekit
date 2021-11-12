@@ -22,7 +22,6 @@ import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
-import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
 
 /** Maneuver triggers based on a start and end date, with no parameter drivers.
@@ -54,7 +53,7 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
      * @since 11.1
      */
     public DateBasedManeuverTriggers(final String name, final AbsoluteDate date, final double duration) {
-        super(createDetector(name, date, duration).withHandler(new ContinueOnEvent<>()));
+        super(createDetector(name, date, duration));
         this.name = name;
     }
 

@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,6 +29,7 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -38,11 +38,11 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
 
     public static class StartStopDates extends StartStopEventsTrigger<DateDetector, DateDetector> {
 
-        public StartStopDates(final AbsoluteDate start, final AbsoluteDate stop, final Action action) {
+        public StartStopDates(final AbsoluteDate start, final AbsoluteDate stop) {
             super(new DateDetector(5.0, 1.0e-10, start, stop.shiftedBy(10.0)).
-                  withHandler((state, detector, increasing) -> action),
+                  withHandler(new StopOnEvent<>()),
                   new DateDetector(5.0, 1.0e-10, stop, stop.shiftedBy(20.0)).
-                  withHandler((state, detector, increasing) -> action));
+                  withHandler(new StopOnEvent<>()));
         }
 
         @Override
@@ -65,15 +65,14 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
 
     }
 
-    protected StartStopEventsTrigger<DateDetector, DateDetector> createTrigger(final AbsoluteDate start, final AbsoluteDate stop, final Action action) {
-        return new StartStopDates(start, stop, action);
+    protected StartStopEventsTrigger<DateDetector, DateDetector> createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
+        return new StartStopDates(start, stop);
     }
 
     @Test
     public void testComponents() {
         StartStopEventsTrigger<DateDetector, DateDetector> trigger = createTrigger(AbsoluteDate.J2000_EPOCH,
-                                                                                   AbsoluteDate.J2000_EPOCH.shiftedBy(100.0),
-                                                                                   Action.CONTINUE);
+                                                                                   AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    startDates = trigger.getStartDetector().getDates();
         final List<TimeStamped>    stopDates  = trigger.getStopDetector().getDates();
         Assert.assertEquals(2,     trigger.getEventsDetectors().count());
