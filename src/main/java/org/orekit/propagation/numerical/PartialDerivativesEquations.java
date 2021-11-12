@@ -279,11 +279,20 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
             int index = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
-                if (driver.isSelected() && !triggersDerivatives.isTriggerParameter(driver.getName())) {
+                if (driver.isSelected()) {
                     final int parameterIndex = map.get(driver.getName());
-                    dAccdParam[0][parameterIndex] += derivativesX[index];
-                    dAccdParam[1][parameterIndex] += derivativesY[index];
-                    dAccdParam[2][parameterIndex] += derivativesZ[index];
+                    if (triggersDerivatives.isManagedColumn(parameterIndex)) {
+                        // triggers are not computed from gradient and variational equations
+                        // here we just ensure we never use this, this is defensive programming
+                        dAccdParam[0][parameterIndex] = Double.NaN;
+                        dAccdParam[1][parameterIndex] = Double.NaN;
+                        dAccdParam[2][parameterIndex] = Double.NaN;
+                    } else {
+                        // sum up gradients as the same parameter may be used by several force models
+                        dAccdParam[0][parameterIndex] += derivativesX[index];
+                        dAccdParam[1][parameterIndex] += derivativesY[index];
+                        dAccdParam[2][parameterIndex] += derivativesZ[index];
+                    }
                     ++index;
                 }
             }
@@ -331,8 +340,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         }
 
         for (int k = 0; k < paramDim; ++k) {
-            if (triggersDerivatives.isTriggerParameter(selected.getDrivers().get(k).getName())) {
-                // TODO
+            if (triggersDerivatives.isManagedColumn(k)) {
+                // the derativatives are managed by the dedicated helper
+                triggersDerivatives.updateDerivatives(k, pDot);
             } else {
                 // the variational equations of the parameters Jacobian matrix are computed
                 // one column at a time, they have the following form:
