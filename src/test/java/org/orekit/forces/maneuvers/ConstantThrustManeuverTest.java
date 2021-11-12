@@ -18,17 +18,12 @@ package org.orekit.forces.maneuvers;
 
 
 import java.util.List;
-import java.util.Locale;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -798,66 +793,6 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         
 
     }
-
-    @Test
-    public void testDerivativeWrtStartTime() {
-        final double isp = 318;
-        final double mass = 2500;
-        final double a = 24396159;
-        final double e = 0.72831215;
-        final double i = FastMath.toRadians(7);
-        final double omega = FastMath.toRadians(180);
-        final double OMEGA = FastMath.toRadians(261);
-        final double lv = 0;
-
-        final double duration = 3653.99;
-        final double f = 420;
-        final double delta = FastMath.toRadians(-7.4978);
-        final double alpha = FastMath.toRadians(351);
-        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
-
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
-                                                       new TimeComponents(23, 30, 00.000),
-                                                       TimeScalesFactory.getUTC());
-        final Orbit orbit =
-            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), initDate, mu);
-        final OrbitType     orbitType = OrbitType.KEPLERIAN;
-        final PositionAngle angleType = PositionAngle.TRUE;
-        double[][] tol = NumericalPropagator.tolerances(0.001, orbit, orbitType);
-        AdaptiveStepsizeIntegrator integrator =
-            new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
-        final SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
-
-        // compute gradient with respect to firing date, keeping stop date constant
-        final AbsoluteDate firing = new AbsoluteDate(new DateComponents(2004, 01, 02),
-                                                     new TimeComponents(04, 15, 34.080),
-                                                     TimeScalesFactory.getUTC());
-        final AbsoluteDate finalDate = firing.shiftedBy(3800);
-        final UnivariateDifferentiableVectorFunction function =
-                        new FiniteDifferencesDifferentiator(8, 1.0).differentiate((UnivariateVectorFunction) dt -> {
-                            final double[] array = new double[6];
-                            integrator.setInitialStepSize(60);
-                            final NumericalPropagator propagator = new NumericalPropagator(integrator);
-                            propagator.setOrbitType(orbitType);
-                            propagator.setPositionAngleType(angleType);
-                            propagator.setInitialState(initialState);
-                            propagator.setAttitudeProvider(law);
-                            propagator.addForceModel(new ConstantThrustManeuver(firing.shiftedBy(dt), duration - dt, f, isp, Vector3D.PLUS_I));
-                            orbitType.mapOrbitToArray(propagator.propagate(finalDate).getOrbit(), angleType, array, null);
-                            return array;
-                        });
-        final UnivariateDerivative1[] reference = function.value(new UnivariateDerivative1(0.0, 1.0));
-        for (int n = 0; n < reference.length; ++n) {
-            final double f0 = reference[n].getValue();
-            final double f1 = reference[n].getFirstDerivative();
-            System.out.format(Locale.US, "o[%d] = %.6f %c %.9f Δt%n",
-                              n, f0, f1 < 0 ? '-' : '+', FastMath.abs(f1));
-        }
-
-    }
-
 
     @Before
     public void setUp() {
