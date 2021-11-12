@@ -27,6 +27,7 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DateDriver;
 
 /** Helper for computing the partial derivatives with respect to maneuvers triggers dates.
@@ -108,7 +109,7 @@ class TriggersDerivatives {
         return state;
     }
 
-    /** Observer for maneuvers triggers.
+    /** Resetter for maneuvers triggers.
      * <p>
      * Let ∂yₜ/∂y₀ be the State Transition matrix from initial time t₀ to current time t.
      * We have ∂yₜ/∂y₀ = ∂yₜ/∂y₁ ⨉ ∂y₁/∂y₀ where y₁ is that state at trigger time t₁.
@@ -126,6 +127,9 @@ class TriggersDerivatives {
         /** Index of the column in the Jacobian with respect to parameters. */
         private final int column;
 
+        /** Propagation direction. */
+        private boolean forward;
+
         /** Sign to apply to acceleration. */
         private double sign;
 
@@ -134,6 +138,12 @@ class TriggersDerivatives {
          */
         TriggersResetter(final int column) {
             this.column = column;
+        }
+
+        /** {@inheritDoc}*/
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+            forward = target.isAfterOrEqualTo(initialState);
         }
 
         /** {@inheritDoc}*/

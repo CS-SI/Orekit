@@ -155,6 +155,16 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
     }
 
+    /** Initialize resetters.
+     * @param initialState initial state
+     * @param target target date for the propagation
+     */
+    protected void initializeResetters(final SpacecraftState initialState, final AbsoluteDate target) {
+        for (final ManeuverTriggersResetter r : resetters) {
+            r.init(initialState, target);
+        }
+    }
+
     /** Notify resetters.
      * @param state spacecraft state at trigger date (before applying the maneuver)
      * @param start if true, the trigger is the start of the maneuver
@@ -175,6 +185,22 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
             reset = r.resetState(reset);
         }
         return reset;
+    }
+
+    /** Initialize resetters.
+     * @param initialState initial state
+     * @param target target date for the propagation
+     * @param <T> type of the field elements
+     */
+    protected <T extends CalculusFieldElement<T>> void initializeResetters(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
+        final List<FieldManeuverTriggersResetter<?>> list = fieldResetters.get(initialState.getDate().getField());
+        if (list != null) {
+            for (final FieldManeuverTriggersResetter<?> r : list) {
+                @SuppressWarnings("unchecked")
+                final FieldManeuverTriggersResetter<T> tr = (FieldManeuverTriggersResetter<T>) r;
+                tr.init(initialState, target);
+            }
+        }
     }
 
     /** Notify resetters.

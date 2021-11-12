@@ -292,6 +292,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target, final A detector) {
             forward = target.isAfterOrEqualTo(initialState);
+            initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
@@ -330,6 +331,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target, final O detector) {
             forward = target.isAfterOrEqualTo(initialState);
+            initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
@@ -370,6 +372,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
         @Override
         public void init(final FieldSpacecraftState<S> initialState, final FieldAbsoluteDate<S> target) {
             forward = target.isAfterOrEqualTo(initialState);
+            initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
@@ -410,6 +413,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
         @Override
         public void init(final FieldSpacecraftState<S> initialState, final FieldAbsoluteDate<S> target) {
             forward = target.isAfterOrEqualTo(initialState);
+            initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
