@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.maneuvers.trigger;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.events.FieldAbstractDetector;
@@ -23,6 +26,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Maneuver triggers based on a start and end date, with no parameter drivers.
  * @author Maxime Journot
@@ -117,6 +121,13 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
         final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) fd;
         return converted;
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Arrays.asList(getFiringIntervalDetector().getStartDriver(),
+                             getFiringIntervalDetector().getStopDriver());
     }
 
 }
