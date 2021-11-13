@@ -136,7 +136,7 @@ class TriggersDerivatives {
      * <p>
      * Before trigger time t₁ (according to propagation direction), ∂yₜ/∂t₁ = 0 as we have not yet
      * reached t₁. After trigger time t₁, ∂yₜ/∂t₁ = ± ∂yₜ/∂y₁ fₘ(t₁, y₁), where the sign depends on
-     * t₁ being a start or stop trigger and also on propagation direction.
+     * t₁ being a start or stop trigger.
      * </p>
      * <p>
      * At trigger time t₁, we must reset the Jacobian columns to ∂y₁/∂t₁ = ± Id fₘ(t₁, y₁).
@@ -164,9 +164,6 @@ class TriggersDerivatives {
 
         /** Indicator for trigger. */
         private boolean triggered;
-
-        /** Propagation direction. */
-        private boolean isForward;
 
         /** Start/stop indicator. */
         private boolean isStart;
@@ -209,7 +206,6 @@ class TriggersDerivatives {
         /** {@inheritDoc}*/
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-            isForward = target.isAfterOrEqualTo(initialState);
             triggered = false;
         }
 
@@ -229,7 +225,7 @@ class TriggersDerivatives {
             // get the acceleration near trigger time
             final SpacecraftState stateWhenFiring = state.shiftedBy((isStart ? +2 : -2) * threshold);
             final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, maneuver.getParameters());
-            sfm = (isStart ^ isForward) ? acceleration : acceleration.negate();
+            sfm = isStart ? acceleration.negate() : acceleration;
 
             // initialize derivatives computation
             final int    stateDim  = 6;
