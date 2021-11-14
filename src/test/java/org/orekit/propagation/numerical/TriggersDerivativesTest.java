@@ -17,9 +17,15 @@
 package org.orekit.propagation.numerical;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -27,11 +33,15 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
@@ -51,6 +61,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 public class TriggersDerivativesTest {
 
@@ -66,11 +77,12 @@ public class TriggersDerivativesTest {
         // propagators will be combined using finite differences to compute derivatives
         final OrbitType     orbitType     = OrbitType.KEPLERIAN;
         final PositionAngle positionAngle = PositionAngle.TRUE;
+        final int           degree        = 20;
         final double        duration      = 200.0;
         final double        h             = 1.0;
         final double        samplingtep   = 60.0;
         for (int k = -4; k <= 4; ++k) {
-            propagators.add(buildPropagator(orbitType, positionAngle, firing, duration, k * h));
+            propagators.add(buildPropagator(orbitType, positionAngle, degree, firing, duration, k * h));
         }
 
         // the central propagator (k = 0) will compute derivatives autonomously using PartialDerivativesEquations and TriggersDerivatives
@@ -84,23 +96,89 @@ public class TriggersDerivativesTest {
                              forEach(d -> d.setSelected(true)));
         autonomous.setInitialState(pde.setInitialJacobians(autonomous.getInitialState()));
 
-        DerivativesSampler sampler = new DerivativesSampler(orbitType, positionAngle, firing, duration, h, samplingtep, pde.getMapper());
+        DerivativesSampler sampler = new DerivativesSampler(pde, orbitType, positionAngle,
+                                                            firing, duration, h, samplingtep, pde.getMapper());
         new PropagatorsParallelizer(propagators, sampler).
-        propagate(firing.shiftedBy(-120 * samplingtep), firing.shiftedBy(duration + 120 * samplingtep));
+        propagate(firing.shiftedBy(-30 * samplingtep), firing.shiftedBy(duration + 1000 * samplingtep));
+        analyzeSample(sampler, orbitType, firing, degree, false, null);
+//        analyzeSample(sampler, orbitType, firing, degree, true, null);
+//        analyzeSample(sampler, orbitType, firing, degree, true, "/tmp");
+    }
 
-        for (final Entry entry : sampler.sample) {
-            System.out.format(Locale.US, "%.6f", entry.date.durationFrom(firing));
-            for (int i = 0; i < entry.finiteDifferences.length; ++i) {
-                System.out.format(Locale.US, " %.9f %.9f", entry.finiteDifferences[i].getFirstDerivative(), entry.direct[i].getFirstDerivative());
+    private void analyzeSample(final DerivativesSampler sampler, final OrbitType orbitType, final AbsoluteDate firing,
+                               final int degree, final boolean plot, final String outputDir) {
+        if (!plot) {
+            return;
+        }
+        final ProcessBuilder pb = new ProcessBuilder("gnuplot").
+                        redirectOutput(ProcessBuilder.Redirect.INHERIT).
+                        redirectError(ProcessBuilder.Redirect.INHERIT);
+        pb.environment().remove("XDG_SESSION_TYPE");
+        Process gnuplot;
+        try {
+            gnuplot = pb.start();
+            try (PrintStream out = new PrintStream(gnuplot.getOutputStream(), false, StandardCharsets.UTF_8.name())) {
+                final String fileName;
+                if (outputDir == null) {
+                    fileName = null;
+                    out.format(Locale.US, "set terminal qt size %d, %d title 'complex plotter'%n", 1000, 1000);
+                } else {
+                    fileName = new File(outputDir,
+                                        "triggers-partials-" + orbitType + "-degree-" + degree + ".png").
+                               getAbsolutePath();
+                    out.format(Locale.US, "set terminal pngcairo size %d, %d%n", 1000, 1000);
+                    out.format(Locale.US, "set output '%s'%n", fileName);
+                }
+                out.format(Locale.US, "set view map scale 1%n");
+                out.format(Locale.US, "set xlabel 't - t_{start}'%n");
+                out.format(Locale.US, "set ylabel 'd/dt_{start}'%n");
+                if (orbitType == OrbitType.CARTESIAN) {
+                    out.format(Locale.US, "set key bottom left%n");
+                } else {
+                    out.format(Locale.US, "set key top left%n");
+                }
+                out.format(Locale.US, "set title 'derivatives of %s state, degree %d'%n", orbitType, degree);
+                out.format(Locale.US, "$data <<EOD%n");
+                for (final Entry entry : sampler.sample) {
+                    out.format(Locale.US, "%.6f", entry.date.durationFrom(firing));
+                    for (int i = 0; i < entry.finiteDifferences.length; ++i) {
+                        out.format(Locale.US, " %.9f %.9f %.9f",
+                                   entry.finiteDifferences[i].getFirstDerivative(),
+                                   entry.integrated[i].getFirstDerivative(),
+                                   entry.ode[i].getFirstDerivative());
+                    }
+                    out.format(Locale.US, "%n");
+                }
+                out.format(Locale.US, "EOD%n");
+                if (orbitType == OrbitType.CARTESIAN) {
+                    out.print("plot $data using 1:2  with lines       title 'dX/dt_{start} finite differences',  \\\n" + 
+                              "     ''    using 1:3  with lines       title 'dX/dt_{start} explicit expression', \\\n" + 
+                              "     ''    using 1:4  with linespoints title 'dX/dt_{start} ODE',                 \\\n" + 
+                              "     ''    using 1:5  with lines       title 'dY/dt_{start} finite differences',  \\\n" + 
+                              "     ''    using 1:6  with lines       title 'dY/dt_{start} explicit expression', \\\n" + 
+                              "     ''    using 1:7  with linespoints title 'dY/dt_{start} ODE',                 \\\n" + 
+                              "     ''    using 1:8  with lines       title 'dZ/dt_{start} finite differences',  \\\n" + 
+                              "     ''    using 1:9  with lines       title 'dZ/dt_{start} explicit expression', \\\n" + 
+                              "     ''    using 1:10 with linespoints title 'dZ/dt_{start} ODE'\n");
+                } else {
+                    out.print("plot $data using 1:2  with lines       title 'da/dt_{start} finite differences',  \\\n" + 
+                              "     ''    using 1:3  with lines       title 'da/dt_{start} explicit expression', \\\n" + 
+                              "     ''    using 1:4  with linespoints title 'da/dt_{start} ODE'\n");
+                }
+                if (fileName == null) {
+                    out.format(Locale.US, "pause mouse close%n");
+                } else {
+                    System.out.format(Locale.US, "output written to %s%n", fileName);
+                }
             }
-            System.out.format(Locale.US, "%n");
+        } catch (IOException ioe) {
+            Assert.fail(ioe.getLocalizedMessage());
         }
 
     }
 
-    private NumericalPropagator buildPropagator(final OrbitType orbitType,
-                                                final PositionAngle positionAngle,
-                                                final AbsoluteDate firing, final double duration,
+    private NumericalPropagator buildPropagator(final OrbitType orbitType, final PositionAngle positionAngle,
+                                                final int degree, final AbsoluteDate firing, final double duration,
                                                 final double shift) {
 
         final double delta = FastMath.toRadians(-7.4978);
@@ -124,6 +202,10 @@ public class TriggersDerivativesTest {
         propagator.setOrbitType(orbitType);
         propagator.setPositionAngleType(positionAngle);
         propagator.setAttitudeProvider(attitudeProvider);
+        if (degree > 0) {
+            propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
+                                                                           GravityFieldFactory.getNormalizedProvider(degree, degree)));
+        }
         propagator.addForceModel(new Maneuver(null, triggers, propulsionModel));
         propagator.setInitialState(initialState);
         return propagator;
@@ -150,20 +232,24 @@ public class TriggersDerivativesTest {
 
     private class DerivativesSampler implements MultiSatStepHandler {
 
-        final OrbitType       orbitType;
-        final PositionAngle   positionAngle;
-        final AbsoluteDate    firing;
-        final double          duration;
-        final double          h;
-        final double          samplingtep;
-        final JacobiansMapper mapper;
-        final List<Entry>     sample;
-        boolean               forward;
-        AbsoluteDate          next;
+        final PartialDerivativesEquations pde;
+        final OrbitType                   orbitType;
+        final PositionAngle               positionAngle;
+        final AbsoluteDate                firing;
+        final double                      duration;
+        final double                      h;
+        final double                      samplingtep;
+        final JacobiansMapper             mapper;
+        final List<Entry>                 sample;
+        boolean                           forward;
+        AbsoluteDate                      next;
+        double[]                          scm;
 
-        DerivativesSampler(final OrbitType orbitType, final PositionAngle positionAngle,
+        DerivativesSampler(final PartialDerivativesEquations pde,
+                           final OrbitType orbitType, final PositionAngle positionAngle,
                            final AbsoluteDate firing, final double duration,
                            final double h, final double samplingtep, final JacobiansMapper mapper) {
+            this.pde           = pde;
             this.orbitType     = orbitType;
             this.positionAngle = positionAngle;
             this.firing        = firing;
@@ -173,6 +259,25 @@ public class TriggersDerivativesTest {
             this.mapper        = mapper;
             this.sample        = new ArrayList<>();
             this.next          = null;
+            this.scm           = null;
+        }
+
+        private void setScm() {
+            try {
+                Field tdField      = PartialDerivativesEquations.class.getDeclaredField("triggersDerivatives");
+                tdField.setAccessible(true);
+                TriggersDerivatives td = (TriggersDerivatives) tdField.get(pde);
+                Field triggersFields = TriggersDerivatives.class.getDeclaredField("triggers");
+                triggersFields.setAccessible(true);
+                @SuppressWarnings("unchecked")
+                Map<Integer, ?> map = (Map<Integer, ?>) triggersFields.get(td);
+                Object computer = map.get(0);
+                Field scmField = computer.getClass().getDeclaredField("scm");
+                scmField.setAccessible(true);
+                scm = (double[]) scmField.get(computer);
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+                scm = null;
+            }
         }
 
         public void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
@@ -190,24 +295,37 @@ public class TriggersDerivativesTest {
             final OrekitStepInterpolator autonomous = interpolators.get((interpolators.size() - 1) / 2);
             while ( forward && (next.isAfter(autonomous.getPreviousState())  && next.isBeforeOrEqualTo(autonomous.getCurrentState())) ||
                    !forward && (next.isBefore(autonomous.getPreviousState()) && next.isAfterOrEqualTo(autonomous.getCurrentState()))) {
+                if (scm == null) {
+                    setScm();
+                }
                 if (!(surrounds(interpolators, firing) || surrounds(interpolators, firing.shiftedBy(duration)))) {
                     // don't sample points where finite differences are in an intermediate state (some before, some after discontinuity)
                     final double[][] o = new double[interpolators.size()][6];
                     for (int i = 0; i < o.length; ++i) {
                         orbitType.mapOrbitToArray(interpolators.get(i).getInterpolatedState(next).getOrbit(), positionAngle, o[i], null);
                     }
+                    final double[][] stm      = new double[o[0].length][o[0].length];
                     final double[][] jacobian = new double[o[0].length][1];
+                    mapper.getStateJacobian(autonomous.getCurrentState(), stm);
                     mapper.getParametersJacobian(interpolators.get(4).getInterpolatedState(next), jacobian);
+                    UnivariateDerivative1[] ode               = new UnivariateDerivative1[6];
+                    UnivariateDerivative1[] integrated        = new UnivariateDerivative1[6];
                     UnivariateDerivative1[] finiteDifferences = new UnivariateDerivative1[6];
-                    UnivariateDerivative1[] direct            = new UnivariateDerivative1[6];
                     for (int i = 0; i < o[0].length; ++i) {
-                        direct[i]            = new UnivariateDerivative1(o[4][i], jacobian[i][0]);
+                        ode[i]               = new UnivariateDerivative1(o[4][i], jacobian[i][0]);
+                        if (scm == null) {
+                            integrated[i] = new UnivariateDerivative1(o[4][i], 0.0);
+                        } else {
+                            integrated[i] = new UnivariateDerivative1(o[4][i],
+                                                                      stm[i][0] * scm[0] + stm[i][1] * scm[1] + stm[i][2] * scm[2] +
+                                                                      stm[i][3] * scm[3] + stm[i][4] * scm[4] + stm[i][5] * scm[5]);
+                        }
                         finiteDifferences[i] = new UnivariateDerivative1(o[4][i],
                                                                          differential8(o[0][i], o[1][i], o[2][i], o[3][i],
                                                                                        o[5][i], o[6][i], o[7][i], o[8][i],
                                                                                        h));
                     }
-                    sample.add(new Entry(next, direct, finiteDifferences));
+                    sample.add(new Entry(next, ode, integrated, finiteDifferences));
                 }
                 next = next.shiftedBy(forward ? samplingtep : -samplingtep);
             }
@@ -224,11 +342,16 @@ public class TriggersDerivativesTest {
 
     private class Entry {
         private AbsoluteDate date;
-        private UnivariateDerivative1[]     direct;
+        private UnivariateDerivative1[]     ode;
+        private UnivariateDerivative1[]     integrated;
         private UnivariateDerivative1[]     finiteDifferences;
-        Entry(final AbsoluteDate date, final UnivariateDerivative1[] direct, final UnivariateDerivative1[] finiteDifferences) {
+        Entry(final AbsoluteDate date,
+              final UnivariateDerivative1[] ode,
+              final UnivariateDerivative1[] integrated,
+              final UnivariateDerivative1[] finiteDifferences) {
             this.date              = date;
-            this.direct            = direct.clone();
+            this.ode               = ode.clone();
+            this.integrated        = integrated.clone();
             this.finiteDifferences = finiteDifferences.clone();
         }
     }
@@ -244,7 +367,8 @@ public class TriggersDerivativesTest {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
     }
 
 }
