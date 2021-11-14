@@ -306,7 +306,7 @@ public class TriggersDerivativesTest {
                     }
                     final double[][] stm      = new double[o[0].length][o[0].length];
                     final double[][] jacobian = new double[o[0].length][1];
-                    mapper.getStateJacobian(autonomous.getCurrentState(), stm);
+                    mapper.getStateJacobian(autonomous.getInterpolatedState(next), stm);
                     mapper.getParametersJacobian(interpolators.get(4).getInterpolatedState(next), jacobian);
                     UnivariateDerivative1[] ode               = new UnivariateDerivative1[6];
                     UnivariateDerivative1[] integrated        = new UnivariateDerivative1[6];
