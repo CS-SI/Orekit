@@ -341,7 +341,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         for (int k = 0; k < paramDim; ++k) {
             if (triggersDerivatives.isManagedColumn(k)) {
-                // the derativatives are managed by the dedicated helper
+                // the derivatives are managed by the dedicated helper
                 triggersDerivatives.updateDerivatives(k, pDot);
             } else {
                 // the variational equations of the parameters Jacobian matrix are computed
