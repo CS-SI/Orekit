@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="10.3.1" />
+  <property name="project.version"         value="10.3.2" />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -46,7 +46,7 @@
   <property name="hamcrest.maven.path"      value="org/hamcrest"                                   />
   <property name="maven.repository"         value="https://repo1.maven.org/maven2"                 />
 
-  <property name="copyright"               value="2002-2020 CS GROUP" />
+  <property name="copyright"               value="2002-2021 CS GROUP" />
 
   <available file="${lib.dir}/${hipparchus.core.jar}" property="libs.present" />
 
