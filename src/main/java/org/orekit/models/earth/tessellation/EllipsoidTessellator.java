@@ -163,6 +163,66 @@ public class EllipsoidTessellator {
                                        final double fullWidth, final double fullLength,
                                        final double widthOverlap, final double lengthOverlap,
                                        final boolean truncateLastWidth, final boolean truncateLastLength) {
+        return tessellate(zone, false,
+                          fullWidth, fullLength, widthOverlap, lengthOverlap,
+                          truncateLastWidth, truncateLastLength);
+    }
+
+    /** Tessellate a zone of interest into tiles.
+     * <p>
+     * The created tiles will completely cover the zone of interest.
+     * </p>
+     * <p>
+     * The distance between a vertex at a tile corner and the vertex at the same corner
+     * in the next vertex are computed by subtracting the overlap width (resp. overlap length)
+     * from the full width (resp. full length). If for example the full width is specified to
+     * be 55 km and the overlap in width is specified to be +5 km, successive tiles would span
+     * as follows:
+     * </p>
+     * <ul>
+     *   <li>tile 1 covering from   0 km to  55 km</li>
+     *   <li>tile 2 covering from  50 km to 105 km</li>
+     *   <li>tile 3 covering from 100 km to 155 km</li>
+     *   <li>...</li>
+     * </ul>
+     * <p>
+     * In order to achieve the same 50 km step but using a 5 km gap instead of an overlap, one would
+     * need to specify the full width to be 45 km and the overlap to be -5 km. With these settings,
+     * successive tiles would span as follows:
+     * </p>
+     * <ul>
+     *   <li>tile 1 covering from   0 km to  45 km</li>
+     *   <li>tile 2 covering from  50 km to  95 km</li>
+     *   <li>tile 3 covering from 100 km to 155 km</li>
+     *   <li>...</li>
+     * </ul>
+     * @param zone zone of interest to tessellate
+     * @param isPathConnected if true, the {@code zone} is known to be path-connected, so
+     * some parts of the algorithm dedicated to handling of non path-connected regions
+     * can be omitted
+     * @param fullWidth full tiles width as a distance on surface, including overlap (in meters)
+     * @param fullLength full tiles length as a distance on surface, including overlap (in meters)
+     * @param widthOverlap overlap between adjacent tiles (in meters), if negative the tiles
+     * will have a gap between each other instead of an overlap
+     * @param lengthOverlap overlap between adjacent tiles (in meters), if negative the tiles
+     * will have a gap between each other instead of an overlap
+     * @param truncateLastWidth if true, the first tiles strip will be started as close as
+     * possible to the zone of interest, and the last tiles strip will have its width reduced
+     * to also remain close to the zone of interest; if false all tiles strip will have the
+     * same {@code fullWidth} and they will be balanced around zone of interest
+     * @param truncateLastLength if true, the first tile in each strip will be started as close as
+     * possible to the zone of interest, and the last tile in each strip will have its length reduced
+     * to also remain close to the zone of interest; if false all tiles in each strip will have the
+     * same {@code fullLength} and they will be balanced around zone of interest
+     * @return a list of lists of tiles covering the zone of interest,
+     * each sub-list corresponding to a part not connected to the other
+     * parts (for example for islands)
+     * @since 10.3.2
+     */
+    public List<List<Tile>> tessellate(final SphericalPolygonsSet zone, final boolean isPathConnected,
+                                       final double fullWidth, final double fullLength,
+                                           final double widthOverlap, final double lengthOverlap,
+                                           final boolean truncateLastWidth, final boolean truncateLastLength) {
 
         final double                  splitWidth  = (fullWidth  - widthOverlap)  / quantization;
         final double                  splitLength = (fullLength - lengthOverlap) / quantization;
@@ -209,9 +269,14 @@ public class EllipsoidTessellator {
 
             }
 
-            // remove the part of the zone covered by the mesh
-            remaining = (SphericalPolygonsSet) factory.difference(remaining, mesh.getCoverage());
-            inside    = getInsidePoint(remaining);
+            if (isPathConnected) {
+                // region is known to be path-connected, don't attempt to compute difference
+                inside = null;
+            } else {
+                // remove the part of the zone covered by the mesh
+                remaining = (SphericalPolygonsSet) factory.difference(remaining, mesh.getCoverage());
+                inside    = getInsidePoint(remaining);
+            }
 
             map.put(mesh, tiles);
 
@@ -239,6 +304,26 @@ public class EllipsoidTessellator {
      * parts (for example for islands)
      */
     public List<List<GeodeticPoint>> sample(final SphericalPolygonsSet zone,
+                                            final double width, final double length) {
+        return sample(zone, false, width, length);
+    }
+
+    /** Sample a zone of interest into a grid sample of {@link GeodeticPoint geodetic points}.
+     * <p>
+     * The created points will be entirely within the zone of interest.
+     * </p>
+     * @param zone zone of interest to sample
+     * @param isPathConnected if true, the {@code zone} is known to be path-connected, so
+     * some parts of the algorithm dedicated to handling of non path-connected regions
+     * can be omitted
+     * @param width grid sample cells width as a distance on surface (in meters)
+     * @param length grid sample cells length as a distance on surface (in meters)
+     * @return a list of lists of points sampling the zone of interest,
+     * each sub-list corresponding to a part not connected to the other
+     * parts (for example for islands)
+     * @since 10.3.2
+     */
+    public List<List<GeodeticPoint>> sample(final SphericalPolygonsSet zone, final boolean isPathConnected,
                                             final double width, final double length) {
 
         final double                         splitWidth  = width  / quantization;
@@ -286,9 +371,14 @@ public class EllipsoidTessellator {
 
             }
 
-            // remove the part of the zone covered by the mesh
-            remaining = (SphericalPolygonsSet) factory.difference(remaining, mesh.getCoverage());
-            inside    = getInsidePoint(remaining);
+            if (isPathConnected) {
+                // region is known to be path-connected, don't attempt to compute difference
+                inside = null;
+            } else {
+                // remove the part of the zone covered by the mesh
+                remaining = (SphericalPolygonsSet) factory.difference(remaining, mesh.getCoverage());
+                inside    = getInsidePoint(remaining);
+            }
 
             map.put(mesh, sample);
 

@@ -19,6 +19,8 @@ package org.orekit.models.earth.tessellation;
 import java.io.IOException;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.Region.Location;
 import org.hipparchus.geometry.partitioning.RegionFactory;
@@ -45,6 +47,26 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 public class EllipsoidTessellatorTest {
+
+    @Test
+    public void testPathConnected() {
+            double radius = 2485.0 / Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+            double eps = 1.0e-10;
+            S2Point pNorth = new S2Point(0.0437089494376725, FastMath.PI / 2 - 1.2792763618135106);
+            Vector3D center = new S2Point(pNorth.getTheta(), pNorth.getPhi() + radius).getVector();
+            S2Point[] boundary = new S2Point[60];
+            for (int i = 0; i < boundary.length; ++i) {
+                boundary[i] = new S2Point(new Rotation(center, (i + 1) * 2 * FastMath.PI / boundary.length,
+                                                       RotationConvention.VECTOR_OPERATOR).
+                                          applyTo(pNorth.getVector()));
+            }
+            SphericalPolygonsSet zone = new SphericalPolygonsSet(eps, boundary);
+            final EllipsoidTessellator tessellator =
+                            new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, true), 32);
+            final List<List<Tile>> tiles = tessellator.tessellate(zone, true, 10000.0, 10000.0, 0.0, 0.0, false, false);
+            Assert.assertEquals(1, tiles.size());
+            Assert.assertEquals(1, tiles.get(0).size());
+    }
 
     @Test
     public void testTilesAlongDescendingTrackWithoutTruncation() {

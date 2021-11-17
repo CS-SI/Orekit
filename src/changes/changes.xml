@@ -20,12 +20,21 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="10.3.2" date="2021-11-17"
+             description="Version 10.3.2 is a patch release of Orekit.
+             It includes a work around for tesselations failing in rare cases for
+             small path-connected regions at high latitude.">
+   	  <action dev="luc" type="fix" issue="857">
+      	Allow users to deactivate handling of a feature devoted to tesselation of non path-connected
+        regions when the caller knows the region is path-connected.
+      </action>
+    </release>
     <release version="10.3.1" date="2021-06-16"
              description="Version 10.3.1 is a patch release of Orekit.
              It fixes one critical bug that could cause potential infinite loops in tesselation
              in very rare cases due to numerical noise.">
-   	  <action dev="luc" type="fix" issue="792">
-      	Fixed potential infinite loops in tesselation in very rare cases due to numerical noise.
+      <action dev="luc" type="fix" issue="792">
+        Fixed potential infinite loops in tesselation in very rare cases due to numerical noise.
       </action>
     </release>
     <release version="10.3" date="2020-12-21"
