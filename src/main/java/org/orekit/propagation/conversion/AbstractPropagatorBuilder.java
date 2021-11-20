@@ -17,7 +17,9 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
@@ -29,7 +31,8 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.StackableGenerator;
+import org.orekit.propagation.integration.IntegrableGenerator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -77,8 +80,15 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Attitude provider for the propagator. */
     private AttitudeProvider attitudeProvider;
 
-    /** Additional equations. */
-    private List<AdditionalEquations> additionalEquations;
+    /** Closed-form updaters.
+     * @since 11.1
+     */
+    private List<StackableGenerator> closedFormUpdaters;
+
+    /** Integrable updaters.
+     * @since 11.1
+     */
+    private List<IntegrableGenerator> integrableUpdaters;
 
     /** Build a new instance.
      * <p>
@@ -160,7 +170,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             driver.setSelected(true);
         }
 
-        this.additionalEquations  = new ArrayList<AdditionalEquations>();
+        this.closedFormUpdaters  = new ArrayList<>();
+        this.integrableUpdaters  = new ArrayList<>();
 
         if (addDriverForCentralAttraction) {
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
@@ -366,22 +377,61 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.initialOrbitDate = newOrbit.getDate();
     }
 
+    /** Add an updater for user-specified state parameters to be computed along with the orbit propagation.
+     * @param updater updater for additional state
+     * @since 11.1
+     */
+    public void addClosedFormUpdater(final StackableGenerator updater) {
+        closedFormUpdaters.add(updater);
+    }
+
+    /** Get an unmodifiable list of updaters for additional state.
+     * @return updaters for the additional states
+     * @since 11.1
+     */
+    public List<StackableGenerator> getClosedFormUpdaters() {
+        return Collections.unmodifiableList(closedFormUpdaters);
+    }
+
     /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
      * @param additional additional equations
      * @since 10.1
+     * @deprecated as of 11.1, replaced by {@link #addIntegrableUpdater(StackableGenerator)}
      */
-    public void addAdditionalEquations(final AdditionalEquations additional) {
-
-        additionalEquations.add(additional);
-
+    @Deprecated
+    public void addAdditionalEquations(final org.orekit.propagation.integration.AdditionalEquations additional) {
+        integrableUpdaters.add(new org.orekit.propagation.integration.AdditionalEquationAdapter(additional));
     }
 
     /** Get the list of additional equations.
      * @return the list of additional equations
      * @since 10.1
+     * @deprecated as of 11.1, replaced by {@link #getIntegrableUpdaters()}
      */
-    protected List<AdditionalEquations> getAdditionalEquations() {
-        return additionalEquations;
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    protected List<org.orekit.propagation.integration.AdditionalEquations> getAdditionalEquations() {
+        return getIntegrableUpdaters().
+                        stream().
+                        map(u -> new org.orekit.propagation.integration.IntegrableAdapter(u)).
+                        collect(Collectors.toList());
+    }
+
+    /** Add an updater for user-specified state parameters to be integrated along with the orbit propagation.
+     * @param updater updater for additional state
+     * @see #addClosedFormGenerator(ClosedFormStateUpdater)
+     * @since 11.1
+     */
+    public void addIntegrableUpdater(final IntegrableGenerator updater) {
+        integrableUpdaters.add(updater);
+    }
+
+    /** Get the list of additional equations.
+     * @return the list of additional equations
+     * @since 11.1
+     */
+    protected List<IntegrableGenerator> getIntegrableUpdaters() {
+        return Collections.unmodifiableList(integrableUpdaters);
     }
 
     /** Deselects orbital and propagation drivers. */

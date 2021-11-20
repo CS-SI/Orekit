@@ -44,10 +44,10 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.StackableGenerator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -91,11 +91,11 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
-        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        adapterPropagator.addClosedFormGenerator(new StackableGenerator() {
             public String getName() {
                 return "dummy 3";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] generate(SpacecraftState state) {
                 return new double[3];
             }
         });
@@ -153,11 +153,11 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
-        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        adapterPropagator.addClosedFormGenerator(new StackableGenerator() {
             public String getName() {
                 return "dummy 3";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] generate(SpacecraftState state) {
                 return new double[3];
             }
         });
@@ -225,12 +225,12 @@ public class AdapterPropagatorTest {
                                          GravityFieldFactory.getUnnormalizedProvider(gravityField));
         adapterPropagator.addEffect(directEffect);
         adapterPropagator.addEffect(derivedEffect);
-        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        adapterPropagator.addClosedFormGenerator(new StackableGenerator() {
             public String getName() {
                 return "dummy 3";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
-                return new double[3];
+            public double[] generate(SpacecraftState state) {
+                return  new double[3];
             }
         });
 
@@ -283,11 +283,11 @@ public class AdapterPropagatorTest {
             new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addClosedFormGenerator(new StackableGenerator() {
             public String getName() {
                 return "dummy 2";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] generate(SpacecraftState state) {
                 return new double[] { 5.0 };
             }
         });

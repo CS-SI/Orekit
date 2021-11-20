@@ -18,6 +18,7 @@ package org.orekit.propagation;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
@@ -141,13 +142,38 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
+     * @deprecated as of 11.1, replaced by {@link #addClosedFormGenerator(FieldClosedFormStateUpdater)}
      */
+    @Deprecated
     void addAdditionalStateProvider(FieldAdditionalStateProvider<T> additionalStateProvider);
 
     /** Get an unmodifiable list of providers for additional state.
      * @return providers for the additional states
+     * @deprecated as of 11.1, replaced by {@link #getClosedFormGenerators()}
      */
+    @Deprecated
     List<FieldAdditionalStateProvider<T>> getAdditionalStateProviders();
+
+    /** Add a generator for user-specified state parameters to be computed along with the orbit propagation.
+     * @param generator generator for additional state
+     * @since 11.1
+     */
+    @SuppressWarnings("deprecation")
+    default void addClosedFormGenerator(FieldStackableGenerator<T> generator) {
+        addAdditionalStateProvider(new FieldClosedFormAdapter<>(generator));
+    }
+
+    /** Get an unmodifiable list of generators for additional states.
+     * @return generators for the additional states
+     * @since 11.1
+     */
+    @SuppressWarnings("deprecation")
+    default List<FieldStackableGenerator<T>> getClosedFormGenerators() {
+        return getAdditionalStateProviders().
+                        stream().
+                        map(asp -> new FieldAdditionalStateProviderAdapter<>(asp)).
+                        collect(Collectors.toList());
+    }
 
     /** Check if an additional state is managed.
      * <p>

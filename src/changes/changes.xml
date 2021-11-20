@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="dd" issue="856">
+        Manage dependencies between additional states in propagators.
+      </action>
       <action dev="luc" type="dd" >
         SpacecraftState now handle derivatives of additional states.
       </action>

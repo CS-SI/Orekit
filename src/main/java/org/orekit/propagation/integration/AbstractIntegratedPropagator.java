@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.DenseOutputModel;
-import org.hipparchus.ode.EquationsMapper;
 import org.hipparchus.ode.ExpandableODE;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEState;
@@ -51,6 +50,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.StackableGenerator;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -67,22 +67,21 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     private final List<EventDetector> detectors;
 
     /** Step handlers dedicated to ephemeris generation. */
-    private final List<StoringStepHandler> generators;
+    private final List<StoringStepHandler> ephemerisGenerators;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
     private final ODEIntegrator integrator;
 
-    /** Additional equations. */
-    private List<AdditionalEquations> additionalEquations;
+    /** Integrable generators.
+     * @since 11.1
+     */
+    private final List<IntegrableGenerator> integrableGenerators;
 
     /** Counter for differential equations calls. */
     private int calls;
 
     /** Mapper between raw double components and space flight dynamics objects. */
     private StateMapper stateMapper;
-
-    /** Equations mapper. */
-    private EquationsMapper equationsMapper;
 
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
@@ -101,8 +100,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     protected AbstractIntegratedPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
         detectors            = new ArrayList<>();
-        generators           = new ArrayList<>();
-        additionalEquations  = new ArrayList<>();
+        ephemerisGenerators  = new ArrayList<>();
+        integrableGenerators = new ArrayList<>();
         this.integrator      = integrator;
         this.propagationType = propagationType;
         this.resetAtEnd      = true;
@@ -223,8 +222,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         // then look at states we integrate ourselves
-        for (final AdditionalEquations equation : additionalEquations) {
-            if (equation.getName().equals(name)) {
+        for (final IntegrableGenerator generator : integrableGenerators) {
+            if (generator.getName().equals(name)) {
                 return true;
             }
         }
@@ -236,29 +235,56 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     @Override
     public String[] getManagedAdditionalStates() {
         final String[] alreadyIntegrated = super.getManagedAdditionalStates();
-        final String[] managed = new String[alreadyIntegrated.length + additionalEquations.size()];
+        final String[] managed = new String[alreadyIntegrated.length + integrableGenerators.size()];
         System.arraycopy(alreadyIntegrated, 0, managed, 0, alreadyIntegrated.length);
-        for (int i = 0; i < additionalEquations.size(); ++i) {
-            managed[i + alreadyIntegrated.length] = additionalEquations.get(i).getName();
+        for (int i = 0; i < integrableGenerators.size(); ++i) {
+            managed[i + alreadyIntegrated.length] = integrableGenerators.get(i).getName();
         }
         return managed;
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
+     * @deprecated as of 11.1, replaced by {@link #addIntegrableGenerator(IntegrableStateUpdater)}
      */
+    @Deprecated
     public void addAdditionalEquations(final AdditionalEquations additional) {
+        addIntegrableGenerator(new AdditionalEquationAdapter(additional));
+    }
+
+    /** Add an generator for user-specified state parameters to be integrated along with the orbit propagation.
+     * @param generator generator for additional state
+     * @see #addClosedFormGenerator(StackableGenerator)
+     * @since 11.1
+     */
+    public void addIntegrableGenerator(final IntegrableGenerator generator) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(additional.getName())) {
+        if (isAdditionalStateManaged(generator.getName())) {
             // this set of equations is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      additional.getName());
+                                      generator.getName());
         }
 
         // this is really a new set of equations, add it
-        additionalEquations.add(additional);
+        integrableGenerators.add(generator);
 
+    }
+
+    /** Get an unmodifiable list of generators for additional state.
+     * @return generators for the additional states
+     * @since 11.1
+     */
+    public List<IntegrableGenerator> getIntegrableGenerators() {
+        return Collections.unmodifiableList(integrableGenerators);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected Collection<StackableGenerator> getAllGenerators() {
+        final List<StackableGenerator> allUpdaters = new ArrayList<>(super.getAllGenerators());
+        allUpdaters.addAll(integrableGenerators);
+        return allUpdaters;
     }
 
     /** {@inheritDoc} */
@@ -299,7 +325,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     @Override
     public EphemerisGenerator getEphemerisGenerator() {
         final StoringStepHandler storingHandler = new StoringStepHandler();
-        generators.add(storingHandler);
+        ephemerisGenerators.add(storingHandler);
         return storingHandler;
     }
 
@@ -363,7 +389,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             for (final OrekitStepHandler handler : getMultiplexer().getHandlers()) {
                 integrator.addStepHandler(new AdaptedStepHandler(handler));
             }
-            for (final StoringStepHandler generator : generators) {
+            for (final StoringStepHandler generator : ephemerisGenerators) {
                 generator.setEndDate(tEnd);
                 integrator.addStepHandler(generator);
             }
@@ -408,7 +434,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             final SpacecraftState initialIntegrationState = getInitialIntegrationState();
             final ODEState mathInitialState = createInitialState(initialIntegrationState);
             final ExpandableODE mathODE = createODE(integrator, mathInitialState);
-            equationsMapper = mathODE.getMapper();
 
             // mathematical integration
             final ODEStateAndDerivative mathFinalState;
@@ -425,12 +450,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                         mathFinalState.getPrimaryDerivative(),
                                                         propagationType);
 
-            finalState = updateAdditionalStates(finalState);
-            for (int i = 0; i < additionalEquations.size(); ++i) {
+            for (int i = 0; i < integrableGenerators.size(); ++i) {
                 final double[] secondary = mathFinalState.getSecondaryState(i + 1);
-                finalState = finalState.addAdditionalState(additionalEquations.get(i).getName(),
+                finalState = finalState.addAdditionalState(integrableGenerators.get(i).getName(),
                                                            secondary);
             }
+            finalState = updateAdditionalStates(finalState);
+
             if (resetAtEnd) {
                 resetInitialState(finalState);
                 setStartDate(finalState.getDate());
@@ -454,6 +480,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param initialState initial state in flight dynamics world
      * @return initial state in mathematics world
      */
+    @SuppressWarnings("deprecation")
     private ODEState createInitialState(final SpacecraftState initialState) {
 
         // retrieve initial state
@@ -461,10 +488,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         stateMapper.mapStateToArray(initialState, primary, null);
 
         // secondary part of the ODE
-        final double[][] secondary = new double[additionalEquations.size()][];
-        for (int i = 0; i < additionalEquations.size(); ++i) {
-            final AdditionalEquations additional = additionalEquations.get(i);
-            secondary[i] = initialState.getAdditionalState(additional.getName());
+        final double[][] secondary = new double[integrableGenerators.size()][];
+        for (int i = 0; i < integrableGenerators.size(); ++i) {
+            final IntegrableGenerator generator = integrableGenerators.get(i);
+            secondary[i] = initialState.getAdditionalState(generator.getName());
+            if (generator instanceof AdditionalEquationAdapter) {
+                ((AdditionalEquationAdapter) generator).setDimension(secondary[i].length);
+            }
         }
 
         return new ODEState(0.0, primary, secondary);
@@ -483,11 +513,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 new ExpandableODE(new ConvertedMainStateEquations(getMainStateEquations(integ)));
 
         // secondary part of the ODE
-        for (int i = 0; i < additionalEquations.size(); ++i) {
-            final AdditionalEquations additional = additionalEquations.get(i);
-            final SecondaryODE secondary =
-                    new ConvertedSecondaryStateEquations(additional,
-                                                         mathInitialState.getSecondaryStateDimension(i + 1));
+        for (int i = 0; i < integrableGenerators.size(); ++i) {
+            final IntegrableGenerator generator = integrableGenerators.get(i);
+            final SecondaryODE        secondary = new ConvertedSecondaryStateEquations(generator,
+                                                                                       mathInitialState.getSecondaryStateDimension(i + 1));
             ode.addSecondaryEquations(secondary);
         }
 
@@ -531,50 +560,21 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return integrator;
     }
 
-    /** Get a complete state with all additional equations.
-     * @param t current value of the independent <I>time</I> variable
-     * @param y array containing the current value of the state vector
-     * @param yDot array containing the current value of the state vector derivative
-     * @return complete state
-     */
-    private SpacecraftState getCompleteState(final double t, final double[] y, final double[] yDot) {
-
-        // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, propagationType);
-
-        // pre-integrated additional states
-        state = updateAdditionalStates(state);
-
-        // additional states integrated here
-        if (!additionalEquations.isEmpty()) {
-
-            for (int i = 0; i < additionalEquations.size(); ++i) {
-                state = state.addAdditionalState(additionalEquations.get(i).getName(),
-                                                 equationsMapper.extractEquationData(i + 1, y));
-            }
-
-        }
-
-        return state;
-
-    }
-
     /** Convert a state from mathematical world to space flight dynamics world.
      * @param os mathematical state
      * @return space flight dynamics state
      */
     private SpacecraftState convert(final ODEStateAndDerivative os) {
 
-        SpacecraftState s =
-                        stateMapper.mapArrayToState(os.getTime(),
-                                                    os.getPrimaryState(),
-                                                    os.getPrimaryDerivative(),
-                                                    propagationType);
-        s = updateAdditionalStates(s);
-        for (int i = 0; i < additionalEquations.size(); ++i) {
+        SpacecraftState s = stateMapper.mapArrayToState(os.getTime(),
+                                                        os.getPrimaryState(),
+                                                        os.getPrimaryDerivative(),
+                                                        propagationType);
+        for (int i = 0; i < integrableGenerators.size(); ++i) {
             final double[] secondary = os.getSecondaryState(i + 1);
-            s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
+            s = s.addAdditionalState(integrableGenerators.get(i).getName(), secondary);
         }
+        s = updateAdditionalStates(s);
 
         return s;
 
@@ -592,10 +592,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         stateMapper.mapStateToArray(state, primary, primaryDot);
 
         // secondary part of the ODE
-        final double[][] secondary    = new double[additionalEquations.size()][];
-        for (int i = 0; i < additionalEquations.size(); ++i) {
-            final AdditionalEquations additional = additionalEquations.get(i);
-            secondary[i] = state.getAdditionalState(additional.getName());
+        final double[][] secondary    = new double[integrableGenerators.size()][];
+        for (int i = 0; i < integrableGenerators.size(); ++i) {
+            final StackableGenerator generator = integrableGenerators.get(i);
+            secondary[i] = state.getAdditionalState(generator.getName());
         }
 
         return new ODEStateAndDerivative(stateMapper.mapDateToDouble(state.getDate()),
@@ -676,19 +676,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Differential equations for the secondary state (Jacobians, user variables ...), with converted API. */
     private class ConvertedSecondaryStateEquations implements SecondaryODE {
 
-        /** Additional equations. */
-        private final AdditionalEquations equations;
+        /** Integrable generator. */
+        private final IntegrableGenerator generator;
 
         /** Dimension of the additional state. */
         private final int dimension;
 
         /** Simple constructor.
-         * @param equations additional equations
+         * @param generator differential equations in the form of an integrable generator
          * @param dimension dimension of the additional state
          */
-        ConvertedSecondaryStateEquations(final AdditionalEquations equations,
-                                         final int dimension) {
-            this.equations = equations;
+        ConvertedSecondaryStateEquations(final IntegrableGenerator generator, final int dimension) {
+            this.generator = generator;
             this.dimension = dimension;
         }
 
@@ -704,10 +703,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                          final double[] secondary0, final double finalTime) {
             // update space dynamics view
             SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, PropagationType.MEAN);
+            initialState = initialState.addAdditionalState(generator.getName(), secondary0);
             initialState = updateAdditionalStates(initialState);
-            initialState = initialState.addAdditionalState(equations.getName(), secondary0);
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
-            equations.init(initialState, target);
+            generator.init(initialState, target);
 
         }
 
@@ -718,21 +717,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // update space dynamics view
             SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
+            currentState = currentState.addAdditionalState(generator.getName(), secondary);
             currentState = updateAdditionalStates(currentState);
-            currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
-            // compute additional derivatives
-            final double[] secondaryDot = new double[secondary.length];
-            final double[] additionalMainDot =
-                            equations.computeDerivatives(currentState, secondaryDot);
-            if (additionalMainDot != null) {
-                // the additional equations have an effect on main equations
-                for (int i = 0; i < additionalMainDot.length; ++i) {
-                    primaryDot[i] += additionalMainDot[i];
-                }
-            }
-
-            return secondaryDot;
+            return currentState.getAdditionalStateDerivative(generator.getName());
 
         }
 
@@ -764,8 +752,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public void init(final ODEStateAndDerivative s0, final double t) {
-            detector.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                          stateMapper.mapDoubleToDate(t));
+            detector.init(convert(s0), stateMapper.mapDoubleToDate(t));
             this.lastT = Double.NaN;
             this.lastG = Double.NaN;
         }
@@ -774,25 +761,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public double g(final ODEStateAndDerivative s) {
             if (!Precision.equals(lastT, s.getTime(), 0)) {
                 lastT = s.getTime();
-                lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative()));
+                lastG = detector.g(convert(s));
             }
             return lastG;
         }
 
         /** {@inheritDoc} */
         public Action eventOccurred(final ODEStateAndDerivative s, final boolean increasing) {
-            return detector.eventOccurred(
-                    getCompleteState(
-                            s.getTime(),
-                            s.getCompleteState(),
-                            s.getCompleteDerivative()),
-                    increasing);
+            return detector.eventOccurred(convert(s), increasing);
         }
 
         /** {@inheritDoc} */
         public ODEState resetState(final ODEStateAndDerivative s) {
 
-            final SpacecraftState oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
+            final SpacecraftState oldState = convert(s);
             final SpacecraftState newState = detector.resetState(oldState);
             stateChanged(newState);
 
@@ -801,9 +783,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             stateMapper.mapStateToArray(newState, primary, null);
 
             // secondary part
-            final double[][] secondary    = new double[additionalEquations.size()][];
-            for (int i = 0; i < additionalEquations.size(); ++i) {
-                secondary[i] = newState.getAdditionalState(additionalEquations.get(i).getName());
+            final double[][] secondary    = new double[integrableGenerators.size()][];
+            for (int i = 0; i < integrableGenerators.size(); ++i) {
+                secondary[i] = newState.getAdditionalState(integrableGenerators.get(i).getName());
             }
 
             return new ODEState(newState.getDate().durationFrom(getStartDate()),
@@ -831,8 +813,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public void init(final ODEStateAndDerivative s0, final double t) {
-            handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                         stateMapper.mapDoubleToDate(t));
+            handler.init(convert(s0), stateMapper.mapDoubleToDate(t));
         }
 
         /** {@inheritDoc} */
@@ -995,15 +976,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get the names of additional states managed by differential equations
-            final String[] names = new String[additionalEquations.size()];
+            final String[] names = new String[integrableGenerators.size()];
             for (int i = 0; i < names.length; ++i) {
-                names[i] = additionalEquations.get(i).getName();
+                names[i] = integrableGenerators.get(i).getName();
             }
 
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                stateMapper, propagationType, model, unmanaged,
-                                                getAdditionalStateProviders(), names);
+                                                stateMapper, propagationType, model,
+                                                getClosedFormGenerators(), unmanaged, names);
 
         }
 

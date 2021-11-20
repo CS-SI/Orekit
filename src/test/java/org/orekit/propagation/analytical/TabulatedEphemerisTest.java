@@ -39,8 +39,8 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.StackableGenerator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -110,19 +110,19 @@ public class TabulatedEphemerisTest {
         EcksteinHechlerPropagator eck =
             new EcksteinHechlerPropagator(transPar, mass,
                                           ae, mu, c20, c30, c40, c50, c60);
-        AdditionalStateProvider provider = new AdditionalStateProvider() {
+        StackableGenerator updater = new StackableGenerator() {
 
             public String getName() {
                 return "dt";
             }
 
-           public double[] getAdditionalState(SpacecraftState state) {
+           public double[] generate(SpacecraftState state) {
                 return new double[] { state.getDate().durationFrom(initDate) };
             }
         };
-        eck.addAdditionalStateProvider(provider);
+        eck.addClosedFormGenerator(updater);
         try {
-            eck.addAdditionalStateProvider(provider);
+            eck.addClosedFormGenerator(updater);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,

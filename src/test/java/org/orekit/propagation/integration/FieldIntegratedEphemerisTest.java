@@ -40,10 +40,10 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.FieldStackableGenerator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -144,7 +144,7 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
-        ephemeris.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
+        ephemeris.addClosedFormGenerator(new FieldStackableGenerator<T>() {
 
             @Override
             public String getName() {
@@ -152,7 +152,7 @@ public class FieldIntegratedEphemerisTest {
             }
 
             @Override
-            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+            public T[] generate(FieldSpacecraftState<T> state) {
                 T[] array = MathArrays.buildArray(state.getDate().getField(), 1);
                 array[0] = state.getDate().durationFrom(initialOrbit.getDate());
                 return array;

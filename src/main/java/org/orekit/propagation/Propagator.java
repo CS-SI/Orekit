@@ -18,6 +18,7 @@ package org.orekit.propagation;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.attitudes.AttitudeProvider;
@@ -162,23 +163,47 @@ public interface Propagator extends PVCoordinatesProvider {
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
+     * @deprecated as of 11.1, replaced by {@link #addClosedFormGenerator(ClosedFormStateUpdater)}
      */
+    @Deprecated
     void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider);
 
     /** Get an unmodifiable list of providers for additional state.
      * @return providers for the additional states
+     * @deprecated as of 11.1, replaced by {@link #getClosedFormGenerators()}
      */
+    @Deprecated
     List<AdditionalStateProvider> getAdditionalStateProviders();
+
+    /** Add a generator for user-specified state parameters to be computed along with the orbit propagation.
+     * @param generator generator for additional state
+     * @since 11.1
+     */
+    @SuppressWarnings("deprecation")
+    default void addClosedFormGenerator(StackableGenerator generator) {
+        addAdditionalStateProvider(new ClosedFormAdapter(generator));
+    }
+
+    /** Get an unmodifiable list of generators for additional states.
+     * @return generators for the additional states
+     * @since 11.1
+     */
+    @SuppressWarnings("deprecation")
+    default List<StackableGenerator> getClosedFormGenerators() {
+        return getAdditionalStateProviders().
+                        stream().
+                        map(asp -> new AdditionalStateProviderAdapter(asp)).
+                        collect(Collectors.toList());
+    }
 
     /** Check if an additional state is managed.
      * <p>
      * Managed states are states for which the propagators know how to compute
      * its evolution. They correspond to additional states for which an
-     * {@link AdditionalStateProvider additional state provider} has been registered
-     * by calling the {@link #addAdditionalStateProvider(AdditionalStateProvider)
-     * addAdditionalStateProvider} method. If the propagator is an {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator integrator-based
-     * propagator}, the states for which a set of {@link
+     * {@link ClosedFormAdapter updater} has been registered by calling the
+     * {@link #addClosedFormGenerator(ClosedFormStateUpdater) addUpdater} method. If the propagator
+     * is an {@link org.orekit.propagation.integration.AbstractIntegratedPropagator
+     * integrator-based propagator}, the states for which a set of {@link
      * org.orekit.propagation.integration.AdditionalEquations additional equations} has
      * been registered by calling the {@link
      * org.orekit.propagation.integration.AbstractIntegratedPropagator#addAdditionalEquations(

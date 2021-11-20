@@ -227,7 +227,7 @@ public class DSSTPropagatorBuilderTest {
 
             public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
                 pDot[0] = 1.0;
-                return new double[7];
+                return null;
             }
         });
 
@@ -239,7 +239,7 @@ public class DSSTPropagatorBuilderTest {
 
     	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
     	        pDot[0] = 1.0;
-    	        return new double[7];
+    	        return null;
     	    }
         });
 
