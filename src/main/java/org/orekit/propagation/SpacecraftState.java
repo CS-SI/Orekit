@@ -77,7 +77,7 @@ public class SpacecraftState
     implements TimeStamped, TimeShiftable<SpacecraftState>, TimeInterpolable<SpacecraftState>, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130407L;
+    private static final long serialVersionUID = 20211119L;
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
@@ -103,17 +103,23 @@ public class SpacecraftState
     /** Additional states. */
     private final Map<String, double[]> additional;
 
+    /** Additional states derivatives.
+     * @since 11.1
+     */
+    private final Map<String, double[]> additionalDot;
+
     /** Build a spacecraft state from orbit only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      */
     public SpacecraftState(final Orbit orbit) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(),
+                           LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, null);
     }
 
-    /** Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from orbit and attitude.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
@@ -132,11 +138,12 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final double mass) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(),
+                           LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
     }
 
-    /** Build a spacecraft state from orbit, attitude provider and mass.
+    /** Build a spacecraft state from orbit, attitude and mass.
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
@@ -148,18 +155,19 @@ public class SpacecraftState
         this(orbit, attitude, mass, null);
     }
 
-    /** Build a spacecraft state from orbit only.
+    /** Build a spacecraft state from orbit and additional states.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
      */
     public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(),
+                           LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, additional);
     }
 
-    /** Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from orbit, attitude and additional states.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
@@ -172,7 +180,7 @@ public class SpacecraftState
         this(orbit, attitude, DEFAULT_MASS, additional);
     }
 
-    /** Create a new instance from orbit and mass.
+    /** Create a new instance from orbit, mass and additional states.
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
@@ -184,7 +192,7 @@ public class SpacecraftState
              mass, additional);
     }
 
-    /** Build a spacecraft state from orbit, attitude provider and mass.
+    /** Build a spacecraft state from orbit, attitude, mass and additional states.
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
@@ -194,6 +202,23 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude,
                            final double mass, final Map<String, double[]> additional)
+        throws IllegalArgumentException {
+        this(orbit, attitude, mass, additional, null);
+    }
+
+    /** Build a spacecraft state from orbit, attitude, mass, additional states and derivatives.
+     * @param orbit the orbit
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     * @param additional additional states (may be null if no additional states are available)
+     * @param additionalDot additional states derivatives(may be null if no additional states derivativesare available)
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     * @since 11.1
+     */
+    public SpacecraftState(final Orbit orbit, final Attitude attitude, final double mass,
+                           final Map<String, double[]> additional,
+                           final Map<String, double[]> additionalDot)
         throws IllegalArgumentException {
         checkConsistency(orbit, attitude);
         this.orbit      = orbit;
@@ -208,11 +233,19 @@ public class SpacecraftState
                 this.additional.put(entry.getKey(), entry.getValue().clone());
             }
         }
+        if (additionalDot == null) {
+            this.additionalDot = Collections.emptyMap();
+        } else {
+            this.additionalDot = new HashMap<String, double[]>(additionalDot.size());
+            for (final Map.Entry<String, double[]> entry : additionalDot.entrySet()) {
+                this.additionalDot.put(entry.getKey(), entry.getValue().clone());
+            }
+        }
     }
 
 
 
-    /** Build a spacecraft state from orbit only.
+    /** Build a spacecraft state from position-velocity-acceleration only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
      */
@@ -222,7 +255,7 @@ public class SpacecraftState
              DEFAULT_MASS, null);
     }
 
-    /** Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from position-velocity-acceleration and attitude.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
@@ -234,7 +267,7 @@ public class SpacecraftState
         this(absPva, attitude, DEFAULT_MASS, null);
     }
 
-    /** Create a new instance from orbit and mass.
+    /** Create a new instance from position-velocity-acceleration and mass.
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
@@ -245,7 +278,7 @@ public class SpacecraftState
              mass, null);
     }
 
-    /** Build a spacecraft state from orbit, attitude provider and mass.
+    /** Build a spacecraft state from position-velocity-acceleration, attitude and mass.
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
@@ -257,7 +290,7 @@ public class SpacecraftState
         this(absPva, attitude, mass, null);
     }
 
-    /** Build a spacecraft state from orbit only.
+    /** Build a spacecraft state from position-velocity-acceleration and additional states.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
      * @param additional additional states
@@ -268,7 +301,7 @@ public class SpacecraftState
              DEFAULT_MASS, additional);
     }
 
-    /** Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from position-velocity-acceleration, attitude and additional states.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
@@ -281,7 +314,7 @@ public class SpacecraftState
         this(absPva, attitude, DEFAULT_MASS, additional);
     }
 
-    /** Create a new instance from orbit and mass.
+    /** Create a new instance from position-velocity-acceleration, mass and additional states.
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
@@ -293,7 +326,7 @@ public class SpacecraftState
              mass, additional);
     }
 
-    /** Build a spacecraft state from orbit, attitude provider and mass.
+    /** Build a spacecraft state from position-velocity-acceleration, attitude, mass and additional states.
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
@@ -303,6 +336,22 @@ public class SpacecraftState
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude,
                            final double mass, final Map<String, double[]> additional)
+        throws IllegalArgumentException {
+        this(absPva, attitude, mass, additional, null);
+    }
+
+    /** Build a spacecraft state from position-velocity-acceleration, attitude, mass and additional states and derivatives.
+     * @param absPva position-velocity-acceleration
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     * @param additional additional states (may be null if no additional states are available)
+     * @param additionalDot additional states derivatives(may be null if no additional states derivativesare available)
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     */
+    public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final double mass,
+                           final Map<String, double[]> additional,
+                           final Map<String, double[]> additionalDot)
         throws IllegalArgumentException {
         checkConsistency(absPva, attitude);
         this.orbit      = null;
@@ -315,6 +364,14 @@ public class SpacecraftState
             this.additional = new HashMap<String, double[]>(additional.size());
             for (final Map.Entry<String, double[]> entry : additional.entrySet()) {
                 this.additional.put(entry.getKey(), entry.getValue().clone());
+            }
+        }
+        if (additionalDot == null) {
+            this.additionalDot = Collections.emptyMap();
+        } else {
+            this.additionalDot = new HashMap<String, double[]>(additionalDot.size());
+            for (final Map.Entry<String, double[]> entry : additionalDot.entrySet()) {
+                this.additionalDot.put(entry.getKey(), entry.getValue().clone());
             }
         }
     }
@@ -342,9 +399,39 @@ public class SpacecraftState
         newMap.putAll(additional);
         newMap.put(name, value.clone());
         if (absPva == null) {
-            return new SpacecraftState(orbit, attitude, mass, newMap);
+            return new SpacecraftState(orbit, attitude, mass, newMap, additionalDot);
         } else {
-            return new SpacecraftState(absPva, attitude, mass, newMap);
+            return new SpacecraftState(absPva, attitude, mass, newMap, additionalDot);
+        }
+    }
+
+    /** Add an additional state derivative.
+     * <p>
+     * {@link SpacecraftState SpacecraftState} instances are immutable,
+     * so this method does <em>not</em> change the instance, but rather
+     * creates a new instance, which has the same components as the original
+     * instance, except it also has the specified state derivative. If the
+     * original instance already had an additional state derivative with the
+     * same name, it will be overridden. If it did not have any additional
+     * state derivative with that name, the new instance will have one more
+     * additional state derivative than the original instance.
+     * </p>
+     * @param name name of the additional state derivative
+     * @param value value of the additional state derivative
+     * @return a new instance, with the additional state added
+     * @see #hasAdditionalStateDerivative(String)
+     * @see #getAdditionalStateDerivative(String)
+     * @see #getAdditionalStatesDerivatives()
+     * @since 11.1
+     */
+    public SpacecraftState addAdditionalStateDerivative(final String name, final double... value) {
+        final Map<String, double[]> newMap = new HashMap<String, double[]>(additionalDot.size() + 1);
+        newMap.putAll(additionalDot);
+        newMap.put(name, value.clone());
+        if (absPva == null) {
+            return new SpacecraftState(orbit, attitude, mass, additional, newMap);
+        } else {
+            return new SpacecraftState(absPva, attitude, mass, additional, newMap);
         }
     }
 
@@ -604,6 +691,18 @@ public class SpacecraftState
         return additional.containsKey(name);
     }
 
+    /** Check if an additional state derivative is available.
+     * @param name name of the additional state derivative
+     * @return true if the additional state derivative is available
+     * @see #addAdditionalStateDerivative(String, double[])
+     * @see #getAdditionalStateDerivative(String)
+     * @see #getAdditionalStatesDerivatives()
+     * @since 11.1
+     */
+    public boolean hasAdditionalStateDerivative(final String name) {
+        return additionalDot.containsKey(name);
+    }
+
     /** Check if two instances have the same set of additional states available.
      * <p>
      * Only the names and dimensions of the additional states are compared,
@@ -629,10 +728,33 @@ public class SpacecraftState
             }
         }
 
+        // check instance additional states derivatives is a subset of the other one
+        for (final Map.Entry<String, double[]> entry : additionalDot.entrySet()) {
+            final double[] other = state.additionalDot.get(entry.getKey());
+            if (other == null) {
+                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                                          entry.getKey());
+            }
+            if (other.length != entry.getValue().length) {
+                throw new MathIllegalStateException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                                    other.length, entry.getValue().length);
+            }
+        }
+
         if (state.additional.size() > additional.size()) {
             // the other state has more additional states
             for (final String name : state.additional.keySet()) {
                 if (!additional.containsKey(name)) {
+                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                                              name);
+                }
+            }
+        }
+
+        if (state.additionalDot.size() > additionalDot.size()) {
+            // the other state has more additional states
+            for (final String name : state.additionalDot.keySet()) {
+                if (!additionalDot.containsKey(name)) {
                     throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
                                               name);
                 }
@@ -644,7 +766,7 @@ public class SpacecraftState
     /** Get an additional state.
      * @param name name of the additional state
      * @return value of the additional state
-          * @see #addAdditionalState(String, double[])
+     * @see #addAdditionalState(String, double[])
      * @see #hasAdditionalState(String)
      * @see #getAdditionalStates()
      */
@@ -655,6 +777,21 @@ public class SpacecraftState
         return additional.get(name).clone();
     }
 
+    /** Get an additional state derivative.
+     * @param name name of the additional state derivative
+     * @return value of the additional state derivative
+     * @see #addAdditionalStateDerivative(String, double[])
+     * @see #hasAdditionalStateDerivative(String)
+     * @see #getAdditionalStatesDerivatives()
+     * @since 11.1
+     */
+    public double[] getAdditionalStateDerivative(final String name) {
+        if (!additionalDot.containsKey(name)) {
+            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
+        }
+        return additionalDot.get(name).clone();
+    }
+
     /** Get an unmodifiable map of additional states.
      * @return unmodifiable map of additional states
      * @see #addAdditionalState(String, double[])
@@ -663,6 +800,17 @@ public class SpacecraftState
      */
     public Map<String, double[]> getAdditionalStates() {
         return Collections.unmodifiableMap(additional);
+    }
+
+    /** Get an unmodifiable map of additional states derivatives.
+     * @return unmodifiable map of additional states derivatives
+     * @see #addAdditionalStateDerivative(String, double[])
+     * @see #hasAdditionalStateDerivative(String)
+     * @see #getAdditionalStateDerivative(String)
+     * @since 11.1
+     */
+    public Map<String, double[]> getAdditionalStatesDerivatives() {
+        return Collections.unmodifiableMap(additionalDot);
     }
 
     /** Compute the transform from state defining frame to spacecraft frame.

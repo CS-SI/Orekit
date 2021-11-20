@@ -58,7 +58,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *
  * <p>It contains an {@link FieldOrbit orbital state} at a current
  * {@link FieldAbsoluteDate} both handled by an {@link FieldOrbit}, plus the current
- * mass and attitude. FieldOrbitand state are guaranteed to be consistent in terms
+ * mass and attitude. FieldOrbit and state are guaranteed to be consistent in terms
  * of date and reference frame. The spacecraft state may also contain additional
  * states, which are simply named double arrays which can hold any user-defined
  * data.
@@ -106,6 +106,11 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** Additional states. */
     private final Map<String, T[]> additional;
 
+    /** Additional states derivatives.
+     * @since 11.1
+     */
+    private final Map<String, T[]> additionalDot;
+
     /** Build a spacecraft state from orbit only.
      * <p>FieldAttitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
@@ -116,7 +121,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
              orbit.getA().getField().getZero().add(DEFAULT_MASS), null);
     }
 
-    /** Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from orbit and attitude.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
@@ -135,11 +140,12 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass) {
         this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(),
+                           LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
     }
 
-    /** Build a spacecraft state from orbit, attitude provider and mass.
+    /** Build a spacecraft state from orbit, attitude and mass.
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
@@ -151,7 +157,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         this(orbit, attitude, mass, null);
     }
 
-    /** Build a spacecraft state from orbit only.
+    /** Build a spacecraft state from orbit and additional states.
      * <p>FieldAttitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
@@ -162,7 +168,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
-    /** Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from orbit attitude and additional states.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
@@ -175,7 +181,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         this(orbit, attitude, orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
-    /** Create a new instance from orbit and mass.
+    /** Create a new instance from orbit, mass and additional states.
      * <p>FieldAttitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
@@ -187,16 +193,30 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
              mass, additional);
     }
 
-    /** Build a spacecraft state from orbit, attitude provider and mass.
+    /** Build a spacecraft state from orbit, attitude, mass and additional states.
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
      * @param additional additional states (may be null if no additional states are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude,
-                                final T mass, final Map<String, T[]> additional)
+                                final T mass, final Map<String, T[]> additional) {
+        this(orbit, attitude, mass, additional, null);
+    }
+
+    /** Build a spacecraft state from orbit, attitude, mass, additional states and derivatives.
+     * @param orbit the orbit
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     * @param additional additional states (may be null if no additional states are available)
+     * @param additionalDot additional states derivatives(may be null if no additional states derivative sare available)
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     * @since 11.1
+     */
+    public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass,
+                                final Map<String, T[]> additional,
+                                final Map<String, T[]> additionalDot)
         throws IllegalArgumentException {
         checkConsistency(orbit, attitude);
         this.orbit      = orbit;
@@ -208,11 +228,22 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             this.additional = Collections.emptyMap();
         } else {
 
-            this.additional = new HashMap<String, T[]>(additional.size());
+            this.additional = new HashMap<>(additional.size());
             for (final Map.Entry<String, T[]> entry : additional.entrySet()) {
                 this.additional.put(entry.getKey(), entry.getValue().clone());
             }
         }
+
+        if (additionalDot == null) {
+            this.additionalDot = Collections.emptyMap();
+        } else {
+
+            this.additionalDot = new HashMap<>(additionalDot.size());
+            for (final Map.Entry<String, T[]> entry : additionalDot.entrySet()) {
+                this.additionalDot.put(entry.getKey(), entry.getValue().clone());
+            }
+        }
+
     }
 
     /** Convert a {@link FieldSpacecraftState}.
@@ -251,13 +282,26 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             if (additionalD.isEmpty()) {
                 this.additional = Collections.emptyMap();
             } else {
-                this.additional = new HashMap<String, T[]>(additionalD.size());
+                this.additional = new HashMap<>(additionalD.size());
                 for (final Map.Entry<String, double[]> entry : additionalD.entrySet()) {
                     final T[] array = MathArrays.buildArray(field, entry.getValue().length);
                     for (int k = 0; k < array.length; ++k) {
                         array[k] = field.getZero().add(entry.getValue()[k]);
                     }
                     this.additional.put(entry.getKey(), array);
+                }
+            }
+            final Map<String, double[]> additionalDotD = state.getAdditionalStatesDerivatives();
+            if (additionalDotD.isEmpty()) {
+                this.additionalDot = Collections.emptyMap();
+            } else {
+                this.additionalDot = new HashMap<>(additionalDotD.size());
+                for (final Map.Entry<String, double[]> entry : additionalDotD.entrySet()) {
+                    final T[] array = MathArrays.buildArray(field, entry.getValue().length);
+                    for (int k = 0; k < array.length; ++k) {
+                        array[k] = field.getZero().add(entry.getValue()[k]);
+                    }
+                    this.additionalDot.put(entry.getKey(), array);
                 }
             }
 
@@ -272,7 +316,9 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             final T ax = zero.add(state.getPVCoordinates().getAcceleration().getX());
             final T ay = zero.add(state.getPVCoordinates().getAcceleration().getY());
             final T az = zero.add(state.getPVCoordinates().getAcceleration().getZ());
-            final FieldPVCoordinates<T> pva_f = new FieldPVCoordinates<>(new FieldVector3D<>(x, y, z), new FieldVector3D<>(vx, vy, vz), new FieldVector3D<>(ax, ay, az));
+            final FieldPVCoordinates<T> pva_f = new FieldPVCoordinates<>(new FieldVector3D<>(x, y, z),
+                                                                         new FieldVector3D<>(vx, vy, vz),
+                                                                         new FieldVector3D<>(ax, ay, az));
             final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
             this.orbit = null;
             this.attitude = new FieldAttitude<>(field, state.getAttitude());
@@ -282,13 +328,26 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             if (additionalD.isEmpty()) {
                 this.additional = Collections.emptyMap();
             } else {
-                this.additional = new HashMap<String, T[]>(additionalD.size());
+                this.additional = new HashMap<>(additionalD.size());
                 for (final Map.Entry<String, double[]> entry : additionalD.entrySet()) {
                     final T[] array = MathArrays.buildArray(field, entry.getValue().length);
                     for (int k = 0; k < array.length; ++k) {
                         array[k] = field.getZero().add(entry.getValue()[k]);
                     }
                     this.additional.put(entry.getKey(), array);
+                }
+            }
+            final Map<String, double[]> additionalDotD = state.getAdditionalStatesDerivatives();
+            if (additionalDotD.isEmpty()) {
+                this.additionalDot = Collections.emptyMap();
+            } else {
+                this.additionalDot = new HashMap<>(additionalDotD.size());
+                for (final Map.Entry<String, double[]> entry : additionalDotD.entrySet()) {
+                    final T[] array = MathArrays.buildArray(field, entry.getValue().length);
+                    for (int k = 0; k < array.length; ++k) {
+                        array[k] = field.getZero().add(entry.getValue()[k]);
+                    }
+                    this.additionalDot.put(entry.getKey(), array);
                 }
             }
         }
@@ -300,11 +359,12 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(),
+                           LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              absPva.getDate().getField().getZero().add(DEFAULT_MASS), null);
     }
 
-    /** Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from orbit and attitude.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
@@ -323,11 +383,12 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(),
+                           LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, null);
     }
 
-    /** Build a spacecraft state from orbit, attitude provider and mass.
+    /** Build a spacecraft state from orbit, attitude and mass.
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
@@ -346,11 +407,12 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final Map<String, T[]> additional) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(),
+                           LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              absPva.getDate().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
-    /** Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from orbit and attitude.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
@@ -358,7 +420,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      */
-    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude, final Map<String, T[]> additional)
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude,
+                                final Map<String, T[]> additional)
         throws IllegalArgumentException {
         this(absPva, attitude, absPva.getDate().getField().getZero().add(DEFAULT_MASS), additional);
     }
@@ -371,20 +434,34 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass, final Map<String, T[]> additional) {
         this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             new LofOffset(absPva.getFrame(),
+                           LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
     }
 
-    /** Build a spacecraft state from orbit, attitude provider and mass.
+    /** Build a spacecraft state from orbit, attitude and mass.
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
      * @param additional additional states (may be null if no additional states are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude,
-                           final T mass, final Map<String, T[]> additional)
+                           final T mass, final Map<String, T[]> additional) {
+        this(absPva, attitude, mass, additional, null);
+    }
+
+    /** Build a spacecraft state from orbit, attitude and mass.
+     * @param absPva position-velocity-acceleration
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     * @param additional additional states (may be null if no additional states are available)
+     * @param additionalDot additional states derivatives(may be null if no additional states derivatives are available)
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     * @since 11.1
+     */
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude, final T mass,
+                                final Map<String, T[]> additional, final Map<String, T[]> additionalDot)
         throws IllegalArgumentException {
         checkConsistency(absPva, attitude);
         this.orbit      = null;
@@ -394,9 +471,17 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         if (additional == null) {
             this.additional = Collections.emptyMap();
         } else {
-            this.additional = new HashMap<String, T[]>(additional.size());
+            this.additional = new HashMap<>(additional.size());
             for (final Map.Entry<String, T[]> entry : additional.entrySet()) {
                 this.additional.put(entry.getKey(), entry.getValue().clone());
+            }
+        }
+        if (additionalDot == null) {
+            this.additionalDot = Collections.emptyMap();
+        } else {
+            this.additionalDot = new HashMap<>(additionalDot.size());
+            for (final Map.Entry<String, T[]> entry : additionalDot.entrySet()) {
+                this.additionalDot.put(entry.getKey(), entry.getValue().clone());
             }
         }
     }
@@ -421,13 +506,41 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     @SafeVarargs
     public final FieldSpacecraftState<T> addAdditionalState(final String name, final T... value) {
-        final Map<String, T[]> newMap = new HashMap<String, T[]>(additional.size() + 1);
+        final Map<String, T[]> newMap = new HashMap<>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
         if (absPva == null) {
-            return new FieldSpacecraftState<>(orbit, attitude, mass, newMap);
+            return new FieldSpacecraftState<>(orbit, attitude, mass, newMap, additionalDot);
         } else {
-            return new FieldSpacecraftState<>(absPva, attitude, mass, newMap);
+            return new FieldSpacecraftState<>(absPva, attitude, mass, newMap, additionalDot);
+        }
+    }
+
+    /** Add an additional state derivative.
+    * {@link SpacecraftState SpacecraftState} instances are immutable,
+     * so this method does <em>not</em> change the instance, but rather
+     * creates a new instance, which has the same components as the original
+     * instance, except it also has the specified state derivative. If the
+     * original instance already had an additional state derivative with the
+     * same name, it will be overridden. If it did not have any additional
+     * state derivative with that name, the new instance will have one more
+     * additional state derivative than the original instance.
+     * @param name name of the additional state derivative
+     * @param value value of the additional state derivative
+     * @return a new instance, with the additional state derivative added
+     * @see #hasAdditionalStateDerivative(String)
+     * @see #hasAdditionalStateDerivative(String)
+     * @see #hasAdditionalStateDerivative()
+     */
+    @SafeVarargs
+    public final FieldSpacecraftState<T> addAdditionalStateDerivative(final String name, final T... value) {
+        final Map<String, T[]> newMap = new HashMap<>(additionalDot.size() + 1);
+        newMap.putAll(additionalDot);
+        newMap.put(name, value.clone());
+        if (absPva == null) {
+            return new FieldSpacecraftState<>(orbit, attitude, mass, additional, newMap);
+        } else {
+            return new FieldSpacecraftState<>(absPva, attitude, mass, additional, newMap);
         }
     }
 
@@ -522,10 +635,10 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState<T> shiftedBy(final double dt) {
         if (absPva == null) {
             return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional);
+                    mass, additional, additionalDot);
         } else {
             return new FieldSpacecraftState<>(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional);
+                    mass, additional, additionalDot);
         }
     }
 
@@ -563,10 +676,10 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState<T> shiftedBy(final T dt) {
         if (absPva == null) {
             return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional);
+                    mass, additional, additionalDot);
         } else {
             return new FieldSpacecraftState<>(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional);
+                    mass, additional, additionalDot);
         }
     }
 
@@ -647,7 +760,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         if (additional.isEmpty()) {
             interpolatedAdditional = null;
         } else {
-            interpolatedAdditional = new HashMap<String, T[]>(additional.size());
+            interpolatedAdditional = new HashMap<>(additional.size());
             for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
                 interpolatedAdditional.put(entry.getKey(), entry.getValue().value(date.getField().getZero()));
             }
@@ -656,10 +769,10 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         // create the complete interpolated state
         if (isOrbitDefined()) {
             return new FieldSpacecraftState<>(interpolatedOrbit, interpolatedAttitude,
-                                       interpolatedMass, interpolatedAdditional);
+                                              interpolatedMass, interpolatedAdditional);
         } else {
             return new FieldSpacecraftState<>(interpolatedAbsPva, interpolatedAttitude,
-                                       interpolatedMass, interpolatedAdditional);
+                                              interpolatedMass, interpolatedAdditional);
         }
 
     }
@@ -729,6 +842,17 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         return additional.containsKey(name);
     }
 
+    /** Check if an additional state derivative is available.
+     * @param name name of the additional state derivative
+     * @return true if the additional state derivative is available
+     * @see #addAdditionalStateDerivative(String, CalculusFieldElement...)
+     * @see #getAdditionalStateDerivative(String)
+     * @see #getAdditionalStatesDerivatives()
+     */
+    public boolean hasAdditionalStateDerivative(final String name) {
+        return additionalDot.containsKey(name);
+    }
+
     /** Check if two instances have the same set of additional states available.
      * <p>
      * Only the names and dimensions of the additional states are compared,
@@ -754,10 +878,33 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             }
         }
 
+        // check instance additional states derivatives is a subset of the other one
+        for (final Map.Entry<String, T[]> entry : additionalDot.entrySet()) {
+            final T[] other = state.additionalDot.get(entry.getKey());
+            if (other == null) {
+                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                                          entry.getKey());
+            }
+            if (other.length != entry.getValue().length) {
+                throw new MathIllegalStateException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                                    other.length, entry.getValue().length);
+            }
+        }
+
         if (state.additional.size() > additional.size()) {
             // the other state has more additional states
             for (final String name : state.additional.keySet()) {
                 if (!additional.containsKey(name)) {
+                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                                              name);
+                }
+            }
+        }
+
+        if (state.additionalDot.size() > additionalDot.size()) {
+            // the other state has more additional states derivatives
+            for (final String name : state.additionalDot.keySet()) {
+                if (!additionalDot.containsKey(name)) {
                     throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
                                               name);
                 }
@@ -780,6 +927,21 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         return additional.get(name).clone();
     }
 
+    /** Get an additional state derivative.
+     * @param name name of the additional state derivative
+     * @return value of the additional state derivative
+     * @see #addAdditionalStateDerivative(String, CalculusFieldElement...)
+     * @see #hasAdditionalStateDerivative(String)
+     * @see #getAdditionalStatesDerivatives()
+     * @since 11.1
+     */
+    public T[] getAdditionalStateDerivative(final String name) {
+        if (!additionalDot.containsKey(name)) {
+            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
+        }
+        return additionalDot.get(name).clone();
+    }
+
     /** Get an unmodifiable map of additional states.
      * @return unmodifiable map of additional states
      * @see #addAdditionalState(String, CalculusFieldElement...)
@@ -788,6 +950,17 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public Map<String, T[]> getAdditionalStates() {
         return Collections.unmodifiableMap(additional);
+    }
+
+    /** Get an unmodifiable map of additional states derivatives.
+     * @return unmodifiable map of additional states derivatives
+     * @see #addAdditionalStateDerivative(String, CalculusFieldElement...)
+     * @see #hasAdditionalStateDerivative(String)
+     * @see #getAdditionalStateDerivative(String)
+    * @since 11.1
+      */
+    public Map<String, T[]> getAdditionalStatesDerivatives() {
+        return Collections.unmodifiableMap(additionalDot);
     }
 
     /** Compute the transform from state defining frame to spacecraft frame.
