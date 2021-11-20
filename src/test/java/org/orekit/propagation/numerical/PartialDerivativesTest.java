@@ -116,7 +116,7 @@ public class PartialDerivativesTest {
                     }
                 }
 
-                PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+                PartialDerivatives partials = new PartialDerivatives("partials", propagator);
                 final SpacecraftState initialState =
                         partials.setInitialJacobians(new SpacecraftState(initialOrbit));
                 propagator.setInitialState(initialState);
@@ -232,7 +232,7 @@ public class PartialDerivativesTest {
                 // compute state Jacobian using PartialDerivatives
                 NumericalPropagator propagator =
                     setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
-                PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+                PartialDerivatives partials = new PartialDerivatives("partials", propagator);
                 final SpacecraftState initialState =
                         partials.setInitialJacobians(new SpacecraftState(initialOrbit));
                 propagator.setInitialState(initialState);
@@ -300,7 +300,7 @@ public class PartialDerivativesTest {
                 // compute state Jacobian using PartialDerivatives
                 NumericalPropagator propagator =
                     setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
-                PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+                PartialDerivatives partials = new PartialDerivatives("partials", propagator);
                 final SpacecraftState initialState =
                         partials.setInitialJacobians(new SpacecraftState(initialOrbit));
                 propagator.setInitialState(initialState);
@@ -400,7 +400,7 @@ public class PartialDerivativesTest {
         maneuver.getParameterDriver("thrust").setSelected(true);
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        PartialDerivativesEquations PDE = new PartialDerivativesEquations("derivatives", propagator);
+        PartialDerivatives PDE = new PartialDerivatives("derivatives", propagator);
         Assert.assertEquals(1, PDE.getSelectedParameters().getNbParams());
         propagator.setInitialState(PDE.setInitialJacobians(initialState));
 
@@ -420,7 +420,7 @@ public class PartialDerivativesTest {
         double dP = 0.001;
         NumericalPropagator propagator =
                 setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
-        new PartialDerivativesEquations("partials", propagator).getMapper();
+        new PartialDerivatives("partials", propagator).getMapper();
      }
 
     @Test(expected=OrekitException.class)
@@ -433,7 +433,7 @@ public class PartialDerivativesTest {
         double dP = 0.001;
         NumericalPropagator propagator =
                 setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
-        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+        PartialDerivatives partials = new PartialDerivatives("partials", propagator);
         partials.setInitialJacobians(new SpacecraftState(initialOrbit),
                                      new double[5][6], new double[6][2]);
      }
@@ -448,7 +448,7 @@ public class PartialDerivativesTest {
         double dP = 0.001;
         NumericalPropagator propagator =
                 setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
-        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+        PartialDerivatives partials = new PartialDerivatives("partials", propagator);
         partials.setInitialJacobians(new SpacecraftState(initialOrbit),
                                      new double[8][6], new double[6][2]);
      }
@@ -463,7 +463,7 @@ public class PartialDerivativesTest {
         double dP = 0.001;
         NumericalPropagator propagator =
                 setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
-        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+        PartialDerivatives partials = new PartialDerivatives("partials", propagator);
         partials.setInitialJacobians(new SpacecraftState(initialOrbit),
                                      new double[6][6], new double[7][2]);
      }
@@ -482,11 +482,11 @@ public class PartialDerivativesTest {
         NumericalPropagator propagator =
                 setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE,
                                 sunAttraction, moonAttraction);
-        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+        PartialDerivatives partials = new PartialDerivatives("partials", propagator);
         try {
             partials.setInitialJacobians(new SpacecraftState(initialOrbit),
                                          new double[6][6], new double[6][3]);
-            partials.computeDerivatives(new SpacecraftState(initialOrbit), new double[6]);
+            partials.generate(new SpacecraftState(initialOrbit));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,

@@ -26,7 +26,7 @@ import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.propagation.numerical.PartialDerivatives;
 import org.orekit.utils.ParameterDriversList;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
@@ -58,7 +58,7 @@ public class BatchLSModel extends AbstractBatchLSModel {
 
         final String equationName = BatchLSModel.class.getName() + "-derivatives";
 
-        final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, (NumericalPropagator) propagator);
+        final PartialDerivatives partials = new PartialDerivatives(equationName, (NumericalPropagator) propagator);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();

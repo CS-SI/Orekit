@@ -34,7 +34,7 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.propagation.numerical.PartialDerivatives;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -119,7 +119,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                 final NumericalPropagator prop  = builder.buildPropagator(point.toArray());
                 final int stateSize = isOnlyPosition() ? 3 : 6;
                 final ParameterDriversList orbitalParameters = builder.getOrbitalParametersDrivers();
-                final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
+                final PartialDerivatives pde = new PartialDerivatives("pde", prop);
                 final ParameterDriversList propagationParameters = pde.getSelectedParameters();
                 prop.setInitialState(pde.setInitialJacobians(prop.getInitialState()));
                 final JacobiansMapper mapper  = pde.getMapper();

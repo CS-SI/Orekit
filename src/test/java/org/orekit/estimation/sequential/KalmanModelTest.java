@@ -45,7 +45,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.propagation.numerical.PartialDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -233,7 +233,7 @@ public class KalmanModelTest {
         
         // Set derivatives computation for the propagator
         final String equationName = KalmanEstimator.class.getName() + "-derivatives-";
-        final PartialDerivativesEquations pde = new PartialDerivativesEquations(equationName, propagator);
+        final PartialDerivatives pde = new PartialDerivatives(equationName, propagator);
         final SpacecraftState rawState = propagator.getInitialState();
         final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
         propagator.resetInitialState(stateWithDerivatives);

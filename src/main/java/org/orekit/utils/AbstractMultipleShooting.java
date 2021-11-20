@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
@@ -30,7 +31,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.IntegrableGenerator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 
@@ -45,8 +46,10 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Patch points along the trajectory. */
     private List<SpacecraftState> patchedSpacecraftStates;
 
-    /** Derivatives linked to the Propagators. */
-    private final List<AdditionalEquations> additionalEquations;
+    /** Derivatives linked to the Propagators.
+     * @since 11.1
+     */
+    private final List<IntegrableGenerator> additionalEquations;
 
     /** List of Propagators. */
     private final List<NumericalPropagator> propagatorList;
@@ -89,10 +92,31 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector.
      * @param additionalName name of the additional equations
+     * @deprecated as of 11.1, replaced by {@link #AbstractMultipleShooting(List, List, double, double, List, String)}
+     */
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
+                                       final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations, final double arcDuration,
+                                       final double tolerance, final String additionalName) {
+        this(initialGuessList, propagatorList, arcDuration, tolerance,
+             additionalEquations.stream().map(ae -> new org.orekit.propagation.integration.AdditionalEquationAdapter(ae)).collect(Collectors.toList()),
+             additionalName);
+    }
+
+    /** Simple Constructor.
+     * <p> Standard constructor for multiple shooting </p>
+     * @param initialGuessList initial patch points to be corrected.
+     * @param propagatorList list of propagators associated to each patch point.
+     * @param arcDuration initial guess of the duration of each arc.
+     * @param tolerance convergence tolerance on the constraint vector.
+     * @param additionalEquations list of additional equations linked to propagatorList.
+     * @param additionalName name of the additional equations
+     * @since 11.1
      */
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                       final List<AdditionalEquations> additionalEquations, final double arcDuration,
-                                       final double tolerance, final String additionalName) {
+                                       final double arcDuration, final double tolerance,
+                                       final List<IntegrableGenerator> additionalEquations, final String additionalName) {
         this.patchedSpacecraftStates = initialGuessList;
         this.propagatorList = propagatorList;
         this.additionalEquations = additionalEquations;
@@ -598,9 +622,22 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      *  @param initialState SpacecraftState without the additional state
      *  @param additionalEquations2 Additional Equations.
      *  @return augmentedSP SpacecraftState with the additional state within.
+     *  @deprecated as of 11.1, replaced by {@link #getAugmentedInitialState(SpacecraftState, IntegrableGenerator)}
+     */
+    @Deprecated
+    protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
+                                                       final org.orekit.propagation.integration.AdditionalEquations additionalEquations2) {
+        return getAugmentedInitialState(initialState, new org.orekit.propagation.integration.AdditionalEquationAdapter(additionalEquations2));
+    }
+
+    /** Compute the additional state from the additionalEquations.
+     *  @param initialState SpacecraftState without the additional state
+     *  @param additionalEquations2 Additional Equations.
+     *  @return augmentedSP SpacecraftState with the additional state within.
+     *  @since 11.1
      */
     protected abstract SpacecraftState getAugmentedInitialState(SpacecraftState initialState,
-                                                                AdditionalEquations additionalEquations2);
+                                                                IntegrableGenerator additionalEquations2);
 
 
 

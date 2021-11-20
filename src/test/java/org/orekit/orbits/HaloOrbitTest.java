@@ -30,7 +30,7 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
-import org.orekit.propagation.numerical.cr3bp.STMEquations;
+import org.orekit.propagation.numerical.cr3bp.StateTransitionMatrix;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -88,6 +88,14 @@ public class HaloOrbitTest {
     }
 
     @Test
+    @Deprecated
+    public void testDeprecated() {
+        CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+        final StateTransitionMatrix stm = new StateTransitionMatrix(syst);
+        Assert.assertEquals(stm.getName(), new org.orekit.propagation.numerical.cr3bp.STMEquations(syst).getName());
+    }
+
+    @Test
     public void testManifolds() {
 
         // Time settings
@@ -142,14 +150,14 @@ public class HaloOrbitTest {
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep, vecAbsoluteTolerances,
                 vecRelativeTolerances);
 
-        final STMEquations stm = new STMEquations(syst);
+        final StateTransitionMatrix stm = new StateTransitionMatrix(syst);
         final SpacecraftState augmentedInitialState =
                         stm.setInitialPhi(initialState);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(syst));
-        propagator.addAdditionalEquations(stm);
+        propagator.addIntegrableGenerator(stm);
         propagator.setInitialState(augmentedInitialState);
         final SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(integrationTime));
         

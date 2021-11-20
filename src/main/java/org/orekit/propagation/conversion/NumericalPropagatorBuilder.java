@@ -223,7 +223,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
         for (StackableGenerator updater: getClosedFormUpdaters()) {
             propagator.addClosedFormGenerator(updater);
         }
-        for (IntegrableGenerator updater: getIntegrableUpdaters()) {
+        for (IntegrableGenerator updater: getIntegrableGenerators()) {
             propagator.addIntegrableGenerator(updater);
         }
 

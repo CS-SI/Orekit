@@ -28,7 +28,7 @@ import org.hipparchus.CalculusFieldElement;
  * @see org.orekit.propagation.AbstractPropagator
  * @see org.orekit.propagation.integration.AdditionalEquations
  * @author Luc Maisonobe
- * @deprecated as of 11.1, replaced by {@link FieldClosedFormStateUpdater}
+ * @deprecated as of 11.1, replaced by {@link FieldStackableGenerator}
  */
 @Deprecated
 public interface FieldAdditionalStateProvider<T extends CalculusFieldElement<T>> {

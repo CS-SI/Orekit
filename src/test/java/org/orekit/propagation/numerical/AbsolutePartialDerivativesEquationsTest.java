@@ -89,11 +89,9 @@ public class AbsolutePartialDerivativesEquationsTest {
      */
     @Test
     public void testComputeDerivativesStateVelocity() {
-        //setup
-        double[] pdot = new double[36];
 
         //action
-        pde.computeDerivatives(state, pdot);
+        pde.generate(state);
 
         //verify
         MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));

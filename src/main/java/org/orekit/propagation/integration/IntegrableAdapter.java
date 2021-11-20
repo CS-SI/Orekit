@@ -25,33 +25,40 @@ import org.orekit.time.AbsoluteDate;
  */
 public class IntegrableAdapter implements AdditionalEquations {
 
-    /** Underlying updater. */
-    private final IntegrableGenerator updater;
+    /** Underlying generator. */
+    private final IntegrableGenerator generator;
 
     /** Simple constructor.
-     * @param updater underlying updater
+     * @param generator underlying generator
      */
-    public IntegrableAdapter(final IntegrableGenerator updater) {
-        this.updater = updater;
+    public IntegrableAdapter(final IntegrableGenerator generator) {
+        this.generator = generator;
     }
 
     /** {@inheritDoc} */
     @Override
     public String getName() {
-        return updater.getName();
+        return generator.getName();
     }
 
     /** {@inheritDoc} */
     @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-        updater.init(initialState, target);
+        generator.init(initialState, target);
     }
 
     /** {@inheritDoc} */
     @Override
     public double[] computeDerivatives(final SpacecraftState s,  final double[] pDot) {
-        System.arraycopy(updater.generate(s), 0, pDot, 0, pDot.length);
+        System.arraycopy(generator.generate(s), 0, pDot, 0, pDot.length);
         return null;
+    }
+
+    /** Get underlying generator.
+     * @return underlying generator
+     */
+    public IntegrableGenerator getGenerator() {
+        return generator;
     }
 
 }

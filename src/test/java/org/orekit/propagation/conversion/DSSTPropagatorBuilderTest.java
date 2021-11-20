@@ -39,7 +39,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.IntegrableGenerator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -219,28 +219,26 @@ public class DSSTPropagatorBuilderTest {
         builder.addForceModel(sun);
 
         // Add additional equations
-        builder.addAdditionalEquations(new AdditionalEquations() {
+        builder.addIntegrableGenerators(new IntegrableGenerator() {
 
             public String getName() {
                 return "linear";
             }
 
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = 1.0;
-                return null;
+            public double[] generate(SpacecraftState s) {
+                return new double[] { 1.0};
             }
         });
 
-        builder.addAdditionalEquations(new AdditionalEquations() {
+        builder.addIntegrableGenerators(new IntegrableGenerator() {
 
     	    public String getName() {
     	        return "linear";
     	    }
 
-    	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-    	        pDot[0] = 1.0;
-    	        return null;
-    	    }
+            public double[] generate(SpacecraftState s) {
+                return new double[] { 1.0};
+            }
         });
 
         try {

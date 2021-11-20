@@ -16,9 +16,13 @@
  */
 package org.orekit.propagation.integration;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.MathArrays;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,37 +34,44 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.semianalytical.dsst.FieldDSSTPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-@Deprecated
-public class AdditionalEquationsTest {
+public class FieldIntegrableGeneratorTest {
 
-    private double          mu;
-    private AbsoluteDate    initDate;
-    private SpacecraftState initialState;
-    private double[][]      tolerance;
+    private double                       mu;
+    private AbsoluteDate                 initDate;
+    private SpacecraftState              initialState;
+    private double[][]                   tolerance;
 
     /** Test for issue #401
      *  with a numerical propagator */
     @Test
     public void testInitNumerical() {
+        doTestInitNumerical(Decimal64Field.getInstance());
+    }
 
+    private <T extends CalculusFieldElement<T>> void doTestInitNumerical(Field<T> field) {
         // setup
         final double reference = 1.25;
-        InitCheckerEquations checker = new InitCheckerEquations(reference);
+        InitCheckerEquations<T> checker = new InitCheckerEquations<>(reference);
         Assert.assertFalse(checker.wasCalled());
 
         // action
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
+                                                                                              tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
-        NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
-        propagatorNumerical.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorNumerical.addAdditionalEquations(checker);
-        propagatorNumerical.propagate(initDate.shiftedBy(600));
+        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
+        propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
+                                            addAdditionalState(checker.getName(), field.getZero().newInstance(reference)));
+        propagatorNumerical.addIntegrableGenerator(checker);
+        propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(600));
 
         // verify
         Assert.assertTrue(checker.wasCalled());
@@ -71,19 +82,24 @@ public class AdditionalEquationsTest {
      *  with a DSST propagator */
     @Test
     public void testInitDSST() {
+        doTestIniDSST(Decimal64Field.getInstance());
+    }
 
+    private <T extends CalculusFieldElement<T>> void doTestIniDSST(Field<T> field) {
         // setup
         final double reference = 3.5;
-        InitCheckerEquations checker = new InitCheckerEquations(reference);
+        InitCheckerEquations<T> checker = new InitCheckerEquations<>(reference);
         Assert.assertFalse(checker.wasCalled());
 
         // action
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
+                                                                                              tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
-        DSSTPropagator propagatorDSST = new DSSTPropagator(integrator);
-        propagatorDSST.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorDSST.addAdditionalEquations(checker);
-        propagatorDSST.propagate(initDate.shiftedBy(600));
+        FieldDSSTPropagator<T> propagatorDSST = new FieldDSSTPropagator<>(field, integrator);
+        propagatorDSST.setInitialState(new FieldSpacecraftState<>(field, initialState).
+                                       addAdditionalState(checker.getName(), field.getZero().newInstance(reference)));
+        propagatorDSST.addIntegrableGenerator(checker);
+        propagatorDSST.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(600));
 
         // verify
         Assert.assertTrue(checker.wasCalled());
@@ -111,7 +127,7 @@ public class AdditionalEquationsTest {
         tolerance    = null;
     }
 
-    public static class InitCheckerEquations implements AdditionalEquations {
+    public static class InitCheckerEquations<T extends CalculusFieldElement<T>> implements FieldIntegrableGenerator<T> {
 
         private double expected;
         private boolean called;
@@ -122,16 +138,16 @@ public class AdditionalEquationsTest {
         }
 
         @Override
-        public void init(SpacecraftState initiaState, AbsoluteDate target) {
-            Assert.assertEquals(expected, initiaState.getAdditionalState(getName())[0], 1.0e-15);
+        public void init(FieldSpacecraftState<T> initiaState, FieldAbsoluteDate<T> target) {
+            Assert.assertEquals(expected, initiaState.getAdditionalState(getName())[0].getReal(), 1.0e-15);
             called = true;
         }
 
         @Override
-        public double[] computeDerivatives(SpacecraftState s, double[] pDot)
-            {
-            pDot[0] = 1.5;
-            return null;
+        public T[] generate(FieldSpacecraftState<T> s)  {
+            final T[] pDot = MathArrays.buildArray(s.getDate().getField(), 1);
+            pDot[0] = s.getDate().getField().getZero().newInstance(1.5);
+            return pDot;
         }
 
         @Override

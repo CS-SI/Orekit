@@ -36,8 +36,7 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-@Deprecated
-public class AdditionalEquationsTest {
+public class IntegrableGeneratorTest {
 
     private double          mu;
     private AbsoluteDate    initDate;
@@ -59,7 +58,7 @@ public class AdditionalEquationsTest {
         integrator.setInitialStepSize(60);
         NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
         propagatorNumerical.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorNumerical.addAdditionalEquations(checker);
+        propagatorNumerical.addIntegrableGenerator(checker);
         propagatorNumerical.propagate(initDate.shiftedBy(600));
 
         // verify
@@ -82,7 +81,7 @@ public class AdditionalEquationsTest {
         integrator.setInitialStepSize(60);
         DSSTPropagator propagatorDSST = new DSSTPropagator(integrator);
         propagatorDSST.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorDSST.addAdditionalEquations(checker);
+        propagatorDSST.addIntegrableGenerator(checker);
         propagatorDSST.propagate(initDate.shiftedBy(600));
 
         // verify
@@ -111,7 +110,7 @@ public class AdditionalEquationsTest {
         tolerance    = null;
     }
 
-    public static class InitCheckerEquations implements AdditionalEquations {
+    public static class InitCheckerEquations implements IntegrableGenerator {
 
         private double expected;
         private boolean called;
@@ -128,10 +127,8 @@ public class AdditionalEquationsTest {
         }
 
         @Override
-        public double[] computeDerivatives(SpacecraftState s, double[] pDot)
-            {
-            pDot[0] = 1.5;
-            return null;
+        public double[] generate(SpacecraftState s) {
+            return new double[] { 1.5 };
         }
 
         @Override

@@ -142,7 +142,7 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
-     * @deprecated as of 11.1, replaced by {@link #addClosedFormGenerator(FieldClosedFormStateUpdater)}
+     * @deprecated as of 11.1, replaced by {@link #addClosedFormGenerator(FieldStackableGenerator)}
      */
     @Deprecated
     void addAdditionalStateProvider(FieldAdditionalStateProvider<T> additionalStateProvider);

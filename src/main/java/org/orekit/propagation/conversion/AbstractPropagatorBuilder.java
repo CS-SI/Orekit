@@ -83,12 +83,12 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Closed-form updaters.
      * @since 11.1
      */
-    private List<StackableGenerator> closedFormUpdaters;
+    private List<StackableGenerator> closedFormGenerators;
 
     /** Integrable updaters.
      * @since 11.1
      */
-    private List<IntegrableGenerator> integrableUpdaters;
+    private List<IntegrableGenerator> integrableGenerators;
 
     /** Build a new instance.
      * <p>
@@ -170,8 +170,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             driver.setSelected(true);
         }
 
-        this.closedFormUpdaters  = new ArrayList<>();
-        this.integrableUpdaters  = new ArrayList<>();
+        this.closedFormGenerators  = new ArrayList<>();
+        this.integrableGenerators  = new ArrayList<>();
 
         if (addDriverForCentralAttraction) {
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
@@ -377,12 +377,12 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.initialOrbitDate = newOrbit.getDate();
     }
 
-    /** Add an updater for user-specified state parameters to be computed along with the orbit propagation.
-     * @param updater updater for additional state
+    /** Add a closed-form generator for user-specified state parameters to be computed along with the orbit propagation.
+     * @param generator generator for additional state
      * @since 11.1
      */
-    public void addClosedFormUpdater(final StackableGenerator updater) {
-        closedFormUpdaters.add(updater);
+    public void addClosedFormGenerator(final StackableGenerator generator) {
+        closedFormGenerators.add(generator);
     }
 
     /** Get an unmodifiable list of updaters for additional state.
@@ -390,48 +390,48 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      * @since 11.1
      */
     public List<StackableGenerator> getClosedFormUpdaters() {
-        return Collections.unmodifiableList(closedFormUpdaters);
+        return Collections.unmodifiableList(closedFormGenerators);
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
      * @param additional additional equations
      * @since 10.1
-     * @deprecated as of 11.1, replaced by {@link #addIntegrableUpdater(StackableGenerator)}
+     * @deprecated as of 11.1, replaced by {@link #addIntegrableGenerators(StackableGenerator)}
      */
     @Deprecated
     public void addAdditionalEquations(final org.orekit.propagation.integration.AdditionalEquations additional) {
-        integrableUpdaters.add(new org.orekit.propagation.integration.AdditionalEquationAdapter(additional));
+        integrableGenerators.add(new org.orekit.propagation.integration.AdditionalEquationAdapter(additional));
     }
 
     /** Get the list of additional equations.
      * @return the list of additional equations
      * @since 10.1
-     * @deprecated as of 11.1, replaced by {@link #getIntegrableUpdaters()}
+     * @deprecated as of 11.1, replaced by {@link #getIntegrableGenerators()}
      */
     @SuppressWarnings("deprecation")
     @Deprecated
     protected List<org.orekit.propagation.integration.AdditionalEquations> getAdditionalEquations() {
-        return getIntegrableUpdaters().
+        return getIntegrableGenerators().
                         stream().
                         map(u -> new org.orekit.propagation.integration.IntegrableAdapter(u)).
                         collect(Collectors.toList());
     }
 
-    /** Add an updater for user-specified state parameters to be integrated along with the orbit propagation.
-     * @param updater updater for additional state
-     * @see #addClosedFormGenerator(ClosedFormStateUpdater)
+    /** Add an integrable generator for user-specified state parameters to be integrated along with the orbit propagation.
+     * @param generator generator for additional state
+     * @see #addClosedFormGenerator(StackableGenerator)
      * @since 11.1
      */
-    public void addIntegrableUpdater(final IntegrableGenerator updater) {
-        integrableUpdaters.add(updater);
+    public void addIntegrableGenerators(final IntegrableGenerator generator) {
+        integrableGenerators.add(generator);
     }
 
-    /** Get the list of additional equations.
-     * @return the list of additional equations
+    /** Get the list of integrable generators.
+     * @return the list of integrable generators
      * @since 11.1
      */
-    protected List<IntegrableGenerator> getIntegrableUpdaters() {
-        return Collections.unmodifiableList(integrableUpdaters);
+    protected List<IntegrableGenerator> getIntegrableGenerators() {
+        return Collections.unmodifiableList(integrableGenerators);
     }
 
     /** Deselects orbital and propagation drivers. */

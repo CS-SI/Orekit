@@ -163,7 +163,7 @@ public interface Propagator extends PVCoordinatesProvider {
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
-     * @deprecated as of 11.1, replaced by {@link #addClosedFormGenerator(ClosedFormStateUpdater)}
+     * @deprecated as of 11.1, replaced by {@link #addClosedFormGenerator(StackableGenerator)}
      */
     @Deprecated
     void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider);
@@ -199,16 +199,16 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Check if an additional state is managed.
      * <p>
      * Managed states are states for which the propagators know how to compute
-     * its evolution. They correspond to additional states for which an
-     * {@link ClosedFormAdapter updater} has been registered by calling the
-     * {@link #addClosedFormGenerator(ClosedFormStateUpdater) addUpdater} method. If the propagator
-     * is an {@link org.orekit.propagation.integration.AbstractIntegratedPropagator
+     * its evolution. They correspond to additional states for which a
+     * {@link StackableGenerator generator} has been registered by calling the
+     * {@link #addClosedFormGenerator(StackableGenerator) addClosedFormGenerator} method.
+     * If the propagator is an {@link org.orekit.propagation.integration.AbstractIntegratedPropagator
      * integrator-based propagator}, the states for which a set of {@link
-     * org.orekit.propagation.integration.AdditionalEquations additional equations} has
+     * org.orekit.propagation.integration.IntegrableGenerator integrable generator} has
      * been registered by calling the {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator#addAdditionalEquations(
-     * org.orekit.propagation.integration.AdditionalEquations) addAdditionalEquations}
-     * method are also counted as managed additional states.
+     * org.orekit.propagation.integration.AbstractIntegratedPropagator#addIntegrableGenerator(
+     * org.orekit.propagation.integration.IntegrableGenerator) method are also counted as
+     * managed additional states.
      * </p>
      * <p>
      * Additional states that are present in the {@link #getInitialState() initial state}

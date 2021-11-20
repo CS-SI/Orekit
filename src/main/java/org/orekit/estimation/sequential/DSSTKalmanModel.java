@@ -24,7 +24,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
-import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
+import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivatives;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
@@ -75,7 +75,7 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
             final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
-            final DSSTPartialDerivativesEquations pde = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) getReferenceTrajectories()[k], pType);
+            final DSSTPartialDerivatives pde = new DSSTPartialDerivatives(equationName, (DSSTPropagator) getReferenceTrajectories()[k], pType);
 
             // Reset the Jacobians
             final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();

@@ -46,7 +46,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.propagation.numerical.PartialDerivatives;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -447,7 +447,7 @@ public abstract class AbstractForceModelTest {
         }
 
         final String name = "pde";
-        PartialDerivativesEquations pde = new PartialDerivativesEquations(name, propagator);
+        PartialDerivatives pde = new PartialDerivatives(name, propagator);
         propagator.setInitialState(pde.setInitialJacobians(state0));
         final JacobiansMapper mapper = pde.getMapper();
         final double[][] dYdY0 = new double[6][6];

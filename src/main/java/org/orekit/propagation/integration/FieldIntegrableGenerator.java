@@ -30,7 +30,7 @@ import org.orekit.time.FieldAbsoluteDate;
 public interface FieldIntegrableGenerator<T extends CalculusFieldElement<T>> extends FieldStackableGenerator<T> {
 
     /** {@inheritDoc}
-     * {@link FieldIntegrableGenerator Integrable generator} are not closed form,
+     * {@link FieldIntegrableGeneratorTest Integrable generator} are not closed form,
      * so this method returns {@code false}.
      */
     @Override

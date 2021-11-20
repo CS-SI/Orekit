@@ -21,7 +21,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** Adapter from {@link FieldAdditionalEquations} to {@link FieldIntegrableGenerator}.
+/** Adapter from {@link FieldAdditionalEquations} to {@link FieldIntegrableGeneratorTest}.
  * @param <T> the type of the field elements
  * @since 11.1
  * @deprecated this adapter is temporary and will be removed when {@link FieldAdditionalEquations} is removed

@@ -64,7 +64,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.propagation.numerical.PartialDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -539,7 +539,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         propagator.setOrbitType(OrbitType.CARTESIAN);
         propagator.setMu(orbit.getMu());
         propagator.addForceModel(new DragForce(atmosphere, shape));
-        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+        PartialDerivatives partials = new PartialDerivatives("partials", propagator);
         propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(orbit, mass)));
 
         SpacecraftState state = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));

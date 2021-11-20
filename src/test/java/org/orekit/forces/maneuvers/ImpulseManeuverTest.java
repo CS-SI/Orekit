@@ -46,7 +46,7 @@ import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.propagation.numerical.PartialDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -274,7 +274,7 @@ public class ImpulseManeuverTest {
         DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-3, 60, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(initialOrbit.getType());
-        PartialDerivativesEquations pde = new PartialDerivativesEquations("derivatives", propagator);
+        PartialDerivatives pde = new PartialDerivatives("derivatives", propagator);
         final SpacecraftState initialState = pde.setInitialJacobians(new SpacecraftState(initialOrbit, initialAttitude));
         propagator.resetInitialState(initialState);
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));

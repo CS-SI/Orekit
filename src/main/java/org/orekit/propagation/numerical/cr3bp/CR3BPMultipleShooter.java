@@ -18,9 +18,10 @@ package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.IntegrableGenerator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AbstractMultipleShooting;
@@ -42,17 +43,36 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
      * @param additionalEquations list of additional equations linked to propagatorList.
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector
+     * @deprecated as of 11.1, replaced by {@link #CR3BPMultipleShooter(List, List, double, double, List)}
+     */
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
+                                 final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations, final double arcDuration, final double tolerance) {
+        this(initialGuessList, propagatorList, arcDuration, tolerance,
+             additionalEquations.stream().map(ae -> new org.orekit.propagation.integration.AdditionalEquationAdapter(ae)).collect(Collectors.toList()));
+    }
+
+    /** Simple Constructor.
+     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
+     * @param initialGuessList initial patch points to be corrected.
+     * @param propagatorList list of propagators associated to each patch point.
+     * @param arcDuration initial guess of the duration of each arc.
+     * @param tolerance convergence tolerance on the constraint vector
+     * @param additionalEquations list of additional equations linked to propagatorList.
+     * @since 11.1
      */
     public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                 final List<AdditionalEquations> additionalEquations, final double arcDuration, final double tolerance) {
-        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, "stmEquations");
+                                final double arcDuration, final double tolerance,
+                                final List<IntegrableGenerator> additionalEquations) {
+        super(initialGuessList, propagatorList, arcDuration, tolerance, additionalEquations, "stmEquations");
         this.npoints = initialGuessList.size();
     }
 
     /** {@inheritDoc} */
     protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
-                                                       final AdditionalEquations additionalEquation) {
-        return ((STMEquations) additionalEquation).setInitialPhi(initialState);
+                                                       final IntegrableGenerator additionalEquation) {
+        return ((StateTransitionMatrix) additionalEquation).setInitialPhi(initialState);
     }
 
     /** {@inheritDoc} */

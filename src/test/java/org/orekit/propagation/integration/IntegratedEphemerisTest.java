@@ -41,7 +41,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.propagation.numerical.PartialDerivatives;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -99,8 +99,8 @@ public class IntegratedEphemerisTest {
         final String eqName = "derivatives";
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
-        final PartialDerivativesEquations derivatives =
-            new PartialDerivativesEquations(eqName, numericalPropagator);
+        final PartialDerivatives derivatives =
+            new PartialDerivatives(eqName, numericalPropagator);
         final SpacecraftState initialState =
                 derivatives.setInitialJacobians(new SpacecraftState(initialOrbit));
         final JacobiansMapper mapper = derivatives.getMapper();
