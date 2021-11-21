@@ -560,8 +560,8 @@ public class DSSTPartialDerivativesTest {
         }
 
         private void checkState(final SpacecraftState state) {
-            Assert.assertEquals(1, state.getAdditionalStates().size());
-            Assert.assertTrue(state.getAdditionalStates().containsKey(mapper.getName()));
+            Assert.assertEquals(1, state.getAdditionalStatesValues().size());
+            Assert.assertNotNull(state.getAdditionalStatesValues().getEntry(mapper.getName()));
             mapper.setShortPeriodJacobians(state);
             mapper.getStateJacobian(state, dYdY0);
             mapper.getParametersJacobian(state, dYdP);

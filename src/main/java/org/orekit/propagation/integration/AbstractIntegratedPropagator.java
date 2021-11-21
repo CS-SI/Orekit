@@ -19,9 +19,7 @@ package org.orekit.propagation.integration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.DenseOutputModel;
@@ -55,6 +53,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 
 
 /** Common handling of {@link org.orekit.propagation.Propagator Propagator}
@@ -966,8 +965,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get the initial additional states that are not managed
-            final Map<String, double[]> unmanaged = new HashMap<String, double[]>();
-            for (final Map.Entry<String, double[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+            final DoubleArrayDictionary unmanaged = new DoubleArrayDictionary();
+            for (final DoubleArrayDictionary.Entry initial : getInitialState().getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state was in the initial state, but is unknown to the propagator
                     // we simply copy its initial value as is
@@ -984,7 +983,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
                                                 stateMapper, propagationType, model,
-                                                getClosedFormGenerators(), unmanaged, names);
+                                                unmanaged, getClosedFormGenerators(), names);
 
         }
 

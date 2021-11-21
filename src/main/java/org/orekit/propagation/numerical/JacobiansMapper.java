@@ -107,7 +107,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
      * </p>
      */
     public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
-                             final double[][] dY1dP, final double[] p) {
+                                    final double[][] dY1dP, final double[] p) {
 
         // set up a converter
         final RealMatrix dY1dC1 = new Array2DRowRealMatrix(getConversionJacobian(state), false);

@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -200,14 +201,14 @@ public abstract class AbstractPropagator implements Propagator {
         // set up queue for updaters
         final Queue<StackableGenerator> pending = new LinkedList<>(getAllGenerators());
 
-        // update the additional states managed by updaters, taking care of dependencies
+        // update the additional states managed by generators, taking care of dependencies
         int yieldCount = 0;
         while (!pending.isEmpty()) {
-            final StackableGenerator updater = pending.remove();
-            if (updater.yield(updated)) {
+            final StackableGenerator generator = pending.remove();
+            if (generator.yield(updated)) {
                 // this updater has to wait for another one,
                 // we put it again in the pending queue
-                pending.add(updater);
+                pending.add(generator);
                 if (++yieldCount >= pending.size()) {
                     // all pending updaters yielded!, they probably need data not yet initialized
                     // we let the propagation proceed, if these data are really needed right now
@@ -216,10 +217,10 @@ public abstract class AbstractPropagator implements Propagator {
                 }
             } else {
                 // we can use this updater right now
-                if (updater.isClosedForm()) {
-                    updated = updated.addAdditionalState(updater.getName(), updater.generate(updated));
+                if (generator.isClosedForm()) {
+                    updated = updated.addAdditionalState(generator.getName(), generator.generate(updated));
                 } else {
-                    updated = updated.addAdditionalStateDerivative(updater.getName(), updater.generate(updated));
+                    updated = updated.addAdditionalStateDerivative(generator.getName(), generator.generate(updated));
                 }
                 yieldCount = 0;
             }
@@ -272,7 +273,7 @@ public abstract class AbstractPropagator implements Propagator {
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
             // copy the additional states present in initialState but otherwise not managed
-            for (final Map.Entry<String, double[]> initial : initialState.getAdditionalStates().entrySet()) {
+            for (final DoubleArrayDictionary.Entry initial : initialState.getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
@@ -288,7 +289,7 @@ public abstract class AbstractPropagator implements Propagator {
     protected void stateChanged(final SpacecraftState state) {
         final AbsoluteDate date    = state.getDate();
         final boolean      forward = date.durationFrom(getStartDate()) >= 0.0;
-        for (final Map.Entry<String, double[]> changed : state.getAdditionalStates().entrySet()) {
+        for (final DoubleArrayDictionary.Entry changed : state.getAdditionalStatesValues().getData()) {
             final TimeSpanMap<double[]> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state

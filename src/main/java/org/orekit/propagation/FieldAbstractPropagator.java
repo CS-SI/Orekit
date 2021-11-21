@@ -35,6 +35,7 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
@@ -287,7 +288,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
             // copy the additional states present in initialState but otherwise not managed
-            for (final Map.Entry<String, T[]> initial : initialState.getAdditionalStates().entrySet()) {
+            for (final FieldArrayDictionary<T>.Entry initial : initialState.getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
@@ -303,7 +304,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     protected void stateChanged(final FieldSpacecraftState<T> state) {
         final AbsoluteDate date    = state.getDate().toAbsoluteDate();
         final boolean      forward = date.durationFrom(getStartDate().toAbsoluteDate()) >= 0.0;
-        for (final Map.Entry<String, T[]> changed : state.getAdditionalStates().entrySet()) {
+        for (final  FieldArrayDictionary<T>.Entry changed : state.getAdditionalStatesValues().getData()) {
             final TimeSpanMap<T[]> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state

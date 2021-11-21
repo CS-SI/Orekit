@@ -1125,8 +1125,7 @@ public class FieldNumericalPropagatorTest {
         doTestEphemerisAdditionalState(Decimal64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>>  void doTestEphemerisAdditionalState(final Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>>  void doTestEphemerisAdditionalState(final Field<T> field) {
 
         // Propagation of the initial at t + dt
         final double dt = -3200;
@@ -1177,7 +1176,7 @@ public class FieldNumericalPropagatorTest {
 
         double shift = -60;
         FieldSpacecraftState<T> s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assert.assertEquals(2, s.getAdditionalStates().size());
+        Assert.assertEquals(2, s.getAdditionalStatesValues().size());
         Assert.assertTrue(s.hasAdditionalState("squaredA"));
         Assert.assertTrue(s.hasAdditionalState("extra"));
         Assert.assertEquals(s.getA().multiply(s.getA()).getReal(), s.getAdditionalState("squaredA")[0].getReal(), 1.0e-10);

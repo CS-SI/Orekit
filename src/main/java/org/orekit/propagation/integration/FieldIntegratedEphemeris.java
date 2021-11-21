@@ -34,6 +34,7 @@ import org.orekit.propagation.FieldStackableGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
@@ -97,7 +98,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     private FieldDenseOutputModel<T> model;
 
     /** Unmanaged additional states that must be simply copied. */
-    private final Map<String, T[]> unmanaged;
+    private final FieldArrayDictionary<T> unmanaged;
 
     /** Creates a new instance of IntegratedEphemeris.
      * @param startDate Start date of the integration (can be minDate or maxDate)
@@ -123,8 +124,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                                final List<org.orekit.propagation.FieldAdditionalStateProvider<T>> providers,
                                final String[] equations) {
         this(startDate, minDate, maxDate, mapper, type, model,
-             providers.stream().map(asp -> new org.orekit.propagation.FieldAdditionalStateProviderAdapter<>(asp)).collect(Collectors.toList()),
-             unmanaged, equations);
+             new FieldArrayDictionary<>(startDate.getField(), unmanaged),
+             providers.stream().map(asp -> new org.orekit.propagation.FieldAdditionalStateProviderAdapter<>(asp)).collect(Collectors.toList()), equations);
     }
 
     /** Creates a new instance of IntegratedEphemeris.
@@ -134,8 +135,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @param mapper mapper between raw double components and spacecraft state
      * @param type type of orbit to output (mean or osculating)
      * @param model underlying raw mathematical model
-     * @param generators generators for pre-integrated states
      * @param unmanaged unmanaged additional states that must be simply copied
+     * @param generators generators for pre-integrated states
      * @param equations names of additional equations
      * @since 11.1
      */
@@ -143,8 +144,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                                     final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
                                     final FieldStateMapper<T> mapper, final PropagationType type,
                                     final FieldDenseOutputModel<T> model,
+                                    final FieldArrayDictionary<T> unmanaged,
                                     final List<FieldStackableGenerator<T>> generators,
-                                    final Map<String, T[]> unmanaged,
                                     final String[] equations) {
 
         super(startDate.getField(), mapper.getAttitudeProvider());
@@ -200,7 +201,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                                os.getPrimaryState(), os.getPrimaryDerivative(),
                                                                type);
-        for (Map.Entry<String, T[]> initial : unmanaged.entrySet()) {
+        for (FieldArrayDictionary<T>.Entry initial : unmanaged.getData()) {
             state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }
         return state;

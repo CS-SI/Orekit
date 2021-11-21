@@ -33,6 +33,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.StackableGenerator;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class stores sequentially generated orbital parameters for
@@ -95,7 +96,7 @@ public class IntegratedEphemeris
     private DenseOutputModel model;
 
     /** Unmanaged additional states that must be simply copied. */
-    private final Map<String, double[]> unmanaged;
+    private final DoubleArrayDictionary unmanaged;
 
     /** Creates a new instance of IntegratedEphemeris.
      * @param startDate Start date of the integration (can be minDate or maxDate)
@@ -109,7 +110,7 @@ public class IntegratedEphemeris
      * @param equations names of additional equations
      * @deprecated as of 11.1, replaced by {@link #IntegratedEphemeris(AbsoluteDate,
      * AbsoluteDate, AbsoluteDate, StateMapper, PropagationType, DenseOutputModel,
-     * List, Map, String[])}
+     * DoubleArrayDictionary, List, String[])}
      */
     @SuppressWarnings("deprecation")
     @Deprecated
@@ -121,8 +122,8 @@ public class IntegratedEphemeris
                                final List<org.orekit.propagation.AdditionalStateProvider> providers,
                                final String[] equations) {
         this(startDate, minDate, maxDate, mapper, type, model,
-             providers.stream().map(asp -> new org.orekit.propagation.AdditionalStateProviderAdapter(asp)).collect(Collectors.toList()),
-             unmanaged, equations);
+             new DoubleArrayDictionary(unmanaged),
+             providers.stream().map(asp -> new org.orekit.propagation.AdditionalStateProviderAdapter(asp)).collect(Collectors.toList()), equations);
     }
 
     /** Creates a new instance of IntegratedEphemeris.
@@ -132,8 +133,8 @@ public class IntegratedEphemeris
      * @param mapper mapper between raw double components and spacecraft state
      * @param type type of orbit to output (mean or osculating)
      * @param model underlying raw mathematical model
-     * @param generators generators for pre-integrated states
      * @param unmanaged unmanaged additional states that must be simply copied
+     * @param generators generators for pre-integrated states
      * @param equations names of additional equations
      * @since 11.1
      */
@@ -141,8 +142,8 @@ public class IntegratedEphemeris
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                final StateMapper mapper, final PropagationType type,
                                final DenseOutputModel model,
+                               final DoubleArrayDictionary unmanaged,
                                final List<StackableGenerator> generators,
-                               final Map<String, double[]> unmanaged,
                                final String[] equations) {
 
         super(mapper.getAttitudeProvider());
@@ -197,7 +198,7 @@ public class IntegratedEphemeris
         SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                        os.getPrimaryState(), os.getPrimaryDerivative(),
                                                        type);
-        for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
+        for (DoubleArrayDictionary.Entry initial : unmanaged.getData()) {
             state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }
         return state;

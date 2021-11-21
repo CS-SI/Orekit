@@ -19,9 +19,7 @@ package org.orekit.propagation.integration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -59,6 +57,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldArrayDictionary;
 
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator FieldPropagator}
@@ -974,8 +973,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             }
 
             // get the initial additional states that are not managed
-            final Map<String, T[]> unmanaged = new HashMap<String, T[]>();
-            for (final Map.Entry<String, T[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+            final FieldArrayDictionary<T> unmanaged = new FieldArrayDictionary<>(startDate.getField());
+            for (final FieldArrayDictionary<T>.Entry initial : getInitialState().getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state was in the initial state, but is unknown to the propagator
                     // we simply copy its initial value as is
@@ -992,7 +991,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             // create the ephemeris
             ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
                                                        stateMapper, propagationType, model,
-                                                       getClosedFormGenerators(), unmanaged, names);
+                                                       unmanaged, getClosedFormGenerators(), names);
 
         }
 
