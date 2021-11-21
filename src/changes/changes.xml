@@ -21,10 +21,15 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
-      <action dev="luc" type="dd" issue="856">
+      <action dev="luc" type="add" >
+        Added DoubleArrayDictionary and FieldArrayDictionary as replacements
+        for HashMap when the number of keys is very small (such as in spacecraft
+        states).
+      </action>
+      <action dev="luc" type="add" issue="856">
         Manage dependencies between additional states in propagators.
       </action>
-      <action dev="luc" type="dd" >
+      <action dev="luc" type="add" >
         SpacecraftState now handle derivatives of additional states.
       </action>
     </release>
