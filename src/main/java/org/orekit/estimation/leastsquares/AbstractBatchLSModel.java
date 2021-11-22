@@ -390,9 +390,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             mappers[p].analyticalDerivatives(evaluationStates[k]);
 
             // Jacobian of the measurement with respect to initial orbital state
-            final double[][] aYY0 = new double[6][6];
-            mappers[p].getStateJacobian(evaluationStates[k], aYY0);
-            final RealMatrix dYdY0 = new Array2DRowRealMatrix(aYY0, false);
+            final RealMatrix dYdY0 = mappers[p].getStateTransitionMatrix(evaluationStates[k]);
             final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
             for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
                 int jOrb = orbitsStartColumns[p];
@@ -409,9 +407,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
             final int nbParams = selectedPropagationDrivers.getNbParams();
             if ( nbParams > 0) {
-                final double[][] aYPp  = new double[6][nbParams];
-                mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
-                final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
+                final RealMatrix dYdPp = mappers[p].getParametersJacobian(evaluationStates[k]);
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {

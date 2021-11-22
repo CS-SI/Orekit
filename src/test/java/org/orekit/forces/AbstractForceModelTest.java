@@ -18,6 +18,7 @@ package org.orekit.forces;
 
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -27,6 +28,7 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
@@ -450,13 +452,13 @@ public abstract class AbstractForceModelTest {
         PartialDerivatives pde = new PartialDerivatives(name, propagator);
         propagator.setInitialState(pde.setInitialJacobians(state0));
         final JacobiansMapper mapper = pde.getMapper();
-        final double[][] dYdY0 = new double[6][6];
+        final AtomicReference<RealMatrix> dYdY0 = new AtomicReference<>();
         propagator.setStepHandler(new OrekitStepHandler() {
             public void handleStep(OrekitStepInterpolator interpolator) {
             }
             public void finish(SpacecraftState finalState) {
                 // pick up final Jacobian
-                mapper.getStateJacobian(finalState, dYdY0);
+                dYdY0.set(mapper.getStateTransitionMatrix(finalState));
             }
 
         });
@@ -465,7 +467,7 @@ public abstract class AbstractForceModelTest {
         for (int j = 0; j < 6; ++j) {
             for (int k = 0; k < 6; ++k) {
                 double scale = integratorAbsoluteTolerances[j] / integratorAbsoluteTolerances[k];
-                Assert.assertEquals(reference[j][k], dYdY0[j][k], checkTolerance * scale);
+                Assert.assertEquals(reference[j][k], dYdY0.get().getEntry(j, k), checkTolerance * scale);
             }
         }
 

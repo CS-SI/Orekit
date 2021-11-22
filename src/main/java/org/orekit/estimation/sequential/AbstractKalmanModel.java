@@ -692,18 +692,17 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             analyticalDerivativeComputations(mappers[k], predictedSpacecraftStates[k]);
 
             // Derivatives of the state vector with respect to initial state vector
-            final double[][] dYdY0 = new double[6][6];
-            mappers[k].getStateJacobian(predictedSpacecraftStates[k], dYdY0 );
+            final RealMatrix dYdY0 = mappers[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
 
             // Fill upper left corner (dY/dY0)
             final List<ParameterDriversList.DelegatingDriver> drivers =
                             builders.get(k).getOrbitalParametersDrivers().getDrivers();
-            for (int i = 0; i < dYdY0.length; ++i) {
+            for (int i = 0; i < dYdY0.getRowDimension(); ++i) {
                 if (drivers.get(i).isSelected()) {
                     int jOrb = orbitsStartColumns[k];
-                    for (int j = 0; j < dYdY0[i].length; ++j) {
+                    for (int j = 0; j < dYdY0.getColumnDimension(); ++j) {
                         if (drivers.get(j).isSelected()) {
-                            stm.setEntry(i, jOrb++, dYdY0[i][j]);
+                            stm.setEntry(i, jOrb++, dYdY0.getEntry(i, j));
                         }
                     }
                 }
@@ -712,13 +711,12 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // Derivatives of the state vector with respect to propagation parameters
             final int nbParams = estimatedPropagationParameters[k].getNbParams();
             if (nbParams > 0) {
-                final double[][] dYdPp  = new double[6][nbParams];
-                mappers[k].getParametersJacobian(predictedSpacecraftStates[k], dYdPp);
+                final RealMatrix dYdPp = mappers[k].getParametersJacobian(predictedSpacecraftStates[k]);
 
                 // Fill 1st row, 2nd column (dY/dPp)
-                for (int i = 0; i < dYdPp.length; ++i) {
+                for (int i = 0; i < dYdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {
-                        stm.setEntry(i, orbitsEndColumns[k] + j, dYdPp[i][j]);
+                        stm.setEntry(i, orbitsEndColumns[k] + j, dYdPp.getEntry(i, j));
                     }
                 }
 
@@ -797,9 +795,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // Jacobian of the measurement with respect to propagation parameters
             final int nbParams = estimatedPropagationParameters[p].getNbParams();
             if (nbParams > 0) {
-                final double[][] aYPp  = new double[6][nbParams];
-                mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
-                final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
+                final RealMatrix dYdPp = mappers[p].getParametersJacobian(evaluationStates[k]);
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {

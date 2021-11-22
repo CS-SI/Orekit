@@ -17,7 +17,6 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -109,14 +108,12 @@ public class IntegratedEphemerisTest {
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         ephemeris.setStepHandler(new OrekitStepHandler() {
 
-            private final Array2DRowRealMatrix dYdY0 = new Array2DRowRealMatrix(6, 6);
-
             public void handleStep(OrekitStepInterpolator interpolator) {
                 SpacecraftState state = interpolator.getCurrentState();
                 Assert.assertEquals(mapper.getAdditionalStateDimension(),
                                     state.getAdditionalState(eqName).length);
-                mapper.getStateJacobian(state, dYdY0.getDataRef());
-                mapper.getParametersJacobian(state, null); // no parameters, this is a no-op and should work
+                RealMatrix dYdY0 = mapper.getStateTransitionMatrix(state);
+                mapper.getParametersJacobian(state); // no parameters, this is a no-op and should work
                 RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
                 Assert.assertTrue(deltaId.getNorm1() >  100);
                 Assert.assertTrue(deltaId.getNorm1() < 3100);

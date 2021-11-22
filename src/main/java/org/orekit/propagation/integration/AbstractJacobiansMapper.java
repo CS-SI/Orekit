@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.integration;
 
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.RealMatrix;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
 import org.orekit.propagation.numerical.JacobiansMapper;
@@ -26,7 +29,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public abstract class AbstractJacobiansMapper {
+public abstract class AbstractJacobiansMapper implements MatricesHarvester {
 
     /** State dimension, fixed to 6.
      * @since 9.0
@@ -81,6 +84,26 @@ public abstract class AbstractJacobiansMapper {
         // noting by default
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
+        final double[][] dYdY0 = new double[STATE_DIMENSION][STATE_DIMENSION];
+        getStateJacobian(s, dYdY0);
+        return new Array2DRowRealMatrix(dYdY0, false);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getParametersJacobian(final SpacecraftState s) {
+        if (getParameters() == 0) {
+            return null;
+        } else {
+            final double[][] dYdP = new double[STATE_DIMENSION][getParameters()];
+            getParametersJacobian(s, dYdP);
+            return new Array2DRowRealMatrix(dYdP, false);
+        }
+    }
+
     /** Set the Jacobian with respect to state into a one-dimensional additional state array.
      * @param state spacecraft state
      * @param dY1dY0 Jacobian of current state at time t₁
@@ -105,7 +128,7 @@ public abstract class AbstractJacobiansMapper {
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
      * @see #getParametersJacobian(SpacecraftState, double[][])
      */
-    public abstract void getStateJacobian(SpacecraftState state,  double[][] dYdY0);
+    public abstract void getStateJacobian(SpacecraftState state, double[][] dYdY0);
 
     /** Get the Jacobian with respect to parameters from a one-dimensional additional state array.
      * <p>

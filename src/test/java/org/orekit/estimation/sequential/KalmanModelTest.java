@@ -246,13 +246,11 @@ public class KalmanModelTest {
         expPhi = MatrixUtils.createRealIdentityMatrix(M);
         
         // Derivatives of the state vector with respect to initial state vector
-        final double[][] dYdY0 = new double[6][6];
-        pde.getMapper().getStateJacobian(scPred, dYdY0 );
+        final double[][] dYdY0 =  pde.getMapper().getStateTransitionMatrix(scPred).getData();
         expPhi.setSubMatrix(dYdY0, 0, 0);
 
         // Derivatives of SRP coef with respect to state
-        final double[][] dYdPp  = new double[6][1];
-        pde.getMapper().getParametersJacobian(scPred, dYdPp);
+        final double[][] dYdPp  = pde.getMapper().getParametersJacobian(scPred).getData();
         expPhi.setSubMatrix(dYdPp, 0, 6);
         
         // Estimated cov matrix from last measurement

@@ -139,7 +139,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** {@inheritDoc} */
-    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0) {
+    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
 
         // get the conversion Jacobian
         final double[][] dYdC = getConversionJacobian(state);

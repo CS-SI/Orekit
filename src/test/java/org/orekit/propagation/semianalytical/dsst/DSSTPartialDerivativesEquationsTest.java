@@ -30,6 +30,7 @@ import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -192,7 +193,6 @@ public class DSSTPartialDerivativesEquationsTest {
             PickUpHandler pickUp = new PickUpHandler(mapper, null);
             propagator.setStepHandler(pickUp);
             propagator.propagate(initialState.getDate().shiftedBy(dt));
-            double[][] dYdP = pickUp.getdYdP();
 
             // compute reference Jacobian using finite differences
             double[][] dYdPRef = new double[6][1];
@@ -272,7 +272,7 @@ public class DSSTPartialDerivativesEquationsTest {
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
             for (int i = 0; i < 6; ++i) {
-                Assert.assertEquals(dYdPRef[i][0], dYdP[i][0], FastMath.abs(dYdPRef[i][0] * tolerance));
+                Assert.assertEquals(dYdPRef[i][0], pickUp.dYdP.getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
             }
 
         }
@@ -332,7 +332,6 @@ public class DSSTPartialDerivativesEquationsTest {
         PickUpHandler pickUp = new PickUpHandler(mapper, null);
         propagator.setStepHandler(pickUp);
         propagator.propagate(target);
-        double[][] dYdY0 = pickUp.getdYdY0();
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -363,7 +362,7 @@ public class DSSTPartialDerivativesEquationsTest {
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
-                    double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
+                    double error = FastMath.abs((pickUp.dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
                     Assert.assertEquals(0, error, tolerance);
                 }
             }
@@ -525,22 +524,12 @@ public class DSSTPartialDerivativesEquationsTest {
 
         private final DSSTJacobiansMapper mapper;
         private final AbsoluteDate pickUpDate;
-        private final double[][] dYdY0;
-        private final double[][] dYdP;
+        private RealMatrix dYdY0;
+        private RealMatrix dYdP;
 
         public PickUpHandler(DSSTJacobiansMapper mapper, AbsoluteDate pickUpDate) {
             this.mapper = mapper;
             this.pickUpDate = pickUpDate;
-            dYdY0 = new double[DSSTJacobiansMapper.STATE_DIMENSION][DSSTJacobiansMapper.STATE_DIMENSION];
-            dYdP  = new double[DSSTJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
-        }
-
-        public double[][] getdYdY0() {
-            return dYdY0;
-        }
-
-        public double[][] getdYdP() {
-            return dYdP;
         }
 
         public void handleStep(OrekitStepInterpolator interpolator) {
@@ -565,8 +554,8 @@ public class DSSTPartialDerivativesEquationsTest {
             Assert.assertEquals(1, state.getAdditionalStates().size());
             Assert.assertTrue(state.getAdditionalStates().containsKey(mapper.getName()));
             mapper.setShortPeriodJacobians(state);
-            mapper.getStateJacobian(state, dYdY0);
-            mapper.getParametersJacobian(state, dYdP);
+            dYdY0 = mapper.getStateTransitionMatrix(state);
+            dYdP  = mapper.getParametersJacobian(state);
 
         }
 
@@ -610,16 +599,10 @@ public class DSSTPartialDerivativesEquationsTest {
                 partialsMEAN.setInitialJacobians(new SpacecraftState(orbit));
         final DSSTJacobiansMapper mapperMEAN = partialsMEAN.getMapper();
         mapperMEAN.setShortPeriodJacobians(initialStateMEAN);
-        double[][] dYdY0MEAN =  new double[DSSTJacobiansMapper.STATE_DIMENSION][DSSTJacobiansMapper.STATE_DIMENSION];
-        mapperMEAN.getStateJacobian(initialStateMEAN, dYdY0MEAN);
+        RealMatrix dYdY0MEAN = mapperMEAN.getStateTransitionMatrix(initialStateMEAN);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) { 
-                if (i == j) {
-                    Assert.assertEquals(1.0, dYdY0MEAN[i][j], 1e-9);
-                }
-                else {
-                    Assert.assertEquals(0.0, dYdY0MEAN[i][j], 1e-9);
-                }
+                Assert.assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
             }
         }
 
@@ -631,13 +614,12 @@ public class DSSTPartialDerivativesEquationsTest {
                 partialsOSC.setInitialJacobians(new SpacecraftState(orbit));
         final DSSTJacobiansMapper mapperOSC = partialsOSC.getMapper();
         mapperOSC.setShortPeriodJacobians(initialStateOSC);
-        double[][] dYdY0OSC =  new double[DSSTJacobiansMapper.STATE_DIMENSION][DSSTJacobiansMapper.STATE_DIMENSION];
-        mapperOSC.getStateJacobian(initialStateOSC, dYdY0OSC);
+        RealMatrix dYdY0OSC =   mapperOSC.getStateTransitionMatrix(initialStateOSC);
         final double[] refLine1 = new double[] {1.0000, -5750.3478, 15270.6488, -2707.1208, -2165.0148, -178.3653};
         final double[] refLine6 = new double[] {0.0000, 0.0035, 0.0013, -0.0005, 0.0005, 1.0000};
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(refLine1[i], dYdY0OSC[0][i], 1e-4);
-            Assert.assertEquals(refLine6[i], dYdY0OSC[5][i], 1e-4);
+            Assert.assertEquals(refLine1[i], dYdY0OSC.getEntry(0, i), 1e-4);
+            Assert.assertEquals(refLine6[i], dYdY0OSC.getEntry(5, i), 1e-4);
         }
         
     }

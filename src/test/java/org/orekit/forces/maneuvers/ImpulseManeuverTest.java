@@ -21,6 +21,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -288,11 +289,10 @@ public class ImpulseManeuverTest {
         Assert.assertEquals(1, finalState.getAdditionalStatesValues().size());
         Assert.assertEquals(36, finalState.getAdditionalState("derivatives").length);
 
-        double[][] stateTransitionMatrix = new double[6][6];
-        pde.getMapper().getStateJacobian(finalState, stateTransitionMatrix);
+        RealMatrix stateTransitionMatrix =  pde.getMapper().getStateTransitionMatrix(finalState);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
-                double sIJ = stateTransitionMatrix[i][j];
+                double sIJ = stateTransitionMatrix.getEntry(i, j);
                 if (j == i) {
                     // dPi/dPj and dVi/dVj are roughly 1 for small propagation times
                     Assert.assertEquals(1.0, sIJ, 2.0e-4);

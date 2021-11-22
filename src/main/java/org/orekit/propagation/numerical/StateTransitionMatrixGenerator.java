@@ -97,7 +97,8 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
      * The returned state must be added to the propagator.
      * </p>
      * @param state initial state
-     * @param dYdY0 initial State Transition Matrix ∂Y/∂Y₀
+     * @param dYdY0 initial State Transition Matrix ∂Y/∂Y₀,
+     * if null (which is the most frequent case), assumed to be 6x6 identity
      * @param orbitType orbit type used for states Y and Y₀ in {@code dYdY0}
      * @param positionAngle position angle used states Y and Y₀ in {@code dYdY0}
      * @return state with initial STM (converted to Cartesian ∂C/∂Y₀) added
@@ -107,11 +108,13 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
                                                            final OrbitType orbitType,
                                                            final PositionAngle positionAngle) {
 
-        if (dYdY0.getRowDimension() != STATE_DIMENSION ||
-            dYdY0.getColumnDimension() != STATE_DIMENSION) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
-                                      dYdY0.getRowDimension(), dYdY0.getColumnDimension(),
-                                      STATE_DIMENSION, STATE_DIMENSION);
+        if (dYdY0 != null) {
+            if (dYdY0.getRowDimension() != STATE_DIMENSION ||
+                            dYdY0.getColumnDimension() != STATE_DIMENSION) {
+                throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
+                                          dYdY0.getRowDimension(), dYdY0.getColumnDimension(),
+                                          STATE_DIMENSION, STATE_DIMENSION);
+            }
         }
 
         // convert to Cartesian STM
@@ -119,7 +122,9 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
         orbitType.convertType(state.getOrbit()).getJacobianWrtCartesian(positionAngle, dYdC);
         final RealMatrix dCdY0 = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).
                                  getSolver().
-                                 solve(dYdY0);
+                                 solve(dYdY0 == null ?
+                                       MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION) :
+                                       dYdY0);
 
         // flatten matrix
         final double[] flat = new double[STATE_DIMENSION * STATE_DIMENSION];

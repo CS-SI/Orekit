@@ -25,6 +25,7 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -560,10 +561,9 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
             (newState.getPVCoordinates().getVelocity().getZ() - state.getPVCoordinates().getVelocity().getZ()) / delta,
         };
 
-        double[][] dYdY0 = new double[6][6];
-        partials.getMapper().getStateJacobian(state, dYdY0);
+        RealMatrix dYdY0 = partials.getMapper().getStateTransitionMatrix(state);
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(dPVdX[i], dYdY0[i][0], 6.2e-6 * FastMath.abs(dPVdX[i]));
+            Assert.assertEquals(dPVdX[i], dYdY0.getEntry(i, 0), 6.2e-6 * FastMath.abs(dPVdX[i]));
         }
 
     }

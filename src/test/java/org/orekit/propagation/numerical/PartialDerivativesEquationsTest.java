@@ -25,13 +25,14 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -200,7 +201,6 @@ public class PartialDerivativesEquationsTest {
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
-                double[][] dYdP = pickUp.getdYdP();
 
                 // compute reference Jacobian using finite differences
                 double[][] dYdPRef = new double[6][1];
@@ -281,7 +281,7 @@ public class PartialDerivativesEquationsTest {
                                    sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
                 for (int i = 0; i < 6; ++i) {
-                    Assert.assertEquals(dYdPRef[i][0], dYdP[i][0], FastMath.abs(dYdPRef[i][0] * tolerance));
+                    Assert.assertEquals(dYdPRef[i][0], pickUp.dYdP.getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
                 }
 
             }
@@ -316,7 +316,6 @@ public class PartialDerivativesEquationsTest {
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
-                double[][] dYdY0 = pickUp.getdYdY0();
 
                 // compute reference state Jacobian using finite differences
                 double[][] dYdY0Ref = new double[6][6];
@@ -345,7 +344,7 @@ public class PartialDerivativesEquationsTest {
 
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
-                        double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
+                        double error = FastMath.abs((pickUp.dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
                         Assert.assertEquals(0, error, 6.0e-2);
 
                     }
@@ -384,7 +383,6 @@ public class PartialDerivativesEquationsTest {
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
-                double[][] dYdY0 = pickUp.getdYdY0();
 
                 // compute reference state Jacobian using finite differences
                 double[][] dYdY0Ref = new double[6][6];
@@ -413,7 +411,7 @@ public class PartialDerivativesEquationsTest {
 
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
-                        double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
+                        double error = FastMath.abs((pickUp.dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
                         Assert.assertEquals(0, error, 1.0e-3);
 
                     }
@@ -646,22 +644,12 @@ public class PartialDerivativesEquationsTest {
 
         private final JacobiansMapper mapper;
         private final AbsoluteDate pickUpDate;
-        private final double[][] dYdY0;
-        private final double[][] dYdP;
+        private RealMatrix dYdY0;
+        private RealMatrix dYdP;
 
         public PickUpHandler(JacobiansMapper mapper, AbsoluteDate pickUpDate) {
             this.mapper = mapper;
             this.pickUpDate = pickUpDate;
-            dYdY0 = new double[JacobiansMapper.STATE_DIMENSION][JacobiansMapper.STATE_DIMENSION];
-            dYdP = new double[JacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
-        }
-
-        public double[][] getdYdY0() {
-            return dYdY0;
-        }
-
-        public double[][] getdYdP() {
-            return dYdP;
         }
 
         public void handleStep(OrekitStepInterpolator interpolator) {
@@ -685,8 +673,8 @@ public class PartialDerivativesEquationsTest {
         private void checkState(final SpacecraftState state) {
             Assert.assertEquals(1, state.getAdditionalStatesValues().size());
             Assert.assertNotNull(state.getAdditionalStatesValues().getEntry(mapper.getName()));
-            mapper.getStateJacobian(state, dYdY0);
-            mapper.getParametersJacobian(state, dYdP);
+            dYdY0 = mapper.getStateTransitionMatrix(state);
+            dYdP  = mapper.getParametersJacobian(state);
         }
 
     }

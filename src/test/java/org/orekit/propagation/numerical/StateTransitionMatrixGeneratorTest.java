@@ -59,14 +59,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
 
 /** Unit tests for {@link StateTransitionMatrixGenerator}. */
 public class StateTransitionMatrixGeneratorTest {
@@ -142,7 +139,7 @@ public class StateTransitionMatrixGeneratorTest {
                                                                              MatrixUtils.createRealIdentityMatrix(StateTransitionMatrixGenerator.STATE_DIMENSION),
                                                                              orbitType, angleType);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(stmGenerator, orbitType, angleType, null, null);
+                PickUpHandler pickUp = new PickUpHandler(stmGenerator, orbitType, angleType, null, null, null);
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
 
@@ -173,7 +170,7 @@ public class StateTransitionMatrixGeneratorTest {
 
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
-                        double error = FastMath.abs((pickUp.dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
+                        double error = FastMath.abs((pickUp.getStm().getEntry(i, j) - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
                         Assert.assertEquals(0, error, 6.0e-2);
 
                     }
@@ -209,11 +206,9 @@ public class StateTransitionMatrixGeneratorTest {
                                                                                                  propagator.getAttitudeProvider());
                 propagator.addIntegrableGenerator(stmGenerator);
                 final SpacecraftState initialState =
-                                stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(initialOrbit),
-                                                                             MatrixUtils.createRealIdentityMatrix(StateTransitionMatrixGenerator.STATE_DIMENSION),
-                                                                             orbitType, angleType);
+                                stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(initialOrbit), null, orbitType, angleType);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(stmGenerator, orbitType, angleType, null, null);
+                PickUpHandler pickUp = new PickUpHandler(stmGenerator, orbitType, angleType, null, null, null);
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
 
@@ -244,7 +239,7 @@ public class StateTransitionMatrixGeneratorTest {
 
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
-                        double error = FastMath.abs((pickUp.dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
+                        double error = FastMath.abs((pickUp.getStm().getEntry(i, j) - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
                         Assert.assertEquals(0, error, 1.0e-3);
 
                     }
@@ -284,15 +279,15 @@ public class StateTransitionMatrixGeneratorTest {
         AbsoluteDate pickupDate = initialOrbit.getDate().shiftedBy(200);
         PickUpHandler pickUp = new PickUpHandler(stmGenerator, propagator.getOrbitType(),
                                                  propagator.getPositionAngleType(), pickupDate,
-                                                 gmDriver);
+                                                 gmDriver.getName(), null);
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
-        Assert.assertEquals(0.0, pickUp.s0.getDate().durationFrom(pickupDate), 1.0e-10);
-        final Vector3D position = pickUp.s0.getPVCoordinates().getPosition();
+        Assert.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
+        final Vector3D position = pickUp.getState().getPVCoordinates().getPosition();
         final double   r        = position.getNorm();
-        Assert.assertEquals(-position.getX() / (r * r * r), pickUp.accPartial[0], 1.0e-15 / (r * r));
-        Assert.assertEquals(-position.getY() / (r * r * r), pickUp.accPartial[1], 1.0e-15 / (r * r));
-        Assert.assertEquals(-position.getZ() / (r * r * r), pickUp.accPartial[2], 1.0e-15 / (r * r));
+        Assert.assertEquals(-position.getX() / (r * r * r), pickUp.getAccPartial()[0], 1.0e-15 / (r * r));
+        Assert.assertEquals(-position.getY() / (r * r * r), pickUp.getAccPartial()[1], 1.0e-15 / (r * r));
+        Assert.assertEquals(-position.getZ() / (r * r * r), pickUp.getAccPartial()[2], 1.0e-15 / (r * r));
 
     }
 
@@ -417,65 +412,6 @@ public class StateTransitionMatrixGeneratorTest {
             propagator.addForceModel(model);
         }
         return propagator;
-    }
-
-    private static class PickUpHandler implements OrekitStepHandler {
-
-        private final StateTransitionMatrixGenerator stmGenerator;
-        private final JacobiansMapper mapper;
-        private final AbsoluteDate pickUpDate;
-        private final String accParamName;
-        private SpacecraftState s0;
-        private double[][] dYdY0;
-        private double[] accPartial;
-
-        public PickUpHandler(final StateTransitionMatrixGenerator stmGenerator, final OrbitType orbitType,
-                             final PositionAngle angleType, final AbsoluteDate pickUpDate,
-                             final ParameterDriver selected) {
-            this.stmGenerator = stmGenerator;
-            ParameterDriversList list = new ParameterDriversList();
-            if (selected == null) {
-                this.accParamName = null;
-            } else {
-                this.accParamName = selected.getName();
-                list.add(selected);
-            }
-            this.mapper       = new JacobiansMapper(stmGenerator.getName(), list, orbitType, angleType);
-            this.pickUpDate   = pickUpDate;
-            this.s0           = null;
-            this.dYdY0        = new double[StateTransitionMatrixGenerator.STATE_DIMENSION][StateTransitionMatrixGenerator.STATE_DIMENSION];
-            this.accPartial   = null;
-        }
-
-        public void handleStep(OrekitStepInterpolator interpolator) {
-            if (pickUpDate != null) {
-                // we want to pick up some intermediate Jacobians
-                double dt0 = pickUpDate.durationFrom(interpolator.getPreviousState().getDate());
-                double dt1 = pickUpDate.durationFrom(interpolator.getCurrentState().getDate());
-                if (dt0 * dt1 > 0) {
-                    // the current step does not cover the pickup date
-                    return;
-                } else {
-                    checkState(interpolator.getInterpolatedState(pickUpDate));
-                }
-            }
-        }
-
-        public void finish(SpacecraftState finalState) {
-            if (s0 == null) {
-                checkState(finalState);
-            }
-        }
-
-        private void checkState(final SpacecraftState state) {
-            Assert.assertEquals(1, state.getAdditionalStatesValues().size());
-            mapper.getStateJacobian(state, dYdY0);
-            if (accParamName != null) {
-                accPartial = stmGenerator.getAccelerationPartials(accParamName);
-            }
-            s0 = state;
-        }
-
     }
 
     /** Mock {@link ForceModel}. */

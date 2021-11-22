@@ -198,21 +198,19 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
         }
 
         // Jacobian part
-        final double[][] dYdY0 = new double[JacobiansMapper.STATE_DIMENSION][JacobiansMapper.STATE_DIMENSION];
-        final double[][] dYdP  = new double[JacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
-        mapper.getStateJacobian(state, dYdY0);
-        mapper.getParametersJacobian(state, dYdP);
+        final RealMatrix dYdY0 = mapper.getStateTransitionMatrix(state);
+        final RealMatrix dYdP  = mapper.getParametersJacobian(state);
         for (int k = 0; k < stateSize; k++) {
             int index = 0;
             for (int j = 0; j < orbitalParameters.getNbParams(); ++j) {
                 final ParameterDriver driver = orbitalParameters.getDrivers().get(j);
                 if (driver.isSelected()) {
-                    jacobian.setEntry(row + k, index++, dYdY0[k][j] * driver.getScale());
+                    jacobian.setEntry(row + k, index++, dYdY0.getEntry(k, j) * driver.getScale());
                 }
             }
             for (int j = 0; j < propagationParameters.getNbParams(); ++j) {
                 final ParameterDriver driver = propagationParameters.getDrivers().get(j);
-                jacobian.setEntry(row + k, index++, dYdP[k][j] * driver.getScale());
+                jacobian.setEntry(row + k, index++, dYdP.getEntry(k, j) * driver.getScale());
             }
         }
 
