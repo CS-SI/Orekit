@@ -91,7 +91,7 @@ public class DerivativesWrtThirdBodyEpoch implements IntegrableGenerator {
      * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
-     * @param name name of the partial derivatives equations
+     * @param name name of the State Transition Matrix additional state
      * @param propagator the propagator that will handle the orbit propagation
      */
     public DerivativesWrtThirdBodyEpoch(final String name, final NumericalPropagator propagator) {

@@ -38,7 +38,7 @@ public class AbsoluteJacobiansMapper extends JacobiansMapper {
     public static final int STATE_DIMENSION = 6;
 
     /** Simple constructor.
-     * @param name name of the Jacobians
+     * @param name name of the State Transition Matrix additional state
      * @param parameters selected parameters for Jacobian computation
      */
     public AbsoluteJacobiansMapper(final String name, final ParameterDriversList parameters) {

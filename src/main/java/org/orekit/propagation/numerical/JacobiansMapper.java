@@ -59,7 +59,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     private final PositionAngle angleType;
 
     /** Simple constructor.
-     * @param name name of the Jacobians
+     * @param name name of the State Transition Matrix additional state
      * @param parameters selected parameters for Jacobian computation
      * @param orbitType orbit type
      * @param angleType position angle type
