@@ -658,9 +658,14 @@ public class NumericalPropagatorTest {
                 return "linear";
             }
 
+            public int getDimension() {
+                return 1;
+            }
+
             public double[] generate(SpacecraftState s) {
                 return new double[] { 1.0 };
             }
+
         });
         try {
             propagator.addIntegrableGenerator(new IntegrableGenerator() {
@@ -669,9 +674,14 @@ public class NumericalPropagatorTest {
                     return "linear";
                 }
 
+                public int getDimension() {
+                    return 1;
+                }
+
                 public double[] generate(SpacecraftState s) {
                     return new double[] { 1.0 };
                 }
+
             });
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -749,6 +759,10 @@ public class NumericalPropagatorTest {
 
             public String getName() {
                 return "linear";
+            }
+
+            public int getDimension() {
+                return 1;
             }
 
             public double[] generate(SpacecraftState s) {
@@ -885,6 +899,9 @@ public class NumericalPropagatorTest {
         propagator.addIntegrableGenerator(new IntegrableGenerator() {
             public String getName() {
                 return "extra";
+            }
+            public int getDimension() {
+                return 1;
             }
             public double[] generate(SpacecraftState s) {
                 return new double[] { rate };

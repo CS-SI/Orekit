@@ -110,6 +110,13 @@ public class DerivativesWrtThirdBodyEpoch implements IntegrableGenerator {
 
     /** {@inheritDoc} */
     @Override
+    public int getDimension() {
+        freezeParametersSelection();
+        return 6 * (6 + selected.getNbParams());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean yield(final SpacecraftState state) {
         return !state.hasAdditionalState(getName());
     }

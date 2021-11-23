@@ -36,6 +36,11 @@ public interface IntegrableGenerator extends StackableGenerator {
         return false;
     }
 
+    /** Get the dimension of the generated derivative.
+     * @return dimension of the generated
+     */
+    int getDimension();
+
     /** Initialize the generator at the start of propagation.
      * @param initialState initial state information at the start of propagation
      * @param target       date of propagation

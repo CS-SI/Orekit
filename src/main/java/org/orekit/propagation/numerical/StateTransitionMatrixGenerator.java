@@ -82,8 +82,15 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getName() {
         return stmName;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        return STATE_DIMENSION * STATE_DIMENSION;
     }
 
     /** {@inheritDoc} */

@@ -61,8 +61,15 @@ class JacobianColumnGenerator implements IntegrableGenerator {
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getName() {
         return columnName;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        return STATE_DIMENSION;
     }
 
     /** {@inheritDoc}
@@ -132,7 +139,7 @@ class JacobianColumnGenerator implements IntegrableGenerator {
         // the factor matrix has already been computed by the STM generator before this generator is called
 
         // retrieve current Jacobian column
-        final double[] p    = s.getAdditionalState(stmGenerator.getName());
+        final double[] p    = s.getAdditionalState(getName());
         final double[] pDot = new double[p.length];
 
         // retrieve partial derivatives of the acceleration with respect to column parameter

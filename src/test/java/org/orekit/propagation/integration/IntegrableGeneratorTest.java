@@ -136,6 +136,11 @@ public class IntegrableGeneratorTest {
             return "linear";
         }
 
+        @Override
+        public int getDimension() {
+            return 1;
+        }
+
         public boolean wasCalled() {
             return called;
         }

@@ -47,6 +47,12 @@ public class AdditionalEquationAdapter implements IntegrableGenerator {
 
     /** {@inheritDoc} */
     @Override
+    public int getDimension() {
+        return dimension;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public String getName() {
         return equations.getName();
     }

@@ -225,9 +225,14 @@ public class DSSTPropagatorBuilderTest {
                 return "linear";
             }
 
+            public int getDimension() {
+                return 1;
+            }
+
             public double[] generate(SpacecraftState s) {
                 return new double[] { 1.0};
             }
+
         });
 
         builder.addIntegrableGenerators(new IntegrableGenerator() {
@@ -236,9 +241,14 @@ public class DSSTPropagatorBuilderTest {
     	        return "linear";
     	    }
 
+            public int getDimension() {
+                return 1;
+            }
+
             public double[] generate(SpacecraftState s) {
                 return new double[] { 1.0};
             }
+
         });
 
         try {

@@ -105,8 +105,16 @@ public class PartialDerivatives implements IntegrableGenerator {
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getName() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        freezeParametersSelection();
+        return 6 * (6 + selected.getNbParams());
     }
 
     /** Freeze the selected parameters from the force models.

@@ -229,9 +229,14 @@ public class NumericalConverterTest {
                 return "linear";
             }
 
-            public double[] generate(SpacecraftState s) {
-                return new double[] { 1.0};
+            public int getDimension() {
+                return 1;
             }
+
+            public double[] generate(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
         });
 
         builder.addIntegrableGenerators(new IntegrableGenerator() {
@@ -240,9 +245,14 @@ public class NumericalConverterTest {
     	        return "linear";
     	    }
 
-            public double[] generate(SpacecraftState s) {
-                return new double[] { 1.0};
+            public int getDimension() {
+                return 1;
             }
+
+            public double[] generate(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
         });
 
         try {
