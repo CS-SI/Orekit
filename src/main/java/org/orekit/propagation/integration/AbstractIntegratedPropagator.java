@@ -251,7 +251,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         addIntegrableGenerator(new AdditionalEquationAdapter(additional));
     }
 
-    /** Add an generator for user-specified state parameters to be integrated along with the orbit propagation.
+    /** Add a generator for user-specified state parameters to be integrated along with the orbit propagation.
      * @param generator generator for additional state
      * @see #addClosedFormGenerator(StackableGenerator)
      * @since 11.1
