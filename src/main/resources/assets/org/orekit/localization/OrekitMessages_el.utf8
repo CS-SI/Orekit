@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = σχεδόν κρίσιμα κεκλιμέν�
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS =  αδύνατο να υπολογιστούν οι Eckstein-Hechler μέσες παράμετροι μετά από {0} επαναλήψεις
 
+# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = αδύνατο να υπολογιστούν οι Brouwer-Lyddane μέσες παράμετροι μετά από {0} επαναλήψεις
+
 # unable to compute TLE after {0} iterations
 UNABLE_TO_COMPUTE_TLE =  αδύνατο να υπολογιστούν οι TLE μετά από {0} επαναλήψεις
 
