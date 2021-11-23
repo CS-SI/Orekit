@@ -573,14 +573,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                         os.getPrimaryState(),
                                                         os.getPrimaryDerivative(),
                                                         propagationType);
-        final double[] secondary = os.getSecondaryState(1);
-        int offset = 0;
-        for (final IntegrableGenerator generator : integrableGenerators) {
-            s = s.addAdditionalState(generator.getName(),
-                                     Arrays.copyOfRange(secondary,
-                                                        offset,
-                                                        offset + generator.getDimension()));
-            offset += generator.getDimension();
+        if (os.getNumberOfSecondaryStates() > 0) {
+            final double[] secondary = os.getSecondaryState(1);
+            int offset = 0;
+            for (final IntegrableGenerator generator : integrableGenerators) {
+                s = s.addAdditionalState(generator.getName(),
+                                         Arrays.copyOfRange(secondary,
+                                                            offset,
+                                                            offset + generator.getDimension()));
+                offset += generator.getDimension();
+            }
         }
         s = updateAdditionalStates(s);
 
