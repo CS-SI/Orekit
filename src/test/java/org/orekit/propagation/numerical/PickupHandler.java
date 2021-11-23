@@ -90,7 +90,7 @@ class PickUpHandler implements OrekitStepHandler {
     }
 
     private void checkState(final SpacecraftState state) {
-        Assert.assertEquals(1, state.getAdditionalStatesValues().size());
+        Assert.assertEquals(2, state.getAdditionalStatesValues().size());
         dYdY0 = mapper.getStateTransitionMatrix(state);
         if (accParamName != null) {
             accPartial = stmGenerator.getAccelerationPartials(accParamName);

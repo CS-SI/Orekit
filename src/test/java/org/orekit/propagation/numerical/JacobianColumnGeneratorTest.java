@@ -28,7 +28,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
@@ -74,13 +73,11 @@ public class JacobianColumnGeneratorTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
     }
 
-    @Ignore
     @Test
     public void testDragParametersDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.4e-3, OrbitType.values());
     }
 
-    @Ignore
     @Test
     public void testMuParametersDerivatives() throws ParseException, IOException {
         // TODO: for an unknown reason, derivatives with respect to central attraction
@@ -233,7 +230,6 @@ public class JacobianColumnGeneratorTest {
 
     }
 
-    @Ignore
     @Test
     public void testJacobianIssue18() {
 

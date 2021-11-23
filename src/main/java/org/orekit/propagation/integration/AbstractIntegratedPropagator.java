@@ -17,6 +17,7 @@
 package org.orekit.propagation.integration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -449,10 +450,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                         mathFinalState.getPrimaryDerivative(),
                                                         propagationType);
 
-            for (int i = 0; i < integrableGenerators.size(); ++i) {
-                final double[] secondary = mathFinalState.getSecondaryState(i + 1);
-                finalState = finalState.addAdditionalState(integrableGenerators.get(i).getName(),
-                                                           secondary);
+            if (!integrableGenerators.isEmpty()) {
+                final double[] secondary = mathFinalState.getSecondaryState(1);
+                int offset = 0;
+                for (IntegrableGenerator generator : integrableGenerators) {
+                    finalState = finalState.addAdditionalState(generator.getName(),
+                                                               Arrays.copyOfRange(secondary,
+                                                                                  offset,
+                                                                                  offset + generator.getDimension()));
+                    offset += generator.getDimension();
+                }
             }
             finalState = updateAdditionalStates(finalState);
 
@@ -512,11 +519,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 new ExpandableODE(new ConvertedMainStateEquations(getMainStateEquations(integ)));
 
         // secondary part of the ODE
-        for (int i = 0; i < integrableGenerators.size(); ++i) {
-            final IntegrableGenerator generator = integrableGenerators.get(i);
-            final SecondaryODE        secondary = new ConvertedSecondaryStateEquations(generator,
-                                                                                       mathInitialState.getSecondaryStateDimension(i + 1));
-            ode.addSecondaryEquations(secondary);
+        if (!integrableGenerators.isEmpty()) {
+            ode.addSecondaryEquations(new ConvertedSecondaryStateEquations());
         }
 
         return ode;
@@ -569,9 +573,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                         os.getPrimaryState(),
                                                         os.getPrimaryDerivative(),
                                                         propagationType);
-        for (int i = 0; i < integrableGenerators.size(); ++i) {
-            final double[] secondary = os.getSecondaryState(i + 1);
-            s = s.addAdditionalState(integrableGenerators.get(i).getName(), secondary);
+        final double[] secondary = os.getSecondaryState(1);
+        int offset = 0;
+        for (final IntegrableGenerator generator : integrableGenerators) {
+            s = s.addAdditionalState(generator.getName(),
+                                     Arrays.copyOfRange(secondary,
+                                                        offset,
+                                                        offset + generator.getDimension()));
+            offset += generator.getDimension();
         }
         s = updateAdditionalStates(s);
 
@@ -675,19 +684,17 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Differential equations for the secondary state (Jacobians, user variables ...), with converted API. */
     private class ConvertedSecondaryStateEquations implements SecondaryODE {
 
-        /** Integrable generator. */
-        private final IntegrableGenerator generator;
-
-        /** Dimension of the additional state. */
+        /** Dimension of the combined additional states. */
         private final int dimension;
 
         /** Simple constructor.
-         * @param generator differential equations in the form of an integrable generator
-         * @param dimension dimension of the additional state
-         */
-        ConvertedSecondaryStateEquations(final IntegrableGenerator generator, final int dimension) {
-            this.generator = generator;
-            this.dimension = dimension;
+          */
+        ConvertedSecondaryStateEquations() {
+            int sum = 0;
+            for (final IntegrableGenerator generator : integrableGenerators) {
+                sum += generator.getDimension();
+            }
+            this.dimension    = sum;
         }
 
         /** {@inheritDoc} */
@@ -701,11 +708,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void init(final double t0, final double[] primary0,
                          final double[] secondary0, final double finalTime) {
             // update space dynamics view
-            SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, PropagationType.MEAN);
-            initialState = initialState.addAdditionalState(generator.getName(), secondary0);
-            initialState = updateAdditionalStates(initialState);
+            final SpacecraftState initialState = convert(t0, primary0, null, secondary0);
+
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
-            generator.init(initialState, target);
+            for (final IntegrableGenerator generator : integrableGenerators) {
+                generator.init(initialState, target);
+            }
 
         }
 
@@ -715,12 +723,44 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                            final double[] primaryDot, final double[] secondary) {
 
             // update space dynamics view
-            SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
-            currentState = currentState.addAdditionalState(generator.getName(), secondary);
-            currentState = updateAdditionalStates(currentState);
+            // the integrable generators generate method will be called here,
+            // according to the generators yield order
+            final SpacecraftState currentState = convert(t, primary, primaryDot, secondary);
 
-            return currentState.getAdditionalStateDerivative(generator.getName());
+            // gather the derivatives from all integrable generators
+            final double[] secondaryDot = new double[dimension];
+            int offset = 0;
+            for (final IntegrableGenerator generator : integrableGenerators) {
+                System.arraycopy(currentState.getAdditionalStateDerivative(generator.getName()), 0,
+                                 secondaryDot, offset,
+                                 generator.getDimension());
+                offset += generator.getDimension();
+            }
 
+            return secondaryDot;
+
+        }
+
+        /** Convert mathematical view to space view.
+         * @param t current value of the independent <I>time</I> variable
+         * @param primary array containing the current value of the primary state vector
+         * @param primaryDot array containing the derivative of the primary state vector
+         * @param secondary array containing the current value of the secondary state vector
+         * @return space view of the state
+         */
+        private SpacecraftState convert(final double t, final double[] primary,
+                                        final double[] primaryDot, final double[] secondary) {
+            SpacecraftState initialState =
+                            stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
+            int offset = 0;
+            for (final IntegrableGenerator generator : integrableGenerators) {
+                initialState = initialState.addAdditionalState(generator.getName(),
+                                                               Arrays.copyOfRange(secondary,
+                                                                                  offset,
+                                                                                  offset + generator.getDimension()));
+                offset += generator.getDimension();
+            }
+            return updateAdditionalStates(initialState);
         }
 
     }
