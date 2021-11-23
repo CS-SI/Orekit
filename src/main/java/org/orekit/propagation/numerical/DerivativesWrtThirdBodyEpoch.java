@@ -112,7 +112,7 @@ public class DerivativesWrtThirdBodyEpoch implements IntegrableGenerator {
     @Override
     public int getDimension() {
         freezeParametersSelection();
-        return 6 * (6 + selected.getNbParams());
+        return 6 * (6 + selected.getNbParams() + 1);
     }
 
     /** {@inheritDoc} */
