@@ -20,7 +20,27 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.1" date="TBD" description="TBD">
+    <release version="11.0.2" date="2021-11-24"
+             description="Version 11.0.2 is a patch release of Orekit.
+             It fixes an important issue related to the handling of indexes
+             when building the state transition matrix in multi satellites
+             orbit determination. It also fixes bugs in TLE and CRD files.
+             Finally it includes an update of the release guide.">
+   	  <action dev="bryan" type="fix" issue="859" due-to="Emmanuel Papanagiotou">
+        Allowed custom setting of state to TLE conversion in propagator builder. 
+      </action>
+   	  <action dev="bryan" type="fix" issue="847">
+        Fixed handling of comments in CRD files.
+      </action>
+   	  <action dev="bryan" type="fix" issue="851">
+        Fixed deserialization of TLE caused by the bStarParameterDriver.
+      </action>
+   	  <action dev="bryan" type="fix" issue="850">
+        Fixed indexes when build state transition matrix for multi sat Kalman.
+      </action>
+   	  <action dev="sdinot" type="update">
+        Updated the release guide to remove actions that are no longer required.
+      </action>
     </release>
     <release version="11.0.1" date="2021-10-22"
              description="Version 11.0.1 is a patch release of Orekit.
