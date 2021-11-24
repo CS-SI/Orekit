@@ -539,6 +539,23 @@ public class CRDParserTest {
         
     }
 
+    @Test
+    public void testIssue847() throws IOException {
+
+        // Read the file
+        final String ex = "/ilrs/lageos1-test.npt";
+        final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify
+        Assert.assertEquals(6, file.getComments().size());
+        Assert.assertEquals("New CFD in the STOP channel", file.getComments().get(0));
+        Assert.assertEquals("No CFD in the START channel", file.getComments().get(1));
+        Assert.assertEquals("New experimental detector (transistor) in the START channel**", file.getComments().get(2));
+        Assert.assertEquals("New CFD in the STOP channel", file.getComments().get(3));
+        Assert.assertEquals("No CFD in the START channel", file.getComments().get(4));
+        Assert.assertEquals("New experimental detector (transistor) in the START channel", file.getComments().get(5));
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
