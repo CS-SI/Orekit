@@ -688,6 +688,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // loop over all orbits
         for (int k = 0; k < predictedSpacecraftStates.length; ++k) {
 
+            // Indexes
+            final int[] indK = covarianceIndirection[k];
+
             // Short period derivatives
             analyticalDerivativeComputations(mappers[k], predictedSpacecraftStates[k]);
 
@@ -700,10 +703,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                             builders.get(k).getOrbitalParametersDrivers().getDrivers();
             for (int i = 0; i < dYdY0.length; ++i) {
                 if (drivers.get(i).isSelected()) {
-                    int jOrb = orbitsStartColumns[k];
                     for (int j = 0; j < dYdY0[i].length; ++j) {
                         if (drivers.get(j).isSelected()) {
-                            stm.setEntry(i, jOrb++, dYdY0[i][j]);
+                            stm.setEntry(indK[i], indK[j], dYdY0[i][j]);
                         }
                     }
                 }
@@ -718,7 +720,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 // Fill 1st row, 2nd column (dY/dPp)
                 for (int i = 0; i < dYdPp.length; ++i) {
                     for (int j = 0; j < nbParams; ++j) {
-                        stm.setEntry(i, orbitsEndColumns[k] + j, dYdPp[i][j]);
+                        stm.setEntry(indK[i], indK[j + 6], dYdPp[i][j]);
                     }
                 }
 
