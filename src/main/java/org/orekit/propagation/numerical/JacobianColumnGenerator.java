@@ -19,6 +19,7 @@ package org.orekit.propagation.numerical;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -38,7 +39,7 @@ class JacobianColumnGenerator implements IntegrableGenerator {
     private static final int STATE_DIMENSION = 2 * SPACE_DIMENSION;
 
     /** Threshold for matrix solving. */
-    private static final double THRESHOLD = 1.0e-6;
+    private static final double THRESHOLD = Precision.SAFE_MIN;
 
     /** Generator for State Transition Matrix. */
     private final StateTransitionMatrixGenerator stmGenerator;

@@ -130,16 +130,9 @@ public class StateTransitionMatrixGeneratorTest {
                 // compute state Jacobian using StateTransitionMatrixGenerator
                 NumericalPropagator propagator =
                     setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
-                StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
-                                                                                                 propagator.getAllForceModels(),
-                                                                                                 propagator.getAttitudeProvider());
-                propagator.addIntegrableGenerator(stmGenerator);
-                final SpacecraftState initialState =
-                                stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(initialOrbit),
-                                                                             MatrixUtils.createRealIdentityMatrix(StateTransitionMatrixGenerator.STATE_DIMENSION),
-                                                                             orbitType, angleType);
+                final SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(stmGenerator, orbitType, angleType, null, null, null);
+                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, null);
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
 
@@ -201,14 +194,9 @@ public class StateTransitionMatrixGeneratorTest {
                 // compute state Jacobian using StateTransitionMatrixGenerator
                 NumericalPropagator propagator =
                     setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
-                StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
-                                                                                                 propagator.getAllForceModels(),
-                                                                                                 propagator.getAttitudeProvider());
-                propagator.addIntegrableGenerator(stmGenerator);
-                final SpacecraftState initialState =
-                                stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(initialOrbit), null, orbitType, angleType);
+                final SpacecraftState initialState = new SpacecraftState(initialOrbit);
+                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, null);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(stmGenerator, orbitType, angleType, null, null, null);
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
 
@@ -251,11 +239,9 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testAccelerationPartial() {
+    public void testAccelerationPartialNewtonOnly() {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
-        ForceModel gravityField =
-                        new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
         ForceModel newton = new NewtonianAttraction(provider.getMu());
         ParameterDriver gmDriver = newton.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
         gmDriver.setSelected(true);
@@ -266,28 +252,54 @@ public class StateTransitionMatrixGeneratorTest {
 
         NumericalPropagator propagator =
                         setUpPropagator(initialOrbit, 0.001, OrbitType.EQUINOCTIAL, PositionAngle.MEAN,
-                                        gravityField, newton);
-        StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
-                                                                                         propagator.getAllForceModels(),
-                                                                                         propagator.getAttitudeProvider());
-        propagator.addIntegrableGenerator(stmGenerator);
-        final SpacecraftState initialState =
-                        stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(initialOrbit),
-                                                                     MatrixUtils.createRealIdentityMatrix(StateTransitionMatrixGenerator.STATE_DIMENSION),
-                                                                     propagator.getOrbitType(), propagator.getPositionAngleType());
+                                        newton);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
         AbsoluteDate pickupDate = initialOrbit.getDate().shiftedBy(200);
-        PickUpHandler pickUp = new PickUpHandler(stmGenerator, propagator.getOrbitType(),
-                                                 propagator.getPositionAngleType(), pickupDate,
-                                                 gmDriver.getName(), null);
+        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getName(), gmDriver.getName());
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
         Assert.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
         final Vector3D position = pickUp.getState().getPVCoordinates().getPosition();
         final double   r        = position.getNorm();
+
+        // here, we check that the trivial partial derivative of Newton acceleration is computed correctly
         Assert.assertEquals(-position.getX() / (r * r * r), pickUp.getAccPartial()[0], 1.0e-15 / (r * r));
         Assert.assertEquals(-position.getY() / (r * r * r), pickUp.getAccPartial()[1], 1.0e-15 / (r * r));
         Assert.assertEquals(-position.getZ() / (r * r * r), pickUp.getAccPartial()[2], 1.0e-15 / (r * r));
+
+    }
+
+    @Test
+    public void testAccelerationPartialGravity5x5() {
+
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        ForceModel gravityField =
+                        new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
+        ParameterDriver gmDriver = gravityField.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+        gmDriver.setSelected(true);
+        ForceModel newton = new NewtonianAttraction(provider.getMu());
+        Orbit initialOrbit =
+                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                                           FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                           provider.getMu());
+
+        NumericalPropagator propagator =
+                        setUpPropagator(initialOrbit, 0.001, OrbitType.EQUINOCTIAL, PositionAngle.MEAN,
+                                        gravityField, newton);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        propagator.setInitialState(initialState);
+        AbsoluteDate pickupDate = initialOrbit.getDate().shiftedBy(200);
+        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getName(), gmDriver.getName());
+        propagator.setStepHandler(pickUp);
+        propagator.propagate(initialState.getDate().shiftedBy(900.0));
+        Assert.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
+        final Vector3D position = pickUp.getState().getPVCoordinates().getPosition();
+        final double   r        = position.getNorm();
+        // here we check that when µ appear is another force model, partial derivatives are not Newton-only anymore
+        Assert.assertTrue(FastMath.abs(-position.getX() / (r * r * r) - pickUp.getAccPartial()[0]) > 2.0e-4 / (r * r));
+        Assert.assertTrue(FastMath.abs(-position.getY() / (r * r * r) - pickUp.getAccPartial()[1]) > 2.0e-4 / (r * r));
+        Assert.assertTrue(FastMath.abs(-position.getZ() / (r * r * r) - pickUp.getAccPartial()[2]) > 2.0e-4 / (r * r));
 
     }
 

@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.integration;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.MatricesHarvester;
@@ -102,6 +105,12 @@ public abstract class AbstractJacobiansMapper implements MatricesHarvester {
             getParametersJacobian(s, dYdP);
             return new Array2DRowRealMatrix(dYdP, false);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<String> getJacobiansColumnsNames() {
+        return parameters.getDrivers().stream().map(d -> d.getName()).collect(Collectors.toList());
     }
 
     /** Set the Jacobian with respect to state into a one-dimensional additional state array.

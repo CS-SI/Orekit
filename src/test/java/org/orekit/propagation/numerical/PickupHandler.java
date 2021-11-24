@@ -16,21 +16,19 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.Collections;
-
 import org.hipparchus.linear.RealMatrix;
 import org.junit.Assert;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.IntegrableGenerator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 class PickUpHandler implements OrekitStepHandler {
 
-    private final StateTransitionMatrixGenerator stmGenerator;
-    private final MatricesMapper mapper;
+    private final NumericalPropagator propagator;
+    private final MatricesHarvester harvester;
     private final AbsoluteDate pickUpDate;
     private final String accParamName;
     private final String columnName;
@@ -38,19 +36,18 @@ class PickUpHandler implements OrekitStepHandler {
     private RealMatrix dYdY0;
     private RealMatrix dYdP;
     private double[] accPartial;
+    private StateTransitionMatrixGenerator stmGenerator;
 
-    public PickUpHandler(final StateTransitionMatrixGenerator stmGenerator, final OrbitType orbitType,
-                         final PositionAngle angleType, final AbsoluteDate pickUpDate,
+    public PickUpHandler(final NumericalPropagator propagator, final AbsoluteDate pickUpDate,
                          final String accParamName, final String columnName) {
-        this.stmGenerator = stmGenerator;
-        this.mapper       = new MatricesMapper(stmGenerator.getName(),
-                                               columnName == null ? Collections.emptyList() : Collections.singletonList(columnName),
-                                               orbitType, angleType);
+        this.propagator   = propagator;
+        this.harvester    = propagator.getMatricesHarvester("stm", null, null);
         this.pickUpDate   = pickUpDate;
         this.accParamName = accParamName;
         this.columnName   = columnName;
         this.s0           = null;
         this.accPartial   = null;
+        Assert.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
     }
 
     public SpacecraftState getState() {
@@ -67,6 +64,16 @@ class PickUpHandler implements OrekitStepHandler {
 
     public double[] getAccPartial() {
         return accPartial.clone();
+    }
+
+    public void init(SpacecraftState s0, AbsoluteDate t) {
+        // as the generators are only created on the fly at propagation start
+        // we retrieve the STM generator here
+        for (final IntegrableGenerator generator : propagator.getIntegrableGenerators()) {
+            if (generator instanceof StateTransitionMatrixGenerator) {
+                stmGenerator = (StateTransitionMatrixGenerator) generator;
+            }
+        }
     }
 
     public void handleStep(OrekitStepInterpolator interpolator) {
@@ -91,13 +98,11 @@ class PickUpHandler implements OrekitStepHandler {
 
     private void checkState(final SpacecraftState state) {
         Assert.assertEquals(columnName == null ? 1 : 2, state.getAdditionalStatesValues().size());
-        dYdY0 = mapper.getStateTransitionMatrix(state);
+        dYdY0 = harvester.getStateTransitionMatrix(state);
         if (accParamName != null) {
             accPartial = stmGenerator.getAccelerationPartials(accParamName);
         }
-        if (columnName != null) {
-            dYdP = mapper.getParametersJacobian(state);
-        }
+        dYdP = harvester.getParametersJacobian(state); // may be null
         s0 = state;
     }
 

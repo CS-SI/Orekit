@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation;
 
+import java.util.List;
+
 import org.hipparchus.linear.RealMatrix;
 
 /** Interface for extracting State Transition Matrices and Jacobians matrices from {@link SpacecraftState spacecraft state}.
@@ -32,7 +34,8 @@ public interface MatricesHarvester {
 
     /** Extract state transition matrix from state.
      * @param state spacecraft state
-     * @return state transition matrix, with semantics consistent with propagation
+     * @return state transition matrix, with semantics consistent with propagation,
+     * or null if no state transition matrix is available
      * {@link org.orekit.orbits.OrbitType orbit type}.
      */
     RealMatrix getStateTransitionMatrix(SpacecraftState state);
@@ -43,5 +46,19 @@ public interface MatricesHarvester {
      * if there are no parameters
      */
     RealMatrix getParametersJacobian(SpacecraftState state);
+
+    /** Get the names of the parameters in the matrix returned by {@link #getParametersJacobian}.
+     * <p>
+     * Beware that the names of the parameters are fully known only at propagation start,
+     * since applications may configure the propagator, retrieve the matrices harvester first
+     * and select the force model parameters to retrieve afterwards (but obviously before
+     * starting propagation). So the method may return wrong results if called too early.
+     * </p>
+     * <p>
+     * The names are returned in the Jacobians matrix columns order
+     * </p>
+     * @return names of the parameters (i.e. columns) of the Jacobian matrix
+     */
+    List<String> getJacobiansColumnsNames();
 
 }

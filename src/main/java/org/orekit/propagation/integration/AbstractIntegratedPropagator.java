@@ -376,6 +376,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         // make sure the integrator will be reset properly even if we change its events handlers and step handlers
         try (IntegratorResetter resetter = new IntegratorResetter(integrator)) {
 
+            // prepare handling of STM and Jacobian matrices
+            setUpStmAndJacobianHandling();
+
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection
@@ -399,6 +402,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         }
 
+    }
+
+    /** Set up State Transition Matrix and Jacobian matrix handling.
+     * @since 11.1
+     */
+    protected void setUpStmAndJacobianHandling() {
+        // nothing to do by default
     }
 
     /** Propagation with or without event detection.

@@ -126,19 +126,9 @@ public class JacobianColumnGeneratorTest {
                     }
                 }
 
-                StateTransitionMatrixGenerator stmGenerator =
-                                new StateTransitionMatrixGenerator("stm",
-                                                                   propagator.getAllForceModels(),
-                                                                   propagator.getAttitudeProvider());
-                JacobianColumnGenerator columnGenerator = new JacobianColumnGenerator(stmGenerator, selected.getName());
-                propagator.addIntegrableGenerator(columnGenerator);
-                propagator.addIntegrableGenerator(stmGenerator);
-
                 SpacecraftState initialState = new SpacecraftState(initialOrbit);
-                initialState = stmGenerator.setInitialStateTransitionMatrix(initialState, null, orbitType, angleType);
-                initialState = columnGenerator.setInitialColumn(initialState, null, orbitType, angleType);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(stmGenerator, orbitType, angleType, null, null, selected.getName());
+                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getName());
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 RealMatrix dYdP = pickUp.getdYdP();
