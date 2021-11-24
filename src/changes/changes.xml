@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.1" date="TBD" description="TBD">
+    </release>
     <release version="11.0.2" date="2021-11-24"
              description="Version 11.0.2 is a patch release of Orekit.
              It fixes an important issue related to the handling of indexes
