@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -138,6 +139,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void addClosedFormGenerator(final StackableGenerator updater) {
 
         // check if the name is already used
@@ -153,6 +155,21 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public StackableGenerator removeClosedFormGenerator(final String stateName) {
+        final Iterator<StackableGenerator> iterator = closedFormGenerators.iterator();
+        while (iterator.hasNext()) {
+            final StackableGenerator generator = iterator.next();
+            if (generator.getName().equals(stateName)) {
+                iterator.remove();
+                return generator;
+            }
+        }
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public List<StackableGenerator> getClosedFormGenerators() {
         return Collections.unmodifiableList(closedFormGenerators);
     }

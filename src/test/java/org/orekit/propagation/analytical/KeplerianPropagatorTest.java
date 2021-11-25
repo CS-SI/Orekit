@@ -823,7 +823,7 @@ public class KeplerianPropagatorTest {
     }
 
     @Test
-    public void testStackableUpdaters() {
+    public void testStackableGenerators() {
         final Frame eme2000 = FramesFactory.getEME2000();
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
                                                    new TimeComponents(14, 0, 0),
@@ -854,6 +854,9 @@ public class KeplerianPropagatorTest {
         Assert.assertEquals(5.0, finalState.getAdditionalState("E")[0], 1.0e-15);
         Assert.assertEquals(1,   finalState.getAdditionalState("F").length);
         Assert.assertEquals(6.0, finalState.getAdditionalState("F")[0], 1.0e-15);
+
+        Assert.assertNotNull(propagator.removeClosedFormGenerator("A"));
+        Assert.assertNull(propagator.removeClosedFormGenerator("A"));
 
     }
 

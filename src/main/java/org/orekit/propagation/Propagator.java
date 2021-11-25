@@ -184,6 +184,19 @@ public interface Propagator extends PVCoordinatesProvider {
         addAdditionalStateProvider(new ClosedFormAdapter(generator));
     }
 
+    /** Remove a generator for user-specified state parameters to be computed along with the orbit propagation.
+     * @param stateName name of the additional state this generator manages
+     * @return the generator found and removed, null if no generator was found
+     * @since 11.1
+     */
+    default StackableGenerator removeClosedFormGenerator(String stateName) {
+        // FIXME: as of 11.1, a default implementation exists, does nothing and returns null.
+        // For 12.0, there should be no default implementation, as
+        // AbstractPropagator (which is the base for all Orekit-provided propagators)
+        // does have a proper implementation*
+        return null;
+    }
+
     /** Get an unmodifiable list of generators for additional states.
      * @return generators for the additional states
      * @since 11.1
