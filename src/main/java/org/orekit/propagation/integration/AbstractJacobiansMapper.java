@@ -82,9 +82,11 @@ public abstract class AbstractJacobiansMapper implements MatricesHarvester {
      * propagator. In other word, this method does nothing for the numerical propagator.
      *
      * @param s spacecraft state with respect to which calculate derivatives
+     * @deprecated as of 11.1, not used anymore
      */
+    @Deprecated
     public void analyticalDerivatives(final SpacecraftState s) {
-        // noting by default
+        // nothing by default
     }
 
     /** {@inheritDoc} */

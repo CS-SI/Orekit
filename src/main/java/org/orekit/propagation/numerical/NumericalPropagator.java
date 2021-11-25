@@ -47,7 +47,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.integration.IntegrableGenerator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -81,7 +80,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   #setPositionAngleType(PositionAngle)}),</li>
  *   <li>whether {@link MatricesHarvester state transition matrices and Jacobians matrices}
  *   should be propagated along with orbital state ({@link
- *   #getMatricesHarvester(String, RealMatrix, DoubleArrayDictionary)}),</li>
+ *   #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
  *   <li>whether {@link org.orekit.propagation.integration.IntegrableGenerator integrable generators}
  *   should be propagated along with orbital state ({@link
  *   #addIntegrableGenerator(org.orekit.propagation.integration.IntegrableGenerator)}),</li>
@@ -401,24 +400,21 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @return harvester to retrieve computed matrices during and after propagation
      * @since 11.1
      */
-    public MatricesHarvester getMatricesHarvester(final String stmName, final RealMatrix initialStm,
-                                                  final DoubleArrayDictionary initialJacobianColumns) {
+    public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
+                                                      final DoubleArrayDictionary initialJacobianColumns) {
         harvester = new NumericalPropagationHarvester(stmName, initialStm, initialJacobianColumns);
         return harvester;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void setUpStmAndJacobianHandling() {
+    protected List<String> setUpStmAndJacobianGenerators() {
 
-        if (harvester != null) {
+        if (harvester == null) {
+            return Collections.emptyList();
+        } else {
 
-            for (final IntegrableGenerator generator : getIntegrableGenerators()) {
-                if (generator.getName().equals(harvester.getStmName())) {
-                    // we have already set up the generators in a previous propagation
-                    return;
-                }
-            }
+            final List<String> matricesStates = new ArrayList<>();
 
             // add the STM generator corresponding to the current settings, and setup state accordingly
             final StateTransitionMatrixGenerator stmGenerator =
@@ -428,6 +424,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                                                          getOrbitType(),
                                                                          getPositionAngleType()));
             addIntegrableGenerator(stmGenerator);
+            matricesStates.add(stmGenerator.getName());
 
             // first pass: gather all parameters, binding similar names together
             final ParameterDriversList selected = new ParameterDriversList();
@@ -453,11 +450,14 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                                            getOrbitType(),
                                                            getPositionAngleType()));
                 addIntegrableGenerator(generator);
+                matricesStates.add(generator.getName());
             }
 
             harvester.setColumnsNames(selected.getDrivers().stream().map(d -> d.getName()).collect(Collectors.toList()));
             harvester.setOrbitType(getOrbitType());
             harvester.setPositionAngleType(getPositionAngleType());
+
+            return matricesStates;
 
         }
 

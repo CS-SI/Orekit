@@ -111,7 +111,7 @@ public class TabulatedEphemerisTest {
         EcksteinHechlerPropagator eck =
             new EcksteinHechlerPropagator(transPar, mass,
                                           ae, mu, c20, c30, c40, c50, c60);
-        StackableGenerator updater = new StackableGenerator() {
+        StackableGenerator generator = new StackableGenerator() {
 
             public String getName() {
                 return "dt";
@@ -121,9 +121,9 @@ public class TabulatedEphemerisTest {
                 return new double[] { state.getDate().durationFrom(initDate) };
             }
         };
-        eck.addClosedFormGenerator(updater);
+        eck.addClosedFormGenerator(generator);
         try {
-            eck.addClosedFormGenerator(updater);
+            eck.addClosedFormGenerator(generator);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,

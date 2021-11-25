@@ -25,7 +25,7 @@ import org.hipparchus.CalculusFieldElement;
  */
 public class FieldClosedFormAdapter<T extends CalculusFieldElement<T>> implements FieldAdditionalStateProvider<T> {
 
-    /** Underlying updater. */
+    /** Underlying generator. */
     private final FieldStackableGenerator<T> generator;
 
     /** Simple constructor.

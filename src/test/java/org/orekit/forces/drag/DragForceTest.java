@@ -62,10 +62,10 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -540,17 +540,18 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         propagator.setOrbitType(OrbitType.CARTESIAN);
         propagator.setMu(orbit.getMu());
         propagator.addForceModel(new DragForce(atmosphere, shape));
-        PartialDerivatives partials = new PartialDerivatives("partials", propagator);
-        propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(orbit, mass)));
+        MatricesHarvester harvester = propagator.setupMatricesComputation("partials", null, null);
+        propagator.setInitialState(new SpacecraftState(orbit, mass));
 
         SpacecraftState state = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
+        RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
 
         double delta = 0.1;
         Orbit shifted = new CartesianOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
                                                                         orbit.getPVCoordinates().getPosition().add(new Vector3D(delta, 0, 0)),
                                                                         orbit.getPVCoordinates().getVelocity()),
                                            orbit.getFrame(), orbit.getMu());
-        propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(shifted, mass)));
+        propagator.setInitialState(new SpacecraftState(shifted, mass));
         SpacecraftState newState = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
         double[] dPVdX = new double[] {
             (newState.getPVCoordinates().getPosition().getX() - state.getPVCoordinates().getPosition().getX()) / delta,
@@ -561,7 +562,6 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
             (newState.getPVCoordinates().getVelocity().getZ() - state.getPVCoordinates().getVelocity().getZ()) / delta,
         };
 
-        RealMatrix dYdY0 = partials.getMapper().getStateTransitionMatrix(state);
         for (int i = 0; i < 6; ++i) {
             Assert.assertEquals(dPVdX[i], dYdY0.getEntry(i, 0), 6.2e-6 * FastMath.abs(dPVdX[i]));
         }

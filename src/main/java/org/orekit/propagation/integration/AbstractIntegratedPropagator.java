@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.hipparchus.exception.MathRuntimeException;
@@ -77,6 +78,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     private final List<IntegrableGenerator> integrableGenerators;
 
+    /** Dimension of the secondary states (gathering all integrable generators).
+     * @since 11.1
+     */
+    private int secondaryDimension;
+
     /** Counter for differential equations calls. */
     private int calls;
 
@@ -99,12 +105,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param propagationType type of orbit to output (mean or osculating).
      */
     protected AbstractIntegratedPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
-        detectors            = new ArrayList<>();
-        ephemerisGenerators  = new ArrayList<>();
-        integrableGenerators = new ArrayList<>();
-        this.integrator      = integrator;
-        this.propagationType = propagationType;
-        this.resetAtEnd      = true;
+        detectors               = new ArrayList<>();
+        ephemerisGenerators     = new ArrayList<>();
+        integrableGenerators    = new ArrayList<>();
+        this.secondaryDimension = 0;
+        this.integrator         = integrator;
+        this.propagationType    = propagationType;
+        this.resetAtEnd         = true;
     }
 
     /** Allow/disallow resetting the initial state at end of propagation.
@@ -245,7 +252,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addIntegrableGenerator(IntegrableStateUpdater)}
+     * @deprecated as of 11.1, replaced by {@link #addIntegrableGenerator(IntegrableGenerator)}
      */
     @Deprecated
     public void addAdditionalEquations(final AdditionalEquations additional) {
@@ -271,6 +278,23 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     }
 
+    /** Remove a generator for user-specified state parameters to be computed along with the orbit propagation.
+     * @param stateName name of the additional state this generator manages
+     * @return the generator found and removed, null if no generator was found
+     * @since 11.1
+     */
+    public IntegrableGenerator removeIntegrableGenerator(final String stateName) {
+        final Iterator<IntegrableGenerator> iterator = integrableGenerators.iterator();
+        while (iterator.hasNext()) {
+            final IntegrableGenerator generator = iterator.next();
+            if (generator.getName().equals(stateName)) {
+                iterator.remove();
+                return generator;
+            }
+        }
+        return null;
+    }
+
     /** Get an unmodifiable list of generators for additional state.
      * @return generators for the additional states
      * @since 11.1
@@ -282,9 +306,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc} */
     @Override
     protected Collection<StackableGenerator> getAllGenerators() {
-        final List<StackableGenerator> allUpdaters = new ArrayList<>(super.getAllGenerators());
-        allUpdaters.addAll(integrableGenerators);
-        return allUpdaters;
+        final List<StackableGenerator> allGenerators = new ArrayList<>(super.getAllGenerators());
+        allGenerators.addAll(integrableGenerators);
+        return allGenerators;
     }
 
     /** {@inheritDoc} */
@@ -377,7 +401,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         try (IntegratorResetter resetter = new IntegratorResetter(integrator)) {
 
             // prepare handling of STM and Jacobian matrices
-            setUpStmAndJacobianHandling();
+            final List<String> matricesStates = setUpStmAndJacobianGenerators();
 
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
@@ -398,17 +422,29 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // propagate from start date to end date with event detection
-            return integrateDynamics(tEnd);
+            final SpacecraftState finalState = integrateDynamics(tEnd);
+
+            // remove the generators for STM and Jacobian matrices
+            for (final String matrixState : matricesStates) {
+                if (removeClosedFormGenerator(matrixState) == null) {
+                    removeIntegrableGenerator(matrixState);
+                }
+            }
+
+            return finalState;
 
         }
 
     }
 
     /** Set up State Transition Matrix and Jacobian matrix handling.
+     * @return names of states that were automatically added for matrices handling,
+     * and whose generators should be removed at propagation end
      * @since 11.1
      */
-    protected void setUpStmAndJacobianHandling() {
+    protected List<String> setUpStmAndJacobianGenerators() {
         // nothing to do by default
+        return Collections.emptyList();
     }
 
     /** Propagation with or without event detection.
@@ -500,20 +536,43 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     private ODEState createInitialState(final SpacecraftState initialState) {
 
         // retrieve initial state
-        final double[] primary  = new double[getBasicDimension()];
+        final double[] primary = new double[getBasicDimension()];
         stateMapper.mapStateToArray(initialState, primary, null);
 
-        // secondary part of the ODE
-        final double[][] secondary = new double[integrableGenerators.size()][];
+        // compute dimension of the secondary state
+        secondaryDimension = 0;
         for (int i = 0; i < integrableGenerators.size(); ++i) {
             final IntegrableGenerator generator = integrableGenerators.get(i);
-            secondary[i] = initialState.getAdditionalState(generator.getName());
             if (generator instanceof AdditionalEquationAdapter) {
-                ((AdditionalEquationAdapter) generator).setDimension(secondary[i].length);
+                ((AdditionalEquationAdapter) generator).setDimension(initialState.getAdditionalState(generator.getName()).length);
             }
+            secondaryDimension += generator.getDimension();
         }
 
-        return new ODEState(0.0, primary, secondary);
+        return new ODEState(0.0, primary, secondary(initialState));
+
+    }
+
+    /** Create secondary state.
+     * @param state spacecraft state
+     * @return seconday state
+     * @since 11.1
+     */
+    private double[][] secondary(final SpacecraftState state) {
+
+        if (secondaryDimension == 0) {
+            return null;
+        }
+
+        final double[][] secondary = new double[1][secondaryDimension];
+        int index = 0;
+        for (int i = 0; i < integrableGenerators.size(); ++i) {
+            final IntegrableGenerator generator = integrableGenerators.get(i);
+            System.arraycopy(state.getAdditionalState(generator.getName()), 0, secondary[0], index, generator.getDimension());
+            index += generator.getDimension();
+        }
+
+        return secondary;
 
     }
 
@@ -563,7 +622,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     public int getBasicDimension() {
         return 7;
-
     }
 
     /** Get the integrator used by the propagator.
@@ -612,11 +670,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         stateMapper.mapStateToArray(state, primary, primaryDot);
 
         // secondary part of the ODE
-        final double[][] secondary    = new double[integrableGenerators.size()][];
-        for (int i = 0; i < integrableGenerators.size(); ++i) {
-            final StackableGenerator generator = integrableGenerators.get(i);
-            secondary[i] = state.getAdditionalState(generator.getName());
-        }
+        final double[][] secondary = secondary(state);
 
         return new ODEStateAndDerivative(stateMapper.mapDateToDouble(state.getDate()),
                                          primary, primaryDot,

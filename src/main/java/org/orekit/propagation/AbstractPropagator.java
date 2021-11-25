@@ -140,17 +140,17 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     @Override
-    public void addClosedFormGenerator(final StackableGenerator updater) {
+    public void addClosedFormGenerator(final StackableGenerator generator) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(updater.getName())) {
+        if (isAdditionalStateManaged(generator.getName())) {
             // this additional state is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      updater.getName());
+                                      generator.getName());
         }
 
         // this is really a new name, add it
-        closedFormGenerators.add(updater);
+        closedFormGenerators.add(generator);
 
     }
 
@@ -215,7 +215,7 @@ public abstract class AbstractPropagator implements Propagator {
         // start with original state and unmanaged states
         SpacecraftState updated = updateUnmanagedStates(original);
 
-        // set up queue for updaters
+        // set up queue for generators
         final Queue<StackableGenerator> pending = new LinkedList<>(getAllGenerators());
 
         // update the additional states managed by generators, taking care of dependencies
@@ -223,17 +223,17 @@ public abstract class AbstractPropagator implements Propagator {
         while (!pending.isEmpty()) {
             final StackableGenerator generator = pending.remove();
             if (generator.yield(updated)) {
-                // this updater has to wait for another one,
+                // this generator has to wait for another one,
                 // we put it again in the pending queue
                 pending.add(generator);
                 if (++yieldCount >= pending.size()) {
-                    // all pending updaters yielded!, they probably need data not yet initialized
+                    // all pending generators yielded!, they probably need data not yet initialized
                     // we let the propagation proceed, if these data are really needed right now
                     // an appropriate exception will be triggered when caller tries to access them
                     break;
                 }
             } else {
-                // we can use this updater right now
+                // we can use this generator right now
                 if (generator.isClosedForm()) {
                     updated = updated.addAdditionalState(generator.getName(), generator.generate(updated));
                 } else {
@@ -249,8 +249,8 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public boolean isAdditionalStateManaged(final String name) {
-        for (final StackableGenerator updater : closedFormGenerators) {
-            if (updater.getName().equals(name)) {
+        for (final StackableGenerator generator : closedFormGenerators) {
+            if (generator.getName().equals(name)) {
                 return true;
             }
         }

@@ -59,7 +59,7 @@ import org.orekit.time.AbsoluteDate;
  * @see AbstractIntegratedPropagator
  * @see org.orekit.propagation.AdditionalStateProvider
  * @author Luc Maisonobe
- * @deprecated as of 11.1, replaced by {@link IntegrableStateUpdater}
+ * @deprecated as of 11.1, replaced by {@link IntegrableGenerator}
  */
 @Deprecated
 public interface AdditionalEquations {

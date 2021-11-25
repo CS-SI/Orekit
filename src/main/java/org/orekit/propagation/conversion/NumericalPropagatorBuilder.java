@@ -219,12 +219,12 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
 
         propagator.resetInitialState(state);
 
-        // Add updaters to the propagator
-        for (StackableGenerator updater: getClosedFormUpdaters()) {
-            propagator.addClosedFormGenerator(updater);
+        // Add generators to the propagator
+        for (StackableGenerator generator: getClosedFormGenerators()) {
+            propagator.addClosedFormGenerator(generator);
         }
-        for (IntegrableGenerator updater: getIntegrableGenerators()) {
-            propagator.addIntegrableGenerator(updater);
+        for (IntegrableGenerator generator: getIntegrableGenerators()) {
+            propagator.addIntegrableGenerator(generator);
         }
 
         return propagator;

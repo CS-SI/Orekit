@@ -213,29 +213,29 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
         // start with original state and unmanaged states
         FieldSpacecraftState<T> updated = updateUnmanagedStates(original);
 
-        // set up queue for updaters
+        // set up queue for generators
         final Queue<FieldStackableGenerator<T>> pending = new LinkedList<>(getAllGenerators());
 
-        // update the additional states managed by updaters, taking care of dependencies
+        // update the additional states managed by generators, taking care of dependencies
         int yieldCount = 0;
         while (!pending.isEmpty()) {
-            final FieldStackableGenerator<T> updater = pending.remove();
-            if (updater.yield(updated)) {
-                // this updater has to wait for another one,
+            final FieldStackableGenerator<T> generator = pending.remove();
+            if (generator.yield(updated)) {
+                // this generator has to wait for another one,
                 // we put it again in the pending queue
-                pending.add(updater);
+                pending.add(generator);
                 if (++yieldCount >= pending.size()) {
-                    // all pending updaters yielded!, they probably need data not yet initialized
+                    // all pending generators yielded!, they probably need data not yet initialized
                     // we let the propagation proceed, if these data are really needed right now
                     // an appropriate exception will be triggered when caller tries to access them
                     break;
                 }
             } else {
-                // we can use this updater right now
-                if (updater.isClosedForm()) {
-                    updated = updated.addAdditionalState(updater.getName(), updater.generate(updated));
+                // we can use this generator right now
+                if (generator.isClosedForm()) {
+                    updated = updated.addAdditionalState(generator.getName(), generator.generate(updated));
                 } else {
-                    updated = updated.addAdditionalStateDerivative(updater.getName(), updater.generate(updated));
+                    updated = updated.addAdditionalStateDerivative(generator.getName(), generator.generate(updated));
                 }
                 yieldCount = 0;
             }

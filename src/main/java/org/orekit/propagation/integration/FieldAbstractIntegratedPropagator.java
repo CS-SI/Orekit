@@ -250,7 +250,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addIntegrableGenerator(IntegrableStateUpdater)}
+     * @deprecated as of 11.1, replaced by {@link #addIntegrableGenerator(FieldIntegrableGenerator)}
      */
     @Deprecated
     public void addAdditionalEquations(final FieldAdditionalEquations<T> additional) {
@@ -287,9 +287,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** {@inheritDoc} */
     @Override
     protected Collection<FieldStackableGenerator<T>> getAllGenerators() {
-        final List<FieldStackableGenerator<T>> allUpdaters = new ArrayList<>(super.getAllGenerators());
-        allUpdaters.addAll(integrableGenerators);
-        return allUpdaters;
+        final List<FieldStackableGenerator<T>> allGenerators = new ArrayList<>(super.getAllGenerators());
+        allGenerators.addAll(integrableGenerators);
+        return allGenerators;
     }
 
     /** {@inheritDoc} */

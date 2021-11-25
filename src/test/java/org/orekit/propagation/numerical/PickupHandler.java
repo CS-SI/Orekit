@@ -41,7 +41,7 @@ class PickUpHandler implements OrekitStepHandler {
     public PickUpHandler(final NumericalPropagator propagator, final AbsoluteDate pickUpDate,
                          final String accParamName, final String columnName) {
         this.propagator   = propagator;
-        this.harvester    = propagator.getMatricesHarvester("stm", null, null);
+        this.harvester    = propagator.setupMatricesComputation("stm", null, null);
         this.pickUpDate   = pickUpDate;
         this.accParamName = accParamName;
         this.columnName   = columnName;

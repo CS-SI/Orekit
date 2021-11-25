@@ -80,12 +80,12 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Attitude provider for the propagator. */
     private AttitudeProvider attitudeProvider;
 
-    /** Closed-form updaters.
+    /** Closed-form generators.
      * @since 11.1
      */
     private List<StackableGenerator> closedFormGenerators;
 
-    /** Integrable updaters.
+    /** Integrable generators.
      * @since 11.1
      */
     private List<IntegrableGenerator> integrableGenerators;
@@ -385,11 +385,11 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         closedFormGenerators.add(generator);
     }
 
-    /** Get an unmodifiable list of updaters for additional state.
-     * @return updaters for the additional states
+    /** Get an unmodifiable list of generators for additional state.
+     * @return generators for the additional states
      * @since 11.1
      */
-    public List<StackableGenerator> getClosedFormUpdaters() {
+    public List<StackableGenerator> getClosedFormGenerators() {
         return Collections.unmodifiableList(closedFormGenerators);
     }
 
