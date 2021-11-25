@@ -20,10 +20,10 @@ import java.util.List;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivatives;
@@ -37,6 +37,9 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class BatchLSModel extends AbstractBatchLSModel {
 
+    /** Name of the State Transition Matrix state. */
+    private final String STM_NAME = BatchLSModel.class.getName() + "-derivatives";
+
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
@@ -48,17 +51,15 @@ public class BatchLSModel extends AbstractBatchLSModel {
                         final ParameterDriversList estimatedMeasurementsParameters,
                         final ModelObserver observer) {
         // call super constructor
-        super(propagatorBuilders, measurements, estimatedMeasurementsParameters,
-              new JacobiansMapper[propagatorBuilders.length], observer);
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     protected JacobiansMapper configureDerivatives(final Propagator propagator) {
 
-        final String equationName = BatchLSModel.class.getName() + "-derivatives";
-
-        final PartialDerivatives partials = new PartialDerivatives(equationName, (NumericalPropagator) propagator);
+        final PartialDerivatives partials = new PartialDerivatives(STM_NAME, (NumericalPropagator) propagator);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
@@ -71,8 +72,7 @@ public class BatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected Orbit configureOrbits(final AbstractJacobiansMapper mapper,
-                                    final Propagator propagator) {
+    protected Orbit configureOrbits(final MatricesHarvester harvester, final Propagator propagator) {
         // Directly return the propagator's initial state
         return propagator.getInitialState().getOrbit();
     }

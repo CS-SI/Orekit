@@ -20,11 +20,11 @@ import java.util.List;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivatives;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -65,14 +65,14 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
                             final PropagationType propagationType,
                             final PropagationType stateType) {
         // call super constructor
-        super(propagatorBuilders, measurements, estimatedMeasurementsParameters,
-              new DSSTJacobiansMapper[propagatorBuilders.length], observer);
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
         this.propagationType = propagationType;
         this.stateType       = stateType;
     }
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     protected DSSTJacobiansMapper configureDerivatives(final Propagator propagator) {
 
         final String equationName = DSSTBatchLSModel.class.getName() + "-derivatives";
@@ -90,8 +90,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected Orbit configureOrbits(final AbstractJacobiansMapper mapper,
-                                    final Propagator propagator) {
+    protected Orbit configureOrbits(final MatricesHarvester harvester, final Propagator propagator) {
         // Cast
         final DSSTPropagator dsstPropagator = (DSSTPropagator) propagator;
         // Mean orbit
@@ -99,7 +98,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
                        DSSTPropagator.computeMeanState(dsstPropagator.getInitialState(), dsstPropagator.getAttitudeProvider(), dsstPropagator.getAllForceModels()) :
                        dsstPropagator.getInitialState();
         // Compute short period derivatives at the beginning of the iteration
-        mapper.setReferenceState(initial);
+        harvester.setReferenceState(initial);
         return initial.getOrbit();
     }
 
