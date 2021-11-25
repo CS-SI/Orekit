@@ -34,7 +34,6 @@ import org.orekit.utils.ParameterDriversList;
  * to be immutable.
  * </p>
  * @author Luc Maisonobe
- * @see org.orekit.propagation.numerical.PartialDerivativesEquations
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
