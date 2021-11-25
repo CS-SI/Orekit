@@ -87,11 +87,4 @@ public class TLEKalmanModel extends AbstractKalmanModel {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @DefaultDataContext
-    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
-        ((TLEJacobiansMapper) mapper).analyticalDerivatives(state);
-    }
-
 }

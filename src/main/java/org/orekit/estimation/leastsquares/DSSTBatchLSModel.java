@@ -99,7 +99,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
                        DSSTPropagator.computeMeanState(dsstPropagator.getInitialState(), dsstPropagator.getAttitudeProvider(), dsstPropagator.getAllForceModels()) :
                        dsstPropagator.getInitialState();
         // Compute short period derivatives at the beginning of the iteration
-        ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(initial);
+        mapper.setReferenceState(initial);
         return initial.getOrbit();
     }
 

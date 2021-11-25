@@ -386,9 +386,6 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
-            // compute derivatives used by analytical orbit determination methods
-            mappers[p].analyticalDerivatives(evaluationStates[k]);
-
             // Jacobian of the measurement with respect to initial orbital state
             final RealMatrix dYdY0 = mappers[p].getStateTransitionMatrix(evaluationStates[k]);
             final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
@@ -406,7 +403,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             // Jacobian of the measurement with respect to propagation parameters
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
             final int nbParams = selectedPropagationDrivers.getNbParams();
-            if ( nbParams > 0) {
+            if (nbParams > 0) {
                 final RealMatrix dYdPp = mappers[p].getParametersJacobian(evaluationStates[k]);
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {

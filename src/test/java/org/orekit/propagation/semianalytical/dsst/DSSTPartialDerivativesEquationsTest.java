@@ -553,7 +553,7 @@ public class DSSTPartialDerivativesEquationsTest {
         private void checkState(final SpacecraftState state) {
             Assert.assertEquals(1, state.getAdditionalStates().size());
             Assert.assertTrue(state.getAdditionalStates().containsKey(mapper.getName()));
-            mapper.setShortPeriodJacobians(state);
+            mapper.setReferenceState(state);
             dYdY0 = mapper.getStateTransitionMatrix(state);
             dYdP  = mapper.getParametersJacobian(state);
 
@@ -598,7 +598,7 @@ public class DSSTPartialDerivativesEquationsTest {
         final SpacecraftState initialStateMEAN =
                 partialsMEAN.setInitialJacobians(new SpacecraftState(orbit));
         final DSSTJacobiansMapper mapperMEAN = partialsMEAN.getMapper();
-        mapperMEAN.setShortPeriodJacobians(initialStateMEAN);
+        mapperMEAN.setReferenceState(initialStateMEAN);
         RealMatrix dYdY0MEAN = mapperMEAN.getStateTransitionMatrix(initialStateMEAN);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) { 
@@ -613,7 +613,7 @@ public class DSSTPartialDerivativesEquationsTest {
         final SpacecraftState initialStateOSC =
                 partialsOSC.setInitialJacobians(new SpacecraftState(orbit));
         final DSSTJacobiansMapper mapperOSC = partialsOSC.getMapper();
-        mapperOSC.setShortPeriodJacobians(initialStateOSC);
+        mapperOSC.setReferenceState(initialStateOSC);
         RealMatrix dYdY0OSC =   mapperOSC.getStateTransitionMatrix(initialStateOSC);
         final double[] refLine1 = new double[] {1.0000, -5750.3478, 15270.6488, -2707.1208, -2165.0148, -178.3653};
         final double[] refLine6 = new double[] {0.0000, 0.0035, 0.0013, -0.0005, 0.0005, 1.0000};

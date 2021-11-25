@@ -157,6 +157,12 @@ class NumericalPropagationHarvester implements MatricesHarvester {
 
     /** {@inheritDoc} */
     @Override
+    public void setReferenceState(final SpacecraftState reference) {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
 
         if (stmName == null || !state.hasAdditionalState(stmName)) {

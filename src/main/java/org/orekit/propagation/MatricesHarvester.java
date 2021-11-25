@@ -32,6 +32,19 @@ import org.hipparchus.linear.RealMatrix;
  */
 public interface MatricesHarvester {
 
+    /** Set up reference state.
+     * <p>
+     * This method is called whenever the global propagation reference state changes.
+     * This corresponds to the start of propagation in batch least squares orbit determination
+     * or at prediction step for each measurement in Kalman filtering. Its goal is to allow
+     * the harvester to compute some internal data. Analytical models like TLE use it to
+     * compute analytical derivatives, semi-analytical models like DSST use it to compute
+     * short periodic terms, numerical models do not use it at all.
+     * </p>
+     * @param reference reference state to set
+     */
+    void setReferenceState(SpacecraftState reference);
+
     /** Extract state transition matrix from state.
      * @param state spacecraft state
      * @return state transition matrix, with semantics consistent with propagation,

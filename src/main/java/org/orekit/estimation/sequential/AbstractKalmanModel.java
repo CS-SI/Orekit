@@ -361,12 +361,14 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                                                         PropagationType pType,
                                                         PropagationType sType);
 
-    /** Analytical computation of derivatives.
-     * This method allow to compute analytical derivatives.
+    /** Not used anymore.
      * @param mapper Jacobian mapper to calculate short period perturbations
      * @param state state used to calculate short period perturbations
+     * @deprecated as of 11.1, not used anymore
      */
-    protected abstract void analyticalDerivativeComputations(AbstractJacobiansMapper mapper, SpacecraftState state);
+    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
+        // nothing by default
+    }
 
     /** Check dimension.
      * @param dimension dimension to check
@@ -688,8 +690,8 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // loop over all orbits
         for (int k = 0; k < predictedSpacecraftStates.length; ++k) {
 
-            // Short period derivatives
-            analyticalDerivativeComputations(mappers[k], predictedSpacecraftStates[k]);
+            // Reset reference (for example compute short periodic terms in DSST)
+            mappers[k].setReferenceState(predictedSpacecraftStates[k]);
 
             // Derivatives of the state vector with respect to initial state vector
             final RealMatrix dYdY0 = mappers[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);

@@ -144,8 +144,9 @@ public class TLEPartialDerivativesTest {
         OrbitType.CARTESIAN.mapOrbitToArray(initState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
         propagator.resetInitialState(initState);
-        mapper.analyticalDerivatives(propagator.propagate(target));
-        RealMatrix dYdY0 = mapper.getStateTransitionMatrix(initState);
+        final SpacecraftState endState = propagator.propagate(target);
+        mapper.setReferenceState(endState);
+        RealMatrix dYdY0 = mapper.getStateTransitionMatrix(endState);
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -203,8 +204,8 @@ public class TLEPartialDerivativesTest {
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
-        mapper.analyticalDerivatives(endState);
-        RealMatrix dYdP = mapper.getParametersJacobian(initialState);
+        mapper.setReferenceState(endState);
+        RealMatrix dYdP = mapper.getParametersJacobian(endState);
 
         // compute reference Jacobian using finite differences
         
