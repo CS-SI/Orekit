@@ -36,6 +36,7 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class AdditionalEquationsTest {
 
     private double          mu;
@@ -121,8 +122,7 @@ public class AdditionalEquationsTest {
         }
 
         @Override
-        public void init(SpacecraftState initiaState, AbsoluteDate target)
-            {
+        public void init(SpacecraftState initiaState, AbsoluteDate target) {
             Assert.assertEquals(expected, initiaState.getAdditionalState(getName())[0], 1.0e-15);
             called = true;
         }
@@ -131,7 +131,7 @@ public class AdditionalEquationsTest {
         public double[] computeDerivatives(SpacecraftState s, double[] pDot)
             {
             pDot[0] = 1.5;
-            return new double[7];
+            return null;
         }
 
         @Override

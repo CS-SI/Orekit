@@ -20,10 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.hipparchus.CalculusFieldElement;
@@ -63,6 +61,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldFixedNumberInte
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldMaxGapInterpolationGrid;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -529,7 +528,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final FieldEquinoctialOrbit<T> osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new FieldSpacecraftState<>(osculatingOrbit, mean.getAttitude(), mean.getMass(),
-                                          mean.getAdditionalStates());
+                                          mean.getAdditionalStatesValues());
 
     }
 
@@ -586,7 +585,8 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
                                                                                            final double epsilon,
                                                                                            final int maxIterations) {
         final FieldOrbit<T> meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModel, epsilon, maxIterations);
-        return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
+        return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(),
+                                          osculating.getAdditionalStatesValues());
     }
 
     /** Override the default value of the parameter.
@@ -885,14 +885,14 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             // (the loop may not be performed if there are no force models and in the
             //  case we want to remain in mean parameters only)
             final T[] elements = y.clone();
-            final Map<String, T[]> coefficients;
+            final FieldArrayDictionary<T> coefficients;
             switch (type) {
                 case MEAN:
                     coefficients = null;
                     break;
                 case OSCULATING:
                     final FieldOrbit<T> meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
-                    coefficients = selectedCoefficients == null ? null : new HashMap<String, T[]>();
+                    coefficients = selectedCoefficients == null ? null : new FieldArrayDictionary<>(date.getField());
                     for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
                         final T[] shortPeriodic = spt.value(meanOrbit);
                         for (int i = 0; i < shortPeriodic.length; i++) {

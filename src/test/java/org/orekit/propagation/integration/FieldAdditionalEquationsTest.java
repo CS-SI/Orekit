@@ -42,6 +42,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class FieldAdditionalEquationsTest {
 
     private double                       mu;

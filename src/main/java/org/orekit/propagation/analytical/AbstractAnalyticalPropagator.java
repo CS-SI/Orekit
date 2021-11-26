@@ -33,10 +33,10 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
-import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.StackableGenerator;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventState;
 import org.orekit.propagation.events.EventState.EventOccurrence;
@@ -413,12 +413,12 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             }
 
             try {
-                // copy the same additional state providers as the original propagator
-                for (AdditionalStateProvider provider : AbstractAnalyticalPropagator.this.getAdditionalStateProviders()) {
-                    addAdditionalStateProvider(provider);
+                // copy the same additional state generators as the original propagator
+                for (StackableGenerator generator : AbstractAnalyticalPropagator.this.getClosedFormGenerators()) {
+                    addClosedFormGenerator(generator);
                 }
             } catch (OrekitException oe) {
-                // as the providers are already compatible with each other,
+                // as the generators are already compatible with each other,
                 // this should never happen
                 throw new OrekitInternalError(null);
             }

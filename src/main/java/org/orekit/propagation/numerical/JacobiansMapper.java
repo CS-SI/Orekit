@@ -25,6 +25,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
+import org.orekit.utils.ParameterDriversList;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
@@ -33,7 +34,6 @@ import org.orekit.propagation.integration.AbstractJacobiansMapper;
  * to be immutable.
  * </p>
  * @author Luc Maisonobe
- * @see org.orekit.propagation.numerical.PartialDerivativesEquations
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
@@ -56,13 +56,13 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
 
     /** Simple constructor.
      * @param name name of the Jacobians
-     * @param nbParams number of selected parameters for Jacobian computation
+     * @param parameters selected parameters for Jacobian computation
      * @param orbitType orbit type
      * @param angleType position angle type
      */
-    JacobiansMapper(final String name, final int nbParams,
+    JacobiansMapper(final String name, final ParameterDriversList parameters,
                     final OrbitType orbitType, final PositionAngle angleType) {
-        super(name, nbParams);
+        super(name, parameters);
         this.orbitType  = orbitType;
         this.angleType  = angleType;
         this.name = name;
@@ -102,7 +102,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
      * </p>
      */
     public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
-                             final double[][] dY1dP, final double[] p) {
+                                    final double[][] dY1dP, final double[] p) {
 
         // set up a converter
         final RealMatrix dY1dC1 = new Array2DRowRealMatrix(getConversionJacobian(state), false);
@@ -134,7 +134,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** {@inheritDoc} */
-    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0) {
+    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
 
         // get the conversion Jacobian
         final double[][] dYdC = getConversionJacobian(state);

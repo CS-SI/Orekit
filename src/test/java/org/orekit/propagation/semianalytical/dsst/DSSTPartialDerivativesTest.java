@@ -16,18 +16,31 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import static org.hamcrest.CoreMatchers.is;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -45,8 +58,11 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -57,6 +73,10 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPress
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
+import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -64,6 +84,47 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 public class DSSTPartialDerivativesTest {
+
+    /** arbitrary date */
+    private static final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+    /** Earth gravitational parameter */
+    private static final double gm = Constants.EIGEN5C_EARTH_MU;
+    /** arbitrary inertial frame */
+    private static final Frame eci = FramesFactory.getGCRF();
+
+    /** unused propagator */
+    private DSSTPropagator propagator;
+    /** mock force model */
+    private MockForceModel forceModel;
+    /** arbitrary state */
+    private SpacecraftState state;
+    /** subject under test */
+    private DSSTPartialDerivatives pde;
+
+    /**
+     * set up {@link #pde} and dependencies.
+     *
+     */
+    @Before
+    public void setUp() {
+        Utils.setDataRoot("regular-data:potential/shm-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
+        propagator = new DSSTPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
+        forceModel = new MockForceModel();
+        propagator.addForceModel(forceModel);
+        pde = new DSSTPartialDerivatives("pde", propagator, PropagationType.MEAN);
+        final Orbit orbit = new EquinoctialOrbit(4.2163393E7,
+                                                 -0.25925449177598586,
+                                                 -0.06946703170551687,
+                                                 0.15995912655021305,
+                                                 -0.5969755874197339,
+                                                 15.47576793123677,
+                                                 PositionAngle.MEAN,
+                                                 eci, date, gm);
+        state = new SpacecraftState(orbit).addAdditionalState("pde", new double[2 * 3 * 6]);
+        pde.setInitialJacobians(state);
+
+    }
 
     @Test
     public void testDragParametersDerivatives() throws ParseException, IOException {
@@ -122,7 +183,7 @@ public class DSSTPartialDerivativesTest {
                 }
             }
 
-            DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, type);
+            DSSTPartialDerivatives partials = new DSSTPartialDerivatives("partials", propagator, type);
             final SpacecraftState initialState =
                     partials.setInitialJacobians(new SpacecraftState(initialOrbit));
             propagator.setInitialState(initialState, PropagationType.MEAN);
@@ -130,7 +191,6 @@ public class DSSTPartialDerivativesTest {
             PickUpHandler pickUp = new PickUpHandler(mapper, null);
             propagator.setStepHandler(pickUp);
             propagator.propagate(initialState.getDate().shiftedBy(dt));
-            double[][] dYdP = pickUp.getdYdP();
 
             // compute reference Jacobian using finite differences
             double[][] dYdPRef = new double[6][1];
@@ -210,7 +270,7 @@ public class DSSTPartialDerivativesTest {
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
             for (int i = 0; i < 6; ++i) {
-                Assert.assertEquals(dYdPRef[i][0], dYdP[i][0], FastMath.abs(dYdPRef[i][0] * tolerance));
+                Assert.assertEquals(dYdPRef[i][0], pickUp.dYdP.getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
             }
 
         }
@@ -259,7 +319,7 @@ public class DSSTPartialDerivativesTest {
         // compute state Jacobian using PartialDerivatives
         DSSTPropagator propagator = setUpPropagator(type, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagator.setMu(provider.getMu());
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, type);
+        DSSTPartialDerivatives partials = new DSSTPartialDerivatives("partials", propagator, type);
         final SpacecraftState initialState =
                 partials.setInitialJacobians(new SpacecraftState(orbit));
         final double[] stateVector = new double[6];
@@ -270,7 +330,6 @@ public class DSSTPartialDerivativesTest {
         PickUpHandler pickUp = new PickUpHandler(mapper, null);
         propagator.setStepHandler(pickUp);
         propagator.propagate(target);
-        double[][] dYdY0 = pickUp.getdYdY0();
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -301,7 +360,7 @@ public class DSSTPartialDerivativesTest {
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
-                    double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
+                    double error = FastMath.abs((pickUp.dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
                     Assert.assertEquals(0, error, tolerance);
                 }
             }
@@ -319,7 +378,7 @@ public class DSSTPartialDerivativesTest {
         double dP = 0.001;
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN).getMapper();
+        new DSSTPartialDerivatives("partials", propagator, PropagationType.MEAN).getMapper();
      }
     
     @Test(expected=OrekitException.class)
@@ -333,7 +392,7 @@ public class DSSTPartialDerivativesTest {
         double dP = 0.001;
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+        DSSTPartialDerivatives partials = new DSSTPartialDerivatives("partials", propagator, PropagationType.MEAN);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[5][6], new double[6][2]);
      }
@@ -349,7 +408,7 @@ public class DSSTPartialDerivativesTest {
         double dP = 0.001;
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+        DSSTPartialDerivatives partials = new DSSTPartialDerivatives("partials", propagator, PropagationType.MEAN);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[8][6], new double[6][2]);
      }
@@ -365,7 +424,7 @@ public class DSSTPartialDerivativesTest {
         double dP = 0.001;
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+        DSSTPartialDerivatives partials = new DSSTPartialDerivatives("partials", propagator, PropagationType.MEAN);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[6][6], new double[7][2]);
      }
@@ -384,11 +443,11 @@ public class DSSTPartialDerivativesTest {
         DSSTPropagator propagator =
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL,
                                 sunAttraction, moonAttraction);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+        DSSTPartialDerivatives partials = new DSSTPartialDerivatives("partials", propagator, PropagationType.MEAN);
         try {
             partials.setInitialJacobians(new SpacecraftState(orbit),
                                          new double[6][6], new double[6][3]);
-            partials.computeDerivatives(new SpacecraftState(orbit), new double[6]);
+            partials.generate(new SpacecraftState(orbit));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
@@ -463,22 +522,12 @@ public class DSSTPartialDerivativesTest {
 
         private final DSSTJacobiansMapper mapper;
         private final AbsoluteDate pickUpDate;
-        private final double[][] dYdY0;
-        private final double[][] dYdP;
+        private RealMatrix dYdY0;
+        private RealMatrix dYdP;
 
         public PickUpHandler(DSSTJacobiansMapper mapper, AbsoluteDate pickUpDate) {
             this.mapper = mapper;
             this.pickUpDate = pickUpDate;
-            dYdY0 = new double[DSSTJacobiansMapper.STATE_DIMENSION][DSSTJacobiansMapper.STATE_DIMENSION];
-            dYdP  = new double[DSSTJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
-        }
-
-        public double[][] getdYdY0() {
-            return dYdY0;
-        }
-
-        public double[][] getdYdP() {
-            return dYdP;
         }
 
         public void handleStep(OrekitStepInterpolator interpolator) {
@@ -500,11 +549,11 @@ public class DSSTPartialDerivativesTest {
         }
 
         private void checkState(final SpacecraftState state) {
-            Assert.assertEquals(1, state.getAdditionalStates().size());
-            Assert.assertTrue(state.getAdditionalStates().containsKey(mapper.getName()));
-            mapper.setShortPeriodJacobians(state);
-            mapper.getStateJacobian(state, dYdY0);
-            mapper.getParametersJacobian(state, dYdP);
+            Assert.assertEquals(1, state.getAdditionalStatesValues().size());
+            Assert.assertNotNull(state.getAdditionalStatesValues().getEntry(mapper.getName()));
+            mapper.setReferenceState(state);
+            dYdY0 = mapper.getStateTransitionMatrix(state);
+            dYdP  = mapper.getParametersJacobian(state);
 
         }
 
@@ -543,47 +592,158 @@ public class DSSTPartialDerivativesTest {
         // Test MEAN case
         DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagatorMEAN.setMu(provider.getMu());
-        DSSTPartialDerivativesEquations partialsMEAN = new DSSTPartialDerivativesEquations("partials", propagatorMEAN, PropagationType.MEAN);
+        DSSTPartialDerivatives partialsMEAN = new DSSTPartialDerivatives("partials", propagatorMEAN, PropagationType.MEAN);
         final SpacecraftState initialStateMEAN =
                 partialsMEAN.setInitialJacobians(new SpacecraftState(orbit));
         final DSSTJacobiansMapper mapperMEAN = partialsMEAN.getMapper();
-        mapperMEAN.setShortPeriodJacobians(initialStateMEAN);
-        double[][] dYdY0MEAN =  new double[DSSTJacobiansMapper.STATE_DIMENSION][DSSTJacobiansMapper.STATE_DIMENSION];
-        mapperMEAN.getStateJacobian(initialStateMEAN, dYdY0MEAN);
+        mapperMEAN.setReferenceState(initialStateMEAN);
+        RealMatrix dYdY0MEAN = mapperMEAN.getStateTransitionMatrix(initialStateMEAN);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) { 
-                if (i == j) {
-                    Assert.assertEquals(1.0, dYdY0MEAN[i][j], 1e-9);
-                }
-                else {
-                    Assert.assertEquals(0.0, dYdY0MEAN[i][j], 1e-9);
-                }
+                Assert.assertEquals(i == j ? 1.0 : 0.0 , dYdY0MEAN.getEntry(i, j), 1e-9);
             }
         }
 
         // Test OSCULATING case
         DSSTPropagator propagatorOSC = setUpPropagator(PropagationType.OSCULATING, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagatorOSC.setMu(provider.getMu());
-        DSSTPartialDerivativesEquations partialsOSC = new DSSTPartialDerivativesEquations("partials", propagatorOSC, PropagationType.OSCULATING);
+        DSSTPartialDerivatives partialsOSC = new DSSTPartialDerivatives("partials", propagatorOSC, PropagationType.OSCULATING);
         final SpacecraftState initialStateOSC =
                 partialsOSC.setInitialJacobians(new SpacecraftState(orbit));
         final DSSTJacobiansMapper mapperOSC = partialsOSC.getMapper();
-        mapperOSC.setShortPeriodJacobians(initialStateOSC);
-        double[][] dYdY0OSC =  new double[DSSTJacobiansMapper.STATE_DIMENSION][DSSTJacobiansMapper.STATE_DIMENSION];
-        mapperOSC.getStateJacobian(initialStateOSC, dYdY0OSC);
+        mapperOSC.setReferenceState(initialStateOSC);
+        RealMatrix dYdY0OSC =   mapperOSC.getStateTransitionMatrix(initialStateOSC);
         final double[] refLine1 = new double[] {1.0000, -5750.3478, 15270.6488, -2707.1208, -2165.0148, -178.3653};
         final double[] refLine6 = new double[] {0.0000, 0.0035, 0.0013, -0.0005, 0.0005, 1.0000};
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(refLine1[i], dYdY0OSC[0][i], 1e-4);
-            Assert.assertEquals(refLine6[i], dYdY0OSC[5][i], 1e-4);
+            Assert.assertEquals(refLine1[i], dYdY0OSC.getEntry(0, i), 1e-4);
+            Assert.assertEquals(refLine6[i], dYdY0OSC.getEntry(5, i), 1e-4);
         }
         
     }
 
-    @Before
-    public void setUp() {
-        Utils.setDataRoot("regular-data:potential/shm-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
+    /**
+     * check {@link DSSTPartialDerivatives#computeDerivatives(SpacecraftState,
+     * double[])}.
+     *
+     */
+    @Test
+    public void testComputeDerivatives() {
+
+        //action
+        pde.generate(state);
+
+        //verify
+        MatcherAssert.assertThat(forceModel.sma.getReal(), is(state.getA()));
+        MatcherAssert.assertThat(forceModel.ex.getReal(),  is(state.getEquinoctialEx()));
+        MatcherAssert.assertThat(forceModel.ey.getReal(),  is(state.getEquinoctialEy()));
+        MatcherAssert.assertThat(forceModel.hx.getReal(),  is(state.getHx()));
+        MatcherAssert.assertThat(forceModel.hy.getReal(),  is(state.getHy()));
+        MatcherAssert.assertThat(forceModel.l.getReal(),   is(state.getLv()));
+
     }
 
+    /** Mock {@link DSSTForceModel}. */
+    private static class MockForceModel implements DSSTForceModel {
+
+        /** semi major axis. */
+        public Gradient sma;
+
+        /**  first component of the eccentricity vector. */
+        public Gradient ex;
+        
+        /** second component of the eccentricity vector. */
+        public Gradient ey;
+        
+        /** first component of the inclination vector. */
+        public Gradient hx;
+        
+        /** second component of the inclination vector. */
+        public Gradient hy;
+        
+        /** true latitude argument. */
+        public Gradient l;
+
+        @Override
+        public List<ShortPeriodTerms> initializeShortPeriodTerms(AuxiliaryElements auxiliaryElements,
+                                                 PropagationType type,
+                                                 double[] parameters) {
+            return new ArrayList<ShortPeriodTerms>();
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                         PropagationType type,
+                                                                                         T[] parameters) {
+            return new ArrayList<FieldShortPeriodTerms<T>>();
+        }
+        
+        @Override
+        public double[] getMeanElementRate(SpacecraftState state,
+                                           AuxiliaryElements auxiliaryElements,
+                                           double[] parameters) {
+            return new double[] {state.getA(),
+                                 state.getEquinoctialEx(),
+                                 state.getEquinoctialEy(),
+                                 state.getHx(),
+                                 state.getHy(),
+                                 state.getLv()};
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
+                                                                      FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                      T[] parameters) {
+            
+            final Field<T> field = state.getDate().getField();
+            
+            this.sma = (Gradient) state.getA();
+            this.ex  = (Gradient) state.getEquinoctialEx();
+            this.ey  = (Gradient) state.getEquinoctialEy();
+            this.hx  = (Gradient) state.getHx();
+            this.hy  = (Gradient) state.getHy();
+            this.l   = (Gradient) state.getLv();
+            
+            final T[] elements = MathArrays.buildArray(field, 6);
+            elements[0] = state.getA();
+            elements[1] = state.getEquinoctialEx();
+            elements[2] = state.getEquinoctialEy();
+            elements[3] = state.getHx();
+            elements[4] = state.getHy();
+            elements[5] = state.getLv();
+
+            return elements;
+
+        }
+
+        @Override
+        public EventDetector[] getEventsDetectors() {
+            return new EventDetector[0];
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field) {
+            return null;
+        }
+
+        @Override
+        public void registerAttitudeProvider(AttitudeProvider provider) {    
+        }
+
+        @Override
+        public void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates) {           
+        }
+        
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(T[] parameters,
+                                                                           FieldSpacecraftState<T>... meanStates) {
+        }
+
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
+        }
+
+    }
 }

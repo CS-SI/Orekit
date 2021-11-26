@@ -20,10 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.hipparchus.ode.ODEIntegrator;
@@ -59,6 +57,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpola
 import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -480,7 +479,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final EquinoctialOrbit osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new SpacecraftState(osculatingOrbit, mean.getAttitude(), mean.getMass(),
-                                   mean.getAdditionalStates());
+                                   mean.getAdditionalStatesValues(), mean.getAdditionalStatesDerivatives());
 
     }
 
@@ -535,7 +534,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                                                    final double epsilon,
                                                    final int maxIterations) {
         final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels, epsilon, maxIterations);
-        return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
+        return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(),
+                                   osculating.getAdditionalStatesValues(), osculating.getAdditionalStatesDerivatives());
     }
 
      /** Override the default value of the parameter.
@@ -830,14 +830,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // (the loop may not be performed if there are no force models and in the
             //  case we want to remain in mean parameters only)
             final double[] elements = y.clone();
-            final Map<String, double[]> coefficients;
+            final DoubleArrayDictionary coefficients;
             switch (type) {
                 case MEAN:
                     coefficients = null;
                     break;
                 case OSCULATING:
                     final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
-                    coefficients = selectedCoefficients == null ? null : new HashMap<String, double[]>();
+                    coefficients = selectedCoefficients == null ? null : new DoubleArrayDictionary();
                     for (final ShortPeriodTerms spt : shortPeriodTerms) {
                         final double[] shortPeriodic = spt.value(meanOrbit);
                         for (int i = 0; i < shortPeriodic.length; i++) {

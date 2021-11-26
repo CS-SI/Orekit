@@ -40,6 +40,17 @@
         Added IntervalEventTrigger and StartStopEventsTrigger to streamline
         several ways to trigger maneuvers.
       </action>
+      <action dev="luc" type="add" >
+        Added DoubleArrayDictionary and FieldArrayDictionary as replacements
+        for HashMap when the number of keys is very small (such as in spacecraft
+        states).
+      </action>
+      <action dev="luc" type="add" issue="856">
+        Manage dependencies between additional states in propagators.
+      </action>
+      <action dev="luc" type="add" >
+        SpacecraftState now handle derivatives of additional states.
+      </action>
     </release>
     <release version="11.0.1" date="2021-10-22"
              description="Version 11.0.1 is a patch release of Orekit.

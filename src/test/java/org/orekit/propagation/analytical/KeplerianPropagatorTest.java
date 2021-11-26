@@ -57,6 +57,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.StackableGenerator;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.AltitudeDetector;
 import org.orekit.propagation.events.ApsideDetector;
@@ -821,6 +822,76 @@ public class KeplerianPropagatorTest {
         }
     }
 
+    @Test
+    public void testStackableGenerators() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbit, new LofOffset(eme2000, LOFType.LVLH));
+
+        // we have A → B → C → D → E → F but register them in a different order
+        propagator.addClosedFormGenerator(new DependentGenerator("F", "E"));
+        propagator.addClosedFormGenerator(new DependentGenerator("B", "A"));
+        propagator.addClosedFormGenerator(new DependentGenerator("E", "D"));
+        propagator.addClosedFormGenerator(new DependentGenerator("C", "B"));
+        propagator.addClosedFormGenerator(new DependentGenerator("A", null));
+        propagator.addClosedFormGenerator(new DependentGenerator("D", "C"));
+
+        final SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(3600.0));
+        Assert.assertEquals(1,   finalState.getAdditionalState("A").length);
+        Assert.assertEquals(1.0, finalState.getAdditionalState("A")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("B").length);
+        Assert.assertEquals(2.0, finalState.getAdditionalState("B")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("C").length);
+        Assert.assertEquals(3.0, finalState.getAdditionalState("C")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("D").length);
+        Assert.assertEquals(4.0, finalState.getAdditionalState("D")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("E").length);
+        Assert.assertEquals(5.0, finalState.getAdditionalState("E")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("F").length);
+        Assert.assertEquals(6.0, finalState.getAdditionalState("F")[0], 1.0e-15);
+
+        Assert.assertNotNull(propagator.removeClosedFormGenerator("A"));
+        Assert.assertNull(propagator.removeClosedFormGenerator("A"));
+
+    }
+
+    @Test
+    public void testCircularDependency() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbit, new LofOffset(eme2000, LOFType.LVLH));
+
+        // here, the dependency creates a loop, which is detected and its adders ignored
+        propagator.addClosedFormGenerator(new DependentGenerator("F", "E"));
+        propagator.addClosedFormGenerator(new DependentGenerator("B", "A"));
+        propagator.addClosedFormGenerator(new DependentGenerator("E", "D"));
+        propagator.addClosedFormGenerator(new DependentGenerator("C", "B"));
+        propagator.addClosedFormGenerator(new DependentGenerator("A", null));
+        propagator.addClosedFormGenerator(new DependentGenerator("D", "F"));
+
+        final SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(3600.0));
+        Assert.assertEquals(1,   finalState.getAdditionalState("A").length);
+        Assert.assertEquals(1.0, finalState.getAdditionalState("A")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("B").length);
+        Assert.assertEquals(2.0, finalState.getAdditionalState("B")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("C").length);
+        Assert.assertEquals(3.0, finalState.getAdditionalState("C")[0], 1.0e-15);
+        Assert.assertFalse(finalState.hasAdditionalState("D"));
+        Assert.assertFalse(finalState.hasAdditionalState("E"));
+        Assert.assertFalse(finalState.hasAdditionalState("F"));
+
+    }
+
     private void checkDerivatives(final Orbit orbit, final boolean expectedDerivatives) {
         Assert.assertEquals(expectedDerivatives, orbit.hasDerivatives());
         Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getADot()));
@@ -850,6 +921,32 @@ public class KeplerianPropagatorTest {
     @After
     public void tearDown() {
         mu   = Double.NaN;
+    }
+
+    private static class DependentGenerator implements StackableGenerator {
+
+        private final String name;
+        private final String dependency;
+
+        DependentGenerator(final String name, final String dependency) {
+            this.name       = name;
+            this.dependency = dependency;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean yield(final SpacecraftState state) {
+            return dependency != null && state.getAdditionalStatesValues().getEntry(dependency) == null;
+        }
+
+        public double[] generate(final SpacecraftState state) {
+            return new double[] {
+                dependency == null ? 1.0 : state.getAdditionalState(dependency)[0] + 1.0
+            };
+        }
+
     }
 
 }

@@ -28,8 +28,8 @@ import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -75,11 +75,11 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.StackableGenerator;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
@@ -90,7 +90,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.IntegrableGenerator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -652,40 +652,48 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testAdditionalStateEvent() {
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addIntegrableGenerator(new IntegrableGenerator() {
 
             public String getName() {
                 return "linear";
             }
 
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = 1.0;
-                return new double[7];
+            public int getDimension() {
+                return 1;
             }
+
+            public double[] generate(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
         });
         try {
-            propagator.addAdditionalEquations(new AdditionalEquations() {
+            propagator.addIntegrableGenerator(new IntegrableGenerator() {
 
                 public String getName() {
                     return "linear";
                 }
 
-                public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                    pDot[0] = 1.0;
-                    return new double[7];
+                public int getDimension() {
+                    return 1;
                 }
+
+                public double[] generate(SpacecraftState s) {
+                    return new double[] { 1.0 };
+                }
+
             });
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         try {
-            propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            propagator.addClosedFormGenerator(new StackableGenerator() {
                public String getName() {
                     return "linear";
                 }
 
-                public double[] getAdditionalState(SpacecraftState state) {
+                public double[] generate(SpacecraftState state) {
                     return null;
                 }
             });
@@ -693,12 +701,12 @@ public class NumericalPropagatorTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addClosedFormGenerator(new StackableGenerator() {
             public String getName() {
                 return "constant";
             }
 
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] generate(SpacecraftState state) {
                 return new double[] { 1.0 };
             }
         });
@@ -747,15 +755,18 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testResetAdditionalStateEvent() {
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addIntegrableGenerator(new IntegrableGenerator() {
 
             public String getName() {
                 return "linear";
             }
 
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = 1.0;
-                return null;
+            public int getDimension() {
+                return 1;
+            }
+
+            public double[] generate(SpacecraftState s) {
+                return new double[] { 1.0 };
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
@@ -877,21 +888,23 @@ public class NumericalPropagatorTest {
         final double dt = -3200;
         final double rate = 2.0;
 
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addClosedFormGenerator(new StackableGenerator() {
             public String getName() {
                 return "squaredA";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] generate(SpacecraftState state) {
                 return new double[] { state.getA() * state.getA() };
             }
         });
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addIntegrableGenerator(new IntegrableGenerator() {
             public String getName() {
                 return "extra";
             }
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = rate;
-                return null;
+            public int getDimension() {
+                return 1;
+            }
+            public double[] generate(SpacecraftState s) {
+                return new double[] { rate };
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", 1.5));
@@ -917,7 +930,7 @@ public class NumericalPropagatorTest {
 
         double shift = -60;
         SpacecraftState s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assert.assertEquals(2, s.getAdditionalStates().size());
+        Assert.assertEquals(2, s.getAdditionalStatesValues().size());
         Assert.assertTrue(s.hasAdditionalState("squaredA"));
         Assert.assertTrue(s.hasAdditionalState("extra"));
         Assert.assertEquals(s.getA() * s.getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);

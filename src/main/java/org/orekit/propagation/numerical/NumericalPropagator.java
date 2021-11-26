@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
@@ -39,6 +41,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -47,8 +50,10 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -69,13 +74,16 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
  *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
- *   ({@link #setOrbitType(OrbitType)}),
+ *   ({@link #setOrbitType(OrbitType)}),</li>
  *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
- *   #setPositionAngleType(PositionAngle)}),
- *   <li>whether {@link org.orekit.propagation.integration.AdditionalEquations additional equations}
- *   (for example {@link PartialDerivativesEquations Jacobians}) should be propagated along with orbital state
- *   ({@link #addAdditionalEquations(org.orekit.propagation.integration.AdditionalEquations)}),
+ *   #setPositionAngleType(PositionAngle)}),</li>
+ *   <li>whether {@link MatricesHarvester state transition matrices and Jacobians matrices}
+ *   should be propagated along with orbital state ({@link
+ *   #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
+ *   <li>whether {@link org.orekit.propagation.integration.IntegrableGenerator integrable generators}
+ *   should be propagated along with orbital state ({@link
+ *   #addIntegrableGenerator(org.orekit.propagation.integration.IntegrableGenerator)}),</li>
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(EventDetector)},
  *   {@link #clearEventsDetectors()})</li>
@@ -107,7 +115,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>the {@link org.orekit.orbits.CartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
  *   v<sub>y</sub>, v<sub>z</sub>) in meters and meters per seconds.
  * </ul>
- * <p> The last element is the mass in kilograms.
+ * <p> The last element is the mass in kilograms and changes only during thrusters firings
  *
  * <p>The following code snippet shows a typical setting for Low Earth Orbit propagation in
  * equinoctial parameters and true longitude argument:</p>
@@ -147,7 +155,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     private final List<ForceModel> forceModels;
 
     /** boolean to ignore or not the creation of a NewtonianAttraction. */
-    private boolean ignoreCentralAttraction = false;
+    private boolean ignoreCentralAttraction;
+
+    /** Harvester for State Transition Matrix and Jacobian matrix. */
+    private NumericalPropagationHarvester harvester;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
@@ -186,7 +197,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     public NumericalPropagator(final ODEIntegrator integrator,
                                final AttitudeProvider attitudeProvider) {
         super(integrator, PropagationType.MEAN);
-        forceModels = new ArrayList<ForceModel>();
+        forceModels             = new ArrayList<ForceModel>();
+        ignoreCentralAttraction = false;
+        harvester               = null;
         initMapper();
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
@@ -367,12 +380,97 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setStartDate(state.getDate());
     }
 
+    /** Set up computation of State Transition Matrix and Jacobians matrix with respect to parameters.
+     * <p>
+     * If this method is called, both State Transition Matrix and Jacobians with respect to the
+     * force models parameters that will be selected when propagation starts will be automatically
+     * computed, and the harvester will allow to retrieve them.
+     * </p>
+     * <p>
+     * The arguments for initial matrices <em>must</em> be compatible with the {@link #setOrbitType(OrbitType) orbit type}
+     * and {@link #setPositionAngleType(PositionAngle) position angle} that will be ultimately
+     * selected when propagation starts
+     * </p>
+     * @param stmName State Transition Matrix state name
+     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
+     * if null (which is the most frequent case), assumed to be 6x6 identity
+     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
+     * if null or if some selected parameters are missing from the dictionary, the corresponding
+     * initial column is assumed to be 0
+     * @return harvester to retrieve computed matrices during and after propagation
+     * @since 11.1
+     */
+    public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
+                                                      final DoubleArrayDictionary initialJacobianColumns) {
+        harvester = new NumericalPropagationHarvester(stmName, initialStm, initialJacobianColumns);
+        return harvester;
+    }
+
     /** {@inheritDoc} */
+    @Override
+    protected List<String> setUpStmAndJacobianGenerators() {
+
+        if (harvester == null) {
+            return Collections.emptyList();
+        } else {
+
+            final List<String> matricesStates = new ArrayList<>();
+
+            // add the STM generator corresponding to the current settings, and setup state accordingly
+            final StateTransitionMatrixGenerator stmGenerator =
+                            new StateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(), getAttitudeProvider());
+            setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
+                                                                         harvester.getInitialStateTransitionMatrix(),
+                                                                         getOrbitType(),
+                                                                         getPositionAngleType()));
+            addIntegrableGenerator(stmGenerator);
+            matricesStates.add(stmGenerator.getName());
+
+            // first pass: gather all parameters, binding similar names together
+            final ParameterDriversList selected = new ParameterDriversList();
+            for (final ForceModel provider : getAllForceModels()) {
+                for (final ParameterDriver driver : provider.getParametersDrivers()) {
+                    selected.add(driver);
+                }
+            }
+
+            // second pass: now that shared parameter names are bound together,
+            // their selections status have been synchronized, we can filter them
+            selected.filter(true);
+
+            // third pass: sort parameters lexicographically
+            selected.sort();
+
+            for (final ParameterDriver driver : selected.getDrivers()) {
+                // add the Jacobians column generator corresponding to this parameter, and setup state accordingly
+                final JacobianColumnGenerator generator =
+                                new JacobianColumnGenerator(stmGenerator, driver.getName());
+                setInitialState(generator.setInitialColumn(getInitialState(),
+                                                           harvester.getInitialJacobianColumn(driver.getName()),
+                                                           getOrbitType(),
+                                                           getPositionAngleType()));
+                addIntegrableGenerator(generator);
+                matricesStates.add(generator.getName());
+            }
+
+            harvester.setColumnsNames(selected.getDrivers().stream().map(d -> d.getName()).collect(Collectors.toList()));
+            harvester.setOrbitType(getOrbitType());
+            harvester.setPositionAngleType(getPositionAngleType());
+
+            return matricesStates;
+
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
                                        final OrbitType orbitType, final PositionAngle positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {

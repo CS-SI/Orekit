@@ -228,24 +228,6 @@
        They are used to pass data back and forth between classes
     -->
   <Match>
-    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
-    <Method name ="getAdditionalState" params="" returns="double[]" />
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
-    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
-    <Method name ="getAdditionalStateDot" params="" returns="double[]" />
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
-    <Class name="org.orekit.estimation.measurements.gnss.AbstractLambdaReducer"/>
-    <Or>  
-      <Method name ="getDiagReference" params="" returns="double[]" />
-      <Method name ="getLowReference" params="" returns="double[]" />
-    </Or>
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
     <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
     <Or>  
       <Method name="getGradient" params="" returns="double[]" />

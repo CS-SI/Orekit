@@ -34,7 +34,8 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.StackableGenerator;
+import org.orekit.propagation.integration.IntegrableGenerator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -218,9 +219,12 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
 
         propagator.resetInitialState(state);
 
-        // Add additional equations to the propagator
-        for (AdditionalEquations equation: getAdditionalEquations()) {
-            propagator.addAdditionalEquations(equation);
+        // Add generators to the propagator
+        for (StackableGenerator generator: getClosedFormGenerators()) {
+            propagator.addClosedFormGenerator(generator);
+        }
+        for (IntegrableGenerator generator: getIntegrableGenerators()) {
+            propagator.addIntegrableGenerator(generator);
         }
 
         return propagator;

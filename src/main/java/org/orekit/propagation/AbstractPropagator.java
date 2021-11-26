@@ -17,10 +17,15 @@
 package org.orekit.propagation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.stream.Collectors;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -28,6 +33,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -50,10 +56,12 @@ public abstract class AbstractPropagator implements Propagator {
     /** Attitude provider. */
     private AttitudeProvider attitudeProvider;
 
-    /** Additional state providers. */
-    private final List<AdditionalStateProvider> additionalStateProviders;
+    /** Closed form generators.
+     * @since 11.1
+     */
+    private final List<StackableGenerator> closedFormGenerators;
 
-    /** States managed by neither additional equations nor state providers. */
+    /** States managed by no generators. */
     private final Map<String, TimeSpanMap<double[]>> unmanagedStates;
 
     /** Initial state. */
@@ -62,9 +70,9 @@ public abstract class AbstractPropagator implements Propagator {
     /** Build a new instance.
      */
     protected AbstractPropagator() {
-        multiplexer              = new StepHandlerMultiplexer();
-        additionalStateProviders = new ArrayList<AdditionalStateProvider>();
-        unmanagedStates          = new HashMap<>();
+        multiplexer        = new StepHandlerMultiplexer();
+        closedFormGenerators = new ArrayList<>();
+        unmanagedStates    = new HashMap<>();
     }
 
     /** Set a start date.
@@ -113,31 +121,65 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
+    @Deprecated
+    @Override
     public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider) {
+        addClosedFormGenerator(new AdditionalStateProviderAdapter(additionalStateProvider));
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    @Override
+    public List<AdditionalStateProvider> getAdditionalStateProviders() {
+        return getClosedFormGenerators().
+                        stream().
+                        map(u -> new ClosedFormAdapter(u)).
+                        collect(Collectors.toList());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void addClosedFormGenerator(final StackableGenerator generator) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(additionalStateProvider.getName())) {
+        if (isAdditionalStateManaged(generator.getName())) {
             // this additional state is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      additionalStateProvider.getName());
+                                      generator.getName());
         }
 
         // this is really a new name, add it
-        additionalStateProviders.add(additionalStateProvider);
+        closedFormGenerators.add(generator);
 
     }
 
     /** {@inheritDoc} */
-    public List<AdditionalStateProvider> getAdditionalStateProviders() {
-        return Collections.unmodifiableList(additionalStateProviders);
+    @Override
+    public StackableGenerator removeClosedFormGenerator(final String stateName) {
+        final Iterator<StackableGenerator> iterator = closedFormGenerators.iterator();
+        while (iterator.hasNext()) {
+            final StackableGenerator generator = iterator.next();
+            if (generator.getName().equals(stateName)) {
+                iterator.remove();
+                return generator;
+            }
+        }
+        return null;
     }
 
-    /** Update state by adding all additional states.
+    /** {@inheritDoc} */
+    @Override
+    public List<StackableGenerator> getClosedFormGenerators() {
+        return Collections.unmodifiableList(closedFormGenerators);
+    }
+
+    /** Update state by adding unmanaged states.
      * @param original original state
-     * @return updated state, with all additional states included
-     * @see #addAdditionalStateProvider(AdditionalStateProvider)
+     * @return updated state, with unmanaged states included
+     * @see #updateAdditionalStates(SpacecraftState)
      */
-    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+    protected SpacecraftState updateUnmanagedStates(final SpacecraftState original) {
 
         // start with original state,
         // which may already contain additional states, for example in interpolated ephemerides
@@ -149,10 +191,56 @@ public abstract class AbstractPropagator implements Propagator {
                                                  entry.getValue().get(original.getDate()));
         }
 
-        // update the additional states managed by providers
-        for (final AdditionalStateProvider provider : additionalStateProviders) {
-            updated = updated.addAdditionalState(provider.getName(),
-                                                 provider.getAdditionalState(updated));
+        return updated;
+
+    }
+
+    /** Get all generators.
+     * @return all generators
+     * @since 11.1
+     */
+    protected Collection<StackableGenerator> getAllGenerators() {
+        return closedFormGenerators;
+    }
+
+    /** Update state by adding all additional states.
+     * @param original original state
+     * @return updated state, with all additional states included
+     * (including {@link #updateUnmanagedStates(SpacecraftState) unmanaged} states)
+     * @see #addClosedFormGenerator(StackableGenerator)
+     * @see #updateUnmanagedStates(SpacecraftState)
+     */
+    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+
+        // start with original state and unmanaged states
+        SpacecraftState updated = updateUnmanagedStates(original);
+
+        // set up queue for generators
+        final Queue<StackableGenerator> pending = new LinkedList<>(getAllGenerators());
+
+        // update the additional states managed by generators, taking care of dependencies
+        int yieldCount = 0;
+        while (!pending.isEmpty()) {
+            final StackableGenerator generator = pending.remove();
+            if (generator.yield(updated)) {
+                // this generator has to wait for another one,
+                // we put it again in the pending queue
+                pending.add(generator);
+                if (++yieldCount >= pending.size()) {
+                    // all pending generators yielded!, they probably need data not yet initialized
+                    // we let the propagation proceed, if these data are really needed right now
+                    // an appropriate exception will be triggered when caller tries to access them
+                    break;
+                }
+            } else {
+                // we can use this generator right now
+                if (generator.isClosedForm()) {
+                    updated = updated.addAdditionalState(generator.getName(), generator.generate(updated));
+                } else {
+                    updated = updated.addAdditionalStateDerivative(generator.getName(), generator.generate(updated));
+                }
+                yieldCount = 0;
+            }
         }
 
         return updated;
@@ -161,8 +249,8 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public boolean isAdditionalStateManaged(final String name) {
-        for (final AdditionalStateProvider provider : additionalStateProviders) {
-            if (provider.getName().equals(name)) {
+        for (final StackableGenerator generator : closedFormGenerators) {
+            if (generator.getName().equals(name)) {
                 return true;
             }
         }
@@ -171,9 +259,9 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public String[] getManagedAdditionalStates() {
-        final String[] managed = new String[additionalStateProviders.size()];
+        final String[] managed = new String[closedFormGenerators.size()];
         for (int i = 0; i < managed.length; ++i) {
-            managed[i] = additionalStateProviders.get(i).getName();
+            managed[i] = closedFormGenerators.get(i).getName();
         }
         return managed;
     }
@@ -202,7 +290,7 @@ public abstract class AbstractPropagator implements Propagator {
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
             // copy the additional states present in initialState but otherwise not managed
-            for (final Map.Entry<String, double[]> initial : initialState.getAdditionalStates().entrySet()) {
+            for (final DoubleArrayDictionary.Entry initial : initialState.getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
@@ -218,7 +306,7 @@ public abstract class AbstractPropagator implements Propagator {
     protected void stateChanged(final SpacecraftState state) {
         final AbsoluteDate date    = state.getDate();
         final boolean      forward = date.durationFrom(getStartDate()) >= 0.0;
-        for (final Map.Entry<String, double[]> changed : state.getAdditionalStates().entrySet()) {
+        for (final DoubleArrayDictionary.Entry changed : state.getAdditionalStatesValues().getData()) {
             final TimeSpanMap<double[]> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state

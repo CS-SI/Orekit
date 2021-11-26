@@ -67,7 +67,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     public TLEJacobiansMapper(final String name,
                               final ParameterDriversList parameters,
                               final TLEPropagator propagator) {
-        super(name, parameters.getNbParams());
+        super(name, parameters);
 
         // Initialize fields
         this.parameters      = parameters;
@@ -108,6 +108,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     /** {@inheritDoc} */
     @Override
     public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
+        computeDerivatives(state);
         for (int i = 0; i < STATE_DIMENSION; i++) {
             final double[] row = dYdY0[i];
             for (int j = 0; j < STATE_DIMENSION; j++) {
@@ -123,6 +124,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
         if (parameters.getNbParams() != 0) {
 
+            computeDerivatives(state);
             for (int i = 0; i < STATE_DIMENSION; i++) {
                 final double[] row = dYdP[i];
                 for (int j = 0; j < parameters.getNbParams(); j++) {
@@ -134,9 +136,19 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** {@inheritDoc}
+     * @deprecated as of 11.1, not used anymore
+     */
+    @Deprecated
     public void analyticalDerivatives(final SpacecraftState s) {
+        computeDerivatives(s);
+    }
+
+    /** Compute analytical derivatives.
+     * @param state current state
+     * @since 11.1
+     */
+    private void computeDerivatives(final SpacecraftState state) {
 
         // Initialize Jacobians to zero
         final int dim = STATE_DIMENSION;
@@ -146,11 +158,11 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
         // Initialize matrix
         if (stateTransition == null) {
-            stateTransition = s.getAdditionalState(getName());
+            stateTransition = state.getAdditionalState(getName());
         }
 
         // Compute Jacobian
-        final AbsoluteDate target = s.getDate();
+        final AbsoluteDate target = state.getDate();
         final FieldAbsoluteDate<Gradient> init = gPropagator.getTLE().getDate();
         final double dt = target.durationFrom(init.toAbsoluteDate());
         final FieldOrbit<Gradient> gOrbit = gPropagator.propagateOrbit(init.shiftedBy(dt), gParameters);

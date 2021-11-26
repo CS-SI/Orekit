@@ -20,10 +20,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.utils.ParameterDriver;
 
-/** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
+/** Set of additional equations computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
  * <p>
  * This set of equations are automatically added to a {@link NumericalPropagator numerical propagator}
@@ -55,7 +54,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AbsolutePartialDerivativesEquations extends PartialDerivativesEquations {
+public class AbsolutePartialDerivativesEquations extends PartialDerivatives {
 
     /** Name. */
     private final String name;
@@ -64,10 +63,10 @@ public class AbsolutePartialDerivativesEquations extends PartialDerivativesEquat
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
      * the propagator by calling its {@link
-     * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
+     * NumericalPropagator#addIntegrableGenerator(org.orekit.propagation.integration.IntegrableGenerator) method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
-     * @param name name of the partial derivatives equations
+     * @param name name of the State Transition Matrix additional state
      * @param propagator the propagator that will handle the orbit propagation
      */
     public AbsolutePartialDerivativesEquations(final String name, final NumericalPropagator propagator) {
@@ -86,7 +85,28 @@ public class AbsolutePartialDerivativesEquations extends PartialDerivativesEquat
         if (!isInitialize()) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new AbsoluteJacobiansMapper(name, getSelectedParameters().getNbParams());
+        return new AbsoluteJacobiansMapper(name, getSelectedParameters());
+    }
+
+    /** Compute the derivatives related to the additional state parameters.
+     * <p>
+     * When this method is called, the spacecraft state contains the main
+     * state (orbit, attitude and mass), all the states provided through
+     * the {@link org.orekit.propagation.AdditionalStateProvider additional
+     * state providers} registered to the propagator, and the additional state
+     * integrated using this equation. It does <em>not</em> contains any other
+     * states to be integrated alongside during the same propagation.
+     * </p>
+     * @param s current state information: date, kinematics, attitude, and
+     * additional state
+     * @param pDot placeholder where the derivatives of the additional parameters
+     * should be put
+     * @return cumulative effect of the equations on the main state (may be null if
+     * equations do not change main state at all)
+     */
+    public double[] computeDerivatives(final SpacecraftState s,  final double[] pDot) {
+        System.arraycopy(generate(s), 0, pDot, 0, pDot.length);
+        return null;
     }
 
 }
