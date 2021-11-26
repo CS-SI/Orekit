@@ -19,6 +19,7 @@ package org.orekit.propagation;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -284,6 +285,25 @@ public class PropagatorsParallelizerTest {
         Assert.assertEquals(2, results.size());
         Assert.assertEquals(0.0, results.get(0).getDate().durationFrom(stopDate), 1.0e-15);
         Assert.assertEquals(0.0, results.get(1).getDate().durationFrom(stopDate), 1.0e-15);
+    }
+
+    @Test
+    public void testInternalStepHandler() {
+        final AbsoluteDate startDate =  orbit.getDate();
+        final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
+        List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
+                                                     buildNumerical());
+        final AtomicInteger called0 = new AtomicInteger();
+        propagators.get(0).getMultiplexer().add(interpolator -> called0.set(11));
+        final AtomicInteger called1 = new AtomicInteger();
+        propagators.get(1).getMultiplexer().add(interpolator -> called1.set(22));
+        List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
+                                                                    propagate(startDate, endDate);
+        Assert.assertEquals(2, results.size());
+        Assert.assertEquals(0.0, results.get(0).getDate().durationFrom(endDate), 1.0e-15);
+        Assert.assertEquals(0.0, results.get(1).getDate().durationFrom(endDate), 1.0e-15);
+        Assert.assertEquals(11, called0.get());
+        Assert.assertEquals(22, called1.get());
     }
 
     private EcksteinHechlerPropagator buildEcksteinHechler() {
