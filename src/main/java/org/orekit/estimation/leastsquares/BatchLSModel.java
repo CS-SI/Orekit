@@ -54,6 +54,12 @@ public class BatchLSModel extends AbstractBatchLSModel {
         super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
     }
 
+//    /** {@inheritDoc} */
+//    @Override
+//    protected MatricesHarvester configureHarvester(final Propagator propagator) {
+//        return ((NumericalPropagator) propagator).setupMatricesComputation(STM_NAME, null, null);
+//    }
+
     /** {@inheritDoc} */
     @Override
     @Deprecated
