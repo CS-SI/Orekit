@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="862">
+        PropagatorParallelizer now preserves existing step handlers in the propagators it runs.
+      </action>
     </release>
     <release version="11.0.1" date="2021-10-22"
              description="Version 11.0.1 is a patch release of Orekit.

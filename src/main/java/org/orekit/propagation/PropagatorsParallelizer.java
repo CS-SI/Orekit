@@ -137,7 +137,7 @@ public class PropagatorsParallelizer {
 
         if (propagators.size() == 1) {
             // special handling when only one propagator is used
-            propagators.get(0).setStepHandler(new SinglePropagatorHandler(globalHandler));
+            propagators.get(0).getMultiplexer().add(new SinglePropagatorHandler(globalHandler));
             return Collections.singletonList(propagators.get(0).propagate(start, target));
         }
 
@@ -372,7 +372,7 @@ public class PropagatorsParallelizer {
             // the main thread will let underlying propagators go forward
             // by consuming the step handling parameters they will put at each step
             queue = new SynchronousQueue<>();
-            propagator.setStepHandler(new MultiplePropagatorsHandler(queue));
+            propagator.getMultiplexer().add(new MultiplePropagatorsHandler(queue));
 
             // start the propagator
             future = executorService.submit(() -> propagator.propagate(start, target));
