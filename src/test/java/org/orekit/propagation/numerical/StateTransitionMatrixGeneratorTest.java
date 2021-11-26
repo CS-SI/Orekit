@@ -18,6 +18,7 @@ package org.orekit.propagation.numerical;
 
 import static org.hamcrest.CoreMatchers.is;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -55,6 +56,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -137,29 +139,7 @@ public class StateTransitionMatrixGeneratorTest {
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
 
                 // compute reference state Jacobian using finite differences
-                double[][] dYdY0Ref = new double[6][6];
-                AbstractIntegratedPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
-                double[] steps = NumericalPropagator.tolerances(1000000 * dP, initialOrbit, orbitType)[0];
-                for (int i = 0; i < 6; ++i) {
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -4 * steps[i], i));
-                    SpacecraftState sM4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -3 * steps[i], i));
-                    SpacecraftState sM3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -2 * steps[i], i));
-                    SpacecraftState sM2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -1 * steps[i], i));
-                    SpacecraftState sM1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  1 * steps[i], i));
-                    SpacecraftState sP1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  2 * steps[i], i));
-                    SpacecraftState sP2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  3 * steps[i], i));
-                    SpacecraftState sP3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  4 * steps[i], i));
-                    SpacecraftState sP4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    fillJacobianColumn(dYdY0Ref, i, orbitType, angleType, steps[i],
-                                       sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
-                }
+                double[][] dYdY0Ref = finiteDifferencesStm(initialOrbit, orbitType, angleType, dP, dt, gravityField);
 
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
@@ -201,30 +181,7 @@ public class StateTransitionMatrixGeneratorTest {
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
 
                 // compute reference state Jacobian using finite differences
-                double[][] dYdY0Ref = new double[6][6];
-                AbstractIntegratedPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
-                double[] steps = NumericalPropagator.tolerances(1000000 * dP, initialOrbit, orbitType)[0];
-                for (int i = 0; i < 6; ++i) {
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -4 * steps[i], i));
-                    SpacecraftState sM4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -3 * steps[i], i));
-                    SpacecraftState sM3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -2 * steps[i], i));
-                    SpacecraftState sM2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -1 * steps[i], i));
-                    SpacecraftState sM1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  1 * steps[i], i));
-                    SpacecraftState sP1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  2 * steps[i], i));
-                    SpacecraftState sP2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  3 * steps[i], i));
-                    SpacecraftState sP3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  4 * steps[i], i));
-                    SpacecraftState sP4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-                    fillJacobianColumn(dYdY0Ref, i, orbitType, angleType, steps[i],
-                                       sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
-                }
-
+                double[][] dYdY0Ref = finiteDifferencesStm(initialOrbit, orbitType, angleType, dP, dt, gravityField);
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((pickUp.getStm().getEntry(i, j) - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
@@ -300,6 +257,69 @@ public class StateTransitionMatrixGeneratorTest {
         Assert.assertTrue(FastMath.abs(-position.getX() / (r * r * r) - pickUp.getAccPartial()[0]) > 2.0e-4 / (r * r));
         Assert.assertTrue(FastMath.abs(-position.getY() / (r * r * r) - pickUp.getAccPartial()[1]) > 2.0e-4 / (r * r));
         Assert.assertTrue(FastMath.abs(-position.getZ() / (r * r * r) - pickUp.getAccPartial()[2]) > 2.0e-4 / (r * r));
+
+    }
+
+    @Test
+    public void testMultiSat() {
+
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        ForceModel gravityField =
+            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
+        Orbit initialOrbitA =
+                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                                           FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                           provider.getMu());
+        Orbit initialOrbitB =
+                        new KeplerianOrbit(7900000.0, 0.015, 0.04, 0.7, 0, 1.2, PositionAngle.TRUE,
+                                           FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                           provider.getMu());
+
+        double dt = 900;
+        double dP = 0.001;
+        for (OrbitType orbitType : OrbitType.values()) {
+            for (PositionAngle angleType : PositionAngle.values()) {
+
+                // compute state Jacobian using StateTransitionMatrixGenerator
+                NumericalPropagator propagatorA1 = setUpPropagator(initialOrbitA, dP, orbitType, angleType, gravityField);
+                final SpacecraftState initialStateA = new SpacecraftState(initialOrbitA);
+                propagatorA1.setInitialState(initialStateA);
+                final PickUpHandler pickUpA = new PickUpHandler(propagatorA1, null, null, null);
+                propagatorA1.setStepHandler(pickUpA);
+
+                NumericalPropagator propagatorB1 = setUpPropagator(initialOrbitB, dP, orbitType, angleType, gravityField);
+                final SpacecraftState initialStateB1 = new SpacecraftState(initialOrbitB);
+                propagatorB1.setInitialState(initialStateB1);
+                final PickUpHandler pickUpB = new PickUpHandler(propagatorB1, null, null, null);
+                propagatorB1.setStepHandler(pickUpB);
+
+//                PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(Arrays.asList(propagatorA1, propagatorB1),
+//                                                                                   interpolators -> {});
+//                parallelizer.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
+                propagatorA1.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
+                propagatorB1.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
+
+                // compute reference state Jacobian using finite differences
+                double[][] dYdY0RefA = finiteDifferencesStm(initialOrbitA, orbitType, angleType, dP, dt, gravityField);
+                for (int i = 0; i < 6; ++i) {
+                    for (int j = 0; j < 6; ++j) {
+                        double error = FastMath.abs((pickUpA.getStm().getEntry(i, j) - dYdY0RefA[i][j]) / dYdY0RefA[i][j]);
+                        Assert.assertEquals(0, error, 6.0e-2);
+
+                    }
+                }
+
+                double[][] dYdY0RefB = finiteDifferencesStm(initialOrbitB, orbitType, angleType, dP, dt, gravityField);
+                for (int i = 0; i < 6; ++i) {
+                    for (int j = 0; j < 6; ++j) {
+                        double error = FastMath.abs((pickUpB.getStm().getEntry(i, j) - dYdY0RefB[i][j]) / dYdY0RefB[i][j]);
+                        Assert.assertEquals(0, error, 6.0e-2);
+
+                    }
+                }
+
+            }
+        }
 
     }
 
@@ -424,6 +444,39 @@ public class StateTransitionMatrixGeneratorTest {
             propagator.addForceModel(model);
         }
         return propagator;
+    }
+
+    private double[][] finiteDifferencesStm(final Orbit initialOrbit, final OrbitType orbitType, final PositionAngle angleType,
+                                            final double dP, final double dt, ForceModel... models) {
+
+        // compute reference state Jacobian using finite differences
+        double[][] dYdY0Ref = new double[6][6];
+        AbstractIntegratedPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, angleType, models);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        double[] steps = NumericalPropagator.tolerances(1000000 * dP, initialOrbit, orbitType)[0];
+        for (int i = 0; i < 6; ++i) {
+            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -4 * steps[i], i));
+            SpacecraftState sM4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -3 * steps[i], i));
+            SpacecraftState sM3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -2 * steps[i], i));
+            SpacecraftState sM2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -1 * steps[i], i));
+            SpacecraftState sM1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  1 * steps[i], i));
+            SpacecraftState sP1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  2 * steps[i], i));
+            SpacecraftState sP2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  3 * steps[i], i));
+            SpacecraftState sP3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  4 * steps[i], i));
+            SpacecraftState sP4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+            fillJacobianColumn(dYdY0Ref, i, orbitType, angleType, steps[i],
+                               sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
+        }
+
+        return dYdY0Ref;
+
     }
 
     /** Mock {@link ForceModel}. */
