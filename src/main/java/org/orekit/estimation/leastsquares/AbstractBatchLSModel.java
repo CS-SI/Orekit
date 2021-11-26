@@ -246,13 +246,13 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
     }
 
     /** Configure the propagator to compute derivatives.
-     * @param propagators {@link Propagator} to configure
+     * @param propagator {@link Propagator} to configure
      * @return harvester harvester to retrive the State Transition Matrix and Jacobian Matrix
      */
-    protected MatricesHarvester configureHarvester(final Propagator propagators) {
+    protected MatricesHarvester configureHarvester(final Propagator propagator) {
         // FIXME: this default implementation is only intended for version 11.1 to delegate to a deprecated method
         // it should be removed in 12.0 when configureDerivatives is removed
-        return configureDerivatives(propagators);
+        return configureDerivatives(propagator);
     }
 
     /** Configure the propagator to compute derivatives.
