@@ -16,8 +16,9 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -61,11 +62,8 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
     /** Attitude provider used in propagation. */
     private final AttitudeProvider attitudeProvider;
 
-    /** Lower part (last 3 rows) of the factor matrix, flatten as a single dimension array. */
-    private final double[] factor;
-
-    /** Acceleration partial derivatives. */
-    private final DoubleArrayDictionary accelerationPartials;
+    /** Observers for partial derivatives. */
+    private final Map<String, PartialsObserver> partialsObservers;
 
     /** Simple constructor.
      * @param stmName name of the Cartesian STM additional state
@@ -74,11 +72,23 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
      */
     StateTransitionMatrixGenerator(final String stmName, final List<ForceModel> forceModels,
                                    final AttitudeProvider attitudeProvider) {
-        this.stmName              = stmName;
-        this.forceModels          = forceModels;
-        this.attitudeProvider     = attitudeProvider;
-        this.factor               = new double[SPACE_DIMENSION * STATE_DIMENSION];
-        this.accelerationPartials = new DoubleArrayDictionary();
+        this.stmName           = stmName;
+        this.forceModels       = forceModels;
+        this.attitudeProvider  = attitudeProvider;
+        this.partialsObservers = new HashMap<>();
+    }
+
+    /** Register an observer for partial derivatives.
+     * <p>
+     * The observer {@link PartialsObserver#partialsComputed(double[], double[]) partialsComputed}
+     * method will be called when partial derivatives are computed, as a side effect of
+     * calling {@link #generate(SpacecraftState)}
+     * </p>
+     * @param name name of the parameter driver this observer is interested in (may be null)
+     * @param observer observer to register
+     */
+    public void addObserver(final String name, final PartialsObserver observer) {
+        partialsObservers.put(name, observer);
     }
 
     /** {@inheritDoc} */
@@ -162,14 +172,14 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
         // some force models depend on velocity (either directly or through attitude),
         // whereas some other force models depend only on position.
         // For the latter, the lower right part of the matrix is zero
-        computePartials(state);
+        final double[] factor = computePartials(state);
 
         // retrieve current State Transition Matrix
         final double[] p    = state.getAdditionalState(getName());
         final double[] pDot = new double[p.length];
 
         // perform multiplication
-        multiplyMatrix(p, pDot, STATE_DIMENSION);
+        multiplyMatrix(factor, p, pDot, STATE_DIMENSION);
 
         return pDot;
 
@@ -190,11 +200,12 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
      * <p>
      * The factor matrix used corresponds to the last call to {@link #generate(SpacecraftState)}
      * </p>
+     * @param factor factor matrix
      * @param x right factor of the multiplication, as a flatten array in row major order
      * @param y placeholder where to put the result, as a flatten array in row major order
      * @param columns number of columns of both x and y (so their dimensions are 6 x columns)
      */
-    public void multiplyMatrix(final double[] x, final double[] y, final int columns) {
+    public static void multiplyMatrix(final double[] factor, final double[] x, final double[] y, final int columns) {
 
         final int n = SPACE_DIMENSION * columns;
 
@@ -213,27 +224,15 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
 
     }
 
-    /** Get the partials derivative of acceleration with respect to a parameter driver.
-     * @param name name of the parameter driver
-     * @return partials derivatives of acceleration with respect to the parameter driver
-     * (zero if parameter was not selected or is unknown)
-     */
-    public double[] getAccelerationPartials(final String name) {
-        return getEntry(name).getValue();
-    }
-
     /** Compute the various partial derivatives.
      * @param state current spacecraft state
+     * @return factor matrix
      */
-    private void computePartials(final SpacecraftState state) {
+    private double[] computePartials(final SpacecraftState state) {
 
-        // reset the matrix to zero
-        Arrays.fill(factor, 0.0);
-
-        // reset the accelerations partials to zero
-        for (DoubleArrayDictionary.Entry entry : accelerationPartials.getData()) {
-            entry.zero();
-        }
+        // set up containers for partial derivatives
+        final double[]              factor               = new double[SPACE_DIMENSION * STATE_DIMENSION];
+        final DoubleArrayDictionary accelerationPartials = new DoubleArrayDictionary();
 
         // evaluate contribution of all force models
         final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(state, 6, attitudeProvider);
@@ -279,32 +278,58 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
             // partials derivatives with respect to parameters
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
-                    getEntry(driver.getName()).increment(new double[] {
+
+                    // get the partials derivatives for this driver
+                    DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(driver.getName());
+                    if (entry == null) {
+                        // create an entry filled with zeroes
+                        accelerationPartials.put(driver.getName(), new double[3]);
+                        entry = accelerationPartials.getEntry(driver.getName());
+                    }
+
+                    // add the contribution of the current force model
+                    entry.increment(new double[] {
                         gradX[paramsIndex], gradY[paramsIndex], gradZ[paramsIndex]
                     });
                     ++paramsIndex;
+
                 }
+            }
+
+            // notify observers
+            for (Map.Entry<String, PartialsObserver> observersEntry : partialsObservers.entrySet()) {
+                final DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(observersEntry.getKey());
+                observersEntry.getValue().partialsComputed(state, factor, entry == null ? new double[3] : entry.getValue());
             }
 
         }
 
+        return factor;
+
     }
 
-    /** Get an acceleration partials entry, creating it if not present.
-     * @param name name of the parameter driver
-     * @return dictionary entry for the specified driver
-     */
-    private DoubleArrayDictionary.Entry getEntry(final String name) {
+    /** Interface for observing partials derivatives. */
+    public interface PartialsObserver {
 
-        final DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(name);
-        if (entry != null) {
-            // the partials are already present
-            return entry;
-        }
-
-        // create an entry filled with zeroes
-        accelerationPartials.put(name, new double[3]);
-        return accelerationPartials.getEntry(name);
+        /** Callback called when partial derivatives have been computed.
+         * <p>
+         * The factor matrix is:
+         * \[F = \begin{matrix}
+         *               0         &             0         &             0         &             1         &             0         &             0        \\
+         *               0         &             0         &             0         &             0         &             1         &             0        \\
+         *               0         &             0         &             0         &             0         &             0         &             1        \\
+         *  \sum \frac{da_x}{dp_x} & \sum\frac{da_x}{dp_y} & \sum\frac{da_x}{dp_z} & \sum\frac{da_x}{dv_x} & \sum\frac{da_x}{dv_y} & \sum\frac{da_x}{dv_z}\\
+         *  \sum \frac{da_y}{dp_x} & \sum\frac{da_y}{dp_y} & \sum\frac{da_y}{dp_z} & \sum\frac{da_y}{dv_x} & \sum\frac{da_y}{dv_y} & \sum\frac{da_y}{dv_z}\\
+         *  \sum \frac{da_z}{dp_x} & \sum\frac{da_z}{dp_y} & \sum\frac{da_z}{dp_z} & \sum\frac{da_z}{dv_x} & \sum\frac{da_z}{dv_y} & \sum\frac{da_z}{dv_z}
+         * \end{matrix}\]
+         * </p>
+         * The factor matrix used corresponds to the last call to {@link #generate(SpacecraftState)}
+         * @param state current spacecrzft state
+         * @param factor factor matrix, flattened along rows
+         * @param accelerationPartials partials derivatives of acceleration with respect to the parameter driver
+         * that was registered (zero if no parameters were not selected or parameter is unknown)
+         */
+        void partialsComputed(SpacecraftState state, double[] factor, double[] accelerationPartials);
 
     }
 

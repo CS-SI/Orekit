@@ -50,6 +50,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.integration.IntegrableGenerator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -304,6 +305,48 @@ public class PropagatorsParallelizerTest {
         Assert.assertEquals(0.0, results.get(1).getDate().durationFrom(endDate), 1.0e-15);
         Assert.assertEquals(11, called0.get());
         Assert.assertEquals(22, called1.get());
+    }
+
+    @Test
+    public void testIntegrableGenerator() {
+        final AbsoluteDate startDate =  orbit.getDate();
+        final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
+        final NumericalPropagator p0 = buildNumerical();
+        final NumericalPropagator p1 = buildNumerical();
+        final String name = "generator";
+        final double factor0 = 2.0e-3;
+        final double factor1 = 2.5e-3;
+        p0.addIntegrableGenerator(new Generator(name, factor0));
+        p0.setInitialState(p0.getInitialState().addAdditionalState(name, 1.0));
+        p1.addIntegrableGenerator(new Generator(name, factor1));
+        p1.setInitialState(p1.getInitialState().addAdditionalState(name, 1.0));
+        List<SpacecraftState> results = new PropagatorsParallelizer(Arrays.asList(p0, p1), interpolators -> {}).
+                                        propagate(startDate, endDate);
+        double expected0 = FastMath.exp(factor0 * endDate.durationFrom(startDate));
+        double expected1 = FastMath.exp(factor1 * endDate.durationFrom(startDate));
+        Assert.assertEquals(expected0, results.get(0).getAdditionalState(name)[0], 6.0e-9 * expected0);
+        Assert.assertEquals(expected1, results.get(1).getAdditionalState(name)[0], 5.0e-8 * expected1);
+    }
+
+    private static class Generator implements IntegrableGenerator {
+        final String name;
+        final double factor;
+        Generator(final String name, final double factor) {
+            this.name   = name;
+            this.factor = factor;
+        }
+        public String getName() {
+            return name;
+        }
+        public boolean yield(final SpacecraftState state) {
+            return !state.hasAdditionalState(name);
+        }
+        public double[] generate(final SpacecraftState state) {
+            return new double[] { factor * state.getAdditionalState(name)[0] };
+        }
+        public int getDimension() {
+            return 1;
+        }
     }
 
     private EcksteinHechlerPropagator buildEcksteinHechler() {

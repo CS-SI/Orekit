@@ -21,6 +21,10 @@ import static org.hamcrest.CoreMatchers.is;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
@@ -32,6 +36,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -62,6 +67,9 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -264,8 +272,7 @@ public class StateTransitionMatrixGeneratorTest {
     public void testMultiSat() {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
-        ForceModel gravityField =
-            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Orbit initialOrbitA =
                         new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -281,26 +288,40 @@ public class StateTransitionMatrixGeneratorTest {
             for (PositionAngle angleType : PositionAngle.values()) {
 
                 // compute state Jacobian using StateTransitionMatrixGenerator
-                NumericalPropagator propagatorA1 = setUpPropagator(initialOrbitA, dP, orbitType, angleType, gravityField);
+                NumericalPropagator propagatorA1 = setUpPropagator(initialOrbitA, dP, orbitType, angleType,
+                                                                   new HolmesFeatherstoneAttractionModel(itrf, provider));
                 final SpacecraftState initialStateA = new SpacecraftState(initialOrbitA);
                 propagatorA1.setInitialState(initialStateA);
                 final PickUpHandler pickUpA = new PickUpHandler(propagatorA1, null, null, null);
                 propagatorA1.setStepHandler(pickUpA);
 
-                NumericalPropagator propagatorB1 = setUpPropagator(initialOrbitB, dP, orbitType, angleType, gravityField);
+                NumericalPropagator propagatorB1 = setUpPropagator(initialOrbitB, dP, orbitType, angleType,
+                                                                   new HolmesFeatherstoneAttractionModel(itrf, provider));
                 final SpacecraftState initialStateB1 = new SpacecraftState(initialOrbitB);
                 propagatorB1.setInitialState(initialStateB1);
                 final PickUpHandler pickUpB = new PickUpHandler(propagatorB1, null, null, null);
                 propagatorB1.setStepHandler(pickUpB);
 
-//                PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(Arrays.asList(propagatorA1, propagatorB1),
-//                                                                                   interpolators -> {});
-//                parallelizer.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
-                propagatorA1.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
-                propagatorB1.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
+                boolean useParallelizer = true;
+                if (useParallelizer) {
+                    PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(Arrays.asList(propagatorA1, propagatorB1),
+                                                                                       interpolators -> {});
+                    parallelizer.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
+                } else {
+                    try {
+                        final ExecutorService            executorService = Executors.newFixedThreadPool(2);
+                        Future<SpacecraftState> future1 = executorService.submit(() -> propagatorA1.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt)));
+                        Future<SpacecraftState> future2 = executorService.submit(() -> propagatorB1.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt)));
+                        future1.get();
+                        future2.get();
+                    } catch (ExecutionException | InterruptedException ee) {
+                        Assert.fail(ee.getLocalizedMessage());
+                    }
+                }
 
                 // compute reference state Jacobian using finite differences
-                double[][] dYdY0RefA = finiteDifferencesStm(initialOrbitA, orbitType, angleType, dP, dt, gravityField);
+                double[][] dYdY0RefA = finiteDifferencesStm(initialOrbitA, orbitType, angleType, dP, dt,
+                                                            new HolmesFeatherstoneAttractionModel(itrf, provider));
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((pickUpA.getStm().getEntry(i, j) - dYdY0RefA[i][j]) / dYdY0RefA[i][j]);
@@ -309,7 +330,8 @@ public class StateTransitionMatrixGeneratorTest {
                     }
                 }
 
-                double[][] dYdY0RefB = finiteDifferencesStm(initialOrbitB, orbitType, angleType, dP, dt, gravityField);
+                double[][] dYdY0RefB = finiteDifferencesStm(initialOrbitB, orbitType, angleType, dP, dt,
+                                                            new HolmesFeatherstoneAttractionModel(itrf, provider));
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((pickUpB.getStm().getEntry(i, j) - dYdY0RefB[i][j]) / dYdY0RefB[i][j]);
@@ -321,6 +343,43 @@ public class StateTransitionMatrixGeneratorTest {
             }
         }
 
+    }
+
+    @Test
+    public void testParallelStm() {
+
+        double a = 7187990.1979844316;
+        double e = 0.5e-4;
+        double i = 1.7105407051081795;
+        double omega = 1.9674147913622104;
+        double OMEGA = FastMath.toRadians(261);
+        double lv = 0;
+
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                 TimeComponents.H00,
+                                                 TimeScalesFactory.getUTC());
+        Orbit orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                                         FramesFactory.getEME2000(), date, Constants.EIGEN5C_EARTH_MU);
+        final AbsoluteDate startDate =  orbit.getDate();
+        final AbsoluteDate endDate   = startDate.shiftedBy(120.0);
+        OrbitType type = OrbitType.CARTESIAN;
+        double minStep = 0.0001;
+        double maxStep = 60;
+        double[][] tolerances = NumericalPropagator.tolerances(0.001, orbit, type);
+        AdaptiveStepsizeIntegrator integrator0 = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
+        integrator0.setInitialStepSize(1.0);
+        NumericalPropagator p0 = new NumericalPropagator(integrator0);
+        p0.setInitialState(new SpacecraftState(orbit).addAdditionalState("tmp", new double[1]));
+        p0.setupMatricesComputation("stm0", null, null);
+        AdaptiveStepsizeIntegrator integrator1 = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
+        integrator1.setInitialStepSize(1.0);
+        NumericalPropagator p1 = new NumericalPropagator(integrator1);
+        p1.setInitialState(new SpacecraftState(orbit));
+        p1.setupMatricesComputation("stm1", null, null);
+        final List<SpacecraftState> results = new PropagatorsParallelizer(Arrays.asList(p0, p1), interpolators -> {}).
+                                              propagate(startDate, endDate);
+        Assert.assertEquals(-0.07953750951271785, results.get(0).getAdditionalState("stm0")[0], 1.0e-10);
+        Assert.assertEquals(-0.07953750951271785, results.get(1).getAdditionalState("stm1")[0], 1.0e-10);
     }
 
     @Test
