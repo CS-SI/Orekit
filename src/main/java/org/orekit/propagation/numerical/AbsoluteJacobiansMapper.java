@@ -26,7 +26,6 @@ import org.orekit.utils.ParameterDriversList;
  * to be immutable.
  * </p>
  * @author Vincent Mouraux
- * @see org.orekit.propagation.numerical.PartialDerivativesEquations
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
@@ -38,7 +37,7 @@ public class AbsoluteJacobiansMapper extends JacobiansMapper {
     public static final int STATE_DIMENSION = 6;
 
     /** Simple constructor.
-     * @param name name of the Jacobians
+     * @param name name of the State Transition Matrix additional state
      * @param parameters selected parameters for Jacobian computation
      */
     public AbsoluteJacobiansMapper(final String name, final ParameterDriversList parameters) {

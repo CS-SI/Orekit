@@ -19,8 +19,8 @@ package org.orekit.propagation.numerical;
 import java.lang.reflect.Array;
 
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
@@ -62,10 +62,10 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.FieldStackableGenerator;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldApsideDetector;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -74,7 +74,7 @@ import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
-import org.orekit.propagation.integration.FieldAdditionalEquations;
+import org.orekit.propagation.integration.FieldIntegrableGenerator;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -872,27 +872,29 @@ public class FieldNumericalPropagatorTest {
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
-        propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+        propagator.addIntegrableGenerator(new FieldIntegrableGenerator<T>() {
 
             public String getName() {
                 return "linear";
             }
 
-            public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot) {
-                pDot[0] = zero.add(1.0);
-                return MathArrays.buildArray(field, 7);
+            public T[] generate(FieldSpacecraftState<T> s) {
+                T[] pDot = MathArrays.buildArray(field, 1);
+                pDot[0] = field.getOne();
+                return pDot;
             }
         });
         try {
-            propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+            propagator.addIntegrableGenerator(new FieldIntegrableGenerator<T>() {
 
                 public String getName() {
                     return "linear";
                 }
 
-                public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot) {
-                    pDot[0] = zero.add(1.0);
-                    return MathArrays.buildArray(field, 7);
+                public T[] generate(FieldSpacecraftState<T> s) {
+                    T[] pDot = MathArrays.buildArray(field, 1);
+                    pDot[0] = field.getOne();
+                    return pDot;
                 }
             });
             Assert.fail("an exception should have been thrown");
@@ -900,12 +902,12 @@ public class FieldNumericalPropagatorTest {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         try {
-            propagator.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
+            propagator.addClosedFormGenerator(new FieldStackableGenerator<T>() {
                public String getName() {
                     return "linear";
                 }
 
-                public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+                public T[] generate(FieldSpacecraftState<T> state) {
                     return null;
                 }
             });
@@ -913,12 +915,12 @@ public class FieldNumericalPropagatorTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
-        propagator.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
+        propagator.addClosedFormGenerator(new FieldStackableGenerator<T>() {
             public String getName() {
                 return "constant";
             }
 
-            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+            public T[] generate(FieldSpacecraftState<T> state) {
                 T[] ret = MathArrays.buildArray(field, 1);
                 ret[0] = zero.add(1.0);
                 return ret;
@@ -978,15 +980,16 @@ public class FieldNumericalPropagatorTest {
         FieldNumericalPropagator<T> propagator = createPropagator(field);
 
 
-        propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+        propagator.addIntegrableGenerator(new FieldIntegrableGenerator<T>() {
 
             public String getName() {
                 return "linear";
             }
 
-            public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot) {
+            public T[] generate(FieldSpacecraftState<T> s) {
+                T[] pDot = MathArrays.buildArray(field, 1);
                 pDot[0] = field.getOne();
-                return null;
+                return pDot;
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear",
@@ -1122,8 +1125,7 @@ public class FieldNumericalPropagatorTest {
         doTestEphemerisAdditionalState(Decimal64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>>  void doTestEphemerisAdditionalState(final Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>>  void doTestEphemerisAdditionalState(final Field<T> field) {
 
         // Propagation of the initial at t + dt
         final double dt = -3200;
@@ -1131,23 +1133,24 @@ public class FieldNumericalPropagatorTest {
         FieldNumericalPropagator<T> propagator = createPropagator(field);
         FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
 
-        propagator.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
+        propagator.addClosedFormGenerator(new FieldStackableGenerator<T>() {
             public String getName() {
                 return "squaredA";
             }
-            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+            public T[] generate(FieldSpacecraftState<T> state) {
                 T[] a = MathArrays.buildArray(field, 1);
                 a[0] = state.getA().multiply(state.getA());
                 return a;
             }
         });
-        propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+        propagator.addIntegrableGenerator(new FieldIntegrableGenerator<T>() {
             public String getName() {
                 return "extra";
             }
-            public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot) {
-                pDot[0] = field.getZero().add(rate);
-                return null;
+            public T[] generate(FieldSpacecraftState<T> s) {
+                T[] pDot = MathArrays.buildArray(field, 1);
+                pDot[0] = field.getZero().newInstance(rate);
+                return pDot;
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", field.getZero().add(1.5)));
@@ -1173,7 +1176,7 @@ public class FieldNumericalPropagatorTest {
 
         double shift = -60;
         FieldSpacecraftState<T> s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assert.assertEquals(2, s.getAdditionalStates().size());
+        Assert.assertEquals(2, s.getAdditionalStatesValues().size());
         Assert.assertTrue(s.hasAdditionalState("squaredA"));
         Assert.assertTrue(s.hasAdditionalState("extra"));
         Assert.assertEquals(s.getA().multiply(s.getA()).getReal(), s.getAdditionalState("squaredA")[0].getReal(), 1.0e-10);

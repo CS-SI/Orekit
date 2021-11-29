@@ -41,7 +41,8 @@
       package integration #CBDBC8 {
         interface AdditionalEquations {
           +String getName()
-          +void computeDerivatives()
+          +boolean yield()
+          +void derivatives()
         }
         class  AbstractIntegratedPropagator {
          +void addAdditionalEquations(AdditionalEquations addEqu)
