@@ -58,7 +58,7 @@ public class IntegrableGeneratorTest {
         integrator.setInitialStepSize(60);
         NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
         propagatorNumerical.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorNumerical.addIntegrableGenerator(checker);
+        propagatorNumerical.addAdditionalEquations(checker);
         propagatorNumerical.propagate(initDate.shiftedBy(600));
 
         // verify
@@ -81,7 +81,7 @@ public class IntegrableGeneratorTest {
         integrator.setInitialStepSize(60);
         DSSTPropagator propagatorDSST = new DSSTPropagator(integrator);
         propagatorDSST.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorDSST.addIntegrableGenerator(checker);
+        propagatorDSST.addAdditionalEquations(checker);
         propagatorDSST.propagate(initDate.shiftedBy(600));
 
         // verify
@@ -110,7 +110,7 @@ public class IntegrableGeneratorTest {
         tolerance    = null;
     }
 
-    public static class InitCheckerEquations implements IntegrableGenerator {
+    public static class InitCheckerEquations implements AdditionalEquations {
 
         private double expected;
         private boolean called;
@@ -127,7 +127,7 @@ public class IntegrableGeneratorTest {
         }
 
         @Override
-        public double[] generate(SpacecraftState s) {
+        public double[] derivatives(SpacecraftState s) {
             return new double[] { 1.5 };
         }
 

@@ -20,8 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.DenseOutputModel;
@@ -50,7 +51,6 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.StackableGenerator;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -64,6 +64,11 @@ import org.orekit.utils.DoubleArrayDictionary;
  */
 public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
+    /** Internal name used for complete secondary state dimension.
+     * @since 11.1
+     */
+    private static final String SECONDARY_DIMENSION = "Orekit-secondary-dimension";
+
     /** Event detectors not related to force models. */
     private final List<EventDetector> detectors;
 
@@ -73,16 +78,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Integrator selected by the user for the orbital extrapolation process. */
     private final ODEIntegrator integrator;
 
-    /** Integrable generators.
+    /** Offsets of secondary states managed by {@link AdditionalEquations}.
      * @since 11.1
      */
-    private final List<IntegrableGenerator> integrableGenerators;
+    private final Map<String, Integer> secondaryOffsets;
 
-    /** Dimension of the secondary states (gathering all integrable generators).
-     * @since 11.1
-     */
-    private int secondaryDimension;
+    /** Additional equations. */
+    private List<AdditionalEquations> additionalEquations;
 
+    /** Map of secondary equation offset in main
     /** Counter for differential equations calls. */
     private int calls;
 
@@ -107,8 +111,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     protected AbstractIntegratedPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
         detectors               = new ArrayList<>();
         ephemerisGenerators     = new ArrayList<>();
-        integrableGenerators    = new ArrayList<>();
-        this.secondaryDimension = 0;
+        additionalEquations     = new ArrayList<>();
+        this.secondaryOffsets   = new HashMap<>();
         this.integrator         = integrator;
         this.propagationType    = propagationType;
         this.resetAtEnd         = true;
@@ -229,8 +233,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         // then look at states we integrate ourselves
-        for (final IntegrableGenerator generator : integrableGenerators) {
-            if (generator.getName().equals(name)) {
+        for (final AdditionalEquations equation : additionalEquations) {
+            if (equation.getName().equals(name)) {
                 return true;
             }
         }
@@ -242,73 +246,46 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     @Override
     public String[] getManagedAdditionalStates() {
         final String[] alreadyIntegrated = super.getManagedAdditionalStates();
-        final String[] managed = new String[alreadyIntegrated.length + integrableGenerators.size()];
+        final String[] managed = new String[alreadyIntegrated.length + additionalEquations.size()];
         System.arraycopy(alreadyIntegrated, 0, managed, 0, alreadyIntegrated.length);
-        for (int i = 0; i < integrableGenerators.size(); ++i) {
-            managed[i + alreadyIntegrated.length] = integrableGenerators.get(i).getName();
+        for (int i = 0; i < additionalEquations.size(); ++i) {
+            managed[i + alreadyIntegrated.length] = additionalEquations.get(i).getName();
         }
         return managed;
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addIntegrableGenerator(IntegrableGenerator)}
      */
-    @Deprecated
     public void addAdditionalEquations(final AdditionalEquations additional) {
-        addIntegrableGenerator(new AdditionalEquationAdapter(additional));
-    }
-
-    /** Add a generator for user-specified state parameters to be integrated along with the orbit propagation.
-     * @param generator generator for additional state
-     * @see #addClosedFormGenerator(StackableGenerator)
-     * @since 11.1
-     */
-    public void addIntegrableGenerator(final IntegrableGenerator generator) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(generator.getName())) {
+        if (isAdditionalStateManaged(additional.getName())) {
             // this set of equations is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      generator.getName());
+                                      additional.getName());
         }
 
         // this is really a new set of equations, add it
-        integrableGenerators.add(generator);
-
-    }
-
-    /** Remove a generator for user-specified state parameters to be computed along with the orbit propagation.
-     * @param stateName name of the additional state this generator manages
-     * @return the generator found and removed, null if no generator was found
-     * @since 11.1
-     */
-    public IntegrableGenerator removeIntegrableGenerator(final String stateName) {
-        final Iterator<IntegrableGenerator> iterator = integrableGenerators.iterator();
-        while (iterator.hasNext()) {
-            final IntegrableGenerator generator = iterator.next();
-            if (generator.getName().equals(stateName)) {
-                iterator.remove();
-                return generator;
-            }
+        // FIXME: the following if statement should be removed in 12.0
+        // when the dummy default implementation of AdditionalEquations.getDimension() is removed
+        if (additional.getDimension() < 0) {
+            // the additional equation does not implement getDimension by itself, we wrap it
+            additionalEquations.add(new AdditionalEquationsWrapper(additional));
+        } else {
+            additionalEquations.add(additional);
         }
-        return null;
+
+        secondaryOffsets.clear();
+
     }
 
-    /** Get an unmodifiable list of generators for additional state.
-     * @return generators for the additional states
+    /** Get an unmodifiable list of equations for additional state.
+     * @return equations for the additional states
      * @since 11.1
      */
-    public List<IntegrableGenerator> getIntegrableGenerators() {
-        return Collections.unmodifiableList(integrableGenerators);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected Collection<StackableGenerator> getAllGenerators() {
-        final List<StackableGenerator> allGenerators = new ArrayList<>(super.getAllGenerators());
-        allGenerators.addAll(integrableGenerators);
-        return allGenerators;
+    public List<AdditionalEquations> getAdditionalEquations() {
+        return Collections.unmodifiableList(additionalEquations);
     }
 
     /** {@inheritDoc} */
@@ -401,7 +378,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         try (IntegratorResetter resetter = new IntegratorResetter(integrator)) {
 
             // prepare handling of STM and Jacobian matrices
-            final List<String> matricesStates = setUpStmAndJacobianGenerators();
+            setUpStmAndJacobianGenerators();
 
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
@@ -424,13 +401,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // propagate from start date to end date with event detection
             final SpacecraftState finalState = integrateDynamics(tEnd);
 
-            // remove the generators for STM and Jacobian matrices
-            for (final String matrixState : matricesStates) {
-                if (removeClosedFormGenerator(matrixState) == null) {
-                    removeIntegrableGenerator(matrixState);
-                }
-            }
-
             return finalState;
 
         }
@@ -438,13 +408,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Set up State Transition Matrix and Jacobian matrix handling.
-     * @return names of states that were automatically added for matrices handling,
-     * and whose generators should be removed at propagation end
      * @since 11.1
      */
-    protected List<String> setUpStmAndJacobianGenerators() {
+    protected void setUpStmAndJacobianGenerators() {
         // nothing to do by default
-        return Collections.emptyList();
     }
 
     /** Propagation with or without event detection.
@@ -496,15 +463,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                         mathFinalState.getPrimaryDerivative(),
                                                         propagationType);
 
-            if (!integrableGenerators.isEmpty()) {
+            if (!additionalEquations.isEmpty()) {
                 final double[] secondary = mathFinalState.getSecondaryState(1);
                 int offset = 0;
-                for (IntegrableGenerator generator : integrableGenerators) {
-                    finalState = finalState.addAdditionalState(generator.getName(),
+                for (AdditionalEquations equations : additionalEquations) {
+                    finalState = finalState.addAdditionalState(equations.getName(),
                                                                Arrays.copyOfRange(secondary,
                                                                                   offset,
-                                                                                  offset + generator.getDimension()));
-                    offset += generator.getDimension();
+                                                                                  offset + equations.getDimension()));
+                    offset += equations.getDimension();
                 }
             }
             finalState = updateAdditionalStates(finalState);
@@ -532,21 +499,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param initialState initial state in flight dynamics world
      * @return initial state in mathematics world
      */
-    @SuppressWarnings("deprecation")
     private ODEState createInitialState(final SpacecraftState initialState) {
 
         // retrieve initial state
         final double[] primary = new double[getBasicDimension()];
         stateMapper.mapStateToArray(initialState, primary, null);
 
-        // compute dimension of the secondary state
-        secondaryDimension = 0;
-        for (int i = 0; i < integrableGenerators.size(); ++i) {
-            final IntegrableGenerator generator = integrableGenerators.get(i);
-            if (generator instanceof AdditionalEquationAdapter) {
-                ((AdditionalEquationAdapter) generator).setDimension(initialState.getAdditionalState(generator.getName()).length);
+        if (secondaryOffsets.isEmpty()) {
+            // compute dimension of the secondary state
+            int offset = 0;
+            for (final AdditionalEquations equations : additionalEquations) {
+                secondaryOffsets.put(equations.getName(), offset);
+                offset += equations.getDimension();
             }
-            secondaryDimension += generator.getDimension();
+            secondaryOffsets.put(SECONDARY_DIMENSION, offset);
         }
 
         return new ODEState(0.0, primary, secondary(initialState));
@@ -555,24 +521,49 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Create secondary state.
      * @param state spacecraft state
-     * @return seconday state
+     * @return secondary state
      * @since 11.1
      */
     private double[][] secondary(final SpacecraftState state) {
 
-        if (secondaryDimension == 0) {
+        if (secondaryOffsets.isEmpty()) {
             return null;
         }
 
-        final double[][] secondary = new double[1][secondaryDimension];
-        int index = 0;
-        for (int i = 0; i < integrableGenerators.size(); ++i) {
-            final IntegrableGenerator generator = integrableGenerators.get(i);
-            System.arraycopy(state.getAdditionalState(generator.getName()), 0, secondary[0], index, generator.getDimension());
-            index += generator.getDimension();
+        final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
+        // FIXME: use yield to extract states in dependencies order
+        for (final AdditionalEquations equations : additionalEquations) {
+            final String   name       = equations.getName();
+            final int      offset     = secondaryOffsets.get(name);
+            final double[] additional = state.getAdditionalState(name);
+            System.arraycopy(additional, 0, secondary[0], offset, additional.length);
         }
 
         return secondary;
+
+    }
+
+    /** Create secondary state derivative.
+     * @param state spacecraft state
+     * @return secondary state derivative
+     * @since 11.1
+     */
+    private double[][] secondaryDerivative(final SpacecraftState state) {
+
+        if (secondaryOffsets.isEmpty()) {
+            return null;
+        }
+
+        final double[][] secondaryDerivative = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
+        // FIXME: use yield to extract derivatives in dependencies order
+        for (final AdditionalEquations equations : additionalEquations) {
+            final String   name       = equations.getName();
+            final int      offset     = secondaryOffsets.get(name);
+            final double[] additionalDerivative = state.getAdditionalStateDerivative(name);
+            System.arraycopy(additionalDerivative, 0, secondaryDerivative[0], offset, additionalDerivative.length);
+        }
+
+        return secondaryDerivative;
 
     }
 
@@ -588,7 +579,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 new ExpandableODE(new ConvertedMainStateEquations(getMainStateEquations(integ)));
 
         // secondary part of the ODE
-        if (!integrableGenerators.isEmpty()) {
+        if (!additionalEquations.isEmpty()) {
             ode.addSecondaryEquations(new ConvertedSecondaryStateEquations());
         }
 
@@ -642,14 +633,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                         os.getPrimaryDerivative(),
                                                         propagationType);
         if (os.getNumberOfSecondaryStates() > 0) {
-            final double[] secondary = os.getSecondaryState(1);
-            int offset = 0;
-            for (final IntegrableGenerator generator : integrableGenerators) {
-                s = s.addAdditionalState(generator.getName(),
-                                         Arrays.copyOfRange(secondary,
-                                                            offset,
-                                                            offset + generator.getDimension()));
-                offset += generator.getDimension();
+            final double[] secondary           = os.getSecondaryState(1);
+            final double[] secondaryDerivative = os.getSecondaryDerivative(1);
+            // FIXME: use yield to add states in dependencies order
+            for (final AdditionalEquations equations : additionalEquations) {
+                final String name      = equations.getName();
+                final int    offset    = secondaryOffsets.get(name);
+                final int    dimension = equations.getDimension();
+                s = s.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                s = s.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
             }
         }
         s = updateAdditionalStates(s);
@@ -670,11 +662,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         stateMapper.mapStateToArray(state, primary, primaryDot);
 
         // secondary part of the ODE
-        final double[][] secondary = secondary(state);
+        final double[][] secondary           = secondary(state);
+        final double[][] secondaryDerivative = secondaryDerivative(state);
 
         return new ODEStateAndDerivative(stateMapper.mapDateToDouble(state.getDate()),
                                          primary, primaryDot,
-                                         secondary, null);
+                                         secondary, secondaryDerivative);
 
     }
 
@@ -751,22 +744,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     private class ConvertedSecondaryStateEquations implements SecondaryODE {
 
         /** Dimension of the combined additional states. */
-        private final int dimension;
+        private final int combinedDimension;
 
         /** Simple constructor.
           */
         ConvertedSecondaryStateEquations() {
-            int sum = 0;
-            for (final IntegrableGenerator generator : integrableGenerators) {
-                sum += generator.getDimension();
-            }
-            this.dimension    = sum;
+            this.combinedDimension = secondaryOffsets.get(SECONDARY_DIMENSION);
         }
 
         /** {@inheritDoc} */
         @Override
         public int getDimension() {
-            return dimension;
+            return combinedDimension;
         }
 
         /** {@inheritDoc} */
@@ -777,8 +766,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             final SpacecraftState initialState = convert(t0, primary0, null, secondary0);
 
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
-            for (final IntegrableGenerator generator : integrableGenerators) {
-                generator.init(initialState, target);
+            for (final AdditionalEquations equations : additionalEquations) {
+                equations.init(initialState, target);
             }
 
         }
@@ -794,13 +783,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             final SpacecraftState currentState = convert(t, primary, primaryDot, secondary);
 
             // gather the derivatives from all integrable generators
-            final double[] secondaryDot = new double[dimension];
-            int offset = 0;
-            for (final IntegrableGenerator generator : integrableGenerators) {
-                System.arraycopy(currentState.getAdditionalStateDerivative(generator.getName()), 0,
-                                 secondaryDot, offset,
-                                 generator.getDimension());
-                offset += generator.getDimension();
+            final double[] secondaryDot = new double[combinedDimension];
+            // FIXME: use yield to compute derivatives in dependencies order
+            for (final AdditionalEquations equations : additionalEquations) {
+                final String name      = equations.getName();
+                final int    offset    = secondaryOffsets.get(name);
+                final int    dimension = equations.getDimension();
+                System.arraycopy(equations.derivatives(currentState), 0, secondaryDot, offset, dimension);
             }
 
             return secondaryDot;
@@ -816,17 +805,19 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          */
         private SpacecraftState convert(final double t, final double[] primary,
                                         final double[] primaryDot, final double[] secondary) {
-            SpacecraftState initialState =
-                            stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
-            int offset = 0;
-            for (final IntegrableGenerator generator : integrableGenerators) {
-                initialState = initialState.addAdditionalState(generator.getName(),
-                                                               Arrays.copyOfRange(secondary,
-                                                                                  offset,
-                                                                                  offset + generator.getDimension()));
-                offset += generator.getDimension();
+
+            SpacecraftState initialState = stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
+
+            // FIXME: use yield to add states in dependencies order
+            for (final AdditionalEquations equations : additionalEquations) {
+                final String name      = equations.getName();
+                final int    offset    = secondaryOffsets.get(name);
+                final int    dimension = equations.getDimension();
+                initialState = initialState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
             }
+
             return updateAdditionalStates(initialState);
+
         }
 
     }
@@ -888,9 +879,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             stateMapper.mapStateToArray(newState, primary, null);
 
             // secondary part
-            final double[][] secondary    = new double[integrableGenerators.size()][];
-            for (int i = 0; i < integrableGenerators.size(); ++i) {
-                secondary[i] = newState.getAdditionalState(integrableGenerators.get(i).getName());
+            final double[][] secondary    = new double[additionalEquations.size()][];
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                secondary[i] = newState.getAdditionalState(additionalEquations.get(i).getName());
             }
 
             return new ODEState(newState.getDate().durationFrom(getStartDate()),
@@ -1081,15 +1072,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get the names of additional states managed by differential equations
-            final String[] names = new String[integrableGenerators.size()];
+            final String[] names = new String[additionalEquations.size()];
             for (int i = 0; i < names.length; ++i) {
-                names[i] = integrableGenerators.get(i).getName();
+                names[i] = additionalEquations.get(i).getName();
             }
 
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
                                                 stateMapper, propagationType, model,
-                                                unmanaged, getClosedFormGenerators(), names);
+                                                unmanaged, getAdditionalStateProviders(), names);
 
         }
 
@@ -1147,6 +1138,64 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         }
 
+    }
+
+    /** Temporary wrapper for {@link AdditionalEquations} that do not implement getDimension().
+     * @since 11.1
+     * @deprecated introduced in 11.1 as a temporary workarounf for missing getDimension, must be removed in 12.0
+     */
+    @Deprecated
+    private class AdditionalEquationsWrapper implements AdditionalEquations {
+
+        /** Wrapped equations. */
+        private final AdditionalEquations equations;
+
+        /** Dimension. */
+        private int dimension;
+
+        /** Simple constructor.
+         * @param equations wrapped equations
+         */
+        AdditionalEquationsWrapper(final AdditionalEquations equations) {
+            this.equations = equations;
+            this.dimension = -1;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String getName() {
+            return equations.getName();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int getDimension() {
+            if (dimension < 0) {
+                // retrieve the dimension the first time we need it
+                dimension = getInitialState().getAdditionalState(getName()).length;
+            }
+            return dimension;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean yield(final SpacecraftState state) {
+            return equations.yield(state);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+            equations.init(initialState, target);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] derivatives(final SpacecraftState s) {
+            final double[] pDot = new double[getDimension()];
+            computeDerivatives(s, pDot);
+            return pDot;
+        }
     }
 
 }

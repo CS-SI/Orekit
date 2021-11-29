@@ -26,7 +26,7 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.data.DataContext;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.cr3bp.StateTransitionMatrix;
+import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.PVCoordinates;
 
@@ -129,7 +129,7 @@ public abstract class LibrationOrbit {
         final double epsilon = syst.getVdim() * 1E2 / syst.getDdim();
 
         // Get Normalize eigen vector linked to the stability of the manifold
-        final RealMatrix phi         = new StateTransitionMatrix(syst).getStateTransitionMatrix(s);
+        final RealMatrix phi         = new STMEquations(syst).getStateTransitionMatrix(s);
         final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
 
         // New PVCoordinates following the manifold
@@ -156,7 +156,7 @@ public abstract class LibrationOrbit {
             syst.getVdim() * 1E2 / syst.getDdim();
 
         // Get Normalize eigen vector linked to the stability of the manifold
-        final RealMatrix phi         = new StateTransitionMatrix(syst).getStateTransitionMatrix(s);
+        final RealMatrix phi         = new STMEquations(syst).getStateTransitionMatrix(s);
         final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(0).unitVector();
 
         // New PVCoordinates following the manifold

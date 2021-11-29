@@ -34,7 +34,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.IntegrableGenerator;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 
@@ -42,7 +42,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 11.1
  */
-class StateTransitionMatrixGenerator implements IntegrableGenerator {
+class StateTransitionMatrixGenerator implements AdditionalEquations {
 
     /** Threshold for matrix solving. */
     private static final double THRESHOLD = Precision.SAFE_MIN;
@@ -158,7 +158,7 @@ class StateTransitionMatrixGenerator implements IntegrableGenerator {
     }
 
     /** {@inheritDoc} */
-    public double[] generate(final SpacecraftState state) {
+    public double[] derivatives(final SpacecraftState state) {
 
         // Assuming position is (px, py, pz), velocity is (vx, vy, vz) and the acceleration
         // due to the force models is (Σ ax, Σ ay, Σ az), the differential equation for

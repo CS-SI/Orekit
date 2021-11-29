@@ -17,15 +17,12 @@
 package org.orekit.propagation;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.stream.Collectors;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -56,10 +53,8 @@ public abstract class AbstractPropagator implements Propagator {
     /** Attitude provider. */
     private AttitudeProvider attitudeProvider;
 
-    /** Closed form generators.
-     * @since 11.1
-     */
-    private final List<StackableGenerator> closedFormGenerators;
+    /** Providers for additional states. */
+    private final List<AdditionalStateProvider> additionalStateProviders;
 
     /** States managed by no generators. */
     private final Map<String, TimeSpanMap<double[]>> unmanagedStates;
@@ -71,7 +66,7 @@ public abstract class AbstractPropagator implements Propagator {
      */
     protected AbstractPropagator() {
         multiplexer        = new StepHandlerMultiplexer();
-        closedFormGenerators = new ArrayList<>();
+        additionalStateProviders = new ArrayList<>();
         unmanagedStates    = new HashMap<>();
     }
 
@@ -121,57 +116,25 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    @Deprecated
     @Override
-    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider) {
-        addClosedFormGenerator(new AdditionalStateProviderAdapter(additionalStateProvider));
-    }
-
-    /** {@inheritDoc} */
-    @SuppressWarnings("deprecation")
-    @Deprecated
-    @Override
-    public List<AdditionalStateProvider> getAdditionalStateProviders() {
-        return getClosedFormGenerators().
-                        stream().
-                        map(u -> new ClosedFormAdapter(u)).
-                        collect(Collectors.toList());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void addClosedFormGenerator(final StackableGenerator generator) {
+    public void addAdditionalStateProvider(final AdditionalStateProvider provider) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(generator.getName())) {
+        if (isAdditionalStateManaged(provider.getName())) {
             // this additional state is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      generator.getName());
+                                      provider.getName());
         }
 
         // this is really a new name, add it
-        closedFormGenerators.add(generator);
+        additionalStateProviders.add(provider);
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public StackableGenerator removeClosedFormGenerator(final String stateName) {
-        final Iterator<StackableGenerator> iterator = closedFormGenerators.iterator();
-        while (iterator.hasNext()) {
-            final StackableGenerator generator = iterator.next();
-            if (generator.getName().equals(stateName)) {
-                iterator.remove();
-                return generator;
-            }
-        }
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<StackableGenerator> getClosedFormGenerators() {
-        return Collections.unmodifiableList(closedFormGenerators);
+    public List<AdditionalStateProvider> getAdditionalStateProviders() {
+        return Collections.unmodifiableList(additionalStateProviders);
     }
 
     /** Update state by adding unmanaged states.
@@ -195,19 +158,11 @@ public abstract class AbstractPropagator implements Propagator {
 
     }
 
-    /** Get all generators.
-     * @return all generators
-     * @since 11.1
-     */
-    protected Collection<StackableGenerator> getAllGenerators() {
-        return closedFormGenerators;
-    }
-
     /** Update state by adding all additional states.
      * @param original original state
      * @return updated state, with all additional states included
      * (including {@link #updateUnmanagedStates(SpacecraftState) unmanaged} states)
-     * @see #addClosedFormGenerator(StackableGenerator)
+     * @see #addAdditionalStateProvider(AdditionalStateProvider)
      * @see #updateUnmanagedStates(SpacecraftState)
      */
     protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
@@ -215,30 +170,26 @@ public abstract class AbstractPropagator implements Propagator {
         // start with original state and unmanaged states
         SpacecraftState updated = updateUnmanagedStates(original);
 
-        // set up queue for generators
-        final Queue<StackableGenerator> pending = new LinkedList<>(getAllGenerators());
+        // set up queue for providers
+        final Queue<AdditionalStateProvider> pending = new LinkedList<>(getAdditionalStateProviders());
 
-        // update the additional states managed by generators, taking care of dependencies
+        // update the additional states managed by providers, taking care of dependencies
         int yieldCount = 0;
         while (!pending.isEmpty()) {
-            final StackableGenerator generator = pending.remove();
-            if (generator.yield(updated)) {
+            final AdditionalStateProvider provider = pending.remove();
+            if (provider.yield(updated)) {
                 // this generator has to wait for another one,
                 // we put it again in the pending queue
-                pending.add(generator);
+                pending.add(provider);
                 if (++yieldCount >= pending.size()) {
-                    // all pending generators yielded!, they probably need data not yet initialized
+                    // all pending providers yielded!, they probably need data not yet initialized
                     // we let the propagation proceed, if these data are really needed right now
                     // an appropriate exception will be triggered when caller tries to access them
                     break;
                 }
             } else {
-                // we can use this generator right now
-                if (generator.isClosedForm()) {
-                    updated = updated.addAdditionalState(generator.getName(), generator.generate(updated));
-                } else {
-                    updated = updated.addAdditionalStateDerivative(generator.getName(), generator.generate(updated));
-                }
+                // we can use this provider right now
+                updated    = updated.addAdditionalState(provider.getName(), provider.getAdditionalState(updated));
                 yieldCount = 0;
             }
         }
@@ -249,8 +200,8 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public boolean isAdditionalStateManaged(final String name) {
-        for (final StackableGenerator generator : closedFormGenerators) {
-            if (generator.getName().equals(name)) {
+        for (final AdditionalStateProvider provider : additionalStateProviders) {
+            if (provider.getName().equals(name)) {
                 return true;
             }
         }
@@ -259,9 +210,9 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public String[] getManagedAdditionalStates() {
-        final String[] managed = new String[closedFormGenerators.size()];
+        final String[] managed = new String[additionalStateProviders.size()];
         for (int i = 0; i < managed.length; ++i) {
-            managed[i] = closedFormGenerators.get(i).getName();
+            managed[i] = additionalStateProviders.get(i).getName();
         }
         return managed;
     }

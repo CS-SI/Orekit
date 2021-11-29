@@ -47,6 +47,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -408,13 +409,17 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected List<String> setUpStmAndJacobianGenerators() {
+    protected void setUpStmAndJacobianGenerators() {
 
-        if (harvester == null) {
-            return Collections.emptyList();
-        } else {
+        if (harvester != null) {
 
-            final List<String> matricesStates = new ArrayList<>();
+            for (final AdditionalEquations equations : getAdditionalEquations()) {
+                if (equations instanceof StateTransitionMatrixGenerator &&
+                    equations.getName().equals(harvester.getStmName())) {
+                    // the equations have already been set up
+                    return;
+                }
+            }
 
             // add the STM generator corresponding to the current settings, and setup state accordingly
             final StateTransitionMatrixGenerator stmGenerator =
@@ -423,8 +428,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                                                          harvester.getInitialStateTransitionMatrix(),
                                                                          getOrbitType(),
                                                                          getPositionAngleType()));
-            addIntegrableGenerator(stmGenerator);
-            matricesStates.add(stmGenerator.getName());
+            addAdditionalEquations(stmGenerator);
 
             // first pass: gather all parameters, binding similar names together
             final ParameterDriversList selected = new ParameterDriversList();
@@ -449,15 +453,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                                            harvester.getInitialJacobianColumn(driver.getName()),
                                                            getOrbitType(),
                                                            getPositionAngleType()));
-                addIntegrableGenerator(generator);
-                matricesStates.add(generator.getName());
+                addAdditionalEquations(generator);
             }
 
             harvester.setColumnsNames(selected.getDrivers().stream().map(d -> d.getName()).collect(Collectors.toList()));
             harvester.setOrbitType(getOrbitType());
             harvester.setPositionAngleType(getPositionAngleType());
-
-            return matricesStates;
 
         }
 

@@ -40,8 +40,8 @@ import org.orekit.forces.gravity.ThirdBodyAttractionEpoch;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.IntegrableGenerator;
-import org.orekit.propagation.numerical.DerivativesWrtThirdBodyEpoch;
+import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -64,7 +64,7 @@ public class MultipleShooterTest {
     /** arbitrary state */
     private SpacecraftState state;
     /** subject under test */
-    private DerivativesWrtThirdBodyEpoch pde;
+    private EpochDerivativesEquations pde;
 
     @Before
     public void setUp() {
@@ -73,7 +73,7 @@ public class MultipleShooterTest {
         forceModel = new ThirdBodyAttractionEpoch(CelestialBodyFactory.getSun());
         propagator.addForceModel(forceModel);
         propagator.addForceModel(new NewtonianAttraction(Constants.WGS84_EARTH_MU));
-        pde = new DerivativesWrtThirdBodyEpoch("ede", propagator);
+        pde = new EpochDerivativesEquations("ede", propagator);
         Vector3D p = new Vector3D(7378137, 0, 0);
         Vector3D v = new Vector3D(0, 7500, 0);
         pv = new PVCoordinates(p, v);
@@ -128,7 +128,7 @@ public class MultipleShooterTest {
         final AbsolutePVCoordinates firstGuessAPV = new AbsolutePVCoordinates(primaryFrame, initialDate, firstGuess);
         List<SpacecraftState> firstGuessList2 = generatePatchPointsEphemeris(sun, earth, firstGuessAPV, arcDuration, narcs, integrator);
         final List<NumericalPropagator> propagatorList  = initializePropagators(sun, earth, integrator, narcs);
-        final List<IntegrableGenerator> additionalEquations = addAdditionalEquations(propagatorList);
+        final List<AdditionalEquations> additionalEquations = addAdditionalEquations(propagatorList);
 
         for (int i = 0; i < narcs + 1; i++) {
             final SpacecraftState sp = firstGuessList2.get(i);
@@ -157,7 +157,7 @@ public class MultipleShooterTest {
 
         final double tolerance = 1.0;
 
-        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, tolerance, additionalEquations);
+        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, additionalEquations, arcDuration, tolerance);
         multipleShooting.setPatchPointComponentFreedom(1, 0, false);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
@@ -231,7 +231,7 @@ public class MultipleShooterTest {
         final AbsolutePVCoordinates firstGuessAPV = new AbsolutePVCoordinates(primaryFrame, initialDate, firstGuess);
         List<SpacecraftState> firstGuessList2 = generatePatchPointsEphemeris(sun, earth, firstGuessAPV, arcDuration, narcs, integrator);
         final List<NumericalPropagator> propagatorList  = initializePropagatorsWithEstimated(sun, earth, integrator, narcs);
-        final List<IntegrableGenerator> additionalEquations = addAdditionalEquations(propagatorList);
+        final List<AdditionalEquations> additionalEquations = addAdditionalEquations(propagatorList);
 
         for (int i = 0; i < narcs + 1; i++) {
             final SpacecraftState sp = firstGuessList2.get(i);
@@ -260,7 +260,7 @@ public class MultipleShooterTest {
 
         final double tolerance = 1.0;
 
-        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, tolerance, additionalEquations);
+        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, additionalEquations, arcDuration, tolerance);
         multipleShooting.setPatchPointComponentFreedom(1, 0, false);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
@@ -281,56 +281,26 @@ public class MultipleShooterTest {
         Assert.assertEquals(0.028078,   Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
     }
 
-    @Deprecated
-    @Test(expected=OrekitException.class)
-    public void testNotInitializedDeprecated() {
-        new org.orekit.propagation.numerical.EpochDerivativesEquations("partials", propagator).getMapper();
-    }
-
     @Test(expected=OrekitException.class)
     public void testNotInitialized() {
-        new DerivativesWrtThirdBodyEpoch("partials", propagator).getMapper();
-    }
-
-    @Deprecated
-    @Test(expected=OrekitException.class)
-    public void testTooSmallDimensionDeprecated() {
-        final org.orekit.propagation.numerical.EpochDerivativesEquations partials =
-                        new org.orekit.propagation.numerical.EpochDerivativesEquations("partials", propagator);
-        partials.setInitialJacobians(state, new double[5][6], new double[6][2]);
+        new EpochDerivativesEquations("partials", propagator).getMapper();
     }
 
     @Test(expected=OrekitException.class)
     public void testTooSmallDimension() {
-        final DerivativesWrtThirdBodyEpoch partials = new DerivativesWrtThirdBodyEpoch("partials", propagator);
+        final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
         partials.setInitialJacobians(state, new double[5][6], new double[6][2]);
-    }
-
-    @Deprecated
-    @Test(expected=OrekitException.class)
-    public void testTooLargeDimensionDeprecated() {
-        final org.orekit.propagation.numerical.EpochDerivativesEquations partials =
-                        new org.orekit.propagation.numerical.EpochDerivativesEquations("partials", propagator);
-        partials.setInitialJacobians(state, new double[8][6], new double[6][2]);
     }
 
     @Test(expected=OrekitException.class)
     public void testTooLargeDimension() {
-        final DerivativesWrtThirdBodyEpoch partials = new DerivativesWrtThirdBodyEpoch("partials", propagator);
+        final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
         partials.setInitialJacobians(state, new double[8][6], new double[6][2]);
-    }
-
-    @Deprecated
-    @Test(expected=OrekitException.class)
-    public void testMismatchedDimensionsDeprecated() {
-        final org.orekit.propagation.numerical.EpochDerivativesEquations partials =
-                        new org.orekit.propagation.numerical.EpochDerivativesEquations("partials", propagator);
-        partials.setInitialJacobians(state, new double[6][6], new double[7][2]);
     }
 
     @Test(expected=OrekitException.class)
     public void testMismatchedDimensions() {
-        final DerivativesWrtThirdBodyEpoch partials = new DerivativesWrtThirdBodyEpoch("partials", propagator);
+        final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
         partials.setInitialJacobians(state, new double[6][6], new double[7][2]);
     }
 
@@ -406,11 +376,11 @@ public class MultipleShooterTest {
         return propagatorList;
     }
 
-    private static List<IntegrableGenerator> addAdditionalEquations(List<NumericalPropagator> propagatorList){
+    private static List<AdditionalEquations> addAdditionalEquations(List<NumericalPropagator> propagatorList){
         final int narcs = propagatorList.size();
-        final List<IntegrableGenerator> additionalEquations = new ArrayList<>(narcs) ;
+        final List<AdditionalEquations> additionalEquations = new ArrayList<AdditionalEquations>(narcs) ;
         for(int i = 0; i < narcs; i++) {
-            additionalEquations.add(new DerivativesWrtThirdBodyEpoch("derivatives", propagatorList.get(i)));
+            additionalEquations.add(new EpochDerivativesEquations("derivatives", propagatorList.get(i)));
         }
         return additionalEquations;
 

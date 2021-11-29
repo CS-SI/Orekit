@@ -489,7 +489,8 @@ public class SpacecraftState
      * did not have any additional state with that name, the new instance
      * will have one more additional state than the original instance.
      * </p>
-     * @param name name of the additional state
+     * @param name name of the additional state (names containing "orekit"
+     * with any case are reserved for the library internal use)
      * @param value value of the additional state
      * @return a new instance, with the additional state added
      * @see #hasAdditionalState(String)
@@ -517,7 +518,8 @@ public class SpacecraftState
      * state derivative with that name, the new instance will have one more
      * additional state derivative than the original instance.
      * </p>
-     * @param name name of the additional state derivative
+     * @param name name of the additional state derivative (names containing "orekit"
+     * with any case are reserved for the library internal use)
      * @param value value of the additional state derivative
      * @return a new instance, with the additional state added
      * @see #hasAdditionalStateDerivative(String)

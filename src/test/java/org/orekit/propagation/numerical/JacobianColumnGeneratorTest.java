@@ -280,8 +280,8 @@ public class JacobianColumnGeneratorTest {
                                                            propagator.getAllForceModels(),
                                                            propagator.getAttitudeProvider());
         JacobianColumnGenerator columnGenerator = new JacobianColumnGenerator(stmGenerator, selected.getName());
-        propagator.addIntegrableGenerator(columnGenerator);
-        propagator.addIntegrableGenerator(stmGenerator);
+        propagator.addAdditionalEquations(columnGenerator);
+        propagator.addAdditionalEquations(stmGenerator);
 
         initialState = stmGenerator.setInitialStateTransitionMatrix(initialState, null, orbitType, angleType);
         initialState = columnGenerator.setInitialColumn(initialState, null, orbitType, angleType);
@@ -312,8 +312,8 @@ public class JacobianColumnGeneratorTest {
                                                            propagator.getAllForceModels(),
                                                            propagator.getAttitudeProvider());
         JacobianColumnGenerator columnGenerator = new JacobianColumnGenerator(stmGenerator, "abc");
-        propagator.addIntegrableGenerator(columnGenerator);
-        propagator.addIntegrableGenerator(stmGenerator);
+        propagator.addAdditionalEquations(columnGenerator);
+        propagator.addAdditionalEquations(stmGenerator);
 
         SpacecraftState initialState = new SpacecraftState(initialOrbit);
         initialState = stmGenerator.setInitialStateTransitionMatrix(initialState, null,

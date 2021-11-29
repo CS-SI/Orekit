@@ -87,8 +87,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> position,
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass)
-        {
+                                                                         final DerivativeStructure mass) {
         try {
 
             java.lang.reflect.Field atmosphereField = DragForce.class.getDeclaredField("atmosphere");
@@ -165,8 +164,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                       final FieldVector3D<Gradient> position,
                                                                       final FieldVector3D<Gradient> velocity,
                                                                       final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass)
-        {
+                                                                      final Gradient mass) {
         try {
 
             java.lang.reflect.Field atmosphereField = DragForce.class.getDeclaredField("atmosphere");
@@ -281,8 +279,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianSphere()
-        {
+    public void testStateJacobianSphere() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -366,8 +363,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianBoxVs80Implementation()
-        {
+    public void testJacobianBoxVs80Implementation() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -395,8 +391,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianBoxVs80ImplementationGradient()
-        {
+    public void testJacobianBoxVs80ImplementationGradient() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -424,8 +419,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianBoxVsFiniteDifferences()
-        {
+    public void testJacobianBoxVsFiniteDifferences() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -451,8 +445,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianBoxVsFiniteDifferencesGradient()
-        {
+    public void testJacobianBoxVsFiniteDifferencesGradient() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -478,8 +471,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobianBox()
-        {
+    public void testGlobalStateJacobianBox() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),

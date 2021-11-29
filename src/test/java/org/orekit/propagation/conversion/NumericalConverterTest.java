@@ -48,7 +48,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.IntegrableGenerator;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -223,7 +223,7 @@ public class NumericalConverterTest {
         builder.addForceModel(gravity);
 
         // Add additional equations
-        builder.addIntegrableGenerators(new IntegrableGenerator() {
+        builder.addAdditionalEquations(new AdditionalEquations() {
 
             public String getName() {
                 return "linear";
@@ -233,13 +233,13 @@ public class NumericalConverterTest {
                 return 1;
             }
 
-            public double[] generate(SpacecraftState s) {
+            public double[] derivatives(SpacecraftState s) {
                 return new double[] { 1.0 };
             }
 
         });
 
-        builder.addIntegrableGenerators(new IntegrableGenerator() {
+        builder.addAdditionalEquations(new AdditionalEquations() {
 
     	    public String getName() {
     	        return "linear";
@@ -249,15 +249,15 @@ public class NumericalConverterTest {
                 return 1;
             }
 
-            public double[] generate(SpacecraftState s) {
+            public double[] derivatives(SpacecraftState s) {
                 return new double[] { 1.0 };
             }
 
         });
 
         try {
-	    // Build the numerical propagator
-	    builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            // Build the numerical propagator
+            builder.buildPropagator(builder.getSelectedNormalizedParameters());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);

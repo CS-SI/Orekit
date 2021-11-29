@@ -21,10 +21,6 @@ import static org.hamcrest.CoreMatchers.is;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
@@ -113,7 +109,7 @@ public class StateTransitionMatrixGeneratorTest {
                                                                              propagator.getPositionAngleType());
 
         //action
-        stmGenerator.generate(state);
+        stmGenerator.derivatives(state);
 
         //verify
         MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
@@ -302,22 +298,9 @@ public class StateTransitionMatrixGeneratorTest {
                 final PickUpHandler pickUpB = new PickUpHandler(propagatorB1, null, null, null);
                 propagatorB1.setStepHandler(pickUpB);
 
-                boolean useParallelizer = true;
-                if (useParallelizer) {
-                    PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(Arrays.asList(propagatorA1, propagatorB1),
-                                                                                       interpolators -> {});
-                    parallelizer.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
-                } else {
-                    try {
-                        final ExecutorService            executorService = Executors.newFixedThreadPool(2);
-                        Future<SpacecraftState> future1 = executorService.submit(() -> propagatorA1.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt)));
-                        Future<SpacecraftState> future2 = executorService.submit(() -> propagatorB1.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt)));
-                        future1.get();
-                        future2.get();
-                    } catch (ExecutionException | InterruptedException ee) {
-                        Assert.fail(ee.getLocalizedMessage());
-                    }
-                }
+                PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(Arrays.asList(propagatorA1, propagatorB1),
+                                                                                   interpolators -> {});
+                parallelizer.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
 
                 // compute reference state Jacobian using finite differences
                 double[][] dYdY0RefA = finiteDifferencesStm(initialOrbitA, orbitType, angleType, dP, dt,
@@ -395,7 +378,7 @@ public class StateTransitionMatrixGeneratorTest {
         StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
                                                                                          propagator.getAllForceModels(),
                                                                                          propagator.getAttitudeProvider());
-        propagator.addIntegrableGenerator(stmGenerator);
+        propagator.addAdditionalEquations(stmGenerator);
         Assert.assertTrue(stmGenerator.yield(new SpacecraftState(initialOrbit)));
      }
 
@@ -412,7 +395,7 @@ public class StateTransitionMatrixGeneratorTest {
         StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
                                                                                          propagator.getAllForceModels(),
                                                                                          propagator.getAttitudeProvider());
-        propagator.addIntegrableGenerator(stmGenerator);
+        propagator.addAdditionalEquations(stmGenerator);
         try {
             stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(initialOrbit),
                                                          MatrixUtils.createRealMatrix(5,  6),

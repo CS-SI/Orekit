@@ -24,13 +24,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.IntegrableGenerator;
+import org.orekit.propagation.integration.AdditionalEquations;
 
 /** Generator for one column of a Jacobian matrix.
  * @author Luc Maisonobe
  * @since 11.1
  */
-class JacobianColumnGenerator implements IntegrableGenerator, StateTransitionMatrixGenerator.PartialsObserver {
+class JacobianColumnGenerator implements AdditionalEquations, StateTransitionMatrixGenerator.PartialsObserver {
 
     /** Space dimension. */
     private static final int SPACE_DIMENSION = 3;
@@ -135,7 +135,7 @@ class JacobianColumnGenerator implements IntegrableGenerator, StateTransitionMat
     @Override
     public void partialsComputed(final SpacecraftState state, final double[] factor, final double[] accelerationPartials) {
         // retrieve current Jacobian column
-        final double[] p    = state.getAdditionalState(getName());
+        final double[] p = state.getAdditionalState(getName());
 
         // compute time derivative of the Jacobian column
         StateTransitionMatrixGenerator.multiplyMatrix(factor, p, pDot, 1);
@@ -146,7 +146,7 @@ class JacobianColumnGenerator implements IntegrableGenerator, StateTransitionMat
 
     /** {@inheritDoc} */
     @Override
-    public double[] generate(final SpacecraftState s) {
+    public double[] derivatives(final SpacecraftState s) {
         return pDot;
     }
 

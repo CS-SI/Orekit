@@ -21,7 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.IntegrableGenerator;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -33,6 +33,7 @@ class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator
     private final AbsoluteDate pickUpDate;
     private final String accParamName;
     private final String columnName;
+    private StateTransitionMatrixGenerator stmGenerator;
     private SpacecraftState s0;
     private RealMatrix dYdY0;
     private RealMatrix dYdP;
@@ -69,9 +70,9 @@ class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator
     public void init(SpacecraftState s0, AbsoluteDate t) {
         // as the generators are only created on the fly at propagation start
         // we retrieve the STM generator here
-        for (final IntegrableGenerator generator : propagator.getIntegrableGenerators()) {
-            if (generator instanceof StateTransitionMatrixGenerator) {
-                StateTransitionMatrixGenerator stmGenerator = (StateTransitionMatrixGenerator) generator;
+        for (final AdditionalEquations equations : propagator.getAdditionalEquations()) {
+            if (equations instanceof StateTransitionMatrixGenerator) {
+                stmGenerator = (StateTransitionMatrixGenerator) equations;
                 stmGenerator.addObserver(accParamName, this);
             }
         }
@@ -105,6 +106,7 @@ class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator
     }
 
     private void checkState(final SpacecraftState state) {
+        stmGenerator.derivatives(state); // just for the side effect of calling partialsComputed
         Assert.assertEquals(columnName == null ? 1 : 2, state.getAdditionalStatesValues().size());
         dYdY0 = harvester.getStateTransitionMatrix(state);
         dYdP  = harvester.getParametersJacobian(state); // may be null

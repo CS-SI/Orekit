@@ -44,9 +44,9 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.StackableGenerator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -228,11 +228,11 @@ public class EphemerisTest {
         }
 
         final Propagator ephem = new Ephemeris(states, 2);
-        ephem.addClosedFormGenerator(new StackableGenerator() {
+        ephem.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() {
                 return name1;
             }
-            public double[] generate(SpacecraftState state) {
+            public double[] getAdditionalState(SpacecraftState state) {
                 return new double[] { state.getDate().durationFrom(initDate) };
             }
         });

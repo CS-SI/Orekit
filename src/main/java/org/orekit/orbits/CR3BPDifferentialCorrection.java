@@ -35,7 +35,7 @@ import org.orekit.propagation.events.HaloXZPlaneCrossingDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
-import org.orekit.propagation.numerical.cr3bp.StateTransitionMatrix;
+import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -142,7 +142,7 @@ public class CR3BPDifferentialCorrection {
             new HaloXZPlaneCrossingDetector(maxcheck, threshold).withHandler(new PlaneCrossingHandler());
 
         // Additional equations set in order to compute the State Transition Matrix along the propagation
-        final StateTransitionMatrix stm = new StateTransitionMatrix(syst);
+        final STMEquations stm = new STMEquations(syst);
 
         // CR3BP has no defined orbit type
         propagator.setOrbitType(null);
@@ -154,7 +154,7 @@ public class CR3BPDifferentialCorrection {
         propagator.addForceModel(new CR3BPForceModel(syst));
 
         // Add previously set additional equations to the propagator
-        propagator.addIntegrableGenerator(stm);
+        propagator.addAdditionalEquations(stm);
 
         // Add previously set event detector to the propagator
         propagator.addEventDetector(XZPlaneCrossing);
@@ -167,7 +167,7 @@ public class CR3BPDifferentialCorrection {
      * @param stm additional equations
      * @return pv Position-Velocity of the starting point on the Halo Orbit
      */
-    private PVCoordinates computeHalo(final StateTransitionMatrix stm) {
+    private PVCoordinates computeHalo(final STMEquations stm) {
 
         // number of iteration
         double iHalo = 0;
@@ -261,7 +261,7 @@ public class CR3BPDifferentialCorrection {
      * @param stm additional equations
      * @return pv Position-Velocity of the starting point on the Lyapunov Orbit
      */
-    public PVCoordinates computeLyapunov(final StateTransitionMatrix stm) {
+    public PVCoordinates computeLyapunov(final STMEquations stm) {
 
         // number of iteration
         double iLyapunov = 0;

@@ -16,10 +16,18 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.ThirdBodyAttractionEpoch;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
-import org.orekit.propagation.integration.IntegrableAdapter;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -58,10 +66,23 @@ import org.orekit.utils.ParameterDriversList;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  * @since 10.2
- * @deprecated after 11.1, replaced by {@link DerivativesWrtThirdBodyEpoch}
  */
-@Deprecated
-public class EpochDerivativesEquations extends IntegrableAdapter {
+public class EpochDerivativesEquations implements AdditionalEquations {
+
+    /** Propagator computing state evolution. */
+    private final NumericalPropagator propagator;
+
+    /** Selected parameters for Jacobian computation. */
+    private ParameterDriversList selected;
+
+    /** Parameters map. */
+    private Map<ParameterDriver, Integer> map;
+
+    /** Name. */
+    private final String name;
+
+    /** Flag for Jacobian matrices initialization. */
+    private boolean initialized;
 
     /** Simple constructor.
      * <p>
@@ -74,17 +95,61 @@ public class EpochDerivativesEquations extends IntegrableAdapter {
      * @param propagator the propagator that will handle the orbit propagation
      */
     public EpochDerivativesEquations(final String name, final NumericalPropagator propagator) {
-        super(new DerivativesWrtThirdBodyEpoch(name, propagator));
+        this.name                   = name;
+        this.selected               = null;
+        this.map                    = null;
+        this.propagator             = propagator;
+        this.initialized            = false;
+        propagator.addAdditionalEquations(this);
     }
 
-    /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
-     * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
-     * with the same name as the instance
-     * @see #setInitialJacobians(SpacecraftState)
-     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
+    /** {@inheritDoc} */
+    public String getName() {
+        return name;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        freezeParametersSelection();
+        return 6 * (6 + selected.getNbParams() + 1);
+    }
+
+    /** Freeze the selected parameters from the force models.
      */
-    public AbsoluteJacobiansMapper getMapper() {
-        return ((DerivativesWrtThirdBodyEpoch) getGenerator()).getMapper();
+    private void freezeParametersSelection() {
+        if (selected == null) {
+
+            // first pass: gather all parameters, binding similar names together
+            selected = new ParameterDriversList();
+            for (final ForceModel provider : propagator.getAllForceModels()) {
+                for (final ParameterDriver driver : provider.getParametersDrivers()) {
+                    selected.add(driver);
+                }
+            }
+
+            // second pass: now that shared parameter names are bound together,
+            // their selections status have been synchronized, we can filter them
+            selected.filter(true);
+
+            // third pass: sort parameters lexicographically
+            selected.sort();
+
+            // fourth pass: set up a map between parameters drivers and matrices columns
+            map = new IdentityHashMap<>();
+            int parameterIndex = 0;
+            for (final ParameterDriver selectedDriver : selected.getDrivers()) {
+                for (final ForceModel provider : propagator.getAllForceModels()) {
+                    for (final ParameterDriver driver : provider.getParametersDrivers()) {
+                        if (driver.getName().equals(selectedDriver.getName())) {
+                            map.put(driver, parameterIndex);
+                        }
+                    }
+                }
+                ++parameterIndex;
+            }
+
+        }
     }
 
     /** Get the selected parameters, in Jacobian matrix column order.
@@ -97,7 +162,8 @@ public class EpochDerivativesEquations extends IntegrableAdapter {
      * is lexicographic order
      */
     public ParameterDriversList getSelectedParameters() {
-        return ((DerivativesWrtThirdBodyEpoch) getGenerator()).getSelectedParameters();
+        freezeParametersSelection();
+        return selected;
     }
 
     /** Set the initial value of the Jacobian with respect to state and parameter.
@@ -117,7 +183,14 @@ public class EpochDerivativesEquations extends IntegrableAdapter {
      * @since 9.0
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
-        return ((DerivativesWrtThirdBodyEpoch) getGenerator()).setInitialJacobians(s0);
+        freezeParametersSelection();
+        final int epochStateDimension = 6;
+        final double[][] dYdY0 = new double[epochStateDimension][epochStateDimension];
+        final double[][] dYdP  = new double[epochStateDimension][selected.getNbParams() + 6];
+        for (int i = 0; i < epochStateDimension; ++i) {
+            dYdY0[i][i] = 1.0;
+        }
+        return setInitialJacobians(s0, dYdY0, dYdP);
     }
 
     /** Set the initial value of the Jacobian with respect to state and parameter.
@@ -141,7 +214,202 @@ public class EpochDerivativesEquations extends IntegrableAdapter {
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
                                                final double[][] dY1dY0, final double[][] dY1dP) {
-        return ((DerivativesWrtThirdBodyEpoch) getGenerator()).setInitialJacobians(s1, dY1dY0, dY1dP);
+
+        freezeParametersSelection();
+
+        // Check dimensions
+        final int stateDimEpoch = dY1dY0.length;
+        if (stateDimEpoch != 6 || stateDimEpoch != dY1dY0[0].length) {
+            throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_6X6,
+                                      stateDimEpoch, dY1dY0[0].length);
+        }
+        if (dY1dP != null && stateDimEpoch != dY1dP.length) {
+            throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
+                                      stateDimEpoch, dY1dP.length);
+        }
+
+        // store the matrices as a single dimension array
+        initialized = true;
+        final AbsoluteJacobiansMapper absoluteMapper = getMapper();
+        final double[] p = new double[absoluteMapper.getAdditionalStateDimension() + 6];
+        absoluteMapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
+
+        // set value in propagator
+        return s1.addAdditionalState(name, p);
+
+    }
+
+    /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
+     * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
+     * with the same name as the instance
+     * @see #setInitialJacobians(SpacecraftState)
+     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
+     */
+    public AbsoluteJacobiansMapper getMapper() {
+        if (!initialized) {
+            throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
+        }
+        return new AbsoluteJacobiansMapper(name, selected);
+    }
+
+    /** {@inheritDoc} */
+    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
+
+        // initialize acceleration Jacobians to zero
+        final int paramDimEpoch = selected.getNbParams() + 1; // added epoch
+        final int dimEpoch      = 3;
+        final double[][] dAccdParam = new double[dimEpoch][paramDimEpoch];
+        final double[][] dAccdPos   = new double[dimEpoch][dimEpoch];
+        final double[][] dAccdVel   = new double[dimEpoch][dimEpoch];
+
+        final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(s, 6, propagator.getAttitudeProvider());
+        final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(s, 3, propagator.getAttitudeProvider());
+
+        // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
+        for (final ForceModel forceModel : propagator.getAllForceModels()) {
+            final NumericalGradientConverter converter = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
+            final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
+
+            final FieldVector3D<Gradient> acceleration = forceModel.acceleration(dsState, parameters);
+            final double[] derivativesX = acceleration.getX().getGradient();
+            final double[] derivativesY = acceleration.getY().getGradient();
+            final double[] derivativesZ = acceleration.getZ().getGradient();
+
+            // update Jacobians with respect to state
+            addToRow(derivativesX, 0, converter.getFreeStateParameters(), dAccdPos, dAccdVel);
+            addToRow(derivativesY, 1, converter.getFreeStateParameters(), dAccdPos, dAccdVel);
+            addToRow(derivativesZ, 2, converter.getFreeStateParameters(), dAccdPos, dAccdVel);
+
+            int index = converter.getFreeStateParameters();
+            for (ParameterDriver driver : forceModel.getParametersDrivers()) {
+                if (driver.isSelected()) {
+                    final int parameterIndex = map.get(driver);
+                    dAccdParam[0][parameterIndex] += derivativesX[index];
+                    dAccdParam[1][parameterIndex] += derivativesY[index];
+                    dAccdParam[2][parameterIndex] += derivativesZ[index];
+                    ++index;
+                }
+            }
+
+            // Add the derivatives of the acceleration w.r.t. the Epoch
+            if (forceModel instanceof ThirdBodyAttractionEpoch) {
+                final double[] parametersValues = new double[] {parameters[0].getValue()};
+                final double[] derivatives = ((ThirdBodyAttractionEpoch) forceModel).getDerivativesToEpoch(s, parametersValues);
+                dAccdParam[0][paramDimEpoch - 1] += derivatives[0];
+                dAccdParam[1][paramDimEpoch - 1] += derivatives[1];
+                dAccdParam[2][paramDimEpoch - 1] += derivatives[2];
+            }
+
+        }
+
+        // the variational equations of the complete state Jacobian matrix have the following form:
+
+        // [        |        ]   [                 |                  ]   [     |     ]
+        // [  Adot  |  Bdot  ]   [  dVel/dPos = 0  |  dVel/dVel = Id  ]   [  A  |  B  ]
+        // [        |        ]   [                 |                  ]   [     |     ]
+        // ---------+---------   ------------------+------------------- * ------+------
+        // [        |        ]   [                 |                  ]   [     |     ]
+        // [  Cdot  |  Ddot  ] = [    dAcc/dPos    |     dAcc/dVel    ]   [  C  |  D  ]
+        // [        |        ]   [                 |                  ]   [     |     ]
+
+        // The A, B, C and D sub-matrices and their derivatives (Adot ...) are 3x3 matrices
+
+        // The expanded multiplication above can be rewritten to take into account
+        // the fixed values found in the sub-matrices in the left factor. This leads to:
+
+        //     [ Adot ] = [ C ]
+        //     [ Bdot ] = [ D ]
+        //     [ Cdot ] = [ dAcc/dPos ] * [ A ] + [ dAcc/dVel ] * [ C ]
+        //     [ Ddot ] = [ dAcc/dPos ] * [ B ] + [ dAcc/dVel ] * [ D ]
+
+        // The following loops compute these expressions taking care of the mapping of the
+        // (A, B, C, D) matrices into the single dimension array p and of the mapping of the
+        // (Adot, Bdot, Cdot, Ddot) matrices into the single dimension array pDot.
+
+        // copy C and E into Adot and Bdot
+        final int stateDim = 6;
+        final double[] p = s.getAdditionalState(getName());
+        System.arraycopy(p, dimEpoch * stateDim, pDot, 0, dimEpoch * stateDim);
+
+        // compute Cdot and Ddot
+        for (int i = 0; i < dimEpoch; ++i) {
+            final double[] dAdPi = dAccdPos[i];
+            final double[] dAdVi = dAccdVel[i];
+            for (int j = 0; j < stateDim; ++j) {
+                pDot[(dimEpoch + i) * stateDim + j] =
+                    dAdPi[0] * p[j]                + dAdPi[1] * p[j +     stateDim] + dAdPi[2] * p[j + 2 * stateDim] +
+                    dAdVi[0] * p[j + 3 * stateDim] + dAdVi[1] * p[j + 4 * stateDim] + dAdVi[2] * p[j + 5 * stateDim];
+            }
+        }
+
+        for (int k = 0; k < paramDimEpoch; ++k) {
+            // the variational equations of the parameters Jacobian matrix are computed
+            // one column at a time, they have the following form:
+            // [      ]   [                 |                  ]   [   ]   [                  ]
+            // [ Edot ]   [  dVel/dPos = 0  |  dVel/dVel = Id  ]   [ E ]   [  dVel/dParam = 0 ]
+            // [      ]   [                 |                  ]   [   ]   [                  ]
+            // --------   ------------------+------------------- * ----- + --------------------
+            // [      ]   [                 |                  ]   [   ]   [                  ]
+            // [ Fdot ] = [    dAcc/dPos    |     dAcc/dVel    ]   [ F ]   [    dAcc/dParam   ]
+            // [      ]   [                 |                  ]   [   ]   [                  ]
+
+            // The E and F sub-columns and their derivatives (Edot, Fdot) are 3 elements columns.
+
+            // The expanded multiplication and addition above can be rewritten to take into
+            // account the fixed values found in the sub-matrices in the left factor. This leads to:
+
+            //     [ Edot ] = [ F ]
+            //     [ Fdot ] = [ dAcc/dPos ] * [ E ] + [ dAcc/dVel ] * [ F ] + [ dAcc/dParam ]
+
+            // The following loops compute these expressions taking care of the mapping of the
+            // (E, F) columns into the single dimension array p and of the mapping of the
+            // (Edot, Fdot) columns into the single dimension array pDot.
+
+            // copy F into Edot
+            final int columnTop = stateDim * stateDim + k;
+            pDot[columnTop]                     = p[columnTop + 3 * paramDimEpoch];
+            pDot[columnTop +     paramDimEpoch] = p[columnTop + 4 * paramDimEpoch];
+            pDot[columnTop + 2 * paramDimEpoch] = p[columnTop + 5 * paramDimEpoch];
+
+            // compute Fdot
+            for (int i = 0; i < dimEpoch; ++i) {
+                final double[] dAdP = dAccdPos[i];
+                final double[] dAdV = dAccdVel[i];
+                pDot[columnTop + (dimEpoch + i) * paramDimEpoch] =
+                    dAccdParam[i][k] +
+                    dAdP[0] * p[columnTop]                     + dAdP[1] * p[columnTop +     paramDimEpoch] + dAdP[2] * p[columnTop + 2 * paramDimEpoch] +
+                    dAdV[0] * p[columnTop + 3 * paramDimEpoch] + dAdV[1] * p[columnTop + 4 * paramDimEpoch] + dAdV[2] * p[columnTop + 5 * paramDimEpoch];
+            }
+
+        }
+
+        // these equations have no effect on the main state itself
+        return null;
+
+    }
+
+    /** Fill Jacobians rows.
+     * @param derivatives derivatives of a component of acceleration (along either x, y or z)
+     * @param index component index (0 for x, 1 for y, 2 for z)
+     * @param freeStateParameters number of free parameters, either 3 (position),
+     * 6 (position-velocity) or 7 (position-velocity-mass)
+     * @param dAccdPos Jacobian of acceleration with respect to spacecraft position
+     * @param dAccdVel Jacobian of acceleration with respect to spacecraft velocity
+     */
+    private void addToRow(final double[] derivatives, final int index, final int freeStateParameters,
+                          final double[][] dAccdPos, final double[][] dAccdVel) {
+
+        for (int i = 0; i < 3; ++i) {
+            dAccdPos[index][i] += derivatives[i];
+        }
+        if (freeStateParameters > 3) {
+            for (int i = 0; i < 3; ++i) {
+                dAccdVel[index][i] += derivatives[i + 3];
+            }
+        }
+
     }
 
 }
+

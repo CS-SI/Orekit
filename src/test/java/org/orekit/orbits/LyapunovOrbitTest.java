@@ -30,7 +30,7 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
-import org.orekit.propagation.numerical.cr3bp.StateTransitionMatrix;
+import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -134,14 +134,14 @@ public class LyapunovOrbitTest {
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep, vecAbsoluteTolerances,
                 vecRelativeTolerances);
 
-        final StateTransitionMatrix stm = new StateTransitionMatrix(syst);
+        final STMEquations stm = new STMEquations(syst);
         final SpacecraftState augmentedInitialState =
                         stm.setInitialPhi(initialState);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(syst));
-        propagator.addIntegrableGenerator(stm);
+        propagator.addAdditionalEquations(stm);
         propagator.setInitialState(augmentedInitialState);
         final SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(integrationTime));
         

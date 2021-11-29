@@ -36,7 +36,6 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-@Deprecated
 public class AdditionalEquationsTest {
 
     private double          mu;
@@ -128,10 +127,14 @@ public class AdditionalEquationsTest {
         }
 
         @Override
-        public double[] computeDerivatives(SpacecraftState s, double[] pDot)
-            {
+        public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
             pDot[0] = 1.5;
             return null;
+        }
+
+        @Override
+        public int getDimension() {
+            return 1;
         }
 
         @Override
