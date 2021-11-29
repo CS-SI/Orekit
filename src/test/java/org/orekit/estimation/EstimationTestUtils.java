@@ -299,11 +299,11 @@ public class EstimationTestUtils {
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
-        Assert.assertTrue(estimator.getIterationsCount()  <= iterations);
-        Assert.assertTrue(estimator.getEvaluationsCount() <= evaluations);
+        Assert.assertEquals(iterations, estimator.getIterationsCount());
+        Assert.assertEquals(evaluations, estimator.getEvaluationsCount());
         Optimum optimum = estimator.getOptimum();
-        Assert.assertTrue(optimum.getIterations()  <= iterations);
-        Assert.assertTrue(optimum.getEvaluations() <= evaluations);
+        Assert.assertEquals(iterations, optimum.getIterations());
+        Assert.assertEquals(evaluations, optimum.getEvaluations());
 
         int    k   = 0;
         double sum = 0;
