@@ -64,8 +64,8 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** Unit tests for {@link JacobianColumnGenerator}. */
-public class JacobianColumnGeneratorTest {
+/** Unit tests for {@link IntegrableJacobianColumnGenerator}. */
+public class IntegrableJacobianColumnGeneratorTest {
 
     @Before
     public void setUp() {
@@ -279,7 +279,7 @@ public class JacobianColumnGeneratorTest {
                         new StateTransitionMatrixGenerator("stm",
                                                            propagator.getAllForceModels(),
                                                            propagator.getAttitudeProvider());
-        JacobianColumnGenerator columnGenerator = new JacobianColumnGenerator(stmGenerator, selected.getName());
+        IntegrableJacobianColumnGenerator columnGenerator = new IntegrableJacobianColumnGenerator(stmGenerator, selected.getName());
         propagator.addAdditionalEquations(columnGenerator);
         propagator.addAdditionalEquations(stmGenerator);
 
@@ -311,7 +311,7 @@ public class JacobianColumnGeneratorTest {
                         new StateTransitionMatrixGenerator("stm",
                                                            propagator.getAllForceModels(),
                                                            propagator.getAttitudeProvider());
-        JacobianColumnGenerator columnGenerator = new JacobianColumnGenerator(stmGenerator, "abc");
+        IntegrableJacobianColumnGenerator columnGenerator = new IntegrableJacobianColumnGenerator(stmGenerator, "abc");
         propagator.addAdditionalEquations(columnGenerator);
         propagator.addAdditionalEquations(stmGenerator);
 

@@ -29,6 +29,9 @@ public class DateDriver extends ParameterDriver implements TimeStamped {
     /** Base date corresponding to shift = 0. */
     private final AbsoluteDate base;
 
+    /** Indicator for start date. */
+    private boolean start;
+
     /** Simple constructor.
      * <p>
      * At construction, the parameter is configured as <em>not</em> selected,
@@ -38,10 +41,12 @@ public class DateDriver extends ParameterDriver implements TimeStamped {
      * </p>
      * @param base base date corresponding to shift = 0
      * @param name name of the parameter
+     * @param start if true, the driver corresponds to a start date
      */
-    public DateDriver(final AbsoluteDate base, final String name) {
+    public DateDriver(final AbsoluteDate base, final String name, final boolean start) {
         super(name, 0.0, 1.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.base = base;
+        this.base  = base;
+        this.start = start;
     }
 
     /** Get the base (unshifted) date.
@@ -49,6 +54,13 @@ public class DateDriver extends ParameterDriver implements TimeStamped {
      */
     public AbsoluteDate getBaseDate() {
         return base;
+    }
+
+    /** Check if driver corresponds to a start date.
+     * @return true if driver corresponds to a start date
+     */
+    public boolean isStart() {
+        return start;
     }
 
     /** Get the shifted date.

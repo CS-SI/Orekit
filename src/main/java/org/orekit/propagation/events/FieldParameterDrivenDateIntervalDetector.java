@@ -57,8 +57,8 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
              field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER,
              new FieldStopOnEvent<FieldParameterDrivenDateIntervalDetector<T>, T>(),
-             new DateDriver(refStart, prefix + START_SUFFIX),
-             new DateDriver(refStop, prefix + STOP_SUFFIX));
+             new DateDriver(refStart, prefix + START_SUFFIX, true),
+             new DateDriver(refStop, prefix + STOP_SUFFIX, false));
     }
 
     /** Private constructor with full parameters.

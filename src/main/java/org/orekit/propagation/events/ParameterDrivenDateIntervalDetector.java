@@ -51,8 +51,8 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
                                                final AbsoluteDate refStart, final AbsoluteDate refStop) {
         this(0.5 * refStop.durationFrom(refStart), 1.0e-10, DEFAULT_MAX_ITER,
              new StopOnDecreasing<ParameterDrivenDateIntervalDetector>(),
-             new DateDriver(refStart, prefix + START_SUFFIX),
-             new DateDriver(refStop, prefix + STOP_SUFFIX));
+             new DateDriver(refStart, prefix + START_SUFFIX, true),
+             new DateDriver(refStop, prefix + STOP_SUFFIX, false));
     }
 
     /** Private constructor with full parameters.

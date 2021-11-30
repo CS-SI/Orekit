@@ -25,8 +25,9 @@ public class DateDriverTest {
 
     @Test
     public void testBase() {
-        DateDriver driver = new DateDriver(AbsoluteDate.J2000_EPOCH, "start");
+        DateDriver driver = new DateDriver(AbsoluteDate.J2000_EPOCH, "start", true);
         Assert.assertEquals("start", driver.getName());
+        Assert.assertTrue(driver.isStart());
         Assert.assertFalse(driver.isSelected());
         Assert.assertEquals(0.0,   driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
         Assert.assertNull(driver.getReferenceDate());

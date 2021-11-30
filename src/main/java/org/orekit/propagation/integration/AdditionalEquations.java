@@ -69,7 +69,7 @@ public interface AdditionalEquations {
     String getName();
 
     /** Get the dimension of the generated derivative.
-     * @return dimension of the generated
+     * @return dimension of the generated derivative
      */
     default int getDimension() {
         // FIXME: as of 11.1 there is a default implementation that intentionally returns a wrong (negative) size

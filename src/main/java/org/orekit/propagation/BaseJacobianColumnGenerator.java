@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.linear.MatrixUtils;
@@ -23,14 +23,12 @@ import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
 
-/** Generator for one column of a Jacobian matrix.
+/** Base generator for one column of a Jacobian matrix.
  * @author Luc Maisonobe
  * @since 11.1
  */
-class JacobianColumnGenerator implements AdditionalEquations, StateTransitionMatrixGenerator.PartialsObserver {
+public class BaseJacobianColumnGenerator {
 
     /** Space dimension. */
     private static final int SPACE_DIMENSION = 3;
@@ -41,53 +39,29 @@ class JacobianColumnGenerator implements AdditionalEquations, StateTransitionMat
     /** Threshold for matrix solving. */
     private static final double THRESHOLD = Precision.SAFE_MIN;
 
-    /** Name of the state for State Transition Matrix. */
-    private final String stmName;
-
     /** Name of the parameter corresponding to the column. */
     private final String columnName;
 
-    /** Last value computed for the partial derivatives. */
-    private final double[] pDot;
-
-    /** Mast value computed for the
     /** Simple constructor.
-     * <p>
-     * The generator for State Transition Matrix <em>must</em> be registered as
-     * an integrable generator to the same propagator as the instance, as it
-     * must be scheduled to update the state before the instance
-     * </p>
-     * @param stmGenerator generator for State Transition Matrix
      * @param columnName name of the parameter corresponding to the column
      */
-    JacobianColumnGenerator(final StateTransitionMatrixGenerator stmGenerator, final String columnName) {
-        this.stmName    = stmGenerator.getName();
+    protected BaseJacobianColumnGenerator(final String columnName) {
         this.columnName = columnName;
-        this.pDot       = new double[STATE_DIMENSION];
-        stmGenerator.addObserver(columnName, this);
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Get the name of the additional state.
+     * @return name of the additional state (names containing "orekit"
+     * with any case are reserved for the library internal use)
+     */
     public String getName() {
         return columnName;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Get the dimension of the generated column.
+     * @return dimension of the generated column
+     */
     public int getDimension() {
         return STATE_DIMENSION;
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The column derivative can be computed only if the State Transition Matrix derivatives
-     * are available, as it implies the STM generator has already been run.
-     * </p>
-     */
-    @Override
-    public boolean yield(final SpacecraftState state) {
-        return !state.hasAdditionalStateDerivative(stmName);
     }
 
     /** Set the initial value of the column.
@@ -129,25 +103,6 @@ class JacobianColumnGenerator implements AdditionalEquations, StateTransitionMat
         // set additional state
         return state.addAdditionalState(columnName, column);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void partialsComputed(final SpacecraftState state, final double[] factor, final double[] accelerationPartials) {
-        // retrieve current Jacobian column
-        final double[] p = state.getAdditionalState(getName());
-
-        // compute time derivative of the Jacobian column
-        StateTransitionMatrixGenerator.multiplyMatrix(factor, p, pDot, 1);
-        pDot[3] += accelerationPartials[0];
-        pDot[4] += accelerationPartials[1];
-        pDot[5] += accelerationPartials[2];
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] derivatives(final SpacecraftState s) {
-        return pDot;
     }
 
 }
