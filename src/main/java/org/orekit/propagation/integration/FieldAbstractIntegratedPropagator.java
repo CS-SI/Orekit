@@ -21,8 +21,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -456,14 +458,15 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                                                         mathFinalState.getPrimaryDerivative(),
                                                         propagationType);
             if (!additionalEquations.isEmpty()) {
-                final T[] secondary = mathFinalState.getSecondaryState(1);
-                int offset = 0;
+                final T[] secondary            = mathFinalState.getSecondaryState(1);
+                final T[] secondaryDerivatives = mathFinalState.getSecondaryDerivative(1);
                 for (FieldAdditionalEquations<T> equations : additionalEquations) {
-                    finalState = finalState.addAdditionalState(equations.getName(),
-                                                               Arrays.copyOfRange(secondary,
-                                                                                  offset,
-                                                                                  offset + equations.getDimension()));
-                    offset += equations.getDimension();
+                    final String   name        = equations.getName();
+                    final int      offset      = secondaryOffsets.get(name);
+                    final int      dimension   = equations.getDimension();
+                    finalState = finalState.
+                                 addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension)).
+                                 addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivatives, offset, offset + dimension));
                 }
             }
             finalState = updateAdditionalStates(finalState);
@@ -773,16 +776,36 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             // update space dynamics view
             // the integrable generators generate method will be called here,
             // according to the generators yield order
-            final FieldSpacecraftState<T> currentState = convert(t, primary, primaryDot, secondary);
+            FieldSpacecraftState<T> updated = convert(t, primary, primaryDot, secondary);
 
-            // gather the derivatives from all integrable generators
+            // set up queue for equations
+            final Queue<FieldAdditionalEquations<T>> pending = new LinkedList<>(additionalEquations);
+
+            // gather the derivatives from all additional equations, taking care of dependencies
             final T[] secondaryDot = MathArrays.buildArray(t.getField(), combinedDimension);
-            // FIXME: use yield to compute derivatives in dependencies order
-            for (final FieldAdditionalEquations<T> equations : additionalEquations) {
-                final String name      = equations.getName();
-                final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = equations.getDimension();
-                System.arraycopy(equations.derivatives(currentState), 0, secondaryDot, offset, dimension);
+            int yieldCount = 0;
+            while (!pending.isEmpty()) {
+                final FieldAdditionalEquations<T> equations = pending.remove();
+                if (equations.yield(updated)) {
+                    // these equations have to wait for another set,
+                    // we put them again in the pending queue
+                    pending.add(equations);
+                    if (++yieldCount >= pending.size()) {
+                        // all pending equations yielded!, they probably need data not yet initialized
+                        // we let the propagation proceed, if these data are really needed right now
+                        // an appropriate exception will be triggered when caller tries to access them
+                        break;
+                    }
+                } else {
+                    // we can use these equations right now
+                    final String name        = equations.getName();
+                    final int    offset      = secondaryOffsets.get(name);
+                    final int    dimension   = equations.getDimension();
+                    final T[]    derivatives = equations.derivatives(updated);
+                    System.arraycopy(derivatives, 0, secondaryDot, offset, dimension);
+                    updated = updated.addAdditionalStateDerivative(name, derivatives);
+                    yieldCount = 0;
+                }
             }
 
             return secondaryDot;

@@ -132,6 +132,36 @@ public class AdditionalEquationsTest {
 
     }
 
+    @Test
+    public void testYield() {
+
+        // setup
+        final double init1 = 1.0;
+        final double init2 = 2.0;
+        final double rate  = 0.5;
+        final double dt    = 600;
+        Yield yield1 = new Yield(null, "yield-1", rate);
+        Yield yield2 = new Yield(yield1.getName(), "yield-2", Double.NaN);
+
+        // action
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(60);
+        NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
+        propagatorNumerical.setInitialState(initialState.
+                                            addAdditionalState(yield1.getName(), init1).
+                                            addAdditionalState(yield2.getName(), init2));
+        propagatorNumerical.addAdditionalEquations(yield2); // we intentionally register yield2 before yield 1 to check reordering
+        propagatorNumerical.addAdditionalEquations(yield1);
+        SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
+
+        // verify
+        Assert.assertEquals(init1 + dt * rate, finalState.getAdditionalState(yield1.getName())[0],           1.0e-10);
+        Assert.assertEquals(init2 + dt * rate, finalState.getAdditionalState(yield2.getName())[0],           1.0e-10);
+        Assert.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield1.getName())[0], 1.0e-10);
+        Assert.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield2.getName())[0], 1.0e-10);
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
@@ -153,7 +183,7 @@ public class AdditionalEquationsTest {
         tolerance    = null;
     }
 
-    public static class Linear implements AdditionalEquations {
+    private static class Linear implements AdditionalEquations {
 
         private String  name;
         private double  expectedAtInit;
@@ -190,6 +220,40 @@ public class AdditionalEquationsTest {
 
         public boolean wasCalled() {
             return called;
+        }
+
+    }
+
+    private static class Yield implements AdditionalEquations {
+
+        private String dependency;
+        private String name;
+        private double rate;
+
+        public Yield(final String dependency, final String name, final double rate) {
+            this.dependency = dependency;
+            this.name       = name;
+            this.rate       = rate;
+        }
+
+        @Override
+        public double[] derivatives(final SpacecraftState s) {
+            return dependency == null ? new double[] { rate } : s.getAdditionalStateDerivative(dependency);
+        }
+
+        @Override
+        public boolean yield(final SpacecraftState state) {
+            return dependency != null && !state.hasAdditionalStateDerivative(dependency);
+        }
+
+        @Override
+        public int getDimension() {
+            return 1;
+        }
+
+        @Override
+        public String getName() {
+            return name;
         }
 
     }

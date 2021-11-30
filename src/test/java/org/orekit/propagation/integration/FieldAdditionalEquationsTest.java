@@ -65,8 +65,13 @@ public class FieldAdditionalEquationsTest {
     }
 
     @Test
-    public void testResetStateT() {
+    public void testResetState() {
         doTestResetState(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testYield() {
+        doTestYield(Decimal64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInitNumerical(Field<T> field) {
@@ -149,6 +154,36 @@ public class FieldAdditionalEquationsTest {
 
     }
 
+    private <T extends CalculusFieldElement<T>> void doTestYield(Field<T> field) {
+
+        // setup
+        final double init1 = 1.0;
+        final double init2 = 2.0;
+        final double rate  = 0.5;
+        final double dt    = 600;
+        Yield<T> yield1 = new Yield<>(null, "yield-1", rate);
+        Yield<T> yield2 = new Yield<>(yield1.getName(), "yield-2", Double.NaN);
+
+        // action
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
+                        tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(60);
+        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
+        propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
+                                            addAdditionalState(yield1.getName(), field.getZero().newInstance(init1)).
+                                            addAdditionalState(yield2.getName(), field.getZero().newInstance(init2)));
+        propagatorNumerical.addAdditionalEquations(yield2); // we intentionally register yield2 before yield 1 to check reordering
+        propagatorNumerical.addAdditionalEquations(yield1);
+        FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
+
+        // verify
+        Assert.assertEquals(init1 + dt * rate, finalState.getAdditionalState(yield1.getName())[0].getReal(),           1.0e-10);
+        Assert.assertEquals(init2 + dt * rate, finalState.getAdditionalState(yield2.getName())[0].getReal(),           1.0e-10);
+        Assert.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield1.getName())[0].getReal(), 1.0e-10);
+        Assert.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield2.getName())[0].getReal(), 1.0e-10);
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
@@ -170,7 +205,7 @@ public class FieldAdditionalEquationsTest {
         tolerance    = null;
     }
 
-    public static class Linear<T extends CalculusFieldElement<T>> implements FieldAdditionalEquations<T> {
+    private static class Linear<T extends CalculusFieldElement<T>> implements FieldAdditionalEquations<T> {
 
         private String  name;
         private double  expectedAtInit;
@@ -209,6 +244,47 @@ public class FieldAdditionalEquationsTest {
 
         public boolean wasCalled() {
             return called;
+        }
+
+    }
+
+    private static class Yield<T extends CalculusFieldElement<T>> implements FieldAdditionalEquations<T> {
+
+        private String dependency;
+        private String name;
+        private double rate;
+
+        public Yield(final String dependency, final String name, final double rate) {
+            this.dependency = dependency;
+            this.name       = name;
+            this.rate       = rate;
+        }
+
+        @Override
+        public T[] derivatives(final FieldSpacecraftState<T> s) {
+            final T[] pDot;
+            if (dependency == null) {
+                pDot = MathArrays.buildArray(s.getDate().getField(), 1);
+                pDot[0] = s.getDate().getField().getZero().newInstance(rate);
+            } else {
+                pDot = s.getAdditionalStateDerivative(dependency);
+            }
+            return pDot;
+        }
+
+        @Override
+        public boolean yield(final FieldSpacecraftState<T> state) {
+            return dependency != null && !state.hasAdditionalStateDerivative(dependency);
+        }
+
+        @Override
+        public int getDimension() {
+            return 1;
+        }
+
+        @Override
+        public String getName() {
+            return name;
         }
 
     }
