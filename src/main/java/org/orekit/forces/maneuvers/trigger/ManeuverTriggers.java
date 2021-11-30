@@ -21,9 +21,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.hipparchus.Field;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -37,12 +37,28 @@ import org.orekit.utils.ParameterDriver;
  */
 public interface ManeuverTriggers {
 
-    /** Initialization method.
-     *  Called in when Maneuver.init(...) is called (from ForceModel.init(...)).
+    /** Initialization method called at propagation start.
+     * <p>
+     * The default implementation does nothing.
+     * </p>
      * @param initialState initial spacecraft state (at the start of propagation).
      * @param target date of propagation. Not equal to {@code initialState.getDate()}.
      */
     default void init(SpacecraftState initialState, AbsoluteDate target) {
+        // nothing by default
+    }
+
+    /** Initialization method called at propagation start.
+     * <p>
+     * The default implementation does nothing.
+     * </p>
+     * @param initialState initial spacecraft state (at the start of propagation).
+     * @param target date of propagation. Not equal to {@code initialState.getDate()}.
+     * @param <T> type of the elements
+     * @since 11.1
+     */
+    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+        init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
     /** Get the event detectors associated with the triggers.
@@ -52,7 +68,7 @@ public interface ManeuverTriggers {
 
     /** Get the event detectors associated with the triggers.
      * @param field field to which the state belongs
-     * @param <T> extends CalculusFieldElement&lt;T&gt;
+     * @param <T> type of the field elements
      * @return the event detectors
      */
     <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
@@ -67,7 +83,7 @@ public interface ManeuverTriggers {
     /** Find out if the maneuver is firing or not.
      * @param date current date
      * @param parameters maneuver triggers parameters
-     * @param <T> extends CalculusFieldElement&lt;T&gt;
+     * @param <T> type of the field elements
      * @return true if the maneuver is firing, false otherwise
      */
     <T extends CalculusFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters);

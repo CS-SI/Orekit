@@ -102,6 +102,13 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         return name;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        freezeParametersSelection();
+        return 6 * (6 + selected.getNbParams());
+    }
+
     /** Freeze the selected parameters from the force models.
      */
     private void freezeParametersSelection() {

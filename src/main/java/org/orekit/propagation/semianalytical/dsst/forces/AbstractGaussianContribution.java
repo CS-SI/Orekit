@@ -194,6 +194,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
+        // Initialize the numerical force model
+        contribution.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public List<ParameterDriver> getParametersDrivers() {
 
         // Parameter drivers

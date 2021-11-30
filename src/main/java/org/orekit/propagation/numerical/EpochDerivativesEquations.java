@@ -108,6 +108,13 @@ public class EpochDerivativesEquations implements AdditionalEquations {
         return name;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        freezeParametersSelection();
+        return 6 * (6 + selected.getNbParams() + 1);
+    }
+
     /** Freeze the selected parameters from the force models.
      */
     private void freezeParametersSelection() {

@@ -131,6 +131,12 @@ public class STMEquations implements AdditionalEquations {
         return name;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        return DIM * DIM;
+    }
+
     /** Method returning the State Transition Matrix.
      * @param s SpacecraftState of the system
      * @return phiM State Transition Matrix

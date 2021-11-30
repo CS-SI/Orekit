@@ -229,10 +229,14 @@ public class NumericalConverterTest {
                 return "linear";
             }
 
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = 1.0;
-                return new double[7];
+            public int getDimension() {
+                return 1;
             }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
         });
 
         builder.addAdditionalEquations(new AdditionalEquations() {
@@ -241,15 +245,19 @@ public class NumericalConverterTest {
     	        return "linear";
     	    }
 
-    	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-    	        pDot[0] = 1.0;
-    		    return new double[7];
-    	    }
+            public int getDimension() {
+                return 1;
+            }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
         });
 
         try {
-	    // Build the numerical propagator
-	    builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            // Build the numerical propagator
+            builder.buildPropagator(builder.getSelectedNormalizedParameters());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
