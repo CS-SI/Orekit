@@ -46,7 +46,7 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-/** Unit tests for {@link AbsolutePartialDerivativesEquations}. */
+/** Unit tests for {@link PartialDerivativesEquations}. */
 public class AbsolutePartialDerivativesEquationsTest {
 
     /** arbitrary date */
@@ -84,14 +84,12 @@ public class AbsolutePartialDerivativesEquationsTest {
     }
 
     /**
-     * check {@link AbsolutePartialDerivativesEquations#computeDerivatives(SpacecraftState,
-     * double[])} correctly sets the satellite velocity.
+     * check {@link PartialDerivativesEquations#derivatives(SpacecraftState)} correctly sets the satellite velocity.
      */
     @Test
     public void testComputeDerivativesStateVelocity() {
-
         //action
-        pde.generate(state);
+        pde.derivatives(state);
 
         //verify
         MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));

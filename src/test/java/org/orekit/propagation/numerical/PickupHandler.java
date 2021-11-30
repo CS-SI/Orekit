@@ -17,26 +17,27 @@
 package org.orekit.propagation.numerical;
 
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.IntegrableGenerator;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
-class PickUpHandler implements OrekitStepHandler {
+class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator.PartialsObserver {
 
     private final NumericalPropagator propagator;
     private final MatricesHarvester harvester;
     private final AbsoluteDate pickUpDate;
     private final String accParamName;
     private final String columnName;
+    private StateTransitionMatrixGenerator stmGenerator;
     private SpacecraftState s0;
     private RealMatrix dYdY0;
     private RealMatrix dYdP;
     private double[] accPartial;
-    private StateTransitionMatrixGenerator stmGenerator;
 
     public PickUpHandler(final NumericalPropagator propagator, final AbsoluteDate pickUpDate,
                          final String accParamName, final String columnName) {
@@ -69,9 +70,10 @@ class PickUpHandler implements OrekitStepHandler {
     public void init(SpacecraftState s0, AbsoluteDate t) {
         // as the generators are only created on the fly at propagation start
         // we retrieve the STM generator here
-        for (final IntegrableGenerator generator : propagator.getIntegrableGenerators()) {
-            if (generator instanceof StateTransitionMatrixGenerator) {
-                stmGenerator = (StateTransitionMatrixGenerator) generator;
+        for (final AdditionalEquations equations : propagator.getAdditionalEquations()) {
+            if (equations instanceof StateTransitionMatrixGenerator) {
+                stmGenerator = (StateTransitionMatrixGenerator) equations;
+                stmGenerator.addObserver(accParamName, this);
             }
         }
     }
@@ -96,14 +98,19 @@ class PickUpHandler implements OrekitStepHandler {
         }
     }
 
+    public void partialsComputed(final SpacecraftState state, final double[] newFactor, final double[] newAccelerationPartials) {
+        if (accParamName != null &&
+            (pickUpDate == null || FastMath.abs(pickUpDate.durationFrom(state.getDate())) < 1.0e-6)) {
+            accPartial = newAccelerationPartials.clone();
+        }
+    }
+
     private void checkState(final SpacecraftState state) {
+        stmGenerator.derivatives(state); // just for the side effect of calling partialsComputed
         Assert.assertEquals(columnName == null ? 1 : 2, state.getAdditionalStatesValues().size());
         dYdY0 = harvester.getStateTransitionMatrix(state);
-        if (accParamName != null) {
-            accPartial = stmGenerator.getAccelerationPartials(accParamName);
-        }
-        dYdP = harvester.getParametersJacobian(state); // may be null
-        s0 = state;
+        dYdP  = harvester.getParametersJacobian(state); // may be null
+        s0    = state;
     }
 
 }

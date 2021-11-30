@@ -21,11 +21,9 @@ import java.util.List;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivatives;
 import org.orekit.utils.ParameterDriversList;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
@@ -65,13 +63,7 @@ public class KalmanModel extends AbstractKalmanModel {
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
             final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
-            final PartialDerivatives pde = new PartialDerivatives(equationName, (NumericalPropagator) getReferenceTrajectories()[k]);
-
-            // Reset the Jacobians
-            final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();
-            final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-            getReferenceTrajectories()[k].resetInitialState(stateWithDerivatives);
-            harvesters[k] = pde.getMapper();
+            harvesters[k] = ((NumericalPropagator) getReferenceTrajectories()[k]).setupMatricesComputation(equationName, null, null);
         }
 
         // Update Jacobian harvesters

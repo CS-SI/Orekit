@@ -24,13 +24,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.IntegrableGenerator;
+import org.orekit.propagation.integration.AdditionalEquations;
 
 /** Generator for one column of a Jacobian matrix.
  * @author Luc Maisonobe
  * @since 11.1
  */
-class JacobianColumnGenerator implements IntegrableGenerator {
+class JacobianColumnGenerator implements AdditionalEquations, StateTransitionMatrixGenerator.PartialsObserver {
 
     /** Space dimension. */
     private static final int SPACE_DIMENSION = 3;
@@ -41,12 +41,16 @@ class JacobianColumnGenerator implements IntegrableGenerator {
     /** Threshold for matrix solving. */
     private static final double THRESHOLD = Precision.SAFE_MIN;
 
-    /** Generator for State Transition Matrix. */
-    private final StateTransitionMatrixGenerator stmGenerator;
+    /** Name of the state for State Transition Matrix. */
+    private final String stmName;
 
     /** Name of the parameter corresponding to the column. */
     private final String columnName;
 
+    /** Last value computed for the partial derivatives. */
+    private final double[] pDot;
+
+    /** Mast value computed for the
     /** Simple constructor.
      * <p>
      * The generator for State Transition Matrix <em>must</em> be registered as
@@ -57,8 +61,10 @@ class JacobianColumnGenerator implements IntegrableGenerator {
      * @param columnName name of the parameter corresponding to the column
      */
     JacobianColumnGenerator(final StateTransitionMatrixGenerator stmGenerator, final String columnName) {
-        this.stmGenerator = stmGenerator;
-        this.columnName   = columnName;
+        this.stmName    = stmGenerator.getName();
+        this.columnName = columnName;
+        this.pDot       = new double[STATE_DIMENSION];
+        stmGenerator.addObserver(columnName, this);
     }
 
     /** {@inheritDoc} */
@@ -81,7 +87,7 @@ class JacobianColumnGenerator implements IntegrableGenerator {
      */
     @Override
     public boolean yield(final SpacecraftState state) {
-        return !state.hasAdditionalStateDerivative(stmGenerator.getName());
+        return !state.hasAdditionalStateDerivative(stmName);
     }
 
     /** Set the initial value of the column.
@@ -126,34 +132,22 @@ class JacobianColumnGenerator implements IntegrableGenerator {
     }
 
     /** {@inheritDoc} */
-    public double[] generate(final SpacecraftState s) {
-
-        // Assuming position is (px, py, pz), velocity is (vx, vy, vz) and the acceleration
-        // due to the force models is (Σ ax, Σ ay, Σ az), the differential equation for
-        // Jacobian matrix with respect to parameter q is:
-        //                  [     0          0          0            1          0          0   ]            [    0   ]
-        //                  [     0          0          0            0          1          0   ]            [    0   ]
-        //  d(∂C/∂Q)/dt  =  [     0          0          0            1          0          1   ] ⨯ ∂C/∂Q +  [    0   ]
-        //                  [Σ dax/dpx  Σ dax/dpy  Σ dax/dpz    Σ dax/dvx  Σ dax/dvy  Σ dax/dvz]            [ dax/dq ]
-        //                  [Σ day/dpx  Σ day/dpy  Σ dax/dpz    Σ day/dvx  Σ day/dvy  Σ dax/dvz]            [ day/dq ]
-        //                  [Σ daz/dpx  Σ daz/dpy  Σ dax/dpz    Σ daz/dvx  Σ daz/dvy  Σ dax/dvz]            [ daz/dq ]
-        // the factor matrix has already been computed by the STM generator before this generator is called
-
+    @Override
+    public void partialsComputed(final SpacecraftState state, final double[] factor, final double[] accelerationPartials) {
         // retrieve current Jacobian column
-        final double[] p    = s.getAdditionalState(getName());
-        final double[] pDot = new double[p.length];
-
-        // retrieve partial derivatives of the acceleration with respect to column parameter
-        final double[] partials = stmGenerator.getAccelerationPartials(getName());
+        final double[] p = state.getAdditionalState(getName());
 
         // compute time derivative of the Jacobian column
-        stmGenerator.multiplyMatrix(p, pDot, 1);
-        pDot[3] += partials[0];
-        pDot[4] += partials[1];
-        pDot[5] += partials[2];
+        StateTransitionMatrixGenerator.multiplyMatrix(factor, p, pDot, 1);
+        pDot[3] += accelerationPartials[0];
+        pDot[4] += accelerationPartials[1];
+        pDot[5] += accelerationPartials[2];
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public double[] derivatives(final SpacecraftState s) {
         return pDot;
-
     }
 
 }

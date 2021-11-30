@@ -247,7 +247,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H2);
+                return Stream.of(H2, COMMENTS);
             }
 
         },
@@ -283,7 +283,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H3);
+                return Stream.of(H3, COMMENTS);
             }
 
         },
@@ -320,7 +320,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H4);
+                return Stream.of(H4, COMMENTS);
             }
 
         },
@@ -385,7 +385,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H5, C0);
+                return Stream.of(H5, C0, COMMENTS);
             }
 
         },
@@ -412,7 +412,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C0);
+                return Stream.of(C0, COMMENTS);
             }
 
         },
@@ -444,7 +444,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -481,7 +481,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -528,7 +528,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -562,7 +562,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -605,7 +605,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -638,7 +638,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -676,7 +676,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -693,7 +693,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -723,7 +723,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, TEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(H8, TEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -754,7 +754,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, ELEVEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(H8, ELEVEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -771,7 +771,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, TEN, ELEVEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(H8, TEN, ELEVEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -803,7 +803,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -820,7 +820,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -865,7 +865,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, TEN, ELEVEN, ANGLES, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(H8, METEO, TEN, ELEVEN, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -882,7 +882,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY);
+                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -899,7 +899,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY);
+                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -916,7 +916,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY);
+                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -933,7 +933,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, H8);
+                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, H8, COMMENTS);
             }
 
         },
@@ -950,7 +950,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY);
+                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -971,7 +971,9 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H1, H2, H3, H4, H5, H8, C0, C1, C2, C3, C4, C5, C6, C7);
+                return Stream.of(H1, H2, H3, H4, H5, H8, H9, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO,
+                                 METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS);
+
             }
 
         },
@@ -1001,7 +1003,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(H1, H9);
+                return Stream.of(H1, H9, COMMENTS);
             }
 
         },

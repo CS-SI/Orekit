@@ -17,7 +17,9 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.MathArrays;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface allows users to add their own differential equations to a numerical propagator.
@@ -66,6 +68,41 @@ public interface FieldAdditionalEquations<T extends CalculusFieldElement<T>> {
      */
     String getName();
 
+    /** Get the dimension of the generated derivative.
+     * @return dimension of the generated
+     */
+    default int getDimension() {
+        // FIXME: as of 11.1 there is a default implementation that intentionally returns a wrong (negative) size
+        // the default implementation should be removed in 12.0
+        return -1;
+    }
+
+    /** Check if this provider should yield so another provider has an opportunity to add missing parts.
+     * <p>
+     * Decision to yield is often based on an additional state being {@link SpacecraftState#hasAdditionalState(String)
+     * already available} in the provided {@code state} (but it could theoretically also depend on
+     * an additional state derivative being {@link SpacecraftState#hasAdditionalStateDerivative(String)
+     * already available}, or any other criterion). If for example a provider needs the state transition
+     * matrix, it could implement this method as:
+     * </p>
+     * <pre>{@code
+     * public boolean yield(final SpacecraftState state) {
+     *     return !state.getAdditionalStates().containsKey("STM");
+     * }
+     * }</pre>
+     * <p>
+     * The default implementation returns {@code false}, meaning that derivative data can be
+     * {@link #derivatives(SpacecraftState) computed} immediately.
+     * </p>
+     * @param state state to handle
+     * @return true if this provider should yield so another provider has an opportunity to add missing parts
+     * as the state is incrementally built up
+     * @since 11.1
+     */
+    default boolean yield(FieldSpacecraftState<T> state) {
+        return false;
+    }
+
     /**
      * Initialize the equations at the start of propagation.
      *
@@ -101,7 +138,27 @@ public interface FieldAdditionalEquations<T extends CalculusFieldElement<T>> {
      * should be put
      * @return cumulative effect of the equations on the main state (may be null if
      * equations do not change main state at all)
+     * @deprecated as of 11.1, replaced by {@link #derivatives(FieldSpacecraftState)}
      */
-    T[] computeDerivatives(FieldSpacecraftState<T> s,  T[] pDot);
+    @Deprecated
+    default T[] computeDerivatives(FieldSpacecraftState<T> s,  T[] pDot) {
+        return null;
+    }
+
+    /** Compute the derivatives related to the additional state parameters.
+     * @param s current state information: date, kinematics, attitude, and
+     * additional states this equations depend on (according to the
+     * {@link #yield(SpacecraftState) yield} method)
+     * @return computed derivatives
+     * @since 11.1
+     */
+    default T[] derivatives(FieldSpacecraftState<T> s) {
+        // FIXME: as of 11.1 there is a default implementation that delegates
+        // to computeDerivatives. This default implementation should be removed when
+        // computeDerivatives is removed in 12.0
+        final T[] pDot = MathArrays.buildArray(s.getDate().getField(), getDimension());
+        computeDerivatives(s, pDot);
+        return pDot;
+    }
 
 }

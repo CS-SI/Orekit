@@ -39,8 +39,8 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.StackableGenerator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -79,8 +79,7 @@ public class TabulatedEphemerisTest {
                                                               c.getFrame(), c.getMu()),
                                            state.getAttitude(),
                                            state.getMass(),
-                                           state.getAdditionalStatesValues(),
-                                           state.getAdditionalStatesDerivatives());
+                                           state.getAdditionalStatesValues());
             }
         }, 8.5, 0.22);
     }
@@ -111,19 +110,19 @@ public class TabulatedEphemerisTest {
         EcksteinHechlerPropagator eck =
             new EcksteinHechlerPropagator(transPar, mass,
                                           ae, mu, c20, c30, c40, c50, c60);
-        StackableGenerator generator = new StackableGenerator() {
+        AdditionalStateProvider provider = new AdditionalStateProvider() {
 
             public String getName() {
                 return "dt";
             }
 
-           public double[] generate(SpacecraftState state) {
+           public double[] getAdditionalState(SpacecraftState state) {
                 return new double[] { state.getDate().durationFrom(initDate) };
             }
         };
-        eck.addClosedFormGenerator(generator);
+        eck.addAdditionalStateProvider(provider);
         try {
-            eck.addClosedFormGenerator(generator);
+            eck.addAdditionalStateProvider(provider);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,

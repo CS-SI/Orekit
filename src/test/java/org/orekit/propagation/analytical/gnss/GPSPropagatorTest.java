@@ -70,14 +70,14 @@ public class GPSPropagatorTest {
     @Test
     public void testClockCorrections() {
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
-        propagator.addClosedFormGenerator(new ClockCorrectionsGenerator(almanacs.get(0)));
+        propagator.addAdditionalStateProvider(new ClockCorrectionsProvider(almanacs.get(0)));
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
         double dtRelMin = 0;
         double dtRelMax = 0;
         for (double dt = 0; dt < 0.5 * Constants.JULIAN_DAY; dt += 1.0) {
             SpacecraftState state = propagator.propagate(date0.shiftedBy(dt));
-            double[] corrections = state.getAdditionalState(ClockCorrectionsGenerator.CLOCK_CORRECTIONS);
+            double[] corrections = state.getAdditionalState(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
             Assert.assertEquals(3, corrections.length);
             Assert.assertEquals(1.33514404296875E-05, corrections[0], 1.0e-19);
             dtRelMin = FastMath.min(dtRelMin, corrections[1]);

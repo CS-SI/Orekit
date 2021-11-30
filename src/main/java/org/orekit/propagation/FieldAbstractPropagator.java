@@ -17,14 +17,12 @@
 package org.orekit.propagation;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -33,10 +31,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
-import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Common handling of {@link Propagator} methods for analytical propagators.
@@ -59,13 +56,11 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     /** Attitude provider. */
     private AttitudeProvider attitudeProvider;
 
-    /** Closed form generators.
-     * @since 11.1
-     */
-    private final List<FieldStackableGenerator<T>> closedFormGenerators;
+    /** Additional state providers. */
+    private final List<FieldAdditionalStateProvider<T>> additionalStateProviders;
 
-    /** States managed by no generators. */
-    private final Map<String, TimeSpanMap<T[]>> unmanagedStates;
+    /** States managed by neither additional equations nor state providers. */
+    private final Map<String, FieldTimeSpanMap<T[], T>> unmanagedStates;
 
     /** Field used.*/
     private final Field<T> field;
@@ -77,10 +72,10 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
      * @param field setting the field
      */
     protected FieldAbstractPropagator(final Field<T> field) {
-        this.field      = field;
-        multiplexer     = new FieldStepHandlerMultiplexer<>();
-        closedFormGenerators        = new ArrayList<>();
-        unmanagedStates = new HashMap<>();
+        this.field               = field;
+        multiplexer              = new FieldStepHandlerMultiplexer<>();
+        additionalStateProviders = new ArrayList<>();
+        unmanagedStates          = new HashMap<>();
     }
 
     /** Set a start date.
@@ -135,47 +130,29 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @Deprecated
-    @Override
     public void addAdditionalStateProvider(final FieldAdditionalStateProvider<T> additionalStateProvider) {
-        addClosedFormGenerator(new FieldAdditionalStateProviderAdapter<>(additionalStateProvider));
-    }
-
-    /** {@inheritDoc} */
-    @SuppressWarnings("deprecation")
-    @Deprecated
-    @Override
-    public List<FieldAdditionalStateProvider<T>> getAdditionalStateProviders() {
-        return getClosedFormGenerators().
-                        stream().
-                        map(u -> new FieldClosedFormAdapter<>(u)).
-                        collect(Collectors.toList());
-    }
-
-    /** {@inheritDoc} */
-    public void addClosedFormGenerator(final FieldStackableGenerator<T> generator) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(generator.getName())) {
+        if (isAdditionalStateManaged(additionalStateProvider.getName())) {
             // this additional state is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      generator.getName());
+                                      additionalStateProvider.getName());
         }
 
         // this is really a new name, add it
-        closedFormGenerators.add(generator);
+        additionalStateProviders.add(additionalStateProvider);
 
     }
 
     /** {@inheritDoc} */
-    public List<FieldStackableGenerator<T>> getClosedFormGenerators() {
-        return Collections.unmodifiableList(closedFormGenerators);
+    public List<FieldAdditionalStateProvider<T>> getAdditionalStateProviders() {
+        return Collections.unmodifiableList(additionalStateProviders);
     }
 
     /** Update state by adding unmanaged states.
      * @param original original state
      * @return updated state, with unmanaged states included
-     * @see #updateAdditionalStates(FieldSpacecraftState)
+     * @see #updateAdditionalStates(SpacecraftState)
      */
     protected FieldSpacecraftState<T> updateUnmanagedStates(final FieldSpacecraftState<T> original) {
 
@@ -184,59 +161,45 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
         FieldSpacecraftState<T> updated = original;
 
         // update the states not managed by providers
-        for (final Map.Entry<String, TimeSpanMap<T[]>> entry : unmanagedStates.entrySet()) {
+        for (final Map.Entry<String, FieldTimeSpanMap<T[], T>> entry : unmanagedStates.entrySet()) {
             updated = updated.addAdditionalState(entry.getKey(),
-                                                 entry.getValue().get(original.getDate().toAbsoluteDate()));
+                                                 entry.getValue().get(original.getDate()));
         }
 
         return updated;
 
     }
 
-    /** Get all generators.
-     * @return all generators
-     * @since 11.1
-     */
-    protected Collection<FieldStackableGenerator<T>> getAllGenerators() {
-        return closedFormGenerators;
-    }
-
     /** Update state by adding all additional states.
      * @param original original state
      * @return updated state, with all additional states included
-     * (including {@link #updateUnmanagedStates(FieldSpacecraftState) unmanaged} states)
-     * @see #addClosedFormGenerator(FieldStackableGenerator)
-     * @see #updateUnmanagedStates(FieldSpacecraftState)
+     * @see #addAdditionalStateProvider(FieldAdditionalStateProvider)
      */
     protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
 
         // start with original state and unmanaged states
         FieldSpacecraftState<T> updated = updateUnmanagedStates(original);
 
-        // set up queue for generators
-        final Queue<FieldStackableGenerator<T>> pending = new LinkedList<>(getAllGenerators());
+        // set up queue for providers
+        final Queue<FieldAdditionalStateProvider<T>> pending = new LinkedList<>(getAdditionalStateProviders());
 
-        // update the additional states managed by generators, taking care of dependencies
+        // update the additional states managed by providers, taking care of dependencies
         int yieldCount = 0;
         while (!pending.isEmpty()) {
-            final FieldStackableGenerator<T> generator = pending.remove();
-            if (generator.yield(updated)) {
+            final FieldAdditionalStateProvider<T> provider = pending.remove();
+            if (provider.yield(updated)) {
                 // this generator has to wait for another one,
                 // we put it again in the pending queue
-                pending.add(generator);
+                pending.add(provider);
                 if (++yieldCount >= pending.size()) {
-                    // all pending generators yielded!, they probably need data not yet initialized
+                    // all pending providers yielded!, they probably need data not yet initialized
                     // we let the propagation proceed, if these data are really needed right now
                     // an appropriate exception will be triggered when caller tries to access them
                     break;
                 }
             } else {
-                // we can use this generator right now
-                if (generator.isClosedForm()) {
-                    updated = updated.addAdditionalState(generator.getName(), generator.generate(updated));
-                } else {
-                    updated = updated.addAdditionalStateDerivative(generator.getName(), generator.generate(updated));
-                }
+                // we can use this provider right now
+                updated    = updated.addAdditionalState(provider.getName(), provider.getAdditionalState(updated));
                 yieldCount = 0;
             }
         }
@@ -247,7 +210,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     public boolean isAdditionalStateManaged(final String name) {
-        for (final FieldStackableGenerator<T> provider : closedFormGenerators) {
+        for (final FieldAdditionalStateProvider<T> provider : additionalStateProviders) {
             if (provider.getName().equals(name)) {
                 return true;
             }
@@ -257,9 +220,9 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     public String[] getManagedAdditionalStates() {
-        final String[] managed = new String[closedFormGenerators.size()];
+        final String[] managed = new String[additionalStateProviders.size()];
         for (int i = 0; i < managed.length; ++i) {
-            managed[i] = closedFormGenerators.get(i).getName();
+            managed[i] = additionalStateProviders.get(i).getName();
         }
         return managed;
     }
@@ -292,7 +255,9 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
-                    unmanagedStates.put(initial.getKey(), new TimeSpanMap<>(initial.getValue()));
+                    unmanagedStates.put(initial.getKey(),
+                                        new FieldTimeSpanMap<>(initial.getValue(),
+                                                               initialState.getDate().getField()));
                 }
             }
         }
@@ -302,10 +267,10 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
      * @param state new state
      */
     protected void stateChanged(final FieldSpacecraftState<T> state) {
-        final AbsoluteDate date    = state.getDate().toAbsoluteDate();
-        final boolean      forward = date.durationFrom(getStartDate().toAbsoluteDate()) >= 0.0;
+        final FieldAbsoluteDate<T> date    = state.getDate();
+        final boolean              forward = date.durationFrom(getStartDate()).getReal() >= 0.0;
         for (final  FieldArrayDictionary<T>.Entry changed : state.getAdditionalStatesValues().getData()) {
-            final TimeSpanMap<T[]> tsm = unmanagedStates.get(changed.getKey());
+            final FieldTimeSpanMap<T[], T> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state
                 if (forward) {

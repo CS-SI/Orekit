@@ -50,12 +50,18 @@
         + SpacecraftState propagate(AbsoluteDate target)
       }
 
+      interface MatrixHarvester {
+        +RealMatrix getStateTransitionMatrix(SpacecraftState state)
+        +RealMatrix getParametersJacobian(SpacecraftState state)
+      }
+
       Propagator <|.. AbstractPropagator
 
       package integration #CBDBC8 {
         interface AdditionalEquations {
           +String getName()
-          +void computeDerivatives()
+          +yield()
+          +void derivatives()
         }
         class  AbstractIntegratedPropagator {
          +void addAdditionalEquations(AdditionalEquations addEqu)
@@ -74,20 +80,13 @@
 
        class NumericalPropagator {
          +void addForceModel(ForceModel model)
+         +MatrixHarvester setupMatricesComputation(name, initialSTM, initialJacobian)
        }
-
-        class PartialDerivativesEquations {
-          +void freezeParametersSelection()
-          +void setInitialJacobians(SpacecraftState s0)
-          +JacobiansMapper getMapper()
-       }
-      class Jacobianizer
 
        TimeDerivativesEquations    <--      ForceModel : contributes
-       AdditionalEquations         <|..     PartialDerivativesEquations
-       PartialDerivativesEquations *-->     ForceModel
        AbstractIntegratedPropagator  <|--     NumericalPropagator
        NumericalPropagator         "1..*" *--> ForceModel
+       MatrixHarvester              <-- NumericalPropagator
        NumericalPropagator         "1" *--> TimeDerivativesEquations : main
 
       }
@@ -98,7 +97,6 @@
   package user.application #F3EDF7 {
         class ComplexForceModel #EAE6F7/B9B3D2
         ComplexForceModel ..|> ForceModel
-       Jacobianizer                  "1" <-->  "1" ComplexForceModel
 
   }
 @enduml

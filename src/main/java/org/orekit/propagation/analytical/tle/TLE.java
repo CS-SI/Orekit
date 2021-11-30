@@ -1014,4 +1014,46 @@ public class TLE implements TimeStamped, Serializable {
         return Collections.singletonList(bStarParameterDriver);
     }
 
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(line1, line2, utc);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -1596648022319057689L;
+
+        /** First line. */
+        private String line1;
+
+        /** Second line. */
+        private String line2;
+
+        /** The UTC scale. */
+        private final TimeScale utc;
+
+        /** Simple constructor.
+         * @param line1 the first element (69 char String)
+         * @param line2 the second element (69 char String)
+         * @param utc the UTC time scale
+         */
+        DataTransferObject(final String line1, final String line2, final TimeScale utc) {
+            this.line1 = line1;
+            this.line2 = line2;
+            this.utc   = utc;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link TLE}.
+         * @return replacement {@link TLE}
+         */
+        private Object readResolve() {
+            return new TLE(line1, line2, utc);
+        }
+
+    }
+
 }

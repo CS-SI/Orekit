@@ -75,11 +75,11 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.StackableGenerator;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
@@ -90,7 +90,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.integration.IntegrableGenerator;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -652,7 +652,7 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testAdditionalStateEvent() {
-        propagator.addIntegrableGenerator(new IntegrableGenerator() {
+        propagator.addAdditionalEquations(new AdditionalEquations() {
 
             public String getName() {
                 return "linear";
@@ -662,13 +662,13 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] generate(SpacecraftState s) {
+            public double[] derivatives(SpacecraftState s) {
                 return new double[] { 1.0 };
             }
 
         });
         try {
-            propagator.addIntegrableGenerator(new IntegrableGenerator() {
+            propagator.addAdditionalEquations(new AdditionalEquations() {
 
                 public String getName() {
                     return "linear";
@@ -678,7 +678,7 @@ public class NumericalPropagatorTest {
                     return 1;
                 }
 
-                public double[] generate(SpacecraftState s) {
+                public double[] derivatives(SpacecraftState s) {
                     return new double[] { 1.0 };
                 }
 
@@ -688,12 +688,12 @@ public class NumericalPropagatorTest {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         try {
-            propagator.addClosedFormGenerator(new StackableGenerator() {
+            propagator.addAdditionalEquations(new AdditionalEquations() {
                public String getName() {
                     return "linear";
                 }
 
-                public double[] generate(SpacecraftState state) {
+                public double[] derivatives(SpacecraftState state) {
                     return null;
                 }
             });
@@ -701,12 +701,12 @@ public class NumericalPropagatorTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
-        propagator.addClosedFormGenerator(new StackableGenerator() {
+        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() {
                 return "constant";
             }
 
-            public double[] generate(SpacecraftState state) {
+            public double[] getAdditionalState(SpacecraftState state) {
                 return new double[] { 1.0 };
             }
         });
@@ -755,7 +755,7 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testResetAdditionalStateEvent() {
-        propagator.addIntegrableGenerator(new IntegrableGenerator() {
+        propagator.addAdditionalEquations(new AdditionalEquations() {
 
             public String getName() {
                 return "linear";
@@ -765,7 +765,7 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] generate(SpacecraftState s) {
+            public double[] derivatives(SpacecraftState s) {
                 return new double[] { 1.0 };
             }
         });
@@ -888,22 +888,22 @@ public class NumericalPropagatorTest {
         final double dt = -3200;
         final double rate = 2.0;
 
-        propagator.addClosedFormGenerator(new StackableGenerator() {
+        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() {
                 return "squaredA";
             }
-            public double[] generate(SpacecraftState state) {
+            public double[] getAdditionalState(SpacecraftState state) {
                 return new double[] { state.getA() * state.getA() };
             }
         });
-        propagator.addIntegrableGenerator(new IntegrableGenerator() {
+        propagator.addAdditionalEquations(new AdditionalEquations() {
             public String getName() {
                 return "extra";
             }
             public int getDimension() {
                 return 1;
             }
-            public double[] generate(SpacecraftState s) {
+            public double[] derivatives(SpacecraftState s) {
                 return new double[] { rate };
             }
         });

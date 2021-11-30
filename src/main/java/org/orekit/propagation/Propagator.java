@@ -18,7 +18,6 @@ package org.orekit.propagation;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.attitudes.AttitudeProvider;
@@ -163,58 +162,20 @@ public interface Propagator extends PVCoordinatesProvider {
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
-     * @deprecated as of 11.1, replaced by {@link #addClosedFormGenerator(StackableGenerator)}
      */
-    @Deprecated
     void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider);
 
     /** Get an unmodifiable list of providers for additional state.
      * @return providers for the additional states
-     * @deprecated as of 11.1, replaced by {@link #getClosedFormGenerators()}
      */
-    @Deprecated
     List<AdditionalStateProvider> getAdditionalStateProviders();
-
-    /** Add a generator for user-specified state parameters to be computed along with the orbit propagation.
-     * @param generator generator for additional state
-     * @since 11.1
-     */
-    @SuppressWarnings("deprecation")
-    default void addClosedFormGenerator(StackableGenerator generator) {
-        addAdditionalStateProvider(new ClosedFormAdapter(generator));
-    }
-
-    /** Remove a generator for user-specified state parameters to be computed along with the orbit propagation.
-     * @param stateName name of the additional state this generator manages
-     * @return the generator found and removed, null if no generator was found
-     * @since 11.1
-     */
-    default StackableGenerator removeClosedFormGenerator(String stateName) {
-        // FIXME: as of 11.1, a default implementation exists, does nothing and returns null.
-        // For 12.0, there should be no default implementation, as
-        // AbstractPropagator (which is the base for all Orekit-provided propagators)
-        // does have a proper implementation*
-        return null;
-    }
-
-    /** Get an unmodifiable list of generators for additional states.
-     * @return generators for the additional states
-     * @since 11.1
-     */
-    @SuppressWarnings("deprecation")
-    default List<StackableGenerator> getClosedFormGenerators() {
-        return getAdditionalStateProviders().
-                        stream().
-                        map(asp -> new AdditionalStateProviderAdapter(asp)).
-                        collect(Collectors.toList());
-    }
 
     /** Check if an additional state is managed.
      * <p>
      * Managed states are states for which the propagators know how to compute
      * its evolution. They correspond to additional states for which a
-     * {@link StackableGenerator generator} has been registered by calling the
-     * {@link #addClosedFormGenerator(StackableGenerator) addClosedFormGenerator} method.
+     * {@link CloseFormAdditionalStateGenerator generator} has been registered by calling the
+     * {@link #addClosedFormGenerator(CloseFormAdditionalStateGenerator) addClosedFormGenerator} method.
      * If the propagator is an {@link org.orekit.propagation.integration.AbstractIntegratedPropagator
      * integrator-based propagator}, the states for which a set of {@link
      * org.orekit.propagation.integration.IntegrableGenerator integrable generator} has

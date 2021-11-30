@@ -47,6 +47,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -408,23 +409,34 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected List<String> setUpStmAndJacobianGenerators() {
+    protected void setUpStmAndJacobianGenerators() {
 
-        if (harvester == null) {
-            return Collections.emptyList();
-        } else {
-
-            final List<String> matricesStates = new ArrayList<>();
+        if (harvester != null) {
 
             // add the STM generator corresponding to the current settings, and setup state accordingly
-            final StateTransitionMatrixGenerator stmGenerator =
-                            new StateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(), getAttitudeProvider());
-            setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
-                                                                         harvester.getInitialStateTransitionMatrix(),
-                                                                         getOrbitType(),
-                                                                         getPositionAngleType()));
-            addIntegrableGenerator(stmGenerator);
-            matricesStates.add(stmGenerator.getName());
+            StateTransitionMatrixGenerator stmGenerator = null;
+            for (final AdditionalEquations equations : getAdditionalEquations()) {
+                if (equations instanceof StateTransitionMatrixGenerator &&
+                    equations.getName().equals(harvester.getStmName())) {
+                    // the STM generator has already been set up in a previous propagation
+                    stmGenerator = (StateTransitionMatrixGenerator) equations;
+                    break;
+                }
+            }
+            if (stmGenerator == null) {
+                // this is the first time we need the STM generate, create it
+                stmGenerator = new StateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(), getAttitudeProvider());
+                addAdditionalEquations(stmGenerator);
+            }
+
+            if (!getInitialIntegrationState().hasAdditionalState(harvester.getStmName())) {
+                // add the initial State Transition Matrix if it is not already there
+                // (perhaps due to a previous propagation)
+                setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
+                                                                             harvester.getInitialStateTransitionMatrix(),
+                                                                             getOrbitType(),
+                                                                             getPositionAngleType()));
+            }
 
             // first pass: gather all parameters, binding similar names together
             final ParameterDriversList selected = new ParameterDriversList();
@@ -442,22 +454,37 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             selected.sort();
 
             for (final ParameterDriver driver : selected.getDrivers()) {
+
                 // add the Jacobians column generator corresponding to this parameter, and setup state accordingly
-                final JacobianColumnGenerator generator =
-                                new JacobianColumnGenerator(stmGenerator, driver.getName());
-                setInitialState(generator.setInitialColumn(getInitialState(),
-                                                           harvester.getInitialJacobianColumn(driver.getName()),
-                                                           getOrbitType(),
-                                                           getPositionAngleType()));
-                addIntegrableGenerator(generator);
-                matricesStates.add(generator.getName());
+                JacobianColumnGenerator columnGenerator = null;
+                for (final AdditionalEquations equations : getAdditionalEquations()) {
+                    if (equations instanceof JacobianColumnGenerator &&
+                        equations.getName().equals(driver.getName())) {
+                        // the Jacobian column generator has already been set up in a previous propagation
+                        columnGenerator = (JacobianColumnGenerator) equations;
+                        break;
+                    }
+                }
+                if (columnGenerator == null) {
+                    // this is the first time we need the Jacobian column generate, create it
+                    columnGenerator = new JacobianColumnGenerator(stmGenerator, driver.getName());
+                    addAdditionalEquations(columnGenerator);
+                }
+
+                if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {
+                    // add the initial Jacobian column if it is not already there
+                    // (perhaps due to a previous propagation)
+                    setInitialState(columnGenerator.setInitialColumn(getInitialState(),
+                                                                     harvester.getInitialJacobianColumn(driver.getName()),
+                                                                     getOrbitType(),
+                                                                     getPositionAngleType()));
+                }
+
             }
 
             harvester.setColumnsNames(selected.getDrivers().stream().map(d -> d.getName()).collect(Collectors.toList()));
             harvester.setOrbitType(getOrbitType());
             harvester.setPositionAngleType(getPositionAngleType());
-
-            return matricesStates;
 
         }
 

@@ -35,7 +35,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.IntegrableGenerator;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -228,9 +228,9 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
         propagator.setInitialState(state, stateType);
 
-        // Add integrable generators to the propagator
-        for (IntegrableGenerator generator: getIntegrableGenerators()) {
-            propagator.addIntegrableGenerator(generator);
+        // Add additional equations to the propagator
+        for (AdditionalEquations equation: getAdditionalEquations()) {
+            propagator.addAdditionalEquations(equation);
         }
 
         return propagator;
