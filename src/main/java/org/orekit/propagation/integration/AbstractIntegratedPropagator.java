@@ -1142,7 +1142,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Temporary wrapper for {@link AdditionalEquations} that do not implement getDimension().
      * @since 11.1
-     * @deprecated introduced in 11.1 as a temporary workarounf for missing getDimension, must be removed in 12.0
+     * @deprecated introduced in 11.1 as a temporary workaround for missing getDimension, must be removed in 12.0
      */
     @Deprecated
     private class AdditionalEquationsWrapper implements AdditionalEquations {

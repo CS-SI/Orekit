@@ -20,19 +20,18 @@ package org.orekit.propagation;
  * <p>
  * {@link Propagator Propagators} generate {@link SpacecraftState states} that contain at
  * least orbit, attitude, and mass. These states may however also contain {@link
- * SpacecraftState#addAdditionalState(String, double...) additional states} and {@link
- * SpacecraftState#addAdditionalStateDerivative(String, double...) derivatives}. Instances of classes
+ * SpacecraftState#addAdditionalState(String, double...) additional states}. Instances of classes
  * implementing this interface are intended to be registered to propagators so they can add these
- * additional states and derivatives incrementally after having computed the basic components
+ * additional states incrementally after having computed the basic components
  * (orbit, attitude and mass).
  * </p>
  * <p>
- * Some additional states or derivatives may depend on previous additional states or derivatives to
+ * Some additional states may depend on previous additional states to
  * be already available the before they can be computed. It may even be impossible to compute some
  * of these additional states at some time if they depend on conditions that are fulfilled only
  * after propagation as started or some event has occurred. As the propagator builds the complete
  * state incrementally, looping over the registered providers, it must call their {@link
- * #generate(SpacecraftState) generate} methods in an order that fulfill these dependencies that
+ * #getAdditionalState(SpacecraftState) getAdditionalState} methods in an order that fulfill these dependencies that
  * may be time-dependent and are not related to the order in which the providers are registered to
  * the propagator. This reordering is performed each time the complete state is built, using a yield
  * mechanism. The propagator first push all providers in a stack and then empty the stack, one provider
@@ -50,9 +49,9 @@ package org.orekit.propagation;
  * </p>
  * <p>
  * It is possible that at some stages in the propagation, a subset of the providers registered to a
- * propagator all yied and cannot {@link #generate(SpacecraftState) generate} their additional
- * state or derivative. This happens for example during the initialization phase of a propagator that
- * compute State Transition MAtrices or Jacobian matrices. These features are managed as secondary equations
+ * propagator all yied and cannot {@link #getAdditionalState(SpacecraftState) retrieve} their additional
+ * state. This happens for example during the initialization phase of a propagator that
+ * compute State Transition Matrices or Jacobian matrices. These features are managed as secondary equations
  * in the ODE integrator, and initialized after the primary equations (which correspond to orbit) have
  * been initialized. So when the primary equation are initialized, the providers that depend on the secondary
  * state will all yield. This behavior is expected. Another case occurs when users set up additional states
@@ -64,9 +63,9 @@ package org.orekit.propagation;
  * returns the most complete state it was able to compute, without generating any error. Errors will indeed
  * not be triggered in the first case (once the primary equations have been initialized, the secondary
  * equations will be initialized too), and they will be triggered in the second case as soon as user attempts
- * to retrieve an additional state or derivative that was not added.
+ * to retrieve an additional state that was not added.
  * </p>
- * @see org.orekit.propagation.AbstractPropagator
+ * @see org.orekit.propagation.Propagator
  * @see org.orekit.propagation.integration.AdditionalEquations
  * @author Luc Maisonobe
  */
