@@ -70,8 +70,10 @@ public class FieldArrayDictionary<T extends CalculusFieldElement<T>> {
      * @param dictionary dictionary to use for initializing entries
      */
     public FieldArrayDictionary(final FieldArrayDictionary<T> dictionary) {
-        this(dictionary.getField(), DEFAULT_INITIAL_CAPACITY + dictionary.data.size());
-        for (final Entry entry : dictionary.data) {
+        // take care to call dictionary.getData() and not use dictionary.data,
+        // otherwise we get an empty dictionary when using a FieldArrayDictionary.view
+        this(dictionary.getField(), DEFAULT_INITIAL_CAPACITY + dictionary.getData().size());
+        for (final Entry entry : dictionary.getData()) {
             // we don't call put(key, value) to avoid the overhead of the unneeded call to remove(key)
             data.add(new Entry(entry.getKey(), entry.getValue()));
         }
