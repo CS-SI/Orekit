@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="865">
+        Added derivatives with respect to maneuvers start and stop dates.
+      </action>
       <action dev="luc" type="add" >
         Added observers for maneuvers triggers.
       </action>
