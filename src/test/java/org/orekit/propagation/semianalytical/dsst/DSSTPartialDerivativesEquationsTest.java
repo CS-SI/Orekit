@@ -449,7 +449,7 @@ public class DSSTPartialDerivativesEquationsTest {
         try {
             partials.setInitialJacobians(new SpacecraftState(orbit),
                                          new double[6][6], new double[6][3]);
-            partials.computeDerivatives(new SpacecraftState(orbit), new double[6]);
+            partials.derivatives(new SpacecraftState(orbit));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
@@ -625,17 +625,14 @@ public class DSSTPartialDerivativesEquationsTest {
     }
 
     /**
-     * check {@link DSSTPartialDerivativesEquations#computeDerivatives(SpacecraftState,
-     * double[])}.
+     * check {@link DSSTPartialDerivativesEquations#erivatives(SpacecraftState)}.
      *
      */
     @Test
-    public void testComputeDerivatives() {
-        //setup
-        double[] pdot = new double[36];
+    public void testDerivatives() {
 
         //action
-        pde.computeDerivatives(state, pdot);
+       pde.derivatives(state);
 
         //verify
         MatcherAssert.assertThat(forceModel.sma.getReal(), is(state.getA()));
