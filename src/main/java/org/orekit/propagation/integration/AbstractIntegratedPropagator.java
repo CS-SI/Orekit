@@ -531,7 +531,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-        // FIXME: use yield to extract states in dependencies order
         for (final AdditionalEquations equations : additionalEquations) {
             final String   name       = equations.getName();
             final int      offset     = secondaryOffsets.get(name);
@@ -555,7 +554,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         final double[][] secondaryDerivative = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-        // FIXME: use yield to extract derivatives in dependencies order
         for (final AdditionalEquations equations : additionalEquations) {
             final String   name       = equations.getName();
             final int      offset     = secondaryOffsets.get(name);
@@ -635,7 +633,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         if (os.getNumberOfSecondaryStates() > 0) {
             final double[] secondary           = os.getSecondaryState(1);
             final double[] secondaryDerivative = os.getSecondaryDerivative(1);
-            // FIXME: use yield to add states in dependencies order
             for (final AdditionalEquations equations : additionalEquations) {
                 final String name      = equations.getName();
                 final int    offset    = secondaryOffsets.get(name);
@@ -808,7 +805,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             SpacecraftState initialState = stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
 
-            // FIXME: use yield to add states in dependencies order
             for (final AdditionalEquations equations : additionalEquations) {
                 final String name      = equations.getName();
                 final int    offset    = secondaryOffsets.get(name);
@@ -879,9 +875,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             stateMapper.mapStateToArray(newState, primary, null);
 
             // secondary part
-            final double[][] secondary    = new double[additionalEquations.size()][];
-            for (int i = 0; i < additionalEquations.size(); ++i) {
-                secondary[i] = newState.getAdditionalState(additionalEquations.get(i).getName());
+            final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
+            for (final AdditionalEquations equations : additionalEquations) {
+                final String name      = equations.getName();
+                final int    offset    = secondaryOffsets.get(name);
+                final int    dimension = equations.getDimension();
+                System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
             }
 
             return new ODEState(newState.getDate().durationFrom(getStartDate()),
