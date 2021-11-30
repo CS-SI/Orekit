@@ -37,8 +37,8 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldAbstractPropagator;
+import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
-import org.orekit.propagation.FieldStackableGenerator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -443,12 +443,12 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             }
 
             try {
-                // copy the same additional state generators as the original propagator
-                for (FieldStackableGenerator<T> generator : FieldAbstractAnalyticalPropagator.this.getClosedFormGenerators()) {
-                    addClosedFormGenerator(generator);
+                // copy the same additional state providers as the original propagator
+                for (FieldAdditionalStateProvider<T> provider : FieldAbstractAnalyticalPropagator.this.getAdditionalStateProviders()) {
+                    addAdditionalStateProvider(provider);
                 }
             } catch (OrekitException oe) {
-                // as the generators are already compatible with each other,
+                // as the providers are already compatible with each other,
                 // this should never happen
                 throw new OrekitInternalError(null);
             }

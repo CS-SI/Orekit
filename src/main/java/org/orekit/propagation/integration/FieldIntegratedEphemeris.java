@@ -19,7 +19,6 @@ package org.orekit.propagation.integration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.FieldDenseOutputModel;
@@ -28,9 +27,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.FieldStackableGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -114,7 +113,6 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType, FieldDenseOutputModel,
      * List, Map, String[])
      */
-    @SuppressWarnings("deprecation")
     @Deprecated
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
                                final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
@@ -125,7 +123,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                                final String[] equations) {
         this(startDate, minDate, maxDate, mapper, type, model,
              new FieldArrayDictionary<>(startDate.getField(), unmanaged),
-             providers.stream().map(asp -> new org.orekit.propagation.FieldAdditionalStateProviderAdapter<>(asp)).collect(Collectors.toList()), equations);
+             providers, equations);
     }
 
     /** Creates a new instance of IntegratedEphemeris.
@@ -136,7 +134,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @param type type of orbit to output (mean or osculating)
      * @param model underlying raw mathematical model
      * @param unmanaged unmanaged additional states that must be simply copied
-     * @param generators generators for pre-integrated states
+     * @param providers generators for pre-integrated states
      * @param equations names of additional equations
      * @since 11.1
      */
@@ -145,7 +143,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                                     final FieldStateMapper<T> mapper, final PropagationType type,
                                     final FieldDenseOutputModel<T> model,
                                     final FieldArrayDictionary<T> unmanaged,
-                                    final List<FieldStackableGenerator<T>> generators,
+                                    final List<FieldAdditionalStateProvider<T>> providers,
                                     final String[] equations) {
 
         super(startDate.getField(), mapper.getAttitudeProvider());
@@ -158,14 +156,14 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         this.model     = model;
         this.unmanaged = unmanaged;
 
-        // set up the pre-integrated generators
-        for (final FieldStackableGenerator<T> generator : generators) {
-            addClosedFormGenerator(generator);
+        // set up the pre-integrated providers
+        for (final FieldAdditionalStateProvider<T> provider : providers) {
+            addAdditionalStateProvider(provider);
         }
 
         // set up providers to map the final elements of the model array to additional states
         for (int i = 0; i < equations.length; ++i) {
-            addClosedFormGenerator(new LocalGenerator(equations[i], i));
+            addAdditionalStateProvider(new LocalGenerator(equations[i], i));
         }
 
     }
@@ -265,7 +263,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     }
 
     /** Local generator for additional state data. */
-    private class LocalGenerator implements FieldStackableGenerator<T> {
+    private class LocalGenerator implements FieldAdditionalStateProvider<T> {
 
         /** Name of the additional state. */
         private final String name;
@@ -290,7 +288,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
 
         /** {@inheritDoc} */
         @Override
-        public T[] generate(final FieldSpacecraftState<T> state) {
+        public T[] getAdditionalState(final FieldSpacecraftState<T> state) {
 
             // extract the part of the interpolated array corresponding to the additional state
             return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);
