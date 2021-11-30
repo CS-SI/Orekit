@@ -17,13 +17,8 @@
 package org.orekit.propagation.numerical;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -123,8 +118,6 @@ public class TriggersDerivativesTest {
         new PropagatorsParallelizer(propagators, sampler).
         propagate(firing.shiftedBy(-30 * samplingtep), firing.shiftedBy(duration + 300 * samplingtep));
 
-        analyzeSample(sampler, orbitType, firing, degree, true, "/tmp");
-
         double[] maxRelativeError = new double[tolerance.length];
         for (final Entry entry : sampler.sample) {
             for (int i = 0; i < entry.finiteDifferences.length; ++i) {
@@ -136,75 +129,6 @@ public class TriggersDerivativesTest {
 
         for (int i = 0; i < tolerance.length; ++i) {
             Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
-        }
-
-    }
-
-    private void analyzeSample(final DerivativesSampler sampler, final OrbitType orbitType, final AbsoluteDate firing,
-                               final int degree, final boolean plot, final String outputDir) {
-        if (!plot) {
-            return;
-        }
-        final ProcessBuilder pb = new ProcessBuilder("gnuplot").
-                        redirectOutput(ProcessBuilder.Redirect.INHERIT).
-                        redirectError(ProcessBuilder.Redirect.INHERIT);
-        pb.environment().remove("XDG_SESSION_TYPE");
-        Process gnuplot;
-        try {
-            gnuplot = pb.start();
-            try (PrintStream out = new PrintStream(gnuplot.getOutputStream(), false, StandardCharsets.UTF_8.name())) {
-                final String fileName;
-                if (outputDir == null) {
-                    fileName = null;
-                    out.format(Locale.US, "set terminal qt size %d, %d title 'complex plotter'%n", 1000, 1000);
-                } else {
-                    fileName = new File(outputDir,
-                                        "triggers-partials-" + orbitType + "-degree-" + degree + ".png").
-                               getAbsolutePath();
-                    out.format(Locale.US, "set terminal pngcairo size %d, %d%n", 1000, 1000);
-                    out.format(Locale.US, "set output '%s'%n", fileName);
-                }
-                out.format(Locale.US, "set offset graph 0.05, 0.05, 0.05, 0.05%n");
-                out.format(Locale.US, "set view map scale 1%n");
-                out.format(Locale.US, "set xlabel 't - t_{start}'%n");
-                if (orbitType == OrbitType.CARTESIAN) {
-                    out.format(Locale.US, "set ylabel 'd\\{X,Y,Z\\}/dt_{start} (m)'%n");
-                    out.format(Locale.US, "set key bottom left%n");
-                } else {
-                    out.format(Locale.US, "set ylabel 'da/dt_{start} (m)'%n");
-                    out.format(Locale.US, "set key top left%n");
-                }
-                out.format(Locale.US, "set title 'derivatives of %s state, gravity field degree %d'%n", orbitType, degree);
-                out.format(Locale.US, "$data <<EOD%n");
-                for (final Entry entry : sampler.sample) {
-                    out.format(Locale.US, "%.6f", entry.date.durationFrom(firing));
-                    for (int i = 0; i < entry.finiteDifferences.length; ++i) {
-                        out.format(Locale.US, " %.9f %.9f",
-                                   entry.finiteDifferences[i].getFirstDerivative(),
-                                   entry.closedForm[i].getFirstDerivative());
-                    }
-                    out.format(Locale.US, "%n");
-                }
-                out.format(Locale.US, "EOD%n");
-                if (orbitType == OrbitType.CARTESIAN) {
-                    out.print("plot $data using 1:2  with lines  title 'dX/dt_{start} finite differences',       \\\n" + 
-                              "     ''    using 1:3  with points title 'dX/dt_{start} closed form based on STM', \\\n" + 
-                              "     ''    using 1:4  with lines  title 'dY/dt_{start} finite differences',       \\\n" + 
-                              "     ''    using 1:5  with points title 'dY/dt_{start} closed form based on STM', \\\n" + 
-                              "     ''    using 1:6  with lines  title 'dZ/dt_{start} finite differences',       \\\n" + 
-                              "     ''    using 1:7  with points title 'dZ/dt_{start} closed form based on STM'\n");
-                } else {
-                    out.print("plot $data using 1:2  with lines  title 'da/dt_{start} finite differences', \\\n" + 
-                              "     ''    using 1:3  with points title 'da/dt_{start} closed form based on STM'\n");
-                }
-                if (fileName == null) {
-                    out.format(Locale.US, "pause mouse close%n");
-                } else {
-                    System.out.format(Locale.US, "output written to %s%n", fileName);
-                }
-            }
-        } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
         }
 
     }
@@ -323,7 +247,7 @@ public class TriggersDerivativesTest {
                                                                                        o[5][i], o[6][i], o[7][i], o[8][i],
                                                                                        h));
                     }
-                    sample.add(new Entry(next, closedForm, finiteDifferences));
+                    sample.add(new Entry(closedForm, finiteDifferences));
                 }
                 next = next.shiftedBy(forward ? samplingtep : -samplingtep);
             }
@@ -339,13 +263,10 @@ public class TriggersDerivativesTest {
     }
 
     private class Entry {
-        private AbsoluteDate date;
         private UnivariateDerivative1[]     closedForm;
         private UnivariateDerivative1[]     finiteDifferences;
-        Entry(final AbsoluteDate date,
-              final UnivariateDerivative1[] closedForm,
+        Entry(final UnivariateDerivative1[] closedForm,
               final UnivariateDerivative1[] finiteDifferences) {
-            this.date              = date;
             this.closedForm        = closedForm.clone();
             this.finiteDifferences = finiteDifferences.clone();
         }
