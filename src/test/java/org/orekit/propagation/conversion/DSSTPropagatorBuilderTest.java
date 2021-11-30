@@ -225,6 +225,10 @@ public class DSSTPropagatorBuilderTest {
                 return "linear";
             }
 
+            public int getDimension() {
+                return 1;
+            }
+
             public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
                 pDot[0] = 1.0;
                 return new double[7];
@@ -235,6 +239,10 @@ public class DSSTPropagatorBuilderTest {
 
     	    public String getName() {
     	        return "linear";
+    	    }
+
+    	    public int getDimension() {
+    	        return 1;
     	    }
 
     	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {

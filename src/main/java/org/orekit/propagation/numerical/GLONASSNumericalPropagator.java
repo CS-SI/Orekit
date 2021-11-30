@@ -209,8 +209,10 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                 stateInInertial.getDate(), pvInPZ90);
         final TimeStampedPVCoordinates pvInInertial = absPV.getPVCoordinates(eci);
         final SpacecraftState transformedState = new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GNSSConstants.GLONASS_MU),
-                                                                stateInInertial.getAttitude(),
-                                                                stateInInertial.getMass(), stateInInertial.getAdditionalStates());
+                                                                     stateInInertial.getAttitude(),
+                                                                     stateInInertial.getMass(),
+                                                                     stateInInertial.getAdditionalStatesValues(),
+                                                                     stateInInertial.getAdditionalStatesDerivatives());
 
         return transformedState;
     }
