@@ -222,7 +222,7 @@ public class DoubleArrayDictionary implements Serializable {
     }
 
     /** Entry in a dictionary. */
-    public class Entry implements Serializable {
+    public static class Entry implements Serializable {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20211121L;
