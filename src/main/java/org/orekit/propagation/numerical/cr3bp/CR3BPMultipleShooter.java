@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AbstractMultipleShooting;
@@ -32,6 +32,9 @@ import org.orekit.utils.AbstractMultipleShooting;
  */
 public class CR3BPMultipleShooter extends AbstractMultipleShooting {
 
+    /** Name of the derivatives. */
+    private static final String STM = "stmEquations";
+
     /** Number of patch points. */
     private int npoints;
 
@@ -42,17 +45,35 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
      * @param additionalEquations list of additional equations linked to propagatorList.
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector
+     * @deprecated as of 11.1, replaced by {@link #CR3BPMultipleShooter(List, List, double, List, double)}
+     */
+    @Deprecated
+    public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
+                                 final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
+                                 final double arcDuration, final double tolerance) {
+        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, STM);
+        this.npoints = initialGuessList.size();
+    }
+
+    /** Simple Constructor.
+     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
+     * @param initialGuessList initial patch points to be corrected.
+     * @param propagatorList list of propagators associated to each patch point.
+     * @param arcDuration initial guess of the duration of each arc.
+     * @param additionalDerivativesProviders list of additional derivatives providers linked to propagatorList.
+     * @param tolerance convergence tolerance on the constraint vector
      */
     public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                 final List<AdditionalEquations> additionalEquations, final double arcDuration, final double tolerance) {
-        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, "stmEquations");
+                                final double arcDuration, final List<AdditionalDerivativesProvider> additionalDerivativesProviders,
+                                final double tolerance) {
+        super(initialGuessList, propagatorList, arcDuration, additionalDerivativesProviders, tolerance, STM);
         this.npoints = initialGuessList.size();
     }
 
     /** {@inheritDoc} */
     protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
-                                                       final AdditionalEquations additionalEquation) {
-        return ((STMEquations) additionalEquation).setInitialPhi(initialState);
+                                                       final AdditionalDerivativesProvider additionalDerivativesProvider) {
+        return ((STMEquations) additionalDerivativesProvider).setInitialPhi(initialState);
     }
 
     /** {@inheritDoc} */

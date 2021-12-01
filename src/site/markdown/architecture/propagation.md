@@ -226,7 +226,7 @@ There are three main cases:
   `AdditionalStateProvider` interface and register it to the propagator, which will
   call it each time it builds a `SpacecraftState`.
 * if a differential equation drives the additional state evolution, then the user
-  can put this equation in an implementation of the `AdditionalEquations` interface
+  can put this equation in an implementation of the `AdditionalDerivativesProvider` interface
   and register it to an integrator-based propagator, which will integrated it and
   provide the integrated state.
 * if no evolution laws are provided to the propagator, but the additional state is
@@ -314,8 +314,8 @@ The mathematical problem to integrate is a dimension-seven time-derivative equat
 system. The six first elements of the state vector are the orbital parameters, which
 may be any orbit type (`KeplerianOrbit`, `CircularOrbit`, `EquinoctialOrbit` or
 `CartesianOrbit`) in meters and radians, and the last element is the mass in
-kilograms. It is possible to have more elements in the state vector if `AdditionalEquations`
-have been added (this is used for example by internal classes that implement `AdditionalEquations`
+kilograms. It is possible to have more elements in the state vector if `AdditionalDerivativesProvider`
+have been added (this is used for example by internal classes that implement `AdditionalDerivativesProvider`
 in order to compute State Transition Matrix and Jacobians matrices with respect to propagation
 parameters). The time derivatives are computed automatically by the Orekit using the Gauss
 equations for the first parameters corresponding to the selected orbit type and the flow rate
@@ -378,9 +378,9 @@ parameters.
 
 The above class diagram shows the design of the partial derivatives equations. As can be seen,
 the numerical propagator provide a way to trigger computation of partial derivatives matrices (State
-Transition Matrix and Jacobians with respect to parameters) and provide an opaque `MatrixHArvester`
+Transition Matrix and Jacobians with respect to parameters) and provide an opaque `MatrixHarvester`
 so users can retrieve these matrices from the propagated states. Internally, the propagator uses
-dedicated classes that implement `AdditionalEquations` to model the matrices elements evolution
+dedicated classes that implement `AdditionalDerivativesProvider` to model the matrices elements evolution
 and propagate both the main set of equations corresponding to the equations of motion and the
 additional set corresponding to the Jacobians of the main set. This additional set is therefore
 tightly linked to the main set and in particular depends on the selected force models. The various

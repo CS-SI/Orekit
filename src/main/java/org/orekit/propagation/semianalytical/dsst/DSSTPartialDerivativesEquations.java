@@ -25,13 +25,13 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
+/** {@link AdditionalDerivativesProvider derivatives provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
  * <p>
  * This set of equations are automatically added to a {@link DSSTPropagator DSST propagator}
@@ -51,7 +51,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPartialDerivativesEquations implements AdditionalEquations {
+public class DSSTPartialDerivativesEquations implements AdditionalDerivativesProvider {
 
     /** Retrograde factor I.
      *  <p>
@@ -90,7 +90,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
      * the propagator by calling its {@link
-     * DSSTPropagator#addAdditionalEquations(AdditionalEquations)} method. So
+     * DSSTPropagator#addAdditionalDerivativesProvider(AdditionalDerivativesProvider)} method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
      * @param name name of the partial derivatives equations
@@ -106,7 +106,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         this.propagator             = propagator;
         this.initialized            = false;
         this.propagationType        = propagationType;
-        propagator.addAdditionalEquations(this);
+        propagator.addAdditionalDerivativesProvider(this);
     }
 
     /** {@inheritDoc} */
@@ -247,7 +247,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
-    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
+    public double[] derivatives(final SpacecraftState s) {
 
         // initialize Jacobians to zero
         final int paramDim = selected.getNbParams();
@@ -308,6 +308,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         // Adot matrix into the single dimension array pDot.
 
         final double[] p = s.getAdditionalState(getName());
+        final double[] pDot = new double[p.length];
 
         for (int i = 0; i < dim; i++) {
             final double[] dMeanElementRatedElementi = dMeanElementRatedElement[i];
@@ -340,8 +341,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             }
         }
 
-        // these equations have no effect on the main state itself
-        return null;
+        return pDot;
 
     }
 

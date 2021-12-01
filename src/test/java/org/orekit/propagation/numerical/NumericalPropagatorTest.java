@@ -90,7 +90,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -652,7 +652,7 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testAdditionalStateEvent() {
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
             public String getName() {
                 return "linear";
@@ -668,7 +668,7 @@ public class NumericalPropagatorTest {
 
         });
         try {
-            propagator.addAdditionalEquations(new AdditionalEquations() {
+            propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
                 public String getName() {
                     return "linear";
@@ -688,14 +688,18 @@ public class NumericalPropagatorTest {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         try {
-            propagator.addAdditionalEquations(new AdditionalEquations() {
+            propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
                public String getName() {
                     return "linear";
                 }
 
-                public double[] derivatives(SpacecraftState state) {
+               public int getDimension() {
+                   return 1;
+               }
+
+               public double[] derivatives(SpacecraftState state) {
                     return null;
-                }
+               }
             });
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -755,7 +759,7 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testResetAdditionalStateEvent() {
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
             public String getName() {
                 return "linear";
@@ -896,7 +900,7 @@ public class NumericalPropagatorTest {
                 return new double[] { state.getA() * state.getA() };
             }
         });
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() {
                 return "extra";
             }

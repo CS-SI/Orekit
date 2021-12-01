@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.MathArrays;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,8 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-@Deprecated
-public class FieldAdditionalEquationsTest {
+public class FieldAdditionalDerivativesProvidersTest {
 
     private double                       mu;
     private AbsoluteDate                 initDate;
@@ -69,6 +69,11 @@ public class FieldAdditionalEquationsTest {
         doTestResetState(Decimal64Field.getInstance());
     }
 
+    @Test
+    public void testYield() {
+        doTestYield(Decimal64Field.getInstance());
+    }
+
     private <T extends CalculusFieldElement<T>> void doTestInitNumerical(Field<T> field) {
         // setup
         final double reference = 1.25;
@@ -84,7 +89,7 @@ public class FieldAdditionalEquationsTest {
         FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
                                             addAdditionalState(linear.getName(), field.getZero().newInstance(reference)));
-        propagatorNumerical.addAdditionalEquations(linear);
+        propagatorNumerical.addAdditionalDerivativesProvider(linear);
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
@@ -108,7 +113,7 @@ public class FieldAdditionalEquationsTest {
         FieldDSSTPropagator<T> propagatorDSST = new FieldDSSTPropagator<>(field, integrator);
         propagatorDSST.setInitialState(new FieldSpacecraftState<>(field, initialState).
                                        addAdditionalState(linear.getName(), field.getZero().newInstance(reference)));
-        propagatorDSST.addAdditionalEquations(linear);
+        propagatorDSST.addAdditionalDerivativesProvider(linear);
         FieldSpacecraftState<T> finalState = propagatorDSST.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
@@ -137,8 +142,8 @@ public class FieldAdditionalEquationsTest {
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
                                             addAdditionalState(linear1.getName(), field.getZero().newInstance(reference1)).
                                             addAdditionalState(linear2.getName(), field.getZero().newInstance(reference2)));
-        propagatorNumerical.addAdditionalEquations(linear1);
-        propagatorNumerical.addAdditionalEquations(linear2);
+        propagatorNumerical.addAdditionalDerivativesProvider(linear1);
+        propagatorNumerical.addAdditionalDerivativesProvider(linear2);
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
@@ -146,6 +151,36 @@ public class FieldAdditionalEquationsTest {
         Assert.assertTrue(linear2.wasCalled());
         Assert.assertEquals(reference1 + dt * rate1, finalState.getAdditionalState(linear1.getName())[0].getReal(), 1.0e-10);
         Assert.assertEquals(reference2 + dt * rate2, finalState.getAdditionalState(linear2.getName())[0].getReal(), 1.0e-10);
+
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestYield(Field<T> field) {
+
+        // setup
+        final double init1 = 1.0;
+        final double init2 = 2.0;
+        final double rate  = 0.5;
+        final double dt    = 600;
+        Yield<T> yield1 = new Yield<>(null, "yield-1", rate);
+        Yield<T> yield2 = new Yield<>(yield1.getName(), "yield-2", Double.NaN);
+
+        // action
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
+                        tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(60);
+        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
+        propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
+                                            addAdditionalState(yield1.getName(), field.getZero().newInstance(init1)).
+                                            addAdditionalState(yield2.getName(), field.getZero().newInstance(init2)));
+        propagatorNumerical.addAdditionalDerivativesProvider(yield2); // we intentionally register yield2 before yield 1 to check reordering
+        propagatorNumerical.addAdditionalDerivativesProvider(yield1);
+        FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
+
+        // verify
+        Assert.assertEquals(init1 + dt * rate, finalState.getAdditionalState(yield1.getName())[0].getReal(),           1.0e-10);
+        Assert.assertEquals(init2 + dt * rate, finalState.getAdditionalState(yield2.getName())[0].getReal(),           1.0e-10);
+        Assert.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield1.getName())[0].getReal(), 1.0e-10);
+        Assert.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield2.getName())[0].getReal(), 1.0e-10);
 
     }
 
@@ -170,7 +205,7 @@ public class FieldAdditionalEquationsTest {
         tolerance    = null;
     }
 
-    private static class Linear<T extends CalculusFieldElement<T>> implements FieldAdditionalEquations<T> {
+    private static class Linear<T extends CalculusFieldElement<T>> implements FieldAdditionalDerivativesProvider<T> {
 
         private String  name;
         private double  expectedAtInit;
@@ -191,9 +226,15 @@ public class FieldAdditionalEquationsTest {
         }
 
         @Override
-        public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot) {
+        public T[] derivatives(FieldSpacecraftState<T> s) {
+            final T[] pDot = MathArrays.buildArray(s.getDate().getField(), 1);
             pDot[0] = s.getDate().getField().getZero().newInstance(rate);
-            return null;
+            return pDot;
+        }
+
+        @Override
+        public int getDimension() {
+            return 1;
         }
 
         @Override
@@ -203,6 +244,47 @@ public class FieldAdditionalEquationsTest {
 
         public boolean wasCalled() {
             return called;
+        }
+
+    }
+
+    private static class Yield<T extends CalculusFieldElement<T>> implements FieldAdditionalDerivativesProvider<T> {
+
+        private String dependency;
+        private String name;
+        private double rate;
+
+        public Yield(final String dependency, final String name, final double rate) {
+            this.dependency = dependency;
+            this.name       = name;
+            this.rate       = rate;
+        }
+
+        @Override
+        public T[] derivatives(final FieldSpacecraftState<T> s) {
+            final T[] pDot;
+            if (dependency == null) {
+                pDot = MathArrays.buildArray(s.getDate().getField(), 1);
+                pDot[0] = s.getDate().getField().getZero().newInstance(rate);
+            } else {
+                pDot = s.getAdditionalStateDerivative(dependency);
+            }
+            return pDot;
+        }
+
+        @Override
+        public boolean yield(final FieldSpacecraftState<T> state) {
+            return dependency != null && !state.hasAdditionalStateDerivative(dependency);
+        }
+
+        @Override
+        public int getDimension() {
+            return 1;
+        }
+
+        @Override
+        public String getName() {
+            return name;
         }
 
     }

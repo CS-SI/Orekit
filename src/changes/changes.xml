@@ -26,6 +26,10 @@
         spacecraft states now also contain both state and derivatives
         managed by the equations.
       </action>
+      <action dev="luc" type="add" >
+        Replaced AdditionalEquations by AdditionalDerivativesProvider with
+        support for dimension retrieval and yield feature between providers.
+      </action>
       <action dev="luc" type="add" issue="856">
         Added a new and simpler API for State Transition Matrix and Jacobian
         matrix computation. This new API is for now only used with NumericalPropagator
@@ -39,7 +43,8 @@
         states).
       </action>
       <action dev="luc" type="add">
-        Manage dependencies between additional states in propagators.
+        Manage dependencies between additional states in propagators using a yield
+        feature between providers.
       </action>
       <action dev="luc" type="add" >
         SpacecraftState now handle derivatives of additional states.

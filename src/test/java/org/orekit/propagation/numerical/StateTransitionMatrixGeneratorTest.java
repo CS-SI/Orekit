@@ -378,7 +378,7 @@ public class StateTransitionMatrixGeneratorTest {
         StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
                                                                                          propagator.getAllForceModels(),
                                                                                          propagator.getAttitudeProvider());
-        propagator.addAdditionalEquations(stmGenerator);
+        propagator.addAdditionalDerivativesProvider(stmGenerator);
         Assert.assertTrue(stmGenerator.yield(new SpacecraftState(initialOrbit)));
      }
 
@@ -395,7 +395,7 @@ public class StateTransitionMatrixGeneratorTest {
         StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
                                                                                          propagator.getAllForceModels(),
                                                                                          propagator.getAttitudeProvider());
-        propagator.addAdditionalEquations(stmGenerator);
+        propagator.addAdditionalDerivativesProvider(stmGenerator);
         try {
             stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(initialOrbit),
                                                          MatrixUtils.createRealMatrix(5,  6),

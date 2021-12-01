@@ -62,10 +62,10 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldApsideDetector;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -74,7 +74,7 @@ import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
-import org.orekit.propagation.integration.FieldAdditionalEquations;
+import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -872,7 +872,7 @@ public class FieldNumericalPropagatorTest {
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
-        propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
 
             public String getName() {
                 return "linear";
@@ -889,7 +889,7 @@ public class FieldNumericalPropagatorTest {
             }
         });
         try {
-            propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+            propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
 
                 public String getName() {
                     return "linear";
@@ -988,7 +988,7 @@ public class FieldNumericalPropagatorTest {
         FieldNumericalPropagator<T> propagator = createPropagator(field);
 
 
-        propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
 
             public String getName() {
                 return "linear";
@@ -1155,7 +1155,7 @@ public class FieldNumericalPropagatorTest {
                 return a;
             }
         });
-        propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
             public String getName() {
                 return "extra";
             }

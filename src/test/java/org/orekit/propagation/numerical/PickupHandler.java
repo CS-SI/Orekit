@@ -21,7 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -70,9 +70,9 @@ class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator
     public void init(SpacecraftState s0, AbsoluteDate t) {
         // as the generators are only created on the fly at propagation start
         // we retrieve the STM generator here
-        for (final AdditionalEquations equations : propagator.getAdditionalEquations()) {
-            if (equations instanceof StateTransitionMatrixGenerator) {
-                stmGenerator = (StateTransitionMatrixGenerator) equations;
+        for (final AdditionalDerivativesProvider provider : propagator.getAdditionalDerivativesProviders()) {
+            if (provider instanceof StateTransitionMatrixGenerator) {
+                stmGenerator = (StateTransitionMatrixGenerator) provider;
                 stmGenerator.addObserver(accParamName, this);
             }
         }

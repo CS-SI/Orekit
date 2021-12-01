@@ -50,7 +50,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -316,9 +316,9 @@ public class PropagatorsParallelizerTest {
         final String name = "generator";
         final double base0 = 2.0e-3;
         final double base1 = 2.5e-3;
-        p0.addAdditionalEquations(new Exponential(name, base0));
+        p0.addAdditionalDerivativesProvider(new Exponential(name, base0));
         p0.setInitialState(p0.getInitialState().addAdditionalState(name, 1.0));
-        p1.addAdditionalEquations(new Exponential(name, base1));
+        p1.addAdditionalDerivativesProvider(new Exponential(name, base1));
         p1.setInitialState(p1.getInitialState().addAdditionalState(name, 1.0));
         List<SpacecraftState> results = new PropagatorsParallelizer(Arrays.asList(p0, p1), interpolators -> {}).
                                         propagate(startDate, endDate);
@@ -328,7 +328,7 @@ public class PropagatorsParallelizerTest {
         Assert.assertEquals(expected1, results.get(1).getAdditionalState(name)[0], 5.0e-8 * expected1);
     }
 
-    private static class Exponential implements AdditionalEquations {
+    private static class Exponential implements AdditionalDerivativesProvider {
         final String name;
         final double base;
         Exponential(final String name, final double base) {

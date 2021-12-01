@@ -24,13 +24,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 
 /** Generator for one column of a Jacobian matrix.
  * @author Luc Maisonobe
  * @since 11.1
  */
-class JacobianColumnGenerator implements AdditionalEquations, StateTransitionMatrixGenerator.PartialsObserver {
+class JacobianColumnGenerator implements AdditionalDerivativesProvider, StateTransitionMatrixGenerator.PartialsObserver {
 
     /** Space dimension. */
     private static final int SPACE_DIMENSION = 3;

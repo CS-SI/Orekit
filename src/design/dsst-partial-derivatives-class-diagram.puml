@@ -39,16 +39,16 @@
       Propagator <|.. AbstractPropagator
 
       package integration #CBDBC8 {
-        interface AdditionalEquations {
+        interface AdditionalDerivativesProvider {
           +String getName()
           +boolean yield()
           +void derivatives()
         }
         class  AbstractIntegratedPropagator {
-         +void addAdditionalEquations(AdditionalEquations addEqu)
+         +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
         }
         AbstractPropagator <|-- AbstractIntegratedPropagator
-        AdditionalEquations <---o AbstractIntegratedPropagator : additional
+        AdditionalDerivativesProvider <---o AbstractIntegratedPropagator : provider
       }
 
       package semianalytical.dsst #CBDBC8 {
@@ -82,7 +82,7 @@
           +void getParametersJacobian(SpacecraftState state, double[][] dYdP)
        }
 
-       AdditionalEquations         <|..     DSSTPartialDerivativesEquations
+       AdditionalDerivativesProvider   <|..     DSSTPartialDerivativesEquations
        DSSTPartialDerivativesEquations *-->     DSSTForceModel
        AbstractIntegratedPropagator  <|--     DSSTPropagator
        DSSTPropagator          *--> DSSTForceModel
