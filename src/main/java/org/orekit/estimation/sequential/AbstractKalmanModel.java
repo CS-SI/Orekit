@@ -1176,7 +1176,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
     /** Setter for the jacobian mappers.
      * @param mappers the jacobian mappers to set
-     * @deprecated as of 11.1, replaced by {@ #setHarvesters(MatricesHarvester[])}
+     * @deprecated as of 11.1, replaced by {@link #setHarvesters(MatricesHarvester[])}
      */
     @Deprecated
     public void setMappers(final AbstractJacobiansMapper[] mappers) {

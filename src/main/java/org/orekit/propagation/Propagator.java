@@ -174,15 +174,8 @@ public interface Propagator extends PVCoordinatesProvider {
      * <p>
      * Managed states are states for which the propagators know how to compute
      * its evolution. They correspond to additional states for which a
-     * {@link CloseFormAdditionalStateGenerator generator} has been registered by calling the
-     * {@link #addClosedFormGenerator(CloseFormAdditionalStateGenerator) addClosedFormGenerator} method.
-     * If the propagator is an {@link org.orekit.propagation.integration.AbstractIntegratedPropagator
-     * integrator-based propagator}, the states for which a set of {@link
-     * org.orekit.propagation.integration.AdditionalDerivativesProvider integrable generator} has
-     * been registered by calling the {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator#addIntegrableGenerator(
-     * org.orekit.propagation.integration.AdditionalDerivativesProvider) method are also counted as
-     * managed additional states.
+     * {@link AdditionalStateProvider provider} has been registered by calling the
+     * {@link #addAdditionalStateProvider(AdditionalStateProvider) addAdditionalStateProvider} method.
      * </p>
      * <p>
      * Additional states that are present in the {@link #getInitialState() initial state}

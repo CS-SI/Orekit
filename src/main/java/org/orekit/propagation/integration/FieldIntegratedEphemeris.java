@@ -110,8 +110,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
      * @deprecated as of 11.1, replaced by {@link #FieldIntegratedEphemeris(FieldAbsoluteDate,
-     * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType, FieldDenseOutputModel,
-     * List, Map, String[])
+     * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType,
+     * FieldDenseOutputModel, FieldArrayDictionary, List, String[])}
      */
     @Deprecated
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,

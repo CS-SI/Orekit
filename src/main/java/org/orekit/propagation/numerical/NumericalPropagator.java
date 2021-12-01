@@ -89,9 +89,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>whether {@link MatricesHarvester state transition matrices and Jacobians matrices}
  *   should be propagated along with orbital state ({@link
  *   #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
- *   <li>whether {@link org.orekit.propagation.integration.AdditionalDerivativesProvider integrable generators}
+ *   <li>whether {@link org.orekit.propagation.integration.AdditionalDerivativesProvider additional derivatives}
  *   should be propagated along with orbital state ({@link
- *   #addIntegrableGenerator(org.orekit.propagation.integration.AdditionalDerivativesProvider)}),</li>
+ *   #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}),</li>
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(EventDetector)},
  *   {@link #clearEventsDetectors()})</li>

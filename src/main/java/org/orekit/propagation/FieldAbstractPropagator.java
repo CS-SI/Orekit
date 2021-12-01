@@ -152,7 +152,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     /** Update state by adding unmanaged states.
      * @param original original state
      * @return updated state, with unmanaged states included
-     * @see #updateAdditionalStates(SpacecraftState)
+     * @see #updateAdditionalStates(FieldSpacecraftState)
      */
     protected FieldSpacecraftState<T> updateUnmanagedStates(final FieldSpacecraftState<T> original) {
 

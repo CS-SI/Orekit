@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
-/** Generic interface for the maneuver triggers used in a {@link Maneuver}.
+/** Generic interface for the maneuver triggers used in a {@link org.orekit.forces.maneuvers.Maneuver}.
  * @author Maxime Journot
  * @since 10.2
  */

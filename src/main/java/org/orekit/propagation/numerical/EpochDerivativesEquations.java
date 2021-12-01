@@ -35,7 +35,7 @@ import org.orekit.utils.ParameterDriversList;
  *  The computation of the derivatives of the acceleration due to a ThirdBodyAttraction
  *  has been added.
  *
- *  Set of {@link AdditionalEquations additional equations} computing the partial derivatives
+ * {@link AdditionalDerivativesProvider Provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
  * <p>
  * This set of equations are automatically added to a {@link NumericalPropagator numerical propagator}

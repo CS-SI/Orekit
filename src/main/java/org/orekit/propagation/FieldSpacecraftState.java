@@ -582,7 +582,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     }
 
     /** Add an additional state derivative.
-    * {@link SpacecraftState SpacecraftState} instances are immutable,
+    * {@link FieldSpacecraftState FieldSpacecraftState} instances are immutable,
      * so this method does <em>not</em> change the instance, but rather
      * creates a new instance, which has the same components as the original
      * instance, except it also has the specified state derivative. If the
@@ -594,8 +594,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @param value value of the additional state derivative
      * @return a new instance, with the additional state derivative added
      * @see #hasAdditionalStateDerivative(String)
-     * @see #hasAdditionalStateDerivative(String)
-     * @see #hasAdditionalStateDerivative()
+     * @see #getAdditionalStateDerivative(String)
+     * @see #getAdditionalStatesDerivatives()
      */
     @SafeVarargs
     public final FieldSpacecraftState<T> addAdditionalStateDerivative(final String name, final T... value) {

@@ -234,12 +234,12 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      *         final FieldAbsoluteDate<S> date  = new FieldAbsoluteDate<>(field, detector.getDate());
      *         final S                    param = field.getZero().newInstance(detector.getParam());
      *
-     *         @SuppressWarnings("unchecked")
      *         final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldXyzDetector<>(date, param);
      *         return converted;
      *
      *     }
-     * }</pre>
+     * }
+     * </pre>
      * @param field field to which the state belongs
      * @param detector primitive firing start detector to convert
      * @param <D> type of the event detector
@@ -267,12 +267,12 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      *         final FieldAbsoluteDate<S> date  = new FieldAbsoluteDate<>(field, detector.getDate());
      *         final S                    param = field.getZero().newInstance(detector.getParam());
      *
-     *         @SuppressWarnings("unchecked")
      *         final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldXyzDetector<>(date, param);
      *         return converted;
      *
      *     }
-     * }</pre>
+     * }
+     * </pre>
      * @param field field to which the state belongs
      * @param detector primitive firing stop detector to convert
      * @param <D> type of the event detector
