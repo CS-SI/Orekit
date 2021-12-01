@@ -173,17 +173,16 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Check if an additional state is managed.
      * <p>
      * Managed states are states for which the propagators know how to compute
-     * its evolution. They correspond to additional states for which an
-     * {@link AdditionalStateProvider additional state provider} has been registered
-     * by calling the {@link #addAdditionalStateProvider(AdditionalStateProvider)
-     * addAdditionalStateProvider} method. If the propagator is an {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator integrator-based
-     * propagator}, the states for which a set of {@link
-     * org.orekit.propagation.integration.AdditionalEquations additional equations} has
+     * its evolution. They correspond to additional states for which a
+     * {@link CloseFormAdditionalStateGenerator generator} has been registered by calling the
+     * {@link #addClosedFormGenerator(CloseFormAdditionalStateGenerator) addClosedFormGenerator} method.
+     * If the propagator is an {@link org.orekit.propagation.integration.AbstractIntegratedPropagator
+     * integrator-based propagator}, the states for which a set of {@link
+     * org.orekit.propagation.integration.AdditionalDerivativesProvider integrable generator} has
      * been registered by calling the {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator#addAdditionalEquations(
-     * org.orekit.propagation.integration.AdditionalEquations) addAdditionalEquations}
-     * method are also counted as managed additional states.
+     * org.orekit.propagation.integration.AbstractIntegratedPropagator#addIntegrableGenerator(
+     * org.orekit.propagation.integration.AdditionalDerivativesProvider) method are also counted as
+     * managed additional states.
      * </p>
      * <p>
      * Additional states that are present in the {@link #getInitialState() initial state}

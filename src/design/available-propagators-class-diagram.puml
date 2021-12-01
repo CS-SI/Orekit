@@ -94,7 +94,7 @@
 
        abstract class AbstractIntegratedPropagator {
          +void setIntegrator(FirstOrderIntegrator integrator)
-         +void addAdditionalEquations(AdditionalEquations addEqu)
+         +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
          +void setInitialAdditionalState(String name, double[] addState)
        }
 

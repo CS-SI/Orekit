@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
@@ -35,20 +36,32 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.inertia.InertialForces;
+import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
+import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.TriggerDateJacobianColumnGenerator;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.DateDriver;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -69,13 +82,16 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
  *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
- *   ({@link #setOrbitType(OrbitType)}),
+ *   ({@link #setOrbitType(OrbitType)}),</li>
  *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
- *   #setPositionAngleType(PositionAngle)}),
- *   <li>whether {@link org.orekit.propagation.integration.AdditionalEquations additional equations}
- *   (for example {@link PartialDerivativesEquations Jacobians}) should be propagated along with orbital state
- *   ({@link #addAdditionalEquations(org.orekit.propagation.integration.AdditionalEquations)}),
+ *   #setPositionAngleType(PositionAngle)}),</li>
+ *   <li>whether {@link MatricesHarvester state transition matrices and Jacobians matrices}
+ *   should be propagated along with orbital state ({@link
+ *   #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
+ *   <li>whether {@link org.orekit.propagation.integration.AdditionalDerivativesProvider integrable generators}
+ *   should be propagated along with orbital state ({@link
+ *   #addIntegrableGenerator(org.orekit.propagation.integration.AdditionalDerivativesProvider)}),</li>
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(EventDetector)},
  *   {@link #clearEventsDetectors()})</li>
@@ -107,7 +123,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>the {@link org.orekit.orbits.CartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
  *   v<sub>y</sub>, v<sub>z</sub>) in meters and meters per seconds.
  * </ul>
- * <p> The last element is the mass in kilograms.
+ * <p> The last element is the mass in kilograms and changes only during thrusters firings
  *
  * <p>The following code snippet shows a typical setting for Low Earth Orbit propagation in
  * equinoctial parameters and true longitude argument:</p>
@@ -147,7 +163,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     private final List<ForceModel> forceModels;
 
     /** boolean to ignore or not the creation of a NewtonianAttraction. */
-    private boolean ignoreCentralAttraction = false;
+    private boolean ignoreCentralAttraction;
+
+    /** Harvester for State Transition Matrix and Jacobian matrix. */
+    private NumericalPropagationHarvester harvester;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
@@ -186,7 +205,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     public NumericalPropagator(final ODEIntegrator integrator,
                                final AttitudeProvider attitudeProvider) {
         super(integrator, PropagationType.MEAN);
-        forceModels = new ArrayList<ForceModel>();
+        forceModels             = new ArrayList<ForceModel>();
+        ignoreCentralAttraction = false;
+        harvester               = null;
         initMapper();
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
@@ -367,12 +388,260 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setStartDate(state.getDate());
     }
 
+    /** Set up computation of State Transition Matrix and Jacobians matrix with respect to parameters.
+     * <p>
+     * If this method is called, both State Transition Matrix and Jacobians with respect to the
+     * force models parameters that will be selected when propagation starts will be automatically
+     * computed, and the harvester will allow to retrieve them.
+     * </p>
+     * <p>
+     * The arguments for initial matrices <em>must</em> be compatible with the {@link #setOrbitType(OrbitType) orbit type}
+     * and {@link #setPositionAngleType(PositionAngle) position angle} that will be ultimately
+     * selected when propagation starts
+     * </p>
+     * @param stmName State Transition Matrix state name
+     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
+     * if null (which is the most frequent case), assumed to be 6x6 identity
+     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
+     * if null or if some selected parameters are missing from the dictionary, the corresponding
+     * initial column is assumed to be 0
+     * @return harvester to retrieve computed matrices during and after propagation
+     * @since 11.1
+     */
+    public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
+                                                      final DoubleArrayDictionary initialJacobianColumns) {
+        harvester = new NumericalPropagationHarvester(stmName, initialStm, initialJacobianColumns);
+        return harvester;
+    }
+
     /** {@inheritDoc} */
+    @Override
+    protected void setUpStmAndJacobianGenerators() {
+
+        if (harvester != null) {
+
+            // set up the additional equations and additional state providers
+            final StateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
+            final List<String> triggersDates     = setUpTriggerDatesJacobiansColumns(stmGenerator.getName());
+            final List<String> regularParameters = setUpRegularParametersJacobiansColumns(stmGenerator, triggersDates);
+
+            // sort the Jacobians columns
+            final List<String> columnsNames = new ArrayList<>(triggersDates.size() + regularParameters.size());
+            columnsNames.addAll(triggersDates);
+            columnsNames.addAll(regularParameters);
+            Collections.sort(columnsNames);
+
+            harvester.setColumnsNames(columnsNames);
+            harvester.setOrbitType(getOrbitType());
+            harvester.setPositionAngleType(getPositionAngleType());
+
+        }
+
+    }
+
+    /** Set up the State Transition Matrix Generator.
+     * @return State Transition Matrix Generator
+     * @since 11.1
+     */
+    private StateTransitionMatrixGenerator setUpStmGenerator() {
+
+        // add the STM generator corresponding to the current settings, and setup state accordingly
+        StateTransitionMatrixGenerator stmGenerator = null;
+        for (final AdditionalDerivativesProvider equations : getAdditionalDerivativesProviders()) {
+            if (equations instanceof StateTransitionMatrixGenerator &&
+                equations.getName().equals(harvester.getStmName())) {
+                // the STM generator has already been set up in a previous propagation
+                stmGenerator = (StateTransitionMatrixGenerator) equations;
+                break;
+            }
+        }
+        if (stmGenerator == null) {
+            // this is the first time we need the STM generate, create it
+            stmGenerator = new StateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(), getAttitudeProvider());
+            addAdditionalDerivativesProvider(stmGenerator);
+        }
+
+        if (!getInitialIntegrationState().hasAdditionalState(harvester.getStmName())) {
+            // add the initial State Transition Matrix if it is not already there
+            // (perhaps due to a previous propagation)
+            setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
+                                                                         harvester.getInitialStateTransitionMatrix(),
+                                                                         getOrbitType(),
+                                                                         getPositionAngleType()));
+        }
+
+        return stmGenerator;
+
+    }
+
+    /** Set up the Jacobians columns generator dedicated to trigger dates.
+     * @param stmName name of the State Transition Matrix state
+     * @return names of the columns corresponding to trigger dates
+     * @since 11.1
+     */
+    private List<String> setUpTriggerDatesJacobiansColumns(final String stmName) {
+
+        final List<String> names = new ArrayList<>();
+        for (final ForceModel forceModel : getAllForceModels()) {
+            if (forceModel instanceof Maneuver) {
+                final Maneuver         maneuver         = (Maneuver) forceModel;
+                final ManeuverTriggers maneuverTriggers = maneuver.getManeuverTriggers();
+                if (maneuverTriggers instanceof AbstractManeuverTriggers) {
+
+                    // FIXME: when issue https://gitlab.orekit.org/orekit/orekit/-/issues/854 is solved
+                    // the previous if statement and the following cast should be removed as the following
+                    // code should really be done for all ManeuverTriggers and not only AbstractManeuverTriggers
+                    final AbstractManeuverTriggers amt = (AbstractManeuverTriggers) maneuverTriggers;
+
+                    amt.getEventsDetectors().
+                        filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
+                        map (d -> (ParameterDrivenDateIntervalDetector) d).
+                        forEach(d -> {
+                            final TriggerDateJacobianColumnGenerator start =
+                                            manageDateDriver(stmName, maneuver, amt, d.getStartDriver(), true,  d.getThreshold());
+                            if (start != null) {
+                                names.add(start.getName());
+                            }
+                            final TriggerDateJacobianColumnGenerator stop =
+                                            manageDateDriver(stmName, maneuver, amt, d.getStopDriver(),  false, d.getThreshold());
+                            if (stop != null) {
+                                names.add(stop.getName());
+                            }
+                        });
+
+                }
+            }
+        }
+
+        return names;
+
+    }
+
+    /** Manage a maneuver date driver.
+     * @param stmName name of the State Transition Matrix state
+     * @param maneuver maneuver force model
+     * @param amt trigger to which the driver is bound
+     * @param driver date driver
+     * @param start if true, the driver is a maneuver start
+     * @param threshold event detector threshold
+     * @return generator for the date driver (null if driver not selected)
+     * @since 11.1
+     */
+    private TriggerDateJacobianColumnGenerator manageDateDriver(final String stmName,
+                                                                final Maneuver maneuver,
+                                                                final AbstractManeuverTriggers amt,
+                                                                final DateDriver driver,
+                                                                final boolean start,
+                                                                final double threshold) {
+        TriggerDateJacobianColumnGenerator triggerGenerator = null;
+
+        if (driver.isSelected()) {
+
+            // check if we already have set up the provider
+            for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+                if (provider instanceof TriggerDateJacobianColumnGenerator &&
+                                provider.getName().equals(driver.getName())) {
+                    // the Jacobian column generator has already been set up in a previous propagation
+                    triggerGenerator = (TriggerDateJacobianColumnGenerator) provider;
+                    break;
+                }
+            }
+
+            if (triggerGenerator == null) {
+                // this is the first time we need the Jacobian column generator, create it
+                triggerGenerator = new TriggerDateJacobianColumnGenerator(stmName, driver.getName(),
+                                                                          start, maneuver, threshold);
+                amt.addResetter(triggerGenerator);
+                addAdditionalStateProvider(triggerGenerator);
+            }
+
+            if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {
+                // add the initial Jacobian column if it is not already there
+                // (perhaps due to a previous propagation)
+                setInitialState(triggerGenerator.setInitialColumn(getInitialState(),
+                                                                  harvester.getInitialJacobianColumn(driver.getName()),
+                                                                  getOrbitType(),
+                                                                  getPositionAngleType()));
+            }
+
+        }
+
+        return triggerGenerator;
+
+    }
+
+    /** Set up the Jacobians columns generator for regular parameters.
+     * @param stmGenerator generator for the State Transition Matrix
+     * @param triggerDates names of the columns already managed as trigger dates
+     * @return names of the columns corresponding to regular parameters
+     * @since 11.1
+     */
+    private List<String> setUpRegularParametersJacobiansColumns(final StateTransitionMatrixGenerator stmGenerator,
+                                                                final List<String> triggerDates) {
+
+        // first pass: gather all parameters (excluding trigger dates), binding similar names together
+        final ParameterDriversList selected = new ParameterDriversList();
+        for (final ForceModel forceModel : getAllForceModels()) {
+            for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
+                if (!triggerDates.contains(driver.getName())) {
+                    selected.add(driver);
+                }
+            }
+        }
+
+        // second pass: now that shared parameter names are bound together,
+        // their selections status have been synchronized, we can filter them
+        selected.filter(true);
+
+        // third pass: sort parameters lexicographically
+        selected.sort();
+
+        // add the Jacobians column generators corresponding to parameters, and setup state accordingly
+        final List<String> names = new ArrayList<>(selected.getNbParams());
+        for (final DelegatingDriver driver : selected.getDrivers()) {
+
+            names.add(driver.getName());
+            IntegrableJacobianColumnGenerator generator = null;
+
+            // check if we already have set up the providers
+            for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
+                if (provider instanceof IntegrableJacobianColumnGenerator &&
+                                provider.getName().equals(driver.getName())) {
+                    // the Jacobian column generator has already been set up in a previous propagation
+                    generator = (IntegrableJacobianColumnGenerator) provider;
+                    break;
+                }
+            }
+
+            if (generator == null) {
+                // this is the first time we need the Jacobian column generator, create it
+                generator = new IntegrableJacobianColumnGenerator(stmGenerator, driver.getName());
+                addAdditionalDerivativesProvider(generator);
+            }
+
+            if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {
+                // add the initial Jacobian column if it is not already there
+                // (perhaps due to a previous propagation)
+                setInitialState(generator.setInitialColumn(getInitialState(),
+                                                           harvester.getInitialJacobianColumn(driver.getName()),
+                                                           getOrbitType(),
+                                                           getPositionAngleType()));
+            }
+
+        }
+
+        return names;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
                                        final OrbitType orbitType, final PositionAngle positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
@@ -502,9 +771,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-            for (final ForceModel forceModel : forceModels) {
-                forceModel.init(initialState, target);
-            }
+            forceModels.forEach(fm -> fm.init(initialState, target));
         }
 
         /** {@inheritDoc} */

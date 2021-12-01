@@ -16,8 +16,6 @@
  */
 package org.orekit.forces.maneuvers;
 
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -30,6 +28,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 
 /** Impulse maneuver model.
@@ -237,8 +236,11 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
             // pack everything in a new state
             SpacecraftState newState = new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
                                                            attitude, newMass);
-            for (final Map.Entry<String, double[]> entry : oldState.getAdditionalStates().entrySet()) {
+            for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesValues().getData()) {
                 newState = newState.addAdditionalState(entry.getKey(), entry.getValue());
+            }
+            for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesDerivatives().getData()) {
+                newState = newState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
             }
             return newState;
 

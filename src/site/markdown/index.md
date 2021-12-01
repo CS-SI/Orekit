@@ -149,6 +149,7 @@
         * raising/setting with respect to a ground location
           (with customizable triggering elevation and ground mask, optionally considering refraction)
         * date and on-the-fly resetting countdown
+        * date interval with parameter-driven boundaries
         * latitude, longitude, altitude crossing
         * latitude, longitude extremum
         * elevation extremum
