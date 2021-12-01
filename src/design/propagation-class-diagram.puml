@@ -48,7 +48,7 @@
         +SpacecraftState addAdditionalState(final String name, final double ... value)
         +boolean hasAdditionalState(final String name)
         +double[] getAdditionalState(final String name)
-        +Map<String, double[]> getAdditionalStates()
+        +DoubleArrayDictionary getAdditionalStates()
       }
       note bottom
         always immutable

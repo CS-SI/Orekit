@@ -34,7 +34,6 @@ import org.orekit.utils.ParameterDriversList;
  * to be immutable.
  * </p>
  * @author Luc Maisonobe
- * @see org.orekit.propagation.numerical.PartialDerivativesEquations
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
@@ -59,7 +58,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     private final PositionAngle angleType;
 
     /** Simple constructor.
-     * @param name name of the Jacobians
+     * @param name name of the State Transition Matrix additional state
      * @param parameters selected parameters for Jacobian computation
      * @param orbitType orbit type
      * @param angleType position angle type
@@ -107,7 +106,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
      * </p>
      */
     public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
-                             final double[][] dY1dP, final double[] p) {
+                                    final double[][] dY1dP, final double[] p) {
 
         // set up a converter
         final RealMatrix dY1dC1 = new Array2DRowRealMatrix(getConversionJacobian(state), false);
@@ -139,7 +138,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** {@inheritDoc} */
-    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0) {
+    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
 
         // get the conversion Jacobian
         final double[][] dYdC = getConversionJacobian(state);
