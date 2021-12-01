@@ -52,7 +52,7 @@ import org.orekit.propagation.TriggerDateJacobianColumnGenerator;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -89,9 +89,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>whether {@link MatricesHarvester state transition matrices and Jacobians matrices}
  *   should be propagated along with orbital state ({@link
  *   #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
- *   <li>whether {@link org.orekit.propagation.integration.IntegrableGenerator integrable generators}
+ *   <li>whether {@link org.orekit.propagation.integration.AdditionalDerivativesProvider integrable generators}
  *   should be propagated along with orbital state ({@link
- *   #addIntegrableGenerator(org.orekit.propagation.integration.IntegrableGenerator)}),</li>
+ *   #addIntegrableGenerator(org.orekit.propagation.integration.AdditionalDerivativesProvider)}),</li>
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(EventDetector)},
  *   {@link #clearEventsDetectors()})</li>
@@ -447,7 +447,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         // add the STM generator corresponding to the current settings, and setup state accordingly
         StateTransitionMatrixGenerator stmGenerator = null;
-        for (final AdditionalEquations equations : getAdditionalEquations()) {
+        for (final AdditionalDerivativesProvider equations : getAdditionalDerivativesProviders()) {
             if (equations instanceof StateTransitionMatrixGenerator &&
                 equations.getName().equals(harvester.getStmName())) {
                 // the STM generator has already been set up in a previous propagation
@@ -458,7 +458,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (stmGenerator == null) {
             // this is the first time we need the STM generate, create it
             stmGenerator = new StateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(), getAttitudeProvider());
-            addAdditionalEquations(stmGenerator);
+            addAdditionalDerivativesProvider(stmGenerator);
         }
 
         if (!getInitialIntegrationState().hasAdditionalState(harvester.getStmName())) {
@@ -603,12 +603,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             names.add(driver.getName());
             IntegrableJacobianColumnGenerator generator = null;
 
-            // check if we already have set up the equations
-            for (final AdditionalEquations equations : getAdditionalEquations()) {
-                if (equations instanceof IntegrableJacobianColumnGenerator &&
-                                equations.getName().equals(driver.getName())) {
+            // check if we already have set up the providers
+            for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
+                if (provider instanceof IntegrableJacobianColumnGenerator &&
+                                provider.getName().equals(driver.getName())) {
                     // the Jacobian column generator has already been set up in a previous propagation
-                    generator = (IntegrableJacobianColumnGenerator) equations;
+                    generator = (IntegrableJacobianColumnGenerator) provider;
                     break;
                 }
             }
@@ -616,7 +616,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             if (generator == null) {
                 // this is the first time we need the Jacobian column generator, create it
                 generator = new IntegrableJacobianColumnGenerator(stmGenerator, driver.getName());
-                addAdditionalEquations(generator);
+                addAdditionalDerivativesProvider(generator);
             }
 
             if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {

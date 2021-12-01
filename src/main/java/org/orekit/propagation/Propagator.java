@@ -178,10 +178,10 @@ public interface Propagator extends PVCoordinatesProvider {
      * {@link #addClosedFormGenerator(CloseFormAdditionalStateGenerator) addClosedFormGenerator} method.
      * If the propagator is an {@link org.orekit.propagation.integration.AbstractIntegratedPropagator
      * integrator-based propagator}, the states for which a set of {@link
-     * org.orekit.propagation.integration.IntegrableGenerator integrable generator} has
+     * org.orekit.propagation.integration.AdditionalDerivativesProvider integrable generator} has
      * been registered by calling the {@link
      * org.orekit.propagation.integration.AbstractIntegratedPropagator#addIntegrableGenerator(
-     * org.orekit.propagation.integration.IntegrableGenerator) method are also counted as
+     * org.orekit.propagation.integration.AdditionalDerivativesProvider) method are also counted as
      * managed additional states.
      * </p>
      * <p>

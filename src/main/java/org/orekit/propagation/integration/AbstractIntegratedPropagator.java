@@ -85,8 +85,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     private final Map<String, Integer> secondaryOffsets;
 
-    /** Additional equations. */
-    private List<AdditionalEquations> additionalEquations;
+    /** Additional derivatives providers.
+     * @since 11.1
+     */
+    private List<AdditionalDerivativesProvider> additionalDerivativesProviders;
 
     /** Map of secondary equation offset in main
     /** Counter for differential equations calls. */
@@ -111,13 +113,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param propagationType type of orbit to output (mean or osculating).
      */
     protected AbstractIntegratedPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
-        detectors               = new ArrayList<>();
-        ephemerisGenerators     = new ArrayList<>();
-        additionalEquations     = new ArrayList<>();
-        this.secondaryOffsets   = new HashMap<>();
-        this.integrator         = integrator;
-        this.propagationType    = propagationType;
-        this.resetAtEnd         = true;
+        detectors                      = new ArrayList<>();
+        ephemerisGenerators            = new ArrayList<>();
+        additionalDerivativesProviders = new ArrayList<>();
+        this.secondaryOffsets          = new HashMap<>();
+        this.integrator                = integrator;
+        this.propagationType           = propagationType;
+        this.resetAtEnd                = true;
     }
 
     /** Allow/disallow resetting the initial state at end of propagation.
@@ -235,8 +237,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         // then look at states we integrate ourselves
-        for (final AdditionalEquations equation : additionalEquations) {
-            if (equation.getName().equals(name)) {
+        for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+            if (provider.getName().equals(name)) {
                 return true;
             }
         }
@@ -248,46 +250,50 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     @Override
     public String[] getManagedAdditionalStates() {
         final String[] alreadyIntegrated = super.getManagedAdditionalStates();
-        final String[] managed = new String[alreadyIntegrated.length + additionalEquations.size()];
+        final String[] managed = new String[alreadyIntegrated.length + additionalDerivativesProviders.size()];
         System.arraycopy(alreadyIntegrated, 0, managed, 0, alreadyIntegrated.length);
-        for (int i = 0; i < additionalEquations.size(); ++i) {
-            managed[i + alreadyIntegrated.length] = additionalEquations.get(i).getName();
+        for (int i = 0; i < additionalDerivativesProviders.size(); ++i) {
+            managed[i + alreadyIntegrated.length] = additionalDerivativesProviders.get(i).getName();
         }
         return managed;
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
+     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
      */
+    @Deprecated
     public void addAdditionalEquations(final AdditionalEquations additional) {
+        addAdditionalDerivativesProvider(new AdditionalEquationsAdapter(additional, this::getInitialState));
+    }
+
+    /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
+     * @param provider provider for additional derivatives
+     * @see #addAdditionalStateProvider(org.orekit.propagation.AdditionalStateProvider)
+     * @since 11.1
+     */
+    public void addAdditionalDerivativesProvider(final AdditionalDerivativesProvider provider) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(additional.getName())) {
-            // this set of equations is already registered, complain
+        if (isAdditionalStateManaged(provider.getName())) {
+            // these derivatives are already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      additional.getName());
+                                      provider.getName());
         }
 
-        // this is really a new set of equations, add it
-        // FIXME: the following if statement should be removed in 12.0
-        // when the dummy default implementation of AdditionalEquations.getDimension() is removed
-        if (additional.getDimension() < 0) {
-            // the additional equation does not implement getDimension by itself, we wrap it
-            additionalEquations.add(new AdditionalEquationsWrapper(additional));
-        } else {
-            additionalEquations.add(additional);
-        }
+        // this is really a new set of derivatives, add it
+        additionalDerivativesProviders.add(provider);
 
         secondaryOffsets.clear();
 
     }
 
-    /** Get an unmodifiable list of equations for additional state.
-     * @return equations for the additional states
+    /** Get an unmodifiable list of providers for additional derivatives.
+     * @return providers for the additional derivatives
      * @since 11.1
      */
-    public List<AdditionalEquations> getAdditionalEquations() {
-        return Collections.unmodifiableList(additionalEquations);
+    public List<AdditionalDerivativesProvider> getAdditionalDerivativesProviders() {
+        return Collections.unmodifiableList(additionalDerivativesProviders);
     }
 
     /** {@inheritDoc} */
@@ -465,13 +471,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                         mathFinalState.getPrimaryDerivative(),
                                                         propagationType);
 
-            if (!additionalEquations.isEmpty()) {
+            if (!additionalDerivativesProviders.isEmpty()) {
                 final double[] secondary            = mathFinalState.getSecondaryState(1);
                 final double[] secondaryDerivatives = mathFinalState.getSecondaryDerivative(1);
-                for (AdditionalEquations equations : additionalEquations) {
-                    final String   name        = equations.getName();
+                for (AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                    final String   name        = provider.getName();
                     final int      offset      = secondaryOffsets.get(name);
-                    final int      dimension   = equations.getDimension();
+                    final int      dimension   = provider.getDimension();
                     finalState = finalState.
                                  addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension)).
                                  addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivatives, offset, offset + dimension));
@@ -511,9 +517,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         if (secondaryOffsets.isEmpty()) {
             // compute dimension of the secondary state
             int offset = 0;
-            for (final AdditionalEquations equations : additionalEquations) {
-                secondaryOffsets.put(equations.getName(), offset);
-                offset += equations.getDimension();
+            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                secondaryOffsets.put(provider.getName(), offset);
+                offset += provider.getDimension();
             }
             secondaryOffsets.put(SECONDARY_DIMENSION, offset);
         }
@@ -534,8 +540,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-        for (final AdditionalEquations equations : additionalEquations) {
-            final String   name       = equations.getName();
+        for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+            final String   name       = provider.getName();
             final int      offset     = secondaryOffsets.get(name);
             final double[] additional = state.getAdditionalState(name);
             System.arraycopy(additional, 0, secondary[0], offset, additional.length);
@@ -557,8 +563,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         final double[][] secondaryDerivative = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-        for (final AdditionalEquations equations : additionalEquations) {
-            final String   name       = equations.getName();
+        for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+            final String   name       = provider.getName();
             final int      offset     = secondaryOffsets.get(name);
             final double[] additionalDerivative = state.getAdditionalStateDerivative(name);
             System.arraycopy(additionalDerivative, 0, secondaryDerivative[0], offset, additionalDerivative.length);
@@ -580,7 +586,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 new ExpandableODE(new ConvertedMainStateEquations(getMainStateEquations(integ)));
 
         // secondary part of the ODE
-        if (!additionalEquations.isEmpty()) {
+        if (!additionalDerivativesProviders.isEmpty()) {
             ode.addSecondaryEquations(new ConvertedSecondaryStateEquations());
         }
 
@@ -636,10 +642,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         if (os.getNumberOfSecondaryStates() > 0) {
             final double[] secondary           = os.getSecondaryState(1);
             final double[] secondaryDerivative = os.getSecondaryDerivative(1);
-            for (final AdditionalEquations equations : additionalEquations) {
-                final String name      = equations.getName();
+            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                final String name      = provider.getName();
                 final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = equations.getDimension();
+                final int    dimension = provider.getDimension();
                 s = s.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
                 s = s.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
             }
@@ -766,8 +772,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             final SpacecraftState initialState = convert(t0, primary0, null, secondary0);
 
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
-            for (final AdditionalEquations equations : additionalEquations) {
-                equations.init(initialState, target);
+            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                provider.init(initialState, target);
             }
 
         }
@@ -783,29 +789,29 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             SpacecraftState updated = convert(t, primary, primaryDot, secondary);
 
             // set up queue for equations
-            final Queue<AdditionalEquations> pending = new LinkedList<>(additionalEquations);
+            final Queue<AdditionalDerivativesProvider> pending = new LinkedList<>(additionalDerivativesProviders);
 
             // gather the derivatives from all additional equations, taking care of dependencies
             final double[] secondaryDot = new double[combinedDimension];
             int yieldCount = 0;
             while (!pending.isEmpty()) {
-                final AdditionalEquations equations = pending.remove();
-                if (equations.yield(updated)) {
-                    // these equations have to wait for another set,
-                    // we put them again in the pending queue
-                    pending.add(equations);
+                final AdditionalDerivativesProvider provider = pending.remove();
+                if (provider.yield(updated)) {
+                    // this provider has to wait for another one,
+                    // we put it again in the pending queue
+                    pending.add(provider);
                     if (++yieldCount >= pending.size()) {
-                        // all pending equations yielded!, they probably need data not yet initialized
+                        // all pending providers yielded!, they probably need data not yet initialized
                         // we let the propagation proceed, if these data are really needed right now
                         // an appropriate exception will be triggered when caller tries to access them
                         break;
                     }
                 } else {
                     // we can use these equations right now
-                    final String   name        = equations.getName();
+                    final String   name        = provider.getName();
                     final int      offset      = secondaryOffsets.get(name);
-                    final int      dimension   = equations.getDimension();
-                    final double[] derivatives = equations.derivatives(updated);
+                    final int      dimension   = provider.getDimension();
+                    final double[] derivatives = provider.derivatives(updated);
                     System.arraycopy(derivatives, 0, secondaryDot, offset, dimension);
                     updated = updated.addAdditionalStateDerivative(name, derivatives);
                     yieldCount = 0;
@@ -828,10 +834,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             SpacecraftState initialState = stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
 
-            for (final AdditionalEquations equations : additionalEquations) {
-                final String name      = equations.getName();
+            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                final String name      = provider.getName();
                 final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = equations.getDimension();
+                final int    dimension = provider.getDimension();
                 initialState = initialState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
             }
 
@@ -899,10 +905,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // secondary part
             final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-            for (final AdditionalEquations equations : additionalEquations) {
-                final String name      = equations.getName();
+            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                final String name      = provider.getName();
                 final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = equations.getDimension();
+                final int    dimension = provider.getDimension();
                 System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
             }
 
@@ -1094,9 +1100,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get the names of additional states managed by differential equations
-            final String[] names = new String[additionalEquations.size()];
+            final String[] names = new String[additionalDerivativesProviders.size()];
             for (int i = 0; i < names.length; ++i) {
-                names[i] = additionalEquations.get(i).getName();
+                names[i] = additionalDerivativesProviders.get(i).getName();
             }
 
             // create the ephemeris
@@ -1160,64 +1166,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         }
 
-    }
-
-    /** Temporary wrapper for {@link AdditionalEquations} that do not implement getDimension().
-     * @since 11.1
-     * @deprecated introduced in 11.1 as a temporary workaround for missing getDimension, must be removed in 12.0
-     */
-    @Deprecated
-    private class AdditionalEquationsWrapper implements AdditionalEquations {
-
-        /** Wrapped equations. */
-        private final AdditionalEquations equations;
-
-        /** Dimension. */
-        private int dimension;
-
-        /** Simple constructor.
-         * @param equations wrapped equations
-         */
-        AdditionalEquationsWrapper(final AdditionalEquations equations) {
-            this.equations = equations;
-            this.dimension = -1;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getName() {
-            return equations.getName();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public int getDimension() {
-            if (dimension < 0) {
-                // retrieve the dimension the first time we need it
-                dimension = getInitialState().getAdditionalState(getName()).length;
-            }
-            return dimension;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean yield(final SpacecraftState state) {
-            return equations.yield(state);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-            equations.init(initialState, target);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public double[] derivatives(final SpacecraftState s) {
-            final double[] pDot = new double[getDimension()];
-            computeDerivatives(s, pDot);
-            return pDot;
-        }
     }
 
 }

@@ -58,16 +58,16 @@
       Propagator <|.. AbstractPropagator
 
       package integration #CBDBC8 {
-        interface AdditionalEquations {
+        interface AdditionalDerivativesProvider {
           +String getName()
           +yield()
           +void derivatives()
         }
         class  AbstractIntegratedPropagator {
-         +void addAdditionalEquations(AdditionalEquations addEqu)
+         +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
         }
         AbstractPropagator <|-- AbstractIntegratedPropagator
-        AdditionalEquations <---o AbstractIntegratedPropagator : additional
+        AdditionalDerivativesProvider <---o AbstractIntegratedPropagator : provider
       }
 
       package numerical #CBDBC8 {

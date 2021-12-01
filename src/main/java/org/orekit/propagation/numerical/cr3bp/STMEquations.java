@@ -23,14 +23,14 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 
 /** Class calculating the state transition matrix coefficient for CR3BP Computation.
  * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
  * @since 10.2
  */
-public class STMEquations implements AdditionalEquations {
+public class STMEquations implements AdditionalDerivativesProvider {
 
     /** Matrix Dimension. */
     private static final int DIM = 6;
@@ -82,10 +82,11 @@ public class STMEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
-    public double[] computeDerivatives(final SpacecraftState s, final double[] dPhi) {
+    public double[] derivatives(final SpacecraftState s) {
 
         // State Transition Matrix
         final double[] phi = s.getAdditionalState(getName());
+        final double[] dPhi = new double[phi.length];
 
         // Spacecraft Potential
         final DerivativeStructure potential = new CR3BPForceModel(syst).getPotential(s);
@@ -122,8 +123,8 @@ public class STMEquations implements AdditionalEquations {
             }
         }
 
-        // these equations have no effect on the main state itself
-        return null;
+        return dPhi;
+
     }
 
     /** {@inheritDoc} */

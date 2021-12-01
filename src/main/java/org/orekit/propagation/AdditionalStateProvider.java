@@ -66,7 +66,7 @@ package org.orekit.propagation;
  * to retrieve an additional state that was not added.
  * </p>
  * @see org.orekit.propagation.Propagator
- * @see org.orekit.propagation.integration.AdditionalEquations
+ * @see org.orekit.propagation.integration.AdditionalDerivativesProvider
  * @author Luc Maisonobe
  */
 public interface AdditionalStateProvider {

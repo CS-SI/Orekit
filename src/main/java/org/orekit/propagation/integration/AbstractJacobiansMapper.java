@@ -45,9 +45,7 @@ public abstract class AbstractJacobiansMapper implements MatricesHarvester {
     /** Simple constructor.
      * @param name name of the Jacobians
      * @param parameters selected parameters for Jacobian computation
-     * @deprecated since 11.1 replaced by {@link #AbstractJacobiansMapper(String, int)}
      */
-    @Deprecated
     protected AbstractJacobiansMapper(final String name, final ParameterDriversList parameters) {
         this.name       = name;
         this.parameters = parameters;

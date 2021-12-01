@@ -68,7 +68,7 @@ import org.hipparchus.CalculusFieldElement;
  * to retrieve an additional state that was not added.
  * </p>
  * @see org.orekit.propagation.FieldPropagator
- * @see org.orekit.propagation.integration.FieldAdditionalEquations
+ * @see org.orekit.propagation.integration.FieldAdditionalDerivativesProvider
  * @author Luc Maisonobe
  */
 public interface FieldAdditionalStateProvider<T extends CalculusFieldElement<T>> {

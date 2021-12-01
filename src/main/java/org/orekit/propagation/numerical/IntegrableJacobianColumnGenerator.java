@@ -18,7 +18,7 @@ package org.orekit.propagation.numerical;
 
 import org.orekit.propagation.BaseJacobianColumnGenerator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 
 /** Generator for one column of a Jacobian matrix.
  * @author Luc Maisonobe
@@ -26,7 +26,7 @@ import org.orekit.propagation.integration.AdditionalEquations;
  */
 class IntegrableJacobianColumnGenerator
     extends BaseJacobianColumnGenerator
-    implements AdditionalEquations, StateTransitionMatrixGenerator.PartialsObserver {
+    implements AdditionalDerivativesProvider, StateTransitionMatrixGenerator.PartialsObserver {
 
     /** Name of the state for State Transition Matrix. */
     private final String stmName;

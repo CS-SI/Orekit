@@ -34,7 +34,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 
@@ -42,7 +42,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 11.1
  */
-class StateTransitionMatrixGenerator implements AdditionalEquations {
+class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
 
     /** Threshold for matrix solving. */
     private static final double THRESHOLD = Precision.SAFE_MIN;

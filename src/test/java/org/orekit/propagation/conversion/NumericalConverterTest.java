@@ -48,7 +48,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -223,7 +223,7 @@ public class NumericalConverterTest {
         builder.addForceModel(gravity);
 
         // Add additional equations
-        builder.addAdditionalEquations(new AdditionalEquations() {
+        builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
             public String getName() {
                 return "linear";
@@ -239,7 +239,7 @@ public class NumericalConverterTest {
 
         });
 
-        builder.addAdditionalEquations(new AdditionalEquations() {
+        builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
     	    public String getName() {
     	        return "linear";
