@@ -69,6 +69,11 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
     /** Estimated propagation drivers. */
     private final ParameterDriversList allEstimatedPropagationParameters;
 
+    /** Per-builder estimated orbita parameters drivers.
+     * @since 11.1
+     */
+    private final ParameterDriversList[] estimatedOrbitalParameters;
+
     /** Per-builder estimated propagation drivers. */
     private final ParameterDriversList[] estimatedPropagationParameters;
 
@@ -186,7 +191,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         orbitsEndColumns        = new int[builders.size()];
         int columns = 0;
         allEstimatedOrbitalParameters = new ParameterDriversList();
+        estimatedOrbitalParameters    = new ParameterDriversList[builders.size()];
         for (int k = 0; k < builders.size(); ++k) {
+            estimatedOrbitalParameters[k] = new ParameterDriversList();
             orbitsStartColumns[k] = columns;
             final String suffix = propagatorBuilders.size() > 1 ? "[" + k + "]" : null;
             for (final ParameterDriver driver : builders.get(k).getOrbitalParametersDrivers().getDrivers()) {
@@ -200,6 +207,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 }
                 if (driver.isSelected()) {
                     allEstimatedOrbitalParameters.add(driver);
+                    estimatedOrbitalParameters[k].add(driver);
                     orbitalParameterColumns.put(driver.getName(), columns++);
                 }
             }
@@ -698,17 +706,14 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             harvesters[k].setReferenceState(predictedSpacecraftStates[k]);
 
             // Derivatives of the state vector with respect to initial state vector
-            final RealMatrix dYdY0 = harvesters[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
+            final int nbOrbParams = estimatedOrbitalParameters[k].getNbParams();
+            if (nbOrbParams > 0) {
+                final RealMatrix dYdY0 = harvesters[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
 
-            // Fill upper left corner (dY/dY0)
-            final List<ParameterDriversList.DelegatingDriver> drivers =
-                            builders.get(k).getOrbitalParametersDrivers().getDrivers();
-            for (int i = 0; i < dYdY0.getRowDimension(); ++i) {
-                if (drivers.get(i).isSelected()) {
-                    for (int j = 0; j < dYdY0.getColumnDimension(); ++j) {
-                        if (drivers.get(j).isSelected()) {
-                            stm.setEntry(indK[i], indK[j], dYdY0.getEntry(i, j));
-                        }
+                // Fill upper left corner (dY/dY0)
+                for (int i = 0; i < dYdY0.getRowDimension(); ++i) {
+                    for (int j = 0; j < nbOrbParams; ++j) {
+                        stm.setEntry(indK[i], indK[j], dYdY0.getEntry(i, j));
                     }
                 }
             }

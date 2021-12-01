@@ -62,6 +62,11 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
     /** Builders for propagators. */
     private final OrbitDeterminationPropagatorBuilder[] builders;
 
+    /** Array of each builder's selected orbit drivers.
+     * @since 11.1
+     */
+    private final ParameterDriversList[] estimatedOrbitalParameters;
+
     /** Array of each builder's selected propagation drivers. */
     private final ParameterDriversList[] estimatedPropagationParameters;
 
@@ -150,6 +155,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         this.measurements                    = measurements;
         this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
+        this.estimatedOrbitalParameters      = new ParameterDriversList[builders.length];
         this.estimatedPropagationParameters  = new ParameterDriversList[builders.length];
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
@@ -311,6 +317,32 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
     }
 
+    /** Get the selected orbital drivers for a propagatorBuilder.
+     * @param iBuilder index of the builder in the builders' array
+     * @return the list of selected orbital drivers for propagatorBuilder of index iBuilder
+     * @since 11.1
+     */
+    public ParameterDriversList getSelectedOrbitalParametersDriversForBuilder(final int iBuilder) {
+
+        // Lazy evaluation, create the list only if it hasn't been created yet
+        if (estimatedOrbitalParameters[iBuilder] == null) {
+
+            // Gather the drivers
+            final ParameterDriversList selectedOrbitalDrivers = new ParameterDriversList();
+            for (final DelegatingDriver delegating : builders[iBuilder].getOrbitalParametersDrivers().getDrivers()) {
+                if (delegating.isSelected()) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        selectedOrbitalDrivers.add(driver);
+                    }
+                }
+            }
+
+            // Add the list of selected orbital parameters drivers to the array
+            estimatedOrbitalParameters[iBuilder] = selectedOrbitalDrivers;
+        }
+        return estimatedOrbitalParameters[iBuilder];
+    }
+
     /** Get the selected propagation drivers for a propagatorBuilder.
      * @param iBuilder index of the builder in the builders' array
      * @return the list of selected propagation drivers for propagatorBuilder of index iBuilder
@@ -419,13 +451,15 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
             // Jacobian of the measurement with respect to initial orbital state
-            final RealMatrix dYdY0 = harvesters[p].getStateTransitionMatrix(evaluationStates[k]);
-            final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
-            for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
-                int jOrb = orbitsStartColumns[p];
-                for (int j = 0; j < dMdY0.getColumnDimension(); ++j) {
-                    final ParameterDriver driver = builders[p].getOrbitalParametersDrivers().getDrivers().get(j);
-                    if (driver.isSelected()) {
+            final ParameterDriversList selectedOrbitalDrivers = getSelectedOrbitalParametersDriversForBuilder(p);
+            final int nbOrbParams = selectedOrbitalDrivers.getNbParams();
+            if (nbOrbParams > 0) {
+                final RealMatrix dYdY0 = harvesters[p].getStateTransitionMatrix(evaluationStates[k]);
+                final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
+                for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
+                    int jOrb = orbitsStartColumns[p];
+                    for (int j = 0; j < dMdY0.getColumnDimension(); ++j) {
+                        final ParameterDriver driver = selectedOrbitalDrivers.getDrivers().get(j);
                         jacobian.setEntry(index + i, jOrb++,
                                           weight[i] * dMdY0.getEntry(i, j) / sigma[i] * driver.getScale());
                     }
