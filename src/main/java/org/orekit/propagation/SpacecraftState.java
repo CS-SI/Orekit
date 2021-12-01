@@ -627,10 +627,10 @@ public class SpacecraftState
     public SpacecraftState shiftedBy(final double dt) {
         if (absPva == null) {
             return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional);
+                    mass, additional, additionalDot);
         } else {
             return new SpacecraftState(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional);
+                    mass, additional, additionalDot);
         }
     }
 
