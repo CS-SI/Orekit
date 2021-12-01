@@ -269,7 +269,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      */
     @Deprecated
     public void addAdditionalEquations(final FieldAdditionalEquations<T> additional) {
-        addAdditionalDerivativesProvider(new FieldAdditionalEquationsWrapper(additional));
+        addAdditionalDerivativesProvider(new FieldAdditionalEquationsAdapter<>(additional, this::getInitialState));
     }
 
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
@@ -485,10 +485,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         } catch (OrekitException pe) {
             throw pe;
-        } catch (MathIllegalArgumentException miae) {
-            throw OrekitException.unwrap(miae);
-        } catch (MathIllegalStateException mise) {
-            throw OrekitException.unwrap(mise);
+        } catch (MathIllegalArgumentException | MathIllegalStateException me) {
+            throw OrekitException.unwrap(me);
         }
     }
 
@@ -1149,64 +1147,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         }
 
-    }
-
-    /** Temporary adapter from {@link FieldAdditionalEquations} to {@link FieldAdditionalDerivativesProvider}.
-     * @since 11.1
-     * @deprecated must be removed in 12.0 when {@link FieldAdditionalEquations} is removed
-     */
-    @Deprecated
-    private class FieldAdditionalEquationsWrapper implements FieldAdditionalDerivativesProvider<T> {
-
-        /** Wrapped equations. */
-        private final FieldAdditionalEquations<T> equations;
-
-        /** Dimension. */
-        private int dimension;
-
-        /** Simple constructor.
-         * @param equations wrapped equations
-         */
-        FieldAdditionalEquationsWrapper(final FieldAdditionalEquations<T> equations) {
-            this.equations = equations;
-            this.dimension = -1;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getName() {
-            return equations.getName();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public int getDimension() {
-            if (dimension < 0) {
-                // retrieve the dimension the first time we need it
-                dimension = getInitialState().getAdditionalState(getName()).length;
-            }
-            return dimension;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean yield(final FieldSpacecraftState<T> state) {
-            return false;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
-            equations.init(initialState, target);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public T[] derivatives(final FieldSpacecraftState<T> s) {
-            final T[] pDot = MathArrays.buildArray(s.getDate().getField(), getDimension());
-            equations.computeDerivatives(s, pDot);
-            return pDot;
-        }
     }
 
 }
