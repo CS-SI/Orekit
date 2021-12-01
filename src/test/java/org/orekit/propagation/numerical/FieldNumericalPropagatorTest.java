@@ -154,8 +154,7 @@ public class FieldNumericalPropagatorTest {
         doTestEventAtBeginningOfEphemeris(Decimal64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>, D extends FieldEventDetector<T>> void doTestEventAtBeginningOfEphemeris(Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>, D extends FieldEventDetector<T>> void doTestEventAtBeginningOfEphemeris(Field<T> field) {
 
         T zero = field.getZero();
         FieldNumericalPropagator<T>  propagator = createPropagator(field);
@@ -283,6 +282,9 @@ public class FieldNumericalPropagatorTest {
         FieldAbsoluteDate<T> date = endDate.shiftedBy(-0.11);
         Assert.assertEquals(
                 ephemeris.propagate(date).getDate().durationFrom(date).getReal(), 0, 0);
+
+        Assert.assertTrue(prop.getAdditionalDerivativesProviders().isEmpty());
+
     }
 
     @Test
