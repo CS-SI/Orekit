@@ -56,9 +56,11 @@ import org.orekit.time.FieldAbsoluteDate;
  * org.orekit.propagation.numerical.FieldNumericalPropagator numerical propagator}.
  * </p>
  * @see AbstractIntegratedPropagator
- * @see org.orekit.propagation.AdditionalStateProvider
+ * @see org.orekit.propagation.FieldAdditionalStateProvider
  * @author Luc Maisonobe
+ * @deprecated as of 11.1, replaced by {@link FieldAdditionalDerivativesProvider}
  */
+@Deprecated
 public interface FieldAdditionalEquations<T extends CalculusFieldElement<T>> {
 
     /** Get the name of the additional state.

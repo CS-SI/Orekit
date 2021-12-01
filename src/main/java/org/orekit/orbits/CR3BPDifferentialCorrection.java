@@ -154,7 +154,7 @@ public class CR3BPDifferentialCorrection {
         propagator.addForceModel(new CR3BPForceModel(syst));
 
         // Add previously set additional equations to the propagator
-        propagator.addAdditionalEquations(stm);
+        propagator.addAdditionalDerivativesProvider(stm);
 
         // Add previously set event detector to the propagator
         propagator.addEventDetector(XZPlaneCrossing);
