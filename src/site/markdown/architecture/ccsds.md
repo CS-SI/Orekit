@@ -33,7 +33,7 @@ Orekit-specific `Section` interface that is used for checks at the end of parsin
 `Metadata` and `Data` are gathered together in a `Segment` structure.
 
 The `org.orekit.files.ccsds.ndm` sub-package defines a single top-level abstract
-class `Ndm`, which stands for Navigation Data Message. All CCDSD messages extend
+class `Ndm`, which stands for Navigation Data Message. All CCSDS messages extend
 this top-level abstract class. `Ndm` is a container for one `Header` and one or
 more `Segment` objects, depending on the message type (for example `Opm` only contains
 one segment whereas `Oem` may contain several segments).
