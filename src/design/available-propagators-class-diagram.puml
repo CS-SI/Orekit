@@ -76,6 +76,7 @@
         AbstractAnalyticalPropagator <|-- AdapterPropagator
         AbstractAnalyticalPropagator <|-- EcksteinHechlerPropagator
         AbstractAnalyticalPropagator <|-- KeplerianPropagator
+        AbstractAnalyticalPropagator <|-- BrouwerLyddanePropagator
 
         AbstractAnalyticalPropagator <|-- Ephemeris
         BoundedPropagator            <|.. Ephemeris
