@@ -46,7 +46,7 @@ import org.orekit.time.AbsoluteDate;
  * respect to intermediate time \(t_1\):
  * \[\frac{\partial y_t}{\partial y_0} = \frac{\partial y_t}{\partial y_1} \frac{\partial y_1}{\partial y_0}\]
  * We deduce
- * \[\frac{\partial y_t}{\partial y_1} = \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1}.
+ * \[\frac{\partial y_t}{\partial y_1} = \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1}\].
  * </p>
  * <p>
  * The Jacobian column can therefore be computed using the closed-form expression:
