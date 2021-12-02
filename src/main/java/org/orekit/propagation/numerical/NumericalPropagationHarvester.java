@@ -165,7 +165,7 @@ class NumericalPropagationHarvester implements MatricesHarvester {
     @Override
     public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
 
-        if (stmName == null || !state.hasAdditionalState(stmName)) {
+        if (!state.hasAdditionalState(stmName)) {
             return null;
         }
 

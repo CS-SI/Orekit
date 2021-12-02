@@ -410,6 +410,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      */
     public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
                                                       final DoubleArrayDictionary initialJacobianColumns) {
+        if (stmName == null) {
+            throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
+        }
         harvester = new NumericalPropagationHarvester(stmName, initialStm, initialJacobianColumns);
         return harvester;
     }
