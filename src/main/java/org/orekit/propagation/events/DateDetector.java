@@ -17,6 +17,8 @@
 package org.orekit.propagation.events;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -107,6 +109,14 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
                                   final int newMaxIter, final EventHandler<? super DateDetector> newHandler) {
         return new DateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
+    }
+
+    /** Get all event dates currently managed, in chronological order.
+     * @return all event dates currently managed, in chronological order
+     * @since 11.1
+     */
+    public List<TimeStamped> getDates() {
+        return Collections.unmodifiableList(eventDateList);
     }
 
     /** Compute the value of the switching function.

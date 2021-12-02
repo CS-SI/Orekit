@@ -418,7 +418,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                     addAdditionalStateProvider(provider);
                 }
             } catch (OrekitException oe) {
-                // as the providers are already compatible with each other,
+                // as the generators are already compatible with each other,
                 // this should never happen
                 throw new OrekitInternalError(null);
             }

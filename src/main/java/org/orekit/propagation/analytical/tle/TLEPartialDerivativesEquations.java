@@ -20,11 +20,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
-import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
+/** Set of additional equations computing the partial derivatives
  * of the state (orbit) with respect to initial state.
  * <p>
  * This set of equations are automatically added to an {@link AbstractAnalyticalPropagator analytical propagator}
