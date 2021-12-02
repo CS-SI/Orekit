@@ -23,9 +23,12 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
-import org.orekit.time.AbsoluteDate;
 
 /** Generator for one column of a Jacobian matrix for special case of trigger dates.
+ * <p>
+ * Typical use cases for this are estimation of maneuver start and stop date during
+ * either orbit determination or maneuver optimisation.
+ * </p>
  * <p>
  * Let \((t_0, y_0)\) be the state at propagation start, \((t_1, y_1)\) be the state at
  * maneuver trigger time, \((t_t, y_t)\) be the state at any arbitrary time \(t\) during
@@ -55,6 +58,11 @@ import org.orekit.time.AbsoluteDate;
  * = \frac{\partial y_t}{\partial y_0} c_1\]
  * where \(c_1\) is the signed contribution of maneuver at \(t_1\) and is computed at trigger time
  * by solving \(\frac{\partial y_1}{\partial y_0} c_1 = \pm f_m(t_1, y_1)\).
+ * </p>
+ * <p>
+ * The implementation takes care to <em>not</em> resetting anything at propagation start.
+ * This allows to get proper Jacobian if we interrupt propagation in the middle of a maneuver
+ * and restart propagation where it left.
  * </p>
  * @author Luc Maisonobe
  * @since 11.1
@@ -121,6 +129,11 @@ public class TriggerDateJacobianColumnGenerator
         return !state.hasAdditionalState(stmName);
     }
 
+    // note that we do NOT implement init
+    // in particular we reset NEITHER contribution nor triggered
+    // this allows to get proper Jacobian if we interrupt propagation
+    // in the middle of a maneuver and restart propagation where it left
+
     /** {@inheritDoc} */
     @Override
     public double[] getAdditionalState(final SpacecraftState state) {
@@ -128,13 +141,6 @@ public class TriggerDateJacobianColumnGenerator
         // is called after maneuverTriggered and before resetState,
         // when preparing the old state to be reset
         return contribution == null ? ZERO : getStm(state).operate(contribution);
-    }
-
-    /** {@inheritDoc}*/
-    @Override
-    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-        contribution = null;
-        triggered    = false;
     }
 
     /** {@inheritDoc}*/

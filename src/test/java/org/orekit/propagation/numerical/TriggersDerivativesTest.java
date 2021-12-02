@@ -61,6 +61,46 @@ import org.orekit.utils.IERSConventions;
 public class TriggersDerivativesTest {
 
     @Test
+    public void testInterrupt() {
+        final AbsoluteDate firing = new AbsoluteDate(new DateComponents(2004, 1, 2),
+                                                     new TimeComponents(4, 15, 34.080),
+                                                     TimeScalesFactory.getUTC());
+        final double duration = 200.0;
+
+        // first propagation, covering the maneuver
+        final NumericalPropagator propagator1  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, 20,
+                                                                 firing, duration, true, 0);
+        setUpManeuverJcobianComputation(true, propagator1);
+        final MatricesHarvester   harvester1   = propagator1.setupMatricesComputation("stm", null, null);
+        final SpacecraftState     state1       = propagator1.propagate(firing.shiftedBy(2 * duration));
+        final RealMatrix          stm1         = harvester1.getStateTransitionMatrix(state1);
+        final RealMatrix          jacobian1    = harvester1.getParametersJacobian(state1);
+
+        // second propagation, interrupted during maneuver
+        final NumericalPropagator propagator2  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, 20,
+                                                                 firing, duration, true, 0);
+        setUpManeuverJcobianComputation(true, propagator2);
+        final MatricesHarvester   harvester2   = propagator2.setupMatricesComputation("stm", null, null);
+        final SpacecraftState     intermediate = propagator2.propagate(firing.shiftedBy(0.5 * duration));
+        final RealMatrix          stmI         = harvester2.getStateTransitionMatrix(intermediate);
+        final RealMatrix          jacobianI    = harvester2.getParametersJacobian(intermediate);
+
+        // intermediate state has really different matrices, they are still building up
+        Assert.assertEquals(0.1253, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-4);
+        Assert.assertEquals(0.0172, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-4);
+
+        // restarting propagation where we left it
+        final SpacecraftState     state2       = propagator2.propagate(firing.shiftedBy(2 * duration));
+        final RealMatrix          stm2         = harvester2.getStateTransitionMatrix(state2);
+        final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
+
+        // after completing the two-stage propagation, we get the same matrices
+        Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 1.0e-13 * stm1.getNorm1());
+        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 2.0e-14 * jacobian1.getNorm1());
+
+    }
+
+    @Test
     public void testDerivativeWrtStartTimeCartesian() {
         doTestDerivativeWrtTime(true, OrbitType.CARTESIAN,
                                 0.022, 0.012, 0.012, 0.013, 0.012, 0.021);
@@ -105,12 +145,7 @@ public class TriggersDerivativesTest {
         // the central propagator (k = 4) will compute derivatives autonomously using State and TriggersDerivatives
         final NumericalPropagator autonomous = (NumericalPropagator) propagators.get(4);
         final MatricesHarvester   harvester  = autonomous.setupMatricesComputation("stm", null, null);
-        autonomous.
-            getAllForceModels().
-            forEach(fm -> fm.getParametersDrivers().
-                             stream().
-                             filter(d -> d.getName().equals(start ? "MAN_0_START" : "MAN_0_STOP")).
-                             forEach(d -> d.setSelected(true)));
+        setUpManeuverJcobianComputation(start, autonomous);
 
         DerivativesSampler sampler = new DerivativesSampler(harvester, orbitType, positionAngle,
                                                             firing, duration, h, samplingtep);
@@ -131,6 +166,16 @@ public class TriggersDerivativesTest {
             Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
         }
 
+    }
+
+    private void setUpManeuverJcobianComputation(final boolean start, final NumericalPropagator propagator) {
+        propagator.
+            getAllForceModels().
+            forEach(fm -> fm.
+                              getParametersDrivers().
+                              stream().
+                              filter(d -> d.getName().equals(start ? "MAN_0_START" : "MAN_0_STOP")).
+                              forEach(d -> d.setSelected(true)));
     }
 
     private NumericalPropagator buildPropagator(final OrbitType orbitType, final PositionAngle positionAngle,
