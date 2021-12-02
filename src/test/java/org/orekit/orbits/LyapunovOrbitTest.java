@@ -141,7 +141,7 @@ public class LyapunovOrbitTest {
         propagator.setOrbitType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(syst));
-        propagator.addAdditionalEquations(stm);
+        propagator.addAdditionalDerivativesProvider(stm);
         propagator.setInitialState(augmentedInitialState);
         final SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(integrationTime));
         
