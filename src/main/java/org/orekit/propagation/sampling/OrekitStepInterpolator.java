@@ -86,7 +86,7 @@ public interface OrekitStepInterpolator {
      * @param newPreviousState start of the restricted step
      * @param newCurrentState end of the restricted step
      * @return restricted version of the instance
-          * @see #getPreviousState()
+     * @see #getPreviousState()
      * @see #getCurrentState()
      * @since 9.0
      */

@@ -740,3 +740,6 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentativa de generar el fichero {0} con un 
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = {0} ha fallado buscando una solución entre {1} (g={2,number,0.0##############E0}) y {3} (g={4,number,0.0##############E0})\nÚltima iteración en {5} (g={6,number,0.0##############E0})
+
+# backward propagation not allowed here
+BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>

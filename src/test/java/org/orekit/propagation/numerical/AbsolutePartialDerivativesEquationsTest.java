@@ -84,16 +84,12 @@ public class AbsolutePartialDerivativesEquationsTest {
     }
 
     /**
-     * check {@link PartialDerivativesEquations#computeDerivatives(SpacecraftState,
-     * double[])} correctly sets the satellite velocity.
+     * check {@link PartialDerivativesEquations#derivatives(SpacecraftState)} correctly sets the satellite velocity.
      */
     @Test
     public void testComputeDerivativesStateVelocity() {
-        //setup
-        double[] pdot = new double[36];
-
         //action
-        pde.computeDerivatives(state, pdot);
+        pde.derivatives(state);
 
         //verify
         MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
