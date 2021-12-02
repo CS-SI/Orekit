@@ -794,7 +794,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         final Map<String, FieldHermiteInterpolator<T>> additionalDotInterpolators =
                 new HashMap<String, FieldHermiteInterpolator<T>>(additionalDot.size());
         for (final FieldArrayDictionary<T>.Entry entry : addionalDotEntries) {
-            additionalInterpolators.put(entry.getKey(), new FieldHermiteInterpolator<>());
+            additionalDotInterpolators.put(entry.getKey(), new FieldHermiteInterpolator<>());
         }
 
         // extract sample data

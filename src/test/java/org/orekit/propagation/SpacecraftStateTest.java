@@ -137,21 +137,25 @@ public class SpacecraftStateTest {
     @Test
     public void testInterpolation()
         throws ParseException, OrekitException {
-        checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450);
-        checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0);
-        checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0);
+        checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, 450 * 450);
+        checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0, 0.0);
+        checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0, 0.0);
     }
 
     private void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
-                                         double expectedErrorA, double expectedErrorM, double expectedErrorQ)
-        {
+                                         double expectedErrorA, double expectedErrorM,
+                                         double expectedErrorQ, double expectedErrorD) {
         AbsoluteDate centerDate = orbit.getDate().shiftedBy(100.0);
-        SpacecraftState centerState = propagator.propagate(centerDate).addAdditionalState("quadratic", 0);
+        SpacecraftState centerState = propagator.propagate(centerDate).
+                                      addAdditionalState("quadratic", 0).
+                                      addAdditionalStateDerivative("quadratic-dot", 0);
         List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
         for (int i = 0; i < n; ++i) {
             double dt = i * 900.0 / (n - 1);
             SpacecraftState state = propagator.propagate(centerDate.shiftedBy(dt));
-            state = state.addAdditionalState("quadratic", dt * dt);
+            state = state.
+                    addAdditionalState("quadratic", dt * dt).
+                    addAdditionalStateDerivative("quadratic-dot", dt * dt);
             sample.add(state);
         }
         double maxErrorP = 0;
@@ -159,6 +163,7 @@ public class SpacecraftStateTest {
         double maxErrorA = 0;
         double maxErrorM = 0;
         double maxErrorQ = 0;
+        double maxErrorD = 0;
         for (double dt = 0; dt < 900.0; dt += 5) {
             SpacecraftState interpolated = centerState.interpolate(centerDate.shiftedBy(dt), sample);
             SpacecraftState propagated = propagator.propagate(centerDate.shiftedBy(dt));
@@ -169,12 +174,14 @@ public class SpacecraftStateTest {
                                                                                                   propagated.getAttitude().getRotation())));
             maxErrorM = FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass() - propagated.getMass()));
             maxErrorQ = FastMath.max(maxErrorQ, FastMath.abs(interpolated.getAdditionalState("quadratic")[0] - dt * dt));
+            maxErrorD = FastMath.max(maxErrorD, FastMath.abs(interpolated.getAdditionalStateDerivative("quadratic-dot")[0] - dt * dt));
         }
         Assert.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
         Assert.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
         Assert.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
         Assert.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
         Assert.assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
+        Assert.assertEquals(expectedErrorD, maxErrorD, 2.0e-10);
     }
 
     @Test(expected=IllegalArgumentException.class)

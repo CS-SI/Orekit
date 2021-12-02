@@ -47,6 +47,7 @@ import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -680,24 +681,29 @@ public class FieldSpacecraftStateTest {
         // test most complete constructor
         T[] dd = MathArrays.buildArray(field, 1);
         dd[0] = zero.add(-6.0);
-        FieldArrayDictionary<T> map = new FieldArrayDictionary<>(field);
-        map.put("test-3", dd);
-        FieldSpacecraftState<T> s = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), state.getMass(), null, map);
+        FieldArrayDictionary<T> dict = new FieldArrayDictionary<>(field);
+        dict.put("test-3", dd);
+        FieldSpacecraftState<T> s = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), state.getMass(), null, dict);
         Assert.assertFalse(s.hasAdditionalState("test-3"));
         Assert.assertEquals(-6.0, s.getAdditionalStateDerivative("test-3")[0].getReal(), 1.0e-15);
+
+        // test conversion
+        FieldSpacecraftState<T> rebuilt = new FieldSpacecraftState<>(field, s.toSpacecraftState());
+        rebuilt.ensureCompatibleAdditionalStates(s);
 
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field)
         throws ParseException, OrekitException {
-        checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, field);
-        checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0, field);
-        checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0, field);
+        checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, 450 * 450, field);
+        checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0, 0.0, field);
+        checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0, 0.0, field);
     }
 
     private <T extends CalculusFieldElement<T>> void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
-                                         double expectedErrorA, double expectedErrorM, double expectedErrorQ, Field<T> field)
-        {
+                                         double expectedErrorA, double expectedErrorM,
+                                         double expectedErrorQ, double expectedErrorD,
+                                         Field<T> field) {
 
         T zero = field.getZero();
         T mu  = zero.add(3.9860047e14);
@@ -729,19 +735,24 @@ public class FieldSpacecraftStateTest {
         FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(orbit, attitudeLaw, mass,
                                                                                ae, mu, c20, c30, c40, c50, c60);
         FieldAbsoluteDate<T> centerDate = orbit.getDate().shiftedBy(100.0);
-        FieldSpacecraftState<T> centerState = propagator.propagate(centerDate).addAdditionalState("quadratic", zero);
+        FieldSpacecraftState<T> centerState = propagator.propagate(centerDate).
+                                              addAdditionalState("quadratic", zero).
+                                              addAdditionalStateDerivative("quadratic-dot", zero);
         List<FieldSpacecraftState<T>> sample = new ArrayList<FieldSpacecraftState<T>>();
         for (int ii = 0; ii < n; ++ii) {
             double dt = ii * 900.0 / (n - 1);
             FieldSpacecraftState<T> state = propagator.propagate(centerDate.shiftedBy(dt));
-            state = state.addAdditionalState("quadratic", zero.add(dt * dt));
+            state = state.
+                    addAdditionalState("quadratic", zero.add(dt * dt)).
+                    addAdditionalStateDerivative("quadratic-dot", zero.add(dt * dt));
             sample.add(state);
         }
-        double maxErrorP = 0;
-        double maxErrorV = 0;
-        double maxErrorA = 0;
-        double maxErrorM = 0;
-        double maxErrorQ = 0;
+        double maxErrorP  = 0;
+        double maxErrorV  = 0;
+        double maxErrorA  = 0;
+        double maxErrorM  = 0;
+        double maxErrorQ  = 0;
+        double maxErrorD = 0;
         for (double dt = 0; dt < 900.0; dt += 5) {
             FieldSpacecraftState<T> interpolated = centerState.interpolate(centerDate.shiftedBy(dt), sample);
             FieldSpacecraftState<T> propagated = propagator.propagate(centerDate.shiftedBy(dt));
@@ -752,12 +763,14 @@ public class FieldSpacecraftStateTest {
                                                                                                   propagated.getAttitude().getRotation()).getReal()));
             maxErrorM = FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass().getReal() - propagated.getMass().getReal()));
             maxErrorQ = FastMath.max(maxErrorQ, FastMath.abs(interpolated.getAdditionalState("quadratic")[0].getReal() - dt * dt));
+            maxErrorD = FastMath.max(maxErrorD, FastMath.abs(interpolated.getAdditionalStateDerivative("quadratic-dot")[0].getReal() - dt * dt));
         }
         Assert.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
         Assert.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
         Assert.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
         Assert.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
         Assert.assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
+        Assert.assertEquals(expectedErrorD, maxErrorD, 2.0e-10);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldVsRealAbsPV(final Field<T> field) {
@@ -777,6 +790,8 @@ public class FieldSpacecraftStateTest {
         FieldAbsolutePVCoordinates<T> absPV_f = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), t_f, pva_f);
 
         FieldSpacecraftState<T> ScS_f = new FieldSpacecraftState<>(absPV_f);
+        FieldSpacecraftState<T> withM = new FieldSpacecraftState<>(absPV_f, zero.newInstance(1234.5));
+        Assert.assertEquals(1234.5, withM.getMass().getReal(), 1.0e-10);
         SpacecraftState ScS_r = ScS_f.toSpacecraftState();
 
         for (double dt = 0; dt < 500; dt+=100){
@@ -860,7 +875,17 @@ public class FieldSpacecraftStateTest {
                 0, Precision.EPSILON);
 
         //action + verify no exception is thrown
-        new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, shiftedAttitude);
+        FieldSpacecraftState<T> s1 = new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, shiftedAttitude);
+        FieldSpacecraftState<T> s2 = s1.shiftedBy(0.001);
+
+        try {
+            // but here, the time difference is too great
+            new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, s2.getAttitude());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
+                                oiae.getSpecifier());
+        }
     }
 
 
