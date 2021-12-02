@@ -639,14 +639,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
             this.mean = mean;
             this.mass = mass;
-            final T zero = mass.getField().getZero();
             final T one  = mass.getField().getOne();
 
             final T app = mean.getA();
-            xnotDot = mu.divide(mean.getA()).sqrt().divide(mean.getA());
+            xnotDot = mu.divide(app).sqrt().divide(app);
 
             // preliminary processing
-            final T q = zero.add(referenceRadius).divide(app);
+            final T q = app.divide(referenceRadius).reciprocal();
             T ql = q.multiply(q);
             final T y2 = ql.multiply(-0.5 * ck0[2]);
 
@@ -710,7 +709,6 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                             add(cosI2.multiply(n2.multiply(126.0).add(-270.0))).
                             add(cosI4.multiply(n2.multiply(-189.0).add(385.0)))));
 
-
             ht = yp2.multiply(-3.0).multiply(cosI1).
                      add(yp2.multiply(0.375).multiply(yp2).multiply(cosI1.multiply(n2.multiply(9.0).add(n.multiply(12.0)).add(-5.0)).
                                                                     add(cosI3.multiply(n2.multiply(-5.0).add(n.multiply(-36.0)).add(-35.0))))).
@@ -721,16 +719,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final T cC = one.subtract(cosI2.multiply(9.0)).subtract(cosI4.multiply(24.0).divide(C5c2));
             final T cD = one.subtract(cosI2.multiply(5.0)).subtract(cosI4.multiply(16.0).divide(C5c2));
 
-
             final T qyp2_4 = yp2.multiply(3.0).multiply(yp2).multiply(cA).
                              subtract(yp4.multiply(10.0).multiply(cB));
             final T qyp52 = cosI1.multiply(epp3).multiply(cD.multiply(0.5).divide(sinI1).
                                                           add(sinI1.multiply(cosI4.divide(C5c2).divide(C5c2).multiply(80.0).
                                                                              add(cosI2.divide(C5c2).multiply(32.0).
                                                                              add(5.0)))));
-            final T qyp22 = epp2.add(2.0).subtract(cosI2.multiply(11.0).multiply(epp2.multiply(3.0).add(2.0))).
-                            subtract(cosI4.divide(C5c2).multiply(40.0).multiply(epp2.multiply(3.0).add(2.0))).
-                            subtract(cosI6.divide(C5c2).divide(C5c2).multiply(400.0).multiply(epp2));
+            final T qyp22 = epp2.add(2.0).subtract(epp2.multiply(3.0).add(2.0).multiply(11.0).multiply(cosI2)).
+                            subtract(epp2.multiply(5.0).add(2.0).multiply(40.0).multiply(cosI4.divide(C5c2))).
+                            subtract(epp2.multiply(400.0).multiply(cosI6).divide(C5c2).divide(C5c2));
             final T qyp42 = one.divide(5.0).multiply(qyp22.
                                                      add(one.multiply(4.0).multiply(epp2.
                                                                                     add(2.0).
@@ -739,21 +736,19 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                                    multiply(cosI4.divide(C5c2).divide(C5c2).multiply(40.0).
                                                                             add(cosI2.divide(C5c2).multiply(16.0)).
                                                                             add(3.0));
-
            // long periodic multiplicative
             dei3sg =  yp5.divide(yp2).multiply(35.0 / 96.0).multiply(epp2).multiply(n2).multiply(cD).multiply(sinI1);
             de2sg = qyp2_4.divide(yp2).multiply(epp).multiply(n2).multiply(-1.0 / 12.0);
-            deisg = sinI1.multiply(yp5.divide(yp2).multiply(-35.0 / 128.0).multiply(epp2).multiply(n2).multiply(cD).
-                                   add(yp2.multiply(n2).multiply(1.0 / 4.0).multiply(yp3.
-                                                                                     add(yp5.multiply(5.0 / 16.0).multiply(cC).multiply(epp2.multiply(3.0).add(4.0))))));
+            deisg = sinI1.multiply(yp5.multiply(-35.0 / 128.0).divide(yp2).multiply(epp2).multiply(n2).multiply(cD).
+                            add(n2.multiply(0.25).divide(yp2).multiply(yp3.add(yp5.multiply(5.0 / 16.0).multiply(epp2.multiply(3.0).add(4.0)).multiply(cC)))));
             de = epp2.multiply(n2).multiply(qyp2_4).divide(24.0).divide(yp2);
 
             final T qyp52quotient = epp.multiply(epp4.multiply(81.0).add(-32.0)).divide(n.multiply(epp2.multiply(9.0).add(4.0)).add(epp2.multiply(3.0)).add(4.0));
-            dlgs2g = yp2.multiply(1.0 / 48.0).multiply(qyp22.multiply(yp2).multiply(yp2).multiply(-3.0).add(qyp42.multiply(yp4).multiply(10.0))).
-                                                       add(qyp2_4.divide(yp2).multiply(n3).divide(24.0));
-            dlgc3g = yp5.divide(yp2).multiply(35.0 / 384.0).multiply(n3).multiply(epp).multiply(cD).multiply(sinI1).
-                     add(yp5.divide(yp2).multiply(35.0 / 1152.0)).multiply(qyp52.multiply(2.0).multiply(cosI1).
-                     subtract(epp.multiply(cD).multiply(sinI1).multiply(epp2.multiply(2.0).add(3.0))));
+            dlgs2g = yp2.multiply(48.0).reciprocal().multiply(yp2.multiply(-3.0).multiply(yp2).multiply(qyp22).
+                            add(yp4.multiply(10.0).multiply(qyp42))).
+                            add(n3.divide(yp2).multiply(qyp2_4).divide(24.0));
+            dlgc3g =  yp5.multiply(35.0 / 384.0).divide(yp2).multiply(n3).multiply(epp).multiply(cD).multiply(sinI1).
+                            add(yp5.multiply(35.0 / 1152.0).divide(yp2).multiply(qyp52.multiply(2.0).multiply(cosI1).subtract(epp.multiply(cD).multiply(sinI1).multiply(epp2.multiply(2.0).add(3.0)))));
             dlgcg = yp3.negate().multiply(cosI2).multiply(epp).divide(yp2.multiply(sinI1).multiply(4.0)).
                     add(yp5.divide(yp2).multiply(0.078125).multiply(cC).multiply(cosI2.divide(sinI1).multiply(epp.negate()).multiply(epp2.multiply(3.0).add(4.0)).
                                                                     add(sinI1.multiply(epp2).multiply(epp2.multiply(9.0).add(26.0)))).
@@ -768,12 +763,10 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                    add(cosI1.multiply(epp).divide(yp2.multiply(sinI1).multiply(4.0)).multiply(yp3.add(yp5.multiply(0.3125).multiply(cC).multiply(epp2.multiply(3.0).add(4.0))))).
                    add(yp5.multiply(qyp52bis).multiply(1.875).divide(yp2.multiply(4.0)));
 
-
             // short periodic multiplicative
             aC = yp2.negate().multiply(C3c2).multiply(app).divide(n3);
             aCbis = y2.multiply(app).multiply(C3c2);
             ac2g2f = y2.multiply(app).multiply(sinI2).multiply(3.0);
-
 
             T qe = y2.multiply(C3c2).multiply(0.5).multiply(n2).divide(n6);
             eC = qe.multiply(epp).divide(n3.add(1.0)).multiply(epp2.multiply(epp2.subtract(3.0)).add(3.0));
@@ -792,10 +785,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             T qi = yp2.multiply(epp).multiply(cosI1).multiply(sinI1);
             ide = cosI1.multiply(epp.negate()).divide(sinI1.multiply(n2));
             isfs2f2g = qi;
-            icfc2f2g = qe.multiply(2.0);
+            icfc2f2g = qi.multiply(2.0);
             qi = yp2.multiply(cosI1).multiply(sinI1);
-            ic2f2g = qe.multiply(1.5);
-
+            ic2f2g = qi.multiply(1.5);
 
             T qgl1 = yp2.multiply(0.25);
             T qgl2 =  yp2.multiply(epp).multiply(n2).multiply(0.25).divide(n.add(1.0));
@@ -814,7 +806,6 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                       add(qgl2.multiply(1.0 / 3.0));
             glos2g3f = qgl2;
 
-
             final T qh = yp2.multiply(cosI1).multiply(3.0);
             hf = qh.negate();
             hl = qh;
@@ -823,14 +814,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             hs2g2f = yp2.multiply(cosI1).multiply(1.5);
             hsfc2g2f = yp2.multiply(cosI1).multiply(epp).negate();
 
-
             final T qedl = yp2.multiply(n3).multiply(-0.25);
             edls2g = qyp2_4.multiply(1.0 / 24.0).multiply(epp).multiply(n3).divide(yp2);
             edlcg = yp3.divide(yp2).multiply(-0.25).multiply(n3).multiply(sinI1).
                     subtract(yp5.divide(yp2).multiply(0.078125).multiply(n3).multiply(sinI1).multiply(cC).multiply(epp2.multiply(9.0).add(4.0)));
             edlc3g = yp5.divide(yp2).multiply(n3).multiply(epp2).multiply(cD).multiply(sinI1).multiply(35.0 / 384.0);
             edlsf = qedl.multiply(C3c2).multiply(2.0);
-            edls2gf = qedl.multiply(cosI1.negate().add(1.0)).multiply(3.0);
+            edls2gf = qedl.multiply(3.0).multiply(cosI2.negate().add(1.0));
             edls2g3f = qedl.multiply(1.0 / 3.0);
 
         }

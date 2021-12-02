@@ -698,7 +698,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                     0.375 * yp2 * yp2 * ((-5.0 + 12.0 * n + 9.0 * n2) * cosI1 + (-35.0 - 36.0 * n - 5.0 * n2) * cosI3) +
                     1.25 * yp4 * (5.0 - 3.0 * n2) * cosI1 * (3.0 - 7.0 * cosI2);
 
-
             final double cA = 1.0 - 11.0 * cosI2 - 40.0 * cosI4 / C5c2;
             final double cB = 1.0 - 3.0 * cosI2 - 8.0 * cosI4 / C5c2;
             final double cC = 1.0 - 9.0 * cosI2 - 24.0 * cosI4 / C5c2;
@@ -716,14 +715,12 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                                     (4.0 + 3.0 * epp2) *
                                     (3.0 + 16.0 * cosI2 / C5c2 + 40.0 * cosI4 / C5c2 / C5c2);
 
-
             // long periodic multiplicative
             dei3sg =  35.0 / 96.0 * yp5 / yp2 * epp2 * n2 * cD * sinI1;
             de2sg = -1.0 / 12.0 * epp * n2 / yp2 * qyp2_4;
             deisg = ( -35.0 / 128.0 * yp5 / yp2 * epp2 * n2 * cD +
                     1.0 / 4.0 * n2 / yp2 * (yp3 + 5.0 / 16.0 * yp5 * (4.0 + 3.0 * epp2) * cC)) * sinI1;
             de = epp2 * n2 / 24.0 / yp2 * qyp2_4;
-
 
             final double qyp52quotient = epp * (-32.0 + 81.0 * epp4) / (4.0 + 3.0 * epp2 + n * (4.0 + 9.0 * epp2));
             dlgs2g = 1.0 / 48.0 / yp2 * (-3.0 * yp2 * yp2 * qyp22 +
@@ -746,13 +743,10 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                    epp * cosI1 / (4.0 * yp2 * sinI1) * (yp3 + 0.3125 * yp5 * (4.0 + 3.0 * epp2) * cC) +
                    1.875 / (4.0 * yp2) * yp5 * qyp52bis;
 
-
-
             // short periodic multiplicative
             aC = -yp2 * C3c2 * app / n3;
             aCbis = y2 * app * C3c2;
             ac2g2f = y2 * app * 3.0 * sinI2;
-
 
             double qe = 0.5 * n2 * y2 * C3c2 / n6;
             eC = qe * epp / (1.0 + n3) * (3.0 - epp2 * (3.0 - epp2));
@@ -775,7 +769,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
             qi = yp2 * cosI1 * sinI1;
             ic2f2g = 1.5 * qi;
 
-
             double qgl1 = 0.25 * yp2;
             double qgl2 = 0.25 * yp2 * epp * n2 / (1.0 + n);
             glf = qgl1 * -6.0 * C5c2;
@@ -793,7 +786,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                       1.0 / 3.0 * qgl2;
             glos2g3f = qgl2;
 
-
             final double qh = 3.0 * yp2 * cosI1;
             hf = -qh;
             hl = qh;
@@ -801,7 +793,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
             hcfs2g2f = 2.0 * epp * yp2 * cosI1;
             hs2g2f = 1.5 * yp2 * cosI1;
             hsfc2g2f = -epp * yp2 * cosI1;
-
 
             final double qedl = -0.25 * yp2 * n3;
             edls2g = 1.0 / 24.0 * epp * n3 / yp2 * qyp2_4;

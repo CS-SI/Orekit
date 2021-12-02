@@ -230,7 +230,7 @@ public class BrouwerLyddanePropagatorTest {
         SpacecraftState BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
 	    final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit());
 
-	    Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.073);
+	    Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.072);
 	    Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
 	    Assert.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000004);
 	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
