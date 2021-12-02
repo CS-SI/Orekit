@@ -45,7 +45,7 @@ import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
- *  using the analytical Brouwer-Lyddane model (from J2 to J5 zonal harmonics)..
+ *  using the analytical Brouwer-Lyddane model (from J2 to J5 zonal harmonics).
  * <p>
  * At the opposite of the {@link EcksteinHechlerPropagator}, the Brouwer-Lyddane model is
  * suited for elliptical orbits, there is no problem having a rather small eccentricity or inclination
