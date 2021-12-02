@@ -44,6 +44,9 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class TLEBatchLSModel extends AbstractBatchLSModel {
 
+    /** Name of the State Transition Matrix state. */
+    private static final String STM_NAME = TLEBatchLSModel.class.getName() + "-derivatives";
+
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
@@ -63,9 +66,8 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
     @Deprecated
     protected TLEJacobiansMapper configureDerivatives(final Propagator propagator) {
 
-        final String equationName = TLEBatchLSModel.class.getName() + "-derivatives";
-
-        final TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations(equationName, (TLEPropagator) propagator);
+        final TLEPartialDerivativesEquations partials =
+                        new TLEPartialDerivativesEquations(STM_NAME, (TLEPropagator) propagator);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();

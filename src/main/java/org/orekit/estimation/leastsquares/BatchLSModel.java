@@ -38,7 +38,7 @@ import org.orekit.utils.ParameterDriversList;
 public class BatchLSModel extends AbstractBatchLSModel {
 
     /** Name of the State Transition Matrix state. */
-    private final String STM_NAME = BatchLSModel.class.getName() + "-derivatives";
+    private static final String STM_NAME = BatchLSModel.class.getName() + "-derivatives";
 
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation

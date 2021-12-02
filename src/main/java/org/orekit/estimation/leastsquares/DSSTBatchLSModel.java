@@ -44,6 +44,9 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
+    /** Name of the State Transition Matrix state. */
+    private static final String STM_NAME = DSSTBatchLSModel.class.getName() + "-derivatives";
+
     /** Type of the orbit used for the propagation.*/
     private PropagationType propagationType;
 
@@ -75,9 +78,8 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
     @Deprecated
     protected DSSTJacobiansMapper configureDerivatives(final Propagator propagator) {
 
-        final String equationName = DSSTBatchLSModel.class.getName() + "-derivatives";
-
-        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) propagator, propagationType);
+        final DSSTPartialDerivativesEquations partials =
+                        new DSSTPartialDerivativesEquations(STM_NAME, (DSSTPropagator) propagator, propagationType);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
