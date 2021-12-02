@@ -25,6 +25,21 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 
 /** Base generator for one column of a Jacobian matrix.
+ * <p>
+ * Specialized versions of this class are used when estimating
+ * parameters (for example propagation parameters like drag coefficient,
+ * thrust or maneuver start date) in orbit determination or maneuver
+ * optimization.
+ * </p>
+ * <p>
+ * Some implementations may be based on closed-form expressions and
+ * will implement the {@link AdditionalStateProvider} interface whereas
+ * otherimplementations may be based on differential equations and will
+ * implement the {@link
+ * org.orekit.propagation.integration.AdditionalDerivativesProvider
+ * AdditionalDerivativesProvider} interface). This base class therefore
+ * does not specify how the column is generated and put into the state.
+ * </p>
  * @author Luc Maisonobe
  * @since 11.1
  */

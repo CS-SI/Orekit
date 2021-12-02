@@ -52,12 +52,17 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
  * \[\frac{\partial y_t}{\partial y_1} = \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1}\].
  * </p>
  * <p>
- * The Jacobian column can therefore be computed using the closed-form expression:
+ * The Jacobian column can therefore be computed using the following closed-form expression:
  * \[\frac{\partial y_t}{\partial t_1}
  * = \pm \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1} f_m(t_1, y_1)
  * = \frac{\partial y_t}{\partial y_0} c_1\]
  * where \(c_1\) is the signed contribution of maneuver at \(t_1\) and is computed at trigger time
  * by solving \(\frac{\partial y_1}{\partial y_0} c_1 = \pm f_m(t_1, y_1)\).
+ * </p>
+ * <p>
+ * As the column is generated using a closed-form expression, this generator implements
+ * the {@link AdditionalStateProvider} interface and stores the column directly
+ * in the premiary state during propagation.
  * </p>
  * <p>
  * The implementation takes care to <em>not</em> resetting anything at propagation start.

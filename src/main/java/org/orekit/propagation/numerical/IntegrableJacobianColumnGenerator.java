@@ -21,6 +21,12 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 
 /** Generator for one column of a Jacobian matrix.
+ * <p>
+ * This generator is based on variational equations, so
+ * it implements {@link AdditionalDerivativesProvider} and
+ * computes only the derivative of the Jacobian column, to
+ * be integrated by the propagator alongside the primary state.
+ * </p>
  * @author Luc Maisonobe
  * @since 11.1
  */
