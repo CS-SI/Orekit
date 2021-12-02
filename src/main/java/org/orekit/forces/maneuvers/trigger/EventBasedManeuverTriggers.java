@@ -248,9 +248,9 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         Action action = Action.CONTINUE; // default not taken into account
         final boolean detectorManaged = getEventsDetectors().anyMatch(managedDetector -> managedDetector.equals(detector));
         if (detectorManaged) {
-            action = Action.RESET_EVENTS;
-            if (forward) {
-                if (increasing) {
+            if (increasing) {
+                action = Action.RESET_EVENTS;
+                if (forward) {
                     if (detector.equals(startFiringDetector)) { // start of firing arc
                         setFiring(true, s.getDate());
                         action = Action.RESET_DERIVATIVES;
@@ -258,10 +258,8 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
                         setFiring(false, s.getDate());
                         action = Action.RESET_DERIVATIVES;
                     }
-                }
-            } else { // backward propagation. We could write a code on 3 lines but that would be
-                // harder to understand and debug. So we do prefer explicit code
-                if (!increasing) {
+                } else { // backward propagation. We could write a code on 3 lines but that would be
+                    // harder to understand and debug. So we do prefer explicit code
                     if (detector.equals(startFiringDetector)) { // end of firing arc
                         setFiring(false, s.getDate());
                         action = Action.RESET_DERIVATIVES;

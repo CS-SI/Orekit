@@ -34,6 +34,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
+import org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -446,7 +447,7 @@ public class ConfigurableLowThrustManeuverTest {
     }
 
     @Test
-    public void testBackwardPropagationEnabled() {
+    public void testDateBasedManeuverTriggers() {
 
         final double f = 0.1;
         final double isp = 2000;
@@ -470,7 +471,7 @@ public class ConfigurableLowThrustManeuverTest {
         final NumericalPropagator forwardPropagator = buildNumericalPropagator(orbit);
         forwardPropagator.addForceModel(new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
                                                                           new DateBasedManeuverTriggers(startDate, duration),
-                                                                          f, isp, false));
+                                                                          f, isp));
         forwardPropagator.setInitialState(initialState);
         final SpacecraftState finalStateNumerical = forwardPropagator.propagate(startDate.shiftedBy(duration + 900.0));
 
@@ -478,10 +479,72 @@ public class ConfigurableLowThrustManeuverTest {
         final NumericalPropagator backwardPropagator = buildNumericalPropagator(finalStateNumerical.getOrbit());
         backwardPropagator.addForceModel(new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
                                                                            new DateBasedManeuverTriggers(startDate, duration),
-                                                                           f, isp, true));
+                                                                           f, isp));
         backwardPropagator.setInitialState(finalStateNumerical);
         final SpacecraftState recoveredStateNumerical = backwardPropagator.propagate(orbit.getDate());
 
+        /////////////////// results check /////////////////////////////////
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(orbit.getPVCoordinates().getPosition(),
+                                              recoveredStateNumerical.getPVCoordinates().getPosition()),
+                            0.015);
+
+    }
+
+    @Test
+    public void testBackwardPropagationEnabled() {
+
+        final double f = 0.1;
+        final double isp = 2000;
+        final double duration = 3000.0;
+ 
+        final Orbit orbit =
+            new KeplerianOrbit(24396159, 0.72831215, FastMath.toRadians(7),
+                               FastMath.toRadians(180), FastMath.toRadians(261),
+                               FastMath.toRadians(0.0), PositionAngle.MEAN,
+                               FramesFactory.getEME2000(),
+                               new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                new TimeComponents(23, 30, 00.000),
+                                                TimeScalesFactory.getUTC()),
+                               Constants.EIGEN5C_EARTH_MU);
+        final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
+        final SpacecraftState initialState =
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), 2500.0);
+        final AbsoluteDate startDate = orbit.getDate().shiftedBy(17461.084);
+        final DateIntervalDetector intervalDetector = new DateIntervalDetector(startDate, startDate.shiftedBy(duration));
+
+        // forward propagation
+        final NumericalPropagator forwardPropagator = buildNumericalPropagator(orbit);
+        final EventBasedManeuverTriggers forwardDetector = new EventBasedManeuverTriggers(intervalDetector,
+                                                                                          BooleanDetector.notCombine(intervalDetector),
+                                                                                          true);
+        forwardPropagator.addForceModel(new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
+                                                                          forwardDetector, f, isp));
+        forwardPropagator.setInitialState(initialState);
+        final SpacecraftState finalStateNumerical = forwardPropagator.propagate(startDate.shiftedBy(duration + 900.0));
+        Assert.assertEquals(0.0, forwardDetector.getTriggeredStart().durationFrom(startDate), 1.0e-16);
+        Assert.assertEquals(duration, forwardDetector.getTriggeredEnd().durationFrom(startDate), 1.0e-16);
+
+        // backward propagation
+        final NumericalPropagator backwardPropagator = buildNumericalPropagator(finalStateNumerical.getOrbit());
+        final EventBasedManeuverTriggers backwardDetector = new EventBasedManeuverTriggers(intervalDetector,
+                                                                                           BooleanDetector.notCombine(intervalDetector),
+                                                                                           true);
+        backwardPropagator.addForceModel(new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
+                                                                           backwardDetector, f, isp));
+        backwardPropagator.setInitialState(finalStateNumerical);
+        final SpacecraftState recoveredStateNumerical = backwardPropagator.propagate(orbit.getDate());
+        Assert.assertEquals(0.0, backwardDetector.getTriggeredStart().durationFrom(startDate), 1.0e-16);
+        Assert.assertEquals(duration, backwardDetector.getTriggeredEnd().durationFrom(startDate), 1.0e-16);
+
+        Assert.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(-0.001)),
+                                                     null));
+        Assert.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(+0.001)),
+                                                     null));
+        Assert.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(duration - 0.001)),
+                                                     null));
+        Assert.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(duration + 0.001)),
+                                                     null));
         /////////////////// results check /////////////////////////////////
         Assert.assertEquals(0.0,
                             Vector3D.distance(orbit.getPVCoordinates().getPosition(),
@@ -527,11 +590,16 @@ public class ConfigurableLowThrustManeuverTest {
 
         /////////////////// propagation /////////////////////////////////
         final NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(initOrbit);
-        numericalPropagatorForward.addForceModel(buildApogeeManeuver());
+        final ConfigurableLowThrustManeuver maneuver = buildApogeeManeuver();
+        numericalPropagatorForward.addForceModel(maneuver);
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing happened
         Assert.assertTrue(finalState.getMass() < initialState.getMass());
+
+        // call init again, to check nothing weir happens (and improving test coverage)
+        maneuver.init(initialState, finalDate);
+         
     }
 
     @Test

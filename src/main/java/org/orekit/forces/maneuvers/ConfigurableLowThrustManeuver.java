@@ -70,11 +70,9 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
                                          final AbstractDetector<? extends EventDetector> startFiringDetector,
                                          final AbstractDetector<? extends EventDetector> stopFiringDetector,
                                          final double thrust, final double isp) {
-        super(thrustDirectionProvider.getManeuverAttitudeProvider(),
-              new EventBasedManeuverTriggers(startFiringDetector, stopFiringDetector),
-              buildBasicConstantThrustPropulsionModel(thrust, isp,
-                                                      thrustDirectionProvider.getThrusterAxisInSatelliteFrame()));
-        this.thrustDirectionProvider = thrustDirectionProvider;
+        this(thrustDirectionProvider,
+             new EventBasedManeuverTriggers(startFiringDetector, stopFiringDetector),
+             thrust, isp);
     }
 
     /**
@@ -87,13 +85,11 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
      * @param trigger                 maneuver triggers
      * @param thrust                  the thrust force (N)
      * @param isp                     engine specific impulse (s)
-     * @param allowBackwardPropagation if true, backward propagation is allowed
      * @since 11.1
      */
     public ConfigurableLowThrustManeuver(final ThrustDirectionAndAttitudeProvider thrustDirectionProvider,
                                          final ManeuverTriggers trigger,
-                                         final double thrust, final double isp,
-                                         final boolean allowBackwardPropagation) {
+                                         final double thrust, final double isp) {
         super(thrustDirectionProvider.getManeuverAttitudeProvider(),
               trigger,
               buildBasicConstantThrustPropulsionModel(thrust, isp,
