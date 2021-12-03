@@ -510,7 +510,33 @@ public class BrouwerLyddanePropagatorTest {
         extrapolator.propagate(extrapDate);
     }
 
+    @Test(expected = OrekitException.class)
+    public void testUnableToComputeBLMeanParameters() {
 
+        final Frame inertialFrame = FramesFactory.getEME2000();
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+
+        // Initial orbit
+        final double a = 24396159; // semi major axis in meters
+        final double e = 0.9; // eccentricity
+        final double i = FastMath.toRadians(7); // inclination
+        final double omega = FastMath.toRadians(180); // perigee argument
+        final double raan = FastMath.toRadians(261); // right ascention of ascending node
+        final double lM = FastMath.toRadians(0); // mean anomaly
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE,
+                                                      inertialFrame, initDate, provider.getMu());
+        // Extrapolator definition
+        // -----------------------
+        BrouwerLyddanePropagator extrapolator =
+            new BrouwerLyddanePropagator(initialOrbit,  GravityFieldFactory.getUnnormalizedProvider(provider));
+
+        // Extrapolation at the initial date
+        // ---------------------------------
+        double delta_t = 0.0;
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
+        extrapolator.propagate(extrapDate);
+
+    }
 
     @Before
     public void setUp() {
