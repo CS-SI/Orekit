@@ -144,7 +144,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @see org.orekit.utils.Constants
      * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, double, double,
-     * double, double, double, double, double)
+     * double, double, double, double)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final double referenceRadius, final double mu,
@@ -194,7 +194,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, double, double,
-     * double, double, double, double, double)
+     * double, double, double, double)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit, final double mass,
                                     final double referenceRadius, final double mu,
@@ -287,7 +287,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, double, double,
-     *                                 double, double, double, double, double, PropagationType)
+     *                                 double, double, double, double, PropagationType)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final AttitudeProvider attitudeProv,

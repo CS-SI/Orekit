@@ -35,7 +35,6 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -88,10 +87,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      *
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider,
-     * UnnormalizedSphericalHarmonicsProvider)
-     * @see #BrouwerLyddanePropagator(Orbit, UnnormalizedSphericalHarmonicsProvider,
-     *                                 PropagationType)
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, UnnormalizedSphericalHarmonicsProvider, PropagationType)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final UnnormalizedSphericalHarmonicsProvider provider) {
@@ -108,16 +104,14 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double,
-     *                                 UnnormalizedSphericalHarmonicsProvider,
-     *                                 UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics,
-     *                                 PropagationType)
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement,
+     * UnnormalizedSphericalHarmonicsProvider, UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics, PropagationType)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final  AttitudeProvider attitude,
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics) {
+                                         final UnnormalizedSphericalHarmonics harmonics) {
         this(initialOrbit, attitude,  mass, provider.getAe(), initialOrbit.getA().getField().getZero().add(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
@@ -147,8 +141,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @see org.orekit.utils.Constants
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, double, double,
-     * double, double, double, double, double)
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, double, CalculusFieldElement, double, double, double, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final double referenceRadius, final T mu,
@@ -167,8 +160,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double,
-     * UnnormalizedSphericalHarmonicsProvider)
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider) {
@@ -198,8 +190,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, double, double,
-     * double, double, double, double, double)
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                          final double referenceRadius, final T mu,
@@ -261,8 +252,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double,
-     *                                 UnnormalizedSphericalHarmonicsProvider, PropagationType)
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, PropagationType)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
@@ -293,8 +283,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, double, double,
-     *                                 double, double, double, double, double, PropagationType)
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, PropagationType)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
