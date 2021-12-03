@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="864">
+        Fixed BStar estimation in TLE-based orbit determination.
+      </action>
       <action dev="mvanel" type="add" issue="653">
         Added Brouwer-Lyddane orbit propagator.
       </action>

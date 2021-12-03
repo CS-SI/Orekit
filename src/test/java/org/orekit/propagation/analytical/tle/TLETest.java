@@ -687,6 +687,46 @@ public class TLETest {
 
     }
 
+    @Test
+    public void testIssue864() {
+
+        // Initialize TLE
+        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleISS);
+
+        // State at TLE epoch
+        final SpacecraftState state = propagator.propagate(tleISS.getDate());
+
+        // Set the BStar driver to selected
+        tleISS.getParametersDrivers().forEach(driver -> driver.setSelected(true));
+
+        // Convert to TLE
+        final TLE rebuilt = TLE.stateToTLE(state, tleISS);
+
+        // Verify if driver is still selected
+        rebuilt.getParametersDrivers().forEach(driver -> Assert.assertTrue(driver.isSelected()));
+
+    }
+
+    @Test
+    public void testUnknowParameter() {
+
+        // Initialize TLE
+        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        try {
+            tleISS.getParameterDriver("MyWonderfulDriver");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
+        }
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
