@@ -818,12 +818,12 @@ public class DSSTPropagatorTest {
         final AbsoluteDate finalDate = orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateNoConfig = propagator.propagate(finalDate);
-        Assert.assertEquals(0, stateNoConfig.getAdditionalStates().size());
+        Assert.assertEquals(0, stateNoConfig.getAdditionalStatesValues().size());
 
         propagator.setSelectedCoefficients(new HashSet<String>());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigEmpty = propagator.propagate(finalDate);
-        Assert.assertEquals(234, stateConfigEmpty.getAdditionalStates().size());
+        Assert.assertEquals(234, stateConfigEmpty.getAdditionalStatesValues().size());
 
         final Set<String> selected = new HashSet<String>();
         selected.add("DSST-3rd-body-Moon-s[7]");
@@ -831,12 +831,12 @@ public class DSSTPropagatorTest {
         propagator.setSelectedCoefficients(selected);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigeSelected = propagator.propagate(finalDate);
-        Assert.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStates().size());
+        Assert.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStatesValues().size());
 
         propagator.setSelectedCoefficients(null);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigNull = propagator.propagate(finalDate);
-        Assert.assertEquals(0, stateConfigNull.getAdditionalStates().size());
+        Assert.assertEquals(0, stateConfigNull.getAdditionalStatesValues().size());
 
     }
 

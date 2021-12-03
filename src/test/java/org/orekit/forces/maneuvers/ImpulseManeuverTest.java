@@ -21,6 +21,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -38,6 +39,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.AbstractDetector;
@@ -46,7 +48,6 @@ import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -237,7 +238,7 @@ public class ImpulseManeuverTest {
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
-        Assert.assertEquals(1, finalState.getAdditionalStates().size());
+        Assert.assertEquals(1, finalState.getAdditionalStatesValues().size());
         Assert.assertEquals(-1.0, finalState.getAdditionalState("testOnly")[0], 1.0e-15);
 
     }
@@ -274,9 +275,8 @@ public class ImpulseManeuverTest {
         DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-3, 60, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(initialOrbit.getType());
-        PartialDerivativesEquations pde = new PartialDerivativesEquations("derivatives", propagator);
-        final SpacecraftState initialState = pde.setInitialJacobians(new SpacecraftState(initialOrbit, initialAttitude));
-        propagator.resetInitialState(initialState);
+        MatricesHarvester harvester = propagator.setupMatricesComputation("derivatives", null, null);
+        propagator.resetInitialState(new SpacecraftState(initialOrbit, initialAttitude));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));
         InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
@@ -285,14 +285,13 @@ public class ImpulseManeuverTest {
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
-        Assert.assertEquals(1, finalState.getAdditionalStates().size());
+        Assert.assertEquals(1, finalState.getAdditionalStatesValues().size());
         Assert.assertEquals(36, finalState.getAdditionalState("derivatives").length);
 
-        double[][] stateTransitionMatrix = new double[6][6];
-        pde.getMapper().getStateJacobian(finalState, stateTransitionMatrix);
+        RealMatrix stateTransitionMatrix = harvester.getStateTransitionMatrix(finalState);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
-                double sIJ = stateTransitionMatrix[i][j];
+                double sIJ = stateTransitionMatrix.getEntry(i, j);
                 if (j == i) {
                     // dPi/dPj and dVi/dVj are roughly 1 for small propagation times
                     Assert.assertEquals(1.0, sIJ, 2.0e-4);

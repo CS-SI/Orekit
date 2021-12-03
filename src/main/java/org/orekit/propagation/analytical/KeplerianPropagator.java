@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.util.Collections;
-import java.util.Map;
-
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
@@ -27,6 +24,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 
 /** Simple Keplerian orbit propagator.
@@ -105,7 +103,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                                  getAttitudeProvider().getAttitude(initialOrbit,
                                                                                    initialOrbit.getDate(),
                                                                                    initialOrbit.getFrame()),
-                                                 mass, mu, Collections.emptyMap());
+                                                 mass, mu, null, null);
         states = new TimeSpanMap<SpacecraftState>(initial);
         super.resetInitialState(initial);
 
@@ -120,19 +118,28 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @param attitude current attitude
      * @param mass current mass
      * @param mu gravity coefficient to use
-     * @param additionalStates additional states
+     * @param additionalStates additional states (may be null)
+     * @param additionalStatesDerivatives additional states derivatives (may be null)
      * @return fixed orbit
      */
-    private SpacecraftState fixState(final Orbit orbit, final Attitude attitude, final double mass,
-                                     final double mu, final Map<String, double[]> additionalStates) {
+    private SpacecraftState fixState(final Orbit orbit, final Attitude attitude, final double mass, final double mu,
+                                     final DoubleArrayDictionary additionalStates,
+                                     final DoubleArrayDictionary additionalStatesDerivatives) {
         final OrbitType type = orbit.getType();
         final double[] stateVector = new double[6];
         type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
         final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
                                                       orbit.getDate(), mu, orbit.getFrame());
         SpacecraftState fixedState = new SpacecraftState(fixedOrbit, attitude, mass);
-        for (final Map.Entry<String, double[]> entry : additionalStates.entrySet()) {
-            fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+        if (additionalStates != null) {
+            for (final DoubleArrayDictionary.Entry entry : additionalStates.getData()) {
+                fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+            }
+        }
+        if (additionalStatesDerivatives != null) {
+            for (final DoubleArrayDictionary.Entry entry : additionalStatesDerivatives.getData()) {
+                fixedState = fixedState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
+            }
         }
         return fixedState;
     }
@@ -147,7 +154,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                                     state.getAttitude(),
                                                     state.getMass(),
                                                     mu,
-                                                    state.getAdditionalStates());
+                                                    state.getAdditionalStatesValues(),
+                                                    state.getAdditionalStatesDerivatives());
 
         states = new TimeSpanMap<SpacecraftState>(fixedState);
         super.resetInitialState(fixedState);

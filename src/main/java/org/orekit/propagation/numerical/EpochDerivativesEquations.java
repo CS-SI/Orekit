@@ -27,7 +27,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.ThirdBodyAttractionEpoch;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -67,7 +67,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Luc Maisonobe
  * @since 10.2
  */
-public class EpochDerivativesEquations implements AdditionalEquations {
+public class EpochDerivativesEquations implements AdditionalDerivativesProvider {
 
     /** Propagator computing state evolution. */
     private final NumericalPropagator propagator;
@@ -100,12 +100,19 @@ public class EpochDerivativesEquations implements AdditionalEquations {
         this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
-        propagator.addAdditionalEquations(this);
+        propagator.addAdditionalDerivativesProvider(this);
     }
 
     /** {@inheritDoc} */
     public String getName() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        freezeParametersSelection();
+        return 6 * (6 + selected.getNbParams() + 1);
     }
 
     /** Freeze the selected parameters from the force models.
@@ -246,7 +253,7 @@ public class EpochDerivativesEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
-    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
+    public double[] derivatives(final SpacecraftState s) {
 
         // initialize acceleration Jacobians to zero
         final int paramDimEpoch = selected.getNbParams() + 1; // added epoch
@@ -323,6 +330,7 @@ public class EpochDerivativesEquations implements AdditionalEquations {
         // copy C and E into Adot and Bdot
         final int stateDim = 6;
         final double[] p = s.getAdditionalState(getName());
+        final double[] pDot = new double[p.length];
         System.arraycopy(p, dimEpoch * stateDim, pDot, 0, dimEpoch * stateDim);
 
         // compute Cdot and Ddot
@@ -377,8 +385,7 @@ public class EpochDerivativesEquations implements AdditionalEquations {
 
         }
 
-        // these equations have no effect on the main state itself
-        return null;
+        return pDot;
 
     }
 
