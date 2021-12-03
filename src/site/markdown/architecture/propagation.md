@@ -226,7 +226,7 @@ There are three main cases:
   `AdditionalStateProvider` interface and register it to the propagator, which will
   call it each time it builds a `SpacecraftState`.
 * if a differential equation drives the additional state evolution, then the user
-  can put this equation in an implementation of the `AdditionalEquations` interface
+  can put this equation in an implementation of the `AdditionalDerivativesProvider` interface
   and register it to an integrator-based propagator, which will integrated it and
   provide the integrated state.
 * if no evolution laws are provided to the propagator, but the additional state is
@@ -314,13 +314,13 @@ The mathematical problem to integrate is a dimension-seven time-derivative equat
 system. The six first elements of the state vector are the orbital parameters, which
 may be any orbit type (`KeplerianOrbit`, `CircularOrbit`, `EquinoctialOrbit` or
 `CartesianOrbit`) in meters and radians, and the last element is the mass in
-kilograms. It is possible to have more elements in the state vector if `AdditionalEquations`
-have been added (typically `PartialDerivativesEquations` which is an implementation of
-`AdditionalEquations` devoted to integration of Jacobian matrices). The time derivatives are
-computed automatically by the Orekit using the Gauss equations for the first parameters
-corresponding to the selected orbit type and the flow rate for mass evolution
-during maneuvers. The user only needs to register the various force models needed for
-the simulation. Various force models are already available in the library and specialized
+kilograms. It is possible to have more elements in the state vector if `AdditionalDerivativesProvider`
+have been added (this is used for example by internal classes that implement `AdditionalDerivativesProvider`
+in order to compute State Transition Matrix and Jacobians matrices with respect to propagation
+parameters). The time derivatives are computed automatically by the Orekit using the Gauss
+equations for the first parameters corresponding to the selected orbit type and the flow rate
+for mass evolution during maneuvers. The user only needs to register the various force models needed
+for the simulation. Various force models are already available in the library and specialized
 ones can be added by users easily for specific needs.
  
 The integrators (_first order integrators_) provided by Hipparchus need 
@@ -377,17 +377,14 @@ parameters.
 ![partial derivatives class diagram](../images/design/partial-derivatives-class-diagram.png)
 
 The above class diagram shows the design of the partial derivatives equations. As can be seen,
-the PartialDerivativesEquations class implements the AdditionalEquations interface and as such
-can be registered by user in a numerical propagator. the propagator will propagate both the
-main set of equations corresponding to the equations of motion and the additional set corresponding
-to the Jacobians of the main set. This additional set is therefore tightly linked to the main set
-and in particular depends on the selected force models. The various force models add their
-direct contribution directly to the main set, just as in simple propagation. They also add a
-contribution to the Jacobians thanks to the AccelerationJacobiansProvider interface, each force
-model being associated with an acceleration Jacobians provider. Some force models like solar
-radiation pressure implement this interface by themselves. Some more complex force model do not
-implement the interface and will be automatically wrapped inside a Jacobianizer class which will
-use finite differences to compute the local Jacobians.
+the numerical propagator provide a way to trigger computation of partial derivatives matrices (State
+Transition Matrix and Jacobians with respect to parameters) and provide an opaque `MatrixHarvester`
+so users can retrieve these matrices from the propagated states. Internally, the propagator uses
+dedicated classes that implement `AdditionalDerivativesProvider` to model the matrices elements evolution
+and propagate both the main set of equations corresponding to the equations of motion and the
+additional set corresponding to the Jacobians of the main set. This additional set is therefore
+tightly linked to the main set and in particular depends on the selected force models. The various
+force models add their direct contribution directly to the main set, just as in simple propagation.
 
 ## Semianalytical propagation
 

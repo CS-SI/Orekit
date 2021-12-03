@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-import org.orekit.propagation.analytical.gnss.ClockCorrectionsProvider;
 import org.orekit.time.TimeStamped;
 
-/**This interface provides the minimal set of orbital elements needed by the {@link ClockCorrectionsProvider}.
+/**This interface provides the minimal set of orbital elements needed by the
+ * {@link org.orekit.propagation.analytical.gnss.ClockCorrectionsProvider}.
 *
 * @author Pascal Parraud
 * @since 11.0
