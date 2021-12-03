@@ -77,6 +77,7 @@
     * analytical propagation models
         * Kepler
         * Eckstein-Heschler
+        * Brouwer-Lyddane
         * SDP4/SGP4 with 2006 corrections
         * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
     * numerical propagators

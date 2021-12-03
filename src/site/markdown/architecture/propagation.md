@@ -280,6 +280,19 @@ If users need a more definitive initialization of an Eckstein-Hechler propagator
 should consider using a propagator converter to initialize their Eckstein-Hechler
 propagator using a complete sample instead of just a single initial orbit.
 
+### Brouwer-Lyddane propagation
+
+At the opposite of the Eckstein-Hechler model, the Brouwer-Lyddane model is
+suited for elliptical orbits. In other words, there is no problem having a small
+(or big) eccentricity or inclination. Lyddane helped to solve this issue with
+the Brouwer model by summing the long and short periodic variations of the mean anomaly
+with the ones of the argument of perigee. One needs still to be careful with
+eccentricities lower than 5e-4. For singularity reason, the computation should not
+be done for the critical inclination : 63.4°.
+
+The Brouwer-Lyddane model considers J2 to J5 potential zonal coefficients, and uses the
+mean and short periodic variation of the keplerian elements to compute the position.
+
 ### GNSS propagation
 
 There are several dedicated models used for GNSS constellations propagation. These

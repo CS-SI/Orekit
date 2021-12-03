@@ -57,6 +57,7 @@
       class KeplerianPropagatorBuilder
       class TLEPropagatorBuilder
       class EcksteinHechlerPropagatorBuilder
+      class BrouwerLyddanePropagatorBuilder
 
       interface PropagatorConverter {
         +Propagator convert(Propagator source, double timeSpan, int nbPoints, Collection<String> freeParameters)
@@ -87,6 +88,7 @@
       PropagatorBuilder <|.. KeplerianPropagatorBuilder
       PropagatorBuilder <|.. TLEPropagatorBuilder
       PropagatorBuilder <|.. DSSTPropagatorBuilder
+      PropagatorBuilder <|.. BrouwerLyddanePropagatorBuilder
       PropagatorBuilder <|.right. EcksteinHechlerPropagatorBuilder
 
       PropagatorConverter <|.. AbstractPropagatorConverter
