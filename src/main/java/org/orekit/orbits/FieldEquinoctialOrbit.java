@@ -1065,7 +1065,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @return a string representation of this object
      */
     public String toString() {
-        return new StringBuffer().append("equinoctial parameters: ").append('{').
+        return new StringBuilder().append("equinoctial parameters: ").append('{').
                                   append("a: ").append(a.getReal()).
                                   append("; ex: ").append(ex.getReal()).append("; ey: ").append(ey.getReal()).
                                   append("; hx: ").append(hx.getReal()).append("; hy: ").append(hy.getReal()).

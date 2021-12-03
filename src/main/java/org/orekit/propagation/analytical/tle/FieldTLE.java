@@ -457,7 +457,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      */
     private void buildLine1() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
 
         buffer.append('1');
 
@@ -542,7 +542,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      */
     private void buildLine2() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         final DecimalFormat f34   = new DecimalFormat("##0.0000", SYMBOLS);
         final DecimalFormat f211  = new DecimalFormat("#0.00000000", SYMBOLS);
 

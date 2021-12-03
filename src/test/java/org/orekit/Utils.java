@@ -103,7 +103,7 @@ public class Utils {
     public static DataContext setDataRoot(String root) {
         try {
             clearFactories();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             for (String component : root.split(":")) {
                 String componentPath;
                 componentPath = Utils.class.getClassLoader().getResource(component).toURI().getPath();
