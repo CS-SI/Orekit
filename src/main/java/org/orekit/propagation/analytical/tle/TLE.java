@@ -819,6 +819,15 @@ public class TLE implements TimeStamped, Serializable {
                 FastMath.abs(deltaHy)  < thrH &&
                 FastMath.abs(deltaLv)  < thrV) {
 
+                // Verify if parameters are estimated
+                for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
+                    if (templateDrivers.isSelected()) {
+                        // Set to selected for the new TLE
+                        current.getParameterDriver(templateDrivers.getName()).setSelected(true);
+                    }
+                }
+
+                // Return
                 return current;
             }
 
@@ -1012,6 +1021,33 @@ public class TLE implements TimeStamped, Serializable {
      */
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(bStarParameterDriver);
+    }
+
+    /** Get parameter driver from its name.
+     * @param name parameter name
+     * @return parameter driver
+     * @since 11.1
+     */
+    public ParameterDriver getParameterDriver(final String name) {
+        // Loop on known drivers
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (name.equals(driver.getName())) {
+                // we have found a parameter with that name
+                return driver;
+            }
+        }
+
+        // build the list of supported parameters
+        final StringBuilder sBuilder = new StringBuilder();
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (sBuilder.length() > 0) {
+                sBuilder.append(", ");
+            }
+            sBuilder.append(driver.getName());
+        }
+        throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                  name, sBuilder.toString());
+
     }
 
     /** Replace the instance with a data transfer object for serialization.
