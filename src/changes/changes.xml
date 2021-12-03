@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="mvanel" type="add" issue="653">
+        Added Brouwer-Lyddane orbit propagator.
+      </action>
       <action dev="luc" type="add" issue="865">
         Added derivatives with respect to maneuvers start and stop dates.
       </action>
