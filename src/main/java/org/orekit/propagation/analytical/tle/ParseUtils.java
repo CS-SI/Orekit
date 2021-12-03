@@ -122,7 +122,7 @@ class ParseUtils  {
                                       satelliteNumber, name, string);
         }
 
-        final StringBuffer padding = new StringBuffer();
+        final StringBuilder padding = new StringBuilder();
         for (int i = 0; i < size; ++i) {
             padding.append(c);
         }
