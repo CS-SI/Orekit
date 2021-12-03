@@ -1706,7 +1706,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return a string representation of this object
      */
     public String toString() {
-        return new StringBuffer().append("Keplerian parameters: ").append('{').
+        return new StringBuilder().append("Keplerian parameters: ").append('{').
                                   append("a: ").append(a.getReal()).
                                   append("; e: ").append(e.getReal()).
                                   append("; i: ").append(FastMath.toDegrees(i.getReal())).

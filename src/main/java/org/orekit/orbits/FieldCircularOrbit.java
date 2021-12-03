@@ -1300,7 +1300,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
      * @return a string representation of this object
      */
     public String toString() {
-        return new StringBuffer().append("circular parameters: ").append('{').
+        return new StringBuilder().append("circular parameters: ").append('{').
                                   append("a: ").append(a.getReal()).
                                   append(", ex: ").append(ex.getReal()).append(", ey: ").append(ey.getReal()).
                                   append(", i: ").append(FastMath.toDegrees(i.getReal())).

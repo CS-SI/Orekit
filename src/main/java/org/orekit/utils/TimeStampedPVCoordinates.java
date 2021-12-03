@@ -344,7 +344,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public String toString(final TimeScale utc) {
         final String comma = ", ";
-        return new StringBuffer().append('{').
+        return new StringBuilder().append('{').
                                   append(date.toString(utc)).append(", P(").
                                   append(getPosition().getX()).append(comma).
                                   append(getPosition().getY()).append(comma).

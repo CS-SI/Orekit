@@ -473,7 +473,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      * @return string representation of the date.
      */
     public String toString() {
-        return new StringBuffer().
+        return new StringBuilder().
                append(FOUR_DIGITS.format(year)).append('-').
                append(TWO_DIGITS.format(month)).append('-').
                append(TWO_DIGITS.format(day)).
