@@ -584,7 +584,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      */
     public String toString() {
         final String comma = ", ";
-        return new StringBuffer().append('{').append("P(").
+        return new StringBuilder().append('{').append("P(").
                 append(position.getX()).append(comma).
                 append(position.getY()).append(comma).
                 append(position.getZ()).append("), V(").
