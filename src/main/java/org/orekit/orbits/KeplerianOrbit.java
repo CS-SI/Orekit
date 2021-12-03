@@ -1593,7 +1593,7 @@ public class KeplerianOrbit extends Orbit {
      * @return a string representation of this object
      */
     public String toString() {
-        return new StringBuffer().append("Keplerian parameters: ").append('{').
+        return new StringBuilder().append("Keplerian parameters: ").append('{').
                                   append("a: ").append(a).
                                   append("; e: ").append(e).
                                   append("; i: ").append(FastMath.toDegrees(i)).

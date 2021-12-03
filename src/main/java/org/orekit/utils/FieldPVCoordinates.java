@@ -764,7 +764,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public String toString() {
         final String comma = ", ";
-        return new StringBuffer().append('{').append("P(").
+        return new StringBuilder().append('{').append("P(").
                                   append(position.getX().getReal()).append(comma).
                                   append(position.getY().getReal()).append(comma).
                                   append(position.getZ().getReal()).append("), V(").

@@ -993,7 +993,7 @@ public class EquinoctialOrbit extends Orbit {
      * @return a string representation of this object
      */
     public String toString() {
-        return new StringBuffer().append("equinoctial parameters: ").append('{').
+        return new StringBuilder().append("equinoctial parameters: ").append('{').
                                   append("a: ").append(a).
                                   append("; ex: ").append(ex).append("; ey: ").append(ey).
                                   append("; hx: ").append(hx).append("; hy: ").append(hy).

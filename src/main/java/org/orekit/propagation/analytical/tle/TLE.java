@@ -458,7 +458,7 @@ public class TLE implements TimeStamped, Serializable {
      */
     private void buildLine1() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
 
         buffer.append('1');
 
@@ -500,7 +500,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(' ');
         buffer.append(ParseUtils.addPadding("elementNumber", elementNumber, ' ', 4, true, satelliteNumber));
 
-        buffer.append(Integer.toString(checksum(buffer)));
+        buffer.append(checksum(buffer));
 
         line1 = buffer.toString();
 
@@ -542,7 +542,7 @@ public class TLE implements TimeStamped, Serializable {
      */
     private void buildLine2() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         final DecimalFormat f34   = new DecimalFormat("##0.0000", SYMBOLS);
         final DecimalFormat f211  = new DecimalFormat("#0.00000000", SYMBOLS);
 
@@ -566,7 +566,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(ParseUtils.addPadding(MEAN_MOTION, f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true, satelliteNumber));
         buffer.append(ParseUtils.addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch, ' ', 5, true, satelliteNumber));
 
-        buffer.append(Integer.toString(checksum(buffer)));
+        buffer.append(checksum(buffer));
 
         line2 = buffer.toString();
 
@@ -890,7 +890,7 @@ public class TLE implements TimeStamped, Serializable {
         // Updates revolutionNumberAtEpoch
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         final double dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (2 * FastMath.PI)));
+        final int newRevolutionNumberAtEpoch = (int) (revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (2 * FastMath.PI)));
         // Gets B*
         final double bStar = templateTLE.getBStar();
         // Gets Mean Motion derivatives
