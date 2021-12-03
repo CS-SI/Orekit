@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -311,7 +312,7 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
 
                 // manage reconnection
                 try {
-                    Thread.sleep((int) Math.rint(delay * 1000));
+                    Thread.sleep((int) FastMath.rint(delay * 1000));
                 } catch (InterruptedException ie) {
                     // Restore interrupted state...
                     Thread.currentThread().interrupt();
