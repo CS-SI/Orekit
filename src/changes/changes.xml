@@ -24,6 +24,9 @@
       <action dev="luc" type="add" issue="862">
         PropagatorParallelizer now preserves existing step handlers in the propagators it runs.
       </action>
+      <action dev="ShippingEnjoyer" type="add">
+        Get rid of StringBuffer for logging without unnecessary synchronization (bias-locking disabled at jdk18)
+      </action>
     </release>
     <release version="11.0.2" date="2021-11-24"
              description="Version 11.0.2 is a patch release of Orekit.
