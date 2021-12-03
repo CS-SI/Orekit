@@ -21,6 +21,7 @@ import org.orekit.forces.maneuvers.propulsion.AbstractConstantThrustPropulsionMo
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider;
 import org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers;
+import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 
@@ -49,9 +50,14 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
     private final ThrustDirectionAndAttitudeProvider thrustDirectionProvider;
 
     /**
-     * Constructor. See
-     * {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers
+     * Constructor.
+     * <p>
+     * This legacy constructor forbids backward propagation.
+     * </p>
+     * <p>
+     * See {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers
      * EventBasedManeuverTriggers} for requirements on detectors
+     * </p>
      * @param thrustDirectionProvider thrust direction and attitude provider
      * @param startFiringDetector     detector to start thrusting (start when
      *                                increasing)
@@ -61,12 +67,33 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
      * @param isp                     engine specific impulse (s)
      */
     public ConfigurableLowThrustManeuver(final ThrustDirectionAndAttitudeProvider thrustDirectionProvider,
-            final AbstractDetector<? extends EventDetector> startFiringDetector,
-            final AbstractDetector<? extends EventDetector> stopFiringDetector, final double thrust, final double isp) {
+                                         final AbstractDetector<? extends EventDetector> startFiringDetector,
+                                         final AbstractDetector<? extends EventDetector> stopFiringDetector,
+                                         final double thrust, final double isp) {
+        this(thrustDirectionProvider,
+             new EventBasedManeuverTriggers(startFiringDetector, stopFiringDetector),
+             thrust, isp);
+    }
+
+    /**
+     * Constructor.
+     * <p>
+     * See {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers
+     * EventBasedManeuverTriggers} for requirements on detectors
+     * </p>
+     * @param thrustDirectionProvider thrust direction and attitude provider
+     * @param trigger                 maneuver triggers
+     * @param thrust                  the thrust force (N)
+     * @param isp                     engine specific impulse (s)
+     * @since 11.1
+     */
+    public ConfigurableLowThrustManeuver(final ThrustDirectionAndAttitudeProvider thrustDirectionProvider,
+                                         final ManeuverTriggers trigger,
+                                         final double thrust, final double isp) {
         super(thrustDirectionProvider.getManeuverAttitudeProvider(),
-                new EventBasedManeuverTriggers(startFiringDetector, stopFiringDetector),
-                buildBasicConstantThrustPropulsionModel(thrust, isp,
-                        thrustDirectionProvider.getThrusterAxisInSatelliteFrame()));
+              trigger,
+              buildBasicConstantThrustPropulsionModel(thrust, isp,
+                                                      thrustDirectionProvider.getThrusterAxisInSatelliteFrame()));
         this.thrustDirectionProvider = thrustDirectionProvider;
 
     }
