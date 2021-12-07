@@ -746,3 +746,6 @@ FIND_ROOT = {0} nu a găsit rădăcina între {1} (g={2,number,0.0##############
 
 # backward propagation not allowed here
 BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
+
+# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
