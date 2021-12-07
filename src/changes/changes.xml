@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="867">
+        Fixed handling of multiple historical eccentricities for a same station.
+      </action>
       <action dev="bryan" type="fix" issue="868">
         Fixed writing of whitespace characters in CPF writer.
       </action>
