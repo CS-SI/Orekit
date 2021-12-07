@@ -195,8 +195,6 @@ public class SinexLoaderTest {
         Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2021-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2999-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assert.assertEquals(0.0, station7090.getValidFrom().durationFrom(new AbsoluteDate("1979-07-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
-        Assert.assertEquals(0.0, station7090.getValidFrom().durationFrom(new AbsoluteDate("1979-07-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
-        Assert.assertTrue(station7090.getValidUntil() == AbsoluteDate.FUTURE_INFINITY);
         Assert.assertTrue(station7090.getValidUntil() == AbsoluteDate.FUTURE_INFINITY);
 
         // Verify station 7092
