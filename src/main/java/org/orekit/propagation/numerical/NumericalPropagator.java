@@ -388,26 +388,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setStartDate(state.getDate());
     }
 
-    /** Set up computation of State Transition Matrix and Jacobians matrix with respect to parameters.
-     * <p>
-     * If this method is called, both State Transition Matrix and Jacobians with respect to the
-     * force models parameters that will be selected when propagation starts will be automatically
-     * computed, and the harvester will allow to retrieve them.
-     * </p>
-     * <p>
-     * The arguments for initial matrices <em>must</em> be compatible with the {@link #setOrbitType(OrbitType) orbit type}
-     * and {@link #setPositionAngleType(PositionAngle) position angle} that will be ultimately
-     * selected when propagation starts
-     * </p>
-     * @param stmName State Transition Matrix state name
-     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
-     * if null (which is the most frequent case), assumed to be 6x6 identity
-     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
-     * if null or if some selected parameters are missing from the dictionary, the corresponding
-     * initial column is assumed to be 0
-     * @return harvester to retrieve computed matrices during and after propagation
-     * @since 11.1
-     */
+    /** {@inheritDoc} */
+    @Override
     public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
                                                       final DoubleArrayDictionary initialJacobianColumns) {
         if (stmName == null) {
