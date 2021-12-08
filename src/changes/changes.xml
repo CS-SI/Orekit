@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="869">
+        Allowed Brouwer-Lyddane model to work for the critical inclination.
+      </action>
       <action dev="bryan" type="fix" issue="867">
         Fixed handling of multiple historical eccentricities for a same station.
       </action>

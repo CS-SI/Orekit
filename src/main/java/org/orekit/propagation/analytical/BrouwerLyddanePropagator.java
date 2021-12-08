@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical;
 import java.io.Serializable;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -46,8 +47,8 @@ import org.orekit.utils.TimeSpanMap;
  * <p>
  * At the opposite of the {@link EcksteinHechlerPropagator}, the Brouwer-Lyddane model is
  * suited for elliptical orbits, there is no problem having a rather small eccentricity or inclination
- * (Lyddane helped to solve this issue with the Brouwer model). One needs still to be careful with eccentricities
- * lower than 5e-4. The computation should not be done for the critical inclination : 63.4°.
+ * (Lyddane helped to solve this issue with the Brouwer model). Singularity for the critical
+ * inclination i = 63.4° is avoided using the method developed in Warren Phipps' 1992 thesis.
  * </p>
  * @see "Brouwer, Dirk. Solution of the problem of artificial satellite theory without drag.
  *       YALE UNIV NEW HAVEN CT NEW HAVEN United States, 1959."
@@ -55,13 +56,17 @@ import org.orekit.utils.TimeSpanMap;
  * @see "Lyddane, R. H. Small eccentricities or inclinations in the Brouwer theory of the
  *       artificial satellite. The Astronomical Journal 68 (1963): 555."
  *
- * @see "Parks, A. D. A drag-augmented Brouwer-Lyddane artificial satellite theory and its
- *       application to long-term station alert predictions. NAVAL SURFACE WEAPONS CENTER DAHLGREN VA, 1983."
+ * @see "Phipps Jr, Warren E. Parallelization of the Navy Space Surveillance Center
+ *       (NAVSPASUR) Satellite Model. NAVAL POSTGRADUATE SCHOOL MONTEREY CA, 1992."
  *
  * @author Melina Vanel
+ * @author Bryan Cazabonne
  * @since 11.1
  */
 public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
+
+    /** Beta constant used by T2 function. */
+    private static final double BETA = FastMath.scalb(100, -11);
 
     /** Initial Brouwer-Lyddane model. */
     private BLModel initialModel;
@@ -664,7 +669,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
             final double cosI3 = cosI2 * cosI1;
             final double cosI4 = cosI2 * cosI2;
             final double cosI6 = cosI4 * cosI2;
-            final double C5c2 = 1.0 - 5.0 * cosI2;
+            final double C5c2 = 1.0 / T2(cosI1);
             final double C3c2 = 3.0 * cosI2 - 1.0;
 
             final double epp = mean.getE();
@@ -677,12 +682,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                 throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL,
                                           mean.getE());
             }
-
-            if (FastMath.abs(cosI2 - 1.0 / 5.0) < 1.0e-3) {
-                throw new OrekitException(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT,
-                                          FastMath.toDegrees(mean.getI()));
-            }
-
 
             // secular multiplicative
             lt = 1 +
@@ -899,6 +898,41 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
 
             // Returns the eccentric anomaly
             return ek;
+        }
+
+        /**
+         * This method is used in Brouwer-Lyddane model to avoid singularity at the
+         * critical inclination (i = 63.4°).
+         * <p>
+         * This method, based on Warren Phipps's 1992 thesis (Eq. 2.47 and 2.48),
+         * approximate the factor (1.0 - 5.0 * cos²(inc))^-1 (causing the singularity)
+         * by a function, named T2 in the thesis.
+         * </p>
+         * @param cosInc cosine of the mean inclination
+         * @return an approximation of (1.0 - 5.0 * cos²(inc))^-1 term
+         */
+        private double T2(final double cosInc) {
+
+            // X = (1.0 - 5.0 * cos²(inc))
+            final double x  = 1.0 - 5.0 * cosInc * cosInc;
+            final double x2 = x * x;
+
+            // Eq. 2.48
+            double sum = 0.0;
+            for (int i = 0; i <= 12; i++) {
+                final double sign = i % 2 == 0 ? +1.0 : -1.0;
+                sum += sign * FastMath.pow(BETA, i) * FastMath.pow(x2, i) / CombinatoricsUtils.factorialDouble(i + 1);
+            }
+
+            // Right term of equation 2.47
+            double product = 1.0;
+            for (int i = 0; i <= 10; i++) {
+                product *= 1 + FastMath.exp(FastMath.scalb(-1.0, i) * BETA * x2);
+            }
+
+            // Return (Eq. 2.47)
+            return BETA * x * sum * product;
+
         }
 
         /** Extrapolate an orbit up to a specific target date.

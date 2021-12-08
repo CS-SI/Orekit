@@ -22,6 +22,7 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -46,10 +47,10 @@ import org.orekit.utils.ParameterDriver;
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
  *  using the analytical Brouwer-Lyddane model (from J2 to J5 zonal harmonics).
  * <p>
- * At the opposite of the {@link EcksteinHechlerPropagator}, the Brouwer-Lyddane model is
+ * At the opposite of the {@link FieldEcksteinHechlerPropagator}, the Brouwer-Lyddane model is
  * suited for elliptical orbits, there is no problem having a rather small eccentricity or inclination
- * (Lyddane helped to solve this issue with the Brouwer model). One needs still to be careful with eccentricities
- * lower than 5e-4. The computation should not be done for the critical inclination : 63.4°.
+ * (Lyddane helped to solve this issue with the Brouwer model). Singularity for the critical
+ * inclination i = 63.4° is avoided using the method developed in Warren Phipps' 1992 thesis.
  * </p>
  * @see "Brouwer, Dirk. Solution of the problem of artificial satellite theory without drag.
  *       YALE UNIV NEW HAVEN CT NEW HAVEN United States, 1959."
@@ -57,13 +58,17 @@ import org.orekit.utils.ParameterDriver;
  * @see "Lyddane, R. H. Small eccentricities or inclinations in the Brouwer theory of the
  *       artificial satellite. The Astronomical Journal 68 (1963): 555."
  *
- * @see "Parks, A. D. A drag-augmented Brouwer-Lyddane artificial satellite theory and its
- *       application to long-term station alert predictions. NAVAL SURFACE WEAPONS CENTER DAHLGREN VA, 1983."
+ * @see "Phipps Jr, Warren E. Parallelization of the Navy Space Surveillance Center
+ *       (NAVSPASUR) Satellite Model. NAVAL POSTGRADUATE SCHOOL MONTEREY CA, 1992."
  *
  * @author Melina Vanel
+ * @author Bryan Cazabonne
  * @since 11.1
  */
 public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T>  {
+
+    /** Beta constant used by T2 function. */
+    private static final double BETA = FastMath.scalb(100, -11);
 
     /** Initial Brouwer-Lyddane model. */
     private FieldBLModel<T> initialModel;
@@ -663,7 +668,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final T cosI3 = cosI2.multiply(cosI1);
             final T cosI4 = cosI2.multiply(cosI2);
             final T cosI6 = cosI4.multiply(cosI2);
-            final T C5c2 = cosI2.multiply(-5.0).add(1.0);
+            final T C5c2 = T2(cosI1).reciprocal();
             final T C3c2 = cosI2.multiply(3.0).subtract(1.0);
 
             final T epp = mean.getE();
@@ -676,12 +681,6 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                 throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL,
                                           mean.getE().getReal());
             }
-
-            if (cosI2.subtract(-0.2).abs().getReal() < 1.0e-3) {
-                throw new OrekitException(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT,
-                                          FastMath.toDegrees(mean.getI().getReal()));
-            }
-
 
             // secular multiplicative
             lt = one.add(yp2.multiply(n).multiply(C3c2).multiply(1.5)).
@@ -911,6 +910,41 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
             // Returns the eccentric anomaly
             return ek;
+        }
+
+        /**
+         * This method is used in Brouwer-Lyddane model to avoid singularity at the
+         * critical inclination (i = 63.4°).
+         * <p>
+         * This method, based on Warren Phipps's 1992 thesis (Eq. 2.47 and 2.48),
+         * approximate the factor (1.0 - 5.0 * cos²(inc))^-1 (causing the singularity)
+         * by a function, named T2 in the thesis.
+         * </p>
+         * @param cosInc cosine of the mean inclination
+         * @return an approximation of (1.0 - 5.0 * cos²(inc))^-1 term
+         */
+        private T T2(final T cosInc) {
+
+            // X = (1.0 - 5.0 * cos²(inc))
+            final T x  = cosInc.multiply(cosInc).multiply(-5.0).add(1.0);
+            final T x2 = x.multiply(x);
+
+            // Eq. 2.48
+            T sum = x.getField().getZero();
+            for (int i = 0; i <= 12; i++) {
+                final double sign = i % 2 == 0 ? +1.0 : -1.0;
+                sum = sum.add(FastMath.pow(x2, i).multiply(FastMath.pow(BETA, i)).multiply(sign).divide(CombinatoricsUtils.factorialDouble(i + 1)));
+            }
+
+            // Right term of equation 2.47
+            T product = x.getField().getOne();
+            for (int i = 0; i <= 10; i++) {
+                product = product.multiply(FastMath.exp(x2.multiply(BETA).multiply(FastMath.scalb(-1.0, i))).add(1.0));
+            }
+
+            // Return (Eq. 2.47)
+            return x.multiply(BETA).multiply(sum).multiply(product);
+
         }
 
         /** Extrapolate an orbit up to a specific target date.
