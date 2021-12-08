@@ -549,28 +549,45 @@ public class FieldBrouwerLyddanePropagatorTest {
         doCriticalInclination(Decimal64Field.getInstance());
     }
 	private <T extends CalculusFieldElement<T>> void doCriticalInclination(Field<T> field) {
-        // for an eccentricity too big for the model
-		T zero = field.getZero();
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
-        FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(67679244.0), zero.add(0.01), zero.add(FastMath.toRadians(63.44)),
-        		                                               zero.add(2.1), zero.add(2.9), zero.add(6.2), PositionAngle.TRUE, 
-        		                                               FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
-        try {
+
+        final Frame inertialFrame = FramesFactory.getEME2000();
+
+        // Initial orbit
+        final double a = 24396159; // semi major axis in meters
+        final double e = 0.01; // eccentricity
+        final double i = FastMath.toRadians(7); // inclination
+        final double omega = FastMath.toRadians(180); // perigee argument
+        final double raan = FastMath.toRadians(261); // right ascention of ascending node
+        final double lM = 0; // mean anomaly
+
+        T zero = field.getZero();
+        FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field);
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega), 
+                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     inertialFrame, initDate, zero.add(provider.getMu()));
+
         // Extrapolator definition
         // -----------------------
         FieldBrouwerLyddanePropagator<T> extrapolator =
-            new FieldBrouwerLyddanePropagator<>(initialOrbit, DEFAULT_LAW, provider.getAe(), zero.add(provider.getMu()),
-            		-1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7);
+            new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider));
 
         // Extrapolation at the initial date
         // ---------------------------------
-        double delta_t = 0.0;
-        FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
-        extrapolator.propagate(extrapDate);
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT, oe.getSpecifier());
-        }
+        final FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
+
+        // Verify
+        Assert.assertEquals(0.0,
+                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
+                                                   finalOrbit.getPVCoordinates().getPosition()).getReal(),
+                            7.0e-8);
+
+        Assert.assertEquals(0.0,
+                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
+                                                   finalOrbit.getPVCoordinates().getVelocity()).getReal(),
+                            1.2e-11);
+
+        Assert.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
+
     }
 
     @Test(expected = OrekitException.class)

@@ -469,24 +469,43 @@ public class BrouwerLyddanePropagatorTest {
     }
 
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void criticalInclination() {
-        // for an eccentricity too big for the model
+
+        final Frame inertialFrame = FramesFactory.getEME2000();
+
+        final double a = 24396159; // semi major axis in meters
+        final double e = 0.01; // eccentricity
+        final double i = FastMath.acos(1.0 / FastMath.sqrt(5.0)); // critical inclination
+        final double omega = FastMath.toRadians(180); // perigee argument
+        final double raan = FastMath.toRadians(261); // right ascention of ascending node
+        final double lM = 0; // mean anomaly
+
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
-        Orbit initialOrbit = new KeplerianOrbit(67679244.0, 0.01, FastMath.toRadians(63.44), 2.1, 2.9,
-                                 6.2, PositionAngle.TRUE, FramesFactory.getEME2000(),
-                                 initDate, provider.getMu());
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE,
+                                                      inertialFrame, initDate, provider.getMu());
+
         // Extrapolator definition
         // -----------------------
         BrouwerLyddanePropagator extrapolator =
-            new BrouwerLyddanePropagator(initialOrbit, DEFAULT_LAW, provider.getAe(), provider.getMu(),
-            		-1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7);
+            new BrouwerLyddanePropagator(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider));
 
         // Extrapolation at the initial date
         // ---------------------------------
-        double delta_t = 0.0;
-        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
-        extrapolator.propagate(extrapDate);
+        SpacecraftState finalOrbit = extrapolator.propagate(initDate);
+
+        // Verify
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
+                                              finalOrbit.getPVCoordinates().getPosition()),
+                            1.9e-8);
+
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
+                                              finalOrbit.getPVCoordinates().getVelocity()),
+                            3.0e-12);
+        Assert.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
+
     }
 
 
