@@ -102,7 +102,9 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         this(initialGuessList, propagatorList, arcDuration,
              additionalEquations.
                  stream().
-                 map(ae -> new org.orekit.propagation.integration.AdditionalEquationsAdapter(ae, () -> propagatorList.get(0).getInitialState())).
+                 map(ae -> ae instanceof AdditionalDerivativesProvider ?
+                           (AdditionalDerivativesProvider) ae :
+                           new org.orekit.propagation.integration.AdditionalEquationsAdapter(ae, () -> propagatorList.get(0).getInitialState())).
                  collect(Collectors.toList()),
              tolerance, additionalName);
     }
