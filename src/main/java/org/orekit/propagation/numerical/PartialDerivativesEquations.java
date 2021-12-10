@@ -27,6 +27,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -61,7 +62,10 @@ import org.orekit.utils.ParameterDriversList;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class PartialDerivativesEquations implements AdditionalDerivativesProvider {
+@SuppressWarnings("deprecation")
+public class PartialDerivativesEquations
+    implements AdditionalDerivativesProvider,
+               org.orekit.propagation.integration.AdditionalEquations {
 
     /** Propagator computing state evolution. */
     private final NumericalPropagator propagator;
@@ -251,6 +255,19 @@ public class PartialDerivativesEquations implements AdditionalDerivativesProvide
         return new JacobiansMapper(name, selected,
                                    propagator.getOrbitType(),
                                    propagator.getPositionAngleType());
+    }
+
+    /** {@inheritDoc} */
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        AdditionalDerivativesProvider.super.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        System.arraycopy(derivatives(s), 0, pDot, 0, pDot.length);
+        return null;
     }
 
     /** {@inheritDoc} */

@@ -28,6 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -51,7 +52,10 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPartialDerivativesEquations implements AdditionalDerivativesProvider {
+@SuppressWarnings("deprecation")
+public class DSSTPartialDerivativesEquations
+    implements AdditionalDerivativesProvider,
+               org.orekit.propagation.integration.AdditionalEquations {
 
     /** Retrograde factor I.
      *  <p>
@@ -244,6 +248,19 @@ public class DSSTPartialDerivativesEquations implements AdditionalDerivativesPro
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
         return new DSSTJacobiansMapper(name, selected, propagator, map, propagationType);
+    }
+
+    /** {@inheritDoc} */
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        AdditionalDerivativesProvider.super.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        System.arraycopy(derivatives(s), 0, pDot, 0, pDot.length);
+        return null;
     }
 
     /** {@inheritDoc} */
