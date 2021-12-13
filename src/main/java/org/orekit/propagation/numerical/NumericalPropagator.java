@@ -399,7 +399,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         return harvester;
     }
 
-    /** Get the names of the parameters in the matrix returned by {@link #getParametersJacobian}.
+    /** Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
      * @return names of the parameters (i.e. columns) of the Jacobian matrix
      */
     protected List<String> getJacobiansColumnsNames() {
