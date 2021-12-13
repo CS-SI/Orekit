@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.util.List;
+
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -26,6 +29,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
+import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -97,11 +104,34 @@ public class NumericalPropagationHarvesterTest {
         doTestInitialStm(null, 0.0);
     }
 
+    @Test
+    public void testColumnsNames() {
+
+        NumericalPropagationHarvester harvester =
+                        (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
+                                                                                            MatrixUtils.createRealIdentityMatrix(6),
+                                                                                            new DoubleArrayDictionary());
+        Assert.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
+
+        DateBasedManeuverTriggers triggers = new DateBasedManeuverTriggers("apogee_boost", propagator.getInitialState().getDate().shiftedBy(60.0), 120.0);
+        PropulsionModel propulsion = new BasicConstantThrustPropulsionModel(400.0, 350.0, Vector3D.PLUS_I, "ABM-");
+        propagator.addForceModel(new Maneuver(null, triggers, propulsion));
+        Assert.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
+
+        triggers.getParametersDrivers().get(1).setSelected(true);
+        propulsion.getParametersDrivers().get(0).setSelected(true);
+        List<String> columnsNames = harvester.getJacobiansColumnsNames();
+        Assert.assertEquals(2, columnsNames.size());
+        Assert.assertEquals("ABM-" + BasicConstantThrustPropulsionModel.THRUST, columnsNames.get(0));
+        Assert.assertEquals("apogee_boost_STOP", columnsNames.get(1));
+
+    }
+
     private void doTestInitialStm(OrbitType type, double deltaId) {
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm", null, null);
-        harvester.setOrbitType(type);
-        harvester.setPositionAngleType(PositionAngle.TRUE);
+        propagator.setOrbitType(type);
+        propagator.setPositionAngleType(PositionAngle.TRUE);
         double[] p = new double[36];
         for (int i = 0; i < p.length; i += 7) {
             p[i] = 1.0;

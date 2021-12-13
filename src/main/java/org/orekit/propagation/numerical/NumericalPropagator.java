@@ -395,8 +395,24 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (stmName == null) {
             throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
         }
-        harvester = new NumericalPropagationHarvester(stmName, initialStm, initialJacobianColumns);
+        harvester = new NumericalPropagationHarvester(this, stmName, initialStm, initialJacobianColumns);
         return harvester;
+    }
+
+    /** Get the names of the parameters in the matrix returned by {@link #getParametersJacobian}.
+     * @return names of the parameters (i.e. columns) of the Jacobian matrix
+     */
+    protected List<String> getJacobiansColumnsNames() {
+        final List<String> columnsNames = new ArrayList<>();
+        for (final ForceModel forceModel : getAllForceModels()) {
+            for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
+                if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
+                    columnsNames.add(driver.getName());
+                }
+            }
+        }
+        Collections.sort(columnsNames);
+        return columnsNames;
     }
 
     /** {@inheritDoc} */
@@ -407,18 +423,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             // set up the additional equations and additional state providers
             final StateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
-            final List<String> triggersDates     = setUpTriggerDatesJacobiansColumns(stmGenerator.getName());
-            final List<String> regularParameters = setUpRegularParametersJacobiansColumns(stmGenerator, triggersDates);
+            final List<String> triggersDates = setUpTriggerDatesJacobiansColumns(stmGenerator.getName());
+            setUpRegularParametersJacobiansColumns(stmGenerator, triggersDates);
 
-            // sort the Jacobians columns
-            final List<String> columnsNames = new ArrayList<>(triggersDates.size() + regularParameters.size());
-            columnsNames.addAll(triggersDates);
-            columnsNames.addAll(regularParameters);
-            Collections.sort(columnsNames);
-
-            harvester.setColumnsNames(columnsNames);
-            harvester.setOrbitType(getOrbitType());
-            harvester.setPositionAngleType(getPositionAngleType());
+            // as we are now starting the propagation, everything is configured
+            // we can freeze the names in the harvester
+            harvester.freezeColumnsNames();
 
         }
 
@@ -558,11 +568,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** Set up the Jacobians columns generator for regular parameters.
      * @param stmGenerator generator for the State Transition Matrix
      * @param triggerDates names of the columns already managed as trigger dates
-     * @return names of the columns corresponding to regular parameters
      * @since 11.1
      */
-    private List<String> setUpRegularParametersJacobiansColumns(final StateTransitionMatrixGenerator stmGenerator,
-                                                                final List<String> triggerDates) {
+    private void setUpRegularParametersJacobiansColumns(final StateTransitionMatrixGenerator stmGenerator,
+                                                        final List<String> triggerDates) {
 
         // first pass: gather all parameters (excluding trigger dates), binding similar names together
         final ParameterDriversList selected = new ParameterDriversList();
@@ -582,10 +591,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         selected.sort();
 
         // add the Jacobians column generators corresponding to parameters, and setup state accordingly
-        final List<String> names = new ArrayList<>(selected.getNbParams());
         for (final DelegatingDriver driver : selected.getDrivers()) {
 
-            names.add(driver.getName());
             IntegrableJacobianColumnGenerator generator = null;
 
             // check if we already have set up the providers
@@ -614,8 +621,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             }
 
         }
-
-        return names;
 
     }
 

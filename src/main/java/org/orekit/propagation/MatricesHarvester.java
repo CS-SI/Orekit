@@ -62,10 +62,11 @@ public interface MatricesHarvester {
 
     /** Get the names of the parameters in the matrix returned by {@link #getParametersJacobian}.
      * <p>
-     * Beware that the names of the parameters are fully known only at propagation start,
-     * since applications may configure the propagator, retrieve the matrices harvester first
-     * and select the force model parameters to retrieve afterwards (but obviously before
-     * starting propagation). So the method may return wrong results if called too early.
+     * Beware that the names of the parameters are fully known only once all force models have
+     * been set up and their parameters properly selected. Applications that retrieve the matrices
+     * harvester first and select the force model parameters to retrieve afterwards (but obviously
+     * before starting propagation) must take care to wait until the parameters have been set up
+     * before they call this method. Calling the method too early would return wrong results.
      * </p>
      * <p>
      * The names are returned in the Jacobians matrix columns order

@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
@@ -38,6 +37,9 @@ class NumericalPropagationHarvester implements MatricesHarvester {
     /** State dimension, fixed to 6. */
     public static final int STATE_DIMENSION = 6;
 
+    /** Propagator bound to this harvester. */
+    private final NumericalPropagator propagator;
+
     /** Initial State Transition Matrix. */
     private final RealMatrix initialStm;
 
@@ -50,18 +52,13 @@ class NumericalPropagationHarvester implements MatricesHarvester {
     /** Columns names for parameters. */
     private List<String> columnsNames;
 
-    /** Orbit type. */
-    private OrbitType orbitType;
-
-    /** Position angle type. */
-    private PositionAngle positionAngleType;
-
     /** Simple constructor.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the {@link #setOrbitType(OrbitType) orbit type}
      * and {@link #setPositionAngleType(PositionAngle) position angle} that will be ultimately
      * selected when propagation starts
      * </p>
+     * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name
      * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
      * if null (which is the most frequent case), assumed to be 6x6 identity
@@ -69,12 +66,13 @@ class NumericalPropagationHarvester implements MatricesHarvester {
      * if null or if some selected parameters are missing from the dictionary, the corresponding
      * initial column is assumed to be 0
      */
-    NumericalPropagationHarvester(final String stmName, final RealMatrix initialStm,
-                                  final DoubleArrayDictionary initialJacobianColumns) {
+    NumericalPropagationHarvester(final NumericalPropagator propagator, final String stmName,
+                                  final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
+        this.propagator             = propagator;
         this.stmName                = stmName;
         this.initialStm             = initialStm == null ? MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION) : initialStm;
         this.initialJacobianColumns = initialJacobianColumns == null ? new DoubleArrayDictionary() : initialJacobianColumns;
-        this.columnsNames           = Collections.emptyList();
+        this.columnsNames           = null;
     }
 
     /** Get the State Transition Matrix state name.
@@ -82,27 +80,6 @@ class NumericalPropagationHarvester implements MatricesHarvester {
      */
     String getStmName() {
         return stmName;
-    }
-
-    /** Set Jacobian matrix columns names.
-     * @param columnsNames names of the parameters for Jacobian columns, in desired matrix order
-     */
-    void setColumnsNames(final List<String> columnsNames) {
-        this.columnsNames = columnsNames;
-    }
-
-    /** Set orbit type.
-     * @param orbitType orbit type
-     */
-    void setOrbitType(final OrbitType orbitType) {
-        this.orbitType = orbitType;
-    }
-
-    /** Set position angle type.
-     * @param positionAngleType angle type
-     */
-    void setPositionAngleType(final PositionAngle positionAngleType) {
-        this.positionAngleType = positionAngleType;
     }
 
     /** Get the initial State Transition Matrix.
@@ -140,10 +117,10 @@ class NumericalPropagationHarvester implements MatricesHarvester {
 
         if (state.isOrbitDefined()) {
             // make sure the state is in the desired orbit type
-            final Orbit orbit = orbitType.convertType(state.getOrbit());
+            final Orbit orbit = propagator.getOrbitType().convertType(state.getOrbit());
 
             // compute the Jacobian, taking the position angle type into account
-            orbit.getJacobianWrtCartesian(positionAngleType, dYdC);
+            orbit.getJacobianWrtCartesian(propagator.getPositionAngleType(), dYdC);
         } else {
             // for absolute PVA, parameters are already Cartesian
             for (int i = 0; i < STATE_DIMENSION; ++i) {
@@ -198,7 +175,7 @@ class NumericalPropagationHarvester implements MatricesHarvester {
     @Override
     public RealMatrix getParametersJacobian(final SpacecraftState state) {
 
-        if (columnsNames.isEmpty()) {
+        if (columnsNames == null || columnsNames.isEmpty()) {
             return null;
         }
 
@@ -223,10 +200,19 @@ class NumericalPropagationHarvester implements MatricesHarvester {
 
     }
 
+    /** Freeze the names of the Jacobian columns.
+     * <p>
+     * This method is called when proagation starts, i.e. when configuration is completed
+     * </p>
+     */
+    void freezeColumnsNames() {
+        columnsNames = getJacobiansColumnsNames();
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<String> getJacobiansColumnsNames() {
-        return Collections.unmodifiableList(columnsNames);
+        return columnsNames == null ? propagator.getJacobiansColumnsNames() : columnsNames;
     }
 
 }

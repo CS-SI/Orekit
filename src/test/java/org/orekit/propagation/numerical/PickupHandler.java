@@ -48,7 +48,12 @@ class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator
         this.columnName   = columnName;
         this.s0           = null;
         this.accPartial   = null;
-        Assert.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
+        if (columnName == null) {
+            Assert.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
+        } else {
+            Assert.assertEquals(1, harvester.getJacobiansColumnsNames().size());
+            Assert.assertEquals(columnName, harvester.getJacobiansColumnsNames().get(0));
+        }
     }
 
     public SpacecraftState getState() {
