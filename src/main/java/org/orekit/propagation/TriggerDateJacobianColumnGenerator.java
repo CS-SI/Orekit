@@ -27,7 +27,7 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 /** Generator for one column of a Jacobian matrix for special case of trigger dates.
  * <p>
  * Typical use cases for this are estimation of maneuver start and stop date during
- * either orbit determination or maneuver optimisation.
+ * either orbit determination or maneuver optimization.
  * </p>
  * <p>
  * Let \((t_0, y_0)\) be the state at propagation start, \((t_1, y_1)\) be the state at
@@ -49,7 +49,7 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
  * respect to intermediate time \(t_1\):
  * \[\frac{\partial y_t}{\partial y_0} = \frac{\partial y_t}{\partial y_1} \frac{\partial y_1}{\partial y_0}\]
  * We deduce
- * \[\frac{\partial y_t}{\partial y_1} = \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1}\].
+ * \[\frac{\partial y_t}{\partial y_1} = \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1}\]
  * </p>
  * <p>
  * The Jacobian column can therefore be computed using the following closed-form expression:
@@ -62,7 +62,7 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
  * <p>
  * As the column is generated using a closed-form expression, this generator implements
  * the {@link AdditionalStateProvider} interface and stores the column directly
- * in the premiary state during propagation.
+ * in the primary state during propagation.
  * </p>
  * <p>
  * The implementation takes care to <em>not</em> resetting anything at propagation start.
