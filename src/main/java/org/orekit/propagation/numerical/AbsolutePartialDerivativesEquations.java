@@ -55,6 +55,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 10.2
  */
+@SuppressWarnings("deprecation")
 public class AbsolutePartialDerivativesEquations extends PartialDerivativesEquations {
 
     /** Name. */

@@ -63,6 +63,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+@Deprecated
 public class DSSTPartialDerivativesTest {
 
     @Test
@@ -499,7 +500,6 @@ public class DSSTPartialDerivativesTest {
             checkState(finalState);
         }
 
-        @SuppressWarnings("deprecation")
         private void checkState(final SpacecraftState state) {
             Assert.assertEquals(1, state.getAdditionalStatesValues().size());
             Assert.assertEquals(mapper.getName(), state.getAdditionalStatesValues().getData().get(0).getKey());
@@ -515,7 +515,6 @@ public class DSSTPartialDerivativesTest {
      * In MEAN case, Jacobian should be a 6x6 identity matrix.
      * In OSCULATING cas, first and last lines are compared to reference values.
      */
-    @SuppressWarnings("deprecation")
     @Test
     public void testIssue713() {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);

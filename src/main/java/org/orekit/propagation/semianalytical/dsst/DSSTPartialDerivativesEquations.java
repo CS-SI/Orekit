@@ -51,8 +51,11 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  * @author Bryan Cazabonne
  * @since 10.0
+ * @deprecated as of 11.1, replaced by {@link
+ * org.orekit.propagation.PropagatorPropagator#setupMatricesComputation(String,
+ * org.hipparchus.linear.RealMatrix, org.orekit.utils.DoubleArrayDictionary)}
  */
-@SuppressWarnings("deprecation")
+@Deprecated
 public class DSSTPartialDerivativesEquations
     implements AdditionalDerivativesProvider,
                org.orekit.propagation.integration.AdditionalEquations {

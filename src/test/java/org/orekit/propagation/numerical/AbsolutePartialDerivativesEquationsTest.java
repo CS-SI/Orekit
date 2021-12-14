@@ -68,6 +68,7 @@ public class AbsolutePartialDerivativesEquationsTest {
     /**
      * set up {@link #pde} and dependencies.
      */
+    @SuppressWarnings("deprecation")
     @Before
     public void setUp() {
         propagator = new NumericalPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
@@ -86,6 +87,7 @@ public class AbsolutePartialDerivativesEquationsTest {
     /**
      * check {@link PartialDerivativesEquations#derivatives(SpacecraftState)} correctly sets the satellite velocity.
      */
+    @SuppressWarnings("deprecation")
     @Test
     public void testComputeDerivativesStateVelocity() {
         //action

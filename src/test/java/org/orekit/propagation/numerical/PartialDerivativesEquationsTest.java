@@ -47,6 +47,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
 /** Unit tests for {@link PartialDerivativesEquations}. */
+@Deprecated
 public class PartialDerivativesEquationsTest {
 
     /** arbitrary date */

@@ -61,8 +61,11 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
+ * @deprecated as of 11.1, replaced by {@link
+ * org.orekit.propagation.PropagatorPropagator#setupMatricesComputation(String,
+ * org.hipparchus.linear.RealMatrix, org.orekit.utils.DoubleArrayDictionary)}
  */
-@SuppressWarnings("deprecation")
+@Deprecated
 public class PartialDerivativesEquations
     implements AdditionalDerivativesProvider,
                org.orekit.propagation.integration.AdditionalEquations {

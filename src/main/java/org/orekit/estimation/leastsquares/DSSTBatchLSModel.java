@@ -26,7 +26,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
-import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
@@ -84,8 +83,8 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
     @Deprecated
     protected DSSTJacobiansMapper configureDerivatives(final Propagator propagator) {
 
-        final DSSTPartialDerivativesEquations partials =
-                        new DSSTPartialDerivativesEquations(STM_NAME, (DSSTPropagator) propagator, propagationType);
+        final org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations partials =
+                        new org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations(STM_NAME, (DSSTPropagator) propagator, propagationType);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();

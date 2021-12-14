@@ -29,7 +29,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -146,94 +145,6 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         }
     }
 
-    @Test(expected=OrekitException.class)
-    public void testNotInitialized() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
-
-        double dP = 0.001;
-        DSSTPropagator propagator =
-                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN).getMapper();
-     }
-    
-    @Test(expected=OrekitException.class)
-    public void testTooSmallDimension() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
-
-        double dP = 0.001;
-        DSSTPropagator propagator =
-                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
-        partials.setInitialJacobians(new SpacecraftState(orbit),
-                                     new double[5][6], new double[6][2]);
-     }
-
-    @Test(expected=OrekitException.class)
-    public void testTooLargeDimension() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
-
-        double dP = 0.001;
-        DSSTPropagator propagator =
-                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
-        partials.setInitialJacobians(new SpacecraftState(orbit),
-                                     new double[8][6], new double[6][2]);
-     }
-    
-    @Test(expected=OrekitException.class)
-    public void testMismatchedDimensions() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
-
-        double dP = 0.001;
-        DSSTPropagator propagator =
-                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
-        partials.setInitialJacobians(new SpacecraftState(orbit),
-                                     new double[6][6], new double[7][2]);
-     }
-    
-    @Test
-    public void testWrongParametersDimension() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
-
-        double dP = 0.001;
-        DSSTForceModel sunAttraction  = new DSSTThirdBody(CelestialBodyFactory.getSun(), Constants.EIGEN5C_EARTH_MU);
-        DSSTForceModel moonAttraction = new DSSTThirdBody(CelestialBodyFactory.getMoon(), Constants.EIGEN5C_EARTH_MU);
-        DSSTPropagator propagator =
-                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL,
-                                sunAttraction, moonAttraction);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
-        try {
-            partials.setInitialJacobians(new SpacecraftState(orbit),
-                                         new double[6][6], new double[6][3]);
-            partials.derivatives(new SpacecraftState(orbit));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
-                                oe.getSpecifier());
-        }
-    }
-
     private void fillJacobianColumn(double[][] jacobian, int column,
                                     OrbitType orbitType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
@@ -330,12 +241,12 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         // Test MEAN case
         DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagatorMEAN.setMu(provider.getMu());
-        DSSTPartialDerivativesEquations partialsMEAN = new DSSTPartialDerivativesEquations("partials", propagatorMEAN, PropagationType.MEAN);
-        final SpacecraftState initialStateMEAN =
-                partialsMEAN.setInitialJacobians(new SpacecraftState(orbit));
-        final DSSTJacobiansMapper mapperMEAN = partialsMEAN.getMapper();
-        mapperMEAN.setReferenceState(initialStateMEAN);
-        RealMatrix dYdY0MEAN = mapperMEAN.getStateTransitionMatrix(initialStateMEAN);
+        SpacecraftState initialStateMEAN = new SpacecraftState(orbit);
+        propagatorMEAN.setInitialState(initialStateMEAN);
+        DSSTHarvester harvesterMEAN = (DSSTHarvester) propagatorMEAN.setupMatricesComputation("stm", null, null);
+        harvesterMEAN.setReferenceState(initialStateMEAN);
+        SpacecraftState finalMEAN = propagatorMEAN.propagate(initialStateMEAN.getDate()); // dummy zero duration propagation, to ensure haverster initialization
+        RealMatrix dYdY0MEAN = harvesterMEAN.getStateTransitionMatrix(finalMEAN);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) { 
                 Assert.assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
@@ -345,12 +256,12 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         // Test OSCULATING case
         DSSTPropagator propagatorOSC = setUpPropagator(PropagationType.OSCULATING, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagatorOSC.setMu(provider.getMu());
-        DSSTPartialDerivativesEquations partialsOSC = new DSSTPartialDerivativesEquations("partials", propagatorOSC, PropagationType.OSCULATING);
-        final SpacecraftState initialStateOSC =
-                partialsOSC.setInitialJacobians(new SpacecraftState(orbit));
-        final DSSTJacobiansMapper mapperOSC = partialsOSC.getMapper();
-        mapperOSC.setReferenceState(initialStateOSC);
-        RealMatrix dYdY0OSC =   mapperOSC.getStateTransitionMatrix(initialStateOSC);
+        final SpacecraftState initialStateOSC = new SpacecraftState(orbit);
+        propagatorOSC.setInitialState(initialStateOSC);
+        DSSTHarvester harvesterOCS = (DSSTHarvester) propagatorOSC.setupMatricesComputation("stm", null, null);
+        harvesterOCS.setReferenceState(initialStateOSC);
+        SpacecraftState finalOSC = propagatorOSC.propagate(initialStateOSC.getDate()); // dummy zero duration propagation, to ensure haverster initialization
+        RealMatrix dYdY0OSC =   harvesterOCS.getStateTransitionMatrix(finalOSC);
         final double[] refLine1 = new double[] {1.0000, -5750.3478, 15270.6488, -2707.1208, -2165.0148, -178.3653};
         final double[] refLine6 = new double[] {0.0000, 0.0035, 0.0013, -0.0005, 0.0005, 1.0000};
         for (int i = 0; i < 6; ++i) {
