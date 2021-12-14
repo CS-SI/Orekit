@@ -21,10 +21,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -43,6 +47,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
@@ -159,14 +164,20 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class NumericalPropagator extends AbstractIntegratedPropagator {
 
+    /** Space dimension. */
+    private static final int SPACE_DIMENSION = 3;
+
+    /** State dimension. */
+    private static final int STATE_DIMENSION = 2 * SPACE_DIMENSION;
+
+    /** Threshold for matrix solving. */
+    private static final double THRESHOLD = Precision.SAFE_MIN;
+
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
 
     /** boolean to ignore or not the creation of a NewtonianAttraction. */
     private boolean ignoreCentralAttraction;
-
-    /** Harvester for State Transition Matrix and Jacobian matrix. */
-    private NumericalPropagationHarvester harvester;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
@@ -207,7 +218,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         super(integrator, PropagationType.MEAN);
         forceModels             = new ArrayList<ForceModel>();
         ignoreCentralAttraction = false;
-        harvester               = null;
         initMapper();
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
@@ -388,21 +398,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setStartDate(state.getDate());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
-                                                      final DoubleArrayDictionary initialJacobianColumns) {
-        if (stmName == null) {
-            throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
-        }
-        harvester = new NumericalPropagationHarvester(this, stmName, initialStm, initialJacobianColumns);
-        return harvester;
-    }
-
     /** Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
      * @return names of the parameters (i.e. columns) of the Jacobian matrix
      */
-    protected List<String> getJacobiansColumnsNames() {
+    List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
@@ -417,8 +416,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        return new NumericalPropagationHarvester(this, stmName, initialStm, initialJacobianColumns);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected void setUpStmAndJacobianGenerators() {
 
+        final AbstractMatricesHarvester harvester = getHarvester();
         if (harvester != null) {
 
             // set up the additional equations and additional state providers
@@ -439,6 +446,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @since 11.1
      */
     private StateTransitionMatrixGenerator setUpStmGenerator() {
+
+        final AbstractMatricesHarvester harvester = getHarvester();
 
         // add the STM generator corresponding to the current settings, and setup state accordingly
         StateTransitionMatrixGenerator stmGenerator = null;
@@ -553,10 +562,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {
                 // add the initial Jacobian column if it is not already there
                 // (perhaps due to a previous propagation)
-                setInitialState(triggerGenerator.setInitialColumn(getInitialState(),
-                                                                  harvester.getInitialJacobianColumn(driver.getName()),
-                                                                  getOrbitType(),
-                                                                  getPositionAngleType()));
+                setInitialColumn(driver.getName(), getHarvester().getInitialJacobianColumn(driver.getName()));
             }
 
         }
@@ -598,7 +604,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             // check if we already have set up the providers
             for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
                 if (provider instanceof IntegrableJacobianColumnGenerator &&
-                                provider.getName().equals(driver.getName())) {
+                    provider.getName().equals(driver.getName())) {
                     // the Jacobian column generator has already been set up in a previous propagation
                     generator = (IntegrableJacobianColumnGenerator) provider;
                     break;
@@ -614,13 +620,50 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {
                 // add the initial Jacobian column if it is not already there
                 // (perhaps due to a previous propagation)
-                setInitialState(generator.setInitialColumn(getInitialState(),
-                                                           harvester.getInitialJacobianColumn(driver.getName()),
-                                                           getOrbitType(),
-                                                           getPositionAngleType()));
+                setInitialColumn(driver.getName(), getHarvester().getInitialJacobianColumn(driver.getName()));
             }
 
         }
+
+    }
+
+    /** Add the initial value of the column to the initial state.
+     * <p>
+     * The initial state must already contain the Cartesian State Transition Matrix.
+     * </p>
+     * @param columnName name of the column
+     * @param dYdQ column of the Jacobian ∂Y/∂qₘ with respect to propagation type,
+     * if null (which is the most frequent case), assumed to be 0
+     * @since 11.1
+     */
+    private void setInitialColumn(final String columnName, final double[] dYdQ) {
+
+        final SpacecraftState state = getInitialState();
+
+        final double[] column;
+        if (dYdQ == null) {
+            // initial Jacobian is null (this is the most frequent case)
+            column = new double[STATE_DIMENSION];
+        } else {
+
+            if (dYdQ.length != STATE_DIMENSION) {
+                throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                          dYdQ.length, STATE_DIMENSION);
+            }
+
+            // convert to Cartesian Jacobian
+            final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
+            getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), dYdC);
+            column = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).
+                     getSolver().
+                     solve(MatrixUtils.createRealVector(dYdQ)).
+                     toArray();
+
+        }
+
+
+        // set additional state
+        setInitialState(state.addAdditionalState(columnName, column));
 
     }
 

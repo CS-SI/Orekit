@@ -19,7 +19,6 @@ package org.orekit.propagation.numerical;
 import java.io.IOException;
 import java.text.ParseException;
 
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -35,14 +34,12 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
-import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
@@ -284,51 +281,13 @@ public class IntegrableJacobianColumnGeneratorTest {
         propagator.addAdditionalDerivativesProvider(stmGenerator);
 
         initialState = stmGenerator.setInitialStateTransitionMatrix(initialState, null, orbitType, angleType);
-        initialState = columnGenerator.setInitialColumn(initialState, null, orbitType, angleType);
+        initialState = initialState.addAdditionalState(columnGenerator.getName(), new double[6]);
         propagator.setInitialState(initialState);
 
         final AbsoluteDate finalDate = fireDate.shiftedBy(3800);
         final SpacecraftState finalorb = propagator.propagate(finalDate);
         Assert.assertEquals(0, finalDate.durationFrom(finalorb.getDate()), 1.0e-11);
 
-    }
-
-    @Test
-    public void testWrongParametersDimension() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-
-        double dP = 0.001;
-        ForceModel sunAttraction  = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
-        sunAttraction.getParameterDriver("Sun attraction coefficient").setSelected(true);
-        ForceModel moonAttraction = new ThirdBodyAttraction(CelestialBodyFactory.getMoon());
-        NumericalPropagator propagator =
-                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE,
-                                sunAttraction, moonAttraction);
-        StateTransitionMatrixGenerator stmGenerator =
-                        new StateTransitionMatrixGenerator("stm",
-                                                           propagator.getAllForceModels(),
-                                                           propagator.getAttitudeProvider());
-        IntegrableJacobianColumnGenerator columnGenerator = new IntegrableJacobianColumnGenerator(stmGenerator, "abc");
-        propagator.addAdditionalDerivativesProvider(columnGenerator);
-        propagator.addAdditionalDerivativesProvider(stmGenerator);
-
-        SpacecraftState initialState = new SpacecraftState(initialOrbit);
-        initialState = stmGenerator.setInitialStateTransitionMatrix(initialState, null,
-                                                                    propagator.getOrbitType(),
-                                                                    propagator.getPositionAngleType());
-        try {
-            columnGenerator.setInitialColumn(initialState, new double[5],
-                                             propagator.getOrbitType(),
-                                             propagator.getPositionAngleType());
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, oe.getSpecifier());
-            Assert.assertEquals(5, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals(6, ((Integer) oe.getParts()[1]).intValue());
-        }
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,

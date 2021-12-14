@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.sampling.ODEStateInterpolator;
@@ -42,11 +43,14 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AbstractMatricesHarvester;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -59,6 +63,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationG
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.ParameterObserver;
 
 /**
@@ -309,6 +315,139 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     public Set<String> getSelectedCoefficients() {
         final Set<String> set = mapper.getSelectedCoefficients();
         return set == null ? null : Collections.unmodifiableSet(set);
+    }
+
+    /** Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
+     * @return names of the parameters (i.e. columns) of the Jacobian matrix
+     */
+    protected List<String> getJacobiansColumnsNames() {
+        final List<String> columnsNames = new ArrayList<>();
+        for (final DSSTForceModel forceModel : getAllForceModels()) {
+            for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
+                if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
+                    columnsNames.add(driver.getName());
+                }
+            }
+        }
+        Collections.sort(columnsNames);
+        return columnsNames;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        return new DSSTHarvester(this, stmName, initialStm, initialJacobianColumns);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void setUpStmAndJacobianGenerators() {
+
+        final AbstractMatricesHarvester harvester = getHarvester();
+        if (harvester != null) {
+
+            // set up the additional equations and additional state providers
+            final DSSTStateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
+            setUpRegularParametersJacobiansColumns(stmGenerator);
+
+            // as we are now starting the propagation, everything is configured
+            // we can freeze the names in the harvester
+            harvester.freezeColumnsNames();
+
+        }
+
+    }
+
+    /** Set up the State Transition Matrix Generator.
+     * @return State Transition Matrix Generator
+     * @since 11.1
+     */
+    private DSSTStateTransitionMatrixGenerator setUpStmGenerator() {
+
+        final AbstractMatricesHarvester harvester = getHarvester();
+
+        // add the STM generator corresponding to the current settings, and setup state accordingly
+        DSSTStateTransitionMatrixGenerator stmGenerator = null;
+        for (final AdditionalDerivativesProvider equations : getAdditionalDerivativesProviders()) {
+            if (equations instanceof DSSTStateTransitionMatrixGenerator &&
+                equations.getName().equals(harvester.getStmName())) {
+                // the STM generator has already been set up in a previous propagation
+                stmGenerator = (DSSTStateTransitionMatrixGenerator) equations;
+                break;
+            }
+        }
+        if (stmGenerator == null) {
+            // this is the first time we need the STM generate, create it
+            stmGenerator = new DSSTStateTransitionMatrixGenerator(harvester.getStmName(), getPropagationType(),
+                                                                  getAllForceModels(), getAttitudeProvider());
+            addAdditionalDerivativesProvider(stmGenerator);
+        }
+
+        if (!getInitialIntegrationState().hasAdditionalState(harvester.getStmName())) {
+            // add the initial State Transition Matrix if it is not already there
+            // (perhaps due to a previous propagation)
+            setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
+                                                                         harvester.getInitialStateTransitionMatrix()),
+                            getPropagationType());
+        }
+
+        return stmGenerator;
+
+    }
+
+    /** Set up the Jacobians columns generator for regular parameters.
+     * @param stmGenerator generator for the State Transition Matrix
+     * @since 11.1
+     */
+    private void setUpRegularParametersJacobiansColumns(final DSSTStateTransitionMatrixGenerator stmGenerator) {
+
+        // first pass: gather all parameters (excluding trigger dates), binding similar names together
+        final ParameterDriversList selected = new ParameterDriversList();
+        for (final DSSTForceModel forceModel : getAllForceModels()) {
+            for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
+                selected.add(driver);
+            }
+        }
+
+        // second pass: now that shared parameter names are bound together,
+        // their selections status have been synchronized, we can filter them
+        selected.filter(true);
+
+        // third pass: sort parameters lexicographically
+        selected.sort();
+
+        // add the Jacobians column generators corresponding to parameters, and setup state accordingly
+        for (final DelegatingDriver driver : selected.getDrivers()) {
+
+            DSSTIntegrableJacobianColumnGenerator generator = null;
+
+            // check if we already have set up the providers
+            for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
+                if (provider instanceof DSSTIntegrableJacobianColumnGenerator &&
+                    provider.getName().equals(driver.getName())) {
+                    // the Jacobian column generator has already been set up in a previous propagation
+                    generator = (DSSTIntegrableJacobianColumnGenerator) provider;
+                    break;
+                }
+            }
+
+            if (generator == null) {
+                // this is the first time we need the Jacobian column generator, create it
+                generator = new DSSTIntegrableJacobianColumnGenerator(stmGenerator, driver.getName());
+                addAdditionalDerivativesProvider(generator);
+            }
+
+            if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {
+                // add the initial Jacobian column if it is not already there
+                // (perhaps due to a previous propagation)
+                setInitialState(getInitialState().addAdditionalState(driver.getName(),
+                                                                     getHarvester().getInitialJacobianColumn(driver.getName())),
+                                getPropagationType());
+            }
+
+        }
+
     }
 
     /** Check if the initial state is provided in osculating elements.
@@ -581,7 +720,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                                      final AbsoluteDate tEnd) {
 
         // check if only mean elements must be used
-        final PropagationType type = isMeanOrbit();
+        final PropagationType type = getPropagationType();
 
         // compute common auxiliary elements
         final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
@@ -619,7 +758,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     @Override
     protected void afterIntegration() {
         // remove the special short periodics step handler if added before
-        if (isMeanOrbit() == PropagationType.OSCULATING) {
+        if (getPropagationType() == PropagationType.OSCULATING) {
             final List<ODEStepHandler> preserved = new ArrayList<ODEStepHandler>();
             final ODEIntegrator integrator = getIntegrator();
             for (final ODEStepHandler sp : integrator.getStepHandlers()) {

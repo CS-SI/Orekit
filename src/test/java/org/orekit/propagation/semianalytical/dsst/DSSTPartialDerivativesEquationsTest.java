@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
@@ -625,7 +625,7 @@ public class DSSTPartialDerivativesEquationsTest {
     }
 
     /**
-     * check {@link DSSTPartialDerivativesEquations#erivatives(SpacecraftState)}.
+     * check {@link DSSTPartialDerivativesEquations#derivatives(SpacecraftState)}.
      *
      */
     @Test

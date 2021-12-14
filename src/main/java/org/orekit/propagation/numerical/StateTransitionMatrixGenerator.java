@@ -87,7 +87,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
      * @param name name of the parameter driver this observer is interested in (may be null)
      * @param observer observer to register
      */
-    public void addObserver(final String name, final PartialsObserver observer) {
+    void addObserver(final String name, final PartialsObserver observer) {
         partialsObservers.put(name, observer);
     }
 
@@ -120,10 +120,10 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
      * @param positionAngle position angle used states Y and Y₀ in {@code dYdY0}
      * @return state with initial STM (converted to Cartesian ∂C/∂Y₀) added
      */
-    public SpacecraftState setInitialStateTransitionMatrix(final SpacecraftState state,
-                                                           final RealMatrix dYdY0,
-                                                           final OrbitType orbitType,
-                                                           final PositionAngle positionAngle) {
+    SpacecraftState setInitialStateTransitionMatrix(final SpacecraftState state,
+                                                    final RealMatrix dYdY0,
+                                                    final OrbitType orbitType,
+                                                    final PositionAngle positionAngle) {
 
         if (dYdY0 != null) {
             if (dYdY0.getRowDimension() != STATE_DIMENSION ||
@@ -197,15 +197,12 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
      *  \sum \frac{da_z}{dp_x} & \sum\frac{da_z}{dp_y} & \sum\frac{da_z}{dp_z} & \sum\frac{da_z}{dv_x} & \sum\frac{da_z}{dv_y} & \sum\frac{da_z}{dv_z}
      * \end{matrix}\]
      * </p>
-     * <p>
-     * The factor matrix used corresponds to the last call to {@link #generate(SpacecraftState)}
-     * </p>
      * @param factor factor matrix
      * @param x right factor of the multiplication, as a flatten array in row major order
      * @param y placeholder where to put the result, as a flatten array in row major order
      * @param columns number of columns of both x and y (so their dimensions are 6 x columns)
      */
-    public static void multiplyMatrix(final double[] factor, final double[] x, final double[] y, final int columns) {
+    static void multiplyMatrix(final double[] factor, final double[] x, final double[] y, final int columns) {
 
         final int n = SPACE_DIMENSION * columns;
 
@@ -235,8 +232,8 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         final DoubleArrayDictionary accelerationPartials = new DoubleArrayDictionary();
 
         // evaluate contribution of all force models
-        final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(state, 6, attitudeProvider);
-        final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(state, 3, attitudeProvider);
+        final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(state, STATE_DIMENSION, attitudeProvider);
+        final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(state, SPACE_DIMENSION, attitudeProvider);
         for (final ForceModel forceModel : forceModels) {
 
             final NumericalGradientConverter     converter    = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
@@ -258,10 +255,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
             factor[13] += gradZ[1];
             factor[14] += gradZ[2];
 
-            int paramsIndex;
-            if (forceModel.dependsOnPositionOnly()) {
-                paramsIndex = 3;
-            } else {
+            if (!forceModel.dependsOnPositionOnly()) {
                 // lower right part of the factor matrix
                 factor[ 3] += gradX[3];
                 factor[ 4] += gradX[4];
@@ -272,10 +266,10 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
                 factor[15] += gradZ[3];
                 factor[16] += gradZ[4];
                 factor[17] += gradZ[5];
-                paramsIndex = 6;
             }
 
             // partials derivatives with respect to parameters
+            int paramsIndex = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
 
@@ -283,7 +277,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
                     DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(driver.getName());
                     if (entry == null) {
                         // create an entry filled with zeroes
-                        accelerationPartials.put(driver.getName(), new double[3]);
+                        accelerationPartials.put(driver.getName(), new double[SPACE_DIMENSION]);
                         entry = accelerationPartials.getEntry(driver.getName());
                     }
 
@@ -299,7 +293,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
             // notify observers
             for (Map.Entry<String, PartialsObserver> observersEntry : partialsObservers.entrySet()) {
                 final DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(observersEntry.getKey());
-                observersEntry.getValue().partialsComputed(state, factor, entry == null ? new double[3] : entry.getValue());
+                observersEntry.getValue().partialsComputed(state, factor, entry == null ? new double[SPACE_DIMENSION] : entry.getValue());
             }
 
         }
@@ -323,8 +317,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
          *  \sum \frac{da_z}{dp_x} & \sum\frac{da_z}{dp_y} & \sum\frac{da_z}{dp_z} & \sum\frac{da_z}{dv_x} & \sum\frac{da_z}{dv_y} & \sum\frac{da_z}{dv_z}
          * \end{matrix}\]
          * </p>
-         * The factor matrix used corresponds to the last call to {@link #generate(SpacecraftState)}
-         * @param state current spacecrzft state
+         * @param state current spacecraft state
          * @param factor factor matrix, flattened along rows
          * @param accelerationPartials partials derivatives of acceleration with respect to the parameter driver
          * that was registered (zero if no parameters were not selected or parameter is unknown)

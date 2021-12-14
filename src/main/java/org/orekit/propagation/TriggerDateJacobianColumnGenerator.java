@@ -73,7 +73,6 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
  * @since 11.1
  */
 public class TriggerDateJacobianColumnGenerator
-    extends BaseJacobianColumnGenerator
     implements AdditionalStateProvider, ManeuverTriggersResetter {
 
     /** Dimension of the state. */
@@ -87,6 +86,9 @@ public class TriggerDateJacobianColumnGenerator
 
     /** Name of the state for State Transition Matrix. */
     private final String stmName;
+
+    /** Name of the parameter corresponding to the column. */
+    private final String columnName;
 
     /** Start/stop management flag. */
     private boolean manageStart;
@@ -116,12 +118,18 @@ public class TriggerDateJacobianColumnGenerator
     public TriggerDateJacobianColumnGenerator(final String stmName, final String columnName,
                                               final boolean manageStart, final Maneuver maneuver,
                                               final double threshold) {
-        super(columnName);
         this.stmName     = stmName;
+        this.columnName  = columnName;
         this.manageStart = manageStart;
         this.maneuver    = maneuver;
         this.sign        = manageStart ? -1 : +1;
         this.threshold   = threshold;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return columnName;
     }
 
     /** {@inheritDoc}

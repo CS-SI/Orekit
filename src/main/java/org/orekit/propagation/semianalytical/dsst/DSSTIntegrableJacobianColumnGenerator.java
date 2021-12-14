@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.semianalytical.dsst;
 
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 
@@ -29,8 +30,8 @@ import org.orekit.propagation.integration.AdditionalDerivativesProvider;
  * @author Luc Maisonobe
  * @since 11.1
  */
-class IntegrableJacobianColumnGenerator
-    implements AdditionalDerivativesProvider, StateTransitionMatrixGenerator.PartialsObserver {
+class DSSTIntegrableJacobianColumnGenerator
+    implements AdditionalDerivativesProvider, DSSTStateTransitionMatrixGenerator.DSSTPartialsObserver {
 
     /** Name of the state for State Transition Matrix. */
     private final String stmName;
@@ -50,7 +51,7 @@ class IntegrableJacobianColumnGenerator
      * @param stmGenerator generator for State Transition Matrix
      * @param columnName name of the parameter corresponding to the column
      */
-    IntegrableJacobianColumnGenerator(final StateTransitionMatrixGenerator stmGenerator, final String columnName) {
+    DSSTIntegrableJacobianColumnGenerator(final DSSTStateTransitionMatrixGenerator stmGenerator, final String columnName) {
         this.stmName    = stmGenerator.getName();
         this.columnName = columnName;
         this.pDot       = new double[getDimension()];
@@ -83,15 +84,16 @@ class IntegrableJacobianColumnGenerator
 
     /** {@inheritDoc} */
     @Override
-    public void partialsComputed(final SpacecraftState state, final double[] factor, final double[] accelerationPartials) {
+    public void partialsComputed(final SpacecraftState state, final RealMatrix factor, final double[] meanElementsPartials) {
         // retrieve current Jacobian column
         final double[] p = state.getAdditionalState(getName());
 
         // compute time derivative of the Jacobian column
-        StateTransitionMatrixGenerator.multiplyMatrix(factor, p, pDot, 1);
-        pDot[3] += accelerationPartials[0];
-        pDot[4] += accelerationPartials[1];
-        pDot[5] += accelerationPartials[2];
+        System.arraycopy(factor.operate(p), 0, pDot, 0, pDot.length);
+        for (int i = 0; i < pDot.length; ++i) {
+            pDot[i] += meanElementsPartials[i];
+        }
+
     }
 
     /** {@inheritDoc} */

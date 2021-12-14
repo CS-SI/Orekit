@@ -70,8 +70,8 @@
       <action dev="luc" type="add" issue="856">
         Added a new and simpler API for State Transition Matrix and Jacobian
         matrix computation. This new API is for now only used with NumericalPropagator
-        (both in batch least squares and in Kalman filter), but it is expected to be
-        generalized to semi-analytical and analytical propagators as well when it is
+        and DSSTPropagator (both in batch least squares and in Kalman filter), but it
+        is expected to be generalized to analytical propagators as well when it is
         stabilized.
       </action>
       <action dev="luc" type="add" >

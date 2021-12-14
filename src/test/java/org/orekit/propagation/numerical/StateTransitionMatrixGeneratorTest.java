@@ -139,7 +139,7 @@ public class StateTransitionMatrixGeneratorTest {
                 final SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 propagator.setInitialState(initialState);
                 PickUpHandler pickUp = new PickUpHandler(propagator, null, null, null);
-                propagator.setStepHandler(pickUp);
+                propagator.getMultiplexer().add(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
 
                 // compute reference state Jacobian using finite differences

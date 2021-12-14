@@ -18,12 +18,9 @@ package org.orekit.propagation.numerical;
 
 import java.util.List;
 
-import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.MatricesHarvester;
+import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.DoubleArrayDictionary;
 
@@ -32,31 +29,18 @@ import org.orekit.utils.DoubleArrayDictionary;
  * @author Luc Maisonobe
  * @since 11.1
  */
-class NumericalPropagationHarvester implements MatricesHarvester {
-
-    /** State dimension, fixed to 6. */
-    public static final int STATE_DIMENSION = 6;
+class NumericalPropagationHarvester extends AbstractMatricesHarvester {
 
     /** Propagator bound to this harvester. */
     private final NumericalPropagator propagator;
-
-    /** Initial State Transition Matrix. */
-    private final RealMatrix initialStm;
-
-    /** Initial columns of the Jacobians matrix with respect to parameters. */
-    private final DoubleArrayDictionary initialJacobianColumns;
-
-    /** State Transition Matrix state name. */
-    private final String stmName;
 
     /** Columns names for parameters. */
     private List<String> columnsNames;
 
     /** Simple constructor.
      * <p>
-     * The arguments for initial matrices <em>must</em> be compatible with the {@link #setOrbitType(OrbitType) orbit type}
-     * and {@link #setPositionAngleType(PositionAngle) position angle} that will be ultimately
-     * selected when propagation starts
+     * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType orbit type}
+     * and {@link org.orekit.orbits.PositionAngle position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name
@@ -68,50 +52,14 @@ class NumericalPropagationHarvester implements MatricesHarvester {
      */
     NumericalPropagationHarvester(final NumericalPropagator propagator, final String stmName,
                                   final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
-        this.propagator             = propagator;
-        this.stmName                = stmName;
-        this.initialStm             = initialStm == null ? MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION) : initialStm;
-        this.initialJacobianColumns = initialJacobianColumns == null ? new DoubleArrayDictionary() : initialJacobianColumns;
-        this.columnsNames           = null;
+        super(stmName, initialStm, initialJacobianColumns);
+        this.propagator   = propagator;
+        this.columnsNames = null;
     }
 
-    /** Get the State Transition Matrix state name.
-     * @return State Transition Matrix state name
-     */
-    String getStmName() {
-        return stmName;
-    }
-
-    /** Get the initial State Transition Matrix.
-     * @return initial State Transition Matrix
-     */
-    RealMatrix getInitialStateTransitionMatrix() {
-        return initialStm;
-    }
-
-    /** Get the initial column of Jacobian matrix with respect to named parameter.
-     * @param columnName name of the column
-     * @return initial column of the Jacobian matrix
-     */
-    double[] getInitialJacobianColumn(final String columnName) {
-        final DoubleArrayDictionary.Entry entry = initialJacobianColumns.getEntry(columnName);
-        return entry == null ? new double[STATE_DIMENSION] : entry.getValue();
-    }
-
-    /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
-     * <p>
-     * For DSST and TLE propagators, state parameters and parameters used for derivatives are the same,
-     * so the Jocabian is simply the identity.
-     * </p>
-     * <p>
-     * For Numerical propagator, parameters used for derivatives are cartesian
-     * and they can be different from state parameters because the numerical propagator can accept different type
-     * of orbits.
-     * </p>
-     * @param state spacecraft state
-     * @return conversion Jacobian
-     */
-    private double[][] getConversionJacobian(final SpacecraftState state) {
+    /** {@inheritDoc} */
+    @Override
+    protected double[][] getConversionJacobian(final SpacecraftState state) {
 
         final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
 
@@ -134,78 +82,7 @@ class NumericalPropagationHarvester implements MatricesHarvester {
 
     /** {@inheritDoc} */
     @Override
-    public void setReferenceState(final SpacecraftState reference) {
-        // nothing to do
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
-
-        if (!state.hasAdditionalState(stmName)) {
-            return null;
-        }
-
-        // get the conversion Jacobian
-        final double[][] dYdC = getConversionJacobian(state);
-
-        // extract the additional state
-        final double[] p = state.getAdditionalState(stmName);
-
-        // compute dYdY0 = dYdC * dCdY0
-        final RealMatrix  dYdY0 = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
-        for (int i = 0; i < STATE_DIMENSION; i++) {
-            final double[] rowC = dYdC[i];
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                double sum = 0;
-                int pIndex = j;
-                for (int k = 0; k < STATE_DIMENSION; ++k) {
-                    sum += rowC[k] * p[pIndex];
-                    pIndex += STATE_DIMENSION;
-                }
-                dYdY0.setEntry(i, j, sum);
-            }
-        }
-
-        return dYdY0;
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public RealMatrix getParametersJacobian(final SpacecraftState state) {
-
-        if (columnsNames == null || columnsNames.isEmpty()) {
-            return null;
-        }
-
-        // get the conversion Jacobian
-        final double[][] dYdC = getConversionJacobian(state);
-
-        // compute dYdP = dYdC * dCdP
-        final RealMatrix dYdP = MatrixUtils.createRealMatrix(STATE_DIMENSION, columnsNames.size());
-        for (int j = 0; j < columnsNames.size(); j++) {
-            final double[] p = state.getAdditionalState(columnsNames.get(j));
-            for (int i = 0; i < STATE_DIMENSION; ++i) {
-                final double[] dYdCi = dYdC[i];
-                double sum = 0;
-                for (int k = 0; k < STATE_DIMENSION; ++k) {
-                    sum += dYdCi[k] * p[k];
-                }
-                dYdP.setEntry(i, j, sum);
-            }
-        }
-
-        return dYdP;
-
-    }
-
-    /** Freeze the names of the Jacobian columns.
-     * <p>
-     * This method is called when proagation starts, i.e. when configuration is completed
-     * </p>
-     */
-    void freezeColumnsNames() {
+    public void freezeColumnsNames() {
         columnsNames = getJacobiansColumnsNames();
     }
 
