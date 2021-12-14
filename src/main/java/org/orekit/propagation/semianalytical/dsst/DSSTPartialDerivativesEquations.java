@@ -52,7 +52,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  * @deprecated as of 11.1, replaced by {@link
- * org.orekit.propagation.PropagatorPropagator#setupMatricesComputation(String,
+ * org.orekit.propagation.Propagator#setupMatricesComputation(String,
  * org.hipparchus.linear.RealMatrix, org.orekit.utils.DoubleArrayDictionary)}
  */
 @Deprecated
