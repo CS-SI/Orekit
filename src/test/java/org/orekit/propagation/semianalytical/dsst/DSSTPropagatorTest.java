@@ -261,6 +261,10 @@ public class DSSTPropagatorTest {
         SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
+        Assert.assertEquals(2, dsstProp.getSatelliteRevolution());
+        dsstProp.setSatelliteRevolution(17);
+        Assert.assertEquals(17, dsstProp.getSatelliteRevolution());
+
         // Propagation of the initial state at t + dt
         final double dt = 3200.;
         final SpacecraftState finalState = dsstProp.propagate(state.getDate().shiftedBy(dt));
@@ -820,7 +824,10 @@ public class DSSTPropagatorTest {
         final SpacecraftState stateNoConfig = propagator.propagate(finalDate);
         Assert.assertEquals(0, stateNoConfig.getAdditionalStatesValues().size());
 
+        Assert.assertNull(propagator.getSelectedCoefficients());
         propagator.setSelectedCoefficients(new HashSet<String>());
+        Assert.assertNotNull(propagator.getSelectedCoefficients());
+        Assert.assertTrue(propagator.getSelectedCoefficients().isEmpty());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigEmpty = propagator.propagate(finalDate);
         Assert.assertEquals(234, stateConfigEmpty.getAdditionalStatesValues().size());
@@ -829,6 +836,7 @@ public class DSSTPropagatorTest {
         selected.add("DSST-3rd-body-Moon-s[7]");
         selected.add("DSST-central-body-tesseral-c[-2][3]");
         propagator.setSelectedCoefficients(selected);
+        Assert.assertEquals(2, propagator.getSelectedCoefficients().size());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigeSelected = propagator.propagate(finalDate);
         Assert.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStatesValues().size());

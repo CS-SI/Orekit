@@ -970,25 +970,20 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             //  case we want to remain in mean parameters only)
             final double[] elements = y.clone();
             final DoubleArrayDictionary coefficients;
-            switch (type) {
-                case MEAN:
-                    coefficients = null;
-                    break;
-                case OSCULATING:
-                    final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
-                    coefficients = selectedCoefficients == null ? null : new DoubleArrayDictionary();
-                    for (final ShortPeriodTerms spt : shortPeriodTerms) {
-                        final double[] shortPeriodic = spt.value(meanOrbit);
-                        for (int i = 0; i < shortPeriodic.length; i++) {
-                            elements[i] += shortPeriodic[i];
-                        }
-                        if (selectedCoefficients != null) {
-                            coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
-                        }
+            if (type == PropagationType.MEAN) {
+                coefficients = null;
+            } else {
+                final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
+                coefficients = selectedCoefficients == null ? null : new DoubleArrayDictionary();
+                for (final ShortPeriodTerms spt : shortPeriodTerms) {
+                    final double[] shortPeriodic = spt.value(meanOrbit);
+                    for (int i = 0; i < shortPeriodic.length; i++) {
+                        elements[i] += shortPeriodic[i];
                     }
-                    break;
-                default:
-                    throw new OrekitInternalError(null);
+                    if (selectedCoefficients != null) {
+                        coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
+                    }
+                }
             }
 
             final double mass = elements[6];

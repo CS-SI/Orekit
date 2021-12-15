@@ -544,7 +544,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             // check if we already have set up the provider
             for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
                 if (provider instanceof TriggerDateJacobianColumnGenerator &&
-                                provider.getName().equals(driver.getName())) {
+                    provider.getName().equals(driver.getName())) {
                     // the Jacobian column generator has already been set up in a previous propagation
                     triggerGenerator = (TriggerDateJacobianColumnGenerator) provider;
                     break;

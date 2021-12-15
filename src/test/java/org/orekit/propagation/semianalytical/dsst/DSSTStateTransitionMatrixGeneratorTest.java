@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -32,6 +33,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -39,8 +41,10 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
@@ -60,6 +64,77 @@ public class DSSTStateTransitionMatrixGeneratorTest {
     }
 
     @Test
+    public void testInterrupt() {
+
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        double dt = 900;
+        double dP = 0.001;
+
+        // first propagation, covering full time range
+        DSSTPropagator propagator1 = setUpPropagator(PropagationType.MEAN, dP, provider);
+        AbsoluteDate t0 = propagator1.getInitialState().getDate();
+        propagator1.
+        getAllForceModels().
+        forEach(fm -> fm.
+                getParametersDrivers().
+                stream().
+                filter(d -> d.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)).
+                forEach(d -> d.setSelected(true)));
+        final MatricesHarvester   harvester1   = propagator1.setupMatricesComputation("stm", null, null);
+        final SpacecraftState     state1       = propagator1.propagate(t0.shiftedBy(dt));
+        final RealMatrix          stm1         = harvester1.getStateTransitionMatrix(state1);
+        final RealMatrix          jacobian1    = harvester1.getParametersJacobian(state1);
+
+        // second propagation, interrupted at mid time
+        DSSTPropagator propagator2 = setUpPropagator(PropagationType.MEAN, dP, provider);
+
+        // some additional providers for test coverage
+        final DSSTStateTransitionMatrixGenerator dummyStmGenerator =
+                        new DSSTStateTransitionMatrixGenerator("dummy-1",
+                                                               propagator2.getPropagationType(),
+                                                               Collections.emptyList(),
+                                                               propagator2.getAttitudeProvider());
+        propagator2.addAdditionalDerivativesProvider(dummyStmGenerator);
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState(dummyStmGenerator.getName(), new double[36]),
+                                    propagator2.getPropagationType());
+        propagator2.addAdditionalDerivativesProvider(new DSSTIntegrableJacobianColumnGenerator(dummyStmGenerator, "dummy-2"));
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-2", new double[6]),
+                                    propagator2.getPropagationType());
+        propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
+            public String getName() { return "dummy-3"; }
+            public int getDimension() { return 1; }
+            public double[] derivatives(SpacecraftState s) { return new double[1]; }
+        });
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]),
+                                    propagator2.getPropagationType());
+        propagator2.
+        getAllForceModels().
+        forEach(fm -> fm.
+                getParametersDrivers().
+                stream().
+                filter(d -> d.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)).
+                forEach(d -> d.setSelected(true)));
+        final MatricesHarvester   harvester2   = propagator2.setupMatricesComputation("stm", null, null);
+        final SpacecraftState     intermediate = propagator2.propagate(t0.shiftedBy(dt / 2));
+        final RealMatrix          stmI         = harvester2.getStateTransitionMatrix(intermediate);
+        final RealMatrix          jacobianI    = harvester2.getParametersJacobian(intermediate);
+
+        // intermediate state has really different matrices, they are still building up
+        Assert.assertEquals(0.158482, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-6);
+        Assert.assertEquals(0.499959, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-6);
+
+        // restarting propagation where we left it
+        final SpacecraftState     state2       = propagator2.propagate(t0.shiftedBy(dt));
+        final RealMatrix          stm2         = harvester2.getStateTransitionMatrix(state2);
+        final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
+
+        // after completing the two-stage propagation, we get the same matrices
+        Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 5.0e-12 * stm1.getNorm1());
+        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-10 * jacobian1.getNorm1());
+
+    }
+
+    @Test
     public void testPropagationTypesElliptical() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
         doTestPropagation(PropagationType.MEAN, 7.0e-16);
     }
@@ -73,47 +148,27 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         throws FileNotFoundException, UnsupportedEncodingException {
 
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
-        Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-
-        DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
-                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
-                                                         4, 4, 4, 8, 4, 4, 2);
-        
-        DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
-        DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            provider.getMu());
-        
-        DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
-
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   provider.getMu());
-        final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(initialOrbit);
 
         double dt = 900;
         double dP = 0.001;
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
 
         // compute state Jacobian using DSSTStateTransitionMatrixGenerator
-        DSSTPropagator propagator = setUpPropagator(type, orbit, dP, orbitType, srp, tesseral, zonal, moon);
+        DSSTPropagator propagator = setUpPropagator(type,  dP, provider);
         propagator.setMu(provider.getMu());
-        final SpacecraftState initialState = new SpacecraftState(orbit);
-        propagator.setInitialState(initialState, type);
+        final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(orbit, PositionAngle.MEAN, stateVector, null);
-        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
+        OrbitType.EQUINOCTIAL.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
+        final AbsoluteDate target = propagator.getInitialState().getDate().shiftedBy(dt);
         PickUpHandler pickUp = new PickUpHandler(propagator, null, null, null);
         propagator.getMultiplexer().add(pickUp);
         propagator.propagate(target);
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
-        DSSTPropagator propagator2 = setUpPropagator(type, orbit, dP, orbitType, srp, tesseral, zonal, moon);
+        DSSTPropagator propagator2 = setUpPropagator(type, dP, provider);
         propagator2.setMu(provider.getMu());
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
+        double[] steps = NumericalPropagator.tolerances(1000000 * dP, initialState.getOrbit(), orbitType)[0];
         for (int i = 0; i < 6; ++i) {
             propagator2.setInitialState(shiftState(initialState, orbitType, -4 * steps[i], i), type);
             SpacecraftState sM4h = propagator2.propagate(target);
@@ -192,29 +247,10 @@ public class DSSTStateTransitionMatrixGeneratorTest {
           return new SpacecraftState(orbit, attitude);
       }
 
-    private DSSTPropagator setUpPropagator(PropagationType type, Orbit orbit, double dP,
-                                           OrbitType orbitType,
-                                           DSSTForceModel... models) {
+    private DSSTPropagator setUpPropagator(PropagationType type, double dP, UnnormalizedSphericalHarmonicsProvider provider) {
 
         final double minStep = 6000.0;
         final double maxStep = 86400.0;
-        
-        double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
-        DSSTPropagator propagator =
-            new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);
-        for (DSSTForceModel model : models) {
-            propagator.addForceModel(model);
-        }
-        return propagator;
-    }
-
-    /** Test to ensure correct Jacobian values.
-     * In MEAN case, Jacobian should be a 6x6 identity matrix.
-     * In OSCULATING cas, first and last lines are compared to reference values.
-     */
-    @Test
-    public void testIssue713() {
-        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         
         Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
@@ -235,14 +271,33 @@ public class DSSTStateTransitionMatrixGeneratorTest {
                                    provider.getMu());
         final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(initialOrbit);
 
+        // compute state Jacobian using DSSTStateTransitionMatrixGenerator
+        double[][] tol = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+        DSSTPropagator propagator =
+            new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);
+        propagator.addForceModel(srp);
+        propagator.addForceModel(tesseral);
+        propagator.addForceModel(zonal);
+        propagator.addForceModel(moon);
+
+        propagator.setInitialState(new SpacecraftState(orbit), type);
+        return propagator;
+    }
+
+    /** Test to ensure correct Jacobian values.
+     * In MEAN case, Jacobian should be a 6x6 identity matrix.
+     * In OSCULATING cas, first and last lines are compared to reference values.
+     */
+    @Test
+    public void testIssue713() {
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        
         double dP = 0.001;
-        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
         
         // Test MEAN case
-        DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN, orbit, dP, orbitType, srp, tesseral, zonal, moon);
+        DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN,  dP, provider);
         propagatorMEAN.setMu(provider.getMu());
-        SpacecraftState initialStateMEAN = new SpacecraftState(orbit);
-        propagatorMEAN.setInitialState(initialStateMEAN);
+        SpacecraftState initialStateMEAN = propagatorMEAN.getInitialState();
         DSSTHarvester harvesterMEAN = (DSSTHarvester) propagatorMEAN.setupMatricesComputation("stm", null, null);
         harvesterMEAN.setReferenceState(initialStateMEAN);
         SpacecraftState finalMEAN = propagatorMEAN.propagate(initialStateMEAN.getDate()); // dummy zero duration propagation, to ensure haverster initialization
@@ -254,10 +309,9 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         }
 
         // Test OSCULATING case
-        DSSTPropagator propagatorOSC = setUpPropagator(PropagationType.OSCULATING, orbit, dP, orbitType, srp, tesseral, zonal, moon);
+        DSSTPropagator propagatorOSC = setUpPropagator(PropagationType.OSCULATING,  dP, provider);
         propagatorOSC.setMu(provider.getMu());
-        final SpacecraftState initialStateOSC = new SpacecraftState(orbit);
-        propagatorOSC.setInitialState(initialStateOSC);
+        final SpacecraftState initialStateOSC = propagatorOSC.getInitialState();
         DSSTHarvester harvesterOCS = (DSSTHarvester) propagatorOSC.setupMatricesComputation("stm", null, null);
         harvesterOCS.setReferenceState(initialStateOSC);
         SpacecraftState finalOSC = propagatorOSC.propagate(initialStateOSC.getDate()); // dummy zero duration propagation, to ensure haverster initialization

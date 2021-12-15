@@ -18,6 +18,7 @@ package org.orekit.propagation.numerical;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
@@ -34,6 +35,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.maneuvers.Maneuver;
@@ -45,10 +47,13 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.TriggerDateJacobianColumnGenerator;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -70,7 +75,7 @@ public class TriggersDerivativesTest {
         // first propagation, covering the maneuver
         final NumericalPropagator propagator1  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, 20,
                                                                  firing, duration, true, 0);
-        setUpManeuverJcobianComputation(true, propagator1);
+        setUpManeuverJacobianComputation(true, propagator1);
         final MatricesHarvester   harvester1   = propagator1.setupMatricesComputation("stm", null, null);
         final SpacecraftState     state1       = propagator1.propagate(firing.shiftedBy(2 * duration));
         final RealMatrix          stm1         = harvester1.getStateTransitionMatrix(state1);
@@ -79,7 +84,28 @@ public class TriggersDerivativesTest {
         // second propagation, interrupted during maneuver
         final NumericalPropagator propagator2  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, 20,
                                                                  firing, duration, true, 0);
-        setUpManeuverJcobianComputation(true, propagator2);
+        setUpManeuverJacobianComputation(true, propagator2);
+
+         // some additional providers for test coverage
+        final StateTransitionMatrixGenerator dummyStmGenerator =
+                        new StateTransitionMatrixGenerator("dummy-1",
+                                                           Collections.emptyList(),
+                                                           propagator2.getAttitudeProvider());
+        propagator2.addAdditionalDerivativesProvider(dummyStmGenerator);
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState(dummyStmGenerator.getName(), new double[36]));
+        propagator2.addAdditionalDerivativesProvider(new IntegrableJacobianColumnGenerator(dummyStmGenerator, "dummy-2"));
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-2", new double[6]));
+        propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
+            public String getName() { return "dummy-3"; }
+            public int getDimension() { return 1; }
+            public double[] derivatives(SpacecraftState s) { return new double[1]; }
+        });
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
+        propagator2.addAdditionalStateProvider(new TriggerDateJacobianColumnGenerator(dummyStmGenerator.getName(), "dummy-4", true, null, 1.0e-6));
+        propagator2.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() { return "dummy-5"; }
+            public double[] getAdditionalState(SpacecraftState s) { return new double[1]; }
+        });
         final MatricesHarvester   harvester2   = propagator2.setupMatricesComputation("stm", null, null);
         final SpacecraftState     intermediate = propagator2.propagate(firing.shiftedBy(0.5 * duration));
         final RealMatrix          stmI         = harvester2.getStateTransitionMatrix(intermediate);
@@ -145,7 +171,7 @@ public class TriggersDerivativesTest {
         // the central propagator (k = 4) will compute derivatives autonomously using State and TriggersDerivatives
         final NumericalPropagator autonomous = (NumericalPropagator) propagators.get(4);
         final MatricesHarvester   harvester  = autonomous.setupMatricesComputation("stm", null, null);
-        setUpManeuverJcobianComputation(start, autonomous);
+        setUpManeuverJacobianComputation(start, autonomous);
 
         DerivativesSampler sampler = new DerivativesSampler(harvester, orbitType, positionAngle,
                                                             firing, duration, h, samplingtep);
@@ -168,13 +194,14 @@ public class TriggersDerivativesTest {
 
     }
 
-    private void setUpManeuverJcobianComputation(final boolean start, final NumericalPropagator propagator) {
+    private void setUpManeuverJacobianComputation(final boolean start, final NumericalPropagator propagator) {
         propagator.
             getAllForceModels().
             forEach(fm -> fm.
                               getParametersDrivers().
                               stream().
-                              filter(d -> d.getName().equals(start ? "MAN_0_START" : "MAN_0_STOP")).
+                              filter(d -> d.getName().equals(start ? "MAN_0_START" : "MAN_0_STOP") ||
+                                          d.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)).
                               forEach(d -> d.setSelected(true)));
     }
 
