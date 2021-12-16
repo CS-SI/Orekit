@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -29,11 +32,13 @@ import org.orekit.utils.ParameterObserver;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
  * <p>
- * {@link #getStartDriver() start}/{@link #getStopDriver() stop} drivers and
- * {@link #getMedianDriver() median}/{@link #getDurationDriver() duration} drivers
- * work in pair. Both drivers in one par can be selected and their changes will
+ * Two dual views can be used for date intervals: either start date/stop date or
+ * median date/duration. {@link #getStartDriver() start}/{@link #getStopDriver() stop}
+ * drivers and {@link #getMedianDriver() median}/{@link #getDurationDriver() duration}
+ * drivers work in pair. Both drivers in one pair can be selected and their changes will
  * be propagated to the other pair, but attempting to select drivers in both
- * pairs at the same time will trigger an exception.
+ * pairs at the same time will trigger an exception. Changing the value of a driver
+ * that is not selected should be avoided as it leads to inconsistencies between the pairs.
  * </p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
@@ -64,6 +69,18 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
 
     /** Duration driver. */
     private ParameterDriver duration;
+
+    /** Build a new instance.
+     * @param prefix prefix to use for parameter drivers names
+     * @param refMedian reference interval median date
+     * @param refDuration reference duration
+     */
+    public ParameterDrivenDateIntervalDetector(final String prefix,
+                                               final AbsoluteDate refMedian, final double refDuration) {
+        this(prefix,
+             refMedian.shiftedBy(-0.5 * refDuration),
+             refMedian.shiftedBy(+0.5 * refDuration));
+    }
 
     /** Build a new instance.
      * @param prefix prefix to use for parameter drivers names
@@ -106,10 +123,28 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
         this.duration = duration;
 
         // set up delegation between drivers
-        start.addObserver(new StartObserver());
-        stop.addObserver(new StopObserver());
-        median.addObserver(new MedianObserver());
-        duration.addObserver(new DurationObserver());
+        replaceBindingObserver(start,    new StartObserver());
+        replaceBindingObserver(stop,     new StopObserver());
+        replaceBindingObserver(median,   new MedianObserver());
+        replaceBindingObserver(duration, new DurationObserver());
+
+    }
+
+    /** Replace binding observers.
+     * @param driver driver for whose binding observers should be replaced
+     * @param bindingObserver new binding observer
+     */
+    private void replaceBindingObserver(final ParameterDriver driver, final BindingObserver bindingObserver) {
+
+        // remove the previous binding observers
+        final List<ParameterObserver> original = driver.
+                                                 getObservers().
+                                                 stream().
+                                                 filter(observer -> observer instanceof BindingObserver).
+                                                 collect(Collectors.toList());
+        original.forEach(observer -> driver.removeObserver(observer));
+
+        driver.addObserver(bindingObserver);
 
     }
 
@@ -187,7 +222,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     }
 
     /** Base observer. */
-    private abstract class Observer implements ParameterObserver {
+    private abstract class BindingObserver implements ParameterObserver {
 
         /** {@inheritDoc} */
         @Override
@@ -216,7 +251,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     }
 
     /** Observer for start date. */
-    private class StartObserver extends Observer {
+    private class StartObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
         protected void setDelta(final double delta) {
@@ -226,7 +261,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     }
 
     /** Observer for stop date. */
-    private class StopObserver extends Observer {
+    private class StopObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
         protected void setDelta(final double delta) {
@@ -236,7 +271,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     }
 
     /** Observer for median date. */
-    private class MedianObserver extends Observer {
+    private class MedianObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
         protected void setDelta(final double delta) {
@@ -246,7 +281,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     }
 
     /** Observer for duration. */
-    private class DurationObserver extends Observer {
+    private class DurationObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
         protected void setDelta(final double delta) {
