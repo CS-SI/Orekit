@@ -17,13 +17,24 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DateDriver;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
+ * <p>
+ * {@link #getStartDriver() start}/{@link #getStopDriver() stop} drivers and
+ * {@link #getMedianDriver() median}/{@link #getDurationDriver() duration} drivers
+ * work in pair. Both drivers in one par can be selected and their changes will
+ * be propagated to the other pair, but attempting to select drivers in both
+ * pairs at the same time will trigger an exception.
+ * </p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @since 11.1
@@ -36,11 +47,23 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     /** Default suffix for stop driver. */
     public static final String STOP_SUFFIX = "_STOP";
 
+    /** Default suffix for median driver. */
+    public static final String MEDIAN_SUFFIX = "_MEDIAN";
+
+    /** Default suffix for duration driver. */
+    public static final String DURATION_SUFFIX = "_DURATION";
+
     /** Reference interval start driver. */
     private DateDriver start;
 
     /** Reference interval stop driver. */
     private DateDriver stop;
+
+    /** Median date driver. */
+    private DateDriver median;
+
+    /** Duration driver. */
+    private ParameterDriver duration;
 
     /** Build a new instance.
      * @param prefix prefix to use for parameter drivers names
@@ -52,7 +75,9 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
         this(0.5 * refStop.durationFrom(refStart), 1.0e-10, DEFAULT_MAX_ITER,
              new StopOnDecreasing<ParameterDrivenDateIntervalDetector>(),
              new DateDriver(refStart, prefix + START_SUFFIX, true),
-             new DateDriver(refStop, prefix + STOP_SUFFIX, false));
+             new DateDriver(refStop, prefix + STOP_SUFFIX, false),
+             new DateDriver(refStart.shiftedBy(0.5 * refStop.durationFrom(refStart)), prefix + MEDIAN_SUFFIX, true),
+             new ParameterDriver(prefix + DURATION_SUFFIX, refStop.durationFrom(refStart), 1.0, 0.0, Double.POSITIVE_INFINITY));
     }
 
     /** Private constructor with full parameters.
@@ -67,13 +92,25 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      * @param handler event handler to call at event occurrences
      * @param start reference interval start driver
      * @param stop reference interval stop driver
+     * @param median median date driver
+     * @param duration duration driver
      */
     private ParameterDrivenDateIntervalDetector(final double maxCheck, final double threshold, final int maxIter,
                                                 final EventHandler<? super ParameterDrivenDateIntervalDetector> handler,
-                                                final DateDriver start, final DateDriver stop) {
+                                                final DateDriver start, final DateDriver stop,
+                                                final DateDriver median, final ParameterDriver duration) {
         super(maxCheck, threshold, maxIter, handler);
-        this.start = start;
-        this.stop  = stop;
+        this.start    = start;
+        this.stop     = stop;
+        this.median   = median;
+        this.duration = duration;
+
+        // set up delegation between drivers
+        start.addObserver(new StartObserver());
+        stop.addObserver(new StopObserver());
+        median.addObserver(new MedianObserver());
+        duration.addObserver(new DurationObserver());
+
     }
 
     /** {@inheritDoc} */
@@ -81,10 +118,15 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     protected ParameterDrivenDateIntervalDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
                                                          final EventHandler<? super ParameterDrivenDateIntervalDetector> newHandler) {
         return new ParameterDrivenDateIntervalDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                                       start, stop);
+                                                       start, stop, median, duration);
     }
 
     /** Get the driver for start date.
+     * <p>
+     * Note that the start date is automatically adjusted if either
+     * {@link #getMedianDriver() median date} or {@link #getDurationDriver() duration}
+     * are {@link ParameterDriver#isSelected() selected} and changed.
+     * </p>
      * @return driver for start date
      */
     public DateDriver getStartDriver() {
@@ -92,10 +134,39 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     }
 
     /** Get the driver for stop date.
+     * <p>
+     * Note that the stop date is automatically adjusted if either
+     * {@link #getMedianDriver() median date} or {@link #getDurationDriver() duration}
+     * are {@link ParameterDriver#isSelected() selected} changed.
+     * </p>
      * @return driver for stop date
      */
     public DateDriver getStopDriver() {
         return stop;
+    }
+
+    /** Get the driver for median date.
+     * <p>
+     * Note that the median date is automatically adjusted if either
+     * {@link #getStartDriver()} start date or {@link #getStopDriver() stop date}
+     * are {@link ParameterDriver#isSelected() selected} changed.
+     * </p>
+     * @return driver for median date
+     */
+    public DateDriver getMedianDriver() {
+        return median;
+    }
+
+    /** Get the driver for duration.
+     * <p>
+     * Note that the duration is automatically adjusted if either
+     * {@link #getStartDriver()} start date or {@link #getStopDriver() stop date}
+     * are {@link ParameterDriver#isSelected() selected} changed.
+     * </p>
+     * @return driver for duration
+     */
+    public ParameterDriver getDurationDriver() {
+        return duration;
     }
 
     /** Compute the value of the switching function.
@@ -113,6 +184,75 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     public double g(final SpacecraftState s) {
         return FastMath.min(s.getDate().durationFrom(start.getDate()),
                             stop.getDate().durationFrom(s.getDate()));
+    }
+
+    /** Base observer. */
+    private abstract class Observer implements ParameterObserver {
+
+        /** {@inheritDoc} */
+        @Override
+        public void valueChanged(final double previousValue, final ParameterDriver driver) {
+            if (driver.isSelected()) {
+                setDelta(driver.getValue() - previousValue);
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
+            if ((start.isSelected()  || stop.isSelected()) &&
+                (median.isSelected() || duration.isSelected())) {
+                throw new OrekitException(OrekitMessages.INCONSISTENT_SELECTION,
+                                          start.getName(), stop.getName(),
+                                          median.getName(), duration.getName());
+            }
+        }
+
+        /** Change a value.
+         * @param delta change of value
+         */
+        protected abstract void setDelta(double delta);
+
+    }
+
+    /** Observer for start date. */
+    private class StartObserver extends Observer {
+        /** {@inheritDoc} */
+        @Override
+        protected void setDelta(final double delta) {
+            median.setValue(median.getValue() + 0.5 * delta);
+            duration.setValue(duration.getValue() - delta);
+        }
+    }
+
+    /** Observer for stop date. */
+    private class StopObserver extends Observer {
+        /** {@inheritDoc} */
+        @Override
+        protected void setDelta(final double delta) {
+            median.setValue(median.getValue() + 0.5 * delta);
+            duration.setValue(duration.getValue() + delta);
+        }
+    }
+
+    /** Observer for median date. */
+    private class MedianObserver extends Observer {
+        /** {@inheritDoc} */
+        @Override
+        protected void setDelta(final double delta) {
+            start.setValue(start.getValue() + delta);
+            stop.setValue(stop.getValue() + delta);
+        }
+    }
+
+    /** Observer for duration. */
+    private class DurationObserver extends Observer {
+        /** {@inheritDoc} */
+        @Override
+        protected void setDelta(final double delta) {
+            start.setValue(start.getValue() - 0.5 * delta);
+            stop.setValue(stop.getValue() + 0.5 * delta);
+        }
     }
 
 }

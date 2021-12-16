@@ -71,6 +71,8 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
  * </p>
  * @author Luc Maisonobe
  * @since 11.1
+ * @see MedianDateJacobianColumnGenerator
+ * @see DurationJacobianColumnGenerator
  */
 public class TriggerDateJacobianColumnGenerator
     implements AdditionalStateProvider, ManeuverTriggersResetter {
