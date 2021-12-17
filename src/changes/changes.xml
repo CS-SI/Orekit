@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="871">
+        Added atmospheric drag effect for Brouwer-Lyddane model.
+      </action>
       <action dev="bryan" type="add" issue="869">
         Allowed Brouwer-Lyddane model to work for the critical inclination.
       </action>

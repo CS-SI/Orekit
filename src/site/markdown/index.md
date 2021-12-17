@@ -78,6 +78,7 @@
         * Kepler
         * Eckstein-Heschler
         * Brouwer-Lyddane with Warren Phipps' correction for the critical inclination of 63.4°
+          and the perturbative acceleration due to atmospheric drag
         * SDP4/SGP4 with 2006 corrections
         * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
     * numerical propagators
