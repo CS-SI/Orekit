@@ -16,7 +16,8 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -36,10 +37,10 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
-
-
 
 /**
  * This class propagates a {@link org.orekit.propagation.SpacecraftState}
@@ -49,7 +50,24 @@ import org.orekit.utils.TimeSpanMap;
  * suited for elliptical orbits, there is no problem having a rather small eccentricity or inclination
  * (Lyddane helped to solve this issue with the Brouwer model). Singularity for the critical
  * inclination i = 63.4° is avoided using the method developed in Warren Phipps' 1992 thesis.
- * </p>
+ * <p>
+ * By default, Brouwer-Lyddane model considers only the perturbations due to zonal harmonics.
+ * However, for low Earth orbits, the magnitude of the perturbative acceleration due to
+ * atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
+ * drag by time derivatives of the <i>mean</i> mean anomaly using the catch-all coefficient
+ * {@link #M2Driver}.
+ *
+ * Usually, M2 is adjusted during an orbit determination process and it represents the
+ * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
+ * The behavior of M2 is closed to the {@link TLE#getBStar()} parameter for the TLE.
+ *
+ * If the value of M2 is equal to {@link #M2 0.0}, the along-track  secular effects are not
+ * considered in the dynamical model. Typical values for M2 are not known. It depends on the
+ * orbit type. However, the value of M2 must be very small (e.g. between 1.0e-14 and 1.0e-15).
+ *
+ * The along-track effects, represented by the secular rates of the mean semi-major axis
+ * and eccentricity, are computed following Eq. 2.38, 2.41, and 2.45 of Warren Phipps' thesis.
+ *
  * @see "Brouwer, Dirk. Solution of the problem of artificial satellite theory without drag.
  *       YALE UNIV NEW HAVEN CT NEW HAVEN United States, 1959."
  *
@@ -64,6 +82,20 @@ import org.orekit.utils.TimeSpanMap;
  * @since 11.1
  */
 public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
+
+    /** Parameter name for M2 coefficient. */
+    public static final String M2_NAME = "M2";
+
+    /** Default value for M2 coefficient. */
+    public static final double M2 = 0.0;
+
+    /** Parameters scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double SCALE = FastMath.scalb(1.0, -20);
 
     /** Beta constant used by T2 function. */
     private static final double BETA = FastMath.scalb(100, -11);
@@ -83,6 +115,9 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     /** Un-normalized zonal coefficients. */
     private double[] ck0;
 
+    /** Empirical coefficient used in the drag modeling. */
+    private final ParameterDriver M2Driver;
+
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
@@ -90,15 +125,16 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      *
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider,
-     * UnnormalizedSphericalHarmonicsProvider)
-     * @see #BrouwerLyddanePropagator(Orbit, UnnormalizedSphericalHarmonicsProvider,
-     *                                 PropagationType)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
+     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, UnnormalizedSphericalHarmonicsProvider, double)
+     * @see #BrouwerLyddanePropagator(Orbit, UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
-                                    final UnnormalizedSphericalHarmonicsProvider provider) {
+                                    final UnnormalizedSphericalHarmonicsProvider provider,
+                                    final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
+             DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), M2);
     }
 
     /**
@@ -109,21 +145,25 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double,
      *                                 UnnormalizedSphericalHarmonicsProvider,
      *                                 UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics,
-     *                                 PropagationType)
+     *                                 PropagationType, double)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final AttitudeProvider attitude,
                                     final double mass,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final UnnormalizedSphericalHarmonics harmonics) {
+                                    final UnnormalizedSphericalHarmonics harmonics,
+                                    final double M2) {
         this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
-             harmonics.getUnnormalizedCnm(5, 0));
+             harmonics.getUnnormalizedCnm(5, 0),
+             M2);
     }
 
     /** Build a propagator from orbit and potential.
@@ -147,16 +187,18 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      * @see org.orekit.utils.Constants
      * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, double, double,
-     * double, double, double, double)
+     * double, double, double, double, double)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final double referenceRadius, final double mu,
                                     final double c20, final double c30, final double c40,
-                                    final double c50) {
+                                    final double c50, final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50);
+                DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
@@ -167,13 +209,15 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double,
-     * UnnormalizedSphericalHarmonicsProvider)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
+     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, UnnormalizedSphericalHarmonicsProvider, double)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit, final double mass,
-                                    final UnnormalizedSphericalHarmonicsProvider provider) {
+                                    final UnnormalizedSphericalHarmonicsProvider provider,
+                                    final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                mass, provider, provider.onDate(initialOrbit.getDate()));
+             mass, provider, provider.onDate(initialOrbit.getDate()), M2);
     }
 
     /** Build a propagator from orbit, mass and potential.
@@ -198,15 +242,17 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, double, double,
-     * double, double, double, double)
+     * double, double, double, double, double)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit, final double mass,
                                     final double referenceRadius, final double mu,
                                     final double c20, final double c30, final double c40,
-                                    final double c50) {
+                                    final double c50, final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                mass, referenceRadius, mu, c20, c30, c40, c50);
+             mass, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
     /** Build a propagator from orbit, attitude provider and potential provider.
@@ -215,11 +261,14 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final AttitudeProvider attitudeProv,
-                                    final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, attitudeProv, DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
+                                    final UnnormalizedSphericalHarmonicsProvider provider,
+                                    final double M2) {
+        this(initialOrbit, attitudeProv, DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), M2);
     }
 
     /** Build a propagator from orbit, attitude provider and potential.
@@ -244,13 +293,15 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final AttitudeProvider attitudeProv,
                                     final double referenceRadius, final double mu,
                                     final double c20, final double c30, final double c40,
-                                    final double c50) {
-        this(initialOrbit, attitudeProv, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50);
+                                    final double c50, final double M2) {
+        this(initialOrbit, attitudeProv, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential provider.
@@ -259,14 +310,17 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double,
-     *                                 UnnormalizedSphericalHarmonicsProvider, PropagationType)
+     *                                UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final AttitudeProvider attitudeProv,
                                     final double mass,
-                                    final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate()));
+                                    final UnnormalizedSphericalHarmonicsProvider provider,
+                                    final double M2) {
+        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate()), M2);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -291,17 +345,19 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double, double, double,
-     *                                 double, double, double, double, PropagationType)
+     *                                 double, double, double, double, PropagationType, double)
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final AttitudeProvider attitudeProv,
                                     final double mass,
                                     final double referenceRadius, final double mu,
                                     final double c20, final double c30, final double c40,
-                                    final double c50) {
+                                    final double c50, final double M2) {
         this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50,
-             PropagationType.OSCULATING);
+             PropagationType.OSCULATING, M2);
     }
 
 
@@ -314,12 +370,14 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final PropagationType initialType) {
+                                    final PropagationType initialType, final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-             DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), initialType);
+             DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), initialType, M2);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential provider.
@@ -330,13 +388,15 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final AttitudeProvider attitudeProv,
                                     final double mass,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final PropagationType initialType) {
-        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate()), initialType);
+                                    final PropagationType initialType, final double M2) {
+        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate()), initialType, M2);
     }
 
     /**
@@ -349,20 +409,21 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final AttitudeProvider attitude,
                                     final double mass,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final UnnormalizedSphericalHarmonics harmonics,
-                                    final PropagationType initialType) {
+                                    final PropagationType initialType, final double M2) {
         this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
              harmonics.getUnnormalizedCnm(5, 0),
-             initialType);
+             initialType, M2);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -389,6 +450,8 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link #M2} drag is not computed
      */
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final AttitudeProvider attitudeProv,
@@ -396,7 +459,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                                     final double referenceRadius, final double mu,
                                     final double c20, final double c30, final double c40,
                                     final double c50,
-                                    final PropagationType initialType) {
+                                    final PropagationType initialType, final double M2) {
 
         super(attitudeProv);
 
@@ -405,14 +468,19 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
         this.mu  = mu;
         this.ck0 = new double[] {0.0, 0.0, c20, c30, c40, c50};
 
+        // initialize M2 driver
+        this.M2Driver = new ParameterDriver(M2_NAME, M2, SCALE,
+                                            Double.NEGATIVE_INFINITY,
+                                            Double.POSITIVE_INFINITY);
+
         // compute mean parameters if needed
-        // transform into circular adapted parameters used by the Brouwer-Lyddane model
         resetInitialState(new SpacecraftState(initialOrbit,
                                               attitudeProv.getAttitude(initialOrbit,
                                                                        initialOrbit.getDate(),
                                                                        initialOrbit.getFrame()),
                                               mass),
                                               initialType);
+
     }
 
     /** {@inheritDoc}
@@ -527,13 +595,27 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
         return new KeplerianOrbit(propOrb_parameters[0].getValue(), propOrb_parameters[1].getValue(),
                                   propOrb_parameters[2].getValue(), propOrb_parameters[3].getValue(),
                                   propOrb_parameters[4].getValue(), propOrb_parameters[5].getValue(),
-                                  PositionAngle.MEAN, current.mean.getFrame(), date, mu);   }
+                                  PositionAngle.MEAN, current.mean.getFrame(), date, mu);
+    }
+
+    /**
+     * Get the value of the M2 drag parameter.
+     * @return the value of the M2 drag parameter
+     */
+    public double getM2() {
+        return M2Driver.getValue();
+    }
+
+    /**
+     * Get the parameters driver for propagation model.
+     * @return drivers for propagation model
+     */
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(M2Driver);
+    }
 
     /** Local class for Brouwer-Lyddane model. */
-    private static class BLModel implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20211123L;
+    private class BLModel {
 
         /** Mean orbit. */
         private final KeplerianOrbit mean;
@@ -620,6 +702,10 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
         private final double edlsf;
         private final double edls2gf;
         private final double edls2g3f;
+
+        // Drag terms
+        private final double aRate;
+        private final double eRate;
 
         // CHECKSTYLE: resume JavadocVariable check
 
@@ -802,6 +888,11 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
             edls2gf = 3.0 * qedl * (1.0 - cosI2);
             edls2g3f = 1.0 / 3.0 * qedl;
 
+            // secular rates of the mean semi-major axis and eccentricity
+            // Eq. 2.41 and Eq. 2.45 of Phipps' 1992 thesis
+            aRate = -4.0 * app / (3.0 * xnotDot);
+            eRate = -4.0 * epp * n * n / (3.0 * xnotDot);
+
         }
 
         /**
@@ -941,6 +1032,9 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
          */
         public UnivariateDerivative2[] propagateParameters(final AbsoluteDate date) {
 
+            // Empirical drag coefficient M2
+            final double m2 = M2Driver.getValue();
+
             // Keplerian evolution
             final UnivariateDerivative2 dt = new UnivariateDerivative2(date.durationFrom(mean.getDate()), 1.0, 0.0);
             final UnivariateDerivative2 xnot = dt.multiply(xnotDot);
@@ -948,11 +1042,13 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
             //____________________________________
             // secular effects
 
-            // mean mean anomaly
-            final UnivariateDerivative2 lpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getMeanAnomaly() + lt * xnot.getValue(),
+            // mean mean anomaly (with drag Eq. 2.38 of Phipps' 1992 thesis)
+            final UnivariateDerivative2 dtM2  = dt.multiply(m2);
+            final UnivariateDerivative2 dt2M2 = dt.multiply(dtM2);
+            final UnivariateDerivative2 lpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getMeanAnomaly() + lt * xnot.getValue() + dt2M2.getValue(),
                                                                                                FastMath.PI),
-                                                                      lt * xnotDot,
-                                                                      0.0);
+                                                                      lt * xnotDot + 2.0 * dtM2.getValue(),
+                                                                      2.0 * m2);
             // mean argument of perigee
             final UnivariateDerivative2 gpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getPerigeeArgument() + gt * xnot.getValue(),
                                                                                                FastMath.PI),
@@ -963,6 +1059,15 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                                                                                                FastMath.PI),
                                                                       ht * xnotDot,
                                                                       0.0);
+
+            // ________________________________________________
+            // secular rates of the mean semi-major axis and eccentricity
+
+            // semi-major axis
+            final UnivariateDerivative2 appDrag = dt.multiply(aRate * m2);
+
+            // eccentricity
+            final UnivariateDerivative2 eppDrag = dt.multiply(eRate * m2);
 
             //____________________________________
             // Long periodical terms
@@ -1019,13 +1124,13 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
             final UnivariateDerivative2 eE3 = eE.multiply(eE).multiply(eE);
             final UnivariateDerivative2 sigma = eE.multiply(n * n).multiply(eE).add(eE);
 
-            // Semi-major axis
-            final UnivariateDerivative2 a = eE3.multiply(aCbis).add(mean.getA()).
+            // Semi-major axis (with drag Eq. 2.41 of Phipps' 1992 thesis)
+            final UnivariateDerivative2 a = eE3.multiply(aCbis).add(appDrag.add(mean.getA())).
                                             add(aC).
                                             add(eE3.multiply(c2g2f).multiply(ac2g2f));
 
-            // Eccentricity
-            final UnivariateDerivative2 e = d1e.add(mean.getE()).
+            // Eccentricity (with drag Eq. 2.45 of Phipps' 1992 thesis)
+            final UnivariateDerivative2 e = d1e.add(eppDrag.add(mean.getE())).
                                             add(eC).
                                             add(cf1.multiply(ecf)).
                                             add(cf2.multiply(e2cf)).
