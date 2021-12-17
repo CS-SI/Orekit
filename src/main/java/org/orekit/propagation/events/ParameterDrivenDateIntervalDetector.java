@@ -140,7 +140,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
         final List<ParameterObserver> original = driver.
                                                  getObservers().
                                                  stream().
-                                                 filter(observer -> observer instanceof BindingObserver).
+                                                 filter(observer -> observer instanceof ParameterDrivenDateIntervalDetector.BindingObserver).
                                                  collect(Collectors.toList());
         original.forEach(observer -> driver.removeObserver(observer));
 
