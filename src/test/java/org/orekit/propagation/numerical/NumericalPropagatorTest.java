@@ -145,7 +145,7 @@ public class NumericalPropagatorTest {
         // mutable holders
         SpacecraftState[] actualState = new SpacecraftState[1];
         AbsoluteDate[] actualDate = new AbsoluteDate[1];
-        ForceModel force = new ForceModelAdapter(){
+        ForceModel force = new ForceModelAdapter() {
             @Override
             public void init(SpacecraftState initialState, AbsoluteDate target) {
                 actualState[0] = initialState;
