@@ -147,7 +147,7 @@ public class NtripClientTest {
 
     @Test
     public void testLocalSourceTable() {
-        DummyServer server = prepareServer("/gnss/ntrip//sourcetable-products.igs-ip.net.txt");
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt");
         server.run();
         NtripClient client = new NtripClient("localhost", server.getServerPort());
         client.setTimeout(500);

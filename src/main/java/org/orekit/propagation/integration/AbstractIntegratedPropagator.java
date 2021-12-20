@@ -439,7 +439,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection
-                integrateDynamics(tStart);
+                try (IntegratorResetter startResetter = new IntegratorResetter(integrator)) {
+                    integrateDynamics(tStart);
+                }
             }
 
             // set up events added by user
@@ -1167,7 +1169,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * This class is intended to be used in a try-with-resource statement.
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
-     * when leaving the block, so the integrator only keep its own handlers
+     * when leaving the block, so the integrator only keeps its own handlers
      * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate).
      * </p>
      * @since 11.0

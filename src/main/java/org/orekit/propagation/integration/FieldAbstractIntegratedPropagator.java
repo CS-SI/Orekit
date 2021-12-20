@@ -392,7 +392,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection
-                integrateDynamics(tStart);
+                try (IntegratorResetter<T> startResetter = new IntegratorResetter<>(integrator)) {
+                    integrateDynamics(tStart);
+                }
             }
 
             // set up events added by user
