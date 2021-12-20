@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -111,6 +112,32 @@ public class NumericalPropagatorTest {
     private AbsoluteDate         initDate;
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
+
+    @Test
+    public void testEventsWithTimeRangePropagation() {
+        final AtomicInteger counter = new AtomicInteger(0);
+        final double dt = 60.0;
+        final EventDetector singleDetector = new DateDetector(initDate.shiftedBy(dt / 2)).
+                                             withHandler((state, detector, increasing) -> {
+                                                 counter.incrementAndGet();
+                                                 return Action.CONTINUE;
+                                             });
+        ForceModel force = new ForceModelAdapter() {
+            @Override
+            public Stream<EventDetector> getEventsDetectors() {
+                return Stream.of(singleDetector);
+            }
+        };
+
+        // action
+        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.addForceModel(force);
+        AbsoluteDate target = initDate.shiftedBy(dt);
+        propagator.propagate(initDate.shiftedBy(1.0), target);
+
+        Assert.assertEquals(1, counter.intValue());
+
+    }
 
     @Test
     public void testForceModelInitialized() {
