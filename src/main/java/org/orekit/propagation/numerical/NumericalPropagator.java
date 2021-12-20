@@ -722,27 +722,18 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         final SpacecraftState state = getInitialState();
 
-        final double[] column;
-        if (dYdQ == null) {
-            // initial Jacobian is null (this is the most frequent case)
-            column = new double[STATE_DIMENSION];
-        } else {
-
-            if (dYdQ.length != STATE_DIMENSION) {
-                throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                          dYdQ.length, STATE_DIMENSION);
-            }
-
-            // convert to Cartesian Jacobian
-            final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
-            getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), dYdC);
-            column = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).
-                     getSolver().
-                     solve(MatrixUtils.createRealVector(dYdQ)).
-                     toArray();
-
+        if (dYdQ.length != STATE_DIMENSION) {
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                      dYdQ.length, STATE_DIMENSION);
         }
 
+        // convert to Cartesian Jacobian
+        final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
+        getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), dYdC);
+        final double[] column = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).
+                        getSolver().
+                        solve(MatrixUtils.createRealVector(dYdQ)).
+                        toArray();
 
         // set additional state
         setInitialState(state.addAdditionalState(columnName, column));
