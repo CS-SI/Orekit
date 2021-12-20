@@ -14,9 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.drag.DragForce;
+import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -24,6 +29,8 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.atmosphere.DTM2000;
+import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -35,7 +42,11 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 
@@ -64,7 +75,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         // Extrapolation at the initial date
         // ---------------------------------
         FieldBrouwerLyddanePropagator<T> extrapolator =
-	            new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider));
+	            new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
         FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
 
         // positions  velocity and semi major axis match perfectly
@@ -98,7 +109,7 @@ public class FieldBrouwerLyddanePropagatorTest {
                                                                FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
 
         FieldBrouwerLyddanePropagator<T> extrapolator =
-	            new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW, GravityFieldFactory.getUnnormalizedProvider(provider));
+	            new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
 
@@ -154,7 +165,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         // Extrapolators definitions
         // -------------------------
         FieldBrouwerLyddanePropagator<T> extrapolatorAna =
-            new FieldBrouwerLyddanePropagator<>(initialOrbit, zero.add(1000.0), kepProvider);
+            new FieldBrouwerLyddanePropagator<>(initialOrbit, zero.add(1000.0), kepProvider, BrouwerLyddanePropagator.M2);
         FieldKeplerianPropagator<T> extrapolatorKep = new FieldKeplerianPropagator<>(initialOrbit);
 
         // Extrapolation at a final date different from initial date
@@ -253,7 +264,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         //_______________________________________________________________________________________________
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator =
-	            new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider));
+	            new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         FieldSpacecraftState<T> BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
         final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit().toOrbit());
@@ -270,6 +281,110 @@ public class FieldBrouwerLyddanePropagatorTest {
 	    		MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.12);
 	}
 
+    @Test
+    public void compareToNumericalPropagationWithDrag() {
+        doCompareToNumericalPropagationWithDrag(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationWithDrag(Field<T> field) {
+
+        T zero = field.getZero();
+        final Frame inertialFrame = FramesFactory.getEME2000();
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final AbsoluteDate date = new AbsoluteDate(2003, 1, 1, 00, 00, 00.000, utc);
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(date, zero);
+        double timeshift = 60000. ;
+
+        // Initial orbit
+        final double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + 400e3; // semi major axis in meters
+        final double e = 0.01; // eccentricity
+        final double i = FastMath.toRadians(7); // inclination
+        final double omega = FastMath.toRadians(180); // perigee argument
+        final double raan = FastMath.toRadians(261); // right ascention of ascending node
+        final double lM = 0; // mean anomaly
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
+                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     inertialFrame, initDate, zero.add(provider.getMu()));
+        // Initial state definition
+        final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
+
+        //_______________________________________________________________________________________________
+        // SET UP A REFERENCE NUMERICAL PROPAGATION
+        //_______________________________________________________________________________________________
+
+        // Adaptive step integrator with a minimum step of 0.001 and a maximum step of 1000
+        final double minStep = 0.001;
+        final double maxstep = 1000.0;
+        final double positionTolerance = 10.0;
+        final OrbitType propagationType = OrbitType.KEPLERIAN;
+        final double[][] tolerances =
+                NumericalPropagator.tolerances(positionTolerance, initialOrbit.toOrbit(), propagationType);
+        final AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
+
+        // Numerical Propagator
+        final NumericalPropagator NumPropagator = new NumericalPropagator(integrator);
+        NumPropagator.setOrbitType(propagationType);
+
+        // Atmosphere
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        MarshallSolarActivityFutureEstimation msafe =
+                        new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
+                                                                  MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
+        DataContext.getDefault().getDataProvidersManager().feed(msafe.getSupportedNames(), msafe);
+        DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
+
+        // Force model
+        final ForceModel holmesFeatherstone =
+                new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
+        final ForceModel drag =
+                        new DragForce(atmosphere, new IsotropicDrag(1.0, 1.0));
+        NumPropagator.addForceModel(holmesFeatherstone);
+        NumPropagator.addForceModel(drag);
+
+        // Set up initial state in the propagator
+        NumPropagator.setInitialState(initialState.toSpacecraftState());
+
+        // Extrapolate from the initial to the final date
+        final SpacecraftState NumFinalState = NumPropagator.propagate(initDate.toAbsoluteDate().shiftedBy(timeshift));
+        final KeplerianOrbit NumOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(NumFinalState.getOrbit());
+
+        //_______________________________________________________________________________________________
+        // SET UP A BROUWER LYDDANE PROPAGATION WITHOUT DRAG
+        //_______________________________________________________________________________________________
+
+        FieldBrouwerLyddanePropagator<T> BLextrapolator =
+                        new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
+
+        FieldSpacecraftState<T> BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
+        KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit().toOrbit());
+
+        // Verify a and e differences without the drag effect on Brouwer-Lyddane
+        final double deltaSmaBefore = 20.44;
+        final double deltaEccBefore = 1.0125e-4;
+        Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaBefore);
+        Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccBefore);
+
+        //_______________________________________________________________________________________________
+        // SET UP A BROUWER LYDDANE PROPAGATION WITH DRAG
+        //_______________________________________________________________________________________________
+
+        double M2 = 1.0e-14;
+        BLextrapolator = new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), M2);
+        BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
+        BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit().toOrbit());
+
+        // Verify a and e differences without the drag effect on Brouwer-Lyddane
+        final double deltaSmaAfter = 15.66;
+        final double deltaEccAfter = 1.0121e-4;
+        Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaAfter);
+        Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccAfter);
+        Assert.assertTrue(deltaSmaAfter < deltaSmaBefore);
+        Assert.assertTrue(deltaEccAfter < deltaEccBefore);
+        Assert.assertEquals(M2, BLextrapolator.getM2(), Double.MIN_VALUE);
+
+    }
 
     @Test
     public void compareToNumericalPropagationMeanInitialOrbit() {
@@ -297,7 +412,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator =
 	            new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider),
-	            		                     PropagationType.MEAN);
+	            		                     PropagationType.MEAN, BrouwerLyddanePropagator.M2);
         FieldSpacecraftState<T> initialOsculatingState = BLextrapolator.propagate(initDate);
         final KeplerianOrbit InitOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(initialOsculatingState.getOrbit().toOrbit());
 
@@ -381,7 +496,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator1 =
 	            new FieldBrouwerLyddanePropagator<>(initialOrbit, DEFAULT_LAW, zero.add(Propagator.DEFAULT_MASS), GravityFieldFactory.getUnnormalizedProvider(provider),
-	            		                     PropagationType.OSCULATING);
+	            		                     PropagationType.OSCULATING, BrouwerLyddanePropagator.M2);
         //_______________________________________________________________________________________________
         // SET UP ANOTHER BROUWER LYDDANE PROPAGATOR
         //_______________________________________________________________________________________________
@@ -392,7 +507,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 	            		                                                       zero.add(raan), zero.add(lM), PositionAngle.TRUE,
                                                      inertialFrame, initDate, zero.add(provider.getMu())),DEFAULT_LAW, 
 	            		                             zero.add(Propagator.DEFAULT_MASS), 
-	            		                             GravityFieldFactory.getUnnormalizedProvider(provider));
+	            		                             GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
         // Reset BL2 with BL1 initial state
         BLextrapolator2.resetInitialState(initialState);
 
@@ -440,12 +555,12 @@ public class FieldBrouwerLyddanePropagatorTest {
 
 
         FieldBrouwerLyddanePropagator<T> BLPropagator1 = new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW,
-        		provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7);
+        		provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
         FieldBrouwerLyddanePropagator<T> BLPropagator2 = new FieldBrouwerLyddanePropagator<>(initialOrbit,
-        		provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7);
+        		provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
         FieldBrouwerLyddanePropagator<T> BLPropagator3 = new FieldBrouwerLyddanePropagator<>(initialOrbit, 
         		zero.add(Propagator.DEFAULT_MASS), provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 
-        		2.54e-6, 1.62e-6, 2.3e-7);
+        		2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
 
         FieldSpacecraftState<T> BLFinalState1 = BLPropagator1.propagate(initDate.shiftedBy(timeshift));
 	    final KeplerianOrbit BLOrbit1 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState1.getOrbit().toOrbit());
@@ -499,7 +614,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         	
             FieldBrouwerLyddanePropagator<T> extrapolator =
                 new FieldBrouwerLyddanePropagator<>(initialOrbit, DEFAULT_LAW, provider.getAe(), zero.add(provider.getMu()),
-                		-1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7);
+                		-1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
             
             // Extrapolation at the initial date
             // ---------------------------------
@@ -530,7 +645,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         // -----------------------
         FieldBrouwerLyddanePropagator<T> extrapolator =
             new FieldBrouwerLyddanePropagator<>(initialOrbit, provider.getAe(), zero.add(provider.getMu()),
-            		-1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7);
+            		-1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
 
         // Extrapolation at the initial date
         // ---------------------------------
@@ -569,7 +684,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         // Extrapolator definition
         // -----------------------
         FieldBrouwerLyddanePropagator<T> extrapolator =
-            new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider));
+            new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         // Extrapolation at the initial date
         // ---------------------------------
@@ -615,7 +730,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // Extrapolator definition
         // -----------------------
-        final FieldBrouwerLyddanePropagator<T> blField = new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider));
+        final FieldBrouwerLyddanePropagator<T> blField = new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         // Extrapolation at the initial date
         // ---------------------------------
@@ -656,7 +771,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 	    // Field propagation
 	    final FieldBrouwerLyddanePropagator<T> blField = new FieldBrouwerLyddanePropagator<>(initialStateField.getOrbit(),
 	                                                                                         GravityFieldFactory.getUnnormalizedProvider(provider),
-	                                                                                         PropagationType.MEAN);
+	                                                                                         PropagationType.MEAN, BrouwerLyddanePropagator.M2);
 	    final FieldSpacecraftState<T> finalStateField     = blField.propagate(initialStateField.getDate().shiftedBy(timeshift));
 	    final FieldKeplerianOrbit<T>  finalOrbitField     = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(finalStateField.getOrbit());
 	    final KeplerianOrbit          finalOrbitFieldReal = finalOrbitField.toOrbit();
@@ -664,7 +779,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 	    // Classical propagation
 	    final BrouwerLyddanePropagator bl = new BrouwerLyddanePropagator(initialState.getOrbit(),
 	                                                                     GravityFieldFactory.getUnnormalizedProvider(provider),
-	                                                                     PropagationType.MEAN);
+	                                                                     PropagationType.MEAN, BrouwerLyddanePropagator.M2);
 	    final SpacecraftState finalState = bl.propagate(initialState.getDate().shiftedBy(timeshift));
 	    final KeplerianOrbit  finalOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(finalState.getOrbit());
 
@@ -708,14 +823,15 @@ public class FieldBrouwerLyddanePropagatorTest {
 
 	    // Field propagation
 	    final FieldBrouwerLyddanePropagator<T> blField = new FieldBrouwerLyddanePropagator<>(initialStateField.getOrbit(),
-	                                                                                         GravityFieldFactory.getUnnormalizedProvider(provider));
+	                                                                                         GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 	    final FieldSpacecraftState<T> finalStateField     = blField.propagate(initialStateField.getDate().shiftedBy(timeshift));
 	    final FieldKeplerianOrbit<T>  finalOrbitField     = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(finalStateField.getOrbit());
 	    final KeplerianOrbit          finalOrbitFieldReal = finalOrbitField.toOrbit();
 
 	    // Classical propagation
 	    final BrouwerLyddanePropagator bl = new BrouwerLyddanePropagator(initialState.getOrbit(),
-	                                                                     GravityFieldFactory.getUnnormalizedProvider(provider));
+	                                                                     GravityFieldFactory.getUnnormalizedProvider(provider),
+	                                                                     BrouwerLyddanePropagator.M2);
 	    final SpacecraftState finalState = bl.propagate(initialState.getDate().shiftedBy(timeshift));
 	    final KeplerianOrbit  finalOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(finalState.getOrbit());
 
@@ -731,7 +847,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data:potential/icgem-format");
+        Utils.setDataRoot("regular-data:atmosphere:potential/icgem-format");
         provider = GravityFieldFactory.getNormalizedProvider(5, 0);
     }
 

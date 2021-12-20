@@ -40,6 +40,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
@@ -51,7 +52,24 @@ import org.orekit.utils.ParameterDriver;
  * suited for elliptical orbits, there is no problem having a rather small eccentricity or inclination
  * (Lyddane helped to solve this issue with the Brouwer model). Singularity for the critical
  * inclination i = 63.4° is avoided using the method developed in Warren Phipps' 1992 thesis.
- * </p>
+ * <p>
+ * By default, Brouwer-Lyddane model considers only the perturbations due to zonal harmonics.
+ * However, for low Earth orbits, the magnitude of the perturbative acceleration due to
+ * atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
+ * drag by time derivatives of the <i>mean</i> mean anomaly using the catch-all coefficient
+ * {@link #M2Driver}.
+ *
+ * Usually, M2 is adjusted during an orbit determination process and it represents the
+ * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
+ * The behavior of M2 is closed to the {@link FieldTLE#getBStar()} parameter for the TLE.
+ *
+ * If the value of M2 is equal to {@link BrouwerLyddanePropagator#M2 0.0}, the along-track secular
+ * effects are not considered in the dynamical model. Typical values for M2 are not known.
+ * It depends on the orbit type. However, the value of M2 must be very small (e.g. between 1.0e-14 and 1.0e-15).
+ *
+ * The along-track effects, represented by the secular rates of the mean semi-major axis
+ * and eccentricity, are computed following Eq. 2.38, 2.41, and 2.45 of Warren Phipps' thesis.
+ *
  * @see "Brouwer, Dirk. Solution of the problem of artificial satellite theory without drag.
  *       YALE UNIV NEW HAVEN CT NEW HAVEN United States, 1959."
  *
@@ -66,6 +84,14 @@ import org.orekit.utils.ParameterDriver;
  * @since 11.1
  */
 public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T>  {
+
+    /** Parameters scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double SCALE = FastMath.scalb(1.0, -20);
 
     /** Beta constant used by T2 function. */
     private static final double BETA = FastMath.scalb(100, -11);
@@ -85,6 +111,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     /** Un-normalized zonal coefficients. */
     private double[] ck0;
 
+    /** Empirical coefficient used in the drag modeling. */
+    private final ParameterDriver M2Driver;
+
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
@@ -92,13 +121,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      *
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
-     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, UnnormalizedSphericalHarmonicsProvider, PropagationType)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
-                                         final UnnormalizedSphericalHarmonicsProvider provider) {
+                                         final UnnormalizedSphericalHarmonicsProvider provider,
+                                         final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
              initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
     }
 
     /**
@@ -109,19 +141,23 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement,
-     * UnnormalizedSphericalHarmonicsProvider, UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics, PropagationType)
+     * UnnormalizedSphericalHarmonicsProvider, UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics, PropagationType, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
-                                         final  AttitudeProvider attitude,
+                                         final AttitudeProvider attitude,
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final UnnormalizedSphericalHarmonics harmonics) {
+                                         final UnnormalizedSphericalHarmonics harmonics,
+                                         final double M2) {
         this(initialOrbit, attitude,  mass, provider.getAe(), initialOrbit.getA().getField().getZero().add(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
-             harmonics.getUnnormalizedCnm(5, 0));
+             harmonics.getUnnormalizedCnm(5, 0),
+             M2);
     }
 
     /** Build a propagator from orbit and potential.
@@ -145,16 +181,18 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see org.orekit.utils.Constants
-     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, double, CalculusFieldElement, double, double, double, double)
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, double, CalculusFieldElement, double, double, double, double, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50) {
+                                         final double c50, final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
              initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
-             referenceRadius, mu, c20, c30, c40, c50);
+             referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
@@ -165,12 +203,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
-                                         final UnnormalizedSphericalHarmonicsProvider provider) {
+                                         final UnnormalizedSphericalHarmonicsProvider provider,
+                                         final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-             mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+             mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
     }
 
     /** Build a propagator from orbit, mass and potential.
@@ -195,14 +236,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50) {
+                                         final double c50, final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-             mass, referenceRadius, mu, c20, c30, c40, c50);
+             mass, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
     /** Build a propagator from orbit, attitude provider and potential provider.
@@ -211,12 +254,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
-                                         final UnnormalizedSphericalHarmonicsProvider provider) {
+                                         final UnnormalizedSphericalHarmonicsProvider provider,
+                                         final double M2) {
         this(initialOrbit, attitudeProv, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
     }
 
     /** Build a propagator from orbit, attitude provider and potential.
@@ -241,14 +287,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50) {
+                                         final double c50, final double M2) {
         this(initialOrbit, attitudeProv, initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
-             referenceRadius, mu, c20, c30, c40, c50);
+             referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential provider.
@@ -257,13 +305,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, PropagationType)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final T mass,
-                                         final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+                                         final UnnormalizedSphericalHarmonicsProvider provider,
+                                         final double M2) {
+        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -288,15 +339,17 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, PropagationType)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
+     * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, PropagationType, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final T mass,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50) {
-        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50, PropagationType.OSCULATING);
+                                         final double c50, final double M2) {
+        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50, PropagationType.OSCULATING, M2);
     }
 
 
@@ -309,13 +362,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final PropagationType initialType) {
+                                         final PropagationType initialType,
+                                         final double M2) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
              initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType);
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, M2);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential provider.
@@ -326,13 +382,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final PropagationType initialType) {
-        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType);
+                                         final PropagationType initialType,
+                                         final double M2) {
+        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, M2);
     }
 
     /**
@@ -345,20 +404,22 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitude,
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final UnnormalizedSphericalHarmonics harmonics,
-                                         final PropagationType initialType) {
+                                         final PropagationType initialType,
+                                         final double M2) {
         this(initialOrbit, attitude, mass, provider.getAe(), initialOrbit.getA().getField().getZero().add(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
              harmonics.getUnnormalizedCnm(5, 0),
-             initialType);
+             initialType, M2);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -385,6 +446,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
+     * @param M2 value of empirical drag coefficient.
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
@@ -392,27 +455,29 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
                                          final double c50,
-                                         final PropagationType initialType) {
+                                         final PropagationType initialType,
+                                         final double M2) {
 
         super(mass.getField(), attitudeProv);
-        try {
 
         // store model coefficients
-            this.referenceRadius = referenceRadius;
-            this.mu  = mu;
-            this.ck0 = new double[] {0.0, 0.0, c20, c30, c40, c50};
+        this.referenceRadius = referenceRadius;
+        this.mu  = mu;
+        this.ck0 = new double[] {0.0, 0.0, c20, c30, c40, c50};
 
-            // compute mean parameters if needed
-            // transform into circular adapted parameters used by the Brouwer-Lyddane model
-            resetInitialState(new FieldSpacecraftState<>(initialOrbit,
-                                                     attitudeProv.getAttitude(initialOrbit,
-                                                                              initialOrbit.getDate(),
-                                                                              initialOrbit.getFrame()),
-                                                     mass),
-                                                     initialType);
-        } catch (OrekitException oe) {
-            throw new OrekitException(oe);
-        }
+        // initialize M2 driver
+        this.M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, M2, SCALE,
+                                            Double.NEGATIVE_INFINITY,
+                                            Double.POSITIVE_INFINITY);
+
+        // compute mean parameters if needed
+        resetInitialState(new FieldSpacecraftState<>(initialOrbit,
+                                                 attitudeProv.getAttitude(initialOrbit,
+                                                                          initialOrbit.getDate(),
+                                                                          initialOrbit.getFrame()),
+                                                 mass),
+                                                 initialType);
+
     }
 
 
@@ -483,7 +548,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         while (i++ < 200) {
 
             // recompute the osculating parameters from the current mean parameters
-            final FieldUnivariateDerivative2<T>[] parameters = current.propagateParameters(current.mean.getDate());
+            final FieldUnivariateDerivative2<T>[] parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField()));
 
             // adapted parameters residuals
             final T deltaA     = osculating.getA()  .subtract(parameters[0].getValue());
@@ -524,11 +589,20 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final FieldBLModel<T> current = models.get(date);
-        final FieldUnivariateDerivative2<T>[] propOrb_parameters = current.propagateParameters(date);
+        final FieldUnivariateDerivative2<T>[] propOrb_parameters = current.propagateParameters(date, parameters);
         return new FieldKeplerianOrbit<T>(propOrb_parameters[0].getValue(), propOrb_parameters[1].getValue(),
                                           propOrb_parameters[2].getValue(), propOrb_parameters[3].getValue(),
                                           propOrb_parameters[4].getValue(), propOrb_parameters[5].getValue(),
-                                          PositionAngle.MEAN, current.mean.getFrame(), date, mu);   }
+                                          PositionAngle.MEAN, current.mean.getFrame(), date, mu);
+    }
+
+    /**
+     * Get the value of the M2 drag parameter.
+     * @return the value of the M2 drag parameter
+     */
+    public double getM2() {
+        return M2Driver.getValue();
+    }
 
     /** Local class for Brouwer-Lyddane model. */
     private static class FieldBLModel<T extends CalculusFieldElement<T>> {
@@ -618,6 +692,10 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         private final T edlsf;
         private final T edls2gf;
         private final T edls2g3f;
+
+        // Drag terms
+        private final T aRate;
+        private final T eRate;
 
         // CHECKSTYLE: resume JavadocVariable check
 
@@ -811,6 +889,11 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             edls2gf = qedl.multiply(3.0).multiply(cosI2.negate().add(1.0));
             edls2g3f = qedl.multiply(1.0 / 3.0);
 
+            // secular rates of the mean semi-major axis and eccentricity
+            // Eq. 2.41 and Eq. 2.45 of Phipps' 1992 thesis
+            aRate = app.multiply(-4.0).divide(xnotDot.multiply(3.0));
+            eRate = epp.multiply(n).multiply(n).multiply(-4.0).divide(xnotDot.multiply(3.0));
+
         }
 
         /**
@@ -949,12 +1032,19 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
         /** Extrapolate an orbit up to a specific target date.
          * @param date target date for the orbit
+         * @param parameters model parameters
          * @return propagated parameters
          */
-        public FieldUnivariateDerivative2<T>[] propagateParameters(final FieldAbsoluteDate<T> date) {
-            final Field<T> field = date.durationFrom(mean.getDate()).getField();
-            final T one = field.getOne();
+        public FieldUnivariateDerivative2<T>[] propagateParameters(final FieldAbsoluteDate<T> date, final T[] parameters) {
+
+            // Field
+            final Field<T> field = date.getField();
+            final T one  = field.getOne();
             final T zero = field.getZero();
+
+            // Empirical drag coefficient M2
+            final T m2 = parameters[0];
+
             // Keplerian evolution
             final FieldUnivariateDerivative2<T> dt = new FieldUnivariateDerivative2<>(date.durationFrom(mean.getDate()), one, zero);
             final FieldUnivariateDerivative2<T> xnot = dt.multiply(xnotDot);
@@ -963,10 +1053,12 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             // secular effects
 
             // mean mean anomaly
-            final FieldUnivariateDerivative2<T> lpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getMeanAnomaly().add(lt.multiply(xnot.getValue())),
+            final FieldUnivariateDerivative2<T> dtM2  = dt.multiply(m2);
+            final FieldUnivariateDerivative2<T> dt2M2 = dt.multiply(dtM2);
+            final FieldUnivariateDerivative2<T> lpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getMeanAnomaly().add(lt.multiply(xnot.getValue())).add(dt2M2.getValue()),
                                                                                         one.getPi()),
-                                                                                        lt.multiply(xnotDot),
-                                                                                        zero);
+                                                                                        lt.multiply(xnotDot).add(dtM2.multiply(2.0).getValue()),
+                                                                                        m2.multiply(2.0));
             // mean argument of perigee
             final FieldUnivariateDerivative2<T> gpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getPerigeeArgument().add(gt.multiply(xnot.getValue())),
                                                                                         one.getPi()),
@@ -977,6 +1069,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                                                         one.getPi()),
                                                                                         ht.multiply(xnotDot),
                                                                                         zero);
+
+            // ________________________________________________
+            // secular rates of the mean semi-major axis and eccentricity
+
+            // semi-major axis
+            final FieldUnivariateDerivative2<T> appDrag = dt.multiply(aRate.multiply(m2));
+
+            // eccentricity
+            final FieldUnivariateDerivative2<T> eppDrag = dt.multiply(eRate.multiply(m2));
 
             //____________________________________
             // Long periodical terms
@@ -1034,12 +1135,12 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final FieldUnivariateDerivative2<T> sigma = eE.multiply(n.multiply(n)).multiply(eE).add(eE);
 
             // Semi-major axis
-            final FieldUnivariateDerivative2<T> a = eE3.multiply(aCbis).add(mean.getA()).
+            final FieldUnivariateDerivative2<T> a = eE3.multiply(aCbis).add(appDrag.add(mean.getA())).
                                             add(aC).
                                             add(eE3.multiply(c2g2f).multiply(ac2g2f));
 
             // Eccentricity
-            final FieldUnivariateDerivative2<T> e = d1e.add(mean.getE()).
+            final FieldUnivariateDerivative2<T> e = d1e.add(eppDrag.add(mean.getE())).
                                             add(eC).
                                             add(cf1.multiply(ecf)).
                                             add(cf2.multiply(e2cf)).
@@ -1117,8 +1218,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> getParametersDrivers() {
-        // Brouwer Lyddane propagation model does not have parameter drivers.
-        return Collections.emptyList();
+        return Collections.singletonList(M2Driver);
     }
 
 }

@@ -25,6 +25,9 @@
         Fixed multiple detection of events when using propagate(start, target) with
         integration-based propagators.
       </action>
+      <action dev="bryan" type="add" issue="871">
+        Added atmospheric drag effect for Brouwer-Lyddane model.
+      </action>
       <action dev="bryan" type="add" issue="869">
         Allowed Brouwer-Lyddane model to work for the critical inclination.
       </action>
