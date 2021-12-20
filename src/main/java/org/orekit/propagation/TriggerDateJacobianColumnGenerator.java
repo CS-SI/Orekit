@@ -23,6 +23,8 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /** Generator for one column of a Jacobian matrix for special case of trigger dates.
  * <p>
@@ -105,10 +107,13 @@ public class TriggerDateJacobianColumnGenerator
     private final double threshold;
 
     /** Signed contribution of maneuver at trigger time ±(∂y₁/∂y₀)⁻¹ fₘ(t₁, y₁). */
-    private double[] contribution;
+    private TimeSpanMap<double[]> contribution;
 
     /** Indicator for trigger. */
     private boolean triggered;
+
+    /** Indicator for forwart propagation. */
+    private boolean forward;
 
     /** Simple constructor.
      * @param stmName name of State Transition Matrix state
@@ -120,12 +125,14 @@ public class TriggerDateJacobianColumnGenerator
     public TriggerDateJacobianColumnGenerator(final String stmName, final String columnName,
                                               final boolean manageStart, final Maneuver maneuver,
                                               final double threshold) {
-        this.stmName     = stmName;
-        this.columnName  = columnName;
-        this.manageStart = manageStart;
-        this.maneuver    = maneuver;
-        this.sign        = manageStart ? -1 : +1;
-        this.threshold   = threshold;
+        this.stmName      = stmName;
+        this.columnName   = columnName;
+        this.manageStart  = manageStart;
+        this.maneuver     = maneuver;
+        this.sign         = manageStart ? -1 : +1;
+        this.threshold    = threshold;
+        this.contribution = null;
+        this.forward      = true;
     }
 
     /** {@inheritDoc} */
@@ -144,10 +151,23 @@ public class TriggerDateJacobianColumnGenerator
         return !state.hasAdditionalState(stmName);
     }
 
-    // note that we do NOT implement init
-    // in particular we reset NEITHER contribution nor triggered
-    // this allows to get proper Jacobian if we interrupt propagation
-    // in the middle of a maneuver and restart propagation where it left
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+
+        // note that we reset contribution or triggered ONLY at start or if we change
+        // propagation direction
+        // this allows to get proper Jacobian if we interrupt propagation
+        // in the middle of a maneuver and restart propagation where it left
+        final boolean newForward = target.isAfterOrEqualTo(initialState);
+        if (contribution == null || forward ^ newForward) {
+            contribution = new TimeSpanMap<>(null);
+            triggered    = false;
+        }
+
+        forward = newForward;
+
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -155,7 +175,8 @@ public class TriggerDateJacobianColumnGenerator
         // we check contribution rather than triggered because this method
         // is called after maneuverTriggered and before resetState,
         // when preparing the old state to be reset
-        return contribution == null ? ZERO : getStm(state).operate(contribution);
+        final double[] c = contribution == null ? null : contribution.get(state.getDate());
+        return c == null ? ZERO : getStm(state).operate(c);
     }
 
     /** {@inheritDoc}*/
@@ -187,7 +208,12 @@ public class TriggerDateJacobianColumnGenerator
         final RealMatrix dY1dY0 = getStm(state);
 
         // store contribution factor for derivatives scm = ±(∂y₁/∂y₀)⁻¹ fₘ(t₁, y₁)
-        contribution = new QRDecomposition(dY1dY0, DECOMPOSITION_THRESHOLD).getSolver().solve(rhs).toArray();
+        final double[] c = new QRDecomposition(dY1dY0, DECOMPOSITION_THRESHOLD).getSolver().solve(rhs).toArray();
+        if (forward) {
+            contribution.addValidAfter(c, state.getDate());
+        } else {
+            contribution.addValidBefore(c, state.getDate());
+        }
 
         // return unchanged state
         return state;
