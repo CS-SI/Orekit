@@ -198,50 +198,50 @@ public class TriggersDerivativesTest {
 
     @Test
     public void testDerivativeWrtMedianCartesianForward() {
-        doTestDerivativeWrtMedianTime(OrbitType.CARTESIAN, true,
-                                      0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
+        doTestDerivativeWrtMedianDuration(true, OrbitType.CARTESIAN, true,
+                                          0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
     }
 
     @Test
     public void testDerivativeWrtMedianKeplerianForward() {
-        doTestDerivativeWrtMedianTime(OrbitType.KEPLERIAN, true,
-                                      0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
+        doTestDerivativeWrtMedianDuration(true, OrbitType.KEPLERIAN, true,
+                                          0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
     }
 
     @Test
     public void testDerivativeWrtMedianCartesianBackward() {
-        doTestDerivativeWrtMedianTime(OrbitType.CARTESIAN, false,
-                                      0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
+        doTestDerivativeWrtMedianDuration(true, OrbitType.CARTESIAN, false,
+                                          0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
     }
 
     @Test
     public void testDerivativeWrtMedianKeplerianBackward() {
-        doTestDerivativeWrtMedianTime(OrbitType.KEPLERIAN, false,
-                                      0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
+        doTestDerivativeWrtMedianDuration(true, OrbitType.KEPLERIAN, false,
+                                          0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
     }
 
     @Test
     public void testDerivativeWrtDurationCartesianForward() {
-        doTestDerivativeWrtDuration(OrbitType.CARTESIAN, true,
-                                    0.00540, 0.00540, 0.00540, 0.00540, 0.00540, 0.00540);
+        doTestDerivativeWrtMedianDuration(false, OrbitType.CARTESIAN, true,
+                                          0.00540, 0.00540, 0.00540, 0.00540, 0.00540, 0.00540);
     }
 
     @Test
     public void testDerivativeWrtDurationKeplerianForward() {
-        doTestDerivativeWrtDuration(OrbitType.KEPLERIAN, true,
-                                    0.00577, 0.00540, 0.00540, 0.00570, 0.00541, 0.00543);
+        doTestDerivativeWrtMedianDuration(false, OrbitType.KEPLERIAN, true,
+                                          0.00577, 0.00540, 0.00540, 0.00570, 0.00541, 0.00543);
     }
 
     @Test
     public void testDerivativeWrtDurationCartesianBackward() {
-        doTestDerivativeWrtDuration(OrbitType.CARTESIAN, false,
-                                    0.00540, 0.00540, 0.00540, 0.00540, 0.00540, 0.00540);
+        doTestDerivativeWrtMedianDuration(false, OrbitType.CARTESIAN, false,
+                                          0.00540, 0.00540, 0.00540, 0.00540, 0.00540, 0.00540);
     }
 
     @Test
     public void testDerivativeWrtDurationKeplerianBackward() {
-        doTestDerivativeWrtDuration(OrbitType.KEPLERIAN, false,
-                                    0.00577, 0.00540, 0.00540, 0.00570, 0.00541, 0.00543);
+        doTestDerivativeWrtMedianDuration(false, OrbitType.KEPLERIAN, false,
+                                          0.00577, 0.00540, 0.00540, 0.00570, 0.00541, 0.00543);
     }
 
     private void doTestDerivativeWrtStartStopTime(final boolean start, final OrbitType orbitType, final boolean forward,
@@ -251,7 +251,7 @@ public class TriggersDerivativesTest {
         final int           degree        = 20;
         final double        duration      = 200.0;
         final double        h             = 1.0;
-        final double        samplingtep   = 240.0;
+        final double        samplingtep   = 2.0;
 
         final KeplerianOrbit initial    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
         final double         firingM    = MathUtils.normalizeAngle(FastMath.PI, initial.getMeanAnomaly() + (forward ? FastMath.PI : -FastMath.PI));
@@ -280,7 +280,10 @@ public class TriggersDerivativesTest {
                                       d.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)).
                           forEach(d -> d.setSelected(true)));
 
-        DerivativesSampler sampler = new DerivativesSampler(harvester, null, null, orbitType, positionAngle,
+        DerivativesSampler sampler = start ?
+                                     new DerivativesSampler(harvester, 4, null, -1, null, -1, null, -1, orbitType, positionAngle,
+                                                            firing, duration, h, samplingtep) :
+                                     new DerivativesSampler(null, -1, harvester, 4, null, -1, null, -1, orbitType, positionAngle,
                                                             firing, duration, h, samplingtep);
 
         final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, sampler);
@@ -292,16 +295,14 @@ public class TriggersDerivativesTest {
 
         double[] maxRelativeError = new double[tolerance.length];
         for (final Entry entry : sampler.sample) {
-            for (int i = 0; i < entry.medianFiniteDifferences.length; ++i) {
-                double f = entry.medianFiniteDifferences[i].getFirstDerivative();
-                double c = entry.medianClosedForm[i].getFirstDerivative();
+            for (int i = 0; i < 6; ++i) {
+                double f = (start ? entry.startFiniteDifferences[i] : entry.stopFiniteDifferences[i]).getFirstDerivative();
+                double c = (start ? entry.startClosedForm[i]        : entry.stopClosedForm[i]).getFirstDerivative();
                 maxRelativeError[i] = FastMath.max(maxRelativeError[i], FastMath.abs(f - c) / FastMath.max(1.0e-10, FastMath.abs(f)));
             }
         }
 
-        analyzeSample(sampler, orbitType, firing, forward, degree,
-                      start ? "start time" : "stop time",
-                      start ? "dt_{start}" : "dt_{stop}",
+        analyzeSample(sampler, orbitType, firing, forward, start ? "start time" : "stop time",
                       true, null);
 
         for (int i = 0; i < tolerance.length; ++i) {
@@ -310,14 +311,14 @@ public class TriggersDerivativesTest {
 
     }
 
-    private void doTestDerivativeWrtMedianTime(final OrbitType orbitType, final boolean forward,
-                                               final double...tolerance) {
+    private void doTestDerivativeWrtMedianDuration(final boolean median, final OrbitType orbitType, final boolean forward,
+                                                       final double...tolerance) {
 
         final PositionAngle positionAngle = PositionAngle.TRUE;
         final int           degree        = 20;
         final double        duration      = 200.0;
         final double        h             = 1.0;
-        final double        samplingtep   = 20.0;
+        final double        samplingtep   = 2.0;
 
         final KeplerianOrbit initial    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
         final double         firingM    = MathUtils.normalizeAngle(FastMath.PI, initial.getMeanAnomaly() + (forward ? FastMath.PI : -FastMath.PI));
@@ -328,8 +329,9 @@ public class TriggersDerivativesTest {
 
         // propagators will be combined using finite differences to compute derivatives
         for (int k = -4; k <= 4; ++k) {
-            final DateBasedManeuverTriggers triggers =
-                            new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(k * h), duration);
+            final DateBasedManeuverTriggers triggers = median ?
+                            new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(k * h), duration) :
+                            new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(-0.5 * k * h), duration + k * h);
             propagators.add(buildPropagator(orbitType, positionAngle, degree, firing, duration, triggers));
         }
         for (int k = -4; k <= 4; ++k) {
@@ -346,14 +348,14 @@ public class TriggersDerivativesTest {
         // the central propagators (k = 4, 13, 22) will compute derivatives autonomously
         // using StateTransitionMatrixGenerator, TriggerDateJacobianColumnGenerator,
         // MedianDateJacobianColumnGenerator and DurationJacobianColumnGenerator
-        final NumericalPropagator autonomousMedian = (NumericalPropagator) propagators.get(4);
-        final MatricesHarvester   harvesterMedian  = autonomousMedian.setupMatricesComputation("stm-0", null, null);
-        autonomousMedian.
+        final NumericalPropagator autonomous = (NumericalPropagator) propagators.get(4);
+        final MatricesHarvester   harvester  = autonomous.setupMatricesComputation("stm-0", null, null);
+        autonomous.
         getAllForceModels().
         forEach(fm -> fm.
                 getParametersDrivers().
                 stream().
-                filter(d -> d.getName().equals("MAN_0_MEDIAN") ||
+                filter(d -> d.getName().equals(median ? "MAN_0_MEDIAN" : "MAN_0_DURATION") ||
                             d.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)).
                 forEach(d -> d.setSelected(true)));
 
@@ -379,7 +381,11 @@ public class TriggersDerivativesTest {
                             d.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)).
                 forEach(d -> d.setSelected(true)));
 
-        DerivativesSampler sampler = new DerivativesSampler(harvesterMedian, harvesterStart, harvesterStop,
+        DerivativesSampler sampler = median ?
+                                     new DerivativesSampler(harvesterStart, 13, harvesterStop, 22, harvester, 4, null, -1,
+                                                            orbitType, positionAngle,
+                                                            firing, duration, h, samplingtep) :
+                                     new DerivativesSampler(harvesterStart, 13, harvesterStop, 22, null, -1, harvester, 4,
                                                             orbitType, positionAngle,
                                                             firing, duration, h, samplingtep);
 
@@ -392,76 +398,16 @@ public class TriggersDerivativesTest {
 
         double[] maxRelativeError = new double[tolerance.length];
         for (final Entry entry : sampler.sample) {
-            for (int i = 0; i < entry.medianFiniteDifferences.length; ++i) {
-                double f = entry.medianFiniteDifferences[i].getFirstDerivative();
-                double c = entry.medianClosedForm[i].getFirstDerivative();
+            for (int i = 0; i < 6; ++i) {
+                double f = (median ? entry.medianFiniteDifferences[i] : entry.durationFiniteDifferences[i]).getFirstDerivative();
+                double c = (median ? entry.medianClosedForm[i]        : entry.durationClosedForm[i]).getFirstDerivative();
                 maxRelativeError[i] = FastMath.max(maxRelativeError[i], FastMath.abs(f - c) / FastMath.max(1.0e-10, FastMath.abs(f)));
             }
         }
 
-        analyzeSample(sampler, orbitType, firing, forward, degree, "median-time", "dt_m", true, null);
-
-        for (int i = 0; i < tolerance.length; ++i) {
-            Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
-        }
-
-    }
-
-    private void doTestDerivativeWrtDuration(final OrbitType orbitType, final boolean forward,
-                                             final double...tolerance) {
-
-        final PositionAngle positionAngle = PositionAngle.TRUE;
-        final int           degree        = 20;
-        final double        duration      = 200.0;
-        final double        h             = 1.0;
-        final double        samplingtep   = 240.0;
-
-        final KeplerianOrbit initial    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
-        final double         firingM    = MathUtils.normalizeAngle(FastMath.PI, initial.getMeanAnomaly() + (forward ? FastMath.PI : -FastMath.PI));
-        final AbsoluteDate   apogeeDate = initial.getDate().shiftedBy((firingM - initial.getMeanAnomaly()) / initial.getKeplerianMeanMotion());
-        final AbsoluteDate   firing     = apogeeDate.shiftedBy(-0.5 * duration);
-
-        final List<Propagator> propagators = new ArrayList<>();
-
-        // propagators will be combined using finite differences to compute derivatives
-        for (int k = -4; k <= 4; ++k) {
-            final DateBasedManeuverTriggers triggers =
-                            new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(-0.5 * k * h), duration + k * h);
-            propagators.add(buildPropagator(orbitType, positionAngle, degree, firing, duration, triggers));
-        }
-
-        // the central propagator (k = 4) will compute derivatives autonomously using State and TriggersDerivatives
-        final NumericalPropagator autonomous = (NumericalPropagator) propagators.get(4);
-        final MatricesHarvester   harvester  = autonomous.setupMatricesComputation("stm", null, null);
-        autonomous.
-        getAllForceModels().
-        forEach(fm -> fm.
-                getParametersDrivers().
-                stream().
-                filter(d -> d.getName().equals("MAN_0_DURATION") ||
-                       d.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)).
-                forEach(d -> d.setSelected(true)));
-
-        DerivativesSampler sampler = new DerivativesSampler(harvester, null, null, orbitType, positionAngle,
-                                                            firing, duration, h, samplingtep);
-
-        final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, sampler);
-        if (forward) {
-            parallelizer.propagate(firing.shiftedBy(-30 * samplingtep), firing.shiftedBy(duration + 300 * samplingtep));
-        } else {
-            parallelizer.propagate(firing.shiftedBy(duration + 30 * samplingtep), firing.shiftedBy(-300 * samplingtep));
-        }
-
-        double[] maxRelativeError = new double[tolerance.length];
-        for (final Entry entry : sampler.sample) {
-            for (int i = 0; i < entry.medianFiniteDifferences.length; ++i) {
-                double f = entry.medianFiniteDifferences[i].getFirstDerivative();
-                double c = entry.medianClosedForm[i].getFirstDerivative();
-                maxRelativeError[i] = FastMath.max(maxRelativeError[i], FastMath.abs(f - c) / FastMath.max(1.0e-10, FastMath.abs(f)));
-            }
-        }
-
-        analyzeSample(sampler, orbitType, firing, forward, degree, "duration", "dτ", true, null);
+        analyzeSample(sampler, orbitType, firing, forward,
+                      median ? "median time" : "duration",
+                      true, null);
 
         for (int i = 0; i < tolerance.length; ++i) {
             Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
@@ -470,8 +416,7 @@ public class TriggersDerivativesTest {
     }
 
     private void analyzeSample(final DerivativesSampler sampler, final OrbitType orbitType, final AbsoluteDate firing,
-                               final boolean forward, final int degree, final String param, final String der,
-                               final boolean plot, final String outputDir) {
+                               final boolean forward, final String param, final boolean plot, final String outputDir) {
         if (!plot) {
             return;
         }
@@ -489,7 +434,7 @@ public class TriggersDerivativesTest {
                     out.format(Locale.US, "set terminal qt size %d, %d title 'complex plotter'%n", 1000, 1000);
                 } else {
                     fileName = new File(outputDir,
-                                        "triggers-partials-" + param + '-' + orbitType + "-degree-" + degree +
+                                        "triggers-partials-" + param.replace(' ', '-') + '-' + orbitType +
                                         (forward ? "-forward" : "-backward") + ".png").
                                getAbsolutePath();
                     out.format(Locale.US, "set terminal pngcairo size %d, %d%n", 1000, 1000);
@@ -499,40 +444,41 @@ public class TriggersDerivativesTest {
                 out.format(Locale.US, "set view map scale 1%n");
                 out.format(Locale.US, "set xlabel 't - t_{start}'%n");
                 if (orbitType == OrbitType.CARTESIAN) {
-                    out.format(Locale.US, "set ylabel 'd\\{X,Y,Z\\}/" + der + " (m/s)'%n");
+                    out.format(Locale.US, "set ylabel 'd\\{X,Y,Z\\}/dt (m/s)'%n");
                     out.format(Locale.US, "set key bottom left%n");
                 } else {
-                    out.format(Locale.US, "set ylabel 'da/" + der + " (m/s)'%n");
+                    out.format(Locale.US, "set ylabel 'da/dt (m/s)'%n");
                     out.format(Locale.US, "set key top left%n");
                 }
-                out.format(Locale.US,
-                           "set title 'derivatives of %s state, gravity field degree %d %s'%n",
-                           orbitType, degree, forward ? "forward" : "backward");
+                out.format(Locale.US, "set title 'derivatives of %s state %s'%n", orbitType, forward ? "forward" : "backward");
                 out.format(Locale.US, "$data <<EOD%n");
                 for (final Entry entry : sampler.sample) {
                     out.format(Locale.US, "%.6f", entry.date.durationFrom(firing));
                     for (int i = 0; i < entry.medianFiniteDifferences.length; ++i) {
-                        out.format(Locale.US, " %.9f %.9f %.9f %.9f %.9f %.9f",
-                                   entry.medianFiniteDifferences[i].getFirstDerivative(),
-                                   entry.medianClosedForm[i].getFirstDerivative(),
-                                   entry.startFiniteDifferences[i] == null ? 0.0 : entry.startFiniteDifferences[i].getFirstDerivative(),
-                                   entry.startClosedForm[i]        == null ? 0.0 : entry.startClosedForm[i].getFirstDerivative(),
-                                   entry.stopFiniteDifferences[i]  == null ? 0.0 : entry.stopFiniteDifferences[i].getFirstDerivative(),
-                                   entry.stopClosedForm[i]         == null ? 0.0 : entry.stopClosedForm[i].getFirstDerivative());
+                        out.format(Locale.US, " %.12f %.12f %.12f %.12f %.12f %.12f",
+                                   entry.medianFiniteDifferences[i] == null ? 0.0 : entry.medianFiniteDifferences[i].getFirstDerivative(),
+                                   entry.medianClosedForm[i]        == null ? 0.0 : entry.medianClosedForm[i].getFirstDerivative(),
+                                   entry.startFiniteDifferences[i]  == null ? 0.0 : entry.startFiniteDifferences[i].getFirstDerivative(),
+                                   entry.startClosedForm[i]         == null ? 0.0 : entry.startClosedForm[i].getFirstDerivative(),
+                                   entry.stopFiniteDifferences[i]   == null ? 0.0 : entry.stopFiniteDifferences[i].getFirstDerivative(),
+                                   entry.stopClosedForm[i]          == null ? 0.0 : entry.stopClosedForm[i].getFirstDerivative());
                     }
                     out.format(Locale.US, "%n");
                 }
                 out.format(Locale.US, "EOD%n");
-                if (orbitType == OrbitType.CARTESIAN) {
-                    out.print("plot $data using 1:4 with lines  lc 1 title 'dX/dt_{start} finite differences',       \\\n" + 
-                              "     ''    using 1:5 with points lc 1 ps 2 title 'dX/dt_{start} closed form based on STM',\\\n" +
-                              "     ''    using 1:($4-$5) with points lc 2 title 'dX/dt_{start} error',\\\n" +
-                              "     ''    using 1:6 with lines  lc 5 title 'dX/dt_{stop} finite differences',       \\\n" + 
-                              "     ''    using 1:7 with points lc 5 title 'dX/dt_{stop} closed form based on STM',\\\n" +
-                              "     ''    using 1:($6-$7) with points lc 7 title 'dX/dt_{stop} error'\n");
-                } else {
-                    out.print("plot $data using 1:2  with lines  title 'da/" + der + " finite differences', \\\n" + 
-                              "     ''    using 1:3  with points title 'da/" + der + " closed form based on STM'\n");
+                final String obs = orbitType == OrbitType.CARTESIAN ? "dX" : "da";
+                out.format(Locale.US, "plot ");
+                if (sampler.indexMedian >= 0) {
+                    out.format(Locale.US, "$data using 1:($2-$3) with points      title '%s/dt_m error'%s%n",
+                               obs, (sampler.indexStart > 0 || sampler.indexStop > 0) ? ",\\" : "");
+                }
+                if (sampler.indexStart >= 0) {
+                    out.format(Locale.US, "$data using 1:($4-$5) with points      title '%s/dt_{start} error'%s%n",
+                               obs, (sampler.indexStop > 0) ? ",\\" : "");
+                }
+                if (sampler.indexStop >= 0) {
+                    out.format(Locale.US, "$data using 1:($6-$7) with points      title '%s/dt_{stop} error'%n",
+                               obs);
                 }
                 if (fileName == null) {
                     out.format(Locale.US, "pause mouse close%n");
@@ -599,9 +545,14 @@ public class TriggersDerivativesTest {
 
     private class DerivativesSampler implements MultiSatStepHandler {
 
-        final MatricesHarvester harvesterMedian;
         final MatricesHarvester harvesterStart;
+        final int               indexStart;
         final MatricesHarvester harvesterStop;
+        final int               indexStop;
+        final MatricesHarvester harvesterMedian;
+        final int               indexMedian;
+        final MatricesHarvester harvesterDuration;
+        final int               indexDuration;
         final OrbitType         orbitType;
         final PositionAngle     positionAngle;
         final AbsoluteDate      firing;
@@ -612,23 +563,29 @@ public class TriggersDerivativesTest {
         boolean                 forward;
         AbsoluteDate            next;
 
-        DerivativesSampler(final MatricesHarvester harvesterMedian,
-                           final MatricesHarvester harvesterStart,
-                           final MatricesHarvester harvesterStop,
+        DerivativesSampler(final MatricesHarvester harvesterStart,    final int indexStart,
+                           final MatricesHarvester harvesterStop,     final int indexStop,
+                           final MatricesHarvester harvesterMedian,   final int indexMedian,
+                           final MatricesHarvester harvesterDuration, final int indexDuration,
                            final OrbitType orbitType, final PositionAngle positionAngle,
                            final AbsoluteDate firing, final double duration,
                            final double h, final double samplingtep) {
-            this.harvesterMedian = harvesterMedian;
-            this.harvesterStart  = harvesterStart;
-            this.harvesterStop   = harvesterStop;
-            this.orbitType       = orbitType;
-            this.positionAngle   = positionAngle;
-            this.firing          = firing;
-            this.duration        = duration;
-            this.h               = h;
-            this.samplingtep     = samplingtep;
-            this.sample          = new ArrayList<>();
-            this.next            = null;
+            this.harvesterStart    = harvesterStart;
+            this.indexStart        = indexStart;
+            this.harvesterStop     = harvesterStop;
+            this.indexStop         = indexStop;
+            this.harvesterMedian   = harvesterMedian;
+            this.indexMedian       = indexMedian;
+            this.harvesterDuration = harvesterDuration;
+            this.indexDuration     = indexDuration;
+            this.orbitType         = orbitType;
+            this.positionAngle     = positionAngle;
+            this.firing            = firing;
+            this.duration          = duration;
+            this.h                 = h;
+            this.samplingtep       = samplingtep;
+            this.sample            = new ArrayList<>();
+            this.next              = null;
         }
 
         public void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
@@ -643,53 +600,56 @@ public class TriggersDerivativesTest {
         }
 
         public void handleStep(final List<OrekitStepInterpolator> interpolators) {
-            final OrekitStepInterpolator interpolatorMedian = interpolators.get(4);
-            final OrekitStepInterpolator interpolatorStart  = interpolators.size() > 13 ? interpolators.get(13) : null;
-            final OrekitStepInterpolator interpolatorStop   = interpolators.size() > 22 ? interpolators.get(22) : null;
-            while ( forward && (next.isAfter(interpolatorMedian.getPreviousState())  && next.isBeforeOrEqualTo(interpolatorMedian.getCurrentState())) ||
-                   !forward && (next.isBefore(interpolatorMedian.getPreviousState()) && next.isAfterOrEqualTo(interpolatorMedian.getCurrentState()))) {
+            final AbsoluteDate previousDate = interpolators.get(0).getPreviousState().getDate();
+            final AbsoluteDate currentDate  = interpolators.get(0).getCurrentState().getDate();
+            while ( forward && (next.isAfter(previousDate)  && next.isBeforeOrEqualTo(currentDate)) ||
+                   !forward && (next.isBefore(previousDate) && next.isAfterOrEqualTo(currentDate))) {
                 // don't sample points where finite differences are in an intermediate state (some before, some after discontinuity)
                 if (!(tooClose(next, firing) || tooClose(next, firing.shiftedBy(duration)))) {
-                    final double[][] o = new double[interpolators.size()][6];
-                    for (int i = 0; i < o.length; ++i) {
-                        orbitType.mapOrbitToArray(interpolators.get(i).getInterpolatedState(next).getOrbit(), positionAngle, o[i], null);
-                    }
-                    final RealMatrix              jacobianMedian          = harvesterMedian.getParametersJacobian(interpolatorMedian.getInterpolatedState(next));
-                    final RealMatrix              jacobianStart           = interpolatorStart == null ? null : harvesterStart.getParametersJacobian(interpolatorStart.getInterpolatedState(next));
-                    final RealMatrix              jacobianStop            = interpolatorStop == null ? null : harvesterStop.getParametersJacobian(interpolatorStop.getInterpolatedState(next));
-                    final UnivariateDerivative1[] medianClosedForm        = new UnivariateDerivative1[6];
-                    final UnivariateDerivative1[] medianFiniteDifferences = new UnivariateDerivative1[6];
-                    final UnivariateDerivative1[] startClosedForm         = new UnivariateDerivative1[6];
-                    final UnivariateDerivative1[] startFiniteDifferences  = new UnivariateDerivative1[6];
-                    final UnivariateDerivative1[] stopClosedForm          = new UnivariateDerivative1[6];
-                    final UnivariateDerivative1[] stopFiniteDifferences   = new UnivariateDerivative1[6];
-                    for (int i = 0; i < o[0].length; ++i) {
-                        medianClosedForm[i]        = new UnivariateDerivative1(o[4][i], jacobianMedian.getEntry(i, 0));
-                        medianFiniteDifferences[i] = new UnivariateDerivative1(o[4][i],
-                                                                               differential8(o[0][i], o[1][i], o[2][i], o[3][i],
-                                                                                             o[5][i], o[6][i], o[7][i], o[8][i],
-                                                                                             h));
-                        if (interpolatorStart != null) {
-                            startClosedForm[i]         = new UnivariateDerivative1(o[13][i], jacobianStart.getEntry(i, 0));
-                            startFiniteDifferences[i]  = new UnivariateDerivative1(o[13][i],
-                                                                                   differential8(o[ 9][i], o[10][i], o[11][i], o[12][i],
-                                                                                                 o[14][i], o[15][i], o[16][i], o[17][i],
-                                                                                                 h));
-                        }
-                        if (interpolatorStop != null) {
-                            stopClosedForm[i]          = new UnivariateDerivative1(o[22][i], jacobianStop.getEntry(i, 0));
-                            stopFiniteDifferences[i]   = new UnivariateDerivative1(o[22][i],
-                                                                                   differential8(o[18][i], o[19][i], o[20][i], o[21][i],
-                                                                                                 o[23][i], o[24][i], o[25][i], o[26][i],
-                                                                                                 h));
-                        }
-                    }
+
+                    final UnivariateDerivative1[] startFiniteDifferences    = new UnivariateDerivative1[6];
+                    final UnivariateDerivative1[] startClosedForm           = new UnivariateDerivative1[6];
+                    final UnivariateDerivative1[] stopFiniteDifferences     = new UnivariateDerivative1[6];
+                    final UnivariateDerivative1[] stopClosedForm            = new UnivariateDerivative1[6];
+                    final UnivariateDerivative1[] medianFiniteDifferences   = new UnivariateDerivative1[6];
+                    final UnivariateDerivative1[] medianClosedForm          = new UnivariateDerivative1[6];
+                    final UnivariateDerivative1[] durationFiniteDifferences = new UnivariateDerivative1[6];
+                    final UnivariateDerivative1[] durationClosedForm        = new UnivariateDerivative1[6];
+
+                    fill(interpolators, harvesterMedian,   indexMedian,   medianClosedForm,   medianFiniteDifferences);
+                    fill(interpolators, harvesterStart,    indexStart,    startClosedForm,    startFiniteDifferences);
+                    fill(interpolators, harvesterStop,     indexStop,     stopClosedForm,     stopFiniteDifferences);
+                    fill(interpolators, harvesterDuration, indexDuration, durationClosedForm, durationFiniteDifferences);
+
                     sample.add(new Entry(next.getDate(),
-                                         medianClosedForm, medianFiniteDifferences,
-                                         startClosedForm, startFiniteDifferences,
-                                         stopClosedForm, stopFiniteDifferences));
+                                         startFiniteDifferences,    startClosedForm,
+                                         stopFiniteDifferences,     stopClosedForm,
+                                         medianFiniteDifferences,   medianClosedForm,
+                                         durationFiniteDifferences, durationClosedForm));
+
                 }
                 next = next.shiftedBy(forward ? samplingtep : -samplingtep);
+            }
+        }
+
+        private void fill(final List<OrekitStepInterpolator> interpolators,
+                          final MatricesHarvester harvester, final int index,
+                          final UnivariateDerivative1[] closedForm,
+                          final UnivariateDerivative1[] finiteDifferences) {
+            if (index >= 0) {
+                final double[][] o = new double[9][6];
+                for (int i = 0; i < o.length; ++i) {
+                    orbitType.mapOrbitToArray(interpolators.get(index + i - 4).getInterpolatedState(next).getOrbit(),
+                                              positionAngle, o[i], null);
+                }
+                final RealMatrix jacobian = harvester.getParametersJacobian(interpolators.get(index).getInterpolatedState(next));
+                for (int i = 0; i < closedForm.length; ++i) {
+                    closedForm[i]        = new UnivariateDerivative1(o[4][i], jacobian.getEntry(i, 0));
+                    finiteDifferences[i] = new UnivariateDerivative1(o[4][i],
+                                                                     differential8(o[0][i], o[1][i], o[2][i], o[3][i],
+                                                                                   o[5][i], o[6][i], o[7][i], o[8][i],
+                                                                                   h));
+                }
             }
         }
 
@@ -703,26 +663,32 @@ public class TriggersDerivativesTest {
 
     private class Entry {
         private AbsoluteDate date;
-        private UnivariateDerivative1[]     medianClosedForm;
-        private UnivariateDerivative1[]     medianFiniteDifferences;
-        private UnivariateDerivative1[]     startClosedForm;
         private UnivariateDerivative1[]     startFiniteDifferences;
-        private UnivariateDerivative1[]     stopClosedForm;
+        private UnivariateDerivative1[]     startClosedForm;
         private UnivariateDerivative1[]     stopFiniteDifferences;
+        private UnivariateDerivative1[]     stopClosedForm;
+        private UnivariateDerivative1[]     medianFiniteDifferences;
+        private UnivariateDerivative1[]     medianClosedForm;
+        private UnivariateDerivative1[]     durationFiniteDifferences;
+        private UnivariateDerivative1[]     durationClosedForm;
         Entry(final AbsoluteDate date,
-              final UnivariateDerivative1[] medianClosedForm,
-              final UnivariateDerivative1[] medianFiniteDifferences,
-              final UnivariateDerivative1[] startClosedForm,
               final UnivariateDerivative1[] startFiniteDifferences,
+              final UnivariateDerivative1[] startClosedForm,
+              final UnivariateDerivative1[] stopFiniteDifferences,
               final UnivariateDerivative1[] stopClosedForm,
-              final UnivariateDerivative1[] stopFiniteDifferences) {
-            this.date                    = date;
-            this.medianClosedForm        = medianClosedForm.clone();
-            this.medianFiniteDifferences = medianFiniteDifferences.clone();
-            this.startClosedForm         = startClosedForm.clone();
-            this.startFiniteDifferences  = startFiniteDifferences.clone();
-            this.stopClosedForm          = stopClosedForm.clone();
-            this.stopFiniteDifferences   = stopFiniteDifferences.clone();
+              final UnivariateDerivative1[] medianFiniteDifferences,
+              final UnivariateDerivative1[] medianClosedForm,
+              final UnivariateDerivative1[] durationFiniteDifferences,
+              final UnivariateDerivative1[] durationClosedForm) {
+            this.date                      = date;
+            this.startFiniteDifferences    = startFiniteDifferences.clone();
+            this.startClosedForm           = startClosedForm.clone();
+            this.stopFiniteDifferences     = stopFiniteDifferences.clone();
+            this.stopClosedForm            = stopClosedForm.clone();
+            this.medianFiniteDifferences   = medianFiniteDifferences.clone();
+            this.medianClosedForm          = medianClosedForm.clone();
+            this.durationFiniteDifferences = durationFiniteDifferences.clone();
+            this.durationClosedForm        = durationClosedForm.clone();
         }
     }
 
