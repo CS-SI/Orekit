@@ -112,7 +112,7 @@ public class TriggerDateJacobianColumnGenerator
     /** Indicator for trigger. */
     private boolean triggered;
 
-    /** Indicator for forwart propagation. */
+    /** Indicator for forward propagation. */
     private boolean forward;
 
     /** Simple constructor.
@@ -160,7 +160,7 @@ public class TriggerDateJacobianColumnGenerator
         // this allows to get proper Jacobian if we interrupt propagation
         // in the middle of a maneuver and restart propagation where it left
         final boolean newForward = target.isAfterOrEqualTo(initialState);
-        if (contribution == null || forward ^ newForward) {
+        if (contribution == null || (forward ^ newForward)) {
             contribution = new TimeSpanMap<>(null);
             triggered    = false;
         }
@@ -200,9 +200,9 @@ public class TriggerDateJacobianColumnGenerator
 
         // initialize derivatives computation
         final RealVector rhs = MatrixUtils.createRealVector(STATE_DIMENSION);
-        rhs.setEntry(3, sign * acceleration.getX());
-        rhs.setEntry(4, sign * acceleration.getY());
-        rhs.setEntry(5, sign * acceleration.getZ());
+        rhs.setEntry(3, (forward ? sign : -sign) * acceleration.getX());
+        rhs.setEntry(4, (forward ? sign : -sign) * acceleration.getY());
+        rhs.setEntry(5, (forward ? sign : -sign) * acceleration.getZ());
 
         // get State Transition Matrix with respect to Cartesian parameters at trigger time
         final RealMatrix dY1dY0 = getStm(state);

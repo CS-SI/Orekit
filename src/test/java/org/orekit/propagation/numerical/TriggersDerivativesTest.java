@@ -33,6 +33,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -148,67 +149,118 @@ public class TriggersDerivativesTest {
     }
 
     @Test
-    public void testDerivativeWrtStartTimeCartesian() {
-        doTestDerivativeWrtStartStopTime(true, OrbitType.CARTESIAN,
+    public void testDerivativeWrtStartTimeCartesianForward() {
+        doTestDerivativeWrtStartStopTime(true, OrbitType.CARTESIAN, true,
                                          0.022, 0.012, 0.012, 0.013, 0.012, 0.021);
     }
 
     @Test
-    public void testDerivativeWrtStartTimeKeplerian() {
-        doTestDerivativeWrtStartStopTime(true, OrbitType.KEPLERIAN,
+    public void testDerivativeWrtStartTimeKeplerianForward() {
+        doTestDerivativeWrtStartStopTime(true, OrbitType.KEPLERIAN, true,
                                          0.012, 0.011, 0.011, 0.012, 0.011, 0.017);
     }
 
     @Test
-    public void testDerivativeWrtStopTimeCartesian() {
-        doTestDerivativeWrtStartStopTime(false, OrbitType.CARTESIAN,
+    public void testDerivativeWrtStartTimeCartesianBackward() {
+        doTestDerivativeWrtStartStopTime(true, OrbitType.CARTESIAN, false,
+                                         0.022, 0.012, 0.012, 0.013, 0.012, 0.021);
+    }
+
+    @Test
+    public void testDerivativeWrtStartTimeKeplerianBackward() {
+        doTestDerivativeWrtStartStopTime(true, OrbitType.KEPLERIAN, false,
+                                         0.012, 0.011, 0.011, 0.012, 0.011, 0.017);
+    }
+
+    @Test
+    public void testDerivativeWrtStopTimeCartesianForward() {
+        doTestDerivativeWrtStartStopTime(false, OrbitType.CARTESIAN, true,
                                          0.00033, 0.00045, 0.00040, 0.00022, 0.00020, 0.00010);
     }
 
     @Test
-    public void testDerivativeWrtStopTimeKeplerian() {
-        doTestDerivativeWrtStartStopTime(false, OrbitType.KEPLERIAN,
+    public void testDerivativeWrtStopTimeKeplerianForward() {
+        doTestDerivativeWrtStartStopTime(false, OrbitType.KEPLERIAN, true,
                                          0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
     }
 
     @Test
-    public void testDerivativeWrtMedianCartesian() {
-        doTestDerivativeWrtMedianTime(OrbitType.CARTESIAN,
+    public void testDerivativeWrtStopTimeCartesianBackward() {
+        doTestDerivativeWrtStartStopTime(false, OrbitType.CARTESIAN, false,
+                                         0.00033, 0.00045, 0.00040, 0.00022, 0.00020, 0.00010);
+    }
+
+    @Test
+    public void testDerivativeWrtStopTimeKeplerianBackward() {
+        doTestDerivativeWrtStartStopTime(false, OrbitType.KEPLERIAN, false,
+                                         0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
+    }
+
+    @Test
+    public void testDerivativeWrtMedianCartesianForward() {
+        doTestDerivativeWrtMedianTime(OrbitType.CARTESIAN, true,
                                       0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
     }
 
     @Test
-    public void testDerivativeWrtMedianKeplerian() {
-        doTestDerivativeWrtMedianTime(OrbitType.KEPLERIAN,
+    public void testDerivativeWrtMedianKeplerianForward() {
+        doTestDerivativeWrtMedianTime(OrbitType.KEPLERIAN, true,
                                       0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
     }
 
     @Test
-    public void testDerivativeWrtDurationCartesian() {
-        doTestDerivativeWrtDuration(OrbitType.CARTESIAN,
+    public void testDerivativeWrtMedianCartesianBackward() {
+        doTestDerivativeWrtMedianTime(OrbitType.CARTESIAN, false,
+                                      0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
+    }
+
+    @Test
+    public void testDerivativeWrtMedianKeplerianBackward() {
+        doTestDerivativeWrtMedianTime(OrbitType.KEPLERIAN, false,
+                                      0.0011, 0.00020, 0.00002, 0.00082, 0.00008, 0.00019);
+    }
+
+    @Test
+    public void testDerivativeWrtDurationCartesianForward() {
+        doTestDerivativeWrtDuration(OrbitType.CARTESIAN, true,
                                     0.00540, 0.00540, 0.00540, 0.00540, 0.00540, 0.00540);
     }
 
     @Test
-    public void testDerivativeWrtDurationKeplerian() {
-        doTestDerivativeWrtDuration(OrbitType.KEPLERIAN,
+    public void testDerivativeWrtDurationKeplerianForward() {
+        doTestDerivativeWrtDuration(OrbitType.KEPLERIAN, true,
                                     0.00577, 0.00540, 0.00540, 0.00570, 0.00541, 0.00543);
     }
 
-    private void doTestDerivativeWrtStartStopTime(final boolean start, final OrbitType orbitType, final double...tolerance) {
+    @Test
+    public void testDerivativeWrtDurationCartesianBackward() {
+        doTestDerivativeWrtDuration(OrbitType.CARTESIAN, false,
+                                    0.00540, 0.00540, 0.00540, 0.00540, 0.00540, 0.00540);
+    }
 
-        final AbsoluteDate firing = new AbsoluteDate(new DateComponents(2004, 1, 2),
-                                                     new TimeComponents(4, 15, 34.080),
-                                                     TimeScalesFactory.getUTC());
+    @Test
+    public void testDerivativeWrtDurationKeplerianBackward() {
+        doTestDerivativeWrtDuration(OrbitType.KEPLERIAN, false,
+                                    0.00577, 0.00540, 0.00540, 0.00570, 0.00541, 0.00543);
+    }
 
-        final List<Propagator> propagators = new ArrayList<>();
+    private void doTestDerivativeWrtStartStopTime(final boolean start, final OrbitType orbitType, final boolean forward,
+                                                  final double...tolerance) {
 
-        // propagators will be combined using finite differences to compute derivatives
         final PositionAngle positionAngle = PositionAngle.TRUE;
         final int           degree        = 20;
         final double        duration      = 200.0;
         final double        h             = 1.0;
         final double        samplingtep   = 240.0;
+
+        final KeplerianOrbit initial    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
+        final double         firingM    = MathUtils.normalizeAngle(FastMath.PI, initial.getMeanAnomaly() + (forward ? FastMath.PI : -FastMath.PI));
+        final AbsoluteDate   apogeeDate = initial.getDate().shiftedBy((firingM - initial.getMeanAnomaly()) / initial.getKeplerianMeanMotion());
+        final AbsoluteDate   firing     = apogeeDate.shiftedBy(-0.5 * duration);
+
+        final List<Propagator> propagators = new ArrayList<>();
+
+        // propagators will be combined using finite differences to compute derivatives
         for (int k = -4; k <= 4; ++k) {
             final DateBasedManeuverTriggers trigger = start ?
                                                       new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(k * h), duration - k * h) :
@@ -231,8 +283,12 @@ public class TriggersDerivativesTest {
         DerivativesSampler sampler = new DerivativesSampler(harvester, null, null, orbitType, positionAngle,
                                                             firing, duration, h, samplingtep);
 
-        new PropagatorsParallelizer(propagators, sampler).
-        propagate(firing.shiftedBy(-30 * samplingtep), firing.shiftedBy(duration + 300 * samplingtep));
+        final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, sampler);
+        if (forward) {
+            parallelizer.propagate(firing.shiftedBy(-30 * samplingtep), firing.shiftedBy(duration + 300 * samplingtep));
+        } else {
+            parallelizer.propagate(firing.shiftedBy(duration + 30 * samplingtep), firing.shiftedBy(-300 * samplingtep));
+        }
 
         double[] maxRelativeError = new double[tolerance.length];
         for (final Entry entry : sampler.sample) {
@@ -243,26 +299,34 @@ public class TriggersDerivativesTest {
             }
         }
 
+        analyzeSample(sampler, orbitType, firing, forward, degree,
+                      start ? "start time" : "stop time",
+                      start ? "dt_{start}" : "dt_{stop}",
+                      true, null);
+
         for (int i = 0; i < tolerance.length; ++i) {
             Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
         }
 
     }
 
-    private void doTestDerivativeWrtMedianTime(final OrbitType orbitType, final double...tolerance) {
+    private void doTestDerivativeWrtMedianTime(final OrbitType orbitType, final boolean forward,
+                                               final double...tolerance) {
 
-        final AbsoluteDate firing = new AbsoluteDate(new DateComponents(2004, 1, 2),
-                                                     new TimeComponents(4, 15, 34.080),
-                                                     TimeScalesFactory.getUTC());
-
-        final List<Propagator> propagators = new ArrayList<>();
-
-        // propagators will be combined using finite differences to compute derivatives
         final PositionAngle positionAngle = PositionAngle.TRUE;
         final int           degree        = 20;
         final double        duration      = 200.0;
         final double        h             = 1.0;
         final double        samplingtep   = 20.0;
+
+        final KeplerianOrbit initial    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
+        final double         firingM    = MathUtils.normalizeAngle(FastMath.PI, initial.getMeanAnomaly() + (forward ? FastMath.PI : -FastMath.PI));
+        final AbsoluteDate   apogeeDate = initial.getDate().shiftedBy((firingM - initial.getMeanAnomaly()) / initial.getKeplerianMeanMotion());
+        final AbsoluteDate   firing     = apogeeDate.shiftedBy(-0.5 * duration);
+
+        final List<Propagator> propagators = new ArrayList<>();
+
+        // propagators will be combined using finite differences to compute derivatives
         for (int k = -4; k <= 4; ++k) {
             final DateBasedManeuverTriggers triggers =
                             new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(k * h), duration);
@@ -319,8 +383,12 @@ public class TriggersDerivativesTest {
                                                             orbitType, positionAngle,
                                                             firing, duration, h, samplingtep);
 
-        new PropagatorsParallelizer(propagators, sampler).
-        propagate(firing.shiftedBy(-30 * samplingtep), firing.shiftedBy(duration + 300 * samplingtep));
+        final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, sampler);
+        if (forward) {
+            parallelizer.propagate(firing.shiftedBy(-30 * samplingtep), firing.shiftedBy(duration + 300 * samplingtep));
+        } else {
+            parallelizer.propagate(firing.shiftedBy(duration + 30 * samplingtep), firing.shiftedBy(-300 * samplingtep));
+        }
 
         double[] maxRelativeError = new double[tolerance.length];
         for (final Entry entry : sampler.sample) {
@@ -331,7 +399,7 @@ public class TriggersDerivativesTest {
             }
         }
 
-        analyzeSample(sampler, orbitType, firing, degree, "median-time", "dt_m", true, null);
+        analyzeSample(sampler, orbitType, firing, forward, degree, "median-time", "dt_m", true, null);
 
         for (int i = 0; i < tolerance.length; ++i) {
             Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
@@ -339,20 +407,23 @@ public class TriggersDerivativesTest {
 
     }
 
-    private void doTestDerivativeWrtDuration(final OrbitType orbitType, final double...tolerance) {
+    private void doTestDerivativeWrtDuration(final OrbitType orbitType, final boolean forward,
+                                             final double...tolerance) {
 
-        final AbsoluteDate firing = new AbsoluteDate(new DateComponents(2004, 1, 2),
-                                                     new TimeComponents(4, 15, 34.080),
-                                                     TimeScalesFactory.getUTC());
-
-        final List<Propagator> propagators = new ArrayList<>();
-
-        // propagators will be combined using finite differences to compute derivatives
         final PositionAngle positionAngle = PositionAngle.TRUE;
         final int           degree        = 20;
         final double        duration      = 200.0;
         final double        h             = 1.0;
         final double        samplingtep   = 240.0;
+
+        final KeplerianOrbit initial    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
+        final double         firingM    = MathUtils.normalizeAngle(FastMath.PI, initial.getMeanAnomaly() + (forward ? FastMath.PI : -FastMath.PI));
+        final AbsoluteDate   apogeeDate = initial.getDate().shiftedBy((firingM - initial.getMeanAnomaly()) / initial.getKeplerianMeanMotion());
+        final AbsoluteDate   firing     = apogeeDate.shiftedBy(-0.5 * duration);
+
+        final List<Propagator> propagators = new ArrayList<>();
+
+        // propagators will be combined using finite differences to compute derivatives
         for (int k = -4; k <= 4; ++k) {
             final DateBasedManeuverTriggers triggers =
                             new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(-0.5 * k * h), duration + k * h);
@@ -374,8 +445,12 @@ public class TriggersDerivativesTest {
         DerivativesSampler sampler = new DerivativesSampler(harvester, null, null, orbitType, positionAngle,
                                                             firing, duration, h, samplingtep);
 
-        new PropagatorsParallelizer(propagators, sampler).
-        propagate(firing.shiftedBy(-30 * samplingtep), firing.shiftedBy(duration + 100 * samplingtep));
+        final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, sampler);
+        if (forward) {
+            parallelizer.propagate(firing.shiftedBy(-30 * samplingtep), firing.shiftedBy(duration + 300 * samplingtep));
+        } else {
+            parallelizer.propagate(firing.shiftedBy(duration + 30 * samplingtep), firing.shiftedBy(-300 * samplingtep));
+        }
 
         double[] maxRelativeError = new double[tolerance.length];
         for (final Entry entry : sampler.sample) {
@@ -386,7 +461,7 @@ public class TriggersDerivativesTest {
             }
         }
 
-        analyzeSample(sampler, orbitType, firing, degree, "duration", "dτ", true, null);
+        analyzeSample(sampler, orbitType, firing, forward, degree, "duration", "dτ", true, null);
 
         for (int i = 0; i < tolerance.length; ++i) {
             Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
@@ -395,7 +470,8 @@ public class TriggersDerivativesTest {
     }
 
     private void analyzeSample(final DerivativesSampler sampler, final OrbitType orbitType, final AbsoluteDate firing,
-                               final int degree, final String param, final String der, final boolean plot, final String outputDir) {
+                               final boolean forward, final int degree, final String param, final String der,
+                               final boolean plot, final String outputDir) {
         if (!plot) {
             return;
         }
@@ -413,7 +489,8 @@ public class TriggersDerivativesTest {
                     out.format(Locale.US, "set terminal qt size %d, %d title 'complex plotter'%n", 1000, 1000);
                 } else {
                     fileName = new File(outputDir,
-                                        "triggers-partials-" + param + '-' + orbitType + "-degree-" + degree + ".png").
+                                        "triggers-partials-" + param + '-' + orbitType + "-degree-" + degree +
+                                        (forward ? "-forward" : "-backward") + ".png").
                                getAbsolutePath();
                     out.format(Locale.US, "set terminal pngcairo size %d, %d%n", 1000, 1000);
                     out.format(Locale.US, "set output '%s'%n", fileName);
@@ -428,7 +505,9 @@ public class TriggersDerivativesTest {
                     out.format(Locale.US, "set ylabel 'da/" + der + " (m/s)'%n");
                     out.format(Locale.US, "set key top left%n");
                 }
-                out.format(Locale.US, "set title 'derivatives of %s state, gravity field degree %d'%n", orbitType, degree);
+                out.format(Locale.US,
+                           "set title 'derivatives of %s state, gravity field degree %d %s'%n",
+                           orbitType, degree, forward ? "forward" : "backward");
                 out.format(Locale.US, "$data <<EOD%n");
                 for (final Entry entry : sampler.sample) {
                     out.format(Locale.US, "%.6f", entry.date.durationFrom(firing));
@@ -471,15 +550,12 @@ public class TriggersDerivativesTest {
                                                 final int degree, final AbsoluteDate firing, final double duration,
                                                 final DateBasedManeuverTriggers triggers) {
 
-        final double delta = FastMath.toRadians(-7.4978);
-        final double alpha = FastMath.toRadians(351);
-        AttitudeProvider attitudeProvider = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider attitudeProvider = buildAttitudeProvider();
+        SpacecraftState initialState = buildInitialState(attitudeProvider);
 
         final double isp      = 318;
         final double f        = 420;
         PropulsionModel propulsionModel = new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM");
-
-        SpacecraftState initialState = buildInitialState(attitudeProvider);
 
         double[][] tol = NumericalPropagator.tolerances(0.01, initialState.getOrbit(), orbitType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
@@ -508,13 +584,17 @@ public class TriggersDerivativesTest {
         final double OMEGA = FastMath.toRadians(261);
         final double lv    = 0;
 
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
-                                                       new TimeComponents(23, 30, 00.000),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 1, 1), new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
-        final Orbit orbit =
-            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
+        final Orbit        orbit    = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                                                         FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         return new SpacecraftState(orbit, attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+    }
+
+    private AttitudeProvider buildAttitudeProvider() {
+        final double delta = FastMath.toRadians(-7.4978);
+        final double alpha = FastMath.toRadians(351);
+        return new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
     }
 
     private class DerivativesSampler implements MultiSatStepHandler {
