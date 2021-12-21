@@ -34,14 +34,15 @@ import org.orekit.utils.TimeSpanMap;
  * <p>
  * Let \((t_0, y_0)\) be the state at propagation start, \((t_1, y_1)\) be the state at
  * maneuver trigger time, \((t_t, y_t)\) be the state at any arbitrary time \(t\) during
- * propagation, and \(f_m(t_t, y_t)\) be the contribution of the maneuver to the global
+ * propagation, and \(f_m(t, y)\) be the contribution of the maneuver to the global
  * ODE \(\frac{dy}{dt} = f(t, y)\). We are interested in the Jacobian column
  * \(\frac{\partial y_t}{\partial t_1}\).
  * </p>
  * <p>
  * After trigger time \(t_1\) (according to propagation direction),
  * \[\frac{\partial y_t}{\partial t_1} = \pm \frac{\partial y_t}{\partial y_1} f_m(t_1, y_1)\]
- * where the sign depends on \(t_1\) being a start or stop trigger.
+ * where the sign depends on \(t_1\) being a start or stop trigger and propagation being forward
+ * or backward.
  * </p>
  * <p>
  * We don't have \(\frac{\partial y_t}{\partial y_1}\) available if \(t_1 \neq t_0\), but we
@@ -67,7 +68,11 @@ import org.orekit.utils.TimeSpanMap;
  * in the primary state during propagation.
  * </p>
  * <p>
- * The implementation takes care to <em>not</em> resetting anything at propagation start.
+ * As the closed-form expression requires picking \(c_1\) at trigger time \(t_1\), it works only
+ * if propagation starts outside of the maneuver and passes over \(t_1\) during integration.
+ * </p>
+ * <p>
+ * The implementation takes care to <em>not</em> resetting \(c_1\) at propagation start.
  * This allows to get proper Jacobian if we interrupt propagation in the middle of a maneuver
  * and restart propagation where it left.
  * </p>
@@ -100,17 +105,14 @@ public class TriggerDateJacobianColumnGenerator
     /** Maneuver force model. */
     private final Maneuver maneuver;
 
-    /** Sign for acceleration. */
-    private final double sign;
-
     /** Event detector threshold. */
     private final double threshold;
 
     /** Signed contribution of maneuver at trigger time ±(∂y₁/∂y₀)⁻¹ fₘ(t₁, y₁). */
     private TimeSpanMap<double[]> contribution;
 
-    /** Indicator for trigger. */
-    private boolean triggered;
+    /** Trigger date. */
+    private AbsoluteDate trigger;
 
     /** Indicator for forward propagation. */
     private boolean forward;
@@ -129,9 +131,9 @@ public class TriggerDateJacobianColumnGenerator
         this.columnName   = columnName;
         this.manageStart  = manageStart;
         this.maneuver     = maneuver;
-        this.sign         = manageStart ? -1 : +1;
         this.threshold    = threshold;
         this.contribution = null;
+        this.trigger      = null;
         this.forward      = true;
     }
 
@@ -162,7 +164,7 @@ public class TriggerDateJacobianColumnGenerator
         final boolean newForward = target.isAfterOrEqualTo(initialState);
         if (contribution == null || (forward ^ newForward)) {
             contribution = new TimeSpanMap<>(null);
-            triggered    = false;
+            trigger      = null;
         }
 
         forward = newForward;
@@ -172,37 +174,61 @@ public class TriggerDateJacobianColumnGenerator
     /** {@inheritDoc} */
     @Override
     public double[] getAdditionalState(final SpacecraftState state) {
+
         // we check contribution rather than triggered because this method
         // is called after maneuverTriggered and before resetState,
         // when preparing the old state to be reset
         final double[] c = contribution == null ? null : contribution.get(state.getDate());
-        return c == null ? ZERO : getStm(state).operate(c);
+
+        if (c == null) {
+            return ZERO;
+        } else {
+
+            // part of the effect due to the acceleration performed at trigger time
+            final double[] effect = getStm(state).operate(c);
+
+            if (trigger != null) {
+                // part of the effect due to mass change influence on current acceleration
+                final double[] parameters   = maneuver.getParameters();
+                final Vector3D acceleration = maneuver.acceleration(state, parameters);
+                final double   flowRate     = maneuver.getPropulsionModel().getMassDerivatives(state, parameters);
+                final double   ratio        = state.getDate().durationFrom(trigger) * flowRate / state.getMass();
+                effect[3] += ratio * acceleration.getX();
+                effect[4] += ratio * acceleration.getY();
+                effect[5] += ratio * acceleration.getZ();
+            }
+
+            return effect;
+
+        }
+
     }
 
     /** {@inheritDoc}*/
     @Override
     public void maneuverTriggered(final SpacecraftState state, final boolean start) {
-        triggered = start == manageStart;
+        trigger = (start == manageStart) ? state.getDate() : null;
     }
 
     /** {@inheritDoc}*/
     @Override
     public SpacecraftState resetState(final SpacecraftState state) {
 
-        if (!triggered) {
+        if (trigger == null) {
             // this is not the maneuver trigger we expected (start vs. stop)
             return state;
         }
 
         // get the acceleration near trigger time
-        final SpacecraftState stateWhenFiring = state.shiftedBy(-2 * sign * threshold);
+        final SpacecraftState stateWhenFiring = state.shiftedBy((manageStart ? 2 : -2) * threshold);
         final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, maneuver.getParameters());
 
         // initialize derivatives computation
-        final RealVector rhs = MatrixUtils.createRealVector(STATE_DIMENSION);
-        rhs.setEntry(3, (forward ? sign : -sign) * acceleration.getX());
-        rhs.setEntry(4, (forward ? sign : -sign) * acceleration.getY());
-        rhs.setEntry(5, (forward ? sign : -sign) * acceleration.getZ());
+        final double     sign = (forward ^ manageStart) ? +1 : -1;
+        final RealVector rhs  = MatrixUtils.createRealVector(STATE_DIMENSION);
+        rhs.setEntry(3, sign * acceleration.getX());
+        rhs.setEntry(4, sign * acceleration.getY());
+        rhs.setEntry(5, sign * acceleration.getZ());
 
         // get State Transition Matrix with respect to Cartesian parameters at trigger time
         final RealMatrix dY1dY0 = getStm(state);
