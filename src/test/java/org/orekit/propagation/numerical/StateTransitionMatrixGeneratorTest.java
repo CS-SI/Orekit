@@ -30,8 +30,10 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -41,14 +43,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.gravity.potential.SHMFormatReader;
+import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.jacobians.TriggerDate;
+import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
+import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -56,12 +65,15 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -76,8 +88,87 @@ public class StateTransitionMatrixGeneratorTest {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data:potential/shm-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
+        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
+    }
+
+    @Test
+    public void testInterrupt() {
+        final AbsoluteDate firing = new AbsoluteDate(new DateComponents(2004, 1, 2),
+                                                     new TimeComponents(4, 15, 34.080),
+                                                     TimeScalesFactory.getUTC());
+        final double duration = 200.0;
+
+        // first propagation, covering the maneuver
+        DateBasedManeuverTriggers triggers1 = new DateBasedManeuverTriggers("MAN_0", firing, duration);
+        final NumericalPropagator propagator1  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, 20,
+                                                                 firing, duration, triggers1);
+        propagator1.
+        getAllForceModels().
+        forEach(fm -> fm.
+                          getParametersDrivers().
+                          stream().
+                          filter(d -> d.getName().equals("MAN_0_START") ||
+                                      d.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)).
+                          forEach(d -> d.setSelected(true)));
+        final MatricesHarvester   harvester1   = propagator1.setupMatricesComputation("stm", null, null);
+        final SpacecraftState     state1       = propagator1.propagate(firing.shiftedBy(2 * duration));
+        final RealMatrix          stm1         = harvester1.getStateTransitionMatrix(state1);
+        final RealMatrix          jacobian1    = harvester1.getParametersJacobian(state1);
+
+        // second propagation, interrupted during maneuver
+        DateBasedManeuverTriggers triggers2 = new DateBasedManeuverTriggers("MAN_0", firing, duration);
+                final NumericalPropagator propagator2  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, 20,
+                                                                         firing, duration, triggers2);
+        propagator2.
+        getAllForceModels().
+        forEach(fm -> fm.
+                getParametersDrivers().
+                stream().
+                filter(d -> d.getName().equals("MAN_0_START") ||
+                       d.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)).
+                forEach(d -> d.setSelected(true)));
+
+         // some additional providers for test coverage
+        final StateTransitionMatrixGenerator dummyStmGenerator =
+                        new StateTransitionMatrixGenerator("dummy-1",
+                                                           Collections.emptyList(),
+                                                           propagator2.getAttitudeProvider());
+        propagator2.addAdditionalDerivativesProvider(dummyStmGenerator);
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState(dummyStmGenerator.getName(), new double[36]));
+        propagator2.addAdditionalDerivativesProvider(new IntegrableJacobianColumnGenerator(dummyStmGenerator, "dummy-2"));
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-2", new double[6]));
+        propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
+            public String getName() { return "dummy-3"; }
+            public int getDimension() { return 1; }
+            public double[] derivatives(SpacecraftState s) { return new double[1]; }
+        });
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
+        propagator2.addAdditionalStateProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
+                                                               (Maneuver) propagator2.getAllForceModels().get(1),
+                                                               1.0e-6));
+        propagator2.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() { return "dummy-5"; }
+            public double[] getAdditionalState(SpacecraftState s) { return new double[1]; }
+        });
+        final MatricesHarvester   harvester2   = propagator2.setupMatricesComputation("stm", null, null);
+        final SpacecraftState     intermediate = propagator2.propagate(firing.shiftedBy(0.5 * duration));
+        final RealMatrix          stmI         = harvester2.getStateTransitionMatrix(intermediate);
+        final RealMatrix          jacobianI    = harvester2.getParametersJacobian(intermediate);
+
+        // intermediate state has really different matrices, they are still building up
+        Assert.assertEquals(0.1253, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-4);
+        Assert.assertEquals(0.0165, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-4);
+
+        // restarting propagation where we left it
+        final SpacecraftState     state2       = propagator2.propagate(firing.shiftedBy(2 * duration));
+        final RealMatrix          stm2         = harvester2.getStateTransitionMatrix(state2);
+        final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
+
+        // after completing the two-stage propagation, we get the same matrices
+        Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 1.0e-13 * stm1.getNorm1());
+        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 8.0e-13 * jacobian1.getNorm1());
+
     }
 
     /**
@@ -519,6 +610,67 @@ public class StateTransitionMatrixGeneratorTest {
 
         return dYdY0Ref;
 
+    }
+
+    private NumericalPropagator buildPropagator(final OrbitType orbitType, final PositionAngle positionAngle,
+                                                final int degree, final AbsoluteDate firing, final double duration,
+                                                final DateBasedManeuverTriggers triggers) {
+
+        final AttitudeProvider attitudeProvider = buildAttitudeProvider();
+        SpacecraftState initialState = buildInitialState(attitudeProvider);
+
+        final double isp      = 318;
+        final double f        = 420;
+        PropulsionModel propulsionModel = new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM");
+
+        double[][] tol = NumericalPropagator.tolerances(0.01, initialState.getOrbit(), orbitType);
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
+        integrator.setInitialStepSize(60);
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+
+        propagator.setOrbitType(orbitType);
+        propagator.setPositionAngleType(positionAngle);
+        propagator.setAttitudeProvider(attitudeProvider);
+        if (degree > 0) {
+            propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
+                                                                           GravityFieldFactory.getNormalizedProvider(degree, degree)));
+        }
+        final Maneuver maneuver = new Maneuver(null, triggers, propulsionModel);
+        propagator.addForceModel(maneuver);
+        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() { return triggers.getName().concat("-acc"); }
+            public double[] getAdditionalState(SpacecraftState state) {
+                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(), 0, propulsionModel.getParametersDrivers().size());
+                return new double[] {
+                    propulsionModel.getAcceleration(state, state.getAttitude(), parameters).getNorm()
+                };
+            }
+        });
+        propagator.setInitialState(initialState);
+        return propagator;
+
+    }
+
+    private SpacecraftState buildInitialState(final AttitudeProvider attitudeProvider) {
+        final double mass  = 2500;
+        final double a     = 24396159;
+        final double e     = 0.72831215;
+        final double i     = FastMath.toRadians(7);
+        final double omega = FastMath.toRadians(180);
+        final double OMEGA = FastMath.toRadians(261);
+        final double lv    = 0;
+
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 1, 1), new TimeComponents(23, 30, 00.000),
+                                                       TimeScalesFactory.getUTC());
+        final Orbit        orbit    = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                                                         FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
+        return new SpacecraftState(orbit, attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+    }
+
+    private AttitudeProvider buildAttitudeProvider() {
+        final double delta = FastMath.toRadians(-7.4978);
+        final double alpha = FastMath.toRadians(351);
+        return new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
     }
 
     /** Mock {@link ForceModel}. */

@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation;
+package org.orekit.forces.maneuvers.jacobians;
 
-/** Generator for one column of a Jacobian matrix for special case of maneuver median date.
+import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.SpacecraftState;
+
+/** Generator for one column of a Jacobian matrix for special case of maneuver duration.
  * <p>
- * Typical use cases for this are estimation of maneuver median date during
+ * Typical use cases for this are estimation of maneuver duration during
  * either orbit determination or maneuver optimization.
  * </p>
  * @author Luc Maisonobe
  * @since 11.1
- * @see DurationJacobianColumnGenerator
- * @see TriggerDateJacobianColumnGenerator
+ * @see MedianDate
+ * @see TriggerDate
  */
-public class MedianDateJacobianColumnGenerator implements AdditionalStateProvider {
+public class Duration implements AdditionalStateProvider {
 
     /** Name of the parameter corresponding to the start date. */
     private final String startName;
@@ -42,7 +45,7 @@ public class MedianDateJacobianColumnGenerator implements AdditionalStateProvide
      * @param stopName name of the parameter corresponding to the stop date
      * @param columnName name of the parameter corresponding to the column
      */
-    public MedianDateJacobianColumnGenerator(final String startName, final String stopName, final String columnName) {
+    public Duration(final String startName, final String stopName, final String columnName) {
         this.startName  = startName;
         this.stopName   = stopName;
         this.columnName = columnName;
@@ -72,10 +75,10 @@ public class MedianDateJacobianColumnGenerator implements AdditionalStateProvide
         final double[] dYdT0 = state.getAdditionalState(startName);
         final double[] dYdT1 = state.getAdditionalState(stopName);
 
-        // combine derivatives to get partials with respect to median date
+        // combine derivatives to get partials with respect to duration
         final double[] dYdTm = new double[dYdT0.length];
         for (int i = 0; i < dYdTm.length; ++i) {
-            dYdTm[i] = dYdT0[i] + dYdT1[i];
+            dYdTm[i] = 0.5 * (dYdT1[i] - dYdT0[i]);
         }
         return dYdTm;
 
