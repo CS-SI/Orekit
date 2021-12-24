@@ -17,15 +17,9 @@
 package org.orekit.forces.maneuvers.jacobians;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -67,7 +61,6 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.IERSConventions;
 
 public class TriggersDerivativesTest {
@@ -227,9 +220,6 @@ public class TriggersDerivativesTest {
             }
         }
 
-        analyzeSample(sampler, orbitType, firing, forward, start ? "start time" : "stop time",
-                      true, "/tmp");
-
         for (int i = 0; i < tolerance.length; ++i) {
             Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
         }
@@ -331,93 +321,8 @@ public class TriggersDerivativesTest {
             }
         }
 
-        analyzeSample(sampler, orbitType, firing, forward,
-                      median ? "median time" : "duration",
-                      true, null);
-
         for (int i = 0; i < tolerance.length; ++i) {
             Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
-        }
-
-    }
-
-    private void analyzeSample(final DerivativesSampler sampler, final OrbitType orbitType, final AbsoluteDate firing,
-                               final boolean forward, final String param, final boolean plot, final String outputDir) {
-        if (!plot) {
-            return;
-        }
-        final ProcessBuilder pb = new ProcessBuilder("gnuplot").
-                        redirectOutput(ProcessBuilder.Redirect.INHERIT).
-                        redirectError(ProcessBuilder.Redirect.INHERIT);
-        pb.environment().remove("XDG_SESSION_TYPE");
-        Process gnuplot;
-        try {
-            gnuplot = pb.start();
-            try (PrintStream out = new PrintStream(gnuplot.getOutputStream(), false, StandardCharsets.UTF_8.name())) {
-                final String name = "triggers-partials-" + param.replace(' ', '-') + '-' + orbitType + (forward ? "-forward" : "-backward");
-                final String fileName;
-                if (outputDir == null) {
-                    fileName = null;
-                    out.format(Locale.US, "set terminal qt size %d, %d title '%s'%n", 1000, 1000, name);
-                } else {
-                    fileName = new File(outputDir, name + ".png").getAbsolutePath();
-                    out.format(Locale.US, "set terminal pngcairo size %d, %d%n", 1000, 1000);
-                    out.format(Locale.US, "set output '%s'%n", fileName);
-                }
-                out.format(Locale.US, "set offset graph 0.05, 0.05, 0.05, 0.05%n");
-//                out.format(Locale.US, "set yrange [-0.0001 : 0.0006]%n");
-                out.format(Locale.US, "set view map scale 1%n");
-                out.format(Locale.US, "set xlabel 't - t_{start}'%n");
-                final String obs = orbitType == OrbitType.CARTESIAN ? "dX" : "da";
-                out.format(Locale.US, "set ylabel '%s/dt (m/s)'%n", obs);
-                out.format(Locale.US, "set key %s%n", orbitType == OrbitType.CARTESIAN ? "bottom left" : "top left");
-                out.format(Locale.US, "set title 'derivatives of %s state %s'%n", orbitType, forward ? "forward" : "backward");
-                out.format(Locale.US, "$data <<EOD%n");
-                for (final Entry entry : sampler.sample) {
-                    out.format(Locale.US, "%.6f", entry.date.durationFrom(firing));
-                    for (int i = 0; i < 6; ++i) {
-                        out.format(Locale.US, " %.12f %.12f %.12f %.12f %.12f %.12f %.12f %.12f",
-                                   entry.start.finiteDifferences[i]    == null ? 0.0 : entry.start.finiteDifferences[i].getFirstDerivative(),
-                                   entry.start.closedForm[i]           == null ? 0.0 : entry.start.closedForm[i].getFirstDerivative(),
-                                   entry.stop.finiteDifferences[i]     == null ? 0.0 : entry.stop.finiteDifferences[i].getFirstDerivative(),
-                                   entry.stop.closedForm[i]            == null ? 0.0 : entry.stop.closedForm[i].getFirstDerivative(),
-                                   entry.median.finiteDifferences[i]   == null ? 0.0 : entry.median.finiteDifferences[i].getFirstDerivative(),
-                                   entry.median.closedForm[i]          == null ? 0.0 : entry.median.closedForm[i].getFirstDerivative(),
-                                   entry.duration.finiteDifferences[i] == null ? 0.0 : entry.duration.finiteDifferences[i].getFirstDerivative(),
-                                   entry.duration.closedForm[i]        == null ? 0.0 : entry.duration.closedForm[i].getFirstDerivative());
-                    }
-                    out.format(Locale.US, " %.12f %.12f %.12f %.12f",
-                               entry.start.acc, entry.stop.acc, entry.median.acc, entry.duration.acc);
-                    out.format(Locale.US, "%n");
-                }
-                out.format(Locale.US, "EOD%n");
-                out.format(Locale.US, "set angles degrees%n");
-                out.format(Locale.US, "plot ");
-                if (sampler.indexStart >= 0) {
-                    out.format(Locale.US, "$data using 1:($2-$3) with points lc 1 title '%s/dt_{start} error'%s%n",
-                               obs, (sampler.indexStop > 0 || sampler.indexMedian > 0 || sampler.indexDuration > 0) ? ",\\" : "");
-                }
-                if (sampler.indexStop >= 0) {
-                    out.format(Locale.US, "$data using 1:($4-$5) with points lc 7 title '%s/dt_{stop} error'%s%n",
-                               obs, (sampler.indexMedian > 0 || sampler.indexDuration > 0) ? ",\\" : "");
-                }
-                if (sampler.indexMedian >= 0) {
-                    out.format(Locale.US, "$data using 1:($6-$7) with points title '%s/dt_m error'%s%n",
-                               obs, (sampler.indexDuration > 0) ? ",\\" : "");
-                }
-                if (sampler.indexDuration >= 0) {
-                    out.format(Locale.US, "$data using 1:($8-$9) with points lc 7 title '%s/dτ error'%n",
-                               obs);
-                }
-                if (fileName == null) {
-                    out.format(Locale.US, "pause mouse close%n");
-                } else {
-                    System.out.format(Locale.US, "output written to %s%n", fileName);
-                }
-            }
-            
-        } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
         }
 
     }
@@ -573,15 +478,6 @@ public class TriggersDerivativesTest {
                                                                                           o[5][i], o[6][i], o[7][i], o[8][i],
                                                                                           h));
                 }
-                Optional<DoubleArrayDictionary.Entry> opt = centralState.
-                                                            getAdditionalStatesValues().
-                                                            getData().
-                                                            stream().
-                                                            filter(d -> d.getKey().endsWith("-acc")).
-                                                            findFirst();
-                if (opt.isPresent()) {
-                    result.acc = opt.get().getValue()[0];
-                }
             }
         }
 
@@ -594,13 +490,11 @@ public class TriggersDerivativesTest {
     }
 
     private static class Entry {
-        private AbsoluteDate date;
         private Result       start;
         private Result       stop;
         private Result       median;
         private Result       duration;
         Entry(final AbsoluteDate date) {
-            this.date     = date;
             this.start    = new Result();
             this.stop     = new Result();
             this.median   = new Result();
@@ -611,11 +505,9 @@ public class TriggersDerivativesTest {
     private static class Result {
         private UnivariateDerivative1[] finiteDifferences;
         private UnivariateDerivative1[] closedForm;
-        private double acc;
         Result() {
             this.finiteDifferences = new UnivariateDerivative1[6];
             this.closedForm        = new UnivariateDerivative1[6];
-            this.acc               = Double.NaN;
         }
     }
 
