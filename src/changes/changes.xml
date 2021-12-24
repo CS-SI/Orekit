@@ -44,7 +44,8 @@
         Added Brouwer-Lyddane orbit propagator.
       </action>
       <action dev="luc" type="add" issue="865">
-        Added derivatives with respect to maneuvers start and stop dates.
+        Added derivatives with respect to maneuvers start/stop dates
+        or median date/duration.
       </action>
       <action dev="luc" type="add" >
         Added observers for maneuvers triggers.

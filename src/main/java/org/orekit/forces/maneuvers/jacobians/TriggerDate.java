@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation;
+package org.orekit.forces.maneuvers.jacobians;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
@@ -23,6 +23,11 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
+import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /** Generator for one column of a Jacobian matrix for special case of trigger dates.
  * <p>
@@ -32,14 +37,22 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
  * <p>
  * Let \((t_0, y_0)\) be the state at propagation start, \((t_1, y_1)\) be the state at
  * maneuver trigger time, \((t_t, y_t)\) be the state at any arbitrary time \(t\) during
- * propagation, and \(f_m(t_t, y_t)\) be the contribution of the maneuver to the global
+ * propagation, and \(f_m(t, y)\) be the contribution of the maneuver to the global
  * ODE \(\frac{dy}{dt} = f(t, y)\). We are interested in the Jacobian column
  * \(\frac{\partial y_t}{\partial t_1}\).
  * </p>
  * <p>
- * After trigger time \(t_1\) (according to propagation direction),
+ * There are two parts in this Jacobian: the primary part corresponds to the full contribution
+ * of the acceleration due to the maneuver as it is delayed by a small amount \(dt_1\), whereas
+ * the secondary part corresponds to change of acceleration after maneuver start as the mass
+ * depletion is delayed and therefore the spacecraft mass is different from the mass for nominal
+ * start time.
+ * </p>
+ * <p>
+ * The primary part is computed as follows. After trigger time \(t_1\) (according to propagation direction),
  * \[\frac{\partial y_t}{\partial t_1} = \pm \frac{\partial y_t}{\partial y_1} f_m(t_1, y_1)\]
- * where the sign depends on \(t_1\) being a start or stop trigger.
+ * where the sign depends on \(t_1\) being a start or stop trigger and propagation being forward
+ * or backward.
  * </p>
  * <p>
  * We don't have \(\frac{\partial y_t}{\partial y_1}\) available if \(t_1 \neq t_0\), but we
@@ -52,7 +65,8 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
  * \[\frac{\partial y_t}{\partial y_1} = \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1}\]
  * </p>
  * <p>
- * The Jacobian column can therefore be computed using the following closed-form expression:
+ * The contribution of the primary part to the Jacobian column can therefore be computed using the following
+ * closed-form expression:
  * \[\frac{\partial y_t}{\partial t_1}
  * = \pm \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1} f_m(t_1, y_1)
  * = \frac{\partial y_t}{\partial y_0} c_1\]
@@ -60,19 +74,47 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
  * by solving \(\frac{\partial y_1}{\partial y_0} c_1 = \pm f_m(t_1, y_1)\).
  * </p>
  * <p>
- * As the column is generated using a closed-form expression, this generator implements
- * the {@link AdditionalStateProvider} interface and stores the column directly
+ * As the primary part of the column is generated using a closed-form expression, this generator
+ * implements the {@link AdditionalStateProvider} interface and stores the column directly
  * in the primary state during propagation.
  * </p>
  * <p>
- * The implementation takes care to <em>not</em> resetting anything at propagation start.
+ * As the closed-form expression requires picking \(c_1\) at trigger time \(t_1\), it works only
+ * if propagation starts outside of the maneuver and passes over \(t_1\) during integration.
+ * </p>
+ * <p>
+ * The secondary part is computed as follows. We have acceleration \(\vec{\Gamma} = \frac{\vec{F}}{m}\) and
+ * \(m = m_0 - q (t - t_s)\), where \(m\) is current mass, \(m_0\) is initial mass and \(t_s\) is
+ * maneuver trigger time. A delay \(dt_s\) on trigger time induces delaying mass depletion.
+ * We get:
+ * \[d\vec{\Gamma} = \frac{-\vec{F}}{m^2}} dm = \frac{-\vec{F}}{m^2} q dt_s = -\vec{Gamma}\frac{q}{m} dt_s\]
+ * From this total differential, we extract the partial derivative of the acceleration
+ * \[\frac{\partial\vec{\Gamma}}{\partial t_s} = -\vec{Gamma}\frac{q}{m}\]
+ * </p>
+ * <p>
+ * The contribution of the secondary part to the Jacobian column can therefore be computed by integrating
+ * the partial derivative of the acceleration, to get the partial derivative of the position.
+ * </p>
+ * <p>
+ * As the secondary part of the column is generated using a differential equation, a separate
+ * underlying generator implementing the {@link AdditionalDerivativesProvider} interface is set up to
+ * perform the integration during propagation.
+ * </p>
+ * <p>
+ * This generator takes care to sum up the primary and secondary parts so the full column of the Jacobian
+ * is computed.
+ * </p>
+ * <p>
+ * The implementation takes care to <em>not</em> resetting \(c_1\) at propagation start.
  * This allows to get proper Jacobian if we interrupt propagation in the middle of a maneuver
  * and restart propagation where it left.
  * </p>
  * @author Luc Maisonobe
  * @since 11.1
+ * @see MedianDate
+ * @see Duration
  */
-public class TriggerDateJacobianColumnGenerator
+public class TriggerDate
     implements AdditionalStateProvider, ManeuverTriggersResetter {
 
     /** Dimension of the state. */
@@ -88,48 +130,53 @@ public class TriggerDateJacobianColumnGenerator
     private final String stmName;
 
     /** Name of the parameter corresponding to the column. */
-    private final String columnName;
+    private final String triggerName;
+
+    /** Mass depletion effect. */
+    private final MassDepletionDelay massDepletionDelay;
 
     /** Start/stop management flag. */
-    private boolean manageStart;
+    private final boolean manageStart;
 
     /** Maneuver force model. */
     private final Maneuver maneuver;
-
-    /** Sign for acceleration. */
-    private final double sign;
 
     /** Event detector threshold. */
     private final double threshold;
 
     /** Signed contribution of maneuver at trigger time ±(∂y₁/∂y₀)⁻¹ fₘ(t₁, y₁). */
-    private double[] contribution;
+    private TimeSpanMap<double[]> contribution;
 
-    /** Indicator for trigger. */
-    private boolean triggered;
+    /** Trigger date. */
+    private AbsoluteDate trigger;
+
+    /** Indicator for forward propagation. */
+    private boolean forward;
 
     /** Simple constructor.
      * @param stmName name of State Transition Matrix state
-     * @param columnName name of the parameter corresponding to the column
+     * @param triggerName name of the parameter corresponding to the trigger date column
      * @param manageStart if true, we compute derivatives with respect to maneuver start
      * @param maneuver maneuver force model
      * @param threshold event detector threshold
      */
-    public TriggerDateJacobianColumnGenerator(final String stmName, final String columnName,
-                                              final boolean manageStart, final Maneuver maneuver,
-                                              final double threshold) {
-        this.stmName     = stmName;
-        this.columnName  = columnName;
-        this.manageStart = manageStart;
-        this.maneuver    = maneuver;
-        this.sign        = manageStart ? -1 : +1;
-        this.threshold   = threshold;
+    public TriggerDate(final String stmName, final String triggerName, final boolean manageStart,
+                       final Maneuver maneuver, final double threshold) {
+        this.stmName            = stmName;
+        this.triggerName        = triggerName;
+        this.massDepletionDelay = new MassDepletionDelay(triggerName, manageStart, maneuver);
+        this.manageStart        = manageStart;
+        this.maneuver           = maneuver;
+        this.threshold          = threshold;
+        this.contribution       = null;
+        this.trigger            = null;
+        this.forward            = true;
     }
 
     /** {@inheritDoc} */
     @Override
     public String getName() {
-        return columnName;
+        return triggerName;
     }
 
     /** {@inheritDoc}
@@ -139,13 +186,33 @@ public class TriggerDateJacobianColumnGenerator
      */
     @Override
     public boolean yield(final SpacecraftState state) {
-        return !state.hasAdditionalState(stmName);
+        return !(state.hasAdditionalState(stmName) && state.hasAdditionalState(massDepletionDelay.getName()));
     }
 
-    // note that we do NOT implement init
-    // in particular we reset NEITHER contribution nor triggered
-    // this allows to get proper Jacobian if we interrupt propagation
-    // in the middle of a maneuver and restart propagation where it left
+    /** Get the mass depletion effect processor.
+     * @return mass depletion effect processor
+     */
+    public MassDepletionDelay getMassDepletionDelay() {
+        return massDepletionDelay;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+
+        // note that we reset contribution or triggered ONLY at start or if we change
+        // propagation direction
+        // this allows to get proper Jacobian if we interrupt propagation
+        // in the middle of a maneuver and restart propagation where it left
+        final boolean newForward = target.isAfterOrEqualTo(initialState);
+        if (contribution == null || (forward ^ newForward)) {
+            contribution = new TimeSpanMap<>(null);
+            trigger      = null;
+        }
+
+        forward = newForward;
+
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -153,30 +220,50 @@ public class TriggerDateJacobianColumnGenerator
         // we check contribution rather than triggered because this method
         // is called after maneuverTriggered and before resetState,
         // when preparing the old state to be reset
-        return contribution == null ? ZERO : getStm(state).operate(contribution);
+        final double[] c = contribution == null ? null : contribution.get(state.getDate());
+        if (c == null) {
+            // no thrust, no effect
+            return ZERO;
+        } else {
+
+            // primary effect: full maneuver contribution at (delayed) trigger date
+            final double[] effect = getStm(state).operate(c);
+
+            // secondary effect: maneuver change throughout thrust as mass depletion is delayed
+            final double[] secondary = state.getAdditionalState(massDepletionDelay.getName());
+
+            // sum up both effects
+            for (int i = 0; i < effect.length; ++i) {
+                effect[i] += secondary[i];
+            }
+
+            return effect;
+
+        }
     }
 
     /** {@inheritDoc}*/
     @Override
     public void maneuverTriggered(final SpacecraftState state, final boolean start) {
-        triggered = start == manageStart;
+        trigger = (start == manageStart) ? state.getDate() : null;
     }
 
     /** {@inheritDoc}*/
     @Override
     public SpacecraftState resetState(final SpacecraftState state) {
 
-        if (!triggered) {
+        if (trigger == null) {
             // this is not the maneuver trigger we expected (start vs. stop)
             return state;
         }
 
         // get the acceleration near trigger time
-        final SpacecraftState stateWhenFiring = state.shiftedBy(-2 * sign * threshold);
+        final SpacecraftState stateWhenFiring = state.shiftedBy((manageStart ? 2 : -2) * threshold);
         final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, maneuver.getParameters());
 
         // initialize derivatives computation
-        final RealVector rhs = MatrixUtils.createRealVector(STATE_DIMENSION);
+        final double     sign = (forward == manageStart) ? -1 : +1;
+        final RealVector rhs  = MatrixUtils.createRealVector(STATE_DIMENSION);
         rhs.setEntry(3, sign * acceleration.getX());
         rhs.setEntry(4, sign * acceleration.getY());
         rhs.setEntry(5, sign * acceleration.getZ());
@@ -185,7 +272,12 @@ public class TriggerDateJacobianColumnGenerator
         final RealMatrix dY1dY0 = getStm(state);
 
         // store contribution factor for derivatives scm = ±(∂y₁/∂y₀)⁻¹ fₘ(t₁, y₁)
-        contribution = new QRDecomposition(dY1dY0, DECOMPOSITION_THRESHOLD).getSolver().solve(rhs).toArray();
+        final double[] c = new QRDecomposition(dY1dY0, DECOMPOSITION_THRESHOLD).getSolver().solve(rhs).toArray();
+        if (forward) {
+            contribution.addValidAfter(c, state.getDate());
+        } else {
+            contribution.addValidBefore(c, state.getDate());
+        }
 
         // return unchanged state
         return state;

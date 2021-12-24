@@ -228,7 +228,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assert.assertEquals(0.0, date.shiftedBy(10.0).durationFrom(maneuver.getEndDate()), 1.0e-15);
         Assert.assertEquals("", maneuver.getName());
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
-        Assert.assertEquals(4, drivers.size());
+        Assert.assertEquals(6, drivers.size());
         Assert.assertEquals("thrust", drivers.get(0).getName());
         Assert.assertEquals("flow rate", drivers.get(1).getName());
         EventDetector detector = maneuver.getEventsDetectors().findFirst().get();
@@ -252,7 +252,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K,
                                        "1A-");
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
-        Assert.assertEquals(4, drivers.size());
+        Assert.assertEquals(6, drivers.size());
         Assert.assertEquals("1A-thrust", drivers.get(0).getName());
         Assert.assertEquals("1A-flow rate", drivers.get(1).getName());
         EventDetector detector = maneuver.getEventsDetectors().findFirst().get();

@@ -41,6 +41,9 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.inertia.InertialForces;
 import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.jacobians.Duration;
+import org.orekit.forces.maneuvers.jacobians.MedianDate;
+import org.orekit.forces.maneuvers.jacobians.TriggerDate;
 import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.frames.Frame;
@@ -53,7 +56,6 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.TriggerDateJacobianColumnGenerator;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -61,7 +63,6 @@ import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.DateDriver;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -501,15 +502,25 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                         filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
                         map (d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {
-                            final TriggerDateJacobianColumnGenerator start =
-                                            manageDateDriver(stmName, maneuver, amt, d.getStartDriver(), true,  d.getThreshold());
-                            if (start != null) {
+                            if (d.getStartDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
+                                final TriggerDate start =
+                                                manageTriggerDate(stmName, maneuver, amt, d.getStartDriver().getName(), true,  d.getThreshold());
                                 names.add(start.getName());
                             }
-                            final TriggerDateJacobianColumnGenerator stop =
-                                            manageDateDriver(stmName, maneuver, amt, d.getStopDriver(),  false, d.getThreshold());
-                            if (stop != null) {
+                            if (d.getStopDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
+                                final TriggerDate stop =
+                                                manageTriggerDate(stmName, maneuver, amt, d.getStopDriver().getName(),  false, d.getThreshold());
                                 names.add(stop.getName());
+                            }
+                            if (d.getMedianDriver().isSelected()) {
+                                final MedianDate median =
+                                                manageMedianDate(d.getStartDriver().getName(), d.getStopDriver().getName(), d.getMedianDriver().getName());
+                                names.add(median.getName());
+                            }
+                            if (d.getDurationDriver().isSelected()) {
+                                final Duration duration =
+                                                manageManeuverDuration(d.getStartDriver().getName(), d.getStopDriver().getName(), d.getDurationDriver().getName());
+                                names.add(duration.getName());
                             }
                         });
 
@@ -521,53 +532,125 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     }
 
-    /** Manage a maneuver date driver.
+    /** Manage a maneuver trigger date.
      * @param stmName name of the State Transition Matrix state
      * @param maneuver maneuver force model
      * @param amt trigger to which the driver is bound
-     * @param driver date driver
+     * @param driverName name of the date driver
      * @param start if true, the driver is a maneuver start
      * @param threshold event detector threshold
-     * @return generator for the date driver (null if driver not selected)
+     * @return generator for the date driver
      * @since 11.1
      */
-    private TriggerDateJacobianColumnGenerator manageDateDriver(final String stmName,
-                                                                final Maneuver maneuver,
-                                                                final AbstractManeuverTriggers amt,
-                                                                final DateDriver driver,
-                                                                final boolean start,
-                                                                final double threshold) {
-        TriggerDateJacobianColumnGenerator triggerGenerator = null;
+    private TriggerDate manageTriggerDate(final String stmName,
+                                          final Maneuver maneuver,
+                                          final AbstractManeuverTriggers amt,
+                                          final String driverName,
+                                          final boolean start,
+                                          final double threshold) {
 
-        if (driver.isSelected()) {
+        TriggerDate triggerGenerator = null;
 
-            // check if we already have set up the provider
-            for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
-                if (provider instanceof TriggerDateJacobianColumnGenerator &&
-                    provider.getName().equals(driver.getName())) {
-                    // the Jacobian column generator has already been set up in a previous propagation
-                    triggerGenerator = (TriggerDateJacobianColumnGenerator) provider;
-                    break;
-                }
+        // check if we already have set up the provider
+        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+            if (provider instanceof TriggerDate &&
+                provider.getName().equals(driverName)) {
+                // the Jacobian column generator has already been set up in a previous propagation
+                triggerGenerator = (TriggerDate) provider;
+                break;
             }
+        }
 
-            if (triggerGenerator == null) {
-                // this is the first time we need the Jacobian column generator, create it
-                triggerGenerator = new TriggerDateJacobianColumnGenerator(stmName, driver.getName(),
-                                                                          start, maneuver, threshold);
-                amt.addResetter(triggerGenerator);
-                addAdditionalStateProvider(triggerGenerator);
-            }
+        if (triggerGenerator == null) {
+            // this is the first time we need the Jacobian column generator, create it
+            triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold);
+            amt.addResetter(triggerGenerator);
+            addAdditionalDerivativesProvider(triggerGenerator.getMassDepletionDelay());
+            addAdditionalStateProvider(triggerGenerator);
+        }
 
-            if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {
-                // add the initial Jacobian column if it is not already there
-                // (perhaps due to a previous propagation)
-                setInitialColumn(driver.getName(), getHarvester().getInitialJacobianColumn(driver.getName()));
-            }
-
+        if (!getInitialIntegrationState().hasAdditionalState(driverName)) {
+            // add the initial Jacobian column if it is not already there
+            // (perhaps due to a previous propagation)
+            setInitialColumn(triggerGenerator.getMassDepletionDelay().getName(), new double[6]);
+            setInitialColumn(driverName, getHarvester().getInitialJacobianColumn(driverName));
         }
 
         return triggerGenerator;
+
+    }
+
+    /** Manage a maneuver median date.
+     * @param startName name of the start driver
+     * @param stopName name of the stop driver
+     * @param medianName name of the median driver
+     * @return generator for the median driver
+     * @since 11.1
+     */
+    private MedianDate manageMedianDate(final String startName, final String stopName, final String medianName) {
+
+        MedianDate medianGenerator = null;
+
+        // check if we already have set up the provider
+        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+            if (provider instanceof MedianDate &&
+                provider.getName().equals(medianName)) {
+                // the Jacobian column generator has already been set up in a previous propagation
+                medianGenerator = (MedianDate) provider;
+                break;
+            }
+        }
+
+        if (medianGenerator == null) {
+            // this is the first time we need the Jacobian column generator, create it
+            medianGenerator = new MedianDate(startName, stopName, medianName);
+            addAdditionalStateProvider(medianGenerator);
+        }
+
+        if (!getInitialIntegrationState().hasAdditionalState(medianName)) {
+            // add the initial Jacobian column if it is not already there
+            // (perhaps due to a previous propagation)
+            setInitialColumn(medianName, getHarvester().getInitialJacobianColumn(medianName));
+        }
+
+        return medianGenerator;
+
+    }
+
+    /** Manage a maneuver duration.
+     * @param startName name of the start driver
+     * @param stopName name of the stop driver
+     * @param durationName name of the duration driver
+     * @return generator for the median driver
+     * @since 11.1
+     */
+    private Duration manageManeuverDuration(final String startName, final String stopName, final String durationName) {
+
+        Duration durationGenerator = null;
+
+        // check if we already have set up the provider
+        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+            if (provider instanceof Duration &&
+                provider.getName().equals(durationName)) {
+                // the Jacobian column generator has already been set up in a previous propagation
+                durationGenerator = (Duration) provider;
+                break;
+            }
+        }
+
+        if (durationGenerator == null) {
+            // this is the first time we need the Jacobian column generator, create it
+            durationGenerator = new Duration(startName, stopName, durationName);
+            addAdditionalStateProvider(durationGenerator);
+        }
+
+        if (!getInitialIntegrationState().hasAdditionalState(durationName)) {
+            // add the initial Jacobian column if it is not already there
+            // (perhaps due to a previous propagation)
+            setInitialColumn(durationName, getHarvester().getInitialJacobianColumn(durationName));
+        }
+
+        return durationGenerator;
 
     }
 
@@ -640,27 +723,18 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         final SpacecraftState state = getInitialState();
 
-        final double[] column;
-        if (dYdQ == null) {
-            // initial Jacobian is null (this is the most frequent case)
-            column = new double[STATE_DIMENSION];
-        } else {
-
-            if (dYdQ.length != STATE_DIMENSION) {
-                throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                          dYdQ.length, STATE_DIMENSION);
-            }
-
-            // convert to Cartesian Jacobian
-            final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
-            getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), dYdC);
-            column = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).
-                     getSolver().
-                     solve(MatrixUtils.createRealVector(dYdQ)).
-                     toArray();
-
+        if (dYdQ.length != STATE_DIMENSION) {
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                      dYdQ.length, STATE_DIMENSION);
         }
 
+        // convert to Cartesian Jacobian
+        final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
+        getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), dYdC);
+        final double[] column = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).
+                        getSolver().
+                        solve(MatrixUtils.createRealVector(dYdQ)).
+                        toArray();
 
         // set additional state
         setInitialState(state.addAdditionalState(columnName, column));

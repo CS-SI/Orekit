@@ -116,6 +116,8 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
                                                                         detector.getStopDriver().getBaseDate());
         fd.getStartDriver().setName(detector.getStartDriver().getName());
         fd.getStopDriver().setName(detector.getStopDriver().getName());
+        fd.getMedianDriver().setName(detector.getMedianDriver().getName());
+        fd.getDurationDriver().setName(detector.getDurationDriver().getName());
 
         @SuppressWarnings("unchecked")
         final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) fd;
@@ -127,7 +129,9 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Arrays.asList(getFiringIntervalDetector().getStartDriver(),
-                             getFiringIntervalDetector().getStopDriver());
+                             getFiringIntervalDetector().getStopDriver(),
+                             getFiringIntervalDetector().getMedianDriver(),
+                             getFiringIntervalDetector().getDurationDriver());
     }
 
 }

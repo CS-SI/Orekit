@@ -77,14 +77,14 @@ public interface PropulsionModel {
                                                                      T[] parameters);
 
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
-     *@param s current spacecraft state
+     * @param s current spacecraft state
      * @param parameters propulsion model parameters
      * @return mass derivative in kg/s
      */
     double getMassDerivatives(SpacecraftState s, double[] parameters);
 
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
-     *@param s current spacecraft state
+     * @param s current spacecraft state
      * @param parameters propulsion model parameters
      * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return mass derivative in kg/s

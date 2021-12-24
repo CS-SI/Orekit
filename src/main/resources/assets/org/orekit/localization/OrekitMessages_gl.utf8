@@ -155,7 +155,6 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grao demasiado grande (n = {0}, o grao de p
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = orde demasiado importante (n = {0}, a orde máxima de potencial é {1})
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
-# SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = varias datas de referencias ({0} e {1}) atopadas no ficheiro de campo de gravidade {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
 
 # no TLE data available for object {0}
@@ -240,7 +239,6 @@ FRAMES_MISMATCH = o sistema de referencia ({0}) non corresponde ao sistema de re
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estado inicial non especificado para a extrapolación de órbita
 
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
-# EVENT_DATE_TOO_CLOSE =  a data acontecemento {0}, máis grande que {1}, menos {3} segundos e máis pequena que {2} máis {3} segundos, non pode ser engadida
 EVENT_DATE_TOO_CLOSE =  <MISSING TRANSLATION>
 
 # unable to read header record from JPL ephemerides binary file {0}
@@ -409,18 +407,15 @@ NOT_ENOUGH_CACHED_NEIGHBORS = número de vecinos almacenados demasiado pequeno: 
 NO_CACHED_ENTRIES = ningunha entrada almacenada
 
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
-# NON_CHRONOLOGICALLY_SORTED_ENTRIES = as entradas xeneradas non están en orde cronolóxica: {0} > {1}
 NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = ningún dato xerado alrededor da data: {0}
 
 # unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before
-# UNABLE_TO_GENERATE_NEW_DATA_BEFORE = imposible de xerar datos antes de {0}, datos necesarios para {1}
 UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
 
 # unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
-# UNABLE_TO_GENERATE_NEW_DATA_AFTER = imposible de xerar datos despois de {0}, datos necesarios para {1}
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
@@ -754,3 +749,6 @@ BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
 
 # no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
 NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
+
+# inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
+INCONSISTENT_SELECTION = <MISSING TRANSLATION>
