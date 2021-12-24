@@ -158,7 +158,7 @@ public class StateTransitionMatrixGeneratorTest {
 
         // intermediate state has really different matrices, they are still building up
         Assert.assertEquals(0.1253, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-4);
-        Assert.assertEquals(0.0165, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-4);
+        Assert.assertEquals(0.0225, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-4);
 
         // restarting propagation where we left it
         final SpacecraftState     state2       = propagator2.propagate(firing.shiftedBy(2 * duration));
@@ -167,7 +167,7 @@ public class StateTransitionMatrixGeneratorTest {
 
         // after completing the two-stage propagation, we get the same matrices
         Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 1.0e-13 * stm1.getNorm1());
-        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 8.0e-13 * jacobian1.getNorm1());
+        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 3.0e-14 * jacobian1.getNorm1());
 
     }
 
