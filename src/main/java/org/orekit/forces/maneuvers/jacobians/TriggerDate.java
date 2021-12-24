@@ -25,6 +25,7 @@ import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
@@ -41,7 +42,14 @@ import org.orekit.utils.TimeSpanMap;
  * \(\frac{\partial y_t}{\partial t_1}\).
  * </p>
  * <p>
- * After trigger time \(t_1\) (according to propagation direction),
+ * There are two parts in this Jacobian: the primary part corresponds to the full contribution
+ * of the acceleration due to the maneuver as it is delayed by a small amount \(dt_1\), whereas
+ * the secondary part corresponds to change of acceleration after maneuver start as the mass
+ * depletion is delayed and therefore the spacecraft mass is different from the mass for nominal
+ * start time.
+ * </p>
+ * <p>
+ * The primary part is computed as follows. After trigger time \(t_1\) (according to propagation direction),
  * \[\frac{\partial y_t}{\partial t_1} = \pm \frac{\partial y_t}{\partial y_1} f_m(t_1, y_1)\]
  * where the sign depends on \(t_1\) being a start or stop trigger and propagation being forward
  * or backward.
@@ -57,7 +65,8 @@ import org.orekit.utils.TimeSpanMap;
  * \[\frac{\partial y_t}{\partial y_1} = \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1}\]
  * </p>
  * <p>
- * The Jacobian column can therefore be computed using the following closed-form expression:
+ * The contribution of the primary part to the Jacobian column can therefore be computed using the following
+ * closed-form expression:
  * \[\frac{\partial y_t}{\partial t_1}
  * = \pm \frac{\partial y_t}{\partial y_0} \left(\frac{\partial y_1}{\partial y_0}\right)^{-1} f_m(t_1, y_1)
  * = \frac{\partial y_t}{\partial y_0} c_1\]
@@ -65,13 +74,35 @@ import org.orekit.utils.TimeSpanMap;
  * by solving \(\frac{\partial y_1}{\partial y_0} c_1 = \pm f_m(t_1, y_1)\).
  * </p>
  * <p>
- * As the column is generated using a closed-form expression, this generator implements
- * the {@link AdditionalStateProvider} interface and stores the column directly
+ * As the primary part of the column is generated using a closed-form expression, this generator
+ * implements the {@link AdditionalStateProvider} interface and stores the column directly
  * in the primary state during propagation.
  * </p>
  * <p>
  * As the closed-form expression requires picking \(c_1\) at trigger time \(t_1\), it works only
  * if propagation starts outside of the maneuver and passes over \(t_1\) during integration.
+ * </p>
+ * <p>
+ * The secondary part is computed as follows. We have acceleration \(\vec{\Gamma} = \frac{\vec{F}}{m}\) and
+ * \(m = m_0 - q (t - t_s)\), where \(m\) is current mass, \(m_0\) is initial mass and \(t_s\) is
+ * maneuver trigger time. A delay \(dt_s\) on trigger time induces delaying mass depletion.
+ * We get:
+ * \[d\vec{\Gamma} = \frac{-\vec{F}}{m^2}} dm = \frac{-\vec{F}}{m^2} q dt_s = -\vec{Gamma}\frac{q}{m} dt_s\]
+ * From this total differential, we extract the partial derivative of the acceleration
+ * \[\frac{\partial\vec{\Gamma}}{\partial t_s} = -\vec{Gamma}\frac{q}{m}\]
+ * </p>
+ * <p>
+ * The contribution of the secondary part to the Jacobian column can therefore be computed by integrating
+ * the partial derivative of the acceleration, to get the partial derivative of the position.
+ * </p>
+ * <p>
+ * As the secondary part of the column is generated using a differential equation, a separate
+ * underlying generator implementing the {@link AdditionalDerivativesProvider} interface is set up to
+ * perform the integration during propagation.
+ * </p>
+ * <p>
+ * This generator takes care to sum up the primary and secondary parts so the full column of the Jacobian
+ * is computed.
  * </p>
  * <p>
  * The implementation takes care to <em>not</em> resetting \(c_1\) at propagation start.
