@@ -123,9 +123,6 @@ public class TriggerDate
     /** Threshold for decomposing state transition matrix at trigger time. */
     private static final double DECOMPOSITION_THRESHOLD = 1.0e-10;
 
-    /** Zero state used before maneuver is triggered. */
-    private static final double[] ZERO = new double[STATE_DIMENSION];
-
     /** Name of the state for State Transition Matrix. */
     private final String stmName;
 
@@ -223,7 +220,7 @@ public class TriggerDate
         final double[] c = contribution == null ? null : contribution.get(state.getDate());
         if (c == null) {
             // no thrust, no effect
-            return ZERO;
+            return new double[STATE_DIMENSION];
         } else {
 
             // primary effect: full maneuver contribution at (delayed) trigger date
