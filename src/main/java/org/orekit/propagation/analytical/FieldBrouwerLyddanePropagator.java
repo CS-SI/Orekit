@@ -61,11 +61,12 @@ import org.orekit.utils.ParameterDriver;
  *
  * Usually, M2 is adjusted during an orbit determination process and it represents the
  * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
- * The behavior of M2 is closed to the {@link FieldTLE#getBStar()} parameter for the TLE.
+ * The behavior of M2 is close to the {@link FieldTLE#getBStar()} parameter for the TLE.
  *
  * If the value of M2 is equal to {@link BrouwerLyddanePropagator#M2 0.0}, the along-track secular
  * effects are not considered in the dynamical model. Typical values for M2 are not known.
  * It depends on the orbit type. However, the value of M2 must be very small (e.g. between 1.0e-14 and 1.0e-15).
+ * The unit of M2 is rad/s².
  *
  * The along-track effects, represented by the secular rates of the mean semi-major axis
  * and eccentricity, are computed following Eq. 2.38, 2.41, and 2.45 of Warren Phipps' thesis.
@@ -121,7 +122,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      *
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
@@ -141,7 +142,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement,
      * UnnormalizedSphericalHarmonicsProvider, UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics, PropagationType, double)
@@ -181,7 +182,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see org.orekit.utils.Constants
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, double, CalculusFieldElement, double, double, double, double, double)
@@ -203,7 +204,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, double)
      */
@@ -236,7 +237,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, double)
      */
@@ -254,7 +255,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -287,7 +288,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -305,7 +306,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
@@ -339,7 +340,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, PropagationType, double)
      */
@@ -362,7 +363,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -382,7 +383,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -404,7 +405,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -446,7 +447,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,

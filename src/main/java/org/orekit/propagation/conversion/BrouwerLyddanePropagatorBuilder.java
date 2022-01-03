@@ -44,6 +44,7 @@ import org.orekit.utils.ParameterDriver;
  * If the value of M2 is equal to {@link BrouwerLyddanePropagator#M2 0.0}, the along-track
  * secular effects are not considered in the dynamical model. Typical values for M2 are not known.
  * It depends on the orbit type. However, the value of M2 must be very small (e.g. between 1.0e-14 and 1.0e-15).
+ * The unit of M2 is rad/s².
  * <p>
  * To estimate the M2 parameter, it is necessary to call the {@link #getPropagationParametersDrivers()} method
  * as follow:
@@ -88,7 +89,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #BrouwerLyddanePropagatorBuilder(Orbit,
      * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider, double)
@@ -125,7 +126,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #BrouwerLyddanePropagatorBuilder(Orbit,
      * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider, double)
@@ -192,7 +193,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @param M2 value of empirical drag coefficient.
+     * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @param attitudeProvider attitude law to use
      */
