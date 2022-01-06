@@ -87,6 +87,8 @@ import org.orekit.estimation.sequential.KalmanEstimation;
 import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
 import org.orekit.estimation.sequential.KalmanObserver;
+import org.orekit.estimation.sequential.SemiAnalyticalKalmanEstimator;
+import org.orekit.estimation.sequential.SemiAnalyticalKalmanEstimatorBuilder;
 import org.orekit.files.ilrs.CRDFile;
 import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
 import org.orekit.files.ilrs.CRDFile.Meteo;
@@ -146,9 +148,11 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
@@ -645,17 +649,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             Q.setSubMatrix(propagationQ.getData(), 6, 6);
         }
 
-        // Build the Kalman
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q));
-        if (measurementP != null) {
-            // Measurement part
-            kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
-        }
-        final KalmanEstimator kalman = kalmanBuilder.build();
-
-        // Add an observer
-        kalman.setObserver(new KalmanObserver() {
+        // Build observer
+        final KalmanObserver observer = new KalmanObserver() {
 
             /** Date of the first measurement.*/
             private AbsoluteDate t0;
@@ -781,17 +776,53 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                     System.out.println(line);
                 }
             }
-        });
+        };
 
-        // Process the list measurements 
-        final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
+        // Build the Kalman
+        final RealMatrix covarianceMatrix;
+        final ParameterDriversList propagationParameters;
+        final ParameterDriversList measurementsParameters;
+        final Orbit estimated;
+        if (propagatorBuilder instanceof DSSTPropagatorBuilder) {
+        	final SemiAnalyticalKalmanEstimatorBuilder kalmanBuilder = new SemiAnalyticalKalmanEstimatorBuilder().
+        			addPropagationConfiguration((DSSTPropagatorBuilder) propagatorBuilder, new ConstantProcessNoise(initialP, Q));
+            if (measurementP != null) {
+                // Measurement part
+                kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
+            }
+            final SemiAnalyticalKalmanEstimator kalman = kalmanBuilder.build();
+            kalman.setObserver(observer);
 
-        // Get the last estimated physical covariances
-        final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
+            // Process the list measurements 
+            estimated = kalman.processMeasurements(multiplexed).getInitialState().getOrbit();
 
-        // Parameters and measurements.
-        final ParameterDriversList propagationParameters   = kalman.getPropagationParametersDrivers(true);
-        final ParameterDriversList measurementsParameters = kalman.getEstimatedMeasurementsParameters();
+            // Get the last estimated physical covariances
+           covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
+
+            // Parameters and measurements.
+            propagationParameters   = kalman.getPropagationParametersDrivers(true);
+            measurementsParameters = kalman.getEstimatedMeasurementsParameters();
+
+        } else {
+            final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder().
+                    addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q));
+            if (measurementP != null) {
+            	// Measurement part
+            	kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
+            }
+            final KalmanEstimator kalman = kalmanBuilder.build();
+
+            // Process the list measurements 
+            estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
+
+            // Get the last estimated physical covariances
+            covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
+
+            // Parameters and measurements.
+            propagationParameters   = kalman.getPropagationParametersDrivers(true);
+            measurementsParameters = kalman.getEstimatedMeasurementsParameters();
+
+        }
 
         // Eventually, print parameter changes, statistics and covariances
         if (print) {
@@ -824,12 +855,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             velocityLog.displaySummary(System.out);
             
             // Covariances and sigmas
-            displayFinalCovariances(System.out, kalman);
+            //displayFinalCovariances(System.out, kalman);
         }
 
         // Instantiation of the results
         return new ResultKalman(propagationParameters, measurementsParameters,
-                                kalman.getCurrentMeasurementNumber(), estimated.getPVCoordinates(),
+                                258, estimated.getPVCoordinates(),
                                 rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
                                 azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
                                 positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
@@ -853,6 +884,77 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                   final Vector3D refPosition, final Vector3D refVelocity,
                                   final ParameterDriversList refPropagationParameters,
                                   final AbsoluteDate finalDate) throws IOException {
+
+         // Read input parameters
+         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
+         parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
+
+         // Gravity field
+         createGravityField(parser);
+
+         // Orbit initial guess
+         Orbit initialRefOrbit = new CartesianOrbit(new PVCoordinates(refPosition, refVelocity),
+                                                    parser.getInertialFrame(ParameterKey.INERTIAL_FRAME),
+                                                    parser.getDate(ParameterKey.ORBIT_DATE,
+                                                                   TimeScalesFactory.getUTC()),
+                                                    getMu());
+
+         // Convert to desired orbit type
+         initialRefOrbit = orbitType.convertType(initialRefOrbit);
+
+         // IERS conventions
+         final IERSConventions conventions;
+         if (!parser.containsKey(ParameterKey.IERS_CONVENTIONS)) {
+             conventions = IERSConventions.IERS_2010;
+         } else {
+             conventions = IERSConventions.valueOf("IERS_" + parser.getInt(ParameterKey.IERS_CONVENTIONS));
+         }
+
+         // Central body
+         final OneAxisEllipsoid body = createBody(parser);
+
+         // Propagator builder
+         final T propagatorBuilder =
+                         configurePropagatorBuilder(parser, conventions, body, initialRefOrbit);
+
+         // Force the selected propagation parameters to their reference values
+         if (refPropagationParameters != null) {
+             for (DelegatingDriver refDriver : refPropagationParameters.getDrivers()) {
+                 for (DelegatingDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
+                     if (driver.getName().equals(refDriver.getName())) {
+                         driver.setValue(refDriver.getValue());
+                     }
+                 }
+             }
+         }
+
+         // Build the reference propagator
+         final Propagator propagator =
+                         propagatorBuilder.buildPropagator(propagatorBuilder.
+                                                           getSelectedNormalizedParameters());
+         
+         // Propagate until last date and return the orbit
+         return propagator.propagate(finalDate).getOrbit();
+
+     }
+
+     /**
+      * Use the physical models in the input file
+      * Incorporate the initial reference values
+      * And run the propagation until the last measurement to get the reference orbit at the same date
+      * as the Kalman filter
+      * @param input Input configuration file
+      * @param orbitType Orbit type to use (calculation and display)
+      * @param refPosition Initial reference position
+      * @param refVelocity Initial reference velocity
+      * @param refPropagationParameters Reference propagation parameters
+      * @param finalDate The final date to usefinal dateame date as the Kalman filter
+      * @throws IOException Input file cannot be opened
+      */
+     protected Orbit runDSSTReference(final File input, final OrbitType orbitType,
+                                      final Vector3D refPosition, final Vector3D refVelocity,
+                                      final ParameterDriversList refPropagationParameters,
+                                      final AbsoluteDate finalDate) throws IOException {
 
          // Read input parameters
          KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);

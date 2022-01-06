@@ -123,6 +123,9 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
     /** Predicted measurement. */
     private EstimatedMeasurement<?> predictedMeasurement;
 
+    /** Corrected measurement. */
+    private EstimatedMeasurement<?> correctedMeasurement;
+
     /** Nominal mean spacecraft state. */
     private SpacecraftState nominalMeanSpacecraftState;
 
@@ -368,7 +371,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         analyticalDerivativeComputations(nominalMeanSpacecraftState);
 
         // Calculate the predicted osculating elements
-        final double[] osculating = computeOsculatingElements();
+        final double[] osculating = computeOsculatingElements(predictedFilterCorrection);
         final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null, builder.getPositionAngle(),
                                                                             currentDate, nominalMeanSpacecraftState.getMu(),
                                                                             nominalMeanSpacecraftState.getFrame());
@@ -454,6 +457,21 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         correctedFilterCorrection = estimate.getState();
         // Update the previous nominal mean spacecraft state
         previousNominalMeanSpacecraftState = nominalMeanSpacecraftState;
+        // Calculate the corrected osculating elements
+        final double[] osculating = computeOsculatingElements(correctedFilterCorrection);
+        final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null, builder.getPositionAngle(),
+                                                                            currentDate, nominalMeanSpacecraftState.getMu(),
+                                                                            nominalMeanSpacecraftState.getFrame());
+
+        // Compute the corrected measurements
+        correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
+        		                                            currentMeasurementNumber,
+        		                                            new SpacecraftState[] {
+        		                                            		new SpacecraftState(osculatingOrbit,
+        		                                            				nominalMeanSpacecraftState.getAttitude(),
+                		                                            		nominalMeanSpacecraftState.getMass(),
+                		                                            		nominalMeanSpacecraftState.getAdditionalStates())
+        		                                            });
     }
 
     /** Finalize estimation operations on the observation grid. */
@@ -684,14 +702,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 		return predictedMeasurement;
 	}
 
-	/** {@inheritDoc}
-	 * In the Extended Semi-analytical Kalman Filter there is
-	 * no corrected measurements. As a result, this method returns
-	 * the predicted measurement.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public EstimatedMeasurement<?> getCorrectedMeasurement() {
-		return predictedMeasurement;
+		return correctedMeasurement;
 	}
 
 	/** Update the nominal spacecraft state.
@@ -950,7 +964,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
     /** Compute the predicted osculating elements.
      * @return the predicted osculating element
      */
-    private double[] computeOsculatingElements() {
+    private double[] computeOsculatingElements(final RealVector filterCorrection) {
 
     	// Number of estimated orbital parameters
     	final int nbOrb = getNumberSelectedOrbitalDrivers();
@@ -966,7 +980,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Physical filter correction
         final RealVector physicalFilterCorrection = MatrixUtils.createRealVector(nbOrb);
         for (int index = 0; index < nbOrb; index++) {
-        	physicalFilterCorrection.addToEntry(index, predictedFilterCorrection.getEntry(index) * scale[index]);
+        	physicalFilterCorrection.addToEntry(index, filterCorrection.getEntry(index) * scale[index]);
         }
 
         // B1 * physicalCorrection
