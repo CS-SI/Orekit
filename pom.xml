@@ -727,6 +727,7 @@
             <manifestEntries>
               <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
               <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
+              <Automatic-Module-Name>org.orekit</Automatic-Module-Name>
             </manifestEntries>
           </archive>
         </configuration>
