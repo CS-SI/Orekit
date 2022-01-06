@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="andrewsgoetz" type="add">
+        Added Automatic-Module-Name "org.orekit" to JAR manifest to improve usability
+        of Orekit by modular Java projects.
+      </action>
       <action dev="luc" type="fix" issue="872">
         Fixed multiple detection of events when using propagate(start, target) with
         integration-based propagators.
