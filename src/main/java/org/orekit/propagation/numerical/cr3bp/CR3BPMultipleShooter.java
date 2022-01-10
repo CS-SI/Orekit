@@ -68,11 +68,12 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
      * @param arcDuration initial guess of the duration of each arc.
      * @param stmEquations list of additional derivatives providers linked to propagatorList.
      * @param tolerance convergence tolerance on the constraint vector
+     * @param maxIter maximum number of iterations
      */
     public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
                                 final double arcDuration, final List<STMEquations> stmEquations,
-                                final double tolerance) {
-        super(initialGuessList, propagatorList, arcDuration, tolerance, STM);
+                                final double tolerance, final int maxIter) {
+        super(initialGuessList, propagatorList, arcDuration, tolerance, maxIter, STM);
         this.stmEquations = stmEquations;
         this.npoints     = initialGuessList.size();
     }

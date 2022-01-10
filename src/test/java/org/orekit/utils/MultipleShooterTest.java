@@ -137,7 +137,7 @@ public class MultipleShooterTest {
         // Perturbation on a patch point
         // -----------------------------
 
-        final int nP = 1; // Perturbated patch point
+        final int nP = 1; // Perturbed patch point
         final Vector3D deltaP = new Vector3D(-50000,1000,0);
         final Vector3D deltaV = new Vector3D(0.1,0,1.0);
         final double deltaEpoch = 1000;
@@ -152,11 +152,11 @@ public class MultipleShooterTest {
         AbsolutePVCoordinates absPva = new AbsolutePVCoordinates(firstGuessSP.getFrame(), newDate, newPos, newVel);
         final Attitude attitude = attPro.getAttitude(absPva, newDate, absPva.getFrame());
         SpacecraftState newSP = new SpacecraftState(absPva , attitude);
-        correctedList.set(1, newSP);
+        correctedList.set(nP, newSP);
 
         final double tolerance = 1.0;
 
-        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, epochEquations, tolerance);
+        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, epochEquations, tolerance, 10);
         multipleShooting.setPatchPointComponentFreedom(1, 0, false);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
@@ -169,18 +169,18 @@ public class MultipleShooterTest {
         multipleShooting.compute();
 
         // Verify
-        Assert.assertEquals(0.0,        Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getPosition(), correctedList.get(0).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.018029,   Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getVelocity(), correctedList.get(0).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(677.097822, Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getPosition(), correctedList.get(1).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.017816,   Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getVelocity(), correctedList.get(1).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(863.676399, Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getPosition(), correctedList.get(2).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.092103,   Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(576.396708, Vector3D.distance(firstGuessList2.get(3).getAbsPVA().getPosition(), correctedList.get(3).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.092099,   Vector3D.distance(firstGuessList2.get(3).getAbsPVA().getVelocity(), correctedList.get(3).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(288.575119, Vector3D.distance(firstGuessList2.get(4).getAbsPVA().getPosition(), correctedList.get(4).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.092113,   Vector3D.distance(firstGuessList2.get(4).getAbsPVA().getVelocity(), correctedList.get(4).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(0.000000,   Vector3D.distance(firstGuessList2.get(5).getAbsPVA().getPosition(), correctedList.get(5).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.092129,   Vector3D.distance(firstGuessList2.get(5).getAbsPVA().getVelocity(), correctedList.get(5).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getPosition(), correctedList.get(0).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getVelocity(), correctedList.get(0).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(0.005230, Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getPosition(), correctedList.get(1).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getVelocity(), correctedList.get(1).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(0.009869, Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getPosition(), correctedList.get(2).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(0.006641, Vector3D.distance(firstGuessList2.get(3).getAbsPVA().getPosition(), correctedList.get(3).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(3).getAbsPVA().getVelocity(), correctedList.get(3).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(0.003216, Vector3D.distance(firstGuessList2.get(4).getAbsPVA().getPosition(), correctedList.get(4).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(4).getAbsPVA().getVelocity(), correctedList.get(4).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(5).getAbsPVA().getPosition(), correctedList.get(5).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(5).getAbsPVA().getVelocity(), correctedList.get(5).getAbsPVA().getVelocity()), eps);
 
     }
 
@@ -259,7 +259,7 @@ public class MultipleShooterTest {
 
         final double tolerance = 1.0;
 
-        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, epochEquations, tolerance);
+        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, epochEquations, tolerance, 10);
         multipleShooting.setPatchPointComponentFreedom(1, 0, false);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
@@ -272,12 +272,12 @@ public class MultipleShooterTest {
         multipleShooting.compute();
 
         // Verify
-        Assert.assertEquals(0.0,        Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getPosition(), correctedList.get(0).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.007568,   Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getVelocity(), correctedList.get(0).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(231.922890, Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getPosition(), correctedList.get(1).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.007547,   Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getVelocity(), correctedList.get(1).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(233.233939, Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getPosition(), correctedList.get(2).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.028078,   Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getPosition(), correctedList.get(0).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getVelocity(), correctedList.get(0).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(0.000108, Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getPosition(), correctedList.get(1).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getVelocity(), correctedList.get(1).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(0.000308, Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getPosition(), correctedList.get(2).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
     }
 
     @Test(expected=OrekitException.class)

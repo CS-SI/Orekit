@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,13 +55,13 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     private final List<NumericalPropagator> propagatorList;
 
     /** Duration of propagation along each arcs. */
-    private double[] propagationTime;
+    private final double[] propagationTime;
 
     /** Free components of patch points. */
-    private boolean[] freePatchPointMap;
+    private final boolean[] freePatchPointMap;
 
     /** Free epoch of patch points. */
-    private boolean[] freeEpochMap;
+    private final boolean[] freeEpochMap;
 
     /** Number of free variables. */
     private int nFree;
@@ -72,13 +73,16 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     private int nConstraints;
 
     /** Patch points components which are constrained. */
-    private Map<Integer, Double> mapConstraints;
+    private final Map<Integer, Double> mapConstraints;
 
     /** True if orbit is closed. */
     private boolean isClosedOrbit;
 
     /** Tolerance on the constraint vector. */
-    private double tolerance;
+    private final double tolerance;
+
+    /** Maximum number of iterations. */
+    private final int maxIter;
 
     /** Expected name of the additional equations. */
     private final String additionalName;
@@ -97,7 +101,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
                                        final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
                                        final double arcDuration, final double tolerance, final String additionalName) {
-        this(initialGuessList, propagatorList, arcDuration, tolerance, additionalName);
+        this(initialGuessList, propagatorList, arcDuration, tolerance, 1, additionalName);
         this.additionalEquations = additionalEquations;
     }
 
@@ -107,39 +111,35 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param propagatorList list of propagators associated to each patch point.
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector.
+     * @param maxIter maximum number of iterations
      * @param additionalName name of the additional equations
      * @since 11.1
      */
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                       final double arcDuration, final double tolerance, final String additionalName) {
+                                       final double arcDuration, final double tolerance, final int maxIter, final String additionalName) {
         this.patchedSpacecraftStates = initialGuessList;
         this.propagatorList = propagatorList;
         this.additionalName = additionalName;
         // Should check if propagatorList.size() = initialGuessList.size() - 1
         final int propagationNumber = initialGuessList.size() - 1;
-        this.propagationTime = new double[propagationNumber];
-        for (int i = 0; i < propagationNumber; i++ ) {
-            this.propagationTime[i] = arcDuration;
-        }
+        propagationTime = new double[propagationNumber];
+        Arrays.fill(propagationTime, arcDuration);
 
         // All the patch points are set initially as free variables
         this.freePatchPointMap = new boolean[6 * initialGuessList.size()]; // epoch
-        for (int i = 0; i < freePatchPointMap.length; i++) {
-            freePatchPointMap[i] = true;
-        }
+        Arrays.fill(freePatchPointMap, true);
 
         //Except the first one, the epochs of the patch points are set free.
         this.freeEpochMap = new boolean[initialGuessList.size()];
+        Arrays.fill(freeEpochMap, true);
         freeEpochMap[0] = false;
-        for (int i = 1; i < freeEpochMap.length; i++) {
-            freeEpochMap[i] = true;
-        }
         this.nEpoch = initialGuessList.size() - 1;
 
         this.nConstraints = 6 * propagationNumber;
         this.nFree = 6 * initialGuessList.size() + 1;
 
         this.tolerance = tolerance;
+        this.maxIter   = maxIter;
 
         // All the additional constraints must be set afterward
         this.mapConstraints = new HashMap<>();
@@ -160,9 +160,8 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param isFree constraint value
      */
     public void setPatchPointComponentFreedom(final int patchNumber, final int componentIndex, final boolean isFree) {
-        if (freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] != isFree ) {
-            final int eps = isFree ? 1 : -1;
-            nFree = nFree + eps;
+        if (freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] != isFree) {
+            nFree += isFree ? 1 : -1;
             freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] = isFree;
         }
     }
@@ -221,7 +220,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             iter++;
 
-        } while (fxNorm > tolerance && iter < 1); // Converge within tolerance and under 10 iterations
+        } while (fxNorm > tolerance && iter < maxIter); // Converge within tolerance and under 10 iterations
 
         return patchedSpacecraftStates;
     }

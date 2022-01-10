@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +36,7 @@ import org.orekit.orbits.LibrationOrbitFamily;
 import org.orekit.orbits.LibrationOrbitType;
 import org.orekit.orbits.RichardsonExpansion;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
-import org.orekit.propagation.numerical.cr3bp.CR3BPMultipleShooter;
-import org.orekit.propagation.numerical.cr3bp.STMEquations;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -103,7 +101,7 @@ public class CR3BPMultipleShooterTest {
                                                                          firstGuess2)));
 
         // Multiple Shooting definition
-        final CR3BPMultipleShooter multipleShooting = new CR3BPMultipleShooter(firstGuessList, propagatorList, arcDuration, cr3bpAdditionalEquations, 1E-8);
+        final CR3BPMultipleShooter multipleShooting = new CR3BPMultipleShooter(firstGuessList, propagatorList, arcDuration, cr3bpAdditionalEquations, 1E-8, 1);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
         multipleShooting.setPatchPointComponentFreedom(1, 3, false);

@@ -65,11 +65,12 @@ public class MultipleShooter extends AbstractMultipleShooting {
      * @param epochEquations list of additional derivatives providers linked to propagatorList.
      * @param propagatorList list of propagators associated to each patch point.
      * @param tolerance convergence tolerance on the constraint vector
+     * @param maxIter maximum number of iterations
      */
     public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                           final double arcDuration,
-                           final List<EpochDerivativesEquations> epochEquations, final double tolerance) {
-        super(initialGuessList, propagatorList, arcDuration, tolerance, DERIVATIVES);
+                           final double arcDuration, final List<EpochDerivativesEquations> epochEquations,
+                           final double tolerance, final int maxIter) {
+        super(initialGuessList, propagatorList, arcDuration, tolerance, maxIter, DERIVATIVES);
         this.epochEquations = epochEquations;
     }
 
@@ -100,7 +101,7 @@ public class MultipleShooter extends AbstractMultipleShooting {
         // The additional constraint vector has the following form :
 
         //           [ y1i - y1d ]---- other constraints (component of
-        // Fadd(X) = [    ...    ]    | a patch point eaquals to a
+        // Fadd(X) = [    ...    ]    | a patch point equals to a
         //           [vz2i - vz2d]----  desired value)
 
         // Number of additional constraints
