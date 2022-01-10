@@ -51,11 +51,12 @@ import org.orekit.utils.ParameterDriver;
  * Newtonian attraction}, {@link org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel
  * gravity field}, and {@link org.orekit.forces.gravity.Relativity relativity}.
  * </p>
+ * @deprecated as of 11.1, this class is not used anymore
  * @author Vincent Mouraux
  * @author Bryan Cazabonne
  * @since 10.2
  */
-@SuppressWarnings("deprecation")
+@Deprecated
 public class AbsolutePartialDerivativesEquations extends PartialDerivativesEquations {
 
     /** Name. */
