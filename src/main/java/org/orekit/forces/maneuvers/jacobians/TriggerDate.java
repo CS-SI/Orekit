@@ -87,9 +87,9 @@ import org.orekit.utils.TimeSpanMap;
  * \(m = m_0 - q (t - t_s)\), where \(m\) is current mass, \(m_0\) is initial mass and \(t_s\) is
  * maneuver trigger time. A delay \(dt_s\) on trigger time induces delaying mass depletion.
  * We get:
- * \[d\vec{\Gamma} = \frac{-\vec{F}}{m^2} dm = \frac{-\vec{F}}{m^2} q dt_s = -\vec{Gamma}\frac{q}{m} dt_s\]
+ * \[d\vec{\Gamma} = \frac{-\vec{F}}{m^2} dm = \frac{-\vec{F}}{m^2} q dt_s = -\vec{\Gamma}\frac{q}{m} dt_s\]
  * From this total differential, we extract the partial derivative of the acceleration
- * \[\frac{\partial\vec{\Gamma}}{\partial t_s} = -\vec{Gamma}\frac{q}{m}\]
+ * \[\frac{\partial\vec{\Gamma}}{\partial t_s} = -\vec{\Gamma}\frac{q}{m}\]
  * </p>
  * <p>
  * The contribution of the secondary part to the Jacobian column can therefore be computed by integrating
