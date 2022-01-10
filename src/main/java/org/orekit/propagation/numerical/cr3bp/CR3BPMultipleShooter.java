@@ -18,9 +18,9 @@ package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AbstractMultipleShooting;
@@ -34,6 +34,11 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
 
     /** Name of the derivatives. */
     private static final String STM = "stmEquations";
+
+    /** Derivatives linked to the Propagators.
+     * @since 11.1
+     */
+    private final List<STMEquations> stmEquations;
 
     /** Number of patch points. */
     private int npoints;
@@ -52,7 +57,8 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
                                  final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
                                  final double arcDuration, final double tolerance) {
         super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, STM);
-        this.npoints = initialGuessList.size();
+        stmEquations = additionalEquations.stream().map(ae -> (STMEquations) ae).collect(Collectors.toList());
+        npoints      = initialGuessList.size();
     }
 
     /** Simple Constructor.
@@ -60,20 +66,20 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
      * @param initialGuessList initial patch points to be corrected.
      * @param propagatorList list of propagators associated to each patch point.
      * @param arcDuration initial guess of the duration of each arc.
-     * @param additionalDerivativesProviders list of additional derivatives providers linked to propagatorList.
+     * @param stmEquations list of additional derivatives providers linked to propagatorList.
      * @param tolerance convergence tolerance on the constraint vector
      */
     public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                final double arcDuration, final List<AdditionalDerivativesProvider> additionalDerivativesProviders,
+                                final double arcDuration, final List<STMEquations> stmEquations,
                                 final double tolerance) {
-        super(initialGuessList, propagatorList, arcDuration, additionalDerivativesProviders, tolerance, STM);
-        this.npoints = initialGuessList.size();
+        super(initialGuessList, propagatorList, arcDuration, tolerance, STM);
+        this.stmEquations = stmEquations;
+        this.npoints     = initialGuessList.size();
     }
 
     /** {@inheritDoc} */
-    protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
-                                                       final AdditionalDerivativesProvider additionalDerivativesProvider) {
-        return ((STMEquations) additionalDerivativesProvider).setInitialPhi(initialState);
+    protected SpacecraftState getAugmentedInitialState(final int i) {
+        return stmEquations.get(i).setInitialPhi(getPatchPoint(i));
     }
 
     /** {@inheritDoc} */

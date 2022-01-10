@@ -36,7 +36,6 @@ import org.orekit.orbits.LibrationOrbitFamily;
 import org.orekit.orbits.LibrationOrbitType;
 import org.orekit.orbits.RichardsonExpansion;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
 import org.orekit.propagation.numerical.cr3bp.CR3BPMultipleShooter;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
@@ -73,7 +72,7 @@ public class CR3BPMultipleShooterTest {
                                                        vecAbsoluteTolerances,
                                                        vecRelativeTolerances);
         final int narcs = 1;
-        final List<AdditionalDerivativesProvider> cr3bpAdditionalEquations = new ArrayList<>(narcs) ;
+        final List<STMEquations> cr3bpAdditionalEquations = new ArrayList<>(narcs) ;
         cr3bpAdditionalEquations.add(new STMEquations(syst));
 
         // Propagator definition for CR3BP

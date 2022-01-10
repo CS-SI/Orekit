@@ -18,9 +18,9 @@ package org.orekit.utils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
@@ -36,6 +36,11 @@ public class MultipleShooter extends AbstractMultipleShooting {
     /** Name fo the additional derivatives. */
     private static final String DERIVATIVES = "derivatives";
 
+    /** Derivatives linked to the Propagators.
+     * @since 11.1
+     */
+    private final List<EpochDerivativesEquations> epochEquations;
+
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
      * @param initialGuessList initial patch points to be corrected.
@@ -50,26 +55,27 @@ public class MultipleShooter extends AbstractMultipleShooting {
                            final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
                            final double arcDuration, final double tolerance) {
         super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, DERIVATIVES);
+        epochEquations = additionalEquations.stream().map(ae -> (EpochDerivativesEquations) ae).collect(Collectors.toList());
     }
 
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
      * @param initialGuessList initial patch points to be corrected.
      * @param arcDuration initial guess of the duration of each arc.
-     * @param additionalDerivativesProviders list of additional derivatives providers linked to propagatorList.
+     * @param epochEquations list of additional derivatives providers linked to propagatorList.
      * @param propagatorList list of propagators associated to each patch point.
      * @param tolerance convergence tolerance on the constraint vector
      */
     public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
                            final double arcDuration,
-                           final List<AdditionalDerivativesProvider> additionalDerivativesProviders, final double tolerance) {
-        super(initialGuessList, propagatorList, arcDuration, additionalDerivativesProviders, tolerance, DERIVATIVES);
+                           final List<EpochDerivativesEquations> epochEquations, final double tolerance) {
+        super(initialGuessList, propagatorList, arcDuration, tolerance, DERIVATIVES);
+        this.epochEquations = epochEquations;
     }
 
     /** {@inheritDoc} */
-    protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
-                                                       final AdditionalDerivativesProvider additionalDerivativesProvider) {
-        return ((EpochDerivativesEquations) additionalDerivativesProvider).setInitialJacobians(initialState);
+    protected SpacecraftState getAugmentedInitialState(final int i) {
+        return epochEquations.get(i).setInitialJacobians(getPatchPoint(i));
     }
 
     /** {@inheritDoc} */

@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
@@ -31,7 +30,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 
@@ -47,9 +45,10 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     private List<SpacecraftState> patchedSpacecraftStates;
 
     /** Derivatives linked to the Propagators.
-     * @since 11.1
+     * @deprecated as of 11.1 not used anymore
      */
-    private final List<AdditionalDerivativesProvider> additionalDerivativesProviders;
+    @Deprecated
+    private List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations;
 
     /** List of Propagators. */
     private final List<NumericalPropagator> propagatorList;
@@ -92,39 +91,29 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector.
      * @param additionalName name of the additional equations
-     * @deprecated as of 11.1, replaced by {@link #AbstractMultipleShooting(List, List, double, List, double, String)}
+     * @deprecated as of 11.1, replaced by {@link #AbstractMultipleShooting(List, List, double, double, String)}
      */
-    @SuppressWarnings("deprecation")
     @Deprecated
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
                                        final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
                                        final double arcDuration, final double tolerance, final String additionalName) {
-        this(initialGuessList, propagatorList, arcDuration,
-             additionalEquations.
-                 stream().
-                 map(ae -> ae instanceof AdditionalDerivativesProvider ?
-                           (AdditionalDerivativesProvider) ae :
-                           new org.orekit.propagation.integration.AdditionalEquationsAdapter(ae, () -> propagatorList.get(0).getInitialState())).
-                 collect(Collectors.toList()),
-             tolerance, additionalName);
+        this(initialGuessList, propagatorList, arcDuration, tolerance, additionalName);
+        this.additionalEquations = additionalEquations;
     }
 
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting </p>
      * @param initialGuessList initial patch points to be corrected.
      * @param propagatorList list of propagators associated to each patch point.
-     * @param additionalDerivativesProviders list of additional derivatives providers linked to propagatorList.
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector.
      * @param additionalName name of the additional equations
      * @since 11.1
      */
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                       final double arcDuration, final List<AdditionalDerivativesProvider> additionalDerivativesProviders,
-                                       final double tolerance, final String additionalName) {
+                                       final double arcDuration, final double tolerance, final String additionalName) {
         this.patchedSpacecraftStates = initialGuessList;
         this.propagatorList = propagatorList;
-        this.additionalDerivativesProviders = additionalDerivativesProviders;
         this.additionalName = additionalName;
         // Should check if propagatorList.size() = initialGuessList.size() - 1
         final int propagationNumber = initialGuessList.size() - 1;
@@ -154,6 +143,15 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
         // All the additional constraints must be set afterward
         this.mapConstraints = new HashMap<>();
+    }
+
+    /** Get a patch point.
+     * @param i index of the patch point
+     * @return state of the patch point
+     * @since 11.1
+     */
+    protected SpacecraftState getPatchPoint(final int i) {
+        return patchedSpacecraftStates.get(i);
     }
 
     /** Set a component of a patch point to free or not.
@@ -503,9 +501,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         for (int i = 0; i < n; i++) {
 
             // SpacecraftState initialization
-            final SpacecraftState initialState = patchedSpacecraftStates.get(i);
-
-            final SpacecraftState augmentedInitialState = getAugmentedInitialState(initialState, additionalDerivativesProviders.get(i));
+            final SpacecraftState augmentedInitialState = getAugmentedInitialState(i);
 
             // Propagator initialization
             propagatorList.get(i).setInitialState(augmentedInitialState);
@@ -513,7 +509,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             final double integrationTime = propagationTime[i];
 
             // Propagate trajectory
-            final SpacecraftState finalState = propagatorList.get(i).propagate(initialState.getDate().shiftedBy(integrationTime));
+            final SpacecraftState finalState = propagatorList.get(i).propagate(augmentedInitialState.getDate().shiftedBy(integrationTime));
 
             propagatedSP.add(finalState);
         }
@@ -627,11 +623,24 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      *  @param initialState SpacecraftState without the additional state
      *  @param additionalEquations2 Additional Equations.
      *  @return augmentedSP SpacecraftState with the additional state within.
+     *  @deprecated as of 11.1, replaced by {@link #getAugmentedInitialState(int)}
      */
-    protected abstract SpacecraftState getAugmentedInitialState(SpacecraftState initialState,
-                                                                AdditionalDerivativesProvider additionalEquations2);
+    @Deprecated
+    protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
+                                                       final org.orekit.propagation.integration.AdditionalEquations additionalEquations2) {
+        throw new UnsupportedOperationException();
+    }
 
-
+    /** Compute the additional state from the additionalEquations.
+     *  @param i index of the state
+     *  @return augmentedSP SpacecraftState with the additional state within.
+     *  @since 11.1
+     */
+    protected SpacecraftState getAugmentedInitialState(final int i) {
+        // FIXME: this base implementation is only intended for version 11.1 to delegate to a deprecated method
+        // it should be removed in 12.0 when getAugmentedInitialState(SpacecraftState, AdditionalDerivativesProvider) is removed
+        return getAugmentedInitialState(patchedSpacecraftStates.get(i), additionalEquations.get(i));
+    }
 
     /** Set the constraint of a closed orbit or not.
      *  @param isClosed true if orbit should be closed

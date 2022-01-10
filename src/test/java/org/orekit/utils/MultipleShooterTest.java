@@ -40,7 +40,6 @@ import org.orekit.forces.gravity.ThirdBodyAttractionEpoch;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -128,7 +127,7 @@ public class MultipleShooterTest {
         final AbsolutePVCoordinates firstGuessAPV = new AbsolutePVCoordinates(primaryFrame, initialDate, firstGuess);
         List<SpacecraftState> firstGuessList2 = generatePatchPointsEphemeris(sun, earth, firstGuessAPV, arcDuration, narcs, integrator);
         final List<NumericalPropagator> propagatorList  = initializePropagators(sun, earth, integrator, narcs);
-        final List<AdditionalDerivativesProvider> additionalDerivativesProviders = addDerivativesProviders(propagatorList);
+        final List<EpochDerivativesEquations> epochEquations = addDerivativesProviders(propagatorList);
 
         for (int i = 0; i < narcs + 1; i++) {
             final SpacecraftState sp = firstGuessList2.get(i);
@@ -157,7 +156,7 @@ public class MultipleShooterTest {
 
         final double tolerance = 1.0;
 
-        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, additionalDerivativesProviders, tolerance);
+        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, epochEquations, tolerance);
         multipleShooting.setPatchPointComponentFreedom(1, 0, false);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
@@ -231,7 +230,7 @@ public class MultipleShooterTest {
         final AbsolutePVCoordinates firstGuessAPV = new AbsolutePVCoordinates(primaryFrame, initialDate, firstGuess);
         List<SpacecraftState> firstGuessList2 = generatePatchPointsEphemeris(sun, earth, firstGuessAPV, arcDuration, narcs, integrator);
         final List<NumericalPropagator> propagatorList  = initializePropagatorsWithEstimated(sun, earth, integrator, narcs);
-        final List<AdditionalDerivativesProvider> additionalDerivativesProviders = addDerivativesProviders(propagatorList);
+        final List<EpochDerivativesEquations> epochEquations = addDerivativesProviders(propagatorList);
 
         for (int i = 0; i < narcs + 1; i++) {
             final SpacecraftState sp = firstGuessList2.get(i);
@@ -260,7 +259,7 @@ public class MultipleShooterTest {
 
         final double tolerance = 1.0;
 
-        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, additionalDerivativesProviders, tolerance);
+        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, epochEquations, tolerance);
         multipleShooting.setPatchPointComponentFreedom(1, 0, false);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
@@ -376,9 +375,9 @@ public class MultipleShooterTest {
         return propagatorList;
     }
 
-    private static List<AdditionalDerivativesProvider> addDerivativesProviders(List<NumericalPropagator> propagatorList){
+    private static List<EpochDerivativesEquations> addDerivativesProviders(List<NumericalPropagator> propagatorList){
         final int narcs = propagatorList.size();
-        final List<AdditionalDerivativesProvider> additionalEquations = new ArrayList<>(narcs) ;
+        final List<EpochDerivativesEquations> additionalEquations = new ArrayList<>(narcs) ;
         for(int i = 0; i < narcs; i++) {
             additionalEquations.add(new EpochDerivativesEquations("derivatives", propagatorList.get(i)));
         }
