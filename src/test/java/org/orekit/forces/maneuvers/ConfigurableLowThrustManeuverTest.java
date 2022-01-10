@@ -50,6 +50,7 @@ import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.BooleanDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.NegateDetector;
+import org.orekit.propagation.events.PositionAngleDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
@@ -352,6 +353,19 @@ public class ConfigurableLowThrustManeuverTest {
                 PositionAngle.MEAN, new ContinueOnEvent<>());
 
         final NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
+
+        // thrust in velocity direction to increase semi-major-axis
+        return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(), maneuverStartDetector,
+                maneuverStopDetector, thrust, isp);
+    }
+
+    private ConfigurableLowThrustManeuver buildPsoManeuver() {
+
+        final PositionAngleDetector maneuverStartDetector = new PositionAngleDetector(OrbitType.EQUINOCTIAL,
+                                                                                      PositionAngle.MEAN, FastMath.toRadians(0.0));
+
+        final PositionAngleDetector maneuverStopDetector = new PositionAngleDetector(OrbitType.EQUINOCTIAL,
+                                                                                     PositionAngle.MEAN, FastMath.toRadians(90.0));
 
         // thrust in velocity direction to increase semi-major-axis
         return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(), maneuverStartDetector,
@@ -732,6 +746,31 @@ public class ConfigurableLowThrustManeuverTest {
         Assert.assertEquals(thrust, maneuver.getThrust(), 1e-9);
         Assert.assertEquals(attitudeProvider, maneuver.getThrustDirectionProvider());
 
+    }
+
+    @Test
+    public void testIssue874() {
+        /////////////////// initial conditions /////////////////////////////////
+        final KeplerianOrbit initOrbit = buildInitOrbit();
+        final double initMass = 20;
+        final SpacecraftState initialState = new SpacecraftState(initOrbit, initMass);
+        final AbsoluteDate initialDate = initOrbit.getDate();
+        final double simulationDuration = 2 * 86400;
+        final AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
+
+        /////////////////// propagations /////////////////////////////////
+
+        final NumericalPropagator numericalPropagator = buildNumericalPropagator(initOrbit);
+        numericalPropagator.addForceModel(buildPsoManeuver());
+        numericalPropagator.setInitialState(initialState);
+        final SpacecraftState finalStateNumerical = numericalPropagator.propagate(finalDate);
+
+        /////////////////// results check /////////////////////////////////
+        final double expectedPropellantConsumption = -0.028;
+        final double expectedDeltaSemiMajorAxisRealized = 20920;
+        Assert.assertEquals(expectedPropellantConsumption, finalStateNumerical.getMass() - initialState.getMass(),
+                0.005);
+        Assert.assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
     }
 
     @Test(expected = OrekitException.class)

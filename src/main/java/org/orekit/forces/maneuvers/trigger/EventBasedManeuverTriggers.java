@@ -144,6 +144,8 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
                 // backward propagation was forbidden
                 throw new OrekitException(OrekitMessages.BACKWARD_PROPAGATION_NOT_ALLOWED);
             }
+            startFiringDetector.init(initialState, target);
+            stopFiringDetector.init(initialState, target);
 
             checkInitialFiringState(initialState);
 
