@@ -49,10 +49,14 @@
         +boolean hasAdditionalState(final String name)
         +double[] getAdditionalState(final String name)
         +DoubleArrayDictionary getAdditionalStates()
+        +SpacecraftState addAdditionalStateDerivative(final String name, final double ... value)
+        +boolean hasAdditionalStateDerivative(final String name)
+        +double[] getAdditionalStateDerivative(final String name)
+        +DoubleArrayDictionary getAdditionalStatesDerivatives()
       }
       note bottom
-        always immutable
-        addAdditionalState creates new instances
+        always immutable addAdditionalState and
+        addAdditionalStateDerivative create new instances
       end note
 
       interface BoundedPropagator {

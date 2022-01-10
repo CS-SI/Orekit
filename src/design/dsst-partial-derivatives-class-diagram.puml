@@ -29,65 +29,56 @@
 
   package org.orekit #ECEBD8 {
 
- 
-    package propagation #DDEBD8 {
+    interface Propagator {
+      + SpacecraftState propagate(AbsoluteDate target)
+      +MatrixHarvester setupMatricesComputation(name, initialSTM, initialJacobian)
+    }
 
-      interface Propagator {
-        + SpacecraftState propagate(AbsoluteDate target)
+    interface MatricesHarvester {
+      +void setReferenceState(SpacecraftState state)
+      +RealMatrix getStateTransitionMatrix(SpacecraftState state)
+      +RealMatrix getParametersJacobian(SpacecraftState state)
+      +List<String> getJacobiansColumnsNames()
+    }
+
+    Propagator -right-> MatricesHarvester
+
+    package integration #DDEBD8 {
+      class  AbstractIntegratedPropagator {
+       +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
       }
-
-      Propagator <|.. AbstractPropagator
-
-      package integration #CBDBC8 {
-        interface AdditionalDerivativesProvider {
-          +String getName()
-          +boolean yield()
-          +void derivatives()
-        }
-        class  AbstractIntegratedPropagator {
-         +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
-        }
-        AbstractPropagator <|-- AbstractIntegratedPropagator
-        AdditionalDerivativesProvider <---o AbstractIntegratedPropagator : provider
+      interface AdditionalDerivativesProvider {
+        +String getName()
+        +yield()
+        +void derivatives()
       }
+      AbstractIntegratedPropagator o--> AdditionalDerivativesProvider : providers
+      Propagator <|.. AbstractIntegratedPropagator
+    }
 
-      package semianalytical.dsst #CBDBC8 {
+    package semianalytical.dsst #DDEBD8 {
 
-      	package forces #CCCCC7 {
+       class DSSTHarvester
 
-        	interface DSSTForceModel {
-          	   +void init(SpacecraftState initialState, AbsoluteDate target)
-        	   +Gradient[] getMeanElementRate()
-               +void updateShortPeriodTerms()
-        	}
-
-          	class DSSTZonal
-          		DSSTForceModel <|.. DSSTZonal
-
-        }
-    
-
-       class DSSTPropagator {
-         +void addForceModel(DSSTForceModel model)
+       class DSSTStateTransitionMatrixGenerator {
+         -List<DSSTForceModel> forceModels
        }
 
-       class DSSTPartialDerivativesEquations {
-          +void freezeParametersSelection()
-          +void setInitialJacobians(SpacecraftState s0)
-          +DSSTJacobiansMapper getMapper()
+       class DSSTIntegrableJacobianColumnGenerator {
+         -String columnName
        }
 
-       class DSSTJacobiansMapper {
-          +void getStateJacobian(SpacecraftState state, double[][] dYdY0)
-          +void getParametersJacobian(SpacecraftState state, double[][] dYdP)
-       }
+       class DSSTPropagator
 
-       AdditionalDerivativesProvider   <|..     DSSTPartialDerivativesEquations
-       DSSTPartialDerivativesEquations *-->     DSSTForceModel
-       AbstractIntegratedPropagator  <|--     DSSTPropagator
-       DSSTPropagator          *--> DSSTForceModel
+       MatricesHarvester <|.. DSSTHarvester
+       AbstractIntegratedPropagator <|-- DSSTPropagator
+       DSSTStateTransitionMatrixGenerator <--o DSSTPropagator
+       DSSTIntegrableJacobianColumnGenerator <--o DSSTPropagator
+       DSSTHarvester <--o DSSTPropagator
 
-       }
+       AdditionalDerivativesProvider <|.. DSSTStateTransitionMatrixGenerator
+       AdditionalDerivativesProvider <|.. DSSTIntegrableJacobianColumnGenerator
+
     }
 
   }
