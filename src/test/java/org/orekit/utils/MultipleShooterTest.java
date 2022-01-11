@@ -156,7 +156,7 @@ public class MultipleShooterTest {
 
         final double tolerance = 1.0;
 
-        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, epochEquations, tolerance, 10);
+        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, epochEquations, arcDuration, tolerance, 10);
         multipleShooting.setPatchPointComponentFreedom(1, 0, false);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
@@ -259,7 +259,7 @@ public class MultipleShooterTest {
 
         final double tolerance = 1.0;
 
-        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, arcDuration, epochEquations, tolerance, 10);
+        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, epochEquations, arcDuration, tolerance, 10);
         multipleShooting.setPatchPointComponentFreedom(1, 0, false);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);

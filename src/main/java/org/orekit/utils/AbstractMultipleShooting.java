@@ -209,9 +209,12 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             final RealMatrix M = computeJacobianMatrix(propagatedSP);
             final RealVector fx = MatrixUtils.createRealVector(computeConstraint(propagatedSP));
 
-            // Solve linear system
-            final RealMatrix MMt = M.multiply(M.transpose());
-            final RealVector dx  = M.transpose().multiply(MatrixUtils.inverse(MMt)).operate(fx);
+            // Solve linear system using minimum norm approach
+            // (i.e. minimize difference between solutions from successive iterations,
+            //  in other word try to stay close to initial guess; this is *not* a least squares solution)
+            // see equation 3.12 in Pavlak's thesis
+            final RealMatrix MMt = M.multiplyTransposed(M);
+            final RealVector dx  = M.transposeMultiply(MatrixUtils.inverse(MMt)).operate(fx);
 
             // Apply correction from the free variable vector to all the variables (propagation time, pacthSpaceraftState)
             updateTrajectory(dx);
@@ -220,7 +223,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             iter++;
 
-        } while (fxNorm > tolerance && iter < maxIter); // Converge within tolerance and under 10 iterations
+        } while (fxNorm > tolerance && iter < maxIter); // Converge within tolerance and under max iterations
 
         return patchedSpacecraftStates;
     }
@@ -627,6 +630,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     @Deprecated
     protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
                                                        final org.orekit.propagation.integration.AdditionalEquations additionalEquations2) {
+        // should never be called, only implementations by derived classes should be called
         throw new UnsupportedOperationException();
     }
 
@@ -638,6 +642,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     protected SpacecraftState getAugmentedInitialState(final int i) {
         // FIXME: this base implementation is only intended for version 11.1 to delegate to a deprecated method
         // it should be removed in 12.0 when getAugmentedInitialState(SpacecraftState, AdditionalDerivativesProvider) is removed
+        // and the method should remain abstract in this class and be implemented by derived classes only
         return getAugmentedInitialState(patchedSpacecraftStates.get(i), additionalEquations.get(i));
     }
 

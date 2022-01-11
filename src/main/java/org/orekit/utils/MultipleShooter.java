@@ -33,7 +33,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  */
 public class MultipleShooter extends AbstractMultipleShooting {
 
-    /** Name fo the additional derivatives. */
+    /** Name of the additional derivatives. */
     private static final String DERIVATIVES = "derivatives";
 
     /** Derivatives linked to the Propagators.
@@ -48,7 +48,7 @@ public class MultipleShooter extends AbstractMultipleShooting {
      * @param additionalEquations list of additional equations linked to propagatorList.
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector
-     * @deprecated as of 11.1, replaced by {@link #MultipleShooter(List, List, double, List, double)}
+     * @deprecated as of 11.1, replaced by {@link #MultipleShooter(List, List, List, double, double, int)}
      */
     @Deprecated
     public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
@@ -61,14 +61,14 @@ public class MultipleShooter extends AbstractMultipleShooting {
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
      * @param initialGuessList initial patch points to be corrected.
-     * @param arcDuration initial guess of the duration of each arc.
-     * @param epochEquations list of additional derivatives providers linked to propagatorList.
      * @param propagatorList list of propagators associated to each patch point.
+     * @param epochEquations list of additional derivatives providers linked to propagatorList.
+     * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector
      * @param maxIter maximum number of iterations
      */
     public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                           final double arcDuration, final List<EpochDerivativesEquations> epochEquations,
+                           final List<EpochDerivativesEquations> epochEquations, final double arcDuration,
                            final double tolerance, final int maxIter) {
         super(initialGuessList, propagatorList, arcDuration, tolerance, maxIter, DERIVATIVES);
         this.epochEquations = epochEquations;

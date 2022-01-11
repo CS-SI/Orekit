@@ -101,7 +101,7 @@ public class CR3BPMultipleShooterTest {
                                                                          firstGuess2)));
 
         // Multiple Shooting definition
-        final CR3BPMultipleShooter multipleShooting = new CR3BPMultipleShooter(firstGuessList, propagatorList, arcDuration, cr3bpAdditionalEquations, 1E-8, 1);
+        final CR3BPMultipleShooter multipleShooting = new CR3BPMultipleShooter(firstGuessList, propagatorList, cr3bpAdditionalEquations, arcDuration, 1E-8, 1);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
         multipleShooting.setPatchPointComponentFreedom(1, 3, false);

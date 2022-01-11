@@ -50,7 +50,7 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
      * @param additionalEquations list of additional equations linked to propagatorList.
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector
-     * @deprecated as of 11.1, replaced by {@link #CR3BPMultipleShooter(List, List, double, List, double)}
+     * @deprecated as of 11.1, replaced by {@link #CR3BPMultipleShooter(List, List, List, double, double, int)}
      */
     @Deprecated
     public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
@@ -65,17 +65,17 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
      * @param initialGuessList initial patch points to be corrected.
      * @param propagatorList list of propagators associated to each patch point.
-     * @param arcDuration initial guess of the duration of each arc.
      * @param stmEquations list of additional derivatives providers linked to propagatorList.
+     * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector
      * @param maxIter maximum number of iterations
      */
     public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                final double arcDuration, final List<STMEquations> stmEquations,
+                                final List<STMEquations> stmEquations, final double arcDuration,
                                 final double tolerance, final int maxIter) {
         super(initialGuessList, propagatorList, arcDuration, tolerance, maxIter, STM);
         this.stmEquations = stmEquations;
-        this.npoints     = initialGuessList.size();
+        this.npoints      = initialGuessList.size();
     }
 
     /** {@inheritDoc} */
@@ -88,17 +88,15 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
 
-        final boolean isClosedOrbit = isClosedOrbit();
-
         // Number of additional constraints
-        final int n = mapConstraints.size() + (isClosedOrbit ? 6 : 0);
+        final int n = mapConstraints.size() + (isClosedOrbit() ? 6 : 0);
 
         final int ncolumns = getNumberOfFreeVariables() - 1;
 
         final double[][] M = new double[n][ncolumns];
 
         int k = 0;
-        if (isClosedOrbit) {
+        if (isClosedOrbit()) {
             // The Jacobian matrix has the following form:
             //
             //      [-1  0              0  ...  1  0             ]
@@ -145,20 +143,19 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
         //           [vyni - vy1i]    |
         //           [vzni - vz1i]----
         //           [ y1i - y1d ]---- other constraints (component of
-        //           [    ...    ]    | a patch point eaquals to a
+        //           [    ...    ]    | a patch point equals to a
         //           [vz2i - vz2d]----  desired value)
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
-        final boolean isClosedOrbit = isClosedOrbit();
         // Number of additional constraints
-        final int n = mapConstraints.size() + (isClosedOrbit ? 6 : 0);
+        final int n = mapConstraints.size() + (isClosedOrbit() ? 6 : 0);
 
         final List<SpacecraftState> patchedSpacecraftStates = getPatchedSpacecraftState();
 
         final double[] fxAdditionnal = new double[n];
         int i = 0;
 
-        if (isClosedOrbit) {
+        if (isClosedOrbit()) {
 
             final AbsolutePVCoordinates apv1i = patchedSpacecraftStates.get(0).getAbsPVA();
             final AbsolutePVCoordinates apvni = patchedSpacecraftStates.get(npoints - 1).getAbsPVA();
