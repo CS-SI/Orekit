@@ -194,7 +194,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
 
         // Initialize B4
         final List<String> names = getJacobiansColumnsNames();
-        final RealMatrix B4 = MatrixUtils.createRealMatrix(STATE_DIMENSION, columnsNames.size());
+        final RealMatrix B4 = MatrixUtils.createRealMatrix(STATE_DIMENSION, names.size());
 
         // add the short period terms
         for (int j = 0; j < names.size(); ++j) {
@@ -278,6 +278,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
         for (final double[] row : shortPeriodDerivativesStm) {
             Arrays.fill(row, 0.0);
         }
+
         shortPeriodDerivativesJacobianColumns.clear();
 
         final DSSTGradientConverter converter = new DSSTGradientConverter(reference, propagator.getAttitudeProvider());
