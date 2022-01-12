@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -57,9 +57,9 @@
     package propagation #DDEBD8 {
       
       package integration #F3EFEB {
-         interface AdditionalEquations {
+         interface AdditionalDerivativesProvider {
            + init()
-           + computeDerivatives()
+           + derivatives()
          }
       }
 
@@ -78,22 +78,19 @@
            + void setStepHandler(OrekitStepHandler handler)
          }
 
-         class DSSTJacobianMapper {
-           + void getB1(B1Matrix)
-           + void getB2(B2Matrix)
-           + void getB3(B3Matrix)
-           + void getB4(B4Matrix)
-           + setShortPeriodJacobians(SpacecraftState meanState)
+         class DSSTHarvester {
+           + RealMatrix getB1()
+           + RealMatrix getB2()
+           + RealMatrix getB3()
+           + RealMatrix getB4()
+           + setReferenceState(SpacecraftState meanState)
          }
          
-         class DSSTPartialDerivativesEquations {
-            + DSSTJacobianMapper getMapper()
-         }
-         
-         AdditionalEquations <|..  DSSTPartialDerivativesEquations
-         DSSTPropagator *-->  AdditionalEquations
+         AdditionalDerivativesProvider <|.. DSSTStateTransitionMatrixGenerator
+         DSSTPropagator *-->  AdditionalDerivativesProvider
          DSSTPropagator *-->  OrekitStepHandler
-         DSSTJacobianMapper <--   DSSTPartialDerivativesEquations
+         DSSTHarvester <--o DSSTPropagator
+         DSSTStateTransitionMatrixGenerator <--o DSSTPropagator
 
       }
 
@@ -114,7 +111,7 @@
       }
       
       class SemiAnalyticalKalmanModel {
-         - DSSTJacobianMapper mapper
+         - DSSTHarvester mapper
          - DSSTPropagator dsstPropagator
          + DSSTPropagator processMeasurements(List<ObservedMeasurement> measurements)
          - void updateNominalSpacecraftState(SpacecraftState nominal)
