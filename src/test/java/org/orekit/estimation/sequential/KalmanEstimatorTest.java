@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,10 +35,12 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
+import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
@@ -50,6 +52,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -772,9 +775,9 @@ public class KalmanEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         final double localClockOffset  = 0.137e-6;
@@ -846,12 +849,12 @@ public class KalmanEstimatorTest {
                                            new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
-                                               { 5.6e5, 1.8e5, 1.9e5 },
-                                               { 5.3e5, 1.8e5, 1.8e5 }
+                                               { 6.9e5, 6.0e5, 12.5e5 },
+                                               { 6.8e5, 5.9e5, 12.7e5 }
                                            }, new double[] { 1e4, 1e4 },
                                            new double[][] {
-                                               { 8.8e2, 1.8e2, 3.1e2 },
-                                               { 8.8e2, 1.8e2, 3.1e2 }
+                                               { 5.0e2, 5.3e2, 1.4e2 },
+                                               { 5.0e2, 5.3e2, 1.4e2 }
                                            }, new double[] { 1.0e1, 1.0e1 });
 
         // after the call to estimate, the parameters lacking a user-specified reference date
@@ -1002,9 +1005,9 @@ public class KalmanEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         final double localClockOffset  = 0.137e-6;
@@ -1090,12 +1093,12 @@ public class KalmanEstimatorTest {
                                            new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
-                                               { 5.6e5, 1.8e5, 1.9e5 },
-                                               { 5.3e5, 1.8e5, 1.8e5 }
+                                               { 6.9e5, 6.0e5, 12.5e5 },
+                                               { 6.8e5, 5.9e5, 12.7e5 }
                                            }, new double[] { 1e4, 1e4 },
                                            new double[][] {
-                                               { 8.8e2, 1.8e2, 3.1e2 },
-                                               { 8.8e2, 1.8e2, 3.1e2 }
+                                               { 5.0e2, 5.3e2, 1.4e2 },
+                                               { 5.0e2, 5.3e2, 1.4e2 }
                                            }, new double[] { 1.0e1, 1.0e1 });
 
         // after the call to estimate, the parameters lacking a user-specified reference date
@@ -1109,6 +1112,74 @@ public class KalmanEstimatorTest {
                 Assert.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
             }
         }
+
+    }
+
+    @Test
+    public void tesIssue850() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create propagator builder
+        final NumericalPropagatorBuilder propagatorBuilder1 =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        propagatorBuilder1.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
+
+        final NumericalPropagatorBuilder propagatorBuilder2 =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        propagatorBuilder2.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
+
+        // Generate measurement for both propagators
+        final Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder1);
+
+        final List<ObservedMeasurement<?>> measurements1 =
+                        EstimationTestUtils.createMeasurements(propagator1,
+                                                               new PositionMeasurementCreator(),
+                                                               0.0, 3.0, 300.0);
+
+        final Propagator propagator2 = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                            propagatorBuilder2);
+
+        final List<ObservedMeasurement<?>> measurements2 =
+                         EstimationTestUtils.createMeasurements(propagator2,
+                                                                new PositionMeasurementCreator(),
+                                                                0.0, 3.0, 300.0);
+
+        // Create a multiplexed measurement
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
+        measurements.add(measurements1.get(0));
+        measurements.add(measurements2.get(0));
+        final ObservedMeasurement<?> multiplexed = new MultiplexedMeasurement(measurements);
+
+        // Covariance matrix initialization
+        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
+        });        
+
+        // Process noise matrix
+        RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
+        });
+  
+
+        // Build the Kalman filter
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder1, new ConstantProcessNoise(initialP, Q)).
+                        addPropagationConfiguration(propagatorBuilder2, new ConstantProcessNoise(initialP, Q)).
+                        build();
+
+        // Perform an estimation at the first measurment epoch (estimated states must be identical to initial orbit)
+        Propagator[] estimated = kalman.estimationStep(multiplexed);
+        final Vector3D pos1 = estimated[0].getInitialState().getPVCoordinates().getPosition();
+        final Vector3D pos2 = estimated[1].getInitialState().getPVCoordinates().getPosition();
+
+        // Verify
+        Assert.assertEquals(0.0, pos1.distance(pos2), 1.0e-12);
+        Assert.assertEquals(0.0, pos1.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
+        Assert.assertEquals(0.0, pos2.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
 
     }
 

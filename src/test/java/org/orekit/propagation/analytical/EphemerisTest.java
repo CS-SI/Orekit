@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -155,15 +154,7 @@ public class EphemerisTest {
         // Propagate and build ephemeris
         final List<SpacecraftState> propagatedStates = new ArrayList<>();
 
-        propagator.setMasterMode(60, new OrekitFixedStepHandler() {
-          @Override
-          public void handleStep(SpacecraftState currentState,
-                                 boolean isLast)
-            throws OrekitException
-          {
-            propagatedStates.add(currentState);
-          }              
-        });
+        propagator.setStepHandler(60, currentState -> propagatedStates.add(currentState));
         propagator.propagate(initialDate.shiftedBy(2*86400.0));
         final Ephemeris ephemeris = new Ephemeris(propagatedStates, 8);
 

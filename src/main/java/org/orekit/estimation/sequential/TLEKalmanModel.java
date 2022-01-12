@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.estimation.sequential;
 import java.util.List;
 
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -26,7 +27,6 @@ import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
 import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
@@ -67,8 +67,8 @@ public class TLEKalmanModel extends AbstractKalmanModel {
         // Update the reference trajectory propagator
         setReferenceTrajectories(propagators);
 
-        // Jacobian mappers
-        final AbstractJacobiansMapper[] mappers = getMappers();
+        // Jacobian harvesters
+        final MatricesHarvester[] harvesters = new MatricesHarvester[propagators.length];
 
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
@@ -79,19 +79,12 @@ public class TLEKalmanModel extends AbstractKalmanModel {
             final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();
             final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
             ((TLEPropagator) getReferenceTrajectories()[k]).resetInitialState(stateWithDerivatives);
-            mappers[k] = pde.getMapper();
+            harvesters[k] = pde.getMapper();
         }
 
-        // Update Jacobian mappers
-        setMappers(mappers);
+        // Update Jacobian harvesters
+        setHarvesters(harvesters);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @DefaultDataContext
-    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
-        ((TLEJacobiansMapper) mapper).analyticalDerivatives(state);
     }
 
 }

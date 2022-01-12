@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -131,7 +131,7 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> getThrustVector(final T parameters[]) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T parameters[]) {
         return new FieldVector3D<T>(parameters[0].multiply(getInitialThrustVector().getX()),
                         parameters[1].multiply(getInitialThrustVector().getY()),
                         parameters[2].multiply(getInitialThrustVector().getZ()));
@@ -139,7 +139,7 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getFlowRate(final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> T getFlowRate(final T[] parameters) {
         return parameters[0].getField().getZero().add(getInitialFlowrate());
     }
 }

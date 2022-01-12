@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,6 +42,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.ParsedMessage;
@@ -49,8 +50,8 @@ import org.orekit.gnss.metric.messages.ParsedMessage;
 /** Source table for ntrip streams retrieval.
  * <p>
  * Note that all authentication is performed automatically by just
- * calling the standard {@link java.net.AuthenticatorAuthenticator#setDefault(Authenticator)
- * Authenticator.setDefault(someAuthenticator)} method to set up an authenticator.
+ * calling the standard {@link Authenticator#setDefault(Authenticator)}
+ * method to set up an authenticator.
  * </p>
  * @author Luc Maisonobe
  * @since 11.0
@@ -217,6 +218,13 @@ public class NtripClient {
         }
     }
 
+    /** Get proxy.
+     * @return proxy to use
+     */
+    public Proxy getProxy() {
+        return proxy;
+    }
+
     /** Set GPS fix data to send as NMEA sentence to Ntrip caster if required.
      * @param hour hour of the fix (UTC time)
      * @param minute minute of the fix (UTC time)
@@ -231,14 +239,14 @@ public class NtripClient {
                        final double undulation) {
 
         // convert latitude
-        final double latDeg = Math.abs(Math.toDegrees(latitude));
-        final int    dLat   = (int) Math.floor(latDeg);
+        final double latDeg = FastMath.abs(FastMath.toDegrees(latitude));
+        final int    dLat   = (int) FastMath.floor(latDeg);
         final double mLat   = DEG_TO_MINUTES * (latDeg - dLat);
         final char   cLat   = latitude >= 0.0 ? 'N' : 'S';
 
         // convert longitude
-        final double lonDeg = Math.abs(Math.toDegrees(longitude));
-        final int    dLon   = (int) Math.floor(lonDeg);
+        final double lonDeg = FastMath.abs(FastMath.toDegrees(longitude));
+        final int    dLon   = (int) FastMath.floor(lonDeg);
         final double mLon   = DEG_TO_MINUTES * (lonDeg - dLon);
         final char   cLon   = longitude >= 0.0 ? 'E' : 'W';
 

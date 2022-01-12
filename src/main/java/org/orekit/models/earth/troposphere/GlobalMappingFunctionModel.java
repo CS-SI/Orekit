@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -175,7 +175,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final FieldAbsoluteDate<T> date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
@@ -203,7 +203,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         } else {
             c10h = zero.add(0.002);
             c11h = zero.add(0.007);
-            psi  = zero.add(FastMath.PI);
+            psi  = zero.getPi();
         }
 
         double t0 = 28;
@@ -211,7 +211,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef = psi.add(((dofyear + 1 - t0) / 365.25) * 2 * FastMath.PI);
+        final T coef = psi.add(zero.getPi().multiply(2.0).multiply((dofyear + 1 - t0) / 365.25));
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(FastMath.cos(latitude).negate().add(1.0)).add(c0h);
 
         // bw and cw constants (Boehm, J et al, 2006) | WET PART

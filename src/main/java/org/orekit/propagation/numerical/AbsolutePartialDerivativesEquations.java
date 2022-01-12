@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.utils.ParameterDriver;
 
-/** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
+/** {@link AdditionalDerivativesProvider derivatives provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
  * <p>
  * This set of equations are automatically added to a {@link NumericalPropagator numerical propagator}
@@ -51,10 +51,12 @@ import org.orekit.utils.ParameterDriver;
  * Newtonian attraction}, {@link org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel
  * gravity field}, and {@link org.orekit.forces.gravity.Relativity relativity}.
  * </p>
+ * @deprecated as of 11.1, this class is not used anymore
  * @author Vincent Mouraux
  * @author Bryan Cazabonne
  * @since 10.2
  */
+@Deprecated
 public class AbsolutePartialDerivativesEquations extends PartialDerivativesEquations {
 
     /** Name. */
@@ -64,7 +66,7 @@ public class AbsolutePartialDerivativesEquations extends PartialDerivativesEquat
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
      * the propagator by calling its {@link
-     * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
+     * NumericalPropagator#addAdditionalDerivativesProvider(AdditionalDerivativesProvider)} method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
      * @param name name of the partial derivatives equations

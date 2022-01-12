@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.gnss.navigation.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;

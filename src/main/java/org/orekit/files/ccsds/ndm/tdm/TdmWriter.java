@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -33,13 +34,13 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>, TdmFile> {
+public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
 
     /** Version number implemented. **/
-    public static final double CCSDS_TDM_VERS = 1.0;
+    public static final double CCSDS_TDM_VERS = 2.0;
 
     /** Padding width for aligning the '=' sign. */
-    public static final int KVN_PADDING_WIDTH = 25;
+    public static final int KVN_PADDING_WIDTH = 29;
 
     /** Converter for {@link RangeUnits#RU Range Units}. */
     private final RangeUnitsConverter converter;
@@ -47,8 +48,8 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildTdmWriter(RangeUnitsConverter)
-     * writerBuilder.buildTdmWriter(converter)}.
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildTdmWriter()
+     * writerBuilder.buildTdmWriter()}.
      * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
@@ -57,20 +58,19 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
      */
     public TdmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final RangeUnitsConverter converter) {
-        super(TdmFile.ROOT, TdmFile.FORMAT_VERSION_KEY, CCSDS_TDM_VERS,
+        super(Tdm.ROOT, Tdm.FORMAT_VERSION_KEY, CCSDS_TDM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
+                  () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> null, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
         this.converter = converter;
     }
 
-    /** Write one segment.
-     * @param generator generator to use for producing output
-     * @param segment segment to write
-     * @throws IOException if any buffer writing operations fails
-     */
-    public void writeSegmentContent(final Generator generator, final Segment<TdmMetadata, ObservationsBlock> segment)
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final Segment<TdmMetadata, ObservationsBlock> segment)
         throws IOException {
 
         // write the metadata
@@ -79,6 +79,7 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,

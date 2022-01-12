@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.generation.Generator;
 
 /**
- * Writer for Common metadata for CCSDS Orbit Parameter/Ephemeris/Mean Message files.
+ * Writer for Common metadata for CCSDS Orbit Parameter/Ephemeris/Mean Messages.
  *
  * @author Luc Maisonobe
  * @since 11.0
@@ -55,12 +55,12 @@ public class CommonMetadataWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // object
-        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),  metadata.getObjectName(), true);
-        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   true);
+        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),  metadata.getObjectName(), null, true);
+        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   null, true);
 
         // frames
-        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(),     metadata.getCenter().getName(),          true);
-        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(),       metadata.getReferenceFrame().getName(),  true);
+        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(),     metadata.getCenter().getName(),          null, true);
+        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(),       metadata.getReferenceFrame().getName(),  null, true);
         generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), timeConverter, metadata.getFrameEpoch(), false);
 
         // time

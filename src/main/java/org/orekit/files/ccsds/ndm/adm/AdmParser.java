@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,11 +22,12 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.NdmConstituent;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -46,8 +47,8 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AdmParser<T extends NdmFile<?, ?>, P extends AbstractMessageParser<T, ?>>
-    extends AbstractMessageParser<T, P> {
+public abstract class AdmParser<T extends NdmConstituent<?, ?>, P extends AbstractConstituentParser<T, ?>>
+    extends AbstractConstituentParser<T, P> {
 
     /** Index rotation element name. */
     private static final String ROTATION_1 = "rotation1";
@@ -69,11 +70,12 @@ public abstract class AdmParser<T extends NdmFile<?, ?>, P extends AbstractMessa
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
-    protected AdmParser(final String root, final String formatVersionKey,
-                        final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
-        super(root, formatVersionKey, conventions, simpleEOP, dataContext);
+    protected AdmParser(final String root, final String formatVersionKey, final IERSConventions conventions,
+                        final boolean simpleEOP, final DataContext dataContext,
+                        final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(root, formatVersionKey, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
         this.missionReferenceDate = missionReferenceDate;
     }
 

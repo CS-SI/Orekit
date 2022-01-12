@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
@@ -28,7 +28,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldAbstractGaussianContributionContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     // CHECKSTYLE: stop VisibilityModifier check
 

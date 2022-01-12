@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.attitudes;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -63,7 +63,7 @@ public class FixedFrameBuilder implements AttitudeBuilder {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldAttitude<T>
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T>
         build(final Frame frame, final FieldPVCoordinatesProvider<T> pvProv,
               final TimeStampedFieldAngularCoordinates<T> rawAttitude) {
 

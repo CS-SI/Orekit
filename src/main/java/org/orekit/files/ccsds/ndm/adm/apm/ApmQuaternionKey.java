@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -43,17 +41,7 @@ public enum ApmQuaternionKey {
     Q_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
 
     /** Second reference frame entry. */
-    Q_FRAME_B((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            if (container.getEndpoints().getFrameA() == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, Q_FRAME_A.name());
-            }
-            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
-            return token.processAsFrame(container.getEndpoints()::setFrameB, context,
-                                        aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
-        }
-        return true;
-    }),
+    Q_FRAME_B((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameB, context, true, true, true)),
 
     /** Rotation direction entry. */
     Q_DIR((token, context, container) -> {
@@ -64,28 +52,36 @@ public enum ApmQuaternionKey {
     }),
 
     /** Scalar part of the quaternion entry. */
-    QC((token, context, container) -> token.processAsIndexedDouble(0, Unit.ONE, container::setQ)),
+    QC((token, context, container) -> token.processAsIndexedDouble(0, Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                   container::setQ)),
 
     /** First component of the vector part of the quaternion entry. */
-    Q1((token, context, container) -> token.processAsIndexedDouble(1, Unit.ONE, container::setQ)),
+    Q1((token, context, container) -> token.processAsIndexedDouble(1, Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                   container::setQ)),
 
     /** Second component of the vector part of the quaternion entry. */
-    Q2((token, context, container) -> token.processAsIndexedDouble(2, Unit.ONE, container::setQ)),
+    Q2((token, context, container) -> token.processAsIndexedDouble(2, Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                   container::setQ)),
 
     /** Third component of the vector part of the quaternion entry. */
-    Q3((token, context, container) -> token.processAsIndexedDouble(3, Unit.ONE, container::setQ)),
+    Q3((token, context, container) -> token.processAsIndexedDouble(3, Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                   container::setQ)),
 
     /** Scalar part of the quaternion derivative entry. */
-    QC_DOT((token, context, container) -> token.processAsIndexedDouble(0, Units.ONE_PER_S, container::setQDot)),
+    QC_DOT((token, context, container) -> token.processAsIndexedDouble(0, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setQDot)),
 
     /** First component of the vector part of the quaternion derivative entry. */
-    Q1_DOT((token, context, container) -> token.processAsIndexedDouble(1, Units.ONE_PER_S, container::setQDot)),
+    Q1_DOT((token, context, container) -> token.processAsIndexedDouble(1, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setQDot)),
 
     /** Second component of the vector part of the quaternion derivative entry. */
-    Q2_DOT((token, context, container) -> token.processAsIndexedDouble(2, Units.ONE_PER_S, container::setQDot)),
+    Q2_DOT((token, context, container) -> token.processAsIndexedDouble(2, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setQDot)),
 
     /** Third component of the vector part of the quaternion derivative entry. */
-    Q3_DOT((token, context, container) -> token.processAsIndexedDouble(3, Units.ONE_PER_S, container::setQDot));
+    Q3_DOT((token, context, container) -> token.processAsIndexedDouble(3, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setQDot));
 
     /** Processing method. */
     private final TokenProcessor processor;

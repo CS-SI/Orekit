@@ -45,8 +45,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
-import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
-import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
+import org.orekit.propagation.semianalytical.dsst.DSSTHarvester;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
@@ -99,8 +98,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
     /** Process noise matrix provider for measurement parameters. */
     private final CovarianceMatrixProvider measurementProcessNoiseMatrix;
 
-    /** Mappers for extracting Jacobians from integrated states. */
-    private DSSTJacobiansMapper mapper;
+    /** Harvester between two-dimensional Jacobian matrices and one-dimensional additional state arrays. */
+    private DSSTHarvester harvester;
 
     /** Propagators for the reference trajectories, up to current date. */
     private DSSTPropagator dsstPropagator;
@@ -241,7 +240,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         this.previousNominalMeanSpacecraftState = nominalMeanSpacecraftState;
 
         // Initialize "field" short periodic terms
-        mapper.initializeFieldShortPeriodTerms(nominalMeanSpacecraftState);
+        harvester.initializeFieldShortPeriodTerms(nominalMeanSpacecraftState);
 
         // Initialize the estimated normalized mean element filter correction (See Ref [1], Eq. 3.2a)
         this.predictedFilterCorrection = MatrixUtils.createRealVector(columns);
@@ -323,7 +322,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         	// Initialize step handler and set it to the propagator
             final EskfMeasurementHandler stepHandler = new EskfMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
-            dsstPropagator.setMasterMode(stepHandler);
+            dsstPropagator.getMultiplexer().add(stepHandler);
             dsstPropagator.propagate(observedMeasurements.get(0).getDate(), observedMeasurements.get(observedMeasurements.size() - 1).getDate());
 
             // Return the last estimated propagator
@@ -383,7 +382,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         		                                            		new SpacecraftState(osculatingOrbit,
         		                                            				nominalMeanSpacecraftState.getAttitude(),
                 		                                            		nominalMeanSpacecraftState.getMass(),
-                		                                            		nominalMeanSpacecraftState.getAdditionalStates())
+                		                                            		nominalMeanSpacecraftState.getAdditionalStatesValues(),
+                		                                            		nominalMeanSpacecraftState.getAdditionalStatesDerivatives())
         		                                            });
 
         // Normalized measurement matrix
@@ -470,7 +470,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         		                                            		new SpacecraftState(osculatingOrbit,
         		                                            				nominalMeanSpacecraftState.getAttitude(),
                 		                                            		nominalMeanSpacecraftState.getMass(),
-                		                                            		nominalMeanSpacecraftState.getAdditionalStates())
+                		                                            		nominalMeanSpacecraftState.getAdditionalStatesValues(),
+                		                                            		nominalMeanSpacecraftState.getAdditionalStatesDerivatives())
         		                                            });
     }
 
@@ -724,20 +725,17 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
     	dsstPropagator = propagator;
 
-        // Link the partial derivatives to this new propagator
+        // Equation name
         final String equationName = SemiAnalyticalKalmanEstimator.class.getName() + "-derivatives-";
-        final DSSTPartialDerivativesEquations pde = new DSSTPartialDerivativesEquations(equationName, dsstPropagator);
 
         // Mean state
         final SpacecraftState meanState = dsstPropagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(dsstPropagator.getInitialState(), dsstPropagator.getAttitudeProvider(), dsstPropagator.getAllForceModels()) :
                        dsstPropagator.getInitialState();
 
-        // Reset the Jacobians
-        final SpacecraftState rawState = meanState;
-        final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-        dsstPropagator.setInitialState(stateWithDerivatives, PropagationType.MEAN);
-        mapper = pde.getMapper();
+        // Update the jacobian harvester
+        dsstPropagator.setInitialState(meanState, PropagationType.MEAN);
+        harvester = (DSSTHarvester) dsstPropagator.setupMatricesComputation(equationName, null, null);
 
     }
 
@@ -749,7 +747,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
     	for (final DSSTForceModel model : builder.getAllForceModels()) {
     		model.updateShortPeriodTerms(model.getParameters(), state);
     	}
-    	mapper.updateFieldShortPeriodTerms(state);
+    	harvester.updateFieldShortPeriodTerms(state);
     }
 
     /** Initialize the short periodic terms for the Kalman Filter.
@@ -793,10 +791,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         // Derivatives of the state vector with respect to initial state vector
         final int nbOrb = getNumberSelectedOrbitalDrivers();
-        final double[][] aYY0 = new double[nbOrb][nbOrb];
-        mapper.getB2(nominalMeanSpacecraftState, aYY0);
-        final RealMatrix dYdY0 = new Array2DRowRealMatrix(aYY0, false);
-
+        final RealMatrix dYdY0 = harvester.getB2(nominalMeanSpacecraftState);
+ 
         // Calculate transitional orbital matrix (See Ref [1], Eq. 3.4a)
         final RealMatrix phi = dYdY0.multiply(phiS);
 
@@ -820,9 +816,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         if (psiS != null) {
 
         	final int nbProp = getNumberSelectedPropagationDrivers();
-        	final double[][] aYPp = new double[nbOrb][nbProp];
-            mapper.getB3(nominalMeanSpacecraftState, aYPp);
-            final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
+        	final RealMatrix dYdPp = harvester.getB3(nominalMeanSpacecraftState);
 
             // Calculate transitional parameters matrix (See Ref [1], Eq. 3.4b)
             final RealMatrix psi = dYdPp.subtract(phi.multiply(psiS));
@@ -894,9 +888,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         final RealMatrix IpB1B4 = MatrixUtils.createRealMatrix(nbOrb, nbOrb + nbProp);
 
     	// B1
-        final double[][] aSptY = new double[nbOrb][nbOrb];
-        mapper.getB1(aSptY);
-        final RealMatrix B1 = new Array2DRowRealMatrix(aSptY, false);
+        final RealMatrix B1 = harvester.getB1();
 
         // I + B1
         final RealMatrix I = MatrixUtils.createRealIdentityMatrix(nbOrb);
@@ -905,12 +897,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         // If there are not propagation parameters, B4 is null
         if (psiS != null) {
-            final double[][] aSptPp = new double[nbOrb][nbProp];
-            mapper.getB4(aSptPp);
-            final RealMatrix B4 = new Array2DRowRealMatrix(aSptPp, false);
+            final RealMatrix B4 = harvester.getB4();
             IpB1B4.setSubMatrix(B4.getData(), 0, nbOrb);
-
         }
+
         // Ref [1], Eq. 3.10
         dMdY = dMdY.multiply(IpB1B4);
 
@@ -970,9 +960,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
     	final int nbOrb = getNumberSelectedOrbitalDrivers();
 
     	// B1
-        final double[][] aSptY = new double[nbOrb][nbOrb];
-        mapper.getB1(aSptY);
-        final RealMatrix B1 = new Array2DRowRealMatrix(aSptY, false);
+        final RealMatrix B1 = harvester.getB1();
 
         // Short periodic terms
         final double[] shortPeriodTerms = dsstPropagator.getShortPeriodTermsValue(nominalMeanSpacecraftState);
@@ -1009,7 +997,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
      * @param state mean state used to calculate short period perturbations
      */
     private void analyticalDerivativeComputations(final SpacecraftState state) {
-        mapper.setShortPeriodJacobians(state);
+    	harvester.setReferenceState(state);
     }
 
     /** Normalize a covariance matrix.

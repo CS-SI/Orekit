@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 
 /**
@@ -61,7 +61,7 @@ public class TroposphericModelUtils {
      * @param elevation the elevation of the satellite, in radians.
      * @return the value of the function at a given elevation
      */
-    public static <T extends RealFieldElement<T>> T mappingFunction(final T a, final T b, final T c, final T elevation) {
+    public static <T extends CalculusFieldElement<T>> T mappingFunction(final T a, final T b, final T c, final T elevation) {
         final T sinE = FastMath.sin(elevation);
         // Numerator
         final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
@@ -111,7 +111,7 @@ public class TroposphericModelUtils {
      * @param field field to which the elements belong
      * @return the height correction, in m
      */
-    public static <T extends RealFieldElement<T>> T computeHeightCorrection(final T elevation, final T height, final Field<T> field) {
+    public static <T extends CalculusFieldElement<T>> T computeHeightCorrection(final T elevation, final T height, final Field<T> field) {
         final T zero = field.getZero();
         final T fixedHeight = FastMath.max(zero, height);
         final T sinE = FastMath.sin(elevation);

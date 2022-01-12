@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,7 @@ package org.orekit.files.ilrs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.Reader;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -56,7 +54,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class CPFParser implements EphemerisFileParser<CPFFile> {
+public class CPFParser implements EphemerisFileParser<CPF> {
 
     /** File format. */
     private static final String FILE_FORMAT = "CPF";
@@ -121,13 +119,12 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
 
     /** {@inheritDoc} */
     @Override
-    public CPFFile parse(final DataSource source) {
+    public CPF parse(final DataSource source) {
 
-        try (InputStream       is     = source.getStreamOpener().openOnce();
-             InputStreamReader isr    = (is  == null) ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
-             BufferedReader    reader = (isr == null) ? null : new BufferedReader(isr)) {
+        try (Reader reader = source.getOpener().openReaderOnce();
+             BufferedReader br = (reader == null) ? null : new BufferedReader(reader)) {
 
-            if (reader == null) {
+            if (br == null) {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
             }
 
@@ -136,7 +133,7 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
 
             int lineNumber = 0;
             Stream<LineParser> parsers = Stream.of(LineParser.H1);
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
                 final String l = line;
                 final Optional<LineParser> selected = parsers.filter(p -> p.canHandle(l)).findFirst();
@@ -176,7 +173,7 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
     private class ParseInfo {
 
         /** The corresponding CPF file. */
-        private CPFFile file;
+        private CPF file;
 
         /** IERS convention. */
         private IERSConventions convention;
@@ -202,7 +199,7 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
         protected ParseInfo() {
 
             // Initialise file
-            file = new CPFFile();
+            file = new CPF();
 
             // Time scale
             this.timeScale = CPFParser.this.timeScale;
@@ -480,8 +477,8 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
                 final Vector3D position = new Vector3D(x, y, z);
 
                 // CPF coordinate
-                final CPFFile.CPFCoordinate coordinate = new CPFFile.CPFCoordinate(date, position, leap);
-                pi.file.addSatelliteCoordinate(coordinate);
+                final CPF.CPFCoordinate coordinate = new CPF.CPFCoordinate(date, position, leap);
+                pi.file.addSatelliteCoordinate(pi.file.getHeader().getIlrsSatelliteId(), coordinate);
 
             }
 

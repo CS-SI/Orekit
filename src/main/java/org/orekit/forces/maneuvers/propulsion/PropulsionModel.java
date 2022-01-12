@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ package org.orekit.forces.maneuvers.propulsion;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -29,6 +29,7 @@ import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Generic interface for a propulsion model used in a {@link Maneuver}.
@@ -45,6 +46,17 @@ public interface PropulsionModel {
     default void init(SpacecraftState initialState, AbsoluteDate target) {
     }
 
+    /** Initialization method.
+     *  Called in when Maneuver.init(...) is called (from ForceModel.init(...))
+     * @param initialState initial spacecraft state (at the start of propagation).
+     * @param target date of propagation. Not equal to {@code initialState.getDate()}.
+     * @param <T> type of the elements
+     * @since 11.1
+     */
+    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+        init(initialState.toSpacecraftState(), target.toAbsoluteDate());
+    }
+
     /** Get the acceleration of the spacecraft during maneuver and in maneuver frame.
      * @param s current spacecraft state
      * @param maneuverAttitude current attitude in maneuver
@@ -57,27 +69,27 @@ public interface PropulsionModel {
      * @param s current spacecraft state
      * @param maneuverAttitude current attitude in maneuver
      * @param parameters propulsion model parameters
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return acceleration
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
                                                                      FieldAttitude<T> maneuverAttitude,
                                                                      T[] parameters);
 
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
-     *@param s current spacecraft state
+     * @param s current spacecraft state
      * @param parameters propulsion model parameters
      * @return mass derivative in kg/s
      */
     double getMassDerivatives(SpacecraftState s, double[] parameters);
 
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
-     *@param s current spacecraft state
+     * @param s current spacecraft state
      * @param parameters propulsion model parameters
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return mass derivative in kg/s
      */
-    <T extends RealFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s,
+    <T extends CalculusFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s,
                                                          T[] parameters);
 
     /** Get the propulsion model parameter drivers.

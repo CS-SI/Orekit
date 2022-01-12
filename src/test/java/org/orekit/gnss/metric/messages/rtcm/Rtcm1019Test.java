@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,8 +32,9 @@ import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
-import org.orekit.gnss.navigation.GPSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.GPSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
 import org.orekit.time.GNSSDate;
 
 public class Rtcm1019Test {
@@ -91,7 +92,7 @@ public class Rtcm1019Test {
         final GPSNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
 
         // Verify propagator initialization
-        final GPSPropagator propagator = new GPSPropagator.Builder(gpsMessage).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(gpsMessage).build();
         Assert.assertNotNull(propagator);
         Assert.assertEquals(0.0, gpsMessage.getDate().
                             durationFrom(new GNSSDate(gpsMessage.getWeek(), 1000.0 * gpsMessage.getTime(), SatelliteSystem.GPS).getDate()), eps);

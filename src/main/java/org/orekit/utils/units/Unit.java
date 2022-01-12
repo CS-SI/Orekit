@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,13 @@
 package org.orekit.utils.units;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Basic handling of multiplicative units.
  * <p>
@@ -59,7 +63,7 @@ public class Unit implements Serializable {
     public static final Unit DAY = HOUR.scale("d", 24.0);
 
     /** Julian year unit.
-     * @see <a href="https://www.iau.org/publications/proceedings_rules/units/">SI Units</a> at IAU
+     * @see <a href="https://www.iau.org/publications/proceedings_rules/units/">SI Units at IAU</a>
      */
     public static final Unit YEAR = DAY.scale("a", 365.25);
 
@@ -402,46 +406,140 @@ public class Unit implements Serializable {
      * The grammar for unit specification allows chains units multiplication and
      * division, as well as putting powers on units.
      * </p>
-     * <p>The symbols used for units are the SI units with some extensions. For
-     * example the accepted non-SI unit for Julian year is "a" but we also accept
-     * "y". The base symbol for mass is "g" as per the standard, despite the unit
-     * is "kg" (its the only unit that has a prefix in its name, so all multiples
-     * must be based on "g"). The base symbol for degrees is "°", but we also
-     * accept "◦" and "deg". The base symbol for arcminute is "′" but we also
-     * accept "'". The base symbol for arcsecond is "″" but we also accept "''",
-     * "\"" and "as".
+     * <p>The symbols used for units are the SI units with some extensions.
      * </p>
+     * <dl>
+     *   <dt>year</dt>
+     *   <dd>the accepted non-SI unit for Julian year is "a" but we also accept "yr"</dd>
+     *   <dt>dimensionless</dt>
+     *   <dd>both "1" and "#" (U+0023, NUMBER SIGN) are accepted</dd>
+     *   <dt>mass</dt>
+     *   <dd>"g" is the standard symbol, despite the unit is "kg" (its the only
+     *       unit that has a prefix in its name, so all multiples must be based on "g")</dd>
+     *   <dt>degrees</dt>
+     *   <dd>the base symbol for degrees is "°" (U+00B0, DEGREE SIGN), but we also accept
+     *       "◦" (U+25E6, WHITE BULLET) and "deg"</dd>
+     *   <dt>arcminute</dt>
+     *   <dd>The base symbol for  is "′" (U+2032, PRIME) but we also accept "'" (U+0027, APOSTROPHE)</dd>
+     *   <dt>arcsecond</dt>
+     *   <dd>The base symbol for  is "″" (U+2033, DOUBLE PRIME) but we also accept
+     *   "''" (two occurrences of U+0027, APOSTROPHE), "\"" (U+0022, QUOTATION MARK) and "as"</dd>
+     * </dl>
      * <p>
-     * All the SI prefix (from "y", yocto, to "Y", Yotta) are accepted. Beware
-     * that some combinations are forbidden, for example "Pa" is Pascal, not
-     * peta-years, and "as" is arcsecond for us, not atto-seconds, because many people
-     * in the space field use mas for milli-arcseconds and µas for micro-arcseconds.
-     * Beware that prefixes are case-sensitive! Prefix and units must be joined
-     * without blanks.
+     * All the SI prefix (from "y", yocto, to "Y", Yotta) are accepted, as well
+     * as integer prefixes. The standard symbol for micro 10⁻⁶ is "µ" (U+00B5, MICRO SIGN),
+     * but we also accept "μ" (U+03BC, GREEK SMALL LETTER MU). Beware that some combinations
+     * are forbidden, for example "Pa" is Pascal, not peta-years, and "as" is arcsecond for
+     * this parser, not atto-seconds, because many people in the space field use mas for
+     * milliarcseconds and µas for microarcseconds. Beware that prefixes are case-sensitive!
+     * Integer prefixes can be used to specify units like "30s", but only once at the beginning
+     * of the specification (i.e. "2rev/d²" is accepted, but "rev/(2d)²" is refused). Conforming
+     * with SI brochure "The International System of Units" (9th edition, 2019), each SI
+     * prefix is part of the unit and precedes the unit symbol without a separator
+     * (i.e. MHz is seen as one identifier).
      * </p>
-     * <ul>
-     *   <li>multiplication can specified with either "*", "×" or "." as the operator</li>
-     *   <li>division can be specified with either "/" or "⁄"</li>
-     *   <li>powers can be specified either by
+     * <dl>
+     *   <dt>multiplication</dt>
+     *   <dd>can specified with either "*" (U+002A, ASTERISK), "×" (U+00D7, MULTIPLICATION SIGN),
+     *   "." (U+002E, FULL STOP) or "·" (U+00B7, MIDDLE DOT) as the operator</dd>
+     *   <dt>division</dt>
+     *   <dd>can be specified with either "/" (U+002F, SOLIDUS) or "⁄" (U+2044, FRACTION SLASH)
+     *   as the operator</dd>
+     *   <dt>powers</dt>
+     *   <dd>can be specified either by
      *     <ul>
-     *       <li>prefixing with the unicode "√" character</li>
+     *       <li>prefixing with the unicode "√" (U+221A, SQUARE ROOT) character</li>
      *       <li>postfixing with "**", "^" or implicitly using unicode superscripts</li>
      *     </ul>
-     *   </li>
-     * </ul>
+     *   </dd>
+     * </dl>
      * <p>
-     * Fractional exponents are allowed, but only with regular characters (because unicode
-     * does not provide a superscript '/'). Negative exponents can be used too.
-     * </p>
+     * Exponents can be specified in different ways:
+     * <ul>
+     *   <li>as an integer, as in "m^-2" or "m⁻²"</li>
+     *   <li>directly as unicode characters for the few fractions that unicode supports, as in "Ω^⅞"</li>
+     *   <li>as the special decimal value 0.5 which is used by CCSDS, as in "km**0.5"</li>
+     *   <li>as a pair of parentheses surrounding two integers separated by a solidus or fraction slash,
+     *   as in "Pa^(11/12)"</li>
+     * </ul>
+     * For integer exponents, the digits must be ASCII digits from the Basic Latin block from
+     * unicode if explicit exponent maker "**" or "^" was used, or using unicode superscript
+     * digits if implicit exponentiation (i.e. no markers at all) is used. Unicode superscripts
+     * are not allowed for fractional exponents because unicode does not provide a superscript solidus.
+     * Negative exponents can be used too.
      * <p>
      * These rules mean all the following (silly) examples are parsed properly:
-     * MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s)
+     * MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s), km**0.5, 2rev/d²
      * </p>
      * @param unitSpecification unit specification to parse
      * @return parsed unit
      */
     public static Unit parse(final String unitSpecification) {
-        return Parser.parse(unitSpecification);
+
+        // parse the specification
+        final List<PowerTerm> terms = Parser.buildTermsList(unitSpecification);
+
+        if (terms == null) {
+            // special handling of "n/a"
+            return Unit.NONE;
+        }
+
+        // build compound unit
+        Unit unit = Unit.ONE;
+        for (final PowerTerm term : terms) {
+            try {
+                Unit u = PrefixedUnit.valueOf(term.getBase().toString());
+                if (!Fraction.ONE.equals(term.getExponent())) {
+                    u = u.power(null, term.getExponent());
+                }
+                u = u.scale(null, term.getScale());
+                unit = unit.multiply(null, u);
+            } catch (IllegalArgumentException iae) {
+                throw new OrekitException(OrekitMessages.UNKNOWN_UNIT, term.getBase());
+            }
+        }
+
+        // give final name to unit
+        return unit.alias(unitSpecification);
+
+    }
+
+    /** Check if the instance represents the same unit as another instance.
+     * <p>
+     * The name is not considered so aliases are considered equal.
+     * </p>
+     * @param unit other unit
+     * @return true if the instance and the other unit refer to the same unit
+     */
+    public boolean equals(final Object unit) {
+
+        if (unit == this) {
+            // first fast check
+            return true;
+        }
+
+        if (unit instanceof Unit) {
+            final Unit u = (Unit) unit;
+            return Precision.equals(scale, u.scale, 1) &&
+                   mass.equals(u.mass) && length.equals(u.length) && time.equals(u.time) &&
+                   current.equals(u.current) && angle.equals(u.angle);
+        }
+
+        return false;
+
+    }
+
+    /** Get a hashcode for this unit.
+     * @return hashcode
+     */
+    public int hashCode() {
+        return 0x67e7 ^
+               (Double.hashCode(scale) << 12) ^
+               (mass.hashCode()        << 10) ^
+               (length.hashCode()      <<  8) ^
+               (time.hashCode()        <<  6) ^
+               (current.hashCode()     <<  4) ^
+               (angle.hashCode()       <<  2);
     }
 
     /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,10 +29,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
@@ -53,6 +56,25 @@ public class DateDetectorTest {
     public void testSimpleTimer() {
         DateDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
         Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
+            public String   getName()                      { return "dummy"; }
+            public int      getDimension()                 { return 1; }
+            public double[] derivatives(SpacecraftState s) { return new double[1]; }
+        });
+        propagator.setInitialState(propagator.getInitialState().addAdditionalState("dummy", new double[1]));
+        propagator.getMultiplexer().add(interpolator -> {
+            SpacecraftState prev = interpolator.getPreviousState();
+            SpacecraftState curr = interpolator.getCurrentState();
+            double dt = curr.getDate().durationFrom(prev.getDate());
+            OrekitStepInterpolator restricted =
+                            interpolator.restrictStep(prev.shiftedBy(dt * +0.25),
+                                                      curr.shiftedBy(dt * -0.25));
+            SpacecraftState restrictedPrev = restricted.getPreviousState();
+            SpacecraftState restrictedCurr = restricted.getCurrentState();
+            double restrictedDt = restrictedCurr.getDate().durationFrom(restrictedPrev.getDate());
+            Assert.assertEquals(dt * 0.5, restrictedDt, 1.0e-10);
+        });
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.addEventDetector(dateDetector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 

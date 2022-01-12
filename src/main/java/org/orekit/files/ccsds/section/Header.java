@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,19 +37,25 @@ public class Header extends CommentsContainer {
     /** ID that uniquely identifies a message from a given originator. */
     private String messageId;
 
+    /** Minimum version for {@link HeaderKey#MESSAGE_ID}. */
+    private final double minVersionMessageId;
+
     /**
      * Constructor.
+     * @param minVersionMessageId minimum version for {@link HeaderKey#MESSAGE_ID}
      */
-    public Header() {
-        formatVersion = Double.NaN;
+    public Header(final double minVersionMessageId) {
+        this.formatVersion       = Double.NaN;
+        this.minVersionMessageId = minVersionMessageId;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(creationDate, HeaderKey.CREATION_DATE);
         checkNotNull(originator,   HeaderKey.ORIGINATOR);
+        checkAllowed(version, messageId, HeaderKey.MESSAGE_ID, minVersionMessageId, Double.POSITIVE_INFINITY);
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,11 +52,11 @@ class SpinStabilizedWriter extends AbstractWriter {
         generator.writeComments(spinStabilized.getComments());
 
         // endpoints
-        generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_A.name(), spinStabilized.getEndpoints().getFrameA().getName(), true);
-        generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_B.name(), spinStabilized.getEndpoints().getFrameB().getName(), true);
+        generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_A.name(), spinStabilized.getEndpoints().getFrameA().getName(), null, true);
+        generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_B.name(), spinStabilized.getEndpoints().getFrameB().getName(), null, true);
         generator.writeEntry(SpinStabilizedKey.SPIN_DIR.name(),
                              spinStabilized.getEndpoints().isA2b() ? AttitudeEndoints.A2B : AttitudeEndoints.B2A,
-                             true);
+                             null, true);
 
         // spin
         generator.writeEntry(SpinStabilizedKey.SPIN_ALPHA.name(),     spinStabilized.getSpinAlpha(), Unit.DEGREE,        true);

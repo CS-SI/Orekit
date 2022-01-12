@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
-/** Common metadata for Orbit Parameter/Ephemeris/Mean Message files.
+/** Common metadata for Orbit Parameter/Ephemeris/Mean Messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -60,11 +60,12 @@ public class CommonMetadata extends OdmMetadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
-        checkNotNull(objectID,       CommonMetadataKey.OBJECT_ID);
-        checkNotNull(center,         CommonMetadataKey.CENTER_NAME);
-        checkNotNull(referenceFrame, CommonMetadataKey.REF_FRAME);
+    public void validate(final double version) {
+        super.validate(version);
+        checkNotNull(getObjectName(), OdmMetadataKey.OBJECT_NAME);
+        checkNotNull(objectID,        CommonMetadataKey.OBJECT_ID);
+        checkNotNull(center,          CommonMetadataKey.CENTER_NAME);
+        checkNotNull(referenceFrame,  CommonMetadataKey.REF_FRAME);
     }
 
     /** Finalize the metadata.
@@ -151,7 +152,7 @@ public class CommonMetadata extends OdmMetadata {
         final boolean isIcrf = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.ICRF;
         final boolean isSolarSystemBarycenter =
                 CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(center.getBody().getName());
-        if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(center.getBody().getName())) ||
+        if (!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(center.getBody().getName()) ||
             isMci && CelestialBodyFactory.MARS.equals(center.getBody().getName()) ||
             isIcrf && isSolarSystemBarycenter) {
             return referenceFrame.asFrame();
@@ -180,14 +181,6 @@ public class CommonMetadata extends OdmMetadata {
     public void setReferenceFrame(final FrameFacade referenceFrame) {
         refuseFurtherComments();
         this.referenceFrame = referenceFrame;
-    }
-
-    /** Get epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame.
-     * @return epoch of reference frame
-     */
-    String getFrameEpochString() {
-        return frameEpochString;
     }
 
     /** Set epoch of reference frame, if not intrinsic to the definition of the

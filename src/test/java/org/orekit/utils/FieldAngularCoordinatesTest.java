@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
@@ -607,14 +607,14 @@ public class FieldAngularCoordinatesTest {
         Assert.assertEquals(0, Vector3D.distance(v2.getAcceleration(), v2Computed.getAcceleration()), 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void checkInverse(FieldVector3D<T> omega, FieldVector3D<T> v1, FieldVector3D<T> v2)
+    private <T extends CalculusFieldElement<T>> void checkInverse(FieldVector3D<T> omega, FieldVector3D<T> v1, FieldVector3D<T> v2)
         {
         checkInverse(omega,
                      v1, FieldVector3D.crossProduct(omega, v1),
                      v2, FieldVector3D.crossProduct(omega, v2));
     }
 
-    private <T extends RealFieldElement<T>> void checkInverseFailure(FieldVector3D<T> omega,
+    private <T extends CalculusFieldElement<T>> void checkInverseFailure(FieldVector3D<T> omega,
                                                                      FieldVector3D<T> v1, FieldVector3D<T> c1,
                                                                      FieldVector3D<T> v2, FieldVector3D<T> c2) {
         try {
@@ -625,7 +625,7 @@ public class FieldAngularCoordinatesTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void checkInverse(FieldVector3D<T> omega,
+    private <T extends CalculusFieldElement<T>> void checkInverse(FieldVector3D<T> omega,
                                                               FieldVector3D<T> v1, FieldVector3D<T> c1,
                                                               FieldVector3D<T> v2, FieldVector3D<T> c2)
         throws MathIllegalArgumentException {

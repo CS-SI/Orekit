@@ -116,11 +116,13 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
         // check index in in the range of the data
         if (i < 0) {
+            final AbsoluteDate earliest = this.getEarliest().getDate();
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                                                this.getEarliest().getDate(), central);
+                    earliest, central, earliest.durationFrom(central));
         } else if (i >= this.data.size()) {
+            final AbsoluteDate latest = this.getLatest().getDate();
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                this.getLatest().getDate(), central);
+                    latest, central, central.durationFrom(latest));
         }
 
         // force unbalanced range if necessary

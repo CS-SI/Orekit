@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.models.earth.troposphere;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -392,7 +392,7 @@ public class TimeSpanEstimatedTroposphericModelTest {
         doTestFieldComparisonWithEstimatedModel(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldComparisonWithEstimatedModel(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldComparisonWithEstimatedModel(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         MappingFunction mapping = new NiellMappingFunctionModel();

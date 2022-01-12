@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.orekit.files.ccsds.ndm.odm.CommonMetadataWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 
 /**
- * Writer for Common metadata for CCSDS Orbit Mean-Elements Message files.
+ * Writer for Common metadata for CCSDS Orbit Mean-Elements Messages.
  *
  * @author Luc Maisonobe
  * @since 11.0
@@ -49,7 +49,7 @@ class OmmMetadataWriter extends CommonMetadataWriter {
         super.writeContent(generator);
 
         // mean elements theory
-        generator.writeEntry(OmmMetadataKey.MEAN_ELEMENT_THEORY.name(), metadata.getMeanElementTheory(), true);
+        generator.writeEntry(OmmMetadataKey.MEAN_ELEMENT_THEORY.name(), metadata.getMeanElementTheory(), null, true);
 
     }
 

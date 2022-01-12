@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,8 @@ package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.navigation.GPSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.GPSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagator;
+import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -54,7 +54,7 @@ public class Rtcm1019Data extends RtcmEphemerisData {
     /**
      * Get the GPS navigation message corresponding to the current RTCM data.
      * <p>
-     * This object can be used to initialize a {@link GPSPropagator}
+     * This object can be used to initialize a {@link GNSSPropagator}
      * <p>
      * This method uses the {@link DataContext#getDefault()} to initialize
      * the time scales used to configure the reference epochs of the navigation
@@ -70,7 +70,7 @@ public class Rtcm1019Data extends RtcmEphemerisData {
     /**
      * Get the GPS navigation message corresponding to the current RTCM data.
      * <p>
-     * This object can be used to initialize a {@link GPSPropagator}
+     * This object can be used to initialize a {@link GNSSPropagator}
      * <p>
      * When calling this method, the reference epochs of the navigation message
      * (i.e. ephemeris and clock epochs) are initialized using the provided time scales.
@@ -172,7 +172,7 @@ public class Rtcm1019Data extends RtcmEphemerisData {
 
     /**
      * Set the GPS fit interval.
-     * @param gpsFitInterval
+     * @param gpsFitInterval the GPS fit interval to set
      */
     public void setGpsFitInterval(final int gpsFitInterval) {
         this.gpsFitInterval = gpsFitInterval;

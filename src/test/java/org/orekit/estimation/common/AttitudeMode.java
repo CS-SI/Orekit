@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ package org.orekit.estimation.common;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.attitudes.NadirPointing;
 import org.orekit.attitudes.YawCompensation;
@@ -27,8 +28,8 @@ import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.propagation.Propagator;
 
 /** Attitude modes.
  * @author Luc Maisonobe
@@ -41,7 +42,7 @@ enum AttitudeMode {
         @Override
         public AttitudeProvider getProvider(Frame inertialFrame,
                                             OneAxisEllipsoid body) {
-            return Propagator.DEFAULT_LAW;
+            return InertialProvider.of(FramesFactory.getEME2000());
         }
     },
 

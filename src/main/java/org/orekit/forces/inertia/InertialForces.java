@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -116,7 +116,7 @@ public class InertialForces extends AbstractForceModel  {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
 
         final FieldTransform<T> inertToStateFrame = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
@@ -146,7 +146,7 @@ public class InertialForces extends AbstractForceModel  {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>>
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>>
         getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }

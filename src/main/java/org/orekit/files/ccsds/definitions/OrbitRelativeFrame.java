@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,7 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.orekit.data.DataContext;
 import org.orekit.frames.LOFType;
-import org.orekit.utils.IERSConventions;
 
 /** Frames used in CCSDS Orbit Data Messages.
  * @author Luc Maisonobe
@@ -109,13 +107,7 @@ public enum OrbitRelativeFrame {
     }
 
     /** Get the type of Local Orbital frame.
-     * <p>
-     * If the frame is not a Local Orbital frame (i.e. if this method returns null),
-     * then the {@link #getFrame(IERSConventions, boolean, DataContext) getFrame} method
-     * must be used to retrieve the absolute frame.
-     * </p>
      * @return type of Local Orbital Frame, or null if the frame is not a local orbital frame
-     * @see #isLof()
      */
     public LOFType getLofType() {
         return lofType;

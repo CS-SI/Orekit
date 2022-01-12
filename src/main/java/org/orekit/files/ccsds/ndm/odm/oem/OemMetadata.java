@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.time.AbsoluteDate;
 
-/** Metadata for Orbit Ephemeris Message files.
+/** Metadata for Orbit Ephemeris Messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -55,8 +55,8 @@ public class OemMetadata extends CommonMetadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        checkMandatoryEntriesExceptDates();
+    public void validate(final double version) {
+        checkMandatoryEntriesExceptDates(version);
         checkNotNull(startTime, OemMetadataKey.START_TIME);
         checkNotNull(stopTime,  OemMetadataKey.STOP_TIME);
     }
@@ -65,9 +65,10 @@ public class OemMetadata extends CommonMetadata {
      * <p>
      * This method should throw an exception if some mandatory entry is missing
      * </p>
+     * @param version format version
      */
-    void checkMandatoryEntriesExceptDates() {
-        super.checkMandatoryEntries();
+    void checkMandatoryEntriesExceptDates(final double version) {
+        super.validate(version);
     }
 
     /** Get start of total time span covered by ephemerides data and
@@ -138,36 +139,6 @@ public class OemMetadata extends CommonMetadata {
         this.useableStopTime = useableStopTime;
     }
 
-    /**
-     * Get the start date of this ephemeris segment.
-     *
-     * @return ephemeris segment start date.
-     */
-    public AbsoluteDate getStart() {
-        // useable start time overrides start time if it is set
-        final AbsoluteDate start = this.getUseableStartTime();
-        if (start != null) {
-            return start;
-        } else {
-            return this.getStartTime();
-        }
-    }
-
-    /**
-     * Get the stop date of this ephemeris segment.
-     *
-     * @return ephemeris segment stop date.
-     */
-    public AbsoluteDate getStop() {
-        // useable stop time overrides stop time if it is set
-        final AbsoluteDate stop = this.getUseableStopTime();
-        if (stop != null) {
-            return stop;
-        } else {
-            return this.getStopTime();
-        }
-    }
-
     /** Get the interpolation method to be used.
      * @return the interpolation method
      */
@@ -199,11 +170,12 @@ public class OemMetadata extends CommonMetadata {
     }
 
     /** Copy the instance, making sure mandatory fields have been initialized.
+     * @param version format version
      * @return a new copy
      */
-    OemMetadata copy() {
+    OemMetadata copy(final double version) {
 
-        checkMandatoryEntriesExceptDates();
+        checkMandatoryEntriesExceptDates(version);
 
         // allocate new instance
         final OemMetadata copy = new OemMetadata(getInterpolationDegree());
@@ -216,9 +188,7 @@ public class OemMetadata extends CommonMetadata {
         // copy object
         copy.setObjectName(getObjectName());
         copy.setObjectID(getObjectID());
-        if (getCenter().getName() != null) {
-            copy.setCenter(getCenter());
-        }
+        copy.setCenter(getCenter());
 
         // copy frames
         copy.setFrameEpoch(getFrameEpoch());

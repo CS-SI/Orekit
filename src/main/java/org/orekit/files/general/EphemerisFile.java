@@ -26,7 +26,6 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.AggregateBoundedPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -122,10 +121,9 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * #getSegments() segments}.
          *
          * <p>In order to view the ephemeris for this satellite as a {@link Propagator}
-         * several conditions must be met. An Orekit {@link Frame} and {@link TimeScale}
-         * must be constructable from the frame and time scale specification in the
-         * ephemeris file. This condition is met when {@link EphemerisSegment#getFrame()}
-         * and {@link EphemerisSegment#getTimeSystem()} return normally for all {@link
+         * several conditions must be met. An Orekit {@link Frame} must be constructable
+         * from the frame specification in the ephemeris file. This condition is met when
+         * {@link EphemerisSegment#getFrame()} return normally for all {@link
          * #getSegments() segments}. If there are multiple segments they must be adjacent
          * such that there are no duplicates or gaps in the ephemeris. The definition of
          * adjacent depends on the ephemeris format as some formats define usable start
@@ -250,10 +248,9 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * View this ephemeris segment as a propagator.
          *
          * <p>In order to view the ephemeris for this satellite as a {@link Propagator}
-         * several conditions must be met. An Orekit {@link Frame} and {@link TimeScale}
-         * must be constructable from the frame and time scale specification in the
-         * ephemeris file. This condition is met when {@link EphemerisSegment#getFrame()}
-         * and {@link EphemerisSegment#getTimeSystem()} return normally. Additionally,
+         * several conditions must be met. An Orekit {@link Frame} must be constructable
+         * from the frame specification in the ephemeris file. This condition is met when
+         * {@link EphemerisSegment#getFrame()} return normally. Additionally,
          * {@link #getMu()} must return a valid value. If these conditions are not met an
          * {@link OrekitException} may be thrown by this method or by one of the methods
          * of the returned {@link Propagator}.

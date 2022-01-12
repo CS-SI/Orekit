@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.generation.Generator;
 
 /**
- * Writer for Common metadata for CCSDS Attitude Parameter/Ephemeris Message files.
+ * Writer for Common metadata for CCSDS Attitude Parameter/Ephemeris Messages.
  *
  * @author Luc Maisonobe
  * @since 11.0
@@ -49,11 +49,11 @@ public class AdmMetadataWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // object
-        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(), true);
-        generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   true);
+        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(), null, true);
+        generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   null, true);
 
         // center
-        generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), true);
+        generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, true);
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),    metadata.getTimeSystem(), true);

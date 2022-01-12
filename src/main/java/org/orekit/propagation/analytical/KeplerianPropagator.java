@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,15 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.util.Collections;
-import java.util.Map;
-
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 
 /** Simple Keplerian orbit propagator.
@@ -36,9 +32,6 @@ import org.orekit.utils.TimeSpanMap;
  * @author Guylaine Prat
  */
 public class KeplerianPropagator extends AbstractAnalyticalPropagator {
-
-    /** Initial state. */
-    private SpacecraftState initialState;
 
     /** All states. */
     private TimeSpanMap<SpacecraftState> states;
@@ -48,29 +41,23 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * for the initial orbit definition. Mass and attitude provider are set to
      * unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param initialOrbit initial orbit
      * @see #KeplerianPropagator(Orbit, AttitudeProvider)
      */
-    @DefaultDataContext
     public KeplerianPropagator(final Orbit initialOrbit) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 initialOrbit.getMu(), DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param initialOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
      * @see #KeplerianPropagator(Orbit, AttitudeProvider, double)
      */
-    @DefaultDataContext
     public KeplerianPropagator(final Orbit initialOrbit, final double mu) {
-        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
                 mu, DEFAULT_MASS);
     }
 
@@ -112,13 +99,13 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         super(attitudeProv);
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        initialState = fixState(initialOrbit,
-                                getAttitudeProvider().getAttitude(initialOrbit,
-                                                                  initialOrbit.getDate(),
-                                                                  initialOrbit.getFrame()),
-                                mass, mu, Collections.emptyMap());
-        states = new TimeSpanMap<SpacecraftState>(initialState);
-        super.resetInitialState(initialState);
+        final SpacecraftState initial = fixState(initialOrbit,
+                                                 getAttitudeProvider().getAttitude(initialOrbit,
+                                                                                   initialOrbit.getDate(),
+                                                                                   initialOrbit.getFrame()),
+                                                 mass, mu, null, null);
+        states = new TimeSpanMap<SpacecraftState>(initial);
+        super.resetInitialState(initial);
 
     }
 
@@ -131,19 +118,28 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @param attitude current attitude
      * @param mass current mass
      * @param mu gravity coefficient to use
-     * @param additionalStates additional states
+     * @param additionalStates additional states (may be null)
+     * @param additionalStatesDerivatives additional states derivatives (may be null)
      * @return fixed orbit
      */
-    private SpacecraftState fixState(final Orbit orbit, final Attitude attitude, final double mass,
-                                     final double mu, final Map<String, double[]> additionalStates) {
+    private SpacecraftState fixState(final Orbit orbit, final Attitude attitude, final double mass, final double mu,
+                                     final DoubleArrayDictionary additionalStates,
+                                     final DoubleArrayDictionary additionalStatesDerivatives) {
         final OrbitType type = orbit.getType();
         final double[] stateVector = new double[6];
         type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
         final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
                                                       orbit.getDate(), mu, orbit.getFrame());
         SpacecraftState fixedState = new SpacecraftState(fixedOrbit, attitude, mass);
-        for (final Map.Entry<String, double[]> entry : additionalStates.entrySet()) {
-            fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+        if (additionalStates != null) {
+            for (final DoubleArrayDictionary.Entry entry : additionalStates.getData()) {
+                fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+            }
+        }
+        if (additionalStatesDerivatives != null) {
+            for (final DoubleArrayDictionary.Entry entry : additionalStatesDerivatives.getData()) {
+                fixedState = fixedState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
+            }
         }
         return fixedState;
     }
@@ -152,15 +148,16 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     public void resetInitialState(final SpacecraftState state) {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        final double mu = initialState == null ? state.getMu() : initialState.getMu();
+        final SpacecraftState formerInitial = getInitialState();
+        final double mu = formerInitial == null ? state.getMu() : formerInitial.getMu();
         final SpacecraftState fixedState = fixState(state.getOrbit(),
                                                     state.getAttitude(),
                                                     state.getMass(),
                                                     mu,
-                                                    state.getAdditionalStates());
+                                                    state.getAdditionalStatesValues(),
+                                                    state.getAdditionalStatesDerivatives());
 
-        initialState = fixedState;
-        states       = new TimeSpanMap<SpacecraftState>(initialState);
+        states = new TimeSpanMap<SpacecraftState>(fixedState);
         super.resetInitialState(fixedState);
 
     }

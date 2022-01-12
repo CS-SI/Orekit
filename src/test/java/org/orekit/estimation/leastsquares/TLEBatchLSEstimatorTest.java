@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Ev
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.TLEContext;
@@ -34,7 +35,9 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.TLERangeMeasurementCreator;
 import org.orekit.estimation.measurements.TLERangeRateMeasurementCreator;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
@@ -48,7 +51,7 @@ public class TLEBatchLSEstimatorTest {
      * Perfect PV measurements with a perfect start
      */
     @Test
-    public void testKeplerPV() {
+    public void testPV() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -74,11 +77,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 1,
-                                     0.0, 2.7e-09,
-                                     0.0, 2.4e-08,
-                                     0.0, 3.4e-09,
-                                     0.0, 1.5e-12);
+        TLEEstimationTestUtils.checkFit(context, estimator, 1, 2,
+                                     0.0, 9.44e-08,
+                                     0.0, 3.57e-07,
+                                     0.0, 7.81e-09,
+                                     0.0, 2.74e-12);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -86,13 +89,13 @@ public class TLEBatchLSEstimatorTest {
         Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assert.assertEquals(6,       physicalCovariances.getRowDimension());
         Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.00255, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assert.assertEquals(0.03071, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
     
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testKeplerPVBackward() {
+    public void testPVBackward() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -118,11 +121,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 1,
-                                     0.0, 4.8e-09,
-                                     0.0, 2.7e-08,
-                                     0.0, 2.7e-09,
-                                     0.0, 1.9e-12);
+        TLEEstimationTestUtils.checkFit(context, estimator, 1, 2,
+                                     0.0, 4.35e-09,
+                                     0.0, 3.08e-08,
+                                     0.0, 6.99e-10,
+                                     0.0, 1.46e-12);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -130,7 +133,7 @@ public class TLEBatchLSEstimatorTest {
         Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assert.assertEquals(6,       physicalCovariances.getRowDimension());
         Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.00255, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assert.assertEquals(0.03420, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
@@ -138,12 +141,14 @@ public class TLEBatchLSEstimatorTest {
      * Perfect range measurements with a biased start
      */
     @Test
-    public void testKeplerRange() {
+    public void testRange() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final TLEPropagatorBuilder propagatorBuilder =
                         context.createBuilder(1.0e-6, 60.0, 1.0);
+        // this test based on range measurements seems to have an attitude dependence?
+        propagatorBuilder.setAttitudeProvider(new InertialProvider(FramesFactory.getEME2000()));
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -203,21 +208,21 @@ public class TLEBatchLSEstimatorTest {
             }
         });
 
-        ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
-        Assert.assertEquals("a", aDriver.getName());
-        aDriver.setValue(aDriver.getValue() + 1.2);
-        aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+        ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
+        Assert.assertEquals(OrbitType.POS_X, xDriver.getName());
+        xDriver.setValue(xDriver.getValue() + 10.0);
+        xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                        0.0, 0.18,
-                                        0.0, 0.32,
-                                        0.0, 0.15,
-                                        0.0, 5.8e-05);
+        TLEEstimationTestUtils.checkFit(context, estimator, 2, 3,
+                                        0.0, 2.29e-6,
+                                        0.0, 4.90e-6,
+                                        0.0, 2.75e-6,
+                                        0.0, 2.84e-10);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
-            if ("a".equals(driver.getName())) {
+            if (OrbitType.POS_X.equals(driver.getName())) {
                 // user-specified reference date
                 Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
@@ -287,48 +292,10 @@ public class TLEBatchLSEstimatorTest {
     }
 
     /**
-     * Perfect range rate measurements with a perfect start
-     */
-    /*
-    @Test
-    public void testKeplerRangeRate() {
-
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
-
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 1.0);
-
-        // create perfect range rate measurements
-        final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
-                                                                           propagatorBuilder);
-        final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeRateMeasurementCreator(context, false),
-                                                               1.0, 3.0, 300.0);
-
-        // create orbit estimator
-        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
-                                                                propagatorBuilder);
-        for (final ObservedMeasurement<?> rangerate : measurements) {
-            estimator.addMeasurement(rangerate);
-        }
-        estimator.setParametersConvergenceThreshold(1.0e-3);
-        estimator.setMaxIterations(10);
-        estimator.setMaxEvaluations(20);
-
-        TLEEstimationTestUtils.checkFit(context, estimator, 3, 6,
-                                     0.0, 1.6e-2,
-                                     0.0, 3.4e-2,
-                                     0.0, 170.0,  // we only have range rate...
-                                     0.0, 6.5e-2);
-    }
-    */
-    /**
      * Perfect range and range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerRangeAndRangeRate() {
+    public void testRangeAndRangeRate() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -365,11 +332,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 3,
+        TLEEstimationTestUtils.checkFit(context, estimator, 3, 6,
                                      0.0, 0.26,
                                      0.0, 0.52,
-                                     0.0, 6.28e-3,
-                                     0.0, 3.28e-6);
+                                     0.0, 4.42e-4,
+                                     0.0, 1.46e-7);
     }
 
 }

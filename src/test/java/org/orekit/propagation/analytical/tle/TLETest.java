@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,13 @@ package org.orekit.propagation.analytical.tle;
 
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.ParseException;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -28,10 +32,15 @@ import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -40,9 +49,13 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class TLETest {
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     private TLE geoTLE;
 
@@ -470,7 +483,8 @@ public class TLETest {
                            "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         TLE tleB = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                            "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        Assert.assertTrue(tleA.equals(tleB));
+        Assert.assertEquals(tleA, tleB);
+        Assert.assertEquals(tleA, tleA);
     }
 
     @Test
@@ -479,7 +493,8 @@ public class TLETest {
                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         TLE tleB = new TLE("1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
                 "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
-        Assert.assertFalse(tleA.equals(tleB));
+        Assert.assertNotEquals(tleA, tleB);
+        Assert.assertNotEquals(tleA, tleA.getLine1());
     }
 
     @Test
@@ -585,7 +600,7 @@ public class TLETest {
     public void testStateToTleISS() {
 
         // Initialize TLE
-        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0 9998",
+        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
                                    "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
 
         // TLE propagator
@@ -614,6 +629,102 @@ public class TLETest {
         Assert.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
         Assert.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
         Assert.assertEquals(tleISS.getBStar(),                   rebuilt.getBStar(),           eps * tleISS.getBStar());
+    }
+
+    @Test
+    public void testIssue802() {
+
+        // Initialize TLE
+        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleISS);
+
+        // State at TLE epoch
+        final SpacecraftState state = propagator.propagate(tleISS.getDate());
+
+        // Changes frame
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final TimeStampedPVCoordinates pv = state.getPVCoordinates(eme2000);
+        final CartesianOrbit orbit = new CartesianOrbit(pv, eme2000, state.getMu());
+
+        // Convert to TLE
+        final TLE rebuilt = TLE.stateToTLE(new SpacecraftState(orbit), tleISS);
+
+        // Verify
+        Assert.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
+        Assert.assertEquals(tleISS.getLine2(), rebuilt.getLine2());
+    }
+
+    @Test
+    public void testIssue851() throws IOException, ClassNotFoundException {
+
+        // Initialize TLE
+        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+        String filename = tempFolder.newFile("file.ser").toString();
+
+        // Serialization 
+        FileOutputStream fileSer = new FileOutputStream(filename);
+        ObjectOutputStream outSer = new ObjectOutputStream(fileSer);
+        outSer.writeObject(tleISS);
+        outSer.close();
+        fileSer.close();
+
+        // Deserialization
+        TLE rebuilt = null;
+        FileInputStream file = new FileInputStream(filename);
+        ObjectInputStream in = new ObjectInputStream(file);
+        rebuilt = (TLE) in.readObject();
+        in.close();
+        file.close();
+
+        // Verify
+        Assert.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
+        Assert.assertEquals(tleISS.getLine2(), rebuilt.getLine2());
+        Assert.assertEquals(tleISS.getBStar(), rebuilt.getBStar(), 1.0e-15);
+
+    }
+
+    @Test
+    public void testIssue864() {
+
+        // Initialize TLE
+        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleISS);
+
+        // State at TLE epoch
+        final SpacecraftState state = propagator.propagate(tleISS.getDate());
+
+        // Set the BStar driver to selected
+        tleISS.getParametersDrivers().forEach(driver -> driver.setSelected(true));
+
+        // Convert to TLE
+        final TLE rebuilt = TLE.stateToTLE(state, tleISS);
+
+        // Verify if driver is still selected
+        rebuilt.getParametersDrivers().forEach(driver -> Assert.assertTrue(driver.isSelected()));
+
+    }
+
+    @Test
+    public void testUnknowParameter() {
+
+        // Initialize TLE
+        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        try {
+            tleISS.getParameterDriver("MyWonderfulDriver");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
+        }
+
     }
 
     @Before

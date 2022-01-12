@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,17 +17,21 @@
 package org.orekit.files.ccsds.ndm.odm.omm;
 
 import org.junit.Test;
-import org.orekit.files.ccsds.ndm.AbstractNdmWriterTest;
+import org.orekit.files.ccsds.ndm.AbstractWriterTest;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.time.AbsoluteDate;
 
-public class OmmWriterTest extends AbstractNdmWriterTest<Header, Segment<OmmMetadata, OmmData>, OmmFile> {
+public class OmmWriterTest extends AbstractWriterTest<Header, Segment<OmmMetadata, OmmData>, Omm> {
 
     protected OmmParser getParser() {
-        return new ParserBuilder().withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).buildOmmParser();
+        return new ParserBuilder().
+               withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+               withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+               buildOmmParser();
     }
 
     protected OmmWriter getWriter() {

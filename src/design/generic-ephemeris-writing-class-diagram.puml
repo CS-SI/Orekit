@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@
       }
       class DataSource {
         +getName()
-        +getStreamOpener()
+        +getOpener()
       }
       DataFilter --> DataSource
     }
@@ -43,15 +43,17 @@
     package files #DDEBD8 {
 
        package sp3 #CBDBC8 {
-          class SP3File
+          class SP3
           class SP3Coordinate
-          SP3File --> SP3Coordinate
+          SP3 --> SP3Coordinate
        }
 
        package ilrs #CBDBC8 {
-         class CPFFile
+         class CPF
+         class CPFWriter
+         class StreamingCpfWriter
          class CPFCoordinate
-         CPFFile --> CPFCoordinate
+         CPF --> CPFCoordinate
        }
 
       package general #CBDBC8 {
@@ -92,8 +94,10 @@
           +getPropagator()
         }
 
-        SP3File ..|> EphemerisFile
-        CPFFile ..|> EphemerisFile
+        SP3 ..|> EphemerisFile
+        CPF ..|> EphemerisFile
+        CPFWriter <--o StreamingCpfWriter
+        EphemerisFileWriter <|.. CPFWriter
         EphemerisFile.SatelliteEphemeris <--* EphemerisFile
         EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
 
@@ -108,16 +112,16 @@
         package oem #CCCCC7 {
           class OemWriter
           class StreamingOemWriter
-          class OemFile
-          EphemerisFile <|.. OemFile
+          class Oem
+          EphemerisFile <|.. Oem
           OemWriter <--o StreamingOemWriter
           EphemerisFileWriter <|.. OemWriter
         }
         package ocm #CCCCC7 {
           class OcmWriter
           class StreamingOcmWriter
-          class OcmFile
-          EphemerisFile <|.. OcmFile
+          class Ocm
+          EphemerisFile <|.. Ocm
           OcmWriter <--o StreamingOcmWriter
           EphemerisFileWriter <|.. OcmWriter
         }

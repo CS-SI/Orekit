@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,28 +43,30 @@ public class Covariance implements TimeStamped {
 
     /** Simple constructor.
      * @param type type of the elements
+     * @param ordering ordering to use
      * @param date entry date
      * @param fields matrix elements
      * @param first index of first field to consider
      */
-    public Covariance(final ElementsType type, final AbsoluteDate date,
+    public Covariance(final ElementsType type, final Ordering ordering, final AbsoluteDate date,
                       final String[] fields, final int first) {
         final List<Unit> units = type.getUnits();
         this.type   = type;
         this.date   = date;
         this.matrix = MatrixUtils.createRealMatrix(units.size(), units.size());
-        int k = 0;
-        for (int i = 0; i < matrix.getRowDimension(); ++i) {
-            final Unit ui = units.get(i);
-            for (int j = 0; j <= i; ++j) {
-                final Unit   uj    = units.get(j);
-                final double rawij = Double.parseDouble(fields[first + k++]);
-                final double cij   = ui.toSI(uj.toSI(rawij));
-                matrix.setEntry(i, j, cij);
-                if (j < i) {
-                    matrix.setEntry(j, i, cij);
+        final CovarianceIndexer indexer = new CovarianceIndexer(units.size());
+        for (int k = 0; first + k < fields.length; ++k) {
+            if (!indexer.isCrossCorrelation()) {
+                final int    i         = indexer.getRow();
+                final int    j         = indexer.getColumn();
+                final double raw       = Double.parseDouble(fields[first + k]);
+                final double converted = units.get(i).toSI(units.get(j).toSI(raw));
+                matrix.setEntry(i, j, converted);
+                if (i != j) {
+                    matrix.setEntry(j, i, converted);
                 }
             }
+            ordering.update(indexer);
         }
     }
 

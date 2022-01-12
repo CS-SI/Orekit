@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,11 +22,12 @@ import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.CommonParser;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
@@ -64,7 +65,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OmmParser extends CommonParser<OmmFile, OmmParser> {
+public class OmmParser extends OdmParser<Omm, OmmParser> {
 
     /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
     private final double defaultMass;
@@ -111,11 +112,13 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param defaultMass default mass to use if there are no spacecraft parameters block logical block in the file
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public OmmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
-                     final double mu, final double defaultMass) {
-        super(OmmFile.ROOT, OmmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+                     final double mu, final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(Omm.ROOT, Omm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+              missionReferenceDate, mu, parsedUnitsBehavior);
         this.defaultMass = defaultMass;
     }
 
@@ -141,7 +144,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header();
+        header                    = new Header(3.0);
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
@@ -151,32 +154,32 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         covarianceBlock           = null;
         userDefinedBlock          = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(OmmFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Omm.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -188,16 +191,17 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         }
         metadata  = new OmmMetadata();
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, this::getMissionReferenceDate,
+                                       this::getDataContext, this::getParsedUnitsBehavior,
+                                       this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
-        setFallback(this::processMetadataToken);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKeplerianElementsToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKeplerianElementsToken);
         return true;
     }
 
@@ -205,7 +209,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
     @Override
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         if (metadata.getCenter().getBody() != null) {
             setMuCreated(metadata.getCenter().getBody().getGM());
         }
@@ -216,7 +220,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
     @Override
     public boolean prepareData() {
         keplerianElementsBlock = new KeplerianElements();
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processKeplerianElementsToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processKeplerianElementsToken);
         return true;
     }
 
@@ -246,7 +250,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
                                  defaultMass : spacecraftParametersBlock.getMass();
             final OmmData data = new OmmData(keplerianElementsBlock, spacecraftParametersBlock,
                                              tleBlock, covarianceBlock, userDefinedBlock, mass);
-            data.checkMandatoryEntries();
+            data.validate(header.getFormatVersion());
             segments.add(new Segment<>(metadata, data));
         }
         metadata                  = null;
@@ -261,11 +265,11 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public OmmFile build() {
+    public Omm build() {
         // OMM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
-        return new OmmFile(header, segments, getConventions(), getDataContext());
+        return new Omm(header, segments, getConventions(), getDataContext());
     }
 
     /** Manage Keplerian elements section.
@@ -274,7 +278,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
      * @return always return true
      */
     boolean manageKeplerianElementsSection(final boolean starting) {
-        setFallback(starting ? this::processKeplerianElementsToken : structureProcessor);
+        anticipateNext(starting ? this::processKeplerianElementsToken : structureProcessor);
         return true;
     }
 
@@ -284,7 +288,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
      * @return always return true
      */
     boolean manageSpacecraftParametersSection(final boolean starting) {
-        setFallback(starting ? this::processSpacecraftParametersToken : structureProcessor);
+        anticipateNext(starting ? this::processSpacecraftParametersToken : structureProcessor);
         return true;
     }
 
@@ -294,7 +298,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
      * @return always return true
      */
     boolean manageTleParametersSection(final boolean starting) {
-        setFallback(starting ? this::processTLEToken : structureProcessor);
+        anticipateNext(starting ? this::processTLEToken : structureProcessor);
         return true;
     }
 
@@ -304,7 +308,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
      * @return always return true
      */
     boolean manageCovarianceSection(final boolean starting) {
-        setFallback(starting ? this::processCovarianceToken : structureProcessor);
+        anticipateNext(starting ? this::processCovarianceToken : structureProcessor);
         return true;
     }
 
@@ -314,7 +318,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
      * @return always return true
      */
     boolean manageUserDefinedParametersSection(final boolean starting) {
-        setFallback(starting ? this::processUserDefinedToken : structureProcessor);
+        anticipateNext(starting ? this::processUserDefinedToken : structureProcessor);
         return true;
     }
 
@@ -377,7 +381,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
             // automatically before the first data token arrives
             prepareData();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
         try {
             return token.getName() != null &&
                    KeplerianElementsKey.valueOf(token.getName()).process(token, context, keplerianElementsBlock);
@@ -399,7 +403,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
                 keplerianElementsBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processTLEToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processTLEToken);
         try {
             return token.getName() != null &&
                    SpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
@@ -421,7 +425,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
                 spacecraftParametersBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processCovarianceToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processCovarianceToken);
         try {
             return token.getName() != null &&
                    OmmTleKey.valueOf(token.getName()).process(token, context, tleBlock);
@@ -445,7 +449,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
                 tleBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
         try {
             return token.getName() != null &&
                    CartesianCovarianceKey.valueOf(token.getName()).process(token, context, covarianceBlock);
@@ -467,7 +471,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
                 covarianceBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
         if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             if (token.getType() == TokenType.ENTRY) {
                 userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataWriter;
 import org.orekit.files.ccsds.section.Header;
@@ -39,7 +40,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata, ApmData>, ApmFile> {
+public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata, ApmData>, Apm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_APM_VERS = 1.0;
@@ -59,16 +60,18 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
      */
     public ApmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, CCSDS_APM_VERS,
+        super(Apm.ROOT, Apm.FORMAT_VERSION_KEY, CCSDS_APM_VERS,
               new ContextBinding(
-                  () -> conventions, () -> false, () -> dataContext,
+                  () -> conventions,
+                  () -> false, () -> dataContext, () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final Segment<AdmMetadata, ApmData> segment)
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final Segment<AdmMetadata, ApmData> segment)
         throws IOException {
 
         // write the metadata
@@ -77,6 +80,7 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,

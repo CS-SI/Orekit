@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.models.earth.troposphere;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -117,12 +117,12 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Use an empirical model for tropospheric zenith hydro-static delay : Saastamoinen model
         final SaastamoinenModel saastamoinen = new SaastamoinenModel(t0, p0, 0.0);
         // Zenith delays. elevation = pi/2 because we compute the delay in the zenith direction
-        final T zhd = saastamoinen.pathDelay(date.getField().getZero().add(0.5 * FastMath.PI), point, parameters, date);
+        final T zhd = saastamoinen.pathDelay(elevation.getPi().multiply(0.5), point, parameters, date);
         final T ztd = parameters[0];
         // Mapping functions
         final T[] mf = model.mappingFactors(elevation, point, date);

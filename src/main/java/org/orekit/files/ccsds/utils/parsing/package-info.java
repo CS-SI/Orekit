@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@
  * This package contains classes related to the processing
  * of parse tokens using the state design pattern.
  * <p>
- * The base abstract class {@link org.orekit.files.ccsds.utils.parsing.AbstractMessageParser
+ * The base abstract class {@link org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser
  * AbstractMessageParser} implements the {@link
  * org.orekit.files.ccsds.utils.lexical.MessageParser MessageParser} interface using
  * the state design pattern, where each {@link

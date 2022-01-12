@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,8 @@
 package org.orekit.propagation.events;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -109,6 +111,14 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
     }
 
+    /** Get all event dates currently managed, in chronological order.
+     * @return all event dates currently managed, in chronological order
+     * @since 11.1
+     */
+    public List<TimeStamped> getDates() {
+        return Collections.unmodifiableList(eventDateList);
+    }
+
     /** Compute the value of the switching function.
      * This function measures the difference between the current and the target date.
      * @param s the current state information: date, kinematics, attitude
@@ -149,19 +159,23 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
             eventDateList.add(new EventDate(target, increasing));
         } else {
             final int lastIndex = eventDateList.size() - 1;
-            if (eventDateList.get(0).getDate().durationFrom(target) > getMaxCheckInterval()) {
+            final AbsoluteDate firstDate = eventDateList.get(0).getDate();
+            final AbsoluteDate lastDate = eventDateList.get(lastIndex).getDate();
+            if (firstDate.durationFrom(target) > getMaxCheckInterval()) {
                 increasing = !eventDateList.get(0).isgIncrease();
                 eventDateList.add(0, new EventDate(target, increasing));
                 currentIndex++;
-            } else if (target.durationFrom(eventDateList.get(lastIndex).getDate()) > getMaxCheckInterval()) {
+            } else if (target.durationFrom(lastDate) > getMaxCheckInterval()) {
                 increasing = !eventDateList.get(lastIndex).isgIncrease();
                 eventDateList.add(new EventDate(target, increasing));
             } else {
                 throw new OrekitIllegalArgumentException(OrekitMessages.EVENT_DATE_TOO_CLOSE,
                                                          target,
-                                                         eventDateList.get(0).getDate(),
-                                                         eventDateList.get(lastIndex).getDate(),
-                                                         getMaxCheckInterval());
+                                                         firstDate,
+                                                         lastDate,
+                                                         getMaxCheckInterval(),
+                                                         firstDate.durationFrom(target),
+                                                         target.durationFrom(lastDate));
             }
         }
     }

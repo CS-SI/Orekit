@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.orekit.files.ccsds.section.AbstractWriter;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 
 /** Writer for user defined parameters data.
  * @author Luc Maisonobe
@@ -45,9 +47,23 @@ public class UserDefinedWriter extends AbstractWriter {
     /** {@inheritDoc} */
     @Override
     protected void writeContent(final Generator generator) throws IOException {
-        for (Map.Entry<String, String> entry : userDefined.getParameters().entrySet()) {
-            generator.writeUserDefined(entry.getKey(), entry.getValue());
+
+        // user-defined parameters block
+        generator.writeComments(userDefined.getComments());
+
+        // entries
+        if (generator.getFormat() == FileFormat.XML) {
+            final XmlGenerator xmlGenerator = (XmlGenerator) generator;
+            for (Map.Entry<String, String> entry : userDefined.getParameters().entrySet()) {
+                xmlGenerator.writeOneAttributeElement(UserDefined.USER_DEFINED_XML_TAG,       entry.getValue(),
+                                                      UserDefined.USER_DEFINED_XML_ATTRIBUTE, entry.getKey());
+            }
+        } else {
+            for (Map.Entry<String, String> entry : userDefined.getParameters().entrySet()) {
+                generator.writeEntry(UserDefined.USER_DEFINED_PREFIX + entry.getKey(), entry.getValue(), null, false);
+            }
         }
+
     }
 
 }

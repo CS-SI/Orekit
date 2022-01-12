@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,9 +71,9 @@ public class AemMetadata extends AdmMetadata {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
+    public void validate(final double version) {
 
-        checkMandatoryEntriesExceptDatesAndExternalFrame();
+        checkMandatoryEntriesExceptDatesAndExternalFrame(version);
         endpoints.checkExternalFrame(AemMetadataKey.REF_FRAME_A, AemMetadataKey.REF_FRAME_B);
 
         checkNotNull(startTime, AemMetadataKey.START_TIME);
@@ -89,10 +89,11 @@ public class AemMetadata extends AdmMetadata {
      * <p>
      * This method should throw an exception if some mandatory entry is missing
      * </p>
+     * @param version format version
      */
-    void checkMandatoryEntriesExceptDatesAndExternalFrame() {
+    void checkMandatoryEntriesExceptDatesAndExternalFrame(final double version) {
 
-        super.checkMandatoryEntries();
+        super.validate(version);
 
         endpoints.checkMandatoryEntriesExceptExternalFrame(AemMetadataKey.REF_FRAME_A,
                                                            AemMetadataKey.REF_FRAME_B,
@@ -103,7 +104,8 @@ public class AemMetadata extends AdmMetadata {
             attitudeType == AttitudeType.QUATERNION_DERIVATIVE) {
             checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE);
         }
-        if (attitudeType == AttitudeType.EULER_ANGLE ||
+        if (attitudeType == AttitudeType.QUATERNION_RATE ||
+            attitudeType == AttitudeType.EULER_ANGLE ||
             attitudeType == AttitudeType.EULER_ANGLE_RATE) {
             checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ);
         }
@@ -121,15 +123,15 @@ public class AemMetadata extends AdmMetadata {
         return endpoints;
     }
 
-    /** Check if rates are specified in {@link #getFrameA() frame A}.
-     * @return true if rates are specified in {@link #getFrameA() frame A}
+    /** Check if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}.
+     * @return true if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
      */
     public boolean rateFrameIsA() {
         return rateFrameIsA == null ? false : rateFrameIsA;
     }
 
     /** Set the frame in which rates are specified.
-     * @param rateFrameIsA if true, rates are specified in {@link #getFrameA() frame A}
+     * @param rateFrameIsA if true, rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
      */
     public void setRateFrameIsA(final boolean rateFrameIsA) {
         refuseFurtherComments();
@@ -138,7 +140,7 @@ public class AemMetadata extends AdmMetadata {
 
     /** Check if rates are specified in spacecraft body frame.
      * <p>
-     * {@link #checkMandatoryEntries() Mandatory entries} must have been
+     * {@link #validate(double) Mandatory entries} must have been
      * initialized properly to non-null values before this method is called,
      * otherwise {@code NullPointerException} will be thrown.
      * </p>
@@ -346,11 +348,12 @@ public class AemMetadata extends AdmMetadata {
     }
 
     /** Copy the instance, making sure mandatory fields have been initialized.
+     * @param version format version
      * @return a new copy
      */
-    AemMetadata copy() {
+    AemMetadata copy(final double version) {
 
-        checkMandatoryEntriesExceptDatesAndExternalFrame();
+        checkMandatoryEntriesExceptDatesAndExternalFrame(version);
 
         // allocate new instance
         final AemMetadata copy = new AemMetadata(getInterpolationDegree());

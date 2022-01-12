@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -37,6 +37,7 @@
        -formatVersion
        -creationDate
        -originator
+       -messageId
       }
       class Metadata {
         -timeSystem
@@ -66,7 +67,7 @@
             -covarianceMatrices
           }
           class OemMetadata
-          class OemFile
+          class Oem
           Data <|.. OemData
           OdmMetadata <|-- OemMetadata
         }
@@ -81,7 +82,7 @@
             - maneuvers
             - userDefinedParameters
           }
-          class OpmFile
+          class Opm
           OdmMetadata <|-- OpmMetadata
           Data <|.. OpmData
          }
@@ -93,12 +94,14 @@
         OMM, OCM, TDM, APM, and AEM
       end note
 
-      abstract class NdmFile
+      abstract class NdmConstituent
+      class Ndm
 
-      NdmFile <|-- OemFile
-      NdmFile <|-- OpmFile
-      Header  "1" <--o NdmFile
-      Segment "*" <--o NdmFile
+      NdmConstituent <|-- Oem
+      NdmConstituent <|-- Opm
+      Header  "1" <--o NdmConstituent
+      Segment "*" <--o NdmConstituent
+      NdmConstituent "*" <--o Ndm
 
     }
   }

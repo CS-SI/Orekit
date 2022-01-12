@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -94,7 +94,7 @@ public class RelativisticClockRangeModifierTest {
         Assert.assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify
-        Assert.assertEquals(6.87, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assert.assertEquals(-6.87, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
 
     }
 

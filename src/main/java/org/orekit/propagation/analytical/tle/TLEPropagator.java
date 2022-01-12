@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,16 +23,14 @@ import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -209,7 +207,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         initializeCommons();
         sxpInitialize();
         // set the initial state
-        final KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagateOrbit(initialTLE.getDate()));
+        final Orbit orbit = propagateOrbit(initialTLE.getDate());
         final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
     }
@@ -236,7 +234,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public static TLEPropagator selectExtrapolator(final TLE tle, final Frames frames) {
         return selectExtrapolator(
                 tle,
-                Propagator.getDefaultLaw(frames),
+                InertialProvider.of(frames.getTEME()),
                 DEFAULT_MASS,
                 frames.getTEME());
     }
@@ -539,20 +537,18 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     protected abstract void sxpPropagate(double t);
 
-    /** Set the initial state.
-     *  @param initialState initial state
+    /** {@inheritDoc}
+     * <p>
+     * For TLE propagator, calling this method is only recommended
+     * for covariance propagation when the new <code>state</code>
+     * differs from the previous one by only adding the additional
+     * state containing the derivatives.
+     * </p>
      */
-    @DefaultDataContext
-    public void setInitialState(final SpacecraftState initialState) {
-        resetInitialState(initialState);
-    }
-
-    /** {@inheritDoc} */
-    @DefaultDataContext
     public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
-        final TLE newTLE = TLE.stateToTLE(state, tle);
+        final TLE newTLE = TLE.stateToTLE(state, tle, utc, teme);
         this.tle = newTLE;
         initializeCommons();
         sxpInitialize();
@@ -570,7 +566,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date) {
-        return OrbitType.KEPLERIAN.convertType(new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU));
+        return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
     }
 
     /** Get the underlying TLE.

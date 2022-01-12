@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -105,7 +105,8 @@ public class IodGibbs {
                                    final Vector3D r3, final AbsoluteDate date3) {
         // Checks measures are not at the same date
         if (date1.equals(date2) || date1.equals(date3) || date2.equals(date3)) {
-            throw new OrekitException(OrekitMessages.NON_DIFFERENT_DATES_FOR_OBSERVATIONS, date1, date2, date3);
+            throw new OrekitException(OrekitMessages.NON_DIFFERENT_DATES_FOR_OBSERVATIONS, date1, date2, date3,
+                    date2.durationFrom(date1), date3.durationFrom(date1), date3.durationFrom(date2));
         }
 
         // Checks measures are in the same plane

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.forces.maneuvers.propulsion;
 
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -56,7 +56,7 @@ public class AbstractConstantThrustTest {
                         new AbstractConstantThrustPropulsionModel(thrust, isp, direction, name) {
             
             @Override
-            public <T extends RealFieldElement<T>> FieldVector3D<T> getThrustVector(T[] parameters) {
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(T[] parameters) {
                 return new FieldVector3D<T>(parameters[0].getField(), thrustVector);
             }
             
@@ -71,7 +71,7 @@ public class AbstractConstantThrustTest {
             }
             
             @Override
-            public <T extends RealFieldElement<T>> T getFlowRate(T[] parameters) {
+            public <T extends CalculusFieldElement<T>> T getFlowRate(T[] parameters) {
                 return parameters[0].getField().getZero().add(flowRate);
             }
             

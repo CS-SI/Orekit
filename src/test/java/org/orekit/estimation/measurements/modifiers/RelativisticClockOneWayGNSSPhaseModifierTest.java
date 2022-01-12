@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class RelativisticClockOneWayGNSSPhaseModifierTest {
         final EstimatedMeasurement<OneWayGNSSPhase> estimatedAfter = phase.estimate(0, 0, states);
 
         // Verify
-        Assert.assertEquals(10.57, (estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0]) * wavelength, 1.0e-2);
+        Assert.assertEquals(-10.57, (estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0]) * wavelength, 1.0e-2);
         Assert.assertEquals(0, modifier.getParametersDrivers().size());
 
     }

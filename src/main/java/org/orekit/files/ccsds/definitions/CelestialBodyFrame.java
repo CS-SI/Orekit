@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -405,14 +405,9 @@ public enum CelestialBodyFrame {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext to use when creating the frame.
      * @return frame corresponding to the CCSDS constant
-     * @see #isLof()
      * @since 10.1
      */
-    public Frame getFrame(final IERSConventions conventions,
-                          final boolean simpleEOP,
-                          final DataContext dataContext) {
-        throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, toString());
-    }
+    public abstract Frame getFrame(IERSConventions conventions, boolean simpleEOP, DataContext dataContext);
 
     /** Parse a CCSDS frame.
      * @param frameName name of the frame, as the value of a CCSDS key=value line

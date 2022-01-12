@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -200,7 +200,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
+    public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
                                                                                      final T[] parameters) {
 
@@ -246,7 +246,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return new force model context
      */
-    private <T extends RealFieldElement<T>> FieldDSSTThirdBodyContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
+    private <T extends CalculusFieldElement<T>> FieldDSSTThirdBodyContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                         final T[] parameters) {
         return new FieldDSSTThirdBodyContext<>(auxiliaryElements, body, parameters);
     }
@@ -283,7 +283,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState,
+    public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState,
                                                                   final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                   final T[] parameters) {
 
@@ -418,7 +418,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
                                                                        final FieldSpacecraftState<T>... meanStates) {
 
         // Field used by default
@@ -517,7 +517,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
         return null;
     }
 
@@ -916,7 +916,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  CS Mathematical Report $3.5.3.2
      *  </p>
      */
-    private class FieldFourierCjSjCoefficients <T extends RealFieldElement<T>> {
+    private class FieldFourierCjSjCoefficients <T extends CalculusFieldElement<T>> {
 
         /** The coefficients G<sub>n, s</sub> and their derivatives. */
         private final FieldGnsCoefficients<T> gns;
@@ -1504,7 +1504,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     *
     * @author Lucian Barbulescu
     */
-    private static class FieldWnsjEtomjmsCoefficient <T extends RealFieldElement<T>> {
+    private static class FieldWnsjEtomjmsCoefficient <T extends CalculusFieldElement<T>> {
 
         /** The value c.
          * <p>
@@ -1794,7 +1794,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *
      * @author Lucian Barbulescu
      */
-    private class FieldGnsCoefficients  <T extends RealFieldElement<T>> {
+    private class FieldGnsCoefficients  <T extends CalculusFieldElement<T>> {
 
         /** Maximum value for n index. */
         private final int nMax;
@@ -2180,7 +2180,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      * </p>
      * @author Lucian Barbulescu
      */
-    private static class FieldCjSjAlphaBetaKH <T extends RealFieldElement<T>> {
+    private static class FieldCjSjAlphaBetaKH <T extends CalculusFieldElement<T>> {
 
         /** The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) series. */
         private final FieldCjSjCoefficient<T> cjsjkh;
@@ -2737,7 +2737,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      * </p>
      * @author Lucian Barbulescu
      */
-    private class FieldGeneratingFunctionCoefficients <T extends RealFieldElement<T>> {
+    private class FieldGeneratingFunctionCoefficients <T extends CalculusFieldElement<T>> {
 
         /** The Fourier coefficients as presented in Danielson 4.2-14,15. */
         private final FieldFourierCjSjCoefficients<T> cjsjFourier;
@@ -3078,10 +3078,14 @@ public class DSSTThirdBody implements DSSTForceModel {
             final Slot         slot  = new Slot(jMax, interpolationPoints);
             final AbsoluteDate first = meanStates[0].getDate();
             final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
-            if (first.compareTo(last) <= 0) {
+            final int compare = first.compareTo(last);
+            if (compare < 0) {
                 slots.addValidAfter(slot, first);
-            } else {
+            } else if (compare > 0) {
                 slots.addValidBefore(slot, first);
+            } else {
+                // single date, valid for all time
+                slots.addValidAfter(slot, AbsoluteDate.PAST_INFINITY);
             }
             return slot;
         }
@@ -3177,7 +3181,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      * </p>
      * @author Lucian Barbulescu
      */
-    private static class FieldThirdBodyShortPeriodicCoefficients <T extends RealFieldElement<T>> implements FieldShortPeriodTerms<T> {
+    private static class FieldThirdBodyShortPeriodicCoefficients <T extends CalculusFieldElement<T>> implements FieldShortPeriodTerms<T> {
 
         /** Maximal value for j. */
         private final int jMax;
@@ -3360,7 +3364,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    private static class FieldSlot <T extends RealFieldElement<T>> {
+    private static class FieldSlot <T extends CalculusFieldElement<T>> {
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>
@@ -3581,7 +3585,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     }
 
     /** Compute potential and potential derivatives with respect to orbital parameters. */
-    private class FieldUAnddU <T extends RealFieldElement<T>> {
+    private class FieldUAnddU <T extends CalculusFieldElement<T>> {
 
         /** The current value of the U function. <br/>
          * Needed for the short periodic contribution */
@@ -3794,7 +3798,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     }
 
     /** Computes init values of the Hansen Objects. */
-    private static class FieldHansenObjects<T extends RealFieldElement<T>> {
+    private static class FieldHansenObjects<T extends CalculusFieldElement<T>> {
 
         /** Max power for summation. */
         private static final int    MAX_POWER = 22;

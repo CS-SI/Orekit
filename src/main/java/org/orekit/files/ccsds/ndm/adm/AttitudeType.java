@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -48,8 +49,9 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final TimeStampedAngularCoordinates coordinates) {
+
             // Initialize the array of attitude data
             final double[] data = new double[4];
 
@@ -102,8 +104,9 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final TimeStampedAngularCoordinates coordinates) {
+
             // Initialize the array of attitude data
             final double[] data = new double[8];
 
@@ -170,8 +173,9 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final TimeStampedAngularCoordinates coordinates) {
+
             // Initialize the array of attitude data
             final double[] data = new double[7];
 
@@ -230,8 +234,8 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final TimeStampedAngularCoordinates coordinates) {
 
             // Attitude
             Rotation rotation = coordinates.getRotation();
@@ -276,8 +280,9 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final TimeStampedAngularCoordinates coordinates) {
+
             // Initialize the array of attitude data
             final double[] data = new double[6];
 
@@ -290,9 +295,9 @@ public enum AttitudeType {
             data[0] = angles[0];
             data[1] = angles[1];
             data[2] = angles[2];
-            data[3] = rotationRate.getX();
-            data[4] = rotationRate.getY();
-            data[5] = rotationRate.getZ();
+            data[3] = Vector3D.dotProduct(rotationRate, eulerRotSequence.getA1());
+            data[4] = Vector3D.dotProduct(rotationRate, eulerRotSequence.getA2());
+            data[5] = Vector3D.dotProduct(rotationRate, eulerRotSequence.getA3());
 
             // Convert units and format
             return EULER_ANGLE_RATE.formatData(data);
@@ -315,7 +320,9 @@ public enum AttitudeType {
                                                    components[1],
                                                    components[2]);
             final Vector3D rotationRate = EULER_ANGLE_RATE.orekitRate(isSpacecraftBodyRate,
-                                                                      new Vector3D(components[3], components[4], components[5]),
+                                                                      new Vector3D(components[3], eulerRotSequence.getA1(),
+                                                                                   components[4], eulerRotSequence.getA2(),
+                                                                                   components[5], eulerRotSequence.getA3()),
                                                                       rotation);
             // Return
             final TimeStampedAngularCoordinates ac =
@@ -326,19 +333,38 @@ public enum AttitudeType {
 
     },
 
-    /** Spin. */
+    /** Spin.
+     * <p>
+     * CCSDS enforces that spin axis is +Z, so if {@link #createDataFields(boolean, boolean, RotationOrder, boolean,
+     * TimeStampedAngularCoordinates) createDataFields} is called with {@code coordinates} with {@link
+     * TimeStampedAngularCoordinates#getRotationRate() rotation rate} that is not along the Z axis, result is
+     * undefined.
+     * </p>
+     */
     SPIN("SPIN", AngularDerivativesFilter.USE_RR,
          Unit.DEGREE, Unit.DEGREE, Unit.DEGREE, Units.DEG_PER_S) {
 
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
-            // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
-            // are optional in CCSDS AEM format. Support for this attitude type is not implemented
-            // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final TimeStampedAngularCoordinates coordinates) {
+
+            // Initialize the array of attitude data
+            final double[] data = new double[4];
+
+            // Attitude
+            final double[] angles = coordinates.getRotation().getAngles(RotationOrder.ZYZ, RotationConvention.FRAME_TRANSFORM);
+
+            // Fill the array
+            data[0] = angles[0];
+            data[1] = 0.5 * FastMath.PI - angles[1];
+            data[2] = angles[2];
+            data[3] = coordinates.getRotationRate().getZ();
+
+            // Convert units and format
+            return SPIN.formatData(data);
+
         }
 
         /** {@inheritDoc} */
@@ -349,10 +375,18 @@ public enum AttitudeType {
                                                    final boolean isSpacecraftBodyRate,
                                                    final AbsoluteDate date,
                                                    final double...components) {
-            // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
-            // are optional in CCSDS AEM format. Support for this attitude type is not implemented
-            // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
+
+            // Build the needed objects
+            final Rotation rotation = new Rotation(RotationOrder.ZYZ,
+                                                   RotationConvention.FRAME_TRANSFORM,
+                                                   components[0],
+                                                   0.5 * FastMath.PI - components[1],
+                                                   components[2]);
+            final Vector3D rotationRate = new Vector3D(0, 0, components[3]);
+
+            // Return
+            return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
+
         }
 
     },
@@ -365,8 +399,8 @@ public enum AttitudeType {
         /** {@inheritDoc} */
         @Override
         public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                        final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                        final TimeStampedAngularCoordinates coordinates) {
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final TimeStampedAngularCoordinates coordinates) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -459,8 +493,7 @@ public enum AttitudeType {
      */
     public TimeStampedAngularCoordinates parse(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                                final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                               final ContextBinding context,
-                                               final String[] fields) {
+                                               final ContextBinding context, final String[] fields) {
 
         // parse the text fields
         final AbsoluteDate date = context.getTimeSystem().getConverter(context).parse(fields[0]);

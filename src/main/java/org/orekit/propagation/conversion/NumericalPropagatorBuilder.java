@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -35,7 +34,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -65,8 +64,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      * callers of this builder to the real orbital parameters.
      * </p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
      * @param positionAngle position angle type to use
@@ -76,13 +73,12 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      * @see #NumericalPropagatorBuilder(Orbit, ODEIntegratorBuilder, PositionAngle,
      * double, AttitudeProvider)
      */
-    @DefaultDataContext
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
                                       final PositionAngle positionAngle,
                                       final double positionScale) {
         this(referenceOrbit, builder, positionAngle, positionScale,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+                InertialProvider.of(referenceOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -197,6 +193,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("deprecation")
     public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
@@ -222,9 +219,14 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
 
         propagator.resetInitialState(state);
 
-        // Add additional equations to the propagator
-        for (AdditionalEquations equation: getAdditionalEquations()) {
-            propagator.addAdditionalEquations(equation);
+        // Add additional derivatives providers to the propagator
+        for (AdditionalDerivativesProvider provider: getAdditionalDerivativesProviders()) {
+            propagator.addAdditionalDerivativesProvider(provider);
+        }
+
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        for (org.orekit.propagation.integration.AdditionalEquations equations : getAdditionalEquations()) {
+            propagator.addAdditionalDerivativesProvider(new org.orekit.propagation.integration.AdditionalEquationsAdapter(equations, propagator::getInitialState));
         }
 
         return propagator;

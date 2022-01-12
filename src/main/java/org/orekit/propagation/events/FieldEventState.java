@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
@@ -26,7 +26,9 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -48,7 +50,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @param <D> class type for the generic version
  */
-public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFieldElement<T>> {
+public class FieldEventState<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> {
 
     /** Event detector. */
     private D detector;
@@ -321,19 +323,33 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
                 // tb as a double for use in f
                 final T tbDouble = tb.durationFrom(fT0);
                 if (forward) {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
-                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    beforeRootG = zero.add(interval.getLeftValue());
-                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    afterRootG = zero.add(interval.getRightValue());
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
+                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        beforeRootG = zero.add(interval.getLeftValue());
+                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        afterRootG = zero.add(interval.getRightValue());
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, loopT, loopG, tb, gb, lastT, lastG);
+                    }
                 } else {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
-                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    beforeRootG = zero.add(interval.getRightValue());
-                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    afterRootG = zero.add(interval.getLeftValue());
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
+                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        beforeRootG = zero.add(interval.getRightValue());
+                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        afterRootG = zero.add(interval.getLeftValue());
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, tb, gb, loopT, loopG, lastT, lastG);
+                    }
                 }
             }
             // tolerance is set to less than 1 ulp
@@ -554,7 +570,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * Class to hold the data related to an event occurrence that is needed to decide how
      * to modify integration.
      */
-    public static class EventOccurrence<T extends RealFieldElement<T>> {
+    public static class EventOccurrence<T extends CalculusFieldElement<T>> {
 
         /** User requested action. */
         private final Action action;

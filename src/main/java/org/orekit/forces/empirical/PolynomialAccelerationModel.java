@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -92,7 +92,7 @@ public class PolynomialAccelerationModel implements AccelerationModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T signedAmplitude(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> T signedAmplitude(final FieldSpacecraftState<T> state,
                                                              final T[] parameters) {
         final T dt = state.getDate().durationFrom(referenceDate);
         T amplitude = dt.getField().getZero();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 /** Keys for {@link ApmData APM Euler angles} entries.
  * @author Bryan Cazabonne
@@ -73,22 +75,28 @@ public enum EulerKey {
     }),
 
     /** X body rotation angle entry. */
-    X_ANGLE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationAngle('X', token.getContentAsAngle()) : true),
+    X_ANGLE((token, context, container) -> token.processAsLabeledDouble('X', Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                        container::setRotationAngle)),
 
     /** Y body rotation angle entry. */
-    Y_ANGLE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationAngle('Y', token.getContentAsAngle()) : true),
+    Y_ANGLE((token, context, container) -> token.processAsLabeledDouble('Y', Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                        container::setRotationAngle)),
 
     /** Z body rotation angle entry. */
-    Z_ANGLE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationAngle('Z', token.getContentAsAngle()) : true),
+    Z_ANGLE((token, context, container) -> token.processAsLabeledDouble('Z', Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                        container::setRotationAngle)),
 
     /** X body rotation rate entry. */
-    X_RATE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationRate('X', token.getContentAsAngle()) : true),
+    X_RATE((token, context, container) -> token.processAsLabeledDouble('X', Units.DEG_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setRotationRate)),
 
     /** Y body rotation rate entry. */
-    Y_RATE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationRate('Y', token.getContentAsAngle()) : true),
+    Y_RATE((token, context, container) -> token.processAsLabeledDouble('Y', Units.DEG_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setRotationRate)),
 
     /** Z body rotation rate entry. */
-    Z_RATE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationRate('Z', token.getContentAsAngle()) : true);
+    Z_RATE((token, context, container) -> token.processAsLabeledDouble('Z', Units.DEG_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setRotationRate));
 
     /** Processing method. */
     private final TokenProcessor processor;

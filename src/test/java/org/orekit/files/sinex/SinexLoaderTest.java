@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -139,6 +139,92 @@ public class SinexLoaderTest {
         Assert.assertEquals(0., ecc7035.distance(loader.getStation("7035").getEccentricities()), 1.0e-15);
         Assert.assertEquals(ReferenceSystem.UNE, loader.getStation("7120").getEccRefSystem());
         Assert.assertEquals(0., ecc7120.distance(loader.getStation("7120").getEccentricities()), 1.0e-15);
+
+    }
+
+    @Test
+    public void testIssue867() {
+
+        // Load file (it corresponds to a small version of the real entier file)
+        SinexLoader loader = new SinexLoader("ecc_xyz-small-multiple-ecc.snx");
+        Assert.assertEquals(4, loader.getStations().size());
+
+        // Verify station 7236
+        final Station  station7236    = loader.getStation("7236");
+        final Vector3D refStation7236 = Vector3D.ZERO;
+        Assert.assertEquals(0.0, refStation7236.distance(station7236.getEccentricities(new AbsoluteDate("1995-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, station7236.getValidFrom().durationFrom(new AbsoluteDate("1988-01-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
+        Assert.assertEquals(0.0, station7236.getValidUntil().durationFrom(new AbsoluteDate("1999-09-30T23:59:59.000", TimeScalesFactory.getUTC())), 1.0e-15);
+
+        // Verify station 7237
+        final Station station7237 = loader.getStation("7237");
+        final Vector3D refStation7237 = Vector3D.ZERO;
+        Assert.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("1995-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2021-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2999-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, station7237.getValidFrom().durationFrom(new AbsoluteDate("1988-01-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
+        Assert.assertTrue(station7237.getValidUntil() == AbsoluteDate.FUTURE_INFINITY);
+
+        // Verify station 7090
+        final Station station7090 = loader.getStation("7090");
+        Vector3D refStation7090 = new Vector3D(-1.2030, 2.5130, -1.5440);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1982-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1984-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1985-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1986-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1987-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        refStation7090 = new Vector3D(-1.1990, 2.5070, -1.5400);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1988-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1990-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1991-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1992-01-01T12:00:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        refStation7090 = new Vector3D(-1.2060, 2.5010, -1.5530);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1992-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1995-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("1998-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        refStation7090 = new Vector3D(-1.2048, 2.5019, -1.5516);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2002-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        refStation7090 = new Vector3D(-1.2058, 2.5026, -1.5522);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2005-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        refStation7090 = new Vector3D(-1.2069, 2.5034, -1.5505);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2008-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        refStation7090 = new Vector3D(-1.2043, 2.5040, -1.5509);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2012-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        refStation7090 = new Vector3D(-1.2073, 2.5034, -1.5509);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2015-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2021-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2999-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, station7090.getValidFrom().durationFrom(new AbsoluteDate("1979-07-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
+        Assert.assertTrue(station7090.getValidUntil() == AbsoluteDate.FUTURE_INFINITY);
+
+        // Verify station 7092
+        final Station station7092 = loader.getStation("7092");
+        Vector3D refStation7092 = new Vector3D(-3.0380, 0.6290, 0.4980);
+        Assert.assertEquals(0.0, refStation7092.distance(station7092.getEccentricities(new AbsoluteDate("1980-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        Assert.assertEquals(0.0, station7092.getValidFrom().durationFrom(new AbsoluteDate("1979-08-15T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
+        Assert.assertEquals(0.0, station7092.getValidUntil().durationFrom(new AbsoluteDate("1980-10-31T23:59:59.000", TimeScalesFactory.getUTC())), 1.0e-15);
+
+    }
+
+    @Test
+    public void testNoEccentricityEntryForEpoch() {
+
+        // Load file (it corresponds to a small version of the real entier file)
+        SinexLoader loader = new SinexLoader("ecc_xyz-small-multiple-ecc.snx");
+
+        // Station 7236
+        final Station station7236 = loader.getStation("7236");
+
+        // Epoch of exception
+        final AbsoluteDate exceptionEpoch = new AbsoluteDate("1987-01-11T00:00:00.000", TimeScalesFactory.getUTC());
+
+        // Test the exception
+        try {
+            station7236.getEccentricities(exceptionEpoch);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_STATION_ECCENTRICITY_FOR_EPOCH, oe.getSpecifier());
+        }
 
     }
 

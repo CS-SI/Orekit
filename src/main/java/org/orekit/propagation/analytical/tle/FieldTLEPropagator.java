@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,24 +19,22 @@ package org.orekit.propagation.analytical.tle;
 
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -55,7 +53,7 @@ import org.orekit.utils.ParameterDriver;
  * <p>
  * Deep- or near- space propagator is selected internally according to NORAD recommendations
  * so that the user has not to worry about the used computation methods. One instance is created
- * for each TLE (this instance can only be get using {@link #selectExtrapolator(FieldTLE, RealFieldElement[])} method,
+ * for each TLE (this instance can only be get using {@link #selectExtrapolator(FieldTLE, CalculusFieldElement[])} method,
  * and can compute {@link PVCoordinates position and velocity coordinates} at any
  * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided
  * TLE epoch (of course this accuracy is not really measurable nor predictable: according to
@@ -72,7 +70,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 11.0
  * @see FieldTLE
  */
-public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
+public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
@@ -187,7 +185,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param parameters SGP4 and SDP4 model parameters
-     * @see #FieldTLEPropagator(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
+     * @see #FieldTLEPropagator(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
     protected FieldTLEPropagator(final FieldTLE<T> initialTLE,
@@ -220,7 +218,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         initializeCommons(parameters);
         sxpInitialize(parameters);
         // set the initial state
-        final FieldKeplerianOrbit<T> orbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(propagateOrbit(initialTLE.getDate(), parameters));
+        final FieldOrbit<T> orbit = propagateOrbit(initialTLE.getDate(), parameters);
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude, mass));
     }
@@ -233,10 +231,10 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
-     * @see #selectExtrapolator(FieldTLE, Frames, RealFieldElement[])
+     * @see #selectExtrapolator(FieldTLE, Frames, CalculusFieldElement[])
      */
     @DefaultDataContext
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {
         return selectExtrapolator(tle, DataContext.getDefault().getFrames(), parameters);
     }
 
@@ -250,10 +248,10 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @return the correct propagator.
      * @param <T> elements type
      */
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames, final T[] parameters) {
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames, final T[] parameters) {
         return selectExtrapolator(
                 tle,
-                Propagator.getDefaultLaw(frames),
+                InertialProvider.of(frames.getTEME()),
                 tle.getE().getField().getZero().add(DEFAULT_MASS),
                 frames.getTEME(),
                 parameters);
@@ -269,10 +267,10 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
-     * @see #selectExtrapolator(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
+     * @see #selectExtrapolator(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
                                                    final AttitudeProvider attitudeProvider,
                                                    final T mass,
                                                    final T[] parameters) {
@@ -290,7 +288,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @return the correct propagator.
      * @param <T> elements type
      */
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
                                                    final AttitudeProvider attitudeProvider,
                                                    final T mass,
                                                    final Frame teme,
@@ -454,7 +452,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         final T xlt   = xl.add(xll);
         final T ayn   = e.multiply(FastMath.sin(omega)).add(aynl);
         final T elsq  = axn.multiply(axn).add(ayn.multiply(ayn));
-        final T capu  = MathUtils.normalizeAngle(xlt.subtract(xnode), zero.add(FastMath.PI));
+        final T capu  = MathUtils.normalizeAngle(xlt.subtract(xnode), zero.getPi());
         T epw    = capu;
         T ecosE  = zero;
         T esinE  = zero;
@@ -577,12 +575,18 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      */
     protected abstract void sxpPropagate(T t, T[] parameters);
 
-    /** {@inheritDoc} */
-    @DefaultDataContext
+    /** {@inheritDoc}
+     * <p>
+     * For TLE propagator, calling this method is only recommended
+     * for covariance propagation when the new <code>state</code>
+     * differs from the previous one by only adding the additional
+     * state containing the derivatives.
+     * </p>
+     */
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
-        final FieldTLE<T> newTLE = FieldTLE.stateToTLE(state, tle);
+        final FieldTLE<T> newTLE = FieldTLE.stateToTLE(state, tle, utc, teme);
         this.tle = newTLE;
         initializeCommons(tle.getParameters(state.getDate().getField()));
         sxpInitialize(tle.getParameters(state.getDate().getField()));
@@ -600,7 +604,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
     /** {@inheritDoc} */
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
-        return OrbitType.KEPLERIAN.convertType(new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().add(TLEConstants.MU)));
+        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().add(TLEConstants.MU));
     }
 
     /** Get the underlying TLE.

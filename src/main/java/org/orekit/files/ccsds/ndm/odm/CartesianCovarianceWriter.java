@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,28 +53,28 @@ public class CartesianCovarianceWriter extends AbstractWriter {
         // covariance block
         generator.writeComments(covariance.getComments());
         // note that there are no epochs in the OPM/OMM covariance matrices (but there are epochs in OEM covariance matrices)
-        generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(), covariance.getReferenceFrame().getName(), false);
-        generator.writeEntry(CartesianCovarianceKey.CX_X.name(),          matrix.getEntry(0, 0), Units.KM2,         true);
-        generator.writeEntry(CartesianCovarianceKey.CY_X.name(),          matrix.getEntry(1, 0), Units.KM2,         true);
-        generator.writeEntry(CartesianCovarianceKey.CY_Y.name(),          matrix.getEntry(1, 1), Units.KM2,         true);
-        generator.writeEntry(CartesianCovarianceKey.CZ_X.name(),          matrix.getEntry(2, 0), Units.KM2,         true);
-        generator.writeEntry(CartesianCovarianceKey.CZ_Y.name(),          matrix.getEntry(2, 1), Units.KM2,         true);
-        generator.writeEntry(CartesianCovarianceKey.CZ_Z.name(),          matrix.getEntry(2, 2), Units.KM2,         true);
-        generator.writeEntry(CartesianCovarianceKey.CX_DOT_X.name(),      matrix.getEntry(3, 0), Units.KM2_PER_S,   true);
-        generator.writeEntry(CartesianCovarianceKey.CX_DOT_Y.name(),      matrix.getEntry(3, 1), Units.KM2_PER_S,   true);
-        generator.writeEntry(CartesianCovarianceKey.CX_DOT_Z.name(),      matrix.getEntry(3, 2), Units.KM2_PER_S,   true);
-        generator.writeEntry(CartesianCovarianceKey.CX_DOT_X_DOT.name(),  matrix.getEntry(3, 3), Units.KM2_PER_S2,  true);
-        generator.writeEntry(CartesianCovarianceKey.CY_DOT_X.name(),      matrix.getEntry(4, 0), Units.KM2_PER_S,   true);
-        generator.writeEntry(CartesianCovarianceKey.CY_DOT_Y.name(),      matrix.getEntry(4, 1), Units.KM2_PER_S,   true);
-        generator.writeEntry(CartesianCovarianceKey.CY_DOT_Z.name(),      matrix.getEntry(4, 2), Units.KM2_PER_S,   true);
-        generator.writeEntry(CartesianCovarianceKey.CY_DOT_X_DOT.name(),  matrix.getEntry(4, 3), Units.KM2_PER_S2,  true);
-        generator.writeEntry(CartesianCovarianceKey.CY_DOT_Y_DOT.name(),  matrix.getEntry(4, 4), Units.KM2_PER_S2,  true);
-        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_X.name(),      matrix.getEntry(5, 0), Units.KM2_PER_S,   true);
-        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Y.name(),      matrix.getEntry(5, 1), Units.KM2_PER_S,   true);
-        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Z.name(),      matrix.getEntry(5, 2), Units.KM2_PER_S,   true);
-        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_X_DOT.name(),  matrix.getEntry(5, 3), Units.KM2_PER_S2,  true);
-        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Y_DOT.name(),  matrix.getEntry(5, 4), Units.KM2_PER_S2,  true);
-        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Z_DOT.name(),  matrix.getEntry(5, 5), Units.KM2_PER_S2,  true);
+        generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(), covariance.getReferenceFrame().getName(), null,             false);
+        generator.writeEntry(CartesianCovarianceKey.CX_X.name(),          matrix.getEntry(0, 0),                    Units.KM2,        true);
+        generator.writeEntry(CartesianCovarianceKey.CY_X.name(),          matrix.getEntry(1, 0),                    Units.KM2,        true);
+        generator.writeEntry(CartesianCovarianceKey.CY_Y.name(),          matrix.getEntry(1, 1),                    Units.KM2,        true);
+        generator.writeEntry(CartesianCovarianceKey.CZ_X.name(),          matrix.getEntry(2, 0),                    Units.KM2,        true);
+        generator.writeEntry(CartesianCovarianceKey.CZ_Y.name(),          matrix.getEntry(2, 1),                    Units.KM2,        true);
+        generator.writeEntry(CartesianCovarianceKey.CZ_Z.name(),          matrix.getEntry(2, 2),                    Units.KM2,        true);
+        generator.writeEntry(CartesianCovarianceKey.CX_DOT_X.name(),      matrix.getEntry(3, 0),                    Units.KM2_PER_S,  true);
+        generator.writeEntry(CartesianCovarianceKey.CX_DOT_Y.name(),      matrix.getEntry(3, 1),                    Units.KM2_PER_S,  true);
+        generator.writeEntry(CartesianCovarianceKey.CX_DOT_Z.name(),      matrix.getEntry(3, 2),                    Units.KM2_PER_S,  true);
+        generator.writeEntry(CartesianCovarianceKey.CX_DOT_X_DOT.name(),  matrix.getEntry(3, 3),                    Units.KM2_PER_S2, true);
+        generator.writeEntry(CartesianCovarianceKey.CY_DOT_X.name(),      matrix.getEntry(4, 0),                    Units.KM2_PER_S,  true);
+        generator.writeEntry(CartesianCovarianceKey.CY_DOT_Y.name(),      matrix.getEntry(4, 1),                    Units.KM2_PER_S,  true);
+        generator.writeEntry(CartesianCovarianceKey.CY_DOT_Z.name(),      matrix.getEntry(4, 2),                    Units.KM2_PER_S,  true);
+        generator.writeEntry(CartesianCovarianceKey.CY_DOT_X_DOT.name(),  matrix.getEntry(4, 3),                    Units.KM2_PER_S2, true);
+        generator.writeEntry(CartesianCovarianceKey.CY_DOT_Y_DOT.name(),  matrix.getEntry(4, 4),                    Units.KM2_PER_S2, true);
+        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_X.name(),      matrix.getEntry(5, 0),                    Units.KM2_PER_S,  true);
+        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Y.name(),      matrix.getEntry(5, 1),                    Units.KM2_PER_S,  true);
+        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Z.name(),      matrix.getEntry(5, 2),                    Units.KM2_PER_S,  true);
+        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_X_DOT.name(),  matrix.getEntry(5, 3),                    Units.KM2_PER_S2, true);
+        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Y_DOT.name(),  matrix.getEntry(5, 4),                    Units.KM2_PER_S2, true);
+        generator.writeEntry(CartesianCovarianceKey.CZ_DOT_Z_DOT.name(),  matrix.getEntry(5, 5),                    Units.KM2_PER_S2, true);
 
     }
 

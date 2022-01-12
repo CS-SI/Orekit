@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.orekit.orbits.LibrationOrbitFamily;
 import org.orekit.orbits.LibrationOrbitType;
 import org.orekit.orbits.RichardsonExpansion;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
 import org.orekit.propagation.numerical.cr3bp.CR3BPMultipleShooter;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
@@ -73,7 +73,7 @@ public class CR3BPMultipleShooterTest {
                                                        vecAbsoluteTolerances,
                                                        vecRelativeTolerances);
         final int narcs = 1;
-        final List<AdditionalEquations> cr3bpAdditionalEquations = new ArrayList<AdditionalEquations>(narcs) ;
+        final List<AdditionalDerivativesProvider> cr3bpAdditionalEquations = new ArrayList<>(narcs) ;
         cr3bpAdditionalEquations.add(new STMEquations(syst));
 
         // Propagator definition for CR3BP
@@ -84,7 +84,7 @@ public class CR3BPMultipleShooterTest {
         propagator.addForceModel(new CR3BPForceModel(syst));
 
         // Add new set of additional equations to the propagator
-        propagator.addAdditionalEquations(cr3bpAdditionalEquations.get(0));
+        propagator.addAdditionalDerivativesProvider(cr3bpAdditionalEquations.get(0));
 
         propagatorList.add(propagator);
 
@@ -104,7 +104,7 @@ public class CR3BPMultipleShooterTest {
                                                                          firstGuess2)));
 
         // Multiple Shooting definition
-        final CR3BPMultipleShooter multipleShooting = new CR3BPMultipleShooter(firstGuessList, propagatorList, cr3bpAdditionalEquations, arcDuration, 1E-8);
+        final CR3BPMultipleShooter multipleShooting = new CR3BPMultipleShooter(firstGuessList, propagatorList, arcDuration, cr3bpAdditionalEquations, 1E-8);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
         multipleShooting.setPatchPointComponentFreedom(1, 3, false);

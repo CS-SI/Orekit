@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,16 +18,15 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.List;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
 import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
@@ -45,6 +44,9 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class TLEBatchLSModel extends AbstractBatchLSModel {
 
+    /** Name of the State Transition Matrix state. */
+    private static final String STM_NAME = TLEBatchLSModel.class.getName() + "-derivatives";
+
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
@@ -56,18 +58,16 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
                            final ParameterDriversList estimatedMeasurementsParameters,
                            final ModelObserver observer) {
         // call super constructor
-        super(propagatorBuilders, measurements, estimatedMeasurementsParameters,
-              new TLEJacobiansMapper[propagatorBuilders.length], observer);
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     /** {@inheritDoc} */
     @Override
-    @DefaultDataContext
+    @Deprecated
     protected TLEJacobiansMapper configureDerivatives(final Propagator propagator) {
 
-        final String equationName = TLEBatchLSModel.class.getName() + "-derivatives";
-
-        final TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations(equationName, (TLEPropagator) propagator);
+        final TLEPartialDerivativesEquations partials =
+                        new TLEPartialDerivativesEquations(STM_NAME, (TLEPropagator) propagator);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
@@ -80,8 +80,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected Orbit configureOrbits(final AbstractJacobiansMapper mapper,
-                                    final Propagator propagator) {
+    protected Orbit configureOrbits(final MatricesHarvester harvester, final Propagator propagator) {
         // Directly return the propagator's initial state
         return propagator.getInitialState().getOrbit();
     }

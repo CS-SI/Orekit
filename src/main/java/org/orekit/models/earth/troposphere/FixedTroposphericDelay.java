@@ -19,7 +19,7 @@ package org.orekit.models.earth.troposphere;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
 import org.hipparchus.util.FastMath;
@@ -142,15 +142,16 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         final T zero = date.getField().getZero();
+        final T pi   = zero.getPi();
         // limit the height to 5000 m
         final T h = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.add(5000));
         // limit the elevation to 0 - π
-        final T ele = FastMath.min(zero.add(FastMath.PI), FastMath.max(zero, elevation));
+        final T ele = FastMath.min(pi, FastMath.max(zero, elevation));
         // mirror elevation at the right angle of π/2
-        final T e = ele.getReal() > 0.5 * FastMath.PI ? ele.negate().add(FastMath.PI) : ele;
+        final T e = ele.getReal() > pi.multiply(0.5).getReal() ? ele.negate().add(pi) : ele;
 
         return delayFunction.value(h, e);
     }

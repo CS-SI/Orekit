@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.forces.maneuvers;
 
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -30,6 +28,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 
 /** Impulse maneuver model.
@@ -45,12 +44,19 @@ import org.orekit.utils.PVCoordinates;
  * can also be a more elaborate {@link
  * org.orekit.propagation.events.ApsideDetector apside event} for apogee
  * maneuvers for example.</p>
- * <p>The maneuver is defined by a single velocity increment in satellite
- * frame. The current attitude of the spacecraft, defined by the current
- * spacecraft state, will be used to compute the velocity direction in
- * inertial frame. A typical case for tangential maneuvers is to use a
- * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude provider for state propagation and a
- * velocity increment along the +X satellite axis.</p>
+ * <p>The maneuver is defined by a single velocity increment.
+ * If no AttitudeProvider is given, the current attitude of the spacecraft,
+ * defined by the current spacecraft state, will be used as the
+ * {@link AttitudeProvider} so the velocity increment should be given in
+ * the same pseudoinertial frame as the {@link SpacecraftState} used to
+ * construct the propagator that will handle the maneuver.
+ * If an AttitudeProvider is given, the velocity increment given should be
+ * defined appropriately in consideration of that provider. So, a typical
+ * case for tangential maneuvers is to provide a {@link org.orekit.attitudes.LofOffset LOF aligned}
+ * attitude provider along with a velocity increment defined in accordance with
+ * that LOF aligned attitude provider; e.g. if the LOF aligned attitude provider
+ * was constructed using LOFType.VNC the velocity increment should be
+ * provided in VNC coordinates.</p>
  * <p>Beware that the triggering event detector must behave properly both
  * before and after maneuver. If for example a node detector is used to trigger
  * an inclination maneuver and the maneuver change the orbit to an equatorial one,
@@ -230,8 +236,11 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
             // pack everything in a new state
             SpacecraftState newState = new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
                                                            attitude, newMass);
-            for (final Map.Entry<String, double[]> entry : oldState.getAdditionalStates().entrySet()) {
+            for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesValues().getData()) {
                 newState = newState.addAdditionalState(entry.getKey(), entry.getValue());
+            }
+            for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesDerivatives().getData()) {
+                newState = newState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
             }
             return newState;
 

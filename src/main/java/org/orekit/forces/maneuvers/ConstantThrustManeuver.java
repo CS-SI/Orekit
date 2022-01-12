@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.maneuvers.propulsion.AbstractConstantThrustPropulsionModel;
@@ -39,18 +39,6 @@ import org.orekit.time.AbsoluteDate;
  * @author Maxime Journot
  */
 public class ConstantThrustManeuver extends Maneuver {
-
-    /** Parameter name for thrust.
-     * @deprecated as of 10.2,
-     *             replace by {@link BasicConstantThrustPropulsionModel#THRUST}*/
-    @Deprecated
-    public static final String THRUST = "thrust";
-
-    /** Parameter name for flow rate.
-     * @deprecated as of 10.2,
-     *             replace by {@link BasicConstantThrustPropulsionModel#FLOW_RATE}*/
-    @Deprecated
-    public static final String FLOW_RATE = "flow rate";
 
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
@@ -175,7 +163,9 @@ public class ConstantThrustManeuver extends Maneuver {
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final AttitudeProvider attitudeOverride,
                                   final AbstractConstantThrustPropulsionModel constantThrustPropulsionModel) {
-        this(attitudeOverride, new DateBasedManeuverTriggers(date, duration), constantThrustPropulsionModel);
+        this(attitudeOverride,
+             new DateBasedManeuverTriggers(constantThrustPropulsionModel.getName(), date, duration),
+             constantThrustPropulsionModel);
     }
 
     /** Simple constructor for a constant direction and constant thrust.
@@ -276,7 +266,7 @@ public class ConstantThrustManeuver extends Maneuver {
      * @return true if maneuver is on at this state
      * @since 10.1
      */
-    public <T extends RealFieldElement<T>> boolean isFiring(final FieldSpacecraftState<T> s) {
+    public <T extends CalculusFieldElement<T>> boolean isFiring(final FieldSpacecraftState<T> s) {
         return isFiring(s.getDate().toAbsoluteDate());
     }
 

@@ -118,7 +118,7 @@ public class CssiSpaceWeatherLoaderTest {
             cswl.getAp(date);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -135,7 +135,7 @@ public class CssiSpaceWeatherLoaderTest {
             cswl.getAp(date);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -152,7 +152,7 @@ public class CssiSpaceWeatherLoaderTest {
             cswl.getAp(date);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -190,7 +190,7 @@ public class CssiSpaceWeatherLoaderTest {
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
         final double dailyFlux = cswl.getDailyFlux(date);
         // The daily flux is supposed to be the one from 1999-12-31
-        assertThat(dailyFlux, closeTo(125.8, 1e-10));
+        assertThat(dailyFlux, closeTo(130.1, 1e-10));
     }
 
     @Test
@@ -198,7 +198,23 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2034, 6, 17, 0, 0, 0.0, utc);
         final double dailyFlux = cswl.getDailyFlux(date);
-        assertThat(dailyFlux, closeTo((136.4 + 141.9) / 2, 1e-3));
+        assertThat(dailyFlux, closeTo((132.7 + 137.3) / 2, 1e-3));
+    }
+
+    @Test
+    public void testMeanFlux() {
+        CssiSpaceWeatherData cswl = loadCswl();
+        AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
+        final double meanFlux = cswl.getMeanFlux(date);
+        assertThat(meanFlux, closeTo(165.6, 1e-10));
+    }
+
+    @Test
+    public void testMeanFluxMonthlyPredicted() {
+        CssiSpaceWeatherData cswl = loadCswl();
+        AbsoluteDate date = new AbsoluteDate(2034, 6, 16, 0, 0, 0.0, utc);
+        final double meanFlux = cswl.getMeanFlux(date);
+        assertThat(meanFlux, closeTo((132.1 + 134.9) / 2, 1e-3));
     }
 
     @Test
@@ -206,7 +222,7 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
         final double averageFlux = cswl.getAverageFlux(date);
-        assertThat(averageFlux, closeTo(158.6, 1e-10));
+        assertThat(averageFlux, closeTo(165.6, 1e-10));
     }
 
     @Test
@@ -214,7 +230,7 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2034, 6, 16, 0, 0, 0.0, utc);
         final double averageFlux = cswl.getAverageFlux(date);
-        assertThat(averageFlux, closeTo((134.8 + 138.8) / 2, 1e-3));
+        assertThat(averageFlux, closeTo((132.1 + 134.9) / 2, 1e-3));
     }
 
     @Test
@@ -222,7 +238,7 @@ public class CssiSpaceWeatherLoaderTest {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, utc);
         final double instantFlux = cswl.getInstantFlux(date);
-        assertThat(instantFlux, closeTo((125.6 + 128.5) / 2, 1e-10));
+        assertThat(instantFlux, closeTo((129.9 + 132.9) / 2, 1e-10));
     }
 
     /**
@@ -271,7 +287,7 @@ public class CssiSpaceWeatherLoaderTest {
         final AbsoluteDate resetDate = date.shiftedBy(0.8 * Constants.JULIAN_DAY + 0.1);
 
         final SpacecraftState[] lastState = new SpacecraftState[1];
-        final OrekitStepHandler stepSaver = (interpolator, isLast) -> {
+        final OrekitStepHandler stepSaver = interpolator -> {
             final AbsoluteDate start = interpolator.getPreviousState().getDate();
             if (start.compareTo(resetDate) < 0) {
                 lastState[0] = interpolator.getPreviousState();
@@ -280,32 +296,32 @@ public class CssiSpaceWeatherLoaderTest {
 
         // propagate with state rest to take slightly different path
         NumericalPropagator propagator = getNumericalPropagatorWithDTM(sun, earth, ic);
-        propagator.setMasterMode(stepSaver);
+        propagator.setStepHandler(stepSaver);
         propagator.propagate(resetDate);
         propagator.resetInitialState(lastState[0]);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
         SpacecraftState actual = propagator.propagate(end);
 
         // propagate straight through
         propagator = getNumericalPropagatorWithDTM(sun, earth, ic);
         propagator.resetInitialState(ic);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
         SpacecraftState expected = propagator.propagate(end);
 
         assertThat(actual.getPVCoordinates(), pvCloseTo(expected.getPVCoordinates(), 1.0));
 
         // propagate with state rest to take slightly different path
         propagator = getNumericalPropagatorWithMSIS(sun, earth, ic);
-        propagator.setMasterMode(stepSaver);
+        propagator.setStepHandler(stepSaver);
         propagator.propagate(resetDate);
         propagator.resetInitialState(lastState[0]);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
         actual = propagator.propagate(end);
 
         // propagate straight through
         propagator = getNumericalPropagatorWithMSIS(sun, earth, ic);
         propagator.resetInitialState(ic);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
         expected = propagator.propagate(end);
 
         assertThat(actual.getPVCoordinates(), pvCloseTo(expected.getPVCoordinates(), 1.0));

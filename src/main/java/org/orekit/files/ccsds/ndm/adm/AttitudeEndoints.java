@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.files.ccsds.ndm.adm;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -48,7 +48,6 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  *   <li>{@link Attitude Orekit attitude} view: attitude is always from external to
  *   spacecraft body</li>
  * </ul>
- * </p>
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -108,11 +107,11 @@ public class AttitudeEndoints implements AttitudeBuilder {
 
         if (frameA == null) {
             if (frameB == null || frameB.asSpacecraftBodyFrame() == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, aKey);
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, aKey.name());
             }
         } else if (frameA.asSpacecraftBodyFrame() == null) {
             if (frameB == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, bKey);
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, bKey.name());
             } else if (frameB.asSpacecraftBodyFrame() == null) {
                 // at least one of the frame must be a spacecraft body frame
                 throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, frameB.getName());
@@ -182,9 +181,10 @@ public class AttitudeEndoints implements AttitudeBuilder {
 
     /** Check if attitude is from external frame to spacecraft body frame.
      * <p>
-     * {@link #checkMandatoryEntries() Mandatory entries} must have been
-     * initialized properly to non-null values before this method is called,
-     * otherwise {@code NullPointerException} will be thrown.
+     * {@link #checkMandatoryEntriesExceptExternalFrame(Enum, Enum, Enum)
+     * Mandatory entries} must have been initialized properly to non-null
+     * values before this method is called, otherwise {@code NullPointerException}
+     * will be thrown.
      * </p>
      * @return true if attitude is from external frame to spacecraft body frame
      */
@@ -247,7 +247,7 @@ public class AttitudeEndoints implements AttitudeBuilder {
 
     /**  {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>>
+    public <T extends CalculusFieldElement<T>>
         FieldAttitude<T> build(final Frame frame, final FieldPVCoordinatesProvider<T> pvProv,
                                final TimeStampedFieldAngularCoordinates<T> rawAttitude) {
 

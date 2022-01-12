@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,13 +23,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -77,6 +78,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
@@ -89,7 +91,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -112,12 +114,38 @@ public class NumericalPropagatorTest {
     private NumericalPropagator  propagator;
 
     @Test
+    public void testEventsWithTimeRangePropagation() {
+        final AtomicInteger counter = new AtomicInteger(0);
+        final double dt = 60.0;
+        final EventDetector singleDetector = new DateDetector(initDate.shiftedBy(dt / 2)).
+                                             withHandler((state, detector, increasing) -> {
+                                                 counter.incrementAndGet();
+                                                 return Action.CONTINUE;
+                                             });
+        ForceModel force = new ForceModelAdapter() {
+            @Override
+            public Stream<EventDetector> getEventsDetectors() {
+                return Stream.of(singleDetector);
+            }
+        };
+
+        // action
+        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.addForceModel(force);
+        AbsoluteDate target = initDate.shiftedBy(dt);
+        propagator.propagate(initDate.shiftedBy(1.0), target);
+
+        Assert.assertEquals(1, counter.intValue());
+
+    }
+
+    @Test
     public void testForceModelInitialized() {
         // setup
         // mutable holders
         SpacecraftState[] actualState = new SpacecraftState[1];
         AbsoluteDate[] actualDate = new AbsoluteDate[1];
-        ForceModel force = new ForceModelAdapter(){
+        ForceModel force = new ForceModelAdapter() {
             @Override
             public void init(SpacecraftState initialState, AbsoluteDate target) {
                 actualState[0] = initialState;
@@ -146,10 +174,10 @@ public class NumericalPropagatorTest {
 
         // action
         final List<SpacecraftState> states = new ArrayList<>();
-        propagator.setEphemerisMode(
-                (interpolator, isLast) -> states.add(interpolator.getCurrentState()));
+        EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        propagator.setStepHandler(interpolator -> states.add(interpolator.getCurrentState()));
         propagator.propagate(end);
-        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         Assert.assertTrue(states.size() > 10); // got some data
@@ -167,9 +195,9 @@ public class NumericalPropagatorTest {
         // choose duration that will round up when expressed as a double
         AbsoluteDate end = initDate.shiftedBy(100)
                 .shiftedBy(3 * FastMath.ulp(100.0) / 4);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
-        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         CountingHandler handler = new CountingHandler();
         DateDetector detector = new DateDetector(10, 1e-9, end)
                 .withHandler(handler);
@@ -192,9 +220,9 @@ public class NumericalPropagatorTest {
         // choose duration that will round up when expressed as a double
         AbsoluteDate end = initDate.shiftedBy(100)
                 .shiftedBy(3 * FastMath.ulp(100.0) / 4);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
-        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         CountingHandler handler = new CountingHandler();
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
@@ -278,9 +306,9 @@ public class NumericalPropagatorTest {
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
-        prop.setEphemerisMode();
+        final EphemerisGenerator generator = prop.getEphemerisGenerator();
         prop.propagate(startDate, endDate);
-        BoundedPropagator ephemeris = prop.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         TimeStampedPVCoordinates actualPV = ephemeris.getPVCoordinates(startDate, eci);
@@ -318,9 +346,9 @@ public class NumericalPropagatorTest {
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
-        prop.setEphemerisMode();
+        final EphemerisGenerator generator = prop.getEphemerisGenerator();
         prop.propagate(endDate, startDate);
-        BoundedPropagator ephemeris = prop.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         TimeStampedPVCoordinates actualPV = ephemeris.getPVCoordinates(startDate, eci);
@@ -414,12 +442,6 @@ public class NumericalPropagatorTest {
         Assert.assertEquals(0, pRef.subtract(pFin).getNorm(), 2e-4);
         Assert.assertEquals(0, vRef.subtract(vFin).getNorm(), 7e-8);
 
-        try {
-            propagator.getGeneratedEphemeris();
-            Assert.fail("an exception should have been thrown");
-        } catch (IllegalStateException ise) {
-            // expected
-        }
     }
 
     @Test
@@ -564,13 +586,12 @@ public class NumericalPropagatorTest {
 
     @Test(expected=OrekitException.class)
     public void testException() {
-        propagator.setMasterMode(new OrekitStepHandler() {
+        propagator.setStepHandler(new OrekitStepHandler() {
             private int countDown = 3;
             private AbsoluteDate previousCall = null;
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
-            public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) {
+            public void handleStep(OrekitStepInterpolator interpolator) {
                 if (previousCall != null) {
                     Assert.assertTrue(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
                 }
@@ -658,42 +679,54 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testAdditionalStateEvent() {
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
             public String getName() {
                 return "linear";
             }
 
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = 1.0;
-                return new double[7];
+            public int getDimension() {
+                return 1;
             }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
         });
         try {
-            propagator.addAdditionalEquations(new AdditionalEquations() {
+            propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
                 public String getName() {
                     return "linear";
                 }
 
-                public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                    pDot[0] = 1.0;
-                    return new double[7];
+                public int getDimension() {
+                    return 1;
                 }
+
+                public double[] derivatives(SpacecraftState s) {
+                    return new double[] { 1.0 };
+                }
+
             });
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         try {
-            propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
                public String getName() {
                     return "linear";
                 }
 
-                public double[] getAdditionalState(SpacecraftState state) {
+               public int getDimension() {
+                   return 1;
+               }
+
+               public double[] derivatives(SpacecraftState state) {
                     return null;
-                }
+               }
             });
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -753,15 +786,18 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testResetAdditionalStateEvent() {
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
             public String getName() {
                 return "linear";
             }
 
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = 1.0;
-                return null;
+            public int getDimension() {
+                return 1;
+            }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
@@ -836,7 +872,7 @@ public class NumericalPropagatorTest {
         propagator.addEventDetector(event1);
 
         // Set the propagation mode
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Propagate
         SpacecraftState finalState = propagator.propagate(endDate);
@@ -853,9 +889,9 @@ public class NumericalPropagatorTest {
         propagator.getInitialState();
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
-        final BoundedPropagator ephemeris1 = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris1 = generator.getGeneratedEphemeris();
         Assert.assertEquals(initDate, ephemeris1.getMinDate());
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
@@ -866,7 +902,7 @@ public class NumericalPropagatorTest {
         Assert.assertEquals(initDate, ephemeris1.getMinDate());
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
-        final BoundedPropagator ephemeris2 = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris2 = generator.getGeneratedEphemeris();
         Assert.assertEquals(initDate.shiftedBy(-2 * dt), ephemeris2.getMinDate());
         Assert.assertEquals(initDate.shiftedBy( 2 * dt), ephemeris2.getMaxDate());
 
@@ -891,39 +927,41 @@ public class NumericalPropagatorTest {
                 return new double[] { state.getA() * state.getA() };
             }
         });
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() {
                 return "extra";
             }
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = rate;
-                return null;
+            public int getDimension() {
+                return 1;
+            }
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { rate };
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", 1.5));
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
-        final BoundedPropagator ephemeris1 = propagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris1 = generator.getGeneratedEphemeris();
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMinDate());
         Assert.assertEquals(initDate, ephemeris1.getMaxDate());
         try {
             ephemeris1.propagate(ephemeris1.getMinDate().shiftedBy(-10.0));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException pe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, pe.getSpecifier());
         }
         try {
             ephemeris1.propagate(ephemeris1.getMaxDate().shiftedBy(+10.0));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException pe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, pe.getSpecifier());
         }
 
         double shift = -60;
         SpacecraftState s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assert.assertEquals(2, s.getAdditionalStates().size());
+        Assert.assertEquals(2, s.getAdditionalStatesValues().size());
         Assert.assertTrue(s.hasAdditionalState("squaredA"));
         Assert.assertTrue(s.hasAdditionalState("extra"));
         Assert.assertEquals(s.getA() * s.getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);
@@ -1029,7 +1067,7 @@ public class NumericalPropagatorTest {
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
         final NumericalPropagator propagator = createPropagator(initialState, OrbitType.CARTESIAN, PositionAngle.TRUE);
         final double samplingStep = 10000.0;
-        propagator.setMasterMode(samplingStep, (state, isLast) -> states.add(state));
+        propagator.setStepHandler(samplingStep, state -> states.add(state));
         propagator.propagate(initialDate.shiftedBy(5 * samplingStep));
 
         // compute reference errors, using serial computation in a for loop
@@ -1404,7 +1442,7 @@ public class NumericalPropagatorTest {
         final AbsoluteDate finalDate = initDate.shiftedBy(40.);
         
         final DateRecorderHandler dateRecorderHandler = new DateRecorderHandler(startDate, finalDate);
-        propagator.setMasterMode(1.0, dateRecorderHandler);
+        propagator.setStepHandler(1.0, dateRecorderHandler);
 
         // Action
         propagator.propagate(startDate, finalDate);
@@ -1438,7 +1476,7 @@ public class NumericalPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isBefore(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
@@ -1472,7 +1510,7 @@ public class NumericalPropagatorTest {
                                                           350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
-        propagator.setMasterMode(60.0, (state, isLast) -> {
+        propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isAfter(maneuverDate)) {
                 Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
@@ -1506,7 +1544,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public void handleStep(SpacecraftState currentState, boolean isLast)
+        public void handleStep(SpacecraftState currentState)
                 {
           final AbsoluteDate date = currentState.getDate();
           if (date.compareTo(startDate) < 0 || date.compareTo(finalDate) > 0) {
@@ -1651,7 +1689,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> void
+        public <T extends CalculusFieldElement<T>> void
         addContribution(FieldSpacecraftState<T> s,
                         FieldTimeDerivativesEquations<T> adder) {
         }
@@ -1665,7 +1703,7 @@ public class NumericalPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
             return FieldVector3D.getZero(s.getDate().getField());
@@ -1677,7 +1715,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

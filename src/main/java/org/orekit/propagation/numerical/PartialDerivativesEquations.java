@@ -26,11 +26,12 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
+/** {@link AdditionalDerivativesProvider derivatives provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
  * <p>
  * This set of equations are automatically added to a {@link NumericalPropagator numerical propagator}
@@ -60,8 +61,14 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
+ * @deprecated as of 11.1, replaced by {@link
+ * org.orekit.propagation.Propagator#setupMatricesComputation(String,
+ * org.hipparchus.linear.RealMatrix, org.orekit.utils.DoubleArrayDictionary)}
  */
-public class PartialDerivativesEquations implements AdditionalEquations {
+@Deprecated
+public class PartialDerivativesEquations
+    implements AdditionalDerivativesProvider,
+               org.orekit.propagation.integration.AdditionalEquations {
 
     /** Propagator computing state evolution. */
     private final NumericalPropagator propagator;
@@ -82,7 +89,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
      * the propagator by calling its {@link
-     * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
+     * NumericalPropagator#addAdditionalDerivativesProvider(AdditionalDerivativesProvider)} method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
      * @param name name of the partial derivatives equations
@@ -94,12 +101,19 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
-        propagator.addAdditionalEquations(this);
+        propagator.addAdditionalDerivativesProvider(this);
     }
 
     /** {@inheritDoc} */
     public String getName() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        freezeParametersSelection();
+        return 6 * (6 + selected.getNbParams());
     }
 
     /** Freeze the selected parameters from the force models.
@@ -247,7 +261,20 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        AdditionalDerivativesProvider.super.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        System.arraycopy(derivatives(s), 0, pDot, 0, pDot.length);
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    public double[] derivatives(final SpacecraftState s) {
 
         // initialize acceleration Jacobians to zero
         final int paramDim = selected.getNbParams();
@@ -316,6 +343,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // copy C and E into Adot and Bdot
         final int stateDim = 6;
         final double[] p = s.getAdditionalState(getName());
+        final double[] pDot = new double[p.length];
         System.arraycopy(p, dim * stateDim, pDot, 0, dim * stateDim);
 
         // compute Cdot and Ddot
@@ -370,8 +398,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         }
 
-        // these equations have no effect on the main state itself
-        return null;
+        return pDot;
 
     }
 

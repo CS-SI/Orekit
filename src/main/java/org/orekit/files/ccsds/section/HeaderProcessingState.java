@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,13 @@
  */
 package org.orekit.files.ccsds.section;
 
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 
 /** {@link ProcessingState} for {@link Header NDM header}.
@@ -36,18 +35,16 @@ public class HeaderProcessingState implements ProcessingState {
     private final ContextBinding context;
 
     /** Parser for the complete message. */
-    private final AbstractMessageParser<?, ?> parser;
+    private final AbstractConstituentParser<?, ?> parser;
 
     /** Simple constructor.
-     * @param dataContext used to retrieve frames, time scales, etc.
      * @param parser parser for the complete message
      */
-    public HeaderProcessingState(final DataContext dataContext, final AbstractMessageParser<?, ?> parser) {
+    public HeaderProcessingState(final AbstractConstituentParser<?, ?> parser) {
         this.context = new ContextBinding(
-            () -> null, () -> true,
-            () -> dataContext, () -> null,
-            () -> TimeSystem.UTC,
-            () -> 0.0, () -> 1.0);
+            parser::getConventions, parser::isSimpleEOP,
+            parser::getDataContext, parser::getParsedUnitsBehavior, () -> null,
+            () -> TimeSystem.UTC, () -> 0.0, () -> 1.0);
         this.parser  = parser;
     }
 
@@ -60,7 +57,9 @@ public class HeaderProcessingState implements ProcessingState {
         if (Double.isNaN(parser.getHeader().getFormatVersion())) {
             // the first thing we expect is the format version
             // (however, in XML files it was already set before entering header)
-            if (parser.getFormatVersionKey().equals(token.getName()) && token.getType() == TokenType.ENTRY) {
+            if (parser.getFormatVersionKey() != null &&
+                parser.getFormatVersionKey().equals(token.getName()) &&
+                token.getType() == TokenType.ENTRY) {
                 parser.getHeader().setFormatVersion(token.getContentAsDouble());
                 return true;
             } else {

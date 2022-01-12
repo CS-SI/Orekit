@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,14 +25,16 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -456,7 +458,7 @@ public class TLE implements TimeStamped, Serializable {
      */
     private void buildLine1() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
 
         buffer.append('1');
 
@@ -498,7 +500,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(' ');
         buffer.append(ParseUtils.addPadding("elementNumber", elementNumber, ' ', 4, true, satelliteNumber));
 
-        buffer.append(Integer.toString(checksum(buffer)));
+        buffer.append(checksum(buffer));
 
         line1 = buffer.toString();
 
@@ -540,7 +542,7 @@ public class TLE implements TimeStamped, Serializable {
      */
     private void buildLine2() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         final DecimalFormat f34   = new DecimalFormat("##0.0000", SYMBOLS);
         final DecimalFormat f211  = new DecimalFormat("#0.00000000", SYMBOLS);
 
@@ -564,7 +566,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(ParseUtils.addPadding(MEAN_MOTION, f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true, satelliteNumber));
         buffer.append(ParseUtils.addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch, ' ', 5, true, satelliteNumber));
 
-        buffer.append(Integer.toString(checksum(buffer)));
+        buffer.append(checksum(buffer));
 
         line2 = buffer.toString();
 
@@ -703,11 +705,7 @@ public class TLE implements TimeStamped, Serializable {
      * @return string representation of this TLE set
      */
     public String toString() {
-        try {
-            return getLine1() + System.getProperty("line.separator") + getLine2();
-        } catch (OrekitException oe) {
-            throw new OrekitInternalError(oe);
-        }
+        return getLine1() + System.getProperty("line.separator") + getLine2();
     }
 
     /**
@@ -724,11 +722,39 @@ public class TLE implements TimeStamped, Serializable {
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
      * @return TLE matching with Spacecraft State and template identification
+     * @see #stateToTLE(SpacecraftState, TLE, TimeScale, Frame)
+     * @see #stateToTLE(SpacecraftState, TLE, TimeScale, Frame, double, int)
      * @since 11.0
      */
     @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
-        return stateToTLE(state, templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+        return stateToTLE(state, templateTLE,
+                          DataContext.getDefault().getTimeScales().getUTC(),
+                          DataContext.getDefault().getFrames().getTEME());
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * This converter uses Fixed Point method to reverse SGP4 and SDP4 propagation algorithm
+     * and generates a usable TLE version of a state.
+     * Equinocital orbital parameters are used in order to get a stiff method.
+     * New TLE epoch is state epoch.
+     *
+     * <p>
+     * This method uses {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT}
+     * for method convergence.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param utc the UTC time scale
+     * @param teme the TEME frame to use for propagation
+     * @return TLE matching with Spacecraft State and template identification
+     * @see #stateToTLE(SpacecraftState, TLE, TimeScale, Frame, double, int)
+     * @since 11.0
+     */
+    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
+                                 final TimeScale utc, final Frame teme) {
+        return stateToTLE(state, templateTLE, utc, teme, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
     }
 
     /**
@@ -737,22 +763,21 @@ public class TLE implements TimeStamped, Serializable {
      * and generates a usable TLE version of a state.
      * New TLE epoch is state epoch.
      *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param utc the UTC time scale
+     * @param teme the TEME frame to use for propagation
      * @param epsilon used to compute threshold for convergence check
      * @param maxIterations maximum number of iterations for convergence
      * @return TLE matching with Spacecraft State and template identification
      * @since 11.0
      */
-    @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
+                                 final TimeScale utc, final Frame teme,
                                  final double epsilon, final int maxIterations) {
 
-        // Gets equinoctial parameters from state
-        final Orbit orbit = state.getOrbit();
-        final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        // Gets equinoctial parameters in TEME frame from state
+        final EquinoctialOrbit equiOrbit = convert(state.getOrbit(), teme);
         double sma = equiOrbit.getA();
         double ex  = equiOrbit.getEquinoctialEx();
         double ey  = equiOrbit.getEquinoctialEy();
@@ -761,8 +786,8 @@ public class TLE implements TimeStamped, Serializable {
         double lv  = equiOrbit.getLv();
 
         // Rough initialization of the TLE
-        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
-        TLE current = newTLE(keplerianOrbit, templateTLE);
+        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(equiOrbit);
+        TLE current = newTLE(keplerianOrbit, templateTLE, utc);
 
         // threshold for each parameter
         final double thrA = epsilon * (1 + sma);
@@ -774,7 +799,7 @@ public class TLE implements TimeStamped, Serializable {
         while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
-            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current);
+            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current, new InertialProvider(Rotation.IDENTITY, teme), state.getMass(), teme);
             final Orbit recovOrbit = propagator.getInitialState().getOrbit();
             final EquinoctialOrbit recovEquiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
@@ -794,6 +819,15 @@ public class TLE implements TimeStamped, Serializable {
                 FastMath.abs(deltaHy)  < thrH &&
                 FastMath.abs(deltaLv)  < thrV) {
 
+                // Verify if parameters are estimated
+                for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
+                    if (templateDrivers.isSelected()) {
+                        // Set to selected for the new TLE
+                        current.getParameterDriver(templateDrivers.getName()).setSelected(true);
+                    }
+                }
+
+                // Return
                 return current;
             }
 
@@ -806,24 +840,36 @@ public class TLE implements TimeStamped, Serializable {
             lv  += deltaLv;
             final EquinoctialOrbit newEquiOrbit =
                                     new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    orbit.getFrame(), orbit.getDate(), orbit.getMu() );
+                                    equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
             final KeplerianOrbit newKeplOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE
-            current = newTLE(newKeplOrbit, templateTLE);
+            current = newTLE(newKeplOrbit, templateTLE, utc);
         }
 
         throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
     }
 
     /**
+     * Converts an orbit into an equinoctial orbit expressed in TEME frame.
+     *
+     * @param orbitIn the orbit to convert
+     * @param teme the TEME frame to use for propagation
+     * @return the converted orbit, i.e. equinoctial in TEME frame
+     */
+    private static EquinoctialOrbit convert(final Orbit orbitIn, final Frame teme) {
+        return new EquinoctialOrbit(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
+    }
+
+    /**
      * Builds a new TLE from Keplerian parameters and a template for TLE data.
      * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
+     * @param utc the UTC time scale
      * @return TLE with template identification and new orbital parameters
      */
-    @DefaultDataContext
-    private static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE) {
+    private static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE,
+                              final TimeScale utc) {
         // Keplerian parameters
         final double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
         final double e           = keplerianOrbit.getE();
@@ -844,7 +890,7 @@ public class TLE implements TimeStamped, Serializable {
         // Updates revolutionNumberAtEpoch
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         final double dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (2 * FastMath.PI)));
+        final int newRevolutionNumberAtEpoch = (int) (revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (2 * FastMath.PI)));
         // Gets B*
         final double bStar = templateTLE.getBStar();
         // Gets Mean Motion derivatives
@@ -853,7 +899,7 @@ public class TLE implements TimeStamped, Serializable {
         // Returns the new TLE
         return new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                        elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar);
+                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
     }
 
     /** Check the lines format validity.
@@ -975,6 +1021,75 @@ public class TLE implements TimeStamped, Serializable {
      */
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(bStarParameterDriver);
+    }
+
+    /** Get parameter driver from its name.
+     * @param name parameter name
+     * @return parameter driver
+     * @since 11.1
+     */
+    public ParameterDriver getParameterDriver(final String name) {
+        // Loop on known drivers
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (name.equals(driver.getName())) {
+                // we have found a parameter with that name
+                return driver;
+            }
+        }
+
+        // build the list of supported parameters
+        final StringBuilder sBuilder = new StringBuilder();
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (sBuilder.length() > 0) {
+                sBuilder.append(", ");
+            }
+            sBuilder.append(driver.getName());
+        }
+        throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                  name, sBuilder.toString());
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(line1, line2, utc);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -1596648022319057689L;
+
+        /** First line. */
+        private String line1;
+
+        /** Second line. */
+        private String line2;
+
+        /** The UTC scale. */
+        private final TimeScale utc;
+
+        /** Simple constructor.
+         * @param line1 the first element (69 char String)
+         * @param line2 the second element (69 char String)
+         * @param utc the UTC time scale
+         */
+        DataTransferObject(final String line1, final String line2, final TimeScale utc) {
+            this.line1 = line1;
+            this.line2 = line2;
+            this.utc   = utc;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link TLE}.
+         * @return replacement {@link TLE}
+         */
+        private Object readResolve() {
+            return new TLE(line1, line2, utc);
+        }
+
     }
 
 }

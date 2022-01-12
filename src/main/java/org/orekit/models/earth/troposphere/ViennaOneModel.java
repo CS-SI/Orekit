@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
@@ -104,7 +104,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, MappingFunctio
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
         final T[] delays = computeZenithDelay(point, parameters, date);
@@ -141,7 +141,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, MappingFunctio
      * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
+    public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -207,7 +207,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, MappingFunctio
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -234,7 +234,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, MappingFunctio
         } else {
             c10h = zero.add(0.002);
             c11h = zero.add(0.007);
-            psi  = zero.add(FastMath.PI);
+            psi  = zero.getPi();
         }
 
         // Compute hydrostatique coefficient c
@@ -244,7 +244,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, MappingFunctio
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef = psi.add(((dofyear - t0) / 365) * 2 * FastMath.PI);
+        final T coef = psi.add(zero.getPi().multiply(2.0).multiply((dofyear - t0) / 365));
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(FastMath.cos(latitude).negate().add(1.)).add(c0h);
 
         // General constants | Wet part

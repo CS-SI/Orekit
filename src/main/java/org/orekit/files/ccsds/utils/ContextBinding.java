@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -37,6 +38,9 @@ import org.orekit.utils.IERSConventions;
  * @since 11.0
  */
 public class ContextBinding {
+
+    /** Behavior adopted for units that have been parsed from a CCSDS message. */
+    private final Supplier<ParsedUnitsBehavior> behaviorSupplier;
 
     /** Supplier for IERS conventions to use. */
     private final Supplier<IERSConventions> conventionsSupplier;
@@ -64,19 +68,22 @@ public class ContextBinding {
      * @param conventionsSupplier supplier for IERS conventions to use
      * @param simpleEOPSupplier supplier for simple or accurate EOP interpolation indicator
      * @param dataContextSupplier supplier for data context to use
+     * @param behaviorSupplier supplier for behavior to adopt on unit
      * @param referenceDateSupplier supplier for reference date for mission elapsed time (MET),
      * mission relative time (MRT), or spacecraft clock (SCLK) time systems
      * @param timeSystemSupplier supplier for reference system for interpreting dates
      * @param clockCountSupplier supplier for clock count at reference date in spacecraft clock (SCLK) time system
      * @param clockRateSupplier supplier for clock rate in spacecraft clock (SCLK) time system
      */
-    public ContextBinding(final Supplier<IERSConventions> conventionsSupplier,
-                          final BooleanSupplier           simpleEOPSupplier,
-                          final Supplier<DataContext>     dataContextSupplier,
-                          final Supplier<AbsoluteDate>    referenceDateSupplier,
-                          final Supplier<TimeSystem>      timeSystemSupplier,
-                          final DoubleSupplier            clockCountSupplier,
-                          final DoubleSupplier            clockRateSupplier) {
+    public ContextBinding(final Supplier<IERSConventions>     conventionsSupplier,
+                          final BooleanSupplier               simpleEOPSupplier,
+                          final Supplier<DataContext>         dataContextSupplier,
+                          final Supplier<ParsedUnitsBehavior> behaviorSupplier,
+                          final Supplier<AbsoluteDate>        referenceDateSupplier,
+                          final Supplier<TimeSystem>          timeSystemSupplier,
+                          final DoubleSupplier                clockCountSupplier,
+                          final DoubleSupplier                clockRateSupplier) {
+        this.behaviorSupplier      = behaviorSupplier;
         this.conventionsSupplier   = conventionsSupplier;
         this.simpleEOPSupplier     = simpleEOPSupplier;
         this.dataContextSupplier   = dataContextSupplier;
@@ -84,6 +91,13 @@ public class ContextBinding {
         this.timeSystemSupplier    = timeSystemSupplier;
         this.clockCountSupplier    = clockCountSupplier;
         this.clockRateSupplier     = clockRateSupplier;
+    }
+
+    /** Get the behavior to adopt for handling parsed units.
+     * @return behavior to adopt for handling parsed units
+     */
+    public ParsedUnitsBehavior getParsedUnitsBehavior() {
+        return behaviorSupplier.get();
     }
 
     /** Get IERS conventions.

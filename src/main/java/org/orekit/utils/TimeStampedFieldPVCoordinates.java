@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.utils;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
@@ -39,7 +39,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 7.0
  */
-public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
+public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
     extends FieldPVCoordinates<T> implements FieldTimeStamped<T> {
 
     /** The date. */
@@ -646,7 +646,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         TimeStampedFieldPVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                      final CartesianDerivativesFilter filter,
                                                      final Collection<TimeStampedFieldPVCoordinates<T>> sample) {
@@ -673,7 +673,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         TimeStampedFieldPVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                      final CartesianDerivativesFilter filter,
                                                      final Stream<TimeStampedFieldPVCoordinates<T>> sample) {

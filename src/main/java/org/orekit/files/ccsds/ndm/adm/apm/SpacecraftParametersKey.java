@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,22 +36,28 @@ public enum SpacecraftParametersKey {
                                                                           context, false, false, true)),
 
     /** 1-axis moment of inertia entry. */
-    I11((token, context, container) -> token.processAsDouble(Units.KG_M2, container::setI11)),
+    I11((token, context, container) -> token.processAsDouble(Units.KG_M2, context.getParsedUnitsBehavior(),
+                                                             container::setI11)),
 
     /** 2-axis moment of inertia entry. */
-    I22((token, context, container) -> token.processAsDouble(Units.KG_M2, container::setI22)),
+    I22((token, context, container) -> token.processAsDouble(Units.KG_M2, context.getParsedUnitsBehavior(),
+                                                             container::setI22)),
 
     /** 3-axis moment of inertia entry. */
-    I33((token, context, container) -> token.processAsDouble(Units.KG_M2, container::setI33)),
+    I33((token, context, container) -> token.processAsDouble(Units.KG_M2, context.getParsedUnitsBehavior(),
+                                                             container::setI33)),
 
     /** 1-axis / 2-axis inertia cross product entry. */
-    I12((token, context, container) -> token.processAsDouble(Units.KG_M2, container::setI12)),
+    I12((token, context, container) -> token.processAsDouble(Units.KG_M2, context.getParsedUnitsBehavior(),
+                                                             container::setI12)),
 
     /** 1-axis / 3-axis inertia cross product entry. */
-    I13((token, context, container) -> token.processAsDouble(Units.KG_M2, container::setI13)),
+    I13((token, context, container) -> token.processAsDouble(Units.KG_M2, context.getParsedUnitsBehavior(),
+                                                             container::setI13)),
 
     /** 2-axis / 3-axis inertia cross product entry. */
-    I23((token, context, container) -> token.processAsDouble(Units.KG_M2, container::setI23));
+    I23((token, context, container) -> token.processAsDouble(Units.KG_M2, context.getParsedUnitsBehavior(),
+                                                             container::setI23));
 
     /** Processing method. */
     private final TokenProcessor processor;

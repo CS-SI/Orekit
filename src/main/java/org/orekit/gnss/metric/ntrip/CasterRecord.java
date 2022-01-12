@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.gnss.metric.ntrip;
+
+import org.hipparchus.util.FastMath;
 
 /** Caster record in source table.
  * @author Luc Maisonobe
@@ -44,8 +46,8 @@ public class CasterRecord extends Record {
         super(line);
         this.port           = Integer.parseInt(getField(2));
         this.canReceiveNMEA = Integer.parseInt(getField(5)) != 0;
-        this.latitude       = Math.toRadians(Double.parseDouble(getField(7)));
-        this.longitude      = Math.toRadians(Double.parseDouble(getField(8)));
+        this.latitude       = FastMath.toRadians(Double.parseDouble(getField(7)));
+        this.longitude      = FastMath.toRadians(Double.parseDouble(getField(8)));
         this.fallbackPort   = Integer.parseInt(getField(10));
     }
 

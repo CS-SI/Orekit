@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,24 +18,22 @@ package org.orekit.propagation.analytical;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -83,8 +81,6 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * extrapolation threshold}.
      * </p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
           * @exception MathIllegalArgumentException if the number of states is smaller than
@@ -92,15 +88,12 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @see #Ephemeris(List, int, double)
      * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
-    @DefaultDataContext
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
         throws MathIllegalArgumentException {
         this(states, interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
     }
 
     /** Constructor with tabulated states.
-     *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
@@ -111,12 +104,12 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @since 9.0
      * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
-    @DefaultDataContext
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints,
                      final double extrapolationThreshold)
         throws MathIllegalArgumentException {
         this(states, interpolationPoints, extrapolationThreshold,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+                // if states is empty an exception will be thrown in the other constructor
+                states.isEmpty() ? null : InertialProvider.of(states.get(0).getFrame()));
     }
 
     /** Constructor with tabulated states.
@@ -147,8 +140,11 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         maxDate = states.get(states.size() - 1).getDate();
         frame = s0.getFrame();
 
-        final Set<String> names0 = s0.getAdditionalStates().keySet();
-        additional = names0.toArray(new String[names0.size()]);
+        final List<DoubleArrayDictionary.Entry> as = s0.getAdditionalStatesValues().getData();
+        additional = new String[as.size()];
+        for (int i = 0; i < additional.length; ++i) {
+            additional[i] = as.get(i).getKey();
+        }
 
         // check all states handle the same additional states
         for (final SpacecraftState state : states) {
@@ -222,11 +218,11 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
             // Verify if orbit is defined
             if (evaluatedState.isOrbitDefined()) {
-                return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude,
-                                           evaluatedState.getMass(), evaluatedState.getAdditionalStates());
+                return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude, evaluatedState.getMass(),
+                                           evaluatedState.getAdditionalStatesValues(), evaluatedState.getAdditionalStatesDerivatives());
             } else {
-                return new SpacecraftState(evaluatedState.getAbsPVA(), calculatedAttitude,
-                                           evaluatedState.getMass(),  evaluatedState.getAdditionalStates());
+                return new SpacecraftState(evaluatedState.getAbsPVA(), calculatedAttitude, evaluatedState.getMass(),
+                                           evaluatedState.getAdditionalStatesValues(), evaluatedState.getAdditionalStatesDerivatives());
             }
 
         }

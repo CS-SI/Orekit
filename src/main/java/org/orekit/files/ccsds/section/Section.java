@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,10 +25,12 @@ public interface Section {
 
     /** Check is all mandatory entries have been initialized.
      * <p>
-     * This method should throw an exception if some mandatory entry is missing
+     * This method should throw an exception if some mandatory entries are missing
+     * or not compatible with version number.
      * </p>
+     * @param version format version
      */
-    void checkMandatoryEntries();
+    void validate(double version);
 
 }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -238,9 +238,13 @@ public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLo
      */
     private void bracketDate(final AbsoluteDate date) {
 
-        if (date.durationFrom(firstDate) < 0 || date.durationFrom(lastDate) > 0) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
-                                      date, firstDate, lastDate);
+        if (date.durationFrom(firstDate) < 0) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                    date, firstDate, lastDate, firstDate.durationFrom(date));
+        }
+        if (date.durationFrom(lastDate) > 0) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                    date, firstDate, lastDate, date.durationFrom(lastDate));
         }
 
         // don't search if the cached selection is fine

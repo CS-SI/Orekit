@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.section;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 
 /** Keys for {@link FileFormat#KVN} format structure.
  * @author Luc Maisonobe
@@ -62,7 +62,7 @@ public enum KvnStructureKey {
          * @param parser file parser
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final AbstractMessageParser<?, ?> parser) {
+    public boolean process(final ParseToken token, final AbstractConstituentParser<?, ?> parser) {
         return processor.process(token, parser);
     }
 
@@ -73,7 +73,7 @@ public enum KvnStructureKey {
          * @param parser file parser
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, AbstractMessageParser<?, ?> parser);
+        boolean process(ParseToken token, AbstractConstituentParser<?, ?> parser);
     }
 
 }

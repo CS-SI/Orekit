@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
@@ -195,7 +195,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
          * @param <T> type of the field elements
          * @return position-velocity at the specified date
          */
-        <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
+        <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
 
     }
 
@@ -990,12 +990,14 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             // extract time range covered by the record
             final AbsoluteDate rangeStart = extractDate(record, DATA_START_RANGE_OFFSET);
             if (rangeStart.compareTo(startEpoch) < 0) {
-                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeStart, startEpoch, finalEpoch);
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                        rangeStart, startEpoch, finalEpoch, startEpoch.durationFrom(rangeStart));
             }
 
             final AbsoluteDate rangeEnd   = extractDate(record, DATE_END_RANGE_OFFSET);
             if (rangeEnd.compareTo(finalEpoch) > 0) {
-                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeEnd, startEpoch, finalEpoch);
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                        rangeEnd, startEpoch, finalEpoch, rangeEnd.durationFrom(finalEpoch));
             }
 
             if (rangeStart.compareTo(end) > 0 || rangeEnd.compareTo(start) < 0) {
@@ -1066,7 +1068,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
 
             // get raw PV from Chebyshev polynomials
             PosVelChebyshev chebyshev;
@@ -1097,7 +1099,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
             return FieldPVCoordinates.getZero(date.getField());
         }
 

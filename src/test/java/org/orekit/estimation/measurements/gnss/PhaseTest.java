@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
@@ -179,9 +178,8 @@ public class PhaseTest {
         final List<Double> absoluteErrors = new ArrayList<>();
         final List<Double> relativeErrors = new ArrayList<>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -310,9 +308,8 @@ public class PhaseTest {
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -460,9 +457,8 @@ public class PhaseTest {
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -610,9 +606,8 @@ public class PhaseTest {
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -780,9 +775,8 @@ public class PhaseTest {
         final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
 
-        // Set master mode
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 

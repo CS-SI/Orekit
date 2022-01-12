@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -72,7 +72,7 @@ class ObservationsBlockWriter extends AbstractWriter {
 
         // write the data
         for (final Observation observation : observationsBlock.getObservations()) {
-            final Observationtype type     = observation.getType();
+            final ObservationType type     = observation.getType();
             final AbsoluteDate    date     = observation.getEpoch();
             final double          siValue  = observation.getMeasurement();
             final double          rawValue = type.siToRaw(converter, metadata, date, siValue);
@@ -81,7 +81,7 @@ class ObservationsBlockWriter extends AbstractWriter {
                 builder.append(generator.dateToString(timeConverter, date));
                 builder.append(' ');
                 builder.append(generator.doubleToString(rawValue));
-                generator.writeEntry(observation.getType().name(), builder.toString(), false);
+                generator.writeEntry(observation.getType().name(), builder.toString(), null, false);
             } else {
                 generator.enterSection(TdmDataKey.observation.name());
                 generator.writeEntry(TdmDataKey.EPOCH.name(), timeConverter, date, true);

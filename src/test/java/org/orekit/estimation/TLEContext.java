@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,8 +46,8 @@ public class TLEContext {
     public StationDisplacement[]                displacements;
     public List<GroundStation>                  stations;
     // Stations for turn-around range
-    // Map entry = master station
-    // Map value = slave station associated
+    // Map entry = primary station
+    // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
 
     public TLEPropagatorBuilder createBuilder(final double minStep, final double maxStep, final double dP) {

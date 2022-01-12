@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -88,7 +88,7 @@ public class TropoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
 
@@ -143,7 +143,7 @@ public class TropoModifierTest {
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
 
@@ -183,7 +183,7 @@ public class TropoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -238,7 +238,7 @@ public class TropoModifierTest {
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -281,16 +281,16 @@ public class TropoModifierTest {
 
         // Create perfect turn-around measurements
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
-            final GroundStation    masterStation = entry.getKey();
-            final GroundStation    slaveStation  = entry.getValue();
-            masterStation.getClockOffsetDriver().setSelected(true);
-            masterStation.getEastOffsetDriver().setSelected(true);
-            masterStation.getNorthOffsetDriver().setSelected(true);
-            masterStation.getZenithOffsetDriver().setSelected(true);
-            slaveStation.getClockOffsetDriver().setSelected(false);
-            slaveStation.getEastOffsetDriver().setSelected(true);
-            slaveStation.getNorthOffsetDriver().setSelected(true);
-            slaveStation.getZenithOffsetDriver().setSelected(true);
+            final GroundStation    primaryStation = entry.getKey();
+            final GroundStation    secondaryStation  = entry.getValue();
+            primaryStation.getClockOffsetDriver().setSelected(true);
+            primaryStation.getEastOffsetDriver().setSelected(true);
+            primaryStation.getNorthOffsetDriver().setSelected(true);
+            primaryStation.getZenithOffsetDriver().setSelected(true);
+            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getEastOffsetDriver().setSelected(true);
+            secondaryStation.getNorthOffsetDriver().setSelected(true);
+            secondaryStation.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -298,7 +298,7 @@ public class TropoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
 
@@ -346,7 +346,7 @@ public class TropoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), false);
 
@@ -388,7 +388,7 @@ public class TropoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -443,7 +443,7 @@ public class TropoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         final AngularTroposphericDelayModifier modifier = new AngularTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
 
@@ -489,7 +489,7 @@ public class TropoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -543,7 +543,7 @@ public class TropoModifierTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
 

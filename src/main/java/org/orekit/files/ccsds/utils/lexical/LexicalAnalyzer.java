@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.files.ccsds.utils.lexical;
-
-import org.orekit.files.ccsds.ndm.NdmFile;
 
 /** Interface for CCSDS messages lexical analysis.
  * <p>
@@ -35,11 +33,11 @@ import org.orekit.files.ccsds.ndm.NdmFile;
  */
 public interface LexicalAnalyzer {
 
-    /** Parse a CCSDS Message file.
+    /** Parse a CCSDS Message.
      * @param messageParser CCSDS Message parser to use
      * @param <T> type of the file
      * @return parsed fileO
      */
-    <T extends NdmFile<?, ?>> T accept(MessageParser<T> messageParser);
+    <T> T accept(MessageParser<T> messageParser);
 
 }

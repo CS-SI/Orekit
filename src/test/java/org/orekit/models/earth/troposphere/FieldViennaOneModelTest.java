@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -72,7 +72,7 @@ public class FieldViennaOneModelTest {
         doTestMappingFactors(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
         final T zero = field.getZero();
         // Site (NRAO, Green Bank, WV): latitude:  38°
         //                              longitude: 280°
@@ -124,7 +124,7 @@ public class FieldViennaOneModelTest {
         doTestDelay(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDelay(final Field<T> field) {
         final T zero = field.getZero();
         final double elevation = 10d;
         final double height = 100d;
@@ -143,7 +143,7 @@ public class FieldViennaOneModelTest {
         doTestFixedHeight(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final double[] a = { 0.00127683, 0.00060955 };

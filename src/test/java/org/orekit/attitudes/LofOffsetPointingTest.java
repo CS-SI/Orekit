@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.attitudes;
 
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -210,7 +210,7 @@ public class LofOffsetPointingTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
+    private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
         {

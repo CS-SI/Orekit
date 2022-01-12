@@ -17,6 +17,7 @@
 package org.orekit.data;
 
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.OrekitMatchers;
@@ -33,6 +34,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.LazyLoadedTimeScales;
 import org.orekit.utils.Constants;
@@ -115,7 +117,7 @@ public class ExceptionalDataContextTest {
 
         // verify using default data context throws an exception
         try {
-            new KeplerianPropagator(orbit);
+            new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.0));
             Assert.fail("Expected Exception");
         } catch (OrekitException e) {
             Assert.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
@@ -129,7 +131,6 @@ public class ExceptionalDataContextTest {
      */
     private void hack() {
         Object o = AbsoluteDate.ARBITRARY_EPOCH;
-        o = InertialProvider.EME2000_ALIGNED;
         Assert.assertNotNull(o);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -54,25 +55,32 @@ public enum SpinStabilizedKey {
     }),
 
     /** Spin right ascension entry. */
-    SPIN_ALPHA((token, context, container) -> token.processAsAngle(container::setSpinAlpha)),
+    SPIN_ALPHA((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                    container::setSpinAlpha)),
 
     /** Spin declination entry. */
-    SPIN_DELTA((token, context, container) -> token.processAsAngle(container::setSpinDelta)),
+    SPIN_DELTA((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                    container::setSpinDelta)),
 
     /** Spin phase entry. */
-    SPIN_ANGLE((token, context, container) -> token.processAsAngle(container::setSpinAngle)),
+    SPIN_ANGLE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                    container::setSpinAngle)),
 
     /** Spin angular velocity entry. */
-    SPIN_ANGLE_VEL((token, context, container) -> token.processAsAngle(container::setSpinAngleVel)),
+    SPIN_ANGLE_VEL((token, context, container) -> token.processAsDouble(Units.DEG_PER_S, context.getParsedUnitsBehavior(),
+                                                                        container::setSpinAngleVel)),
 
     /** Nutation angle entry. */
-    NUTATION((token, context, container) -> token.processAsAngle(container::setNutation)),
+    NUTATION((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                  container::setNutation)),
 
     /** Nutation period entry. */
-    NUTATION_PER((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setNutationPeriod)),
+    NUTATION_PER((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                      container::setNutationPeriod)),
 
     /** Nutation phase entry. */
-    NUTATION_PHASE((token, context, container) -> token.processAsAngle(container::setNutationPhase));
+    NUTATION_PHASE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                        container::setNutationPhase));
 
     /** Processing method. */
     private final TokenProcessor processor;

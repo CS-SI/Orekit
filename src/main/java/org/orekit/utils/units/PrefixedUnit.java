@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,9 @@ import org.orekit.errors.OrekitMessages;
  */
 class PrefixedUnit extends Unit {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20210407L;
+
     /** Allowed units with SI prefixes, with various aliases for angles, year, sfu, and tecu. */
     private static final Map<String, PrefixedUnit> ALLOWED;
 
@@ -39,7 +42,7 @@ class PrefixedUnit extends Unit {
                                               Unit.HOUR,
                                               Unit.DAY,
                                               Unit.YEAR,
-                                              Unit.YEAR.alias("y"),
+                                              Unit.YEAR.alias("yr"),
                                               Unit.HERTZ,
                                               Unit.METRE,
                                               Unit.GRAM, // only case were we must use a derived unit
@@ -66,9 +69,9 @@ class PrefixedUnit extends Unit {
                                               Unit.TESLA,
                                               Unit.SOLAR_FLUX_UNIT,
                                               Unit.SOLAR_FLUX_UNIT.alias("SFU"),
+                                              Unit.SOLAR_FLUX_UNIT.alias("sfu"),
                                               Unit.TOTAL_ELECTRON_CONTENT_UNIT,
-                                              Unit.TOTAL_ELECTRON_CONTENT_UNIT.alias("tecu"),
-                                              Unit.PERCENT);
+                                              Unit.TOTAL_ELECTRON_CONTENT_UNIT.alias("tecu"));
         ALLOWED = new HashMap<>(base.size() * Prefix.values().length);
         for (final Unit unit : base) {
             ALLOWED.put(unit.getName(), new PrefixedUnit(null, unit));
@@ -77,6 +80,12 @@ class PrefixedUnit extends Unit {
                 ALLOWED.put(pu.getName(), pu);
             }
         }
+
+        // units that don't accept any prefix
+        for (final Unit noPrefix : Arrays.asList(Unit.PERCENT, Unit.ONE, Unit.ONE.alias("#"))) {
+            ALLOWED.put(noPrefix.getName(), new PrefixedUnit(null, noPrefix));
+        }
+
     }
 
     /** Simple constructor.

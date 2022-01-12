@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import java.io.IOException;
 import java.util.List;
 
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
@@ -31,10 +30,9 @@ import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
-/** An {@link AttitudeEphemerisFileWriter} generating {@link AemFile AEM} files.
+/** An {@link AttitudeEphemerisFileWriter} generating {@link Aem AEM} files.
  * @author Bryan Cazabonne
  * @since 11.0
  */
@@ -55,6 +53,9 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
     /** Output name for error messages. */
     private final String outputName;
 
+    /** Column number for aligning units. */
+    private final int unitsColumn;
+
     /**
      * Constructor used to create a new AEM writer configured with the necessary parameters
      * to successfully fill in all required fields that aren't part of a standard object.
@@ -68,44 +69,39 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * as new segments are written (with at least the segment start and stop will change,
      * but some other parts may change too). The {@code template} argument itself is not
      * changed.
-     * </>
+     * </p>
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildA
-     * writerBuilder.buildAemWriter(template, fileName)}.
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildAemWriter()}.
      * </p>
      * @param writer underlying writer
      * @param header file header (may be null)
      * @param template template for metadata
      * @param fileFormat file format to use
      * @param outputName output name for error messages
+     * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
      * @since 11.0
      */
     public AttitudeWriter(final AemWriter writer,
                           final Header header, final AemMetadata template,
-                          final FileFormat fileFormat, final String outputName) {
-        this.writer     = writer;
-        this.header     = header;
-        this.metadata   = template.copy();
-        this.fileFormat = fileFormat;
-        this.outputName = outputName;
-    }
-
-    /** Get current metadata.
-     * @return current metadata
-     */
-    AemMetadata getMetadata() {
-        return metadata;
+                          final FileFormat fileFormat, final String outputName,
+                          final int unitsColumn) {
+        this.writer      = writer;
+        this.header      = header;
+        this.metadata    = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.fileFormat  = fileFormat;
+        this.outputName  = outputName;
+        this.unitsColumn = unitsColumn;
     }
 
     /** {@inheritDoc}
      * <p>
-     * As {@link AttitudeEphemerisFile.SatelliteAttitudeEphemeris} does not have all the entries
+     * As {@code AttitudeEphemerisFile.SatelliteAttitudeEphemeris} does not have all the entries
      * from {@link AemMetadata}, the only values that will be extracted from the
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame, attitude type...) will be inherited from the template  metadata set at writer
-     * {@link #AEMWriter(IERSConventions, DataContext, Header, AemMetadata, String, String) construction}.
+     * {@link #AttitudeWriter(AemWriter, Header, AemMetadata, FileFormat, String, int) construction}.
      * </p>
      */
     @Override
@@ -136,8 +132,8 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         }
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
-                                   new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName) :
-                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName)) {
+                                   new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName, unitsColumn) :
+                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName, unitsColumn > 0)) {
 
             writer.writeHeader(generator, header);
 

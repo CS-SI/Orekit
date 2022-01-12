@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.util.FastMath;
@@ -202,7 +202,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -217,7 +217,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef    = zero.add(2 * FastMath.PI * ((dofyear - t0) / 365.25));
+        final T coef    = zero.getPi().multiply(2.0).multiply((dofyear - t0) / 365.25);
         final T cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5

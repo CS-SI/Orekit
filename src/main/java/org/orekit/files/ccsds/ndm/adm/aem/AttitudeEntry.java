@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
+
+import java.util.Arrays;
 
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.time.AbsoluteDate;
@@ -41,6 +43,7 @@ class AttitudeEntry {
     AttitudeEntry(final AemMetadata metadata) {
         this.metadata   = metadata;
         this.components = new double[8];
+        Arrays.fill(components, Double.NaN);
     }
 
     /** Get the metadata.
@@ -65,11 +68,39 @@ class AttitudeEntry {
         components[i] = value;
     }
 
-    /** Get component index of first rotation.
-     * @return component index of first rotation
+    /** Set one angle.
+     * @param axis axis label
+     * @param value value of the angle
      */
-    int firstRotationIndex() {
-        return metadata.getAttitudeType() == AttitudeType.QUATERNION_RATE ? 4 : 3;
+    public void setAngle(final char axis, final double value) {
+        if (metadata.getEulerRotSeq() != null) {
+            final String seq = metadata.getEulerRotSeq().name();
+            if (seq.charAt(0) == axis && Double.isNaN(components[0])) {
+                components[0] = value;
+            } else if (seq.charAt(1) == axis && Double.isNaN(components[1])) {
+                components[1] = value;
+            } else if (seq.charAt(2) == axis && Double.isNaN(components[2])) {
+                components[2] = value;
+            }
+        }
+    }
+
+    /** Set one rate.
+     * @param axis axis label
+     * @param value value of the rate
+     */
+    public void setRate(final char axis, final double value) {
+        if (metadata.getEulerRotSeq() != null) {
+            final String seq   = metadata.getEulerRotSeq().name();
+            final int    first = metadata.getAttitudeType() == AttitudeType.QUATERNION_RATE ? 4 : 3;
+            if (seq.charAt(0) == axis && Double.isNaN(components[first])) {
+                components[first] = value;
+            } else if (seq.charAt(1) == axis && Double.isNaN(components[first + 1])) {
+                components[first + 1] = value;
+            } else if (seq.charAt(2) == axis && Double.isNaN(components[first + 2])) {
+                components[first + 2] = value;
+            }
+        }
     }
 
     /** Get the angular coordinates entry.
@@ -78,10 +109,8 @@ class AttitudeEntry {
     public TimeStampedAngularCoordinates getCoordinates() {
         return metadata.getAttitudeType().build(metadata.isFirst(),
                                                 metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                metadata.getEulerRotSeq(),
-                                                metadata.isSpacecraftBodyRate(),
-                                                epoch,
-                                                components);
+                                                metadata.getEulerRotSeq(), metadata.isSpacecraftBodyRate(),
+                                                epoch, components);
     }
 
 }

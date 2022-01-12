@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -39,6 +39,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 
@@ -133,6 +134,13 @@ public class Maneuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
+        propulsionModel.init(initialState, target);
+        maneuverTriggers.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
@@ -154,7 +162,7 @@ public class Maneuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
@@ -200,7 +208,7 @@ public class Maneuver extends AbstractForceModel {
     }
 
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
@@ -233,7 +241,7 @@ public class Maneuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         // Event detectors are extracted from the maneuver triggers
         return maneuverTriggers.getFieldEventsDetectors(field);
     }
@@ -273,10 +281,10 @@ public class Maneuver extends AbstractForceModel {
     /** Extract propulsion model parameters from the parameters' array called in by the ForceModel interface.
      *  Convention: Propulsion parameters are given before maneuver triggers parameters
      * @param parameters parameters' array called in by ForceModel interface
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return propulsion model parameters
      */
-    private <T extends RealFieldElement<T>> T[] getPropulsionModelParameters(final T[] parameters) {
+    private <T extends CalculusFieldElement<T>> T[] getPropulsionModelParameters(final T[] parameters) {
         return Arrays.copyOfRange(parameters, 0, propulsionModel.getParametersDrivers().size());
     }
 
@@ -294,10 +302,10 @@ public class Maneuver extends AbstractForceModel {
     /** Extract maneuver triggers' parameters from the parameters' array called in by the ForceModel interface.
      *  Convention: Propulsion parameters are given before maneuver triggers parameters
      * @param parameters parameters' array called in by ForceModel interface
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return maneuver triggers' parameters
      */
-    private <T extends RealFieldElement<T>> T[] getManeuverTriggersParameters(final T[] parameters) {
+    private <T extends CalculusFieldElement<T>> T[] getManeuverTriggersParameters(final T[] parameters) {
         final int nbPropulsionModelDrivers = propulsionModel.getParametersDrivers().size();
         return Arrays.copyOfRange(parameters, nbPropulsionModelDrivers,
                                   nbPropulsionModelDrivers + maneuverTriggers.getParametersDrivers().size());

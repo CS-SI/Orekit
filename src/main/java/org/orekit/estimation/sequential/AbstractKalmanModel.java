@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,6 +40,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -67,6 +68,11 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
     /** Estimated propagation drivers. */
     private final ParameterDriversList allEstimatedPropagationParameters;
+
+    /** Per-builder estimated orbita parameters drivers.
+     * @since 11.1
+     */
+    private final ParameterDriversList[] estimatedOrbitalParameters;
 
     /** Per-builder estimated propagation drivers. */
     private final ParameterDriversList[] estimatedPropagationParameters;
@@ -98,8 +104,8 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
     /** Scaling factors. */
     private final double[] scale;
 
-    /** Mappers for extracting Jacobians from integrated states. */
-    private AbstractJacobiansMapper[] mappers;
+    /** Harvesters for extracting Jacobians from integrated states. */
+    private MatricesHarvester[] harvesters;
 
     /** Propagators for the reference trajectories, up to current date. */
     private Propagator[] referenceTrajectories;
@@ -141,15 +147,15 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @param mappers mappers for extracting Jacobians from integrated states
+     * @param harvesters harvesters for extracting Jacobians from integrated states
      */
     protected AbstractKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementParameters,
                                   final CovarianceMatrixProvider measurementProcessNoiseMatrix,
-                                  final AbstractJacobiansMapper[] mappers) {
+                                  final MatricesHarvester[] harvesters) {
         this(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters,
-             measurementProcessNoiseMatrix, mappers, PropagationType.MEAN, PropagationType.MEAN);
+             measurementProcessNoiseMatrix, harvesters, PropagationType.MEAN, PropagationType.MEAN);
     }
 
     /** Kalman process model constructor (package private).
@@ -159,7 +165,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @param mappers mappers for extracting Jacobians from integrated states
+     * @param harvesters harvesters for extracting Jacobians from integrated states
      * @param propagationType type of the orbit used for the propagation (mean or osculating), applicable only for DSST
      * @param stateType type of the elements used to define the orbital state (mean or osculating), applicable only for DSST
      */
@@ -167,7 +173,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementParameters,
                                   final CovarianceMatrixProvider measurementProcessNoiseMatrix,
-                                  final AbstractJacobiansMapper[] mappers,
+                                  final MatricesHarvester[] harvesters,
                                   final PropagationType propagationType,
                                   final PropagationType stateType) {
 
@@ -185,7 +191,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         orbitsEndColumns        = new int[builders.size()];
         int columns = 0;
         allEstimatedOrbitalParameters = new ParameterDriversList();
+        estimatedOrbitalParameters    = new ParameterDriversList[builders.size()];
         for (int k = 0; k < builders.size(); ++k) {
+            estimatedOrbitalParameters[k] = new ParameterDriversList();
             orbitsStartColumns[k] = columns;
             final String suffix = propagatorBuilders.size() > 1 ? "[" + k + "]" : null;
             for (final ParameterDriver driver : builders.get(k).getOrbitalParametersDrivers().getDrivers()) {
@@ -199,6 +207,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 }
                 if (driver.isSelected()) {
                     allEstimatedOrbitalParameters.add(driver);
+                    estimatedOrbitalParameters[k].add(driver);
                     orbitalParameterColumns.put(driver.getName(), columns++);
                 }
             }
@@ -285,7 +294,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         }
 
         // Build the reference propagators and add their partial derivatives equations implementation
-        this.mappers = mappers.clone();
+        this.harvesters = harvesters.clone();
         updateReferenceTrajectories(getEstimatedPropagators(), propagationType, stateType);
         this.predictedSpacecraftStates = new SpacecraftState[referenceTrajectories.length];
         for (int i = 0; i < predictedSpacecraftStates.length; ++i) {
@@ -361,12 +370,14 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                                                         PropagationType pType,
                                                         PropagationType sType);
 
-    /** Analytical computation of derivatives.
-     * This method allow to compute analytical derivatives.
+    /** Not used anymore.
      * @param mapper Jacobian mapper to calculate short period perturbations
      * @param state state used to calculate short period perturbations
+     * @deprecated as of 11.1, not used anymore
      */
-    protected abstract void analyticalDerivativeComputations(AbstractJacobiansMapper mapper, SpacecraftState state);
+    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
+        // nothing by default
+    }
 
     /** Check dimension.
      * @param dimension dimension to check
@@ -688,23 +699,21 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // loop over all orbits
         for (int k = 0; k < predictedSpacecraftStates.length; ++k) {
 
-            // Short period derivatives
-            analyticalDerivativeComputations(mappers[k], predictedSpacecraftStates[k]);
+            // Indexes
+            final int[] indK = covarianceIndirection[k];
+
+            // Reset reference (for example compute short periodic terms in DSST)
+            harvesters[k].setReferenceState(predictedSpacecraftStates[k]);
 
             // Derivatives of the state vector with respect to initial state vector
-            final double[][] dYdY0 = new double[6][6];
-            mappers[k].getStateJacobian(predictedSpacecraftStates[k], dYdY0 );
+            final int nbOrbParams = estimatedOrbitalParameters[k].getNbParams();
+            if (nbOrbParams > 0) {
+                final RealMatrix dYdY0 = harvesters[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
 
-            // Fill upper left corner (dY/dY0)
-            final List<ParameterDriversList.DelegatingDriver> drivers =
-                            builders.get(k).getOrbitalParametersDrivers().getDrivers();
-            for (int i = 0; i < dYdY0.length; ++i) {
-                if (drivers.get(i).isSelected()) {
-                    int jOrb = orbitsStartColumns[k];
-                    for (int j = 0; j < dYdY0[i].length; ++j) {
-                        if (drivers.get(j).isSelected()) {
-                            stm.setEntry(i, jOrb++, dYdY0[i][j]);
-                        }
+                // Fill upper left corner (dY/dY0)
+                for (int i = 0; i < dYdY0.getRowDimension(); ++i) {
+                    for (int j = 0; j < nbOrbParams; ++j) {
+                        stm.setEntry(indK[i], indK[j], dYdY0.getEntry(i, j));
                     }
                 }
             }
@@ -712,13 +721,12 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // Derivatives of the state vector with respect to propagation parameters
             final int nbParams = estimatedPropagationParameters[k].getNbParams();
             if (nbParams > 0) {
-                final double[][] dYdPp  = new double[6][nbParams];
-                mappers[k].getParametersJacobian(predictedSpacecraftStates[k], dYdPp);
+                final RealMatrix dYdPp = harvesters[k].getParametersJacobian(predictedSpacecraftStates[k]);
 
                 // Fill 1st row, 2nd column (dY/dPp)
-                for (int i = 0; i < dYdPp.length; ++i) {
+                for (int i = 0; i < dYdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {
-                        stm.setEntry(i, orbitsEndColumns[k] + j, dYdPp[i][j]);
+                        stm.setEntry(indK[i], indK[j + 6], dYdPp.getEntry(i, j));
                     }
                 }
 
@@ -797,9 +805,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // Jacobian of the measurement with respect to propagation parameters
             final int nbParams = estimatedPropagationParameters[p].getNbParams();
             if (nbParams > 0) {
-                final double[][] aYPp  = new double[6][nbParams];
-                mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
-                final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
+                final RealMatrix dYdPp = harvesters[p].getParametersJacobian(evaluationStates[k]);
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {
@@ -1166,16 +1172,28 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
     /** Getter for the jacobian mappers.
      * @return the jacobian mappers
+     * @deprecated as of 11.1, not used anymore
      */
+    @Deprecated
     public AbstractJacobiansMapper[] getMappers() {
-        return mappers.clone();
+        return null;
     }
 
     /** Setter for the jacobian mappers.
      * @param mappers the jacobian mappers to set
+     * @deprecated as of 11.1, replaced by {@link #setHarvesters(MatricesHarvester[])}
      */
+    @Deprecated
     public void setMappers(final AbstractJacobiansMapper[] mappers) {
-        this.mappers = mappers.clone();
+        setHarvesters(mappers);
+    }
+
+    /** Setter for the jacobian harvesters.
+     * @param harvesters the jacobian harvesters to set
+     * @since 11.1
+     */
+    public void setHarvesters(final MatricesHarvester[] harvesters) {
+        this.harvesters = harvesters.clone();
     }
 
     /** Get the propagators estimated with the values set in the propagators builders.

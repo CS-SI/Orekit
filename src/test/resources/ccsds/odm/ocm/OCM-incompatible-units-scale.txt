@@ -8,8 +8,8 @@ TIME_SYSTEM    = TAI
 EPOCH_TZERO    = 2021-01-01T00:00:00
 META_STOP
 
-ORB_START
-ORB_TYPE       = CARTPV
-ORB_UNITS      = [ m, m, m, m/s, m/s, m/s ]
+TRAJ_START
+TRAJ_TYPE       = CARTPV
+TRAJ_UNITS     = [ m, m, m, m/s, m/s, m/s ]
 0.0  3.0e6 4.0e6 5.0e6 -1.0e3 -2.0e3 -3.0e3
-ORB_STOP
+TRAJ_STOP

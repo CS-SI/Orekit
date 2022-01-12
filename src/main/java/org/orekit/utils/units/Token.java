@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.utils.units;
 
+import org.hipparchus.fraction.Fraction;
+
 /** Unit token.
  * @author Luc Maisonobe
  * @since 11.0
@@ -28,24 +30,23 @@ class Token {
     /** Token type. */
     private final TokenType type;
 
-    /** Prefixed unit value. */
-    private final PrefixedUnit unit;
-
     /** Integer value. */
-    private final int value;
+    private final int integer;
+
+    /** Fraction value. */
+    private final Fraction fraction;
 
     /** Build a token.
      * @param subString substring corresponding to the token
      * @param type token type
-     * @param unit prefixed unit value
-     * @param value integer value of the token
+     * @param integer integer value
+     * @param fraction fraction value
      */
-    Token(final CharSequence subString, final TokenType type,
-          final PrefixedUnit unit, final int value) {
+    Token(final CharSequence subString, final TokenType type, final int integer, final Fraction fraction) {
         this.subString = subString;
         this.type      = type;
-        this.unit      = unit;
-        this.value     = value;
+        this.integer   = integer;
+        this.fraction  = fraction;
     }
 
     /** Get the substring corresponding to the token.
@@ -62,18 +63,18 @@ class Token {
         return type;
     }
 
-    /** Get the prefixed unit value.
-     * @return prefixed unit value
-     */
-    public PrefixedUnit getPrefixedUnit() {
-        return unit;
-    }
-
-    /** Get the integer value.
+    /** Get the integer value (numerator in case of fraction).
      * @return integer value
      */
-    public int getValue() {
-        return value;
+    public int getInt() {
+        return integer;
+    }
+
+    /** Get the fraction value.
+     * @return fraction value
+     */
+    public Fraction getFraction() {
+        return fraction;
     }
 
 }

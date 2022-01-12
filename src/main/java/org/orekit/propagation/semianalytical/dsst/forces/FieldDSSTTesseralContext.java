@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -34,7 +34,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     /** Retrograde factor I.
      *  <p>
@@ -128,7 +128,7 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
         // Keplerian period
         final T a = auxiliaryElements.getSma();
-        period = (a.getReal() < 0) ? zero.add(Double.POSITIVE_INFINITY) : a.multiply(2.0 * FastMath.PI).multiply(a.divide(mu).sqrt());
+        period = (a.getReal() < 0) ? zero.add(Double.POSITIVE_INFINITY) : a.multiply(a.getPi().multiply(2.0)).multiply(a.divide(mu).sqrt());
 
         A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
 

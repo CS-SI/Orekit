@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -36,7 +35,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -74,8 +73,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * callers of this builder to the real orbital parameters.
      * </p>
      *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
      * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
      * @param positionScale scaling factor used for orbital parameters normalization
@@ -85,14 +82,13 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * @see #DSSTPropagatorBuilder(Orbit, ODEIntegratorBuilder, double, PropagationType,
      * PropagationType, AttitudeProvider)
      */
-    @DefaultDataContext
     public DSSTPropagatorBuilder(final Orbit referenceOrbit,
                                  final ODEIntegratorBuilder builder,
                                  final double positionScale,
                                  final PropagationType propagationType,
                                  final PropagationType stateType) {
         this(referenceOrbit, builder, positionScale, propagationType, stateType,
-                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+                InertialProvider.of(referenceOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -232,6 +228,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("deprecation")
     public DSSTPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
@@ -255,12 +252,18 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
         propagator.setInitialState(state, stateType);
 
-        // Add additional equations to the propagator
-        for (AdditionalEquations equation: getAdditionalEquations()) {
-            propagator.addAdditionalEquations(equation);
+        // Add additional derivatives providers to the propagator
+        for (AdditionalDerivativesProvider provider: getAdditionalDerivativesProviders()) {
+            propagator.addAdditionalDerivativesProvider(provider);
+        }
+
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        for (org.orekit.propagation.integration.AdditionalEquations equations : getAdditionalEquations()) {
+            propagator.addAdditionalDerivativesProvider(new org.orekit.propagation.integration.AdditionalEquationsAdapter(equations, propagator::getInitialState));
         }
 
         return propagator;
+
     }
 
     /** {@inheritDoc} */

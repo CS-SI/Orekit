@@ -1,5 +1,5 @@
-# internal error, please notify development team by creating an issue at {0}
-INTERNAL_ERROR = intern fejl, informer venligst udviklerne ved at oprette en sag på {0}
+# internal error, please notify development team by creating a new topic at {0}
+INTERNAL_ERROR = intern fejl, underret venligst udviklerholdet ved at oprette et nyt emne på {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = højde ({0} m) er under den tilladte tærskel på {1} m
@@ -18,6 +18,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = banen er nær kritisk hældning (i = {0} grad
 
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = umuligt at udregne Eckstein-Hechler middelparametrene efter {0} iterationer
+
+# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = umuligt at udregne Brouwer-Lyddane middelparametrene efter {0} iterationer
 
 # unable to compute TLE after {0} iterations
 UNABLE_TO_COMPUTE_TLE = umuligt at udregne TLE efter {0} iterationer
@@ -67,6 +70,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = ingen jordorienteringsparametre er indl
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = manglende jordorienteringsparametre mellem {0} og {1}
 
+# missing Earth Orientation Parameters between {0} and {1}, gap is {2,number,0.0##############E0} s
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = <MISSING TRANSLATION>
+
 # missing Earth Orientation Parameters
 NO_EARTH_ORIENTATION_PARAMETERS = ingen jordorienteringsparametre
 
@@ -74,13 +80,13 @@ NO_EARTH_ORIENTATION_PARAMETERS = ingen jordorienteringsparametre
 NOT_A_SUPPORTED_IERS_DATA_FILE = filen {0} er ikke en understøttet IERS datafil
 
 # inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
-INCONSISTENT_DATES_IN_IERS_FILE = ikke konsekvente datoer i IERS filen {0}: {1}-{2}-{3} og MJD {4}
+INCONSISTENT_DATES_IN_IERS_FILE = ikke-konsistente datoer i IERS filen {0}: {1}-{2}-{3} og MJD {4}
 
 # unexpected data after line {0} in file {1}: {2}
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = uventet data efter linje {0} i filen {1}: {2}
 
 # unexpected data at line {0} in file {1}
-UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
+UNEXPECTED_DATA_AT_LINE_IN_FILE = uventet data i linje {0} i filen {1}
 
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = ikke-kronologiske datoer i filen {0}, linje {1}
@@ -104,7 +110,7 @@ UNEXPECTED_END_OF_FILE_AFTER_LINE = uventet ende på fil {0} (efter linje {1})
 UNABLE_TO_PARSE_LINE_IN_FILE = kunne ikke analysere linje {0} i filen {1}:\n{2}
 
 # unable to parse element {0} at line {1}, file {2}
-UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
+UNABLE_TO_PARSE_ELEMENT_IN_FILE = kunne ikke analysere elementet {0} på linje {1}, filen {2}
 
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = kunne ikke finde filen {0}
@@ -148,8 +154,8 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = for høj grad (n = {0}, maksimal potentiel 
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = for høj kontrol (m = {0}, maksimal potentiel kontrol er {1})
 
-# several reference dates ({0} and {1}) found in gravity field file {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = flere referencedatoer ({0} og {1}) fundet i tyngdefeltsfilen {2}
+# several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
 
 # no TLE data available for object {0}
 NO_TLE_FOR_OBJECT = ingen TLE data tilgængelig for objektet {0}
@@ -206,10 +212,10 @@ NON_EXISTENT_HMS_TIME = klokkeslettet {0}:{1}:{2} eksisterer ikke
 NON_EXISTENT_TIME = klokkeslettet {0} eksisterer ikke
 
 # out of range seconds number: {0}
-OUT_OF_RANGE_SECONDS_NUMBER = sekundnummer {0} overskrider området
+OUT_OF_RANGE_SECONDS_NUMBER = sekundnummer {0} udenfor intervallet
 
-# out of range seconds number: {0} is not in [{1}, {2})
-OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
+# out of range seconds number: {0} is not in [{1}, {2}]
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = sekundnummer {0} udenfor intervallet: er ikke i [{1}, {2}]
 
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = vinkeltypen er ikke understøttet, understøttede vinkler: {0}, {1} og {2}
@@ -232,11 +238,8 @@ FRAMES_MISMATCH = ramme ({0}) passer ikke med ramme ({1})
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = initialstatus er ikke præciseret for banepropagation
 
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = propagatøren er ikke sat til indstillingen efemeridegeneration
-
-# event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
-EVENT_DATE_TOO_CLOSE = hændelsesdatoen {0}, større end {1} minus {3} sekunder og mindre end {2} plus {3} sekunder, kan ikke lægges til
+# target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
+EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION>
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = kan ikke læse startblokken fra den binære JPL efemeridefil {0}
@@ -264,6 +267,12 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = dato udenfor gyldighedsperioden for {0} efe
 
 # out of range date for ephemerides: {0}, [{1}, {2}]
 OUT_OF_RANGE_EPHEMERIDES_DATE = dato udenfor gyldighedsperioden for efemeriderne: {0}, [{1}, {2}]
+
+# out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = <MISSING TRANSLATION>
+
+# out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = <MISSING TRANSLATION>
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
 UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = to uventede højdeværdier: {0} og {1}, for en asimut: {2}
@@ -314,7 +323,10 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = ugyldig datofeltlængde for CCSDS dato: {
 CCSDS_DATE_MISSING_AGENCY_EPOCH = manglende bureauepoke i CCSDS dato
 
 # missing mandatory key {0} in CCSDS file {1}
-CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
+CCSDS_MISSING_KEYWORD = manglende påkrævet nøgle {0} i CCSDS-fil {1}
+
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = nøglen {0} er ikke tilladt i formatversion {1}
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = uventet nøgleord på linje nummer {0} i CCSDS-filen {1}:\n{2}
@@ -332,7 +344,7 @@ CCSDS_UNKNOWN_CONVENTIONS = ingen IERS-konventioner er angivet før indlæsninge
 CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne CCSDS fils kontekst
 
 # inconsistent time systems: {0} ≠ {1}
-CCSDS_INCONSISTENT_TIME_SYSTEMS = Ikke konsistente tidssystemer: {0} ≠ {1}
+CCSDS_INCONSISTENT_TIME_SYSTEMS = Ikke-konsistente tidssystemer: {0} ≠ {1}
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = Intet CCSDS TDM nøgleord blev fundet i linje {0} af fil {1}:\n{2}
@@ -341,7 +353,7 @@ CCSDS_TDM_KEYWORD_NOT_FOUND = Intet CCSDS TDM nøgleord blev fundet i linje {0} 
 CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
 
 # Time system should have already been set before line {0} of file {1}
-CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
+CCSDS_TIME_SYSTEM_NOT_READ_YET = Tidssystem skulle have været sat før linje {0} af fil {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = navnet "{0}" er allerede brugt til en anden tilstand
@@ -356,7 +368,7 @@ DSST_NEWCOMB_OPERATORS_COMPUTATION = kan ikke beregne Newcomb operatorer for sig
 DSST_VMNS_COEFFICIENT_ERROR_MS = kan ikke beregne Vmns-koefficienten for m > n ({0} > {1})
 
 # inconsistent shadow computation: entry = {0} whereas exit = {1}
-DSST_SPR_SHADOW_INCONSISTENT = ukonsekvent skyggeberegning: indgang = {0} og udgang = {1}
+DSST_SPR_SHADOW_INCONSISTENT = ikke-konsistent skyggeberegning: indgang = {0} og udgang = {1}
 
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
 DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle bane har en excentricitet ({0} > 0.5). DSST kræver en ikke implementeret tidsafhængig numerisk metode til at beregne de gennemsnitlige hastigheder
@@ -394,16 +406,16 @@ NOT_ENOUGH_CACHED_NEIGHBORS = for få mellemlagrede naboer: {0} (skal mindst væ
 # no cached entries
 NO_CACHED_ENTRIES = ingen mellemlagrede poster
 
-# generated entries not sorted: {0} > {1}
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = genererede poster er ikke sorterede: {0} > {1}
+# generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = ingen data genereret rundt om dato: {0}
 
-# unable to generate new data before {0}, data requested for {1}
+# unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before
 UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
 
-# unable to generate new data after {0}, data requested for {1}
+# unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
@@ -466,14 +478,17 @@ CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
 # element set type {0} ({1}) is not supported yet
 CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = <MISSING TRANSLATION>
 
+# retrograde factor not supported in element set {0}
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
+
 # element set type {0} ({1}) expects {2} elements
 CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
 
 # wrong number of units for maneuver {0}
-CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = forkert antal enheder til manøvre {0}
 
 # missing time field for maneuver {0}
-CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
+CCSDS_MANEUVER_MISSING_TIME = manglende tidsfelt for manøvre {0}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Oprettelsen af en aggregeret propagator kræver mindst en propagator-bestanddel, men ingen blev angivet.
@@ -515,7 +530,7 @@ UNKNOWN_CLOCK_DATA_TYPE = ukendt ur datatype {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = ukendt satellitantennekode {0}
 
 # frequency {0} is not supported by antenna {1}
-UNSUPPORTED_FREQUENCY_FOR_ANTENNA = <MISSING TRANSLATION>
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frekvensen {0} er ikke understøttet af antennen {1}
 
 # cannot find satellite {0} in satellite system {1}
 CANNOT_FIND_SATELLITE_IN_SYSTEM = kunne ikke finde satellitten {0} i satellitsystemet {1}
@@ -569,7 +584,7 @@ NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
 IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>
 
 # invalid satellite system {0}
-INVALID_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+INVALID_SATELLITE_SYSTEM = ugyldigt satellitsystem {0}
 
 # IONEX file {0} does not contain TEC data for date {1}
 NO_TEC_DATA_IN_FILE_FOR_DATE = <MISSING TRANSLATION>
@@ -601,7 +616,7 @@ MODIP_GRID_NOT_LOADED = <MISSING TRANSLATION>
 NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
 
 # file {0} is not a supported Hatanaka-compressed file
-NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = filen {0} er ikke en understøttet Hatanaka-komprimeret fil
 
 # Cannot compute around {0}
 CANNOT_COMPUTE_LAGRANGIAN = <MISSING TRANSLATION>
@@ -618,17 +633,17 @@ INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION
 # frequencies {0} and {1} are incompatibles for the {2} combination
 INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
 
-# observations {0} and {1} are not in chronological dates
+# observations are not in chronological order: {0} is {2} s after {1}
 NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
 
-# observations {0}, {1} and {2} must have different dates
+# Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
 # observations are not in the same plane
-NON_COPLANAR_POINTS = <MISSING TRANSLATION>
+NON_COPLANAR_POINTS = observationer er ikke i samme plan
 
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
@@ -722,3 +737,18 @@ INCOMPATIBLE_UNITS = <MISSING TRANSLATION>
 
 # missing velocity data
 MISSING_VELOCITY = <MISSING TRANSLATION>
+
+# attempt to generate file {0} with a formatting error
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
+
+# {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
+FIND_ROOT = <MISSING TRANSLATION>
+
+# backward propagation not allowed here
+BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
+
+# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
+
+# inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
+INCONSISTENT_SELECTION = <MISSING TRANSLATION>

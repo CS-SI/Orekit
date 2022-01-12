@@ -29,9 +29,9 @@ import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.sp3.SP3File.SP3Coordinate;
-import org.orekit.files.sp3.SP3File.SP3Ephemeris;
-import org.orekit.files.sp3.SP3File.SP3OrbitType;
+import org.orekit.files.sp3.SP3.SP3Coordinate;
+import org.orekit.files.sp3.SP3.SP3Ephemeris;
+import org.orekit.files.sp3.SP3.SP3OrbitType;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -52,7 +52,7 @@ public class SP3ParserTest {
         // simple test for version sp3-a, only contains position entries
         final String    ex     = "/sp3/example-a-1.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -86,7 +86,7 @@ public class SP3ParserTest {
         Assert.assertEquals(779, file.getGpsWeek());
         Assert.assertEquals(518400.0, file.getSecondsOfWeek(), 1.0e-10);
         Assert.assertEquals(25, file.getSatellites().size());
-        Assert.assertEquals(SP3File.SP3FileType.UNDEFINED, file.getType());
+        Assert.assertEquals(SP3.SP3FileType.UNDEFINED, file.getType());
         Assert.assertNull(file.getSatellites().get(null));
     }
 
@@ -95,7 +95,7 @@ public class SP3ParserTest {
         // simple test for version sp3-a, contains p/v entries
         final String    ex     = "/sp3/example-a-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -125,7 +125,7 @@ public class SP3ParserTest {
         // simple test for version sp3-c, contains p entries
         final String    ex     = "/sp3/example-c-1.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -153,7 +153,7 @@ public class SP3ParserTest {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String    ex     = "/sp3/example-c-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -183,7 +183,7 @@ public class SP3ParserTest {
         // simple test for version sp3-d, contains p entries
         final String    ex     = "/sp3/example-d-1.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.BCT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -211,7 +211,7 @@ public class SP3ParserTest {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String    ex     = "/sp3/example-d-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -241,7 +241,7 @@ public class SP3ParserTest {
         // simple test for version sp3-c, contains more than 85 satellites
         final String    ex     = "/sp3/gbm19500_truncated.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File   file   = new SP3Parser().parse(source);
+        final SP3   file   = new SP3Parser().parse(source);
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
@@ -273,7 +273,7 @@ public class SP3ParserTest {
         final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
 
         // action
-        final SP3File file = parser.parse(source);
+        final SP3 file = parser.parse(source);
 
         // verify
         TimeScale gps = TimeScalesFactory.getGPS();
@@ -314,7 +314,7 @@ public class SP3ParserTest {
 
         final SP3Parser parser = new SP3Parser();
         final DataSource compressed = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3File file = parser.parse(new UnixCompressFilter().filter(compressed));
+        final SP3 file = parser.parse(new UnixCompressFilter().filter(compressed));
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals("FIT",file.getOrbitTypeKey());
@@ -417,7 +417,7 @@ public class SP3ParserTest {
         final String      ex           = "/sp3/esaBHN.sp3.Z";
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
-        final SP3File     file         = parser.parse(uncompressed);
+        final SP3     file         = parser.parse(uncompressed);
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals("BHN",file.getOrbitTypeKey());
     }
@@ -429,7 +429,7 @@ public class SP3ParserTest {
         final String      ex           = "/sp3/esaPRO.sp3.Z";
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
-        final SP3File     file         = parser.parse(uncompressed);
+        final SP3     file         = parser.parse(uncompressed);
         Assert.assertEquals(SP3OrbitType.EXT, file.getOrbitType());
         Assert.assertEquals("PRO",file.getOrbitTypeKey());
     }
@@ -441,7 +441,7 @@ public class SP3ParserTest {
         final String      ex           = "/sp3/unknownType.sp3.Z";
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
-        final SP3File     file         = parser.parse(uncompressed);
+        final SP3     file         = parser.parse(uncompressed);
         Assert.assertEquals(SP3OrbitType.OTHER, file.getOrbitType());
         Assert.assertEquals("UKN",file.getOrbitTypeKey());
     }
@@ -478,6 +478,92 @@ public class SP3ParserTest {
             Assert.assertEquals(  2, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertEquals(192, ((Integer) oe.getParts()[2]).intValue());
         }
+
+    }
+
+    @Test
+    public void testIssue803() {
+
+        // Test issue 803 (see https://gitlab.orekit.org/orekit/orekit/-/issues/803)
+        final String    ex     = "/sp3/truncated-nsgf.orb.lageos2.160305.v35.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Coordinates
+        final List<SP3Coordinate> coords = file.getSatellites().get("L52").getCoordinates();
+        Assert.assertEquals(1, coords.size());
+        final SP3Coordinate coord = coords.get(0);
+
+        // Verify
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+
+        // PL52   2228.470946   7268.265924   9581.471543
+        // VL52 -44856.945000  24321.151000  -7116.222800
+        checkPVEntry(new PVCoordinates(new Vector3D(2228470.946, 7268265.924, 9581471.543),
+                                       new Vector3D(-4485.6945000, 2432.1151000, -711.6222800)),
+                     coord);
+        Assert.assertEquals(999999.999999, coord.getClockCorrection(), 1.0e-6);
+        Assert.assertEquals(999999.999999, coord.getClockRateChange(), 1.0e-6);
+
+    }
+
+    @Test
+    public void testIssue827() {
+
+        // Test issue 827 (see https://gitlab.orekit.org/orekit/orekit/-/issues/827)
+        final String    ex     = "/sp3/truncated-nsgf.orb.lageos2.160305.v35.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Coordinates
+        final List<SP3Coordinate> coords = file.getSatellites().get("L52").getCoordinates();
+        Assert.assertEquals(1, coords.size());
+        final SP3Coordinate coord = coords.get(0);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+
+        // 2016  2 28 0 0 0.00000000
+        Assert.assertEquals(new AbsoluteDate(2016, 2, 28, 0, 0, 0,
+                TimeScalesFactory.getUTC()), coord.getDate());
+
+
+        // PL52   2228.470946   7268.265924   9581.471543
+        // VL52 -44856.945000  24321.151000  -7116.222800
+        checkPVEntry(new PVCoordinates(new Vector3D(2228470.946, 7268265.924, 9581471.543),
+                                       new Vector3D(-4485.6945000, 2432.1151000, -711.6222800)),
+                     coord);
+        Assert.assertEquals(999999.999999, coord.getClockCorrection(), 1.0e-6);
+        Assert.assertEquals(999999.999999, coord.getClockRateChange(), 1.0e-6);
+
+    }
+
+    @Test
+    public void testIssue828() {
+
+        // Test issue 828 (see https://gitlab.orekit.org/orekit/orekit/-/issues/828)
+        final String    ex     = "/sp3/example-d-3.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.IRNSS, file.getType());
+
+    }
+
+    @Test
+    public void testIssue828Bis() {
+
+        // Test issue 828 (see https://gitlab.orekit.org/orekit/orekit/-/issues/828)
+        final String    ex     = "/sp3/example-d-4.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.SBAS, file.getType());
 
     }
 

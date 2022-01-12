@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -34,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -72,7 +71,7 @@ public class FieldDSSTThirdBodyTest {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field)  {
+    private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field)  {
         
         final T zero = field.getZero();
         
@@ -133,7 +132,7 @@ public class FieldDSSTThirdBodyTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
         final T zero = field.getZero();
  
         final FieldSpacecraftState<T> meanState = getGEOState(field);
@@ -203,7 +202,7 @@ public class FieldDSSTThirdBodyTest {
         forces.add(sun);
                         
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
 
         // Compute state Jacobian using directly the method
         final double[][] shortPeriodJacobian = new double[6][6];
@@ -330,7 +329,7 @@ public class FieldDSSTThirdBodyTest {
         }
       
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
         
         final double[][] shortPeriodJacobian = new double[6][1];
       
@@ -435,7 +434,7 @@ public class FieldDSSTThirdBodyTest {
       
     }
 
-    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
                     
         final T zero = field.getZero();
         // No shadow at this date

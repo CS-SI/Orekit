@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -77,6 +77,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -209,9 +210,9 @@ public class DSSTPropagatorTest {
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
-        prop.setEphemerisMode();
+        EphemerisGenerator generator = prop.getEphemerisGenerator();
         prop.propagate(startDate, endDate);
-        BoundedPropagator ephemeris = prop.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
         TimeStampedPVCoordinates actualPV = ephemeris.getPVCoordinates(startDate, eci);
@@ -260,6 +261,10 @@ public class DSSTPropagatorTest {
         SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
+        Assert.assertEquals(2, dsstProp.getSatelliteRevolution());
+        dsstProp.setSatelliteRevolution(17);
+        Assert.assertEquals(17, dsstProp.getSatelliteRevolution());
+
         // Propagation of the initial state at t + dt
         final double dt = 3200.;
         final SpacecraftState finalState = dsstProp.propagate(state.getDate().shiftedBy(dt));
@@ -281,14 +286,14 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         // Set ephemeris mode
-        dsstProp.setEphemerisMode();
+        EphemerisGenerator generator = dsstProp.getEphemerisGenerator();
 
         // Propagation of the initial state at t + 10 days
         final double dt = 2. * Constants.JULIAN_DAY;
         dsstProp.propagate(state.getDate().shiftedBy(5. * dt));
 
         // Get ephemeris
-        BoundedPropagator ephem = dsstProp.getGeneratedEphemeris();
+        BoundedPropagator ephem = generator.getGeneratedEphemeris();
 
         // Propagation of the initial state with ephemeris at t + 2 days
         final SpacecraftState s = ephem.propagate(state.getDate().shiftedBy(dt));
@@ -684,16 +689,14 @@ public class DSSTPropagatorTest {
         // direct generation of states
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
-        propagator.setMasterMode(
-                600,
-                (currentState, isLast) -> states.add(currentState));
+        propagator.setStepHandler(600, currentState -> states.add(currentState));
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
 
         // ephemeris generation
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
-        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         double maxError = 0;
         for (final SpacecraftState state : states) {
@@ -819,25 +822,29 @@ public class DSSTPropagatorTest {
         final AbsoluteDate finalDate = orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateNoConfig = propagator.propagate(finalDate);
-        Assert.assertEquals(0, stateNoConfig.getAdditionalStates().size());
+        Assert.assertEquals(0, stateNoConfig.getAdditionalStatesValues().size());
 
+        Assert.assertNull(propagator.getSelectedCoefficients());
         propagator.setSelectedCoefficients(new HashSet<String>());
+        Assert.assertNotNull(propagator.getSelectedCoefficients());
+        Assert.assertTrue(propagator.getSelectedCoefficients().isEmpty());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigEmpty = propagator.propagate(finalDate);
-        Assert.assertEquals(234, stateConfigEmpty.getAdditionalStates().size());
+        Assert.assertEquals(234, stateConfigEmpty.getAdditionalStatesValues().size());
 
         final Set<String> selected = new HashSet<String>();
         selected.add("DSST-3rd-body-Moon-s[7]");
         selected.add("DSST-central-body-tesseral-c[-2][3]");
         propagator.setSelectedCoefficients(selected);
+        Assert.assertEquals(2, propagator.getSelectedCoefficients().size());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigeSelected = propagator.propagate(finalDate);
-        Assert.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStates().size());
+        Assert.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStatesValues().size());
 
         propagator.setSelectedCoefficients(null);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigNull = propagator.propagate(finalDate);
-        Assert.assertEquals(0, stateConfigNull.getAdditionalStates().size());
+        Assert.assertEquals(0, stateConfigNull.getAdditionalStatesValues().size());
 
     }
 
@@ -1132,7 +1139,7 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
             return null;
         }
 
@@ -1152,7 +1159,7 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        protected <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
+        protected <T extends CalculusFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
                                                                  FieldAuxiliaryElements<T> auxiliaryElements) {
             final Field<T> field = state.getDate().getField();
             final T zero = field.getZero();
@@ -1196,7 +1203,7 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
             return FieldVector3D.getZero(s.getDate().getField());
         }
 
@@ -1208,7 +1215,7 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,21 +17,20 @@
 package org.orekit.propagation;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
-import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.OrekitStepNormalizer;
+import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -45,14 +44,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public abstract class AbstractPropagator implements Propagator {
 
-    /** Propagation mode. */
-    private int mode;
-
-    /** Fixed step size. */
-    private double fixedStepSize;
-
-    /** Step handler. */
-    private OrekitStepHandler stepHandler;
+    /** Multiplexer for step handlers. */
+    private StepHandlerMultiplexer multiplexer;
 
     /** Start date. */
     private AbsoluteDate startDate;
@@ -60,10 +53,10 @@ public abstract class AbstractPropagator implements Propagator {
     /** Attitude provider. */
     private AttitudeProvider attitudeProvider;
 
-    /** Additional state providers. */
+    /** Providers for additional states. */
     private final List<AdditionalStateProvider> additionalStateProviders;
 
-    /** States managed by neither additional equations nor state providers. */
+    /** States managed by no generators. */
     private final Map<String, TimeSpanMap<double[]>> unmanagedStates;
 
     /** Initial state. */
@@ -72,11 +65,9 @@ public abstract class AbstractPropagator implements Propagator {
     /** Build a new instance.
      */
     protected AbstractPropagator() {
-        mode                     = SLAVE_MODE;
-        stepHandler              = null;
-        fixedStepSize            = Double.NaN;
-        additionalStateProviders = new ArrayList<AdditionalStateProvider>();
-        unmanagedStates          = new HashMap<>();
+        multiplexer        = new StepHandlerMultiplexer();
+        additionalStateProviders = new ArrayList<>();
+        unmanagedStates    = new HashMap<>();
     }
 
     /** Set a start date.
@@ -109,11 +100,6 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public int getMode() {
-        return mode;
-    }
-
-    /** {@inheritDoc} */
     public Frame getFrame() {
         return initialState.getFrame();
     }
@@ -125,67 +111,38 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public void setSlaveMode() {
-        mode          = SLAVE_MODE;
-        stepHandler   = null;
-        fixedStepSize = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    public void setMasterMode(final double h,
-                              final OrekitFixedStepHandler handler) {
-        setMasterMode(new OrekitStepNormalizer(h, handler));
-        fixedStepSize = h;
-    }
-
-    /** {@inheritDoc} */
-    public void setMasterMode(final OrekitStepHandler handler) {
-        mode          = MASTER_MODE;
-        stepHandler   = handler;
-        fixedStepSize = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    public void setEphemerisMode() {
-        mode          = EPHEMERIS_GENERATION_MODE;
-        stepHandler   = null;
-        fixedStepSize = Double.NaN;
+    public StepHandlerMultiplexer getMultiplexer() {
+        return multiplexer;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setEphemerisMode(final OrekitStepHandler handler) {
-        mode          = EPHEMERIS_GENERATION_MODE;
-        stepHandler   = handler;
-        fixedStepSize = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider) {
+    public void addAdditionalStateProvider(final AdditionalStateProvider provider) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(additionalStateProvider.getName())) {
+        if (isAdditionalStateManaged(provider.getName())) {
             // this additional state is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      additionalStateProvider.getName());
+                                      provider.getName());
         }
 
         // this is really a new name, add it
-        additionalStateProviders.add(additionalStateProvider);
+        additionalStateProviders.add(provider);
 
     }
 
     /** {@inheritDoc} */
+    @Override
     public List<AdditionalStateProvider> getAdditionalStateProviders() {
         return Collections.unmodifiableList(additionalStateProviders);
     }
 
-    /** Update state by adding all additional states.
+    /** Update state by adding unmanaged states.
      * @param original original state
-     * @return updated state, with all additional states included
-     * @see #addAdditionalStateProvider(AdditionalStateProvider)
+     * @return updated state, with unmanaged states included
+     * @see #updateAdditionalStates(SpacecraftState)
      */
-    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+    protected SpacecraftState updateUnmanagedStates(final SpacecraftState original) {
 
         // start with original state,
         // which may already contain additional states, for example in interpolated ephemerides
@@ -197,10 +154,44 @@ public abstract class AbstractPropagator implements Propagator {
                                                  entry.getValue().get(original.getDate()));
         }
 
-        // update the additional states managed by providers
-        for (final AdditionalStateProvider provider : additionalStateProviders) {
-            updated = updated.addAdditionalState(provider.getName(),
-                                                 provider.getAdditionalState(updated));
+        return updated;
+
+    }
+
+    /** Update state by adding all additional states.
+     * @param original original state
+     * @return updated state, with all additional states included
+     * (including {@link #updateUnmanagedStates(SpacecraftState) unmanaged} states)
+     * @see #addAdditionalStateProvider(AdditionalStateProvider)
+     * @see #updateUnmanagedStates(SpacecraftState)
+     */
+    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+
+        // start with original state and unmanaged states
+        SpacecraftState updated = updateUnmanagedStates(original);
+
+        // set up queue for providers
+        final Queue<AdditionalStateProvider> pending = new LinkedList<>(getAdditionalStateProviders());
+
+        // update the additional states managed by providers, taking care of dependencies
+        int yieldCount = 0;
+        while (!pending.isEmpty()) {
+            final AdditionalStateProvider provider = pending.remove();
+            if (provider.yield(updated)) {
+                // this generator has to wait for another one,
+                // we put it again in the pending queue
+                pending.add(provider);
+                if (++yieldCount >= pending.size()) {
+                    // all pending providers yielded!, they probably need data not yet initialized
+                    // we let the propagation proceed, if these data are really needed right now
+                    // an appropriate exception will be triggered when caller tries to access them
+                    break;
+                }
+            } else {
+                // we can use this provider right now
+                updated    = updated.addAdditionalState(provider.getName(), provider.getAdditionalState(updated));
+                yieldCount = 0;
+            }
         }
 
         return updated;
@@ -226,32 +217,6 @@ public abstract class AbstractPropagator implements Propagator {
         return managed;
     }
 
-    /** Get the fixed step size.
-     * @return fixed step size (or NaN if there are no fixed step size).
-     */
-    protected double getFixedStepSize() {
-        return fixedStepSize;
-    }
-
-    /** Get the step handler.
-     * @return step handler
-     */
-    protected OrekitStepHandler getStepHandler() {
-        return stepHandler;
-    }
-
-    /** {@inheritDoc} */
-    public abstract BoundedPropagator getGeneratedEphemeris();
-
-    /** {@inheritDoc} */
-    public abstract <T extends EventDetector> void addEventDetector(T detector);
-
-    /** {@inheritDoc} */
-    public abstract Collection<EventDetector> getEventsDetectors();
-
-    /** {@inheritDoc} */
-    public abstract void clearEventsDetectors();
-
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target) {
         if (startDate == null) {
@@ -276,7 +241,7 @@ public abstract class AbstractPropagator implements Propagator {
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
             // copy the additional states present in initialState but otherwise not managed
-            for (final Map.Entry<String, double[]> initial : initialState.getAdditionalStates().entrySet()) {
+            for (final DoubleArrayDictionary.Entry initial : initialState.getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
@@ -292,7 +257,7 @@ public abstract class AbstractPropagator implements Propagator {
     protected void stateChanged(final SpacecraftState state) {
         final AbsoluteDate date    = state.getDate();
         final boolean      forward = date.durationFrom(getStartDate()) >= 0.0;
-        for (final Map.Entry<String, double[]> changed : state.getAdditionalStates().entrySet()) {
+        for (final DoubleArrayDictionary.Entry changed : state.getAdditionalStatesValues().getData()) {
             final TimeSpanMap<double[]> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state

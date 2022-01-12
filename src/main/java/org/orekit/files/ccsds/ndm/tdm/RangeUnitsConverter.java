@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.orekit.time.AbsoluteDate;
 /** Interface for converting {@link RangeUnits#RU Range Units} to meters.
  * <p>
  * Implementations of this interface must be provided by user when dealing
- * with {@link TdmFile Tracking Data Messages} that include range observations
+ * with {@link Tdm Tracking Data Messages} that include range observations
  * in {@link RangeUnits#RU Range Units}. These units are intended for mission-specific
  * measurements and must be described in an Interface Control Document.
  * </p>

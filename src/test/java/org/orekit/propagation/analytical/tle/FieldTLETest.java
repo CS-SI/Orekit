@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -41,6 +41,9 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.DateComponents;
@@ -49,6 +52,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldTLETest {
 
@@ -189,7 +193,7 @@ public class FieldTLETest {
         }
     }
 
-    public <T extends RealFieldElement<T>> void doTestTLEFormat(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestTLEFormat(Field<T> field) {
 
         String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
@@ -247,7 +251,7 @@ public class FieldTLETest {
     }
 
 
-    public <T extends RealFieldElement<T>> void doTestIssue196(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestIssue196(Field<T> field) {
 
         String line1A = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         String line1B = "1 27421U 02021A   02124.48976499  -.0002147  00000-0 -89879-2 0    20";
@@ -274,7 +278,7 @@ public class FieldTLETest {
 
     }
 
-    public <T extends RealFieldElement<T>>void doTestSymmetry(Field<T> field) {
+    public <T extends CalculusFieldElement<T>>void doTestSymmetry(Field<T> field) {
         checkSymmetry(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         checkSymmetry(field, "1 31928U 98067BA  08269.84884916  .00114257  17652-4  13615-3 0  4412",
@@ -283,7 +287,7 @@ public class FieldTLETest {
                       "2 T7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60");
     }
 
-    private <T extends RealFieldElement<T>> void checkSymmetry(Field<T> field, String line1, String line2) {
+    private <T extends CalculusFieldElement<T>> void checkSymmetry(Field<T> field, String line1, String line2) {
         FieldTLE<T> tleRef = new FieldTLE<T>(field, line1, line2);
         FieldTLE<T> tle = new FieldTLE<T>(tleRef.getSatelliteNumber(), tleRef.getClassification(),
                           tleRef.getLaunchYear(), tleRef.getLaunchNumber(), tleRef.getLaunchPiece(),
@@ -296,17 +300,17 @@ public class FieldTLETest {
         Assert.assertEquals(line2, tle.getLine2());
     }
 
-    public <T extends RealFieldElement<T>> void doTestBug74(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestBug74(Field<T> field) {
         checkSymmetry(field, "1 00001U 00001A   12026.45833333 2.94600864  39565-9  16165-7 1    12",
                       "2 00001 127.0796 254.4522 0000000 224.9662   0.4817  0.00000000    11");
     }
 
-    public <T extends RealFieldElement<T> >void doTestBug77(Field<T> field) {
+    public <T extends CalculusFieldElement<T> >void doTestBug77(Field<T> field) {
         checkSymmetry(field, "1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
                       "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
     }
 
-    public <T extends RealFieldElement<T>> void doTestDirectConstruction(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestDirectConstruction(Field<T> field) {
         final T T_zero = field.getZero();
         FieldTLE<T> tleA = new FieldTLE<T>(5555, 'U', 1971, 86, "J", 0, 908,
                            new FieldAbsoluteDate<T>(field, new DateComponents(2012, 26),
@@ -333,7 +337,7 @@ public class FieldTLETest {
         Assert.assertEquals(tleA.getElementNumber(),             tleB.getElementNumber(), 0);
     }
 
-    public <T extends RealFieldElement<T>> void doTestGenerateAlpha5(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestGenerateAlpha5(Field<T> field) {
         final T T_zero = field.getZero();
         FieldTLE<T> tle = new FieldTLE<T>(339999, 'U', 1971, 86, "J", 0, 908,
                           new FieldAbsoluteDate<T>(field, new DateComponents(2012, 26),
@@ -351,7 +355,7 @@ public class FieldTLETest {
         Assert.assertEquals("2 Z9999  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804541", tle.getLine2());
     }
 
-    public <T extends RealFieldElement<T>> void doTestBug77TooLargeSecondDerivative(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeSecondDerivative(Field<T> field) {
         try {
             final T T_zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<T>(5555, 'U', 1971, 86, "J", 0, 908,
@@ -370,7 +374,7 @@ public class FieldTLETest {
         }
     }
 
-    public <T extends RealFieldElement<T>> void doTestBug77TooLargeBStar(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeBStar(Field<T> field) {
         try {
             final T T_zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<T>(5555, 'U', 1971, 86, "J", 0, 908,
@@ -389,7 +393,7 @@ public class FieldTLETest {
         }
     }
 
-    public <T extends RealFieldElement<T>> void doTestBug77TooLargeEccentricity(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeEccentricity(Field<T> field) {
         try {
             final T T_zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<T>(5555, 'U', 1971, 86, "J", 0, 908,
@@ -408,7 +412,7 @@ public class FieldTLETest {
         }
     }
 
-    public <T extends RealFieldElement<T>> void doTestBug77TooLargeSatelliteNumber1(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeSatelliteNumber1(Field<T> field) {
         try {
             final T T_zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<T>(1000000, 'U', 1971, 86, "J", 0, 908,
@@ -427,7 +431,7 @@ public class FieldTLETest {
         }
     }
 
-    public <T extends RealFieldElement<T>> void doTestBug77TooLargeSatelliteNumber2(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestBug77TooLargeSatelliteNumber2(Field<T> field) {
         try {
             final T T_zero = field.getZero();
             FieldTLE<T> tle = new FieldTLE<T>(1000000, 'U', 1971, 86, "J", 0, 908,
@@ -451,7 +455,7 @@ public class FieldTLETest {
         return  m * 2 * FastMath.PI * CombinatoricsUtils.factorial(n) / FastMath.pow(Constants.JULIAN_DAY, n);
     }
 
-    public <T extends RealFieldElement<T>> void doTestDifferentSatNumbers(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestDifferentSatNumbers(Field<T> field) {
         new FieldTLE<T>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                "2 27422  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
     }
@@ -491,7 +495,7 @@ public class FieldTLETest {
         }
     }
 
-    public <T extends RealFieldElement<T>>void doTestSatCodeCompliance(Field<T> field) throws IOException, OrekitException, ParseException {
+    public <T extends CalculusFieldElement<T>>void doTestSatCodeCompliance(Field<T> field) throws IOException, OrekitException, ParseException {
 
         BufferedReader rEntry = null;
         BufferedReader rResults = null;
@@ -576,7 +580,7 @@ public class FieldTLETest {
         }
     }
 
-    public <T extends RealFieldElement<T>> void doTestZeroInclination(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestZeroInclination(Field<T> field) {
         FieldTLE<T> tle = new FieldTLE<T>(field,"1 26451U 00043A   10130.13784012 -.00000276  00000-0  10000-3 0  3866",
                                                 "2 26451 000.0000 266.1044 0001893 160.7642 152.5985 01.00271160 35865");
         final T[] parameters;
@@ -588,12 +592,12 @@ public class FieldTLETest {
         Assert.assertEquals(3074.1890089357994, pv.getVelocity().getNorm().getReal(), 1.0e-6);
     }
 
-    public <T extends RealFieldElement<T>> void doTestSymmetryAfterLeapSecondIntroduction(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestSymmetryAfterLeapSecondIntroduction(Field<T> field) {
         checkSymmetry(field, "1 34602U 09013A   12187.35117436  .00002472  18981-5  42406-5 0  9995",
                              "2 34602  96.5991 210.0210 0006808 112.8142 247.3865 16.06008103193411");
     }
 
-    public <T extends RealFieldElement<T>> void doTestOldTLE(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestOldTLE(Field<T> field) {
         String line1 = "1 15427U          85091.94293084 0.00000051  00000+0  32913-4 0   179";
         String line2 = "2 15427  98.9385  46.0219 0015502 321.4354  38.5705 14.11363211 15580";
         Assert.assertTrue(TLE.isFormatOK(line1, line2));
@@ -604,7 +608,7 @@ public class FieldTLETest {
                             1.0e-15);
     }
 
-    public <T extends RealFieldElement<T>> void doTestEqualTLE(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestEqualTLE(Field<T> field) {
         FieldTLE<T> tleA = new FieldTLE<T>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                                   "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         FieldTLE<T> tleB = new FieldTLE<T>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
@@ -612,7 +616,7 @@ public class FieldTLETest {
         Assert.assertTrue(tleA.equals(tleB));
     }
 
-    public <T extends RealFieldElement<T>> void doTestNonEqualTLE(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestNonEqualTLE(Field<T> field) {
         FieldTLE<T> tleA = new FieldTLE<T>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                                   "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         FieldTLE<T> tleB = new FieldTLE<T>(field, "1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
@@ -620,7 +624,7 @@ public class FieldTLETest {
         Assert.assertFalse(tleA.equals(tleB));
     }
 
-    public <T extends RealFieldElement<T>> void doTestIssue388(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestIssue388(Field<T> field) {
         final T T_zero = field.getZero();
         FieldTLE<T> tleRef = new FieldTLE<T>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                                     "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
@@ -647,7 +651,7 @@ public class FieldTLETest {
         Assert.assertEquals(1.0e-4, new FieldTLE<T>(field, changedBStar.getLine1(), changedBStar.getLine2()).getBStar(), 1.0e-15);
     }
 
-    public <T extends RealFieldElement<T>> void doTestIssue664NegativeRaanPa(Field<T> field) {
+    public <T extends CalculusFieldElement<T>> void doTestIssue664NegativeRaanPa(Field<T> field) {
         final T T_zero = field.getZero();
         FieldTLE<T> tle = new FieldTLE<T>(99999, 'X', 2020, 42, "F", 0, 999,
                 new FieldAbsoluteDate<T>(field, "2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), T_zero.add(0.0011010400252833312), T_zero.add(0.0),
@@ -665,7 +669,7 @@ public class FieldTLETest {
     	doTestStateToTLELeo(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestStateToTLELeo(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestStateToTLELeo(final Field<T> field) {
     	final FieldTLE<T> leoTLE = new FieldTLE<>(field, "1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
                                                   "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
         checkConversion(leoTLE, field);
@@ -676,13 +680,13 @@ public class FieldTLETest {
     	doTestStateToTLEGeo(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestStateToTLEGeo(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestStateToTLEGeo(final Field<T> field) {
     	final FieldTLE<T> geoTLE = new FieldTLE<>(field, "1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
-                                                  "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
+                                                         "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
         checkConversion(geoTLE, field);
     }
 
-    private <T extends RealFieldElement<T>> void checkConversion(final FieldTLE<T> tle, final Field<T> field)
+    private <T extends CalculusFieldElement<T>> void checkConversion(final FieldTLE<T> tle, final Field<T> field)
         {
 
         FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field));
@@ -713,11 +717,11 @@ public class FieldTLETest {
         doTestStateToTleISS(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestStateToTleISS(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestStateToTleISS(final Field<T> field) {
 
         // Initialize TLE
-        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0 9998",
-                                                  "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                                         "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
 
         // TLE propagator
         final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
@@ -748,17 +752,62 @@ public class FieldTLETest {
     }
 
     @Test
+    public void testIssue802() {
+        doTestIssue802(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue802(final Field<T> field) {
+
+        // Initialize TLE
+        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                                         "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+
+        // State at TLE epoch
+        final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
+
+        // Changes frame
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final TimeStampedFieldPVCoordinates<T> pv = state.getPVCoordinates(eme2000);
+        final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(pv, eme2000, state.getMu());
+
+        // Convert to TLE
+        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(new FieldSpacecraftState<T>(orbit), tleISS);
+
+        // Verify
+        Assert.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
+        Assert.assertEquals(tleISS.getLine2(), rebuilt.getLine2());
+    }
+
+    @Test
     public void testToTLE() {
         doTestToTLE(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestToTLE(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToTLE(final Field<T> field) {
         final TLE tle = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
                                 "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
         final FieldTLE<T> fieldTle = new FieldTLE<T>(field, tle.getLine1(), tle.getLine2());
         final TLE rebuilt = fieldTle.toTLE();
         Assert.assertTrue(rebuilt.equals(tle));
         Assert.assertEquals(tle.toString(), rebuilt.toString());
+    }
+
+    @Test
+    public void testIssue781() {
+
+        final DSFactory factory = new DSFactory(6, 3);
+        final String line1 = "1 05709U 71116A   21105.62692147  .00000088  00000-0  00000-0 0  9999";
+        final String line2 = "2 05709  10.8207 310.3659 0014139  71.9531 277.0561  0.99618926100056";
+        Assert.assertTrue(TLE.isFormatOK(line1, line2));
+
+        final FieldTLE<DerivativeStructure> fieldTLE = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
+        final FieldTLEPropagator<DerivativeStructure> tlePropagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, fieldTLE.getParameters(factory.getDerivativeField()));
+        final FieldTLE<DerivativeStructure> fieldTLE1 = FieldTLE.stateToTLE(tlePropagator.getInitialState(), fieldTLE);
+        Assert.assertEquals(line2, fieldTLE1.getLine2());
+
     }
 
     @Before

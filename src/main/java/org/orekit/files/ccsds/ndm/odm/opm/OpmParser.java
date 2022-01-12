@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.CommonParser;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
@@ -65,7 +66,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public class OpmParser extends CommonParser<OpmFile, OpmParser> {
+public class OpmParser extends OdmParser<Opm, OpmParser> {
 
     /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
     private final double defaultMass;
@@ -118,12 +119,14 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param defaultMass default mass to use if there are no spacecraft parameters block logical block in the file
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public OpmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
-                     final double defaultMass) {
-        super(OpmFile.ROOT, OpmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+                     final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(Opm.ROOT, Opm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+              missionReferenceDate, mu, parsedUnitsBehavior);
         this.defaultMass = defaultMass;
     }
 
@@ -149,7 +152,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header();
+        header                    = new Header(3.0);
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
@@ -161,32 +164,32 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         maneuverBlocks            = new ArrayList<>();
         userDefinedBlock          = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(OpmFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Opm.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -198,16 +201,17 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         }
         metadata  = new CommonMetadata();
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, this::getMissionReferenceDate,
+                                       this::getDataContext, this::getParsedUnitsBehavior,
+                                       this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
-        setFallback(this::processMetadataToken);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processStateVectorToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processStateVectorToken);
         return true;
     }
 
@@ -215,7 +219,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
     @Override
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         if (metadata.getCenter().getBody() != null) {
             setMuCreated(metadata.getCenter().getBody().getGM());
         }
@@ -225,7 +229,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean prepareData() {
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processStateVectorToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processStateVectorToken);
         return true;
     }
 
@@ -256,7 +260,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                                              spacecraftParametersBlock, covarianceBlock,
                                              maneuverBlocks, userDefinedBlock,
                                              mass);
-            data.checkMandatoryEntries();
+            data.validate(header.getFormatVersion());
             segments.add(new Segment<>(metadata, data));
         }
         metadata                  = null;
@@ -273,11 +277,11 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public OpmFile build() {
+    public Opm build() {
         // OPM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
-        return new OpmFile(header, segments, getConventions(), getDataContext(), getSelectedMu());
+        return new Opm(header, segments, getConventions(), getDataContext(), getSelectedMu());
     }
 
     /** Manage state vector section.
@@ -286,7 +290,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageStateVectorSection(final boolean starting) {
-        setFallback(starting ? this::processStateVectorToken : structureProcessor);
+        anticipateNext(starting ? this::processStateVectorToken : structureProcessor);
         return true;
     }
 
@@ -296,7 +300,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageKeplerianElementsSection(final boolean starting) {
-        setFallback(starting ? this::processKeplerianElementsToken : structureProcessor);
+        anticipateNext(starting ? this::processKeplerianElementsToken : structureProcessor);
         return true;
     }
 
@@ -306,7 +310,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageSpacecraftParametersSection(final boolean starting) {
-        setFallback(starting ? this::processSpacecraftParametersToken : structureProcessor);
+        anticipateNext(starting ? this::processSpacecraftParametersToken : structureProcessor);
         return true;
     }
 
@@ -316,7 +320,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageCovarianceSection(final boolean starting) {
-        setFallback(starting ? this::processCovarianceToken : structureProcessor);
+        anticipateNext(starting ? this::processCovarianceToken : structureProcessor);
         return true;
     }
 
@@ -326,7 +330,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageManeuversSection(final boolean starting) {
-        setFallback(starting ? this::processManeuverToken : structureProcessor);
+        anticipateNext(starting ? this::processManeuverToken : structureProcessor);
         return true;
     }
 
@@ -336,7 +340,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
      * @return always return true
      */
     boolean manageUserDefinedParametersSection(final boolean starting) {
-        setFallback(starting ? this::processUserDefinedToken : structureProcessor);
+        anticipateNext(starting ? this::processUserDefinedToken : structureProcessor);
         return true;
     }
 
@@ -396,7 +400,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
             prepareData();
             stateVectorBlock = new StateVector();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processKeplerianElementsToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processKeplerianElementsToken);
         try {
             return token.getName() != null &&
                    StateVectorKey.valueOf(token.getName()).process(token, context, stateVectorBlock);
@@ -414,7 +418,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         if (keplerianElementsBlock == null) {
             keplerianElementsBlock = new KeplerianElements();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
         try {
             return token.getName() != null &&
                    KeplerianElementsKey.valueOf(token.getName()).process(token, context, keplerianElementsBlock);
@@ -436,7 +440,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                 keplerianElementsBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processCovarianceToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processCovarianceToken);
         try {
             return token.getName() != null &&
                    SpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
@@ -460,7 +464,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                 spacecraftParametersBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processManeuverToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processManeuverToken);
         try {
             return token.getName() != null &&
                    CartesianCovarianceKey.valueOf(token.getName()).process(token, context, covarianceBlock);
@@ -482,7 +486,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                 covarianceBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
         try {
             if (token.getName() != null &&
                 ManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {
@@ -513,7 +517,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                 currentManeuver = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
         if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             if (token.getType() == TokenType.ENTRY) {
                 userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),

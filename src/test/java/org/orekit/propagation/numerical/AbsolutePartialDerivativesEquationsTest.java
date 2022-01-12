@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -46,7 +46,8 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-/** Unit tests for {@link PartialDerivativesEquations}. */
+/** Unit tests for {@link AbsolutePartialDerivativesEquations}. */
+@Deprecated
 public class AbsolutePartialDerivativesEquationsTest {
 
     /** arbitrary date */
@@ -84,16 +85,12 @@ public class AbsolutePartialDerivativesEquationsTest {
     }
 
     /**
-     * check {@link PartialDerivativesEquations#computeDerivatives(SpacecraftState,
-     * double[])} correctly sets the satellite velocity.
+     * check {@link PartialDerivativesEquations#derivatives(SpacecraftState)} correctly sets the satellite velocity.
      */
     @Test
     public void testComputeDerivativesStateVelocity() {
-        //setup
-        double[] pdot = new double[36];
-
         //action
-        pde.computeDerivatives(state, pdot);
+        pde.derivatives(state);
 
         //verify
         MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
@@ -127,7 +124,7 @@ public class AbsolutePartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> void
+        public <T extends CalculusFieldElement<T>> void
             addContribution(FieldSpacecraftState<T> s,
                             FieldTimeDerivativesEquations<T> adder) {
         }
@@ -140,7 +137,7 @@ public class AbsolutePartialDerivativesEquationsTest {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
             this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
@@ -159,7 +156,7 @@ public class AbsolutePartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

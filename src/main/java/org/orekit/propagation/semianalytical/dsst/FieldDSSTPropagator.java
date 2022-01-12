@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,14 +20,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
@@ -62,8 +60,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldFixedNumberInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldMaxGapInterpolationGrid;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -85,10 +83,7 @@ import org.orekit.utils.ParameterObserver;
  * <li>the discrete events that should be triggered during propagation (
  * {@link #addEventDetector(org.orekit.propagation.events.FieldEventDetector)},
  * {@link #clearEventsDetectors()})</li>
- * <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- * {@link #setMasterMode(RealFieldElement, org.orekit.propagation.sampling.FieldOrekitFixedStepHandler)},
- * {@link #setMasterMode(org.orekit.propagation.sampling.FieldOrekitStepHandler)},
- * {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
+ * <li>the binding logic with the rest of the application ({@link #getMultiplexer()})</li>
  * </ul>
  * <p>
  * From these configuration parameters, only the initial state is mandatory.
@@ -128,7 +123,7 @@ import org.orekit.utils.ParameterObserver;
  * @author Pascal Parraud
  * @since 10.0
  */
-public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbstractIntegratedPropagator<T>  {
+public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractIntegratedPropagator<T>  {
 
     /** Retrograde factor I.
      *  <p>
@@ -371,12 +366,12 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * </p>
      * <p>
      * If neither {@link #setInterpolationGridToFixedNumberOfPoints(int)}
-     * nor {@link #setInterpolationGridToMaxTimeGap(RealFieldElement)} has been called,
+     * nor {@link #setInterpolationGridToMaxTimeGap(CalculusFieldElement)} has been called,
      * by default the propagator is set as to 3 interpolations points per step.
      * </p>
      * @param interpolationPoints number of interpolation points at
      * each integration step
-     * @see #setInterpolationGridToMaxTimeGap(RealFieldElement)
+     * @see #setInterpolationGridToMaxTimeGap(CalculusFieldElement)
      * @since 7.1
      */
     public void setInterpolationGridToFixedNumberOfPoints(final int interpolationPoints) {
@@ -390,7 +385,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * </p>
      * <p>
      * If neither {@link #setInterpolationGridToFixedNumberOfPoints(int)}
-     * nor {@link #setInterpolationGridToMaxTimeGap(RealFieldElement)} has been called,
+     * nor {@link #setInterpolationGridToMaxTimeGap(CalculusFieldElement)} has been called,
      * by default the propagator is set as to 3 interpolations points per step.
      * </p>
      * @param maxGap maximum time gap between interpolation points (seconds)
@@ -408,7 +403,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      *  </p>
      *  @param force perturbing {@link DSSTForceModel force} to add
      *  @see #removeForceModels()
-     *  @see #setMu(RealFieldElement)
+     *  @see #setMu(CalculusFieldElement)
      */
     public void addForceModel(final DSSTForceModel force) {
 
@@ -476,7 +471,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @return list of perturbing force models, with Newtonian attraction being the
      * last one
      * @see #addForceModel(DSSTForceModel)
-     * @see #setMu(RealFieldElement)
+     * @see #setMu(CalculusFieldElement)
      */
     public List<DSSTForceModel> getAllForceModels() {
         return Collections.unmodifiableList(forceModels);
@@ -514,7 +509,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @return osculating state in a DSST sense
      */
     @SuppressWarnings("unchecked")
-    public static <T extends RealFieldElement<T>> FieldSpacecraftState<T> computeOsculatingState(final FieldSpacecraftState<T> mean,
+    public static <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> computeOsculatingState(final FieldSpacecraftState<T> mean,
                                                                                                  final AttitudeProvider attitudeProvider,
                                                                                                  final Collection<DSSTForceModel> forces) {
 
@@ -533,7 +528,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         final FieldEquinoctialOrbit<T> osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new FieldSpacecraftState<>(osculatingOrbit, mean.getAttitude(), mean.getMass(),
-                                          mean.getAdditionalStates());
+                                          mean.getAdditionalStatesValues());
 
     }
 
@@ -556,7 +551,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @param <T> type of the elements
      * @return mean state in a DSST sense
      */
-    public static <T extends RealFieldElement<T>> FieldSpacecraftState<T> computeMeanState(final FieldSpacecraftState<T> osculating,
+    public static <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> computeMeanState(final FieldSpacecraftState<T> osculating,
                                                                                            final AttitudeProvider attitudeProvider,
                                                                                            final Collection<DSSTForceModel> forceModel) {
         return computeMeanState(osculating, attitudeProvider, forceModel, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
@@ -584,13 +579,14 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @param <T> type of the elements
      * @since 10.1
      */
-    public static <T extends RealFieldElement<T>> FieldSpacecraftState<T> computeMeanState(final FieldSpacecraftState<T> osculating,
+    public static <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> computeMeanState(final FieldSpacecraftState<T> osculating,
                                                                                            final AttitudeProvider attitudeProvider,
                                                                                            final Collection<DSSTForceModel> forceModel,
                                                                                            final double epsilon,
                                                                                            final int maxIterations) {
         final FieldOrbit<T> meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModel, epsilon, maxIterations);
-        return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
+        return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(),
+                                          osculating.getAdditionalStatesValues());
     }
 
     /** Override the default value of the parameter.
@@ -707,7 +703,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @since 10.1
      */
     @SuppressWarnings("unchecked")
-    private static <T extends RealFieldElement<T>> FieldOrbit<T> computeMeanOrbit(final FieldSpacecraftState<T> osculating, final AttitudeProvider attitudeProvider, final Collection<DSSTForceModel> forceModel,
+    private static <T extends CalculusFieldElement<T>> FieldOrbit<T> computeMeanOrbit(final FieldSpacecraftState<T> osculating, final AttitudeProvider attitudeProvider, final Collection<DSSTForceModel> forceModel,
                                                                                   final double epsilon, final int maxIterations) {
 
         // zero
@@ -721,7 +717,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         final T thresholdA = epsilonT.multiply(FastMath.abs(meanOrbit.getA()).add(1.));
         final T thresholdE = epsilonT.multiply(meanOrbit.getE().add(1.));
         final T thresholdI = epsilonT.multiply(meanOrbit.getI().add(1.));
-        final T thresholdL = epsilonT.multiply(FastMath.PI);
+        final T thresholdL = epsilonT.multiply(zero.getPi());
 
         // ensure all Gaussian force models can rely on attitude
         for (final DSSTForceModel force : forceModel) {
@@ -788,7 +784,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @param <T> type of the elements
      * @return osculating state
      */
-    private static <T extends RealFieldElement<T>> FieldEquinoctialOrbit<T> computeOsculatingOrbit(final FieldSpacecraftState<T> meanState,
+    private static <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> computeOsculatingOrbit(final FieldSpacecraftState<T> meanState,
                                                                                                    final List<FieldShortPeriodTerms<T>> shortPeriodTerms) {
 
         final T[] mean = MathArrays.buildArray(meanState.getDate().getField(), 6);
@@ -889,14 +885,14 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
             // (the loop may not be performed if there are no force models and in the
             //  case we want to remain in mean parameters only)
             final T[] elements = y.clone();
-            final Map<String, T[]> coefficients;
+            final FieldArrayDictionary<T> coefficients;
             switch (type) {
                 case MEAN:
                     coefficients = null;
                     break;
                 case OSCULATING:
                     final FieldOrbit<T> meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
-                    coefficients = selectedCoefficients == null ? null : new HashMap<String, T[]>();
+                    coefficients = selectedCoefficients == null ? null : new FieldArrayDictionary<>(date.getField());
                     for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
                         final T[] shortPeriodic = spt.value(meanOrbit);
                         for (int i = 0; i < shortPeriodic.length; i++) {
@@ -1022,11 +1018,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         /** {@inheritDoc} */
         @Override
         public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
-            final SpacecraftState stateD  = initialState.toSpacecraftState();
-            final AbsoluteDate    targetD = target.toAbsoluteDate();
-            for (final DSSTForceModel forceModel : forceModels) {
-                forceModel.init(stateD, targetD);
-            }
+            forceModels.forEach(fm -> fm.init(initialState, target));
         }
 
         /** {@inheritDoc} */
@@ -1093,7 +1085,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
      */
-    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit) {
+    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit) {
         return FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
     }
 
@@ -1116,7 +1108,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      *                       and row 1 being the relative tolerance error
      * @since 10.3
      */
-    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final T dV,
+    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
                                                                         final FieldOrbit<T> orbit) {
         return FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.EQUINOCTIAL);
     }
@@ -1139,7 +1131,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         /** {@inheritDoc} */
         @SuppressWarnings("unchecked")
         @Override
-        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
+        public void handleStep(final FieldODEStateInterpolator<T> interpolator) {
 
             // Get the grid points to compute
             final T[] interpolationPoints =

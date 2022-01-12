@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,9 +39,20 @@ import org.orekit.time.AbsoluteDate;
  * <pre>{@code
  * Propagator propagator = ...; // pre-configured propagator
  * AEMWriter  aemWriter  = ...; // pre-configured writer
- *   try (Generator out = ...;) { // set-up output stream
- *     propagator.setMasterMode(step, new StreamingAemWriter(out, aemWriter).newSegment());
- *     propagator.propagate(startDate, stopDate);
+ *   try (Generator out = ...;  // set-up output stream
+ *        StreamingAemWriter sw = new StreamingAemWriter(out, aemWriter)) { // set-up streaming writer
+ *
+ *     // write segment 1
+ *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     propagator.propagate(startDate1, stopDate1);
+ *
+ *     ...
+ *
+ *     // write segment n
+ *     propagator.getMultiplexer().clear();
+ *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     propagator.propagate(startDateN, stopDateN);
+ *
  *   }
  * }</pre>
  * @author Bryan Cazabonne
@@ -50,7 +61,7 @@ import org.orekit.time.AbsoluteDate;
  * @see AemWriter
  * @since 10.2
  */
-public class StreamingAemWriter {
+public class StreamingAemWriter implements AutoCloseable {
 
     /** Generator for AEM output. */
     private final Generator generator;
@@ -79,7 +90,7 @@ public class StreamingAemWriter {
         this.generator          = generator;
         this.writer             = writer;
         this.header             = header;
-        this.metadata           = template.copy();
+        this.metadata           = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
         this.headerWritePending = true;
     }
 
@@ -93,6 +104,12 @@ public class StreamingAemWriter {
         return new SegmentWriter();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void close() throws IOException {
+        writer.writeFooter(generator);
+    }
+
     /** A writer for a segment of an AEM. */
     public class SegmentWriter implements OrekitFixedStepHandler {
 
@@ -100,14 +117,16 @@ public class StreamingAemWriter {
          * {@inheritDoc}
          *
          * <p> Sets the {@link AemMetadataKey#START_TIME} and {@link AemMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link AemWriter#writeHeader(Generator)
-         * writeHeader} if it is the first segment) and {@link AemWriter#writeMetadata()} to start the segment.
+         * segment's metadata if not already set by the user. Then calls {@link AemWriter#writeHeader(Generator, Header)
+         * writeHeader} if it is the first segment) and {@link AemWriter#writeMetadata(Generator, AemMetadata)} to start the segment.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
             try {
-                if (t.isBefore(s0)) {
-                    throw new OrekitException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES, s0.getDate(), t);
+                final AbsoluteDate date = s0.getDate();
+                if (t.isBefore(date)) {
+                    throw new OrekitException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
+                            date, t, date.durationFrom(t));
                 }
 
                 if (headerWritePending) {
@@ -116,7 +135,7 @@ public class StreamingAemWriter {
                     headerWritePending = false;
                 }
 
-                metadata.setStartTime(s0.getDate());
+                metadata.setStartTime(date);
                 metadata.setUseableStartTime(null);
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
@@ -137,12 +156,19 @@ public class StreamingAemWriter {
 
         /** {@inheritDoc}. */
         @Override
-        public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+        public void handleStep(final SpacecraftState currentState) {
             try {
                 writer.writeAttitudeEphemerisLine(generator, metadata, currentState.getAttitude().getOrientation());
-                if (isLast) {
-                    writer.endAttitudeBlock(generator);
-                }
+            } catch (IOException e) {
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
+            }
+        }
+
+        /** {@inheritDoc}. */
+        @Override
+        public void finish(final SpacecraftState finalState) {
+            try {
+                writer.endAttitudeBlock(generator);
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }

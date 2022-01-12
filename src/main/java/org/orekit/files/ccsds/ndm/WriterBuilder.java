@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,13 +24,14 @@ import org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter;
 import org.orekit.files.ccsds.ndm.odm.oem.OemWriter;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmWriter;
 import org.orekit.files.ccsds.ndm.odm.opm.OpmWriter;
+import org.orekit.files.ccsds.ndm.tdm.IdentityConverter;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnits;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnitsConverter;
 import org.orekit.files.ccsds.ndm.tdm.TdmWriter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Builder for all {@link NdmFile CCSDS Message} files writers.
+/** Builder for all {@link NdmConstituent CCSDS Message} files writers.
  * <p>
  * This builder can be used for building all CCSDS Messages writers types.
  * It is particularly useful in multi-threaded context as writers cannot
@@ -50,8 +51,8 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      *   <li>{@link #getConventions() IERS conventions} set to {@link IERSConventions#IERS_2010}</li>
      *   <li>{@link #getDataContext() data context} set to {@link DataContext#getDefault() default context}</li>
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
+     *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
      * </ul>
-     * </p>
      */
     @DefaultDataContext
     public WriterBuilder() {
@@ -65,80 +66,86 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      * <ul>
      *   <li>{@link #getConventions() IERS conventions} set to {@link IERSConventions#IERS_2010}</li>
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
+     *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
      * </ul>
-     * </p>
      * @param dataContext data context used to retrieve frames, time scales, etc.
      */
     public WriterBuilder(final DataContext dataContext) {
-        this(IERSConventions.IERS_2010, dataContext, null);
+        this(IERSConventions.IERS_2010, dataContext, null, new IdentityConverter());
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param rangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      */
     private WriterBuilder(final IERSConventions conventions, final DataContext dataContext,
-                          final AbsoluteDate missionReferenceDate) {
-        super(conventions, dataContext, missionReferenceDate);
+                          final AbsoluteDate missionReferenceDate, final RangeUnitsConverter rangeUnitsConverter) {
+        super(conventions, dataContext, missionReferenceDate, rangeUnitsConverter);
     }
 
     /** {@inheritDoc} */
     @Override
     protected WriterBuilder create(final IERSConventions newConventions, final DataContext newDataContext,
-                                   final AbsoluteDate newMissionReferenceDate) {
-        return new WriterBuilder(newConventions, newDataContext, newMissionReferenceDate);
+                                   final AbsoluteDate newMissionReferenceDate, final RangeUnitsConverter newRangeUnitsConverter) {
+        return new WriterBuilder(newConventions, newDataContext, newMissionReferenceDate, newRangeUnitsConverter);
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.OpmFile Orbit Parameters Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.Ndm Navigation Data Messages}.
+     * @return a new writer
+     */
+    public NdmWriter buildNdmWriter() {
+        return new NdmWriter(this);
+    }
+
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.Opm Orbit Parameters Messages}.
      * @return a new writer
      */
     public OpmWriter buildOpmWriter() {
         return new OpmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.OmmFile Orbit Mean elements Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.omm.Omm Orbit Mean elements Messages}.
      * @return a new writer
      */
     public OmmWriter buildOmmWriter() {
         return new OmmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.oem.Oem Orbit Ephemeris Messages}.
      * @return a new writer
      */
     public OemWriter buildOemWriter() {
         return new OemWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.ocm.OcmFile Orbit Comprehensive Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.ocm.Ocm Orbit Comprehensive Messages}.
      * @return a new writer
      */
     public OcmWriter buildOcmWriter() {
         return new OcmWriter(getConventions(), getDataContext());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.apm.ApmFile Attitude Parameters Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.apm.Apm Attitude Parameters Messages}.
      * @return a new writer
      */
     public ApmWriter buildApmWriter() {
         return new ApmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.aem.AemFile Attitude Ephemeris Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.aem.Aem Attitude Ephemeris Messages}.
      * @return a new writer
      */
     public AemWriter buildAemWriter() {
         return new AemWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.
-     * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
-     * are no range observations in {@link RangeUnits#RU Range Units})
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.Tdm Tracking Data Messages}.
      * @return a new writer
      */
-    public TdmWriter buildTdmWriter(final RangeUnitsConverter converter) {
-        return new TdmWriter(getConventions(), getDataContext(), converter);
+    public TdmWriter buildTdmWriter() {
+        return new TdmWriter(getConventions(), getDataContext(), getRangeUnitsConverter());
     }
 
 }

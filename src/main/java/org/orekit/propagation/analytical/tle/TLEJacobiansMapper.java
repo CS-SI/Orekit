@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,13 @@
 package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -47,14 +47,14 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     /** State dimension, fixed to 6. */
     public static final int STATE_DIMENSION = 6;
 
-    /** Name. */
-    private String name;
-
     /** Selected parameters for Jacobian computation. */
     private final ParameterDriversList parameters;
 
-    /** Propagator computing state evolution. */
-    private final TLEPropagator propagator;
+    /** TLE propagator. */
+    private final FieldTLEPropagator<Gradient> gPropagator;
+
+    /** Parameters. */
+    private final Gradient[] gParameters;
 
     /** Placeholder for the derivatives of state. */
     private double[] stateTransition;
@@ -67,15 +67,17 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     public TLEJacobiansMapper(final String name,
                               final ParameterDriversList parameters,
                               final TLEPropagator propagator) {
-
         super(name, parameters);
 
+        // Initialize fields
         this.parameters      = parameters;
-        this.name            = name;
-        this.propagator      = propagator;
+        this.stateTransition = null;
 
-        stateTransition = null;
-
+        // Intialize "field" propagator
+        final TLEGradientConverter           converter   = new TLEGradientConverter(propagator);
+        final FieldSpacecraftState<Gradient> gState      = converter.getState();
+        this.gParameters = converter.getParameters(gState);
+        this.gPropagator = converter.getPropagator(gState, gParameters);
     }
 
     /** {@inheritDoc} */
@@ -106,7 +108,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     /** {@inheritDoc} */
     @Override
     public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
-
+        computeDerivatives(state);
         for (int i = 0; i < STATE_DIMENSION; i++) {
             final double[] row = dYdY0[i];
             for (int j = 0; j < STATE_DIMENSION; j++) {
@@ -122,6 +124,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
         if (parameters.getNbParams() != 0) {
 
+            computeDerivatives(state);
             for (int i = 0; i < STATE_DIMENSION; i++) {
                 final double[] row = dYdP[i];
                 for (int j = 0; j < parameters.getNbParams(); j++) {
@@ -133,102 +136,95 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @DefaultDataContext
+    /** {@inheritDoc}
+     * @deprecated as of 11.1, not used anymore
+     */
+    @Deprecated
     public void analyticalDerivatives(final SpacecraftState s) {
+        computeDerivatives(s);
+    }
 
-        final double[] p = s.getAdditionalState(name);
-        if (stateTransition == null) {
-            stateTransition = new double[p.length];
-        }
+    /** Compute analytical derivatives.
+     * @param state current state
+     * @since 11.1
+     */
+    private void computeDerivatives(final SpacecraftState state) {
 
-        // initialize Jacobians to zero
-        final int dim = 6;
+        // Initialize Jacobians to zero
+        final int dim = STATE_DIMENSION;
         final int paramDim = parameters.getNbParams();
         final double[][] stateGrad = new double[dim][dim];
         final double[][] paramGrad = new double[dim][paramDim];
-        final TLEGradientConverter converter = new TLEGradientConverter(propagator.getTLE());
-        final FieldTLEPropagator<Gradient> gPropagator = converter.getPropagator();
-        final Gradient[] gParameters = converter.getParameters(gPropagator.getTLE());
+
+        // Initialize matrix
+        if (stateTransition == null) {
+            stateTransition = state.getAdditionalState(getName());
+        }
 
         // Compute Jacobian
-        final AbsoluteDate init = getInitialState().getDate();
-        final AbsoluteDate end  = s.getDate();
-        final double dt = end.durationFrom(init);
-        final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), gParameters);
-        final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(orbit);
+        final AbsoluteDate target = state.getDate();
+        final FieldAbsoluteDate<Gradient> init = gPropagator.getTLE().getDate();
+        final double dt = target.durationFrom(init.toAbsoluteDate());
+        final FieldOrbit<Gradient> gOrbit = gPropagator.propagateOrbit(init.shiftedBy(dt), gParameters);
+        final FieldPVCoordinates<Gradient> gPv = gOrbit.getPVCoordinates();
 
-        final Gradient a = TLEGradientConverter.computeA(gOrbit.getKeplerianMeanMotion());
-        final double[] derivativesA           = a.getGradient();
-        final double[] derivativesE           = gOrbit.getE().getGradient();
-        final double[] derivativesI           = gOrbit.getI().getGradient();
-        final double[] derivativesRAAN        = gOrbit.getRightAscensionOfAscendingNode().getGradient();
-        final double[] derivativesPA          = gOrbit.getPerigeeArgument().getGradient();
-        final double[] derivativesMeanAnomaly = gOrbit.getMeanAnomaly().getGradient();
+        final double[] derivativesX   = gPv.getPosition().getX().getGradient();
+        final double[] derivativesY   = gPv.getPosition().getY().getGradient();
+        final double[] derivativesZ   = gPv.getPosition().getZ().getGradient();
+        final double[] derivativesVx  = gPv.getVelocity().getX().getGradient();
+        final double[] derivativesVy  = gPv.getVelocity().getY().getGradient();
+        final double[] derivativesVz  = gPv.getVelocity().getZ().getGradient();
 
-        // as mean motion was used to build the gradient, chain rule is applied to retrieve derivatives with respect to semi major axis
-        final double dAdMeanMotion = derivativesA[0];
+        // Update Jacobian with respect to state
+        addToRow(derivativesX,  0, stateGrad);
+        addToRow(derivativesY,  1, stateGrad);
+        addToRow(derivativesZ,  2, stateGrad);
+        addToRow(derivativesVx, 3, stateGrad);
+        addToRow(derivativesVy, 4, stateGrad);
+        addToRow(derivativesVz, 5, stateGrad);
 
-        // update Jacobian with respect to state
-        addToRow(derivativesA,            0, stateGrad);
-        addToRow(derivativesE,            1, stateGrad);
-        addToRow(derivativesI,            2, stateGrad);
-        addToRow(derivativesRAAN,         3, stateGrad);
-        addToRow(derivativesPA,           4, stateGrad);
-        addToRow(derivativesMeanAnomaly,  5, stateGrad);
-
-        int index = converter.getFreeStateParameters();
+        int index = TLEGradientConverter.FREE_STATE_PARAMETERS;
         int parameterIndex = 0;
-        for (ParameterDriver driver : propagator.getTLE().getParametersDrivers()) {
+        for (ParameterDriver driver : parameters.getDrivers()) {
             if (driver.isSelected()) {
-                paramGrad[0][parameterIndex] += derivativesA[index];
-                paramGrad[1][parameterIndex] += derivativesE[index];
-                paramGrad[2][parameterIndex] += derivativesI[index];
-                paramGrad[3][parameterIndex] += derivativesRAAN[index];
-                paramGrad[4][parameterIndex] += derivativesPA[index];
-                paramGrad[5][parameterIndex] += derivativesMeanAnomaly[index];
+                paramGrad[0][parameterIndex] += derivativesX[index];
+                paramGrad[1][parameterIndex] += derivativesY[index];
+                paramGrad[2][parameterIndex] += derivativesZ[index];
+                paramGrad[3][parameterIndex] += derivativesVx[index];
+                paramGrad[4][parameterIndex] += derivativesVy[index];
+                paramGrad[5][parameterIndex] += derivativesVz[index];
                 ++index;
             }
             ++parameterIndex;
         }
 
-        // the previous derivatives correspond to state transition matrix with mean motion as 1rst element instead of semi major axis
+        // State derivatives
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
                 stateTransition[j + dim * i] = stateGrad[i][j];
-
-                // retrieving dElement/dA from dElement/dMeanMotion
-                if (j == 0) {
-                    stateTransition[j + dim * i] /= dAdMeanMotion;
-                }
             }
         }
+
+        // Propagation parameters derivatives
         final int columnTop = dim * dim;
         for (int k = 0; k < paramDim; k++) {
             for (int i = 0; i < dim; ++i) {
                 stateTransition[columnTop + (i + dim * k)] = paramGrad[i][k];
             }
         }
+
     }
 
     /** Fill Jacobians rows.
      * @param derivatives derivatives of a component
-     * @param index component index (0 for a, 1 for e, 2 for i, 3 for RAAN, 4 for PA, 5 for M)
+     * @param index component index (0 for X, 1 for Y, 2 for Z, 3 for Vx, 4 for Vy, 5 for Vz)
      * @param grad Jacobian of mean elements rate with respect to mean elements
      */
     private void addToRow(final double[] derivatives, final int index,
                           final double[][] grad) {
-
         for (int i = 0; i < 6; i++) {
             grad[index][i] += derivatives[i];
         }
     }
 
-   /** Getter for initial propagator state.
-    * @return the propagator initial state
-    */
-    public SpacecraftState getInitialState() {
-        return propagator.getInitialState();
-    }
 }

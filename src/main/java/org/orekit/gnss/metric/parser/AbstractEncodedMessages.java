@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.metric.parser;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -70,7 +71,7 @@ public abstract class AbstractEncodedMessages implements EncodedMessage {
                 remaining = 8;
             }
 
-            final int nbBits = Math.min(remaining, needed);
+            final int nbBits = FastMath.min(remaining, needed);
             value      = (value << nbBits) | (current >>> (8 - nbBits));
             current    = (current << nbBits) & 0xFF;
             remaining -= nbBits;

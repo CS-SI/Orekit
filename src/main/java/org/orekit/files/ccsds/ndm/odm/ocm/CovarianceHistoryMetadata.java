@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,6 +65,9 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Covariance element set type. */
     private ElementsType covType;
 
+    /** Covariance ordering. */
+    private Ordering covOrdering;
+
     /** Units of covariance element set. */
     private List<Unit> covUnits;
 
@@ -74,20 +77,21 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     CovarianceHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        covBasis            = "PREDICTED";
-        covReferenceFrame   = new FrameFacade(null, null,
-                                              OrbitRelativeFrame.TNW_INERTIAL, null,
-                                              OrbitRelativeFrame.TNW_INERTIAL.name());
-        covFrameEpoch       = epochT0;
-        covScaleMin         = 1.0;
-        covScaleMax         = 1.0;
-        covType             = ElementsType.CARTPV;
+        covBasis          = "PREDICTED";
+        covReferenceFrame = new FrameFacade(null, null,
+                                            OrbitRelativeFrame.TNW_INERTIAL, null,
+                                            OrbitRelativeFrame.TNW_INERTIAL.name());
+        covFrameEpoch     = epochT0;
+        covScaleMin       = 1.0;
+        covScaleMax       = 1.0;
+        covType           = ElementsType.CARTPV;
+        covOrdering       = Ordering.LTM;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         if (covUnits != null) {
             covType.checkUnits(covUnits);
         }
@@ -183,15 +187,15 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
         this.covReferenceFrame = covReferenceFrame;
     }
 
-    /** Get epoch of the {@link #getCovRefFrame() covariance reference frame}.
-     * @return epoch of the {@link #getCovRefFrame() covariance reference frame}
+    /** Get epoch of the {@link #getCovReferenceFrame() covariance reference frame}.
+     * @return epoch of the {@link #getCovReferenceFrame() covariance reference frame}
      */
     public AbsoluteDate getCovFrameEpoch() {
         return covFrameEpoch;
     }
 
-    /** Set epoch of the {@link #getCovRefFrame() covariance reference frame}.
-     * @param covFrameEpoch epoch of the {@link #getCovRefFrame() covariance reference frame}
+    /** Set epoch of the {@link #getCovReferenceFrame() covariance reference frame}.
+     * @param covFrameEpoch epoch of the {@link #getCovReferenceFrame() covariance reference frame}
      */
     public void setCovFrameEpoch(final AbsoluteDate covFrameEpoch) {
         refuseFurtherComments();
@@ -253,6 +257,21 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     public void setCovType(final ElementsType covType) {
         refuseFurtherComments();
         this.covType = covType;
+    }
+
+    /** Get covariance ordering.
+     * @return covariance ordering
+     */
+    public Ordering getCovOrdering() {
+        return covOrdering;
+    }
+
+    /** Set covariance ordering.
+     * @param covOrdering covariance ordering
+     */
+    public void setCovOrdering(final Ordering covOrdering) {
+        refuseFurtherComments();
+        this.covOrdering = covOrdering;
     }
 
     /** Get covariance element set units.

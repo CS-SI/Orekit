@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 
 /** Keys for {@link OemMetadata OEM container} entries.
@@ -42,17 +39,7 @@ public enum OemMetadataKey {
     USEABLE_STOP_TIME((token, context, container) -> token.processAsDate(container::setUseableStopTime, context)),
 
     /** Interpolation method in ephemeris. */
-    INTERPOLATION((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsUppercaseString()));
-            } catch (IllegalArgumentException iae) {
-                throw new OrekitException(iae, OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
-                                          token.getName(), token.getLineNumber(), token.getFileName());
-            }
-        }
-        return true;
-    }),
+    INTERPOLATION((token, context, container) -> token.processAsEnum(InterpolationMethod.class, container::setInterpolationMethod)),
 
     /** Interpolation degree in ephemeris. */
     INTERPOLATION_DEGREE((token, context, container) -> token.processAsInteger(container::setInterpolationDegree));

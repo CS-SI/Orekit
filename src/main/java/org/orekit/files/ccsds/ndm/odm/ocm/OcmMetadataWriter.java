@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.units.Unit;
 
 /**
- * Writer for Common metadata for CCSDS Orbit Comprehensive Message files.
+ * Writer for Common metadata for CCSDS Orbit Comprehensive Messages.
  *
  * @author Luc Maisonobe
  * @since 11.0
@@ -58,67 +58,67 @@ class OcmMetadataWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         generator.writeEntry(OcmMetadataKey.CLASSIFICATION.name(),
-                             metadata.getClassification(), false);
+                             metadata.getClassification(), null, false);
 
         // object
         generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),
-                             metadata.getObjectName(), false);
+                             metadata.getObjectName(), null, false);
         generator.writeEntry(OcmMetadataKey.INTERNATIONAL_DESIGNATOR.name(),
-                             metadata.getInternationalDesignator(), false);
+                             metadata.getInternationalDesignator(), null, false);
         generator.writeEntry(OcmMetadataKey.CATALOG_NAME.name(),
-                             metadata.getCatalogName(), false);
+                             metadata.getCatalogName(), null, false);
         generator.writeEntry(OcmMetadataKey.OBJECT_DESIGNATOR.name(),
-                             metadata.getObjectDesignator(), false);
+                             metadata.getObjectDesignator(), null, false);
         generator.writeEntry(OcmMetadataKey.ALTERNATE_NAMES.name(),
                              metadata.getAlternateNames(), false);
 
         // originator
         generator.writeEntry(OcmMetadataKey.ORIGINATOR_POC.name(),
-                             metadata.getOriginatorPOC(), false);
+                             metadata.getOriginatorPOC(), null, false);
         generator.writeEntry(OcmMetadataKey.ORIGINATOR_POSITION.name(),
-                             metadata.getOriginatorPosition(), false);
+                             metadata.getOriginatorPosition(), null, false);
         generator.writeEntry(OcmMetadataKey.ORIGINATOR_PHONE.name(),
-                             metadata.getOriginatorPhone(), false);
+                             metadata.getOriginatorPhone(), null, false);
         generator.writeEntry(OcmMetadataKey.ORIGINATOR_ADDRESS.name(),
-                             metadata.getOriginatorAddress(), false);
+                             metadata.getOriginatorAddress(), null, false);
 
         // technical
         generator.writeEntry(OcmMetadataKey.TECH_ORG.name(),
-                             metadata.getTechOrg(), false);
+                             metadata.getTechOrg(), null, false);
         generator.writeEntry(OcmMetadataKey.TECH_POC.name(),
-                             metadata.getTechPOC(), false);
+                             metadata.getTechPOC(), null, false);
         generator.writeEntry(OcmMetadataKey.TECH_POSITION.name(),
-                             metadata.getTechPosition(), false);
+                             metadata.getTechPosition(), null, false);
         generator.writeEntry(OcmMetadataKey.TECH_PHONE.name(),
-                             metadata.getTechPhone(), false);
+                             metadata.getTechPhone(), null, false);
         generator.writeEntry(OcmMetadataKey.TECH_ADDRESS.name(),
-                             metadata.getTechAddress(), false);
+                             metadata.getTechAddress(), null, false);
 
         // messages
         generator.writeEntry(OcmMetadataKey.PREVIOUS_MESSAGE_ID.name(),
-                             metadata.getPreviousMessageID(), false);
+                             metadata.getPreviousMessageID(), null, false);
         generator.writeEntry(OcmMetadataKey.NEXT_MESSAGE_ID.name(),
-                             metadata.getNextMessageID(), false);
+                             metadata.getNextMessageID(), null, false);
         generator.writeEntry(OcmMetadataKey.ADM_MESSAGE_LINK.name(),
-                             metadata.getAdmMessageLink(), false);
+                             metadata.getAdmMessageLink(), null, false);
         generator.writeEntry(OcmMetadataKey.CDM_MESSAGE_LINK.name(),
-                             metadata.getCdmMessageLink(), false);
+                             metadata.getCdmMessageLink(), null, false);
         generator.writeEntry(OcmMetadataKey.PRM_MESSAGE_LINK.name(),
-                             metadata.getPrmMessageLink(), false);
+                             metadata.getPrmMessageLink(), null, false);
         generator.writeEntry(OcmMetadataKey.RDM_MESSAGE_LINK.name(),
-                             metadata.getRdmMessageLink(), false);
+                             metadata.getRdmMessageLink(), null, false);
         generator.writeEntry(OcmMetadataKey.TDM_MESSAGE_LINK.name(),
-                             metadata.getTdmMessageLink(), false);
+                             metadata.getTdmMessageLink(), null, false);
 
         // operator
         generator.writeEntry(OcmMetadataKey.OPERATOR.name(),
-                             metadata.getOperator(), false);
+                             metadata.getOperator(), null, false);
         generator.writeEntry(OcmMetadataKey.OWNER.name(),
-                             metadata.getOwner(), false);
+                             metadata.getOwner(), null, false);
         generator.writeEntry(OcmMetadataKey.COUNTRY.name(),
-                             metadata.getCountry(), false);
+                             metadata.getCountry(), null, false);
         generator.writeEntry(OcmMetadataKey.CONSTELLATION.name(),
-                             metadata.getConstellation(), false);
+                             metadata.getConstellation(), null, false);
         generator.writeEntry(OcmMetadataKey.OBJECT_TYPE.name(),
                              metadata.getObjectType(), false);
 
@@ -153,11 +153,11 @@ class OcmMetadataWriter extends AbstractWriter {
 
         // data sources
         generator.writeEntry(OcmMetadataKey.EOP_SOURCE.name(),
-                             metadata.getEopSource(), false);
+                             metadata.getEopSource(), null, false);
         generator.writeEntry(OcmMetadataKey.INTERP_METHOD_EOP.name(),
-                             metadata.getInterpMethodEOP(), false);
+                             metadata.getInterpMethodEOP(), null, false);
         generator.writeEntry(OcmMetadataKey.CELESTIAL_SOURCE.name(),
-                             metadata.getCelestialSource(), false);
+                             metadata.getCelestialSource(), null, false);
 
     }
 

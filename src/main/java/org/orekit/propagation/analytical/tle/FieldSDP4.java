@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
@@ -40,7 +40,7 @@ import org.orekit.utils.Constants;
  * @author Thomas Paulet (field translation)
  * @since 11.0
  */
-abstract class FieldSDP4<T extends RealFieldElement<T>>  extends FieldTLEPropagator<T> {
+abstract class FieldSDP4<T extends CalculusFieldElement<T>>  extends FieldTLEPropagator<T> {
 
     // CHECKSTYLE: stop VisibilityModifier check
 

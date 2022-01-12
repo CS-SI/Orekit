@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -86,7 +86,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
         
         final T zero = field.getZero();
         
@@ -168,7 +168,7 @@ public class FieldDSSTSolarRadiationPressureTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
  
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
@@ -266,7 +266,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         srp.registerAttitudeProvider(attitudeProvider);
                         
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
         
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(srp);
@@ -401,7 +401,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         }
       
         // Converter for derivatives
-        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
       
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(srp);

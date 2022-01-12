@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
@@ -37,7 +38,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata, OcmData>, OcmFile> {
+public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata, OcmData>, Ocm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OCM_VERS = 3.0;
@@ -55,19 +56,18 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
      * @param dataContext used to retrieve frames, time scales, etc.
      */
     public OcmWriter(final IERSConventions conventions, final DataContext dataContext) {
-        super(OcmFile.ROOT, OcmFile.FORMAT_VERSION_KEY, CCSDS_OCM_VERS,
+        super(Ocm.ROOT, Ocm.FORMAT_VERSION_KEY, CCSDS_OCM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
+                  () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> null, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
     }
 
-    /** Write one segment.
-     * @param generator generator to use for producing output
-     * @param segment segment to write
-     * @throws IOException if any buffer writing operations fails
-     */
-    public void writeSegmentContent(final Generator generator, final Segment<OcmMetadata, OcmData> segment)
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegmentContent(final Generator generator, final double formatVersion,
+                                    final Segment<OcmMetadata, OcmData> segment)
         throws IOException {
 
         // write the metadata
@@ -76,6 +76,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       metadata::getEpochT0,
                                       metadata::getTimeSystem,
                                       metadata::getSclkOffsetAtEpoch,
@@ -87,11 +88,11 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
             generator.enterSection(XmlStructureKey.data.name());
         }
 
-        // orbit history
-        if (segment.getData().getOrbitBlocks() != null && !segment.getData().getOrbitBlocks().isEmpty()) {
-            for (final OrbitStateHistory history : segment.getData().getOrbitBlocks()) {
-                // write optional orbits history block
-                new OrbitStateHistoryWriter(history, getTimeConverter()).write(generator);
+        // trajectory history
+        if (segment.getData().getOTrajectoryBlocks() != null && !segment.getData().getOTrajectoryBlocks().isEmpty()) {
+            for (final TrajectoryStateHistory history : segment.getData().getOTrajectoryBlocks()) {
+                // write optional trajectory history block
+                new TrajectoryStateHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 

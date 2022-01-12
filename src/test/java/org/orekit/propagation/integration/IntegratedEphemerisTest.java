@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -26,6 +25,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.CelestialBodyPointed;
+import org.orekit.attitudes.InertialProvider;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.FramesFactory;
@@ -33,16 +35,17 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 public class IntegratedEphemerisTest {
@@ -57,11 +60,11 @@ public class IntegratedEphemerisTest {
 
         // Propagation
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
-        numericalPropagator.setEphemerisMode();
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
-        BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // tests
         for (int i = 1; i <= Constants.JULIAN_DAY; i++) {
@@ -78,9 +81,9 @@ public class IntegratedEphemerisTest {
         SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
         SpacecraftState state = keplerEx.propagate(finalDate);
         numericalPropagator.setInitialState(state);
-        numericalPropagator.setEphemerisMode();
+        final EphemerisGenerator generator2 = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.propagate(initialOrbit.getDate());
-        BoundedPropagator invEphemeris = numericalPropagator.getGeneratedEphemeris();
+        BoundedPropagator invEphemeris = generator2.getGeneratedEphemeris();
         SpacecraftState numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
         Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
         Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
@@ -92,27 +95,18 @@ public class IntegratedEphemerisTest {
     public void testPartialDerivativesIssue16() {
 
         final String eqName = "derivatives";
-        numericalPropagator.setEphemerisMode();
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
-        final PartialDerivativesEquations derivatives =
-            new PartialDerivativesEquations(eqName, numericalPropagator);
-        final SpacecraftState initialState =
-                derivatives.setInitialJacobians(new SpacecraftState(initialOrbit));
-        final JacobiansMapper mapper = derivatives.getMapper();
-        numericalPropagator.setInitialState(initialState);
+        final MatricesHarvester harvester = numericalPropagator.setupMatricesComputation(eqName, null, null);
+        numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
-        BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
-        ephemeris.setMasterMode(new OrekitStepHandler() {
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        ephemeris.setStepHandler(new OrekitStepHandler() {
 
-            private final Array2DRowRealMatrix dYdY0 = new Array2DRowRealMatrix(6, 6);
-
-            public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-                {
+            public void handleStep(OrekitStepInterpolator interpolator) {
                 SpacecraftState state = interpolator.getCurrentState();
-                Assert.assertEquals(mapper.getAdditionalStateDimension(),
-                                    state.getAdditionalState(eqName).length);
-                mapper.getStateJacobian(state, dYdY0.getDataRef());
-                mapper.getParametersJacobian(state, null); // no parameters, this is a no-op and should work
+                RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
+                harvester.getParametersJacobian(state); // no parameters, this is a no-op and should work
                 RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
                 Assert.assertTrue(deltaId.getNorm1() >  100);
                 Assert.assertTrue(deltaId.getNorm1() < 3100);
@@ -128,15 +122,37 @@ public class IntegratedEphemerisTest {
     public void testGetFrame() {
         // setup
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
-        numericalPropagator.setEphemerisMode();
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
-        BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //action
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
+    }
+
+    @Test
+    public void testIssue766() {
+
+        // setup
+        AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
+        numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
+        numericalPropagator.propagate(finalDate);
+        Assert.assertTrue(numericalPropagator.getCalls() < 3200);
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+
+        // verify
+        Assert.assertTrue(ephemeris.getAttitudeProvider() instanceof InertialProvider);
+
+        // action
+        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ephemeris.setAttitudeProvider(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
+                                                               Vector3D.PLUS_I, Vector3D.PLUS_K));
+        Assert.assertTrue(ephemeris.getAttitudeProvider() instanceof CelestialBodyPointed);
+
     }
 
     @Before

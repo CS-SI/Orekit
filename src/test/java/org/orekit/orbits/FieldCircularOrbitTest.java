@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
@@ -220,7 +220,7 @@ public class FieldCircularOrbitTest {
         doTestCopyNonKeplerianAcceleration(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestCircularToEquinoctialEll(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestCircularToEquinoctialEll(Field<T> field) {
 
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -278,7 +278,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestToOrbitWithoutDerivatives(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToOrbitWithoutDerivatives(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -315,7 +315,7 @@ public class FieldCircularOrbitTest {
         Assert.assertTrue(Double.isNaN(orbit.getAlphaDot(PositionAngle.MEAN)));
     }
 
-    private <T extends RealFieldElement<T>> void doTestToOrbitWithDerivatives(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToOrbitWithDerivatives(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -356,7 +356,7 @@ public class FieldCircularOrbitTest {
         MatcherAssert.assertThat(orbit.getAlphaDot(PositionAngle.MEAN),        relativelyCloseTo(fieldOrbit.getAlphaDot(PositionAngle.MEAN).getReal(),        0));
     }
 
-    private <T extends RealFieldElement<T>> void doTestCircularToEquinoctialCirc(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestCircularToEquinoctialCirc(Field<T> field) {
 
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -386,7 +386,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestCircularToCartesian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestCircularToCartesian(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -423,7 +423,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestCircularToKeplerian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestCircularToKeplerian(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -461,7 +461,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestHyperbolic1(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestHyperbolic1(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         try {
@@ -472,7 +472,7 @@ public class FieldCircularOrbitTest {
         }
     }
 
-    private <T extends RealFieldElement<T>>  void doTestHyperbolic2(Field<T> field) {
+    private <T extends CalculusFieldElement<T>>  void doTestHyperbolic2(Field<T> field) {
         T zero =  field.getZero();
        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(42166.712), zero.add(0.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add( 5.300),
@@ -484,7 +484,7 @@ public class FieldCircularOrbitTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void doTestAnomalyEll(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAnomalyEll(Field<T> field) {
         T zero =  field.getZero();
         T one =  field.getOne();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -537,7 +537,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAnomalyCirc(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAnomalyCirc(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -585,7 +585,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestPositionVelocityNormsEll(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPositionVelocityNormsEll(Field<T> field) {
         T zero =  field.getZero();
         T one =  field.getOne();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -619,7 +619,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestNumericalIssue25(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNumericalIssue25(Field<T> field) {
 
         T zero =  field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(3782116.14107698), zero.add(416663.11924914), zero.add(5875541.62103057));
@@ -632,7 +632,7 @@ public class FieldCircularOrbitTest {
         Assert.assertEquals(0.0, orbit.getE().getReal(), 2.0e-14);
     }
 
-    private <T extends RealFieldElement<T>> void doTestPerfectlyEquatorial(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPerfectlyEquatorial(Field<T> field) {
         T zero =  field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(-7293947.695148368), zero.add( 5122184.668436634), zero.add(0.0));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-3890.4029433398), zero.add( -5369.811285264604), zero.add(0.0));
@@ -645,7 +645,7 @@ public class FieldCircularOrbitTest {
         Assert.assertEquals(0.0, orbit.getRightAscensionOfAscendingNode().getReal(), 2.0e-14);
     }
 
-    private <T extends RealFieldElement<T>> void doTestPositionVelocityNormsCirc(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPositionVelocityNormsCirc(Field<T> field) {
         T zero =  field.getZero();
         T one =  field.getOne();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -678,7 +678,7 @@ public class FieldCircularOrbitTest {
                             Utils.epsilonTest * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal()));
     }
 
-    private <T extends RealFieldElement<T>> void doTestGeometryEll(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGeometryEll(Field<T> field) {
 
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -723,7 +723,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestGeometryCirc(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGeometryCirc(Field<T> field) {
 
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -770,7 +770,7 @@ public class FieldCircularOrbitTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void doTestSymmetryEll(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSymmetryEll(Field<T> field) {
 
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -793,7 +793,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestSymmetryCir(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSymmetryCir(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -812,7 +812,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestNonInertialFrame(Field<T> field) throws IllegalArgumentException {
+    private <T extends CalculusFieldElement<T>> void doTestNonInertialFrame(Field<T> field) throws IllegalArgumentException {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -824,7 +824,7 @@ public class FieldCircularOrbitTest {
                                  date, zero.add(mu));
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianReference(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestJacobianReference(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -913,7 +913,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianFinitedifferences(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestJacobianFinitedifferences(Field<T> field) {
         T zero =  field.getZero();
 
         FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
@@ -960,7 +960,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> T[][] finiteDifferencesJacobian(PositionAngle type, FieldCircularOrbit<T> orbit, T hP)
+    private <T extends CalculusFieldElement<T>> T[][] finiteDifferencesJacobian(PositionAngle type, FieldCircularOrbit<T> orbit, T hP)
         {
         Field<T> field = hP.getField();
         T[][] jacobian = MathArrays.buildArray(field, 6, 6);
@@ -970,7 +970,7 @@ public class FieldCircularOrbitTest {
         return jacobian;
     }
 
-    private <T extends RealFieldElement<T>> void fillColumn(PositionAngle type, int i, FieldCircularOrbit<T> orbit, T hP, T[][] jacobian) {
+    private <T extends CalculusFieldElement<T>> void fillColumn(PositionAngle type, int i, FieldCircularOrbit<T> orbit, T hP, T[][] jacobian) {
 
         T zero = hP.getField().getZero();
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
@@ -1054,7 +1054,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field, boolean useDerivatives,
+    private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field, boolean useDerivatives,
                                                                      double shiftErrorWithin, double interpolationErrorWithin,
                                                                      double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
                                                                      double shiftErrorFarPast, double interpolationErrorFarPast)
@@ -1138,7 +1138,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestNonKeplerianDerivatives(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNonKeplerianDerivatives(Field<T> field) {
         final T zero = field.getZero();
 
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
@@ -1207,7 +1207,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>, S extends Function<FieldCircularOrbit<T>, T>>
+    private <T extends CalculusFieldElement<T>, S extends Function<FieldCircularOrbit<T>, T>>
     double differentiate(TimeStampedFieldPVCoordinates<T> pv, Frame frame, T mu, S picker) {
         final DSFactory factory = new DSFactory(1, 1);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
@@ -1219,7 +1219,7 @@ public class FieldCircularOrbitTest {
         return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
      }
 
-    private <T extends RealFieldElement<T>> void doTestPositionAngleDerivatives(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPositionAngleDerivatives(final Field<T> field) {
         final T zero = field.getZero();
 
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
@@ -1265,7 +1265,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestEquatorialRetrograde(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEquatorialRetrograde(final Field<T> field) {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(10000000.0), field.getZero(), field.getZero());
         FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero(), field.getZero().add(-6500.0), field.getZero().add(1.0e-10));
@@ -1290,7 +1290,7 @@ public class FieldCircularOrbitTest {
         Assert.assertTrue(Double.isNaN(orbit.getHyDot().getReal()));
     }
 
-    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) {
         T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         FieldVector3D<T> position     = new FieldVector3D<>(zero.add(6893443.400234382),
@@ -1327,7 +1327,7 @@ public class FieldCircularOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestToString(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToString(Field<T> field) {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(-29536113.0),
                                                         field.getZero().add(30329259.0),
@@ -1342,7 +1342,7 @@ public class FieldCircularOrbitTest {
                             orbit.toString());
     }
 
-    private <T extends RealFieldElement<T>> void doTestCopyNonKeplerianAcceleration(Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doTestCopyNonKeplerianAcceleration(Field<T> field)
         {
 
         final T zero = field.getZero();

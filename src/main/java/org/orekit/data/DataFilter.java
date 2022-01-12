@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,14 @@ public interface DataFilter {
      * Filtering is often based on suffix. For example a gzip compressed
      * file will have an original name of the form base.ext.gz when the
      * corresponding uncompressed file will have a filtered name base.ext.
+     * </p>
+     * <p>
+     * A filter must <em>never</em> {@link DataSource.Opener#openStreamOnce() open}
+     * the {@link DataSource} by itself, regardless of the fact it will return
+     * the original instance or a filtered instance. The rationale is that it
+     * is the upper layer that will decide to open (or not) the returned
+     * value and that a {@link DataSource} can be opened only once; this is the
+     * core principle of lazy-opening provided by {@link DataSource}.
      * </p>
      * <p>
      * Beware that as the {@link DataProvidersManager data providers manager}

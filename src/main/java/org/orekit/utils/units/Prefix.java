@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,8 +61,19 @@ enum Prefix {
     /** Thousandth. */
     MILLI("m", 1.0e-3),
 
-    /** Millionth. */
+    /** Millionth.
+     * <p>
+     * The symbol used here is the standard SI one: µ (U+00B5, MICRO SIGN)
+     * </p>
+     */
     MICRO("µ", 1.0e-6),
+
+    /** Millionth.
+     * <p>
+     * The symbol used here is an alternate one: μ (U+03BC, GREEK SMALL LETTER MU)
+     * </p>
+     */
+    MICRO_ALTERNATE("μ", 1.0e-6),
 
     /** Billionth. */
     NANO("n", 1.0e-9),

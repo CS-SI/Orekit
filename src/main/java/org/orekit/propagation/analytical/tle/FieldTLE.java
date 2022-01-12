@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,17 +24,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -67,7 +70,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thomas Paulet (field translation)
  * @since 11.0
  */
-public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped<T>, Serializable {
+public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, Serializable {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
@@ -211,8 +214,9 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      */
     public FieldTLE(final Field<T> field, final String line1, final String line2, final TimeScale utc) {
 
-        // zero for fields
+        // zero and pi for fields
         final T zero = field.getZero();
+        final T pi   = zero.getPi();
 
         // identification
         satelliteNumber = ParseUtils.parseSatelliteNumber(line1, 2, 5);
@@ -240,12 +244,11 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
-        meanMotion                 = zero.add(ParseUtils.parseDouble(line2, 52, 11) * FastMath.PI / 43200.0);
-        meanMotionFirstDerivative  = zero.add(ParseUtils.parseDouble(line1, 33, 10) * FastMath.PI / 1.86624e9);
-        meanMotionSecondDerivative = zero.add(Double.parseDouble((line1.substring(44, 45) + '.' +
-                                                         line1.substring(45, 50) + 'e' +
-                                                         line1.substring(50, 52)).replace(' ', '0')) *
-                                     FastMath.PI / 5.3747712e13);
+        meanMotion                 = pi.multiply(ParseUtils.parseDouble(line2, 52, 11)).divide(43200.0);
+        meanMotionFirstDerivative  = pi.multiply(ParseUtils.parseDouble(line1, 33, 10)).divide(1.86624e9);
+        meanMotionSecondDerivative = pi.multiply(Double.parseDouble((line1.substring(44, 45) + '.' +
+                                                                     line1.substring(45, 50) + 'e' +
+                                                                     line1.substring(50, 52)).replace(' ', '0'))).divide(5.3747712e13);
 
         eccentricity = zero.add(Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0')));
         inclination  = zero.add(FastMath.toRadians(ParseUtils.parseDouble(line2, 8, 8)));
@@ -308,8 +311,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @param meanAnomaly mean anomaly (rad)
      * @param revolutionNumberAtEpoch revolution number at epoch
      * @param bStar ballistic coefficient
-     * @see #FieldTLE(int, char, int, int, String, int, int, FieldAbsoluteDate, RealFieldElement, RealFieldElement,
-     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, int, double, TimeScale)
+     * @see #FieldTLE(int, char, int, int, String, int, int, FieldAbsoluteDate, CalculusFieldElement, CalculusFieldElement,
+     * CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, CalculusFieldElement, int, double, TimeScale)
      */
     @DefaultDataContext
     public FieldTLE(final int satelliteNumber, final char classification,
@@ -375,6 +378,9 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                final int revolutionNumberAtEpoch, final double bStar,
                final TimeScale utc) {
 
+        // pi for fields
+        final T pi = e.getPi();
+
         // identification
         this.satelliteNumber = satelliteNumber;
         this.classification  = classification;
@@ -395,16 +401,16 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         this.inclination = i;
 
         // Normalizing RAAN in [0,2pi] interval
-        this.raan = MathUtils.normalizeAngle(raan, raan.getField().getZero().add(FastMath.PI));
+        this.raan = MathUtils.normalizeAngle(raan, pi);
 
         // Checking eccentricity range
         this.eccentricity = e;
 
         // Normalizing PA in [0,2pi] interval
-        this.pa = MathUtils.normalizeAngle(pa, pa.getField().getZero().add(FastMath.PI));
+        this.pa = MathUtils.normalizeAngle(pa, pi);
 
         // Normalizing mean anomaly in [0,2pi] interval
-        this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, meanAnomaly.getField().getZero().add(FastMath.PI));
+        this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, pi);
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
         this.bStarParameterDriver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
@@ -451,7 +457,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      */
     private void buildLine1() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
 
         buffer.append('1');
 
@@ -474,14 +480,14 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         buffer.append(ParseUtils.addPadding("fraction", fraction,  '0', 8, true, satelliteNumber));
 
         buffer.append(' ');
-        final double n1 = meanMotionFirstDerivative.getReal() * 1.86624e9 / FastMath.PI;
+        final double n1 = meanMotionFirstDerivative.divide(pa.getPi()).multiply(1.86624e9).getReal();
         final String sn1 = ParseUtils.addPadding("meanMotionFirstDerivative",
                                                  new DecimalFormat(".00000000", SYMBOLS).format(n1),
                                                  ' ', 10, true, satelliteNumber);
         buffer.append(sn1);
 
         buffer.append(' ');
-        final double n2 = meanMotionSecondDerivative.getReal() * 5.3747712e13 / FastMath.PI;
+        final double n2 = meanMotionSecondDerivative.divide(pa.getPi()).multiply(5.3747712e13).getReal();
         buffer.append(formatExponentMarkerFree("meanMotionSecondDerivative", n2, 5, ' ', 8, true));
 
         buffer.append(' ');
@@ -536,7 +542,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      */
     private void buildLine2() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         final DecimalFormat f34   = new DecimalFormat("##0.0000", SYMBOLS);
         final DecimalFormat f211  = new DecimalFormat("#0.00000000", SYMBOLS);
 
@@ -546,18 +552,18 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         buffer.append(ParseUtils.buildSatelliteNumber(satelliteNumber, "satelliteNumber-2"));
 
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding(INCLINATION, f34.format(FastMath.toDegrees(inclination)), ' ', 8, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding(INCLINATION, f34.format(FastMath.toDegrees(inclination).getReal()), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding("raan", f34.format(FastMath.toDegrees(raan)), ' ', 8, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("raan", f34.format(FastMath.toDegrees(raan).getReal()), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
         buffer.append(ParseUtils.addPadding(ECCENTRICITY, (int) FastMath.rint(eccentricity.getReal() * 1.0e7), '0', 7, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding("pa", f34.format(FastMath.toDegrees(pa)), ' ', 8, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("pa", f34.format(FastMath.toDegrees(pa).getReal()), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly).getReal()), ' ', 8, true, satelliteNumber));
 
         buffer.append(' ');
-        buffer.append(ParseUtils.addPadding(MEAN_MOTION, f211.format(meanMotion.getReal() * 43200.0 / FastMath.PI), ' ', 11, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding(MEAN_MOTION, f211.format(meanMotion.divide(pa.getPi()).multiply(43200.0).getReal()), ' ', 11, true, satelliteNumber));
         buffer.append(ParseUtils.addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch,
                                             ' ', 5, true, satelliteNumber));
 
@@ -742,10 +748,15 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @param templateTLE first guess used to get identification and estimate new TLE
      * @param <T> type of the element
      * @return TLE matching with Spacecraft State and template identification
+     * @see #stateToTLE(FieldSpacecraftState, FieldTLE, TimeScale, Frame)
+     * @see #stateToTLE(FieldSpacecraftState, FieldTLE, TimeScale, Frame, double, int)
+     * @since 11.0
      */
     @DefaultDataContext
-    public static <T extends RealFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE) {
-        return stateToTLE(state, templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE) {
+        return stateToTLE(state, templateTLE,
+                          DataContext.getDefault().getTimeScales().getUTC(),
+                          DataContext.getDefault().getFrames().getTEME());
     }
 
     /**
@@ -754,22 +765,46 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * and generates a usable TLE version of a state.
      * New TLE epoch is state epoch.
      *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>
+     * This method uses {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT}
+     * for method convergence.
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param utc the UTC time scale
+     * @param teme the TEME frame to use for propagation
+     * @param <T> type of the element
+     * @return TLE matching with Spacecraft State and template identification
+     * @see #stateToTLE(FieldSpacecraftState, FieldTLE, TimeScale, Frame, double, int)
+     * @since 11.0
+     */
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+                                                                             final TimeScale utc, final Frame teme) {
+        return stateToTLE(state, templateTLE, utc, teme, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
+     * and generates a usable TLE version of a state.
+     * New TLE epoch is state epoch.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param utc the UTC time scale
+     * @param teme the TEME frame to use for propagation
      * @param epsilon used to compute threshold for convergence check
      * @param maxIterations maximum number of iterations for convergence
      * @param <T> type of the element
      * @return TLE matching with Spacecraft State and template identification
+     * @since 11.0
      */
-    @DefaultDataContext
-    public static <T extends RealFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
-                                                                         final double epsilon, final int maxIterations) {
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+                                                                             final TimeScale utc, final Frame teme,
+                                                                             final double epsilon, final int maxIterations) {
 
-        // get keplerian parameters from state
-        final FieldOrbit<T> orbit = state.getOrbit();
-        final FieldEquinoctialOrbit<T> equiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
+        // Gets equinoctial parameters in TEME frame from state
+        final FieldEquinoctialOrbit<T> equiOrbit = convert(state.getOrbit(), teme);
         T sma = equiOrbit.getA();
         T ex  = equiOrbit.getEquinoctialEx();
         T ey  = equiOrbit.getEquinoctialEy();
@@ -778,8 +813,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         T lv  = equiOrbit.getLv();
 
         // Rough initialization of the TLE
-        final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
-        FieldTLE<T> current = newTLE(keplerianOrbit, templateTLE);
+        final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equiOrbit);
+        FieldTLE<T> current = newTLE(keplerianOrbit, templateTLE, utc);
 
         // Field
         final Field<T> field = state.getDate().getField();
@@ -788,13 +823,13 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         final T thrA = sma.add(1).multiply(epsilon);
         final T thrE = FastMath.hypot(ex, ey).add(1).multiply(epsilon);
         final T thrH = FastMath.hypot(hx, hy).add(1).multiply(epsilon);
-        final double thrV = epsilon * FastMath.PI;
+        final T thrV = sma.getPi().multiply(epsilon);
 
         int k = 0;
         while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
-            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, templateTLE.getParameters(field));
+            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, new InertialProvider(Rotation.IDENTITY, teme), state.getMass(), teme, templateTLE.getParameters(field));
             final FieldOrbit<T> recovOrbit = propagator.getInitialState().getOrbit();
             final FieldEquinoctialOrbit<T> recovEquiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
@@ -812,7 +847,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                 FastMath.abs(deltaEy.getReal())  < thrE.getReal() &&
                 FastMath.abs(deltaHx.getReal())  < thrH.getReal() &&
                 FastMath.abs(deltaHy.getReal())  < thrH.getReal() &&
-                FastMath.abs(deltaLv.getReal())  < thrV) {
+                FastMath.abs(deltaLv.getReal())  < thrV.getReal()) {
 
                 return current;
             }
@@ -826,25 +861,38 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
             lv  = lv.add(deltaLv);
             final FieldEquinoctialOrbit<T> newEquiOrbit =
                                     new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    orbit.getFrame(), orbit.getDate(), orbit.getMu() );
+                                    equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
             final FieldKeplerianOrbit<T> newKeplOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE
-            current = newTLE(newKeplOrbit, templateTLE);
+            current = newTLE(newKeplOrbit, templateTLE, utc);
         }
 
         throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
     }
 
     /**
+     * Converts an orbit into an equinoctial orbit expressed in TEME frame.
+     *
+     * @param orbitIn the orbit to convert
+     * @param teme the TEME frame to use for propagation
+     * @param <T> type of the element
+     * @return the converted orbit, i.e. equinoctial in TEME frame
+     */
+    private static <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn, final Frame teme) {
+        return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
+    }
+
+    /**
      * Builds a new TLE from Keplerian parameters and a template for TLE data.
      * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
+     * @param utc the UTC time scale
      * @param <T> type of the element
      * @return TLE with template identification and new orbital parameters
      */
-    @DefaultDataContext
-    private static <T extends RealFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit, final FieldTLE<T> templateTLE) {
+    private static <T extends CalculusFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit, final FieldTLE<T> templateTLE,
+                                                                          final TimeScale utc) {
         // Keplerian parameters
         final T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
         final T e           = keplerianOrbit.getE();
@@ -865,7 +913,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         // Updates revolutionNumberAtEpoch
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         final T dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly.getReal(), FastMath.PI) + dt.getReal() * meanMotion.getReal()) / (2 * FastMath.PI)));
+        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor(MathUtils.normalizeAngle(meanAnomaly, e.getPi()).add(dt.multiply(meanMotion)).divide(e.getPi().multiply(2.0))).getReal());
         // Gets B*
         final double bStar = templateTLE.getBStar();
         // Gets Mean Motion derivatives
@@ -874,7 +922,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         // Returns the new TLE
         return new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                        elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar);
+                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
     }
 
 

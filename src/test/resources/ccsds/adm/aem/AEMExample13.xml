@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aem id="CCSDS_AEM_VERS" version="1.0">
+  <header>
+    <CREATION_DATE>2021-04-15T13:31:24.0</CREATION_DATE>
+    <ORIGINATOR>CS GROUP</ORIGINATOR>
+  </header>
+
+  <body>
+    <segment>
+      <metadata>
+        <OBJECT_NAME>OREKIT SAT</OBJECT_NAME>
+        <OBJECT_ID>2020-012A</OBJECT_ID>
+        <REF_FRAME_A>LVLH</REF_FRAME_A>
+        <REF_FRAME_B>IMU_FRAME_1</REF_FRAME_B>
+        <ATTITUDE_DIR>B2A</ATTITUDE_DIR>
+        <TIME_SYSTEM>TAI</TIME_SYSTEM>
+        <START_TIME>2021-04-15T13:31:20.0</START_TIME>
+        <STOP_TIME>2021-04-15T13:31:23.0</STOP_TIME>
+        <ATTITUDE_TYPE>QUATERNION/DERIVATIVE</ATTITUDE_TYPE>
+        <QUATERNION_TYPE>FIRST</QUATERNION_TYPE>
+        <INTERPOLATION_DEGREE>1</INTERPOLATION_DEGREE>
+      </metadata>
+      <data>
+        <attitudeState>
+          <quaternionDerivative>
+            <EPOCH>2021-04-15T13:31:20.0</EPOCH>
+            <quaternion>
+              <QC>0.4886148886986714</QC>
+              <Q1>-0.40215690839288926</Q1>
+              <Q2>0.5816278675112939</Q2>
+              <Q3>0.5111108835743206</Q3>
+            </quaternion>
+            <quaternionRate>
+              <QC_DOT units="1/s">3.0077619996648645E-4</QC_DOT>
+              <Q1_DOT units="1/s">2.5945771992435184E-4</Q1_DOT>
+              <Q2_DOT units="1/s">-2.8362061580605415E-4</Q2_DOT>
+              <Q3_DOT units="1/s">2.393622263168597E-4</Q3_DOT>
+            </quaternionRate>
+          </quaternionDerivative>
+        </attitudeState>
+        <attitudeState>
+          <quaternionDerivative>
+            <EPOCH>2021-04-15T13:31:20.5</EPOCH>
+            <quaternion>
+              <QC>0.4887649908329683</QC>
+              <Q1>-0.40202699245978285</Q1>
+              <Q2>0.5814859890939396</Q2>
+              <Q3>0.5112309904116072</Q3>
+            </quaternion>
+            <quaternionRate>
+              <QC_DOT units="1/s">3.0071481809516165E-4</QC_DOT>
+              <Q1_DOT units="1/s">2.5950414011706777E-4</Q1_DOT>
+              <Q2_DOT units="1/s">-2.837152043818123E-4</Q2_DOT>
+              <Q3_DOT units="1/s">2.3927581114550022E-4</Q3_DOT>
+            </quaternionRate>
+          </quaternionDerivative>
+        </attitudeState>
+        <attitudeState>
+          <quaternionDerivative>
+            <EPOCH>2021-04-15T13:31:21.0</EPOCH>
+            <quaternion>
+              <QC>0.48891587134278325</QC>
+              <Q1>-0.40189789424138683</Q1>
+              <Q2>0.5813438470205494</Q2>
+              <Q3>0.5113498654393233</Q3>
+            </quaternion>
+            <quaternionRate>
+              <QC_DOT units="1/s">3.006517334171891E-4</QC_DOT>
+              <Q1_DOT units="1/s">2.5955208580067334E-4</Q1_DOT>
+              <Q2_DOT units="1/s">-2.8380814822340114E-4</Q2_DOT>
+              <Q3_DOT units="1/s">2.3919074098857043E-4</Q3_DOT>
+            </quaternionRate>
+          </quaternionDerivative>
+        </attitudeState>
+        <attitudeState>
+          <quaternionDerivative>
+            <EPOCH>2021-04-15T13:31:21.5</EPOCH>
+            <quaternion>
+              <QC>0.4890659012370637</QC>
+              <Q1>-0.4017679188661911</Q1>
+              <Q2>0.5812018826309413</Q2>
+              <Q3>0.5114698967127566</Q3>
+            </quaternion>
+            <quaternionRate>
+              <QC_DOT units="1/s">3.005886439556086E-4</QC_DOT>
+              <Q1_DOT units="1/s">2.596001902002068E-4</Q1_DOT>
+              <Q2_DOT units="1/s">-2.8390129365150717E-4</Q2_DOT>
+              <Q3_DOT units="1/s">2.391056428420167E-4</Q3_DOT>
+            </quaternionRate>
+          </quaternionDerivative>
+        </attitudeState>
+        <attitudeState>
+          <quaternionDerivative>
+            <EPOCH>2021-04-15T13:31:22.0</EPOCH>
+            <quaternion>
+              <QC>0.4892161452431583</QC>
+              <Q1>-0.4016381192421581</Q1>
+              <Q2>0.5810601725106898</Q2>
+              <Q3>0.51158915188547</Q3>
+            </quaternion>
+            <quaternionRate>
+              <QC_DOT units="1/s">3.005240863786447E-4</QC_DOT>
+              <Q1_DOT units="1/s">2.5965107942241364E-4</Q1_DOT>
+              <Q2_DOT units="1/s">-2.839930876922821E-4</Q2_DOT>
+              <Q3_DOT units="1/s">2.3902306798958108E-4</Q3_DOT>
+            </quaternionRate>
+          </quaternionDerivative>
+        </attitudeState>
+        <attitudeState>
+          <quaternionDerivative>
+            <EPOCH>2021-04-15T13:31:22.5</EPOCH>
+            <quaternion>
+              <QC>0.48936686342800423</QC>
+              <Q1>-0.4015078879475958</Q1>
+              <Q2>0.5809178378780534</Q2>
+              <Q3>0.5117088571928238</Q3>
+            </quaternion>
+            <quaternionRate>
+              <QC_DOT units="1/s">3.0046090906165154E-4</QC_DOT>
+              <Q1_DOT units="1/s">2.5969893333732414E-4</Q1_DOT>
+              <Q2_DOT units="1/s">-2.840859291292821E-4</Q2_DOT>
+              <Q3_DOT units="1/s">2.3893692590818883E-4</Q3_DOT>
+            </quaternionRate>
+          </quaternionDerivative>
+        </attitudeState>
+        <attitudeState>
+          <quaternionDerivative>
+            <EPOCH>2021-04-15T13:31:23.0</EPOCH>
+            <quaternion>
+              <QC>0.48951703526162665</QC>
+              <Q1>-0.40137802891266533</Q1>
+              <Q2>0.5807760418353325</Q2>
+              <Q3>0.5118280368687662</Q3>
+            </quaternion>
+            <quaternionRate>
+              <QC_DOT units="1/s">3.00400025108563E-4</QC_DOT>
+              <Q1_DOT units="1/s">2.597440158653036E-4</Q1_DOT>
+              <Q2_DOT units="1/s">-2.841810163540131E-4</Q2_DOT>
+              <Q3_DOT units="1/s">2.3885002083304103E-4</Q3_DOT>
+            </quaternionRate>
+          </quaternionDerivative>
+        </attitudeState>
+      </data>
+    </segment>
+  </body>
+</aem>
+

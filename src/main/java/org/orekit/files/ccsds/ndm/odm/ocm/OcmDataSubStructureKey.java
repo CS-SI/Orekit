@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,11 +25,11 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
  */
 public enum OcmDataSubStructureKey {
 
-    /** Orbit state time history section. */
-    ORB((token, parser) -> parser.manageOrbitStateSection(token.getType() == TokenType.START)),
+    /** Trajectory state time history section. */
+    TRAJ((token, parser) -> parser.manageTrajectoryStateSection(token.getType() == TokenType.START)),
 
-    /** Orbit state time history section. */
-    orb((token, parser) -> parser.manageOrbitStateSection(token.getType() == TokenType.START)),
+    /** Trajectory state time history section. */
+    traj((token, parser) -> parser.manageTrajectoryStateSection(token.getType() == TokenType.START)),
 
     /** Physical properties section. */
     PHYS((token, parser) -> parser.managePhysicalPropertiesSection(token.getType() == TokenType.START)),

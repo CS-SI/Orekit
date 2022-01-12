@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,8 +51,8 @@ public class AbstractRelativisticClockModifier {
         final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
         // Relativistic clock correction taking into account two-ways measurements
         return pv.length < 3 ?
-               s * (dotProduct(pv[1]) - dotProduct(pv[0])) :
-               s * (dotProduct(pv[2]) - dotProduct(pv[1]));
+               s * (dotProduct(pv[0]) - dotProduct(pv[1])) :
+               s * (dotProduct(pv[1]) - dotProduct(pv[2]));
     }
 
     /** Get the scale factor used to compute relativistic effect.

@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -103,12 +103,13 @@
             of ProcessingState for
             different logical blocks
           end note
-          class OpmFile
+          class Opm
         }
 
         class ParserBuilder {
           +withConventions()
           +withDataContext()
+          +withParsedUnitsBehavior()
           +with...()
           +buildOpmParser()
           +buildOmmParser()
@@ -117,6 +118,12 @@
           +buildApmParser()
           +buildAemParser()
           +buildTdmParser()
+        }
+
+        enum ParsedUnitsBehavior {
+          +IGNORE_PARSED
+          +CONVERT_COMPATIBLE
+          +STRICT_COMPLIANCE
         }
 
       }
@@ -134,11 +141,12 @@
   AbstractMessageParser ..|> MessageParser
   ProcessingState <--o AbstractMessageParser : "current"
   ProcessingState <--o AbstractMessageParser : "fallback"
-  OpmParser --> OpmFile : "build"
+  OpmParser --> Opm : "build"
   HeaderProcessingState       ..|> ProcessingState
   KvnStructureProcessingState ..|> ProcessingState
   XmlStructureProcessingState ..|> ProcessingState
   ProcessingState <|.. OpmParser
   ParserBuilder -right-> OpmParser : build
+  ParserBuilder o--> ParsedUnitsBehavior
 
 @enduml

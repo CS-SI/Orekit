@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 /** Spacecraft physical properties.
  * @author Luc Maisonobe
@@ -47,7 +48,7 @@ public class PhysicalProperties extends CommentsContainer {
     private double dragConstantArea;
 
     /** Nominal drag coefficient. */
-    private double nominalDragCoefficient;
+    private double dragCoefficient;
 
     /** Drag coefficient 1σ uncertainty. */
     private double dragUncertainty;
@@ -110,7 +111,7 @@ public class PhysicalProperties extends CommentsContainer {
     private double srpConstantArea;
 
     /** Nominal SRP coefficient. */
-    private double nominalSrpCoefficient;
+    private double srpCoefficient;
 
     /** SRP coefficient 1σ uncertainty. */
     private double srpUncertainty;
@@ -145,8 +146,8 @@ public class PhysicalProperties extends CommentsContainer {
     /** Overall accuracy of spacecraft to maintain attitude. */
     private double attitudePointingAccuracy;
 
-    /** Average number of orbit or attitude maneuvers per year. */
-    private double maneuversPerYear;
+    /** Average average frequency of orbit or attitude maneuvers (in SI units, hence per second). */
+    private double maneuversFrequency;
 
     /** Maximum composite thrust the spacecraft can accomplish. */
     private double maxThrust;
@@ -168,7 +169,7 @@ public class PhysicalProperties extends CommentsContainer {
         // calling refuseFurtherComments as a side effect
         dockedWith                     = new ArrayList<>();
         dragConstantArea                  = Double.NaN;
-        nominalDragCoefficient         = Double.NaN;
+        dragCoefficient         = Double.NaN;
         dragUncertainty                = 0.0;
         initialWetMass                    = Double.NaN;
         wetMass                           = Double.NaN;
@@ -190,7 +191,7 @@ public class PhysicalProperties extends CommentsContainer {
         minRcs                         = Double.NaN;
         maxRcs                         = Double.NaN;
         srpConstantArea                = Double.NaN;
-        nominalSrpCoefficient          = Double.NaN;
+        srpCoefficient          = Double.NaN;
         srpUncertainty                 = Double.NaN;
         vmAbsolute                     = Double.NaN;
         vmApparentMin                  = Double.NaN;
@@ -200,7 +201,7 @@ public class PhysicalProperties extends CommentsContainer {
         attitudeKnowledgeAccuracy      = Double.NaN;
         attitudeControlAccuracy        = Double.NaN;
         attitudePointingAccuracy       = Double.NaN;
-        maneuversPerYear               = Double.NaN;
+        maneuversFrequency             = Double.NaN;
         maxThrust                      = Double.NaN;
         bolDv                          = Double.NaN;
         remainingDv                    = Double.NaN;
@@ -270,16 +271,16 @@ public class PhysicalProperties extends CommentsContainer {
     /** Get the nominal drag coefficient.
      * @return the nominal drag coefficient
      */
-    public double getNominalDragCoefficient() {
-        return nominalDragCoefficient;
+    public double getDragCoefficient() {
+        return dragCoefficient;
     }
 
     /** Set the the nominal drag coefficient.
-     * @param nominalDragCoefficient the nominal drag coefficient
+     * @param dragCoefficient the nominal drag coefficient
      */
-    public void setNominalDragCoefficient(final double nominalDragCoefficient) {
+    public void setDragCoefficient(final double dragCoefficient) {
         refuseFurtherComments();
-        this.nominalDragCoefficient = nominalDragCoefficient;
+        this.dragCoefficient = dragCoefficient;
     }
 
     /** Get the drag coefficient 1σ uncertainty.
@@ -586,16 +587,16 @@ public class PhysicalProperties extends CommentsContainer {
     /** Get the nominal SRP coefficient.
      * @return nominal SRP coefficient
      */
-    public double getNominalSrpCoefficient() {
-        return nominalSrpCoefficient;
+    public double getSrpCoefficient() {
+        return srpCoefficient;
     }
 
     /** Set the nominal SRP coefficient.
-     * @param nominalSrpCoefficient nominal SRP coefficient
+     * @param srpCoefficient nominal SRP coefficient
      */
-    public void setNominalSrpCoefficient(final double nominalSrpCoefficient) {
+    public void setSrpCoefficient(final double srpCoefficient) {
         refuseFurtherComments();
-        this.nominalSrpCoefficient = nominalSrpCoefficient;
+        this.srpCoefficient = srpCoefficient;
     }
 
     /** Get the SRP coefficient 1σ uncertainty.
@@ -767,15 +768,22 @@ public class PhysicalProperties extends CommentsContainer {
      * @return average number of orbit or attitude maneuvers per year.
      */
     public double getManeuversPerYear() {
-        return maneuversPerYear;
+        return maneuversFrequency * Constants.JULIAN_YEAR;
     }
 
-    /** Set the average number of orbit or attitude maneuvers per year.
-     * @param maneuversPerYear average number of orbit or attitude maneuvers per year.
+    /** Get the average frequency of orbit or attitude maneuvers (in SI units, hence per second).
+     * @return average frequency of orbit or attitude maneuvers (in SI units, hence per second).
      */
-    public void setManeuversPerYear(final double maneuversPerYear) {
+    public double getManeuversFrequency() {
+        return maneuversFrequency;
+    }
+
+    /** Set the average frequency of orbit or attitude maneuvers (in SI units, hence per second).
+     * @param maneuversFrequency average frequency of orbit or attitude (in SI units, hence per second).
+     */
+    public void setManeuversFrequency(final double maneuversFrequency) {
         refuseFurtherComments();
-        this.maneuversPerYear = maneuversPerYear;
+        this.maneuversFrequency = maneuversFrequency;
     }
 
     /** Get the maximum composite thrust the spacecraft can accomplish.

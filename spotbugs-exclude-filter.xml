@@ -139,8 +139,8 @@
     <Class name="~.*\.TurnAroundRangeTroposphericDelayModifier$"/>
     <Method name="modify" />
     <Or>
-      <Local name="masterDjac" />
-      <Local name="slaveDjac" />
+      <Local name="primaryDjac" />
+      <Local name="secondaryDjac" />
     </Or>
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
@@ -228,24 +228,6 @@
        They are used to pass data back and forth between classes
     -->
   <Match>
-    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
-    <Method name ="getAdditionalState" params="" returns="double[]" />
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
-    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
-    <Method name ="getAdditionalStateDot" params="" returns="double[]" />
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
-    <Class name="org.orekit.estimation.measurements.gnss.AbstractLambdaReducer"/>
-    <Or>  
-      <Method name ="getDiagReference" params="" returns="double[]" />
-      <Method name ="getLowReference" params="" returns="double[]" />
-    </Or>
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
     <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
     <Or>  
       <Method name="getGradient" params="" returns="double[]" />
@@ -296,6 +278,16 @@
     <Class name="~.*\.IERSConventions$"/>
     <Method name="loadLoveNumbers" />
     <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
+  </Match>
+
+  <!-- The following is intentional.
+       At the construction, the mapper is not set yet However, if the attitude provider is
+       changed afterwards, it must be changed in the mapper too
+    -->
+  <Match>
+    <Class name="~.*\.IntegratedEphemeris$"/>
+    <Method name="setAttitudeProvider" />
+    <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR" />
   </Match>
 
 </FindBugsFilter>

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,30 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.orekit.utils.units.Unit;
 import org.xml.sax.Attributes;
 
 /** Builder for the root element with CCSDS message version.
  * <p>
- * Instances of this class are immutable.
+ * All parsers for CCSDS ADM, ODM and TDM messages need to handle the
+ * root level XML element specially. OPM file for example have a root
+ * element of the form:
  * </p>
+ * <pre>
+ *   &lt;opm id="CCSDS_OPM_VERS" verion="3.0"&gt;
+ * </pre>
+ * <p>
+ * This {@link XmlTokenBuilder token builder} will generate two
+ * {@link ParseToken parse tokens} from this root element:
+ * </p>
+ * <ol>
+ *   <li>one with name set to "opm", type set to {@link TokenType#START} and no content</li>
+ *   <li>one with name set to "CCSDS_OPM_VERS", type set to {@link TokenType#ENTRY} and content set to "3.0"</li>
+ * </ol>
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -35,18 +53,19 @@ public class MessageVersionXmlTokenBuilder implements XmlTokenBuilder {
 
     /** {@inheritDoc} */
     @Override
-    public ParseToken buildToken(final boolean startTag, final String qName,
-                                 final String content, final Attributes attributes,
-                                 final int lineNumber, final String fileName) {
+    public List<ParseToken> buildTokens(final boolean startTag, final String qName,
+                                        final String content, final Attributes attributes,
+                                        final int lineNumber, final String fileName) {
         if (startTag) {
             // we replace the start tag with the message version specification
-            return new ParseToken(TokenType.ENTRY,
-                                  attributes.getValue(ID),
-                                  attributes.getValue(VERSION),
-                                  null,
-                                  lineNumber, fileName);
+            final String     id      = attributes.getValue(ID);
+            final String     version = attributes.getValue(VERSION);
+            final ParseToken start   = new ParseToken(TokenType.START, qName, null, Unit.NONE, lineNumber, fileName);
+            final ParseToken entry   = new ParseToken(TokenType.ENTRY, id, version, Unit.NONE, lineNumber, fileName);
+            return Arrays.asList(start, entry);
         } else {
-            return new ParseToken(TokenType.STOP, qName, null, null, lineNumber, fileName);
+            final ParseToken stop = new ParseToken(TokenType.STOP, qName, null, Unit.NONE, lineNumber, fileName);
+            return Collections.singletonList(stop);
         }
     }
 

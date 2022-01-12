@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,12 +36,12 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.oem.EphemerisWriter;
 import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
@@ -136,7 +136,7 @@ public class OrekitEphemerisFileTest {
         assertEquals(body.getGM(),
                      satellite.getSegments().get(0).getMu(), muTolerance);
 
-        String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
+        String tempOem = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
         OemMetadata template = new OemMetadata(2);
         template.setTimeSystem(TimeSystem.UTC);
         template.setObjectID(satId);
@@ -144,15 +144,14 @@ public class OrekitEphemerisFileTest {
         template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     null, template, FileFormat.KVN, "dummy");
-        writer.write(tempOemFile, ephemerisFile);
+                                                     null, template, FileFormat.KVN, "dummy", 60);
+        writer.write(tempOem, ephemerisFile);
 
-        OemParser parser = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                         null, body.getGM(), 2);
-        EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFromFile = parser.parse(new DataSource(tempOemFile));
-        Files.delete(Paths.get(tempOemFile));
+        OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
+        EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFrom = parser.parse(new DataSource(tempOem));
+        Files.delete(Paths.get(tempOem));
         
-        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
+        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getCoordinates().size());

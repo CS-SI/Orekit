@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,8 @@ package org.orekit.propagation.numerical;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -33,10 +33,10 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
-import org.orekit.gnss.GLONASSEphemeris;
-import org.orekit.gnss.navigation.GLONASSNavigationMessage;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GLONASSEphemeris;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.GLONASSDate;
@@ -72,7 +72,11 @@ public class GLONASSNumericalPropagatorTest {
         final ClassicalRungeKuttaIntegrator integrator = new ClassicalRungeKuttaIntegrator(10.);
 
         // Initialize the propagator
-        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagator.Builder(integrator, ephemeris, false).build();
+        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(integrator, ephemeris, false).
+                        attitudeProvider(Utils.defaultLaw()).
+                        mass(1521.0).
+                        eci(FramesFactory.getEME2000()).
+                        build();
 
         // Target date
         final AbsoluteDate target = new AbsoluteDate(new DateComponents(2012, 9, 7),
@@ -131,7 +135,7 @@ public class GLONASSNumericalPropagatorTest {
         doTestFromITRF2008ToPZ90Field(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFromITRF2008ToPZ90Field(final Field<T> field)  {
+    private <T extends CalculusFieldElement<T>> void doTestFromITRF2008ToPZ90Field(final Field<T> field)  {
         // Reference for the test
         // "PARAMETRY ZEMLI 1990" (PZ-90.11) Reference Document
         //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014" 
@@ -177,7 +181,7 @@ public class GLONASSNumericalPropagatorTest {
         // 4th order Runge-Kutta
         final ClassicalRungeKuttaIntegrator integrator = new ClassicalRungeKuttaIntegrator(1.);
         // Initialize the propagator
-        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagator.Builder(integrator, ge, true).build();
+        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(integrator, ge, true).build();
         // Compute the PV coordinates at the date of the GLONASS orbital elements
         final SpacecraftState finalState = propagator.propagate(target);
         final PVCoordinates pvInPZ90 = finalState.getPVCoordinates(pz90);

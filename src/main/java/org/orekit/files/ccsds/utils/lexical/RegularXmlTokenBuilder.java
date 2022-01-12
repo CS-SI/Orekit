@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,18 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.orekit.utils.units.Unit;
+import org.orekit.utils.units.UnitsCache;
 import org.xml.sax.Attributes;
 
 /** Regular builder using XML elements names and content for tokens.
  * <p>
- * Instances of this class are immutable.
+ * Each tag generates exactly one token, either a {@link TokenType#START START},
+ * or {@link TokenType#STOP STOP} token without content for non-leaf elements,
+ * or a {@link TokenType#ENTRY ENTRY} token with content for leaf elements.
  * </p>
  * @author Luc Maisonobe
  * @since 11.0
@@ -30,20 +37,33 @@ public class RegularXmlTokenBuilder implements XmlTokenBuilder {
     /** Attribute name for units. */
     private static final String UNITS = "units";
 
+    /** Cache for parsed units. */
+    private final UnitsCache cache;
+
+    /** Simple constructor.
+     */
+    public RegularXmlTokenBuilder() {
+        this.cache = new UnitsCache();
+    }
+
     /** {@inheritDoc} */
     @Override
-    public ParseToken buildToken(final boolean startTag, final String qName,
-                                 final String content, final Attributes attributes,
-                                 final int lineNumber, final String fileName) {
+    public List<ParseToken> buildTokens(final boolean startTag, final String qName,
+                                        final String content, final Attributes attributes,
+                                        final int lineNumber, final String fileName) {
 
         // elaborate the token type
         final TokenType tokenType = (content == null) ?
                                     (startTag ? TokenType.START : TokenType.STOP) :
                                     TokenType.ENTRY;
 
+        // get units
+        final Unit units = cache.getUnits(attributes.getValue(UNITS));
+
         // final build
-        return new ParseToken(tokenType, qName, content, attributes.getValue(UNITS),
-                              lineNumber, fileName);
+        final ParseToken token = new ParseToken(tokenType, qName, content, units, lineNumber, fileName);
+
+        return Collections.singletonList(token);
 
     }
 

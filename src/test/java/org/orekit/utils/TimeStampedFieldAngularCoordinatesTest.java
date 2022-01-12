@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
@@ -496,7 +496,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
         doTestIssue773(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue773(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIssue773(final Field<T> field) {
         // Epoch
         final AbsoluteDate date = new AbsoluteDate();
 

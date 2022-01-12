@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,14 +19,21 @@ package org.orekit.files.ccsds.utils.generation;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.hipparchus.fraction.Fraction;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.units.Parser;
+import org.orekit.utils.units.PowerTerm;
 import org.orekit.utils.units.Unit;
 
 /** Base class for both Key-Value Notation and eXtended Markup Language generators for CCSDS messages.
@@ -44,27 +51,26 @@ public abstract class AbstractGenerator implements Generator {
     /** Output name for error messages. */
     private final String outputName;
 
+    /** Flag for writing units. */
+    private final boolean writeUnits;
+
     /** Sections stack. */
     private final Deque<String> sections;
+
+    /** Map from SI Units name to CCSDS unit names. */
+    private final Map<String, String> siToCcsds;
 
     /** Simple constructor.
      * @param output destination of generated output
      * @param outputName output name for error messages
+     * @param writeUnits if true, units must be written
      */
-    public AbstractGenerator(final Appendable output, final String outputName) {
+    public AbstractGenerator(final Appendable output, final String outputName, final boolean writeUnits) {
         this.output     = output;
         this.outputName = outputName;
+        this.writeUnits = writeUnits;
         this.sections   = new ArrayDeque<>();
-    }
-
-    /** Append a character sequence to output stream.
-     * @param cs character sequence to append
-     * @return reference to this
-     * @throws IOException if an I/O error occurs.
-     */
-    protected AbstractGenerator append(final CharSequence cs) throws IOException {
-        output.append(cs);
-        return this;
+        this.siToCcsds  = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -73,10 +79,26 @@ public abstract class AbstractGenerator implements Generator {
         return outputName;
     }
 
+    /** Check if unit must be written.
+     * @param unit entry unit
+     * @return true if units must be written
+     */
+    public boolean writeUnits(final Unit unit) {
+        return writeUnits &&
+               unit != null &&
+               !unit.getName().equals(Unit.NONE.getName()) &&
+               !unit.getName().equals(Unit.ONE.getName());
+    }
+
     /** {@inheritDoc} */
     @Override
     public void close() throws IOException {
-        // nothing to do
+
+        // get out from all sections properly
+        while (!sections.isEmpty()) {
+            exitSection();
+        }
+
     }
 
     /** {@inheritDoc} */
@@ -100,45 +122,45 @@ public abstract class AbstractGenerator implements Generator {
                 builder.append(v);
                 first = false;
             }
-            writeEntry(key, builder.toString(), mandatory);
+            writeEntry(key, builder.toString(), null, mandatory);
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public void writeEntry(final String key, final Enum<?> value, final boolean mandatory) throws IOException {
-        writeEntry(key, value == null ? null : value.name(), mandatory);
+        writeEntry(key, value == null ? null : value.name(), null, mandatory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void writeEntry(final String key, final TimeConverter converter, final AbsoluteDate date, final boolean mandatory)
         throws IOException {
-        writeEntry(key, date == null ? (String) null : dateToString(converter, date), mandatory);
+        writeEntry(key, date == null ? (String) null : dateToString(converter, date), null, mandatory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void writeEntry(final String key, final double value, final Unit unit, final boolean mandatory) throws IOException {
-        writeEntry(key, doubleToString(unit.fromSI(value)), mandatory);
+        writeEntry(key, doubleToString(unit.fromSI(value)), unit, mandatory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void writeEntry(final String key, final Double value, final Unit unit, final boolean mandatory) throws IOException {
-        writeEntry(key, value == null ? (String) null : doubleToString(unit.fromSI(value.doubleValue())), mandatory);
+        writeEntry(key, value == null ? (String) null : doubleToString(unit.fromSI(value.doubleValue())), unit, mandatory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void writeEntry(final String key, final char value, final boolean mandatory) throws IOException {
-        writeEntry(key, Character.toString(value), mandatory);
+        writeEntry(key, Character.toString(value), null, mandatory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void writeEntry(final String key, final int value, final boolean mandatory) throws IOException {
-        writeEntry(key, Integer.toString(value), mandatory);
+        writeEntry(key, Integer.toString(value), null, mandatory);
     }
 
     /** {@inheritDoc} */
@@ -150,7 +172,7 @@ public abstract class AbstractGenerator implements Generator {
     /** {@inheritDoc} */
     @Override
     public void writeRawData(final CharSequence data) throws IOException {
-        append(data);
+        output.append(data);
     }
 
     /** {@inheritDoc} */
@@ -196,4 +218,123 @@ public abstract class AbstractGenerator implements Generator {
         return AccurateFormatter.format(year, month, day, hour, minute, seconds);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String unitsListToString(final List<Unit> units) {
+
+        if (units == null || units.isEmpty()) {
+            // nothing to output
+            return null;
+        }
+
+        final StringBuilder builder = new StringBuilder();
+        builder.append('[');
+        boolean first = true;
+        for (final Unit unit : units) {
+            if (!first) {
+                builder.append(',');
+            }
+            builder.append(siToCcsdsName(unit.getName()));
+            first = false;
+        }
+        builder.append(']');
+        return builder.toString();
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String siToCcsdsName(final String siName) {
+
+        if (!siToCcsds.containsKey(siName)) {
+
+            // build a name using only CCSDS syntax
+            final StringBuilder builder = new StringBuilder();
+
+            // parse the SI name that may contain fancy features like unicode superscripts, square roots sign…
+            final List<PowerTerm> terms = Parser.buildTermsList(siName);
+
+            if (terms == null) {
+                builder.append("n/a");
+            } else {
+
+                // put the positive exponent first
+                boolean first = true;
+                for (final PowerTerm term : terms) {
+                    if (term.getExponent().getNumerator() >= 0) {
+                        if (!first) {
+                            builder.append('*');
+                        }
+                        appendScale(builder, term.getScale());
+                        appendBase(builder, term.getBase());
+                        appendExponent(builder, term.getExponent());
+                        first = false;
+                    }
+                }
+
+                if (first) {
+                    // no positive exponents at all, we add "1" to get something like "1/s"
+                    builder.append('1');
+                }
+
+                // put the negative exponents last
+                for (final PowerTerm term : terms) {
+                    if (term.getExponent().getNumerator() < 0) {
+                        builder.append('/');
+                        appendScale(builder, term.getScale());
+                        appendBase(builder, term.getBase());
+                        appendExponent(builder, term.getExponent().negate());
+                    }
+                }
+
+            }
+
+            // put the converted name in the map for reuse
+            siToCcsds.put(siName, builder.toString());
+
+        }
+
+        return siToCcsds.get(siName);
+
+    }
+
+    /** Append a scaling factor.
+     * @param builder builder to which term must be added
+     * @param scale scaling factor
+     */
+    private void appendScale(final StringBuilder builder, final double scale) {
+        final int factor = (int) FastMath.rint(scale);
+        if (FastMath.abs(scale - factor) > 1.0e-12) {
+            // this should never happen with CCSDS units
+            throw new OrekitInternalError(null);
+        }
+        if (factor != 1) {
+            builder.append(factor);
+        }
+    }
+
+    /** Append a base term.
+     * @param builder builder to which term must be added
+     * @param base base term
+     */
+    private void appendBase(final StringBuilder builder, final CharSequence base) {
+        if ("°".equals(base) || "◦".equals(base)) {
+            builder.append("deg");
+        } else {
+            builder.append(base);
+        }
+    }
+
+    /** Append an exponent.
+     * @param builder builder to which term must be added
+     * @param exponent exponent to add
+     */
+    private void appendExponent(final StringBuilder builder, final Fraction exponent) {
+        if (!exponent.equals(Fraction.ONE)) {
+            builder.append("**");
+            builder.append(exponent.equals(Fraction.ONE_HALF) ? "0.5" : exponent);
+        }
+    }
+
 }
+

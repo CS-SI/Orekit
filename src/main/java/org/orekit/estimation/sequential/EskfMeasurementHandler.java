@@ -82,9 +82,9 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
 		model.updateShortPeriods(s0);
 	}
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
 	@Override
-	public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
+	public void handleStep(final OrekitStepInterpolator interpolator) {
 
 		// Current date
         final AbsoluteDate currentDate = interpolator.getCurrentState().getDate();

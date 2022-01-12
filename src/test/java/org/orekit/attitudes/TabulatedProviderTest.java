@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
@@ -159,13 +159,7 @@ public class TabulatedProviderTest {
 
         // create sample
         final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
-        referencePropagator.setMasterMode(samplingRate, new OrekitFixedStepHandler() {
-
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
-                sample.add(currentState.getAttitude().getOrientation());
-            }
-
-        });
+        referencePropagator.setStepHandler(samplingRate, currentState -> sample.add(currentState.getAttitude().getOrientation()));
         referencePropagator.propagate(circOrbit.getDate().shiftedBy(2 * circOrbit.getKeplerianPeriod()));
 
         return sample;
@@ -182,13 +176,13 @@ public class TabulatedProviderTest {
 
         // compute interpolation error on the internal steps .
         final double[] error = new double[1];
-        interpolatingPropagator.setMasterMode(checkingRate, new OrekitFixedStepHandler() {
+        interpolatingPropagator.setStepHandler(checkingRate, new OrekitFixedStepHandler() {
 
             public void init(SpacecraftState s0, AbsoluteDate t, double step) {
                 error[0] = 0.0;
             }
 
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
+            public void handleStep(SpacecraftState currentState) {
                 Attitude interpolated = currentState.getAttitude();
                 Attitude reference    = referenceProvider.getAttitude(currentState.getOrbit(),
                                                                       currentState.getDate(),
@@ -205,7 +199,7 @@ public class TabulatedProviderTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
+    private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame) {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);

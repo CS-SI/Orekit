@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,12 @@
 package org.orekit.estimation;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -50,7 +51,6 @@ import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -89,9 +89,7 @@ public class TLEEstimationTestUtils {
         
         String line1 = "1 07276U 74026A   00055.48318287  .00000000  00000-0  22970+3 0  9994";
         String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
-        TLE tle = new TLE(line1, line2);
-
-        context.initialTLE = tle;
+        context.initialTLE = new TLE(line1, line2);
 
         context.stations = Arrays.asList(//context.createStation(-18.59146, -173.98363,   76.0, "Leimatu`a"),
                                          context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
@@ -100,8 +98,8 @@ public class TLEEstimationTestUtils {
                         );
 
         // Turn-around range stations
-        // Map entry = master station
-        // Map value = slave station associated
+        // Map entry = primary station
+        // Map value = secondary station associated
         context.TARstations = new HashMap<GroundStation, GroundStation>();
 
         context.TARstations.put(context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
@@ -136,7 +134,7 @@ public class TLEEstimationTestUtils {
                                                        RotationConvention.VECTOR_OPERATOR);
                 return new Transform(date, rotation, rotationRate);
             }
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+            public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 final T rotationduration = date.durationFrom(datedef);
                 final FieldVector3D<T> alpharot = new FieldVector3D<>(rotationduration, rotationRate);
                 final FieldRotation<T> rotation = new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
@@ -155,7 +153,7 @@ public class TLEEstimationTestUtils {
         //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
         //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
         //                );
-        context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
+        context.stations = Collections.singletonList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
 
         // TLE of GEOS-10 from near J2000 epoch      
         String line1 = "1 24786U 97019A   00002.84035656  .00000093  00000-0  00000-0 0  4663";
@@ -165,15 +163,15 @@ public class TLEEstimationTestUtils {
         // Geo-stationary Satellite Orbit, tightly above the station (l0-L0)
         context.initialTLE = tle;
 
-        context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
+        context.stations = Collections.singletonList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
 
         // Turn-around range stations
-        // Map entry = master station
-        // Map value = slave station associated
+        // Map entry = primary station
+        // Map value = secondary station associated
         context.TARstations = new HashMap<GroundStation, GroundStation>();
 
         context.TARstations.put(context.createStation(  41.977, 13.600,  671.354, "Fucino"),
-                                context.createStation(  43.604,  1.444,  263.0  , "Toulouse"));
+                                context.createStation(  43.604,  1.444,  263.0  , "ToulouMEANse"));
 
         context.TARstations.put(context.createStation(  49.867,  8.65 ,  144.0  , "Darmstadt"),
                                 context.createStation( -25.885, 27.707, 1566.633, "Pretoria"));
@@ -187,9 +185,7 @@ public class TLEEstimationTestUtils {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(initialOrbit,
-                                              PositionAngle.MEAN,
-                                              orbitArray, null);
+        initialOrbit.getType().mapOrbitToArray(initialOrbit, PositionAngle.MEAN, orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
         }
@@ -203,7 +199,7 @@ public class TLEEstimationTestUtils {
                                                                   final double startPeriod, final double endPeriod,
                                                                   final double step) {
 
-        propagator.setMasterMode(step, creator);
+        propagator.setStepHandler(step, creator);
         final double       period = propagator.getInitialState().getKeplerianPeriod();
         final AbsoluteDate start  = propagator.getInitialState().getDate().shiftedBy(startPeriod * period);
         final AbsoluteDate end    = propagator.getInitialState().getDate().shiftedBy(endPeriod   * period);

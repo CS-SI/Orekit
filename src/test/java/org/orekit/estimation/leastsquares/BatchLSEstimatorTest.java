@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,6 +51,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -352,10 +353,10 @@ public class BatchLSEstimatorTest {
 
         final NumericalPropagatorBuilder propagatorBuilder1 =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 1.0);
+                                              1.0e-6, 60.0, 1.0e-3);
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 1.0);
+                                              1.0e-6, 60.0, 1.0e-3);
 
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
@@ -366,9 +367,9 @@ public class BatchLSEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         
@@ -471,8 +472,8 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 2.6e-06,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
+                                     0.0, 2.9e-06,
                                      0.0, 1.1e-05,
                                      0.0, 8.3e-07,
                                      0.0, 3.7e-10);
@@ -530,7 +531,7 @@ public class BatchLSEstimatorTest {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final NumericalPropagatorBuilder propagatorBuilder1 =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 1.0, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
+                                              1.0e-6, 60.0, 1.0e-3, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
 
         // Adding selection of parameters
         String satName = "sat 1";
@@ -552,7 +553,7 @@ public class BatchLSEstimatorTest {
         final Context context2 = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context2.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 1.0, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
+                                              1.0e-6, 60.0, 1.0e-3, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
 
         // Adding selection of parameters
         satName = "sat 2";
@@ -579,9 +580,9 @@ public class BatchLSEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         final List<ObservedMeasurement<?>> r12 =
@@ -668,10 +669,10 @@ public class BatchLSEstimatorTest {
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 4, 5,
-                                     0.0, 3.0e-06,
-                                     0.0, 7.2e-06,
-                                     0.0, 3.3e-07,
-                                     0.0, 7.7e-11);
+                                     0.0, 7.0e-06,
+                                     0.0, 2.2e-05,
+                                     0.0, 6.8e-07,
+                                     0.0, 2.7e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -686,11 +687,11 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            5.8e-6);
+                            5.4e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),
-                            3.5e-9);
+                            4.1e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -731,9 +732,9 @@ public class BatchLSEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
         

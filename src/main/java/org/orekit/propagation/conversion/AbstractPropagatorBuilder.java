@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -78,7 +78,13 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     private AttitudeProvider attitudeProvider;
 
     /** Additional equations. */
-    private List<AdditionalEquations> additionalEquations;
+    @Deprecated
+    private List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations;
+
+    /** Additional derivatives providers.
+     * @since 11.1
+     */
+    private List<AdditionalDerivativesProvider> additionalDerivativesProviders;
 
     /** Build a new instance.
      * <p>
@@ -111,7 +117,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
                                         final double positionScale, final boolean addDriverForCentralAttraction) {
         this(templateOrbit, positionAngle, positionScale, addDriverForCentralAttraction,
-                new InertialProvider(templateOrbit.getFrame()));
+             new InertialProvider(templateOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -160,7 +166,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             driver.setSelected(true);
         }
 
-        this.additionalEquations  = new ArrayList<AdditionalEquations>();
+        this.additionalEquations             = new ArrayList<>();
+        this.additionalDerivativesProviders  = new ArrayList<>();
 
         if (addDriverForCentralAttraction) {
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
@@ -369,19 +376,37 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
      * @param additional additional equations
      * @since 10.1
+     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
      */
-    public void addAdditionalEquations(final AdditionalEquations additional) {
-
+    @Deprecated
+    public void addAdditionalEquations(final org.orekit.propagation.integration.AdditionalEquations additional) {
         additionalEquations.add(additional);
-
     }
 
     /** Get the list of additional equations.
      * @return the list of additional equations
      * @since 10.1
+     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
      */
-    protected List<AdditionalEquations> getAdditionalEquations() {
+    @Deprecated
+    protected List<org.orekit.propagation.integration.AdditionalEquations> getAdditionalEquations() {
         return additionalEquations;
+    }
+
+    /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
+     * @param provider provider for additional derivatives
+     * @since 11.1
+     */
+    public void addAdditionalDerivativesProvider(final AdditionalDerivativesProvider provider) {
+        additionalDerivativesProviders.add(provider);
+    }
+
+    /** Get the list of additional equations.
+     * @return the list of additional equations
+     * @since 11.1
+     */
+    protected List<AdditionalDerivativesProvider> getAdditionalDerivativesProviders() {
+        return additionalDerivativesProviders;
     }
 
     /** Deselects orbital and propagation drivers. */

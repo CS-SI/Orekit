@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -48,11 +48,15 @@
         +SpacecraftState addAdditionalState(final String name, final double ... value)
         +boolean hasAdditionalState(final String name)
         +double[] getAdditionalState(final String name)
-        +Map<String, double[]> getAdditionalStates()
+        +DoubleArrayDictionary getAdditionalStates()
+        +SpacecraftState addAdditionalStateDerivative(final String name, final double ... value)
+        +boolean hasAdditionalStateDerivative(final String name)
+        +double[] getAdditionalStateDerivative(final String name)
+        +DoubleArrayDictionary getAdditionalStatesDerivatives()
       }
       note bottom
-        always immutable
-        addAdditionalState creates new instances
+        always immutable addAdditionalState and
+        addAdditionalStateDerivative create new instances
       end note
 
       interface BoundedPropagator {
@@ -61,12 +65,10 @@
       }
 
       interface Propagator {
-        +int getMode()
-        +void setSlaveMode()
-        +void setMasterMode(double h, OrekitFixedStepHandler handler)
-        +void setMasterMode(OrekitStepHandler handler)
-        +void setEphemerisMode()
-        +BoundedPropagator getGeneratedEphemeris()
+        +StepHandlerMultiplexer getMultiplexer()
+        +void clearStepHandlers()
+        +void setStepHandler(double h, OrekitFixedStepHandler handler)
+        +void setStepHandler(OrekitStepHandler handler)
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
         +void addEventDetector(EventDetector detector)

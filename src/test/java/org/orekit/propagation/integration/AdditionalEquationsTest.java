@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,16 +26,19 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class AdditionalEquationsTest {
 
     private double          mu;
@@ -50,19 +53,22 @@ public class AdditionalEquationsTest {
 
         // setup
         final double reference = 1.25;
-        InitCheckerEquations checker = new InitCheckerEquations(reference);
-        Assert.assertFalse(checker.wasCalled());
+        final double rate      = 1.5;
+        final double dt        = 600.0;
+        Linear linear = new Linear("linear", reference, rate);
+        Assert.assertFalse(linear.wasCalled());
 
         // action
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
-        propagatorNumerical.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorNumerical.addAdditionalEquations(checker);
-        propagatorNumerical.propagate(initDate.shiftedBy(600));
+        propagatorNumerical.setInitialState(initialState.addAdditionalState(linear.getName(), reference));
+        propagatorNumerical.addAdditionalEquations(linear);
+        SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
 
         // verify
-        Assert.assertTrue(checker.wasCalled());
+        Assert.assertTrue(linear.wasCalled());
+        Assert.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0], 1.0e-10);
 
     }
 
@@ -73,19 +79,57 @@ public class AdditionalEquationsTest {
 
         // setup
         final double reference = 3.5;
-        InitCheckerEquations checker = new InitCheckerEquations(reference);
-        Assert.assertFalse(checker.wasCalled());
+        final double rate      = 1.5;
+        final double dt        = 600.0;
+        Linear linear = new Linear("linear", reference, rate);
+        Assert.assertFalse(linear.wasCalled());
 
         // action
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         DSSTPropagator propagatorDSST = new DSSTPropagator(integrator);
-        propagatorDSST.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorDSST.addAdditionalEquations(checker);
-        propagatorDSST.propagate(initDate.shiftedBy(600));
+        propagatorDSST.setInitialState(initialState.addAdditionalState(linear.getName(), reference));
+        propagatorDSST.addAdditionalEquations(linear);
+        SpacecraftState finalState = propagatorDSST.propagate(initDate.shiftedBy(dt));
 
         // verify
-        Assert.assertTrue(checker.wasCalled());
+        Assert.assertTrue(linear.wasCalled());
+        Assert.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0], 1.0e-10);
+
+    }
+
+    @Test
+    public void testResetState() {
+
+        // setup
+        final double reference1 = 3.5;
+        final double rate1      = 1.5;
+        Linear linear1 = new Linear("linear-1", reference1, rate1);
+        Assert.assertFalse(linear1.wasCalled());
+        final double reference2 = 4.5;
+        final double rate2      = 1.25;
+        Linear linear2 = new Linear("linear-2", reference2, rate2);
+        Assert.assertFalse(linear2.wasCalled());
+        final double dt = 600;
+
+        // action
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(60);
+        NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
+        propagatorNumerical.setInitialState(initialState.
+                                            addAdditionalState(linear1.getName(), reference1).
+                                            addAdditionalState(linear2.getName(), reference2));
+        propagatorNumerical.addAdditionalEquations(linear1);
+        propagatorNumerical.addAdditionalEquations(linear2);
+        propagatorNumerical.addEventDetector(new ImpulseManeuver<>(new DateDetector(initDate.shiftedBy(dt / 2.0)),
+                                                                   new Vector3D(0.1, 0.2, 0.3), 350.0));
+        SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
+
+        // verify
+        Assert.assertTrue(linear1.wasCalled());
+        Assert.assertTrue(linear2.wasCalled());
+        Assert.assertEquals(reference1 + dt * rate1, finalState.getAdditionalState(linear1.getName())[0], 1.0e-10);
+        Assert.assertEquals(reference2 + dt * rate2, finalState.getAdditionalState(linear2.getName())[0], 1.0e-10);
 
     }
 
@@ -110,33 +154,35 @@ public class AdditionalEquationsTest {
         tolerance    = null;
     }
 
-    public static class InitCheckerEquations implements AdditionalEquations {
+    private static class Linear implements AdditionalEquations {
 
-        private double expected;
+        private String  name;
+        private double  expectedAtInit;
+        private double  rate;
         private boolean called;
 
-        public InitCheckerEquations(final double expected) {
-            this.expected = expected;
-            this.called   = false;
+        public Linear(final String name, final double expectedAtInit, final double rate) {
+            this.name           = name;
+            this.expectedAtInit = expectedAtInit;
+            this.rate           = rate;
+            this.called         = false;
         }
 
         @Override
-        public void init(SpacecraftState initiaState, AbsoluteDate target)
-            {
-            Assert.assertEquals(expected, initiaState.getAdditionalState(getName())[0], 1.0e-15);
+        public void init(SpacecraftState initiaState, AbsoluteDate target) {
+            Assert.assertEquals(expectedAtInit, initiaState.getAdditionalState(getName())[0], 1.0e-15);
             called = true;
         }
 
         @Override
-        public double[] computeDerivatives(SpacecraftState s, double[] pDot)
-            {
-            pDot[0] = 1.5;
-            return new double[7];
+        public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+            pDot[0] = rate;
+            return null;
         }
 
         @Override
         public String getName() {
-            return "linear";
+            return name;
         }
 
         public boolean wasCalled() {

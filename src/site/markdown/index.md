@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2021 CS GROUP
+<!--- Copyright 2002-2022 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -77,6 +77,8 @@
     * analytical propagation models
         * Kepler
         * Eckstein-Heschler
+        * Brouwer-Lyddane with Warren Phipps' correction for the critical inclination of 63.4°
+          and the perturbative acceleration due to atmospheric drag
         * SDP4/SGP4 with 2006 corrections
         * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
     * numerical propagators
@@ -100,7 +102,14 @@
         * serialization mechanism to store complete results on persistent storage for
           later use
         * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
-    * semi-analytical propagation model (DSST) with customizable force models
+    * semi-analytical propagation model (DSST)
+        * central attraction
+        * gravity models
+        * atmospheric drag
+        * third body attraction
+        * radiation pressure with eclipses
+        * computation of Jacobians with respect to orbital parameters and selected
+          force models parameters
     * trajectories around Lagragian points using CR3BP model
     * tabulated ephemerides
         * file based
@@ -112,14 +121,23 @@
         analyzes
     * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
-    * all propagators can be used in several different modes
-        * slave mode: propagator is driven by calling application
-        * master mode: propagator drives application callback functions
-        * ephemeris generation mode: all intermediate results are stored during
-          propagation and provided back to the application which can navigate at will
-          through them, effectively using the propagated orbit as if it was an
-          analytical model, even if it really is a numerically propagated one, which
+    * all propagators can manage the time loop by themselves and handle callback
+      functions (called step handlers) from the calling application at each time step.
+        * step handlers can be called at discrete time at regular time steps, which are
+          independent of propagator time steps
+        * step handlers can be called with interpolators valid throughout one propagator
+          time step, which can have varying sizes
+        * step handlers can be switched off completely, when only final state is desired
+        * special step handlers are provided for a posteriori ephemeris generation: all
+          intermediate results are stored during propagation and provided back to the application
+          which can navigate at will through them, effectively using the propagated orbit as if
+          it was analytical model, even if it really is a numerically propagated one, which
           is ideal for search and iterative algorithms
+        * several step handlers can be used simultaneously, so it is possible to have a fine
+          grained fixed time step to log state in a huge file, and have at the same time a
+          coarse grained time step to display progress for user at a more human-friendly rate,
+          this feature can also be used for debugging purpose, by setting up a temporary
+          step handler alongside the operational ones
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
     * predefined discrete events
@@ -133,6 +151,7 @@
         * raising/setting with respect to a ground location
           (with customizable triggering elevation and ground mask, optionally considering refraction)
         * date and on-the-fly resetting countdown
+        * date interval with parameter-driven boundaries
         * latitude, longitude, altitude crossing
         * latitude, longitude extremum
         * elevation extremum
@@ -165,7 +184,7 @@
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
-    * loading of CCSDS Attitude Data Messages (both AEM, and APM types are supported)
+    * loading and writing of CCSDS Attitude Data Messages (both AEM, and APM types are supported, in both KVN and XML formats, standalone or in combined NDM)
 
   * Orbit determination
   
@@ -173,6 +192,10 @@
         * optimizers choice (Levenberg-Marquardt or Gauss-Newton)
         * decomposition algorithms choice (QR, LU, SVD, Cholesky)
         * choice between forming normal equations or not
+    * sequential batch least squares fitting
+        * sequential Gauss-Newton optimizer
+        * decomposition algorithms choice (QR, LU, SVD, Cholesky)
+        * possibility to use an initial covariance matrix
     *  Kalman filtering
         * customizable process noise matrices providers
         * time dependent process noise provider
@@ -203,6 +226,7 @@
         * multiplexed
     * possibility to add custom measurements
     * loading of ILRS CRD laser ranging measurements file
+    * loading and writing of CCSDS Tracking Data Messages (in both KVN and XML formats, standalone or in combined NDM)
     * several predefined modifiers
         * tropospheric effects
         * ionospheric effects
@@ -232,16 +256,18 @@
     * computation of Dilution Of Precision
     * loading of ANTEX antenna models file
     * loading of RINEX observation files (version 2 and version 3)
+    * loading of RINEX navigation files (version 3)
     * support for Hatanaka compact RINEX format
     * loading of SINEX station file
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
+    * parsing of RTCM messages
     * implementation of Ntrip protocol
 
   * Orbit file handling
   
     * loading of SP3 orbit files (from version a to d)
-    * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
+    * loading and writing of CCSDS Orbit Data Messages (both OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format
     * loading of ILRS CPF orbit files

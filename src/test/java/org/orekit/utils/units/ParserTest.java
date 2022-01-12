@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,15 @@
  */
 package org.orekit.utils.units;
 
-import org.hipparchus.fraction.Fraction;
-import org.hipparchus.util.FastMath;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
 
 /**
- * Unit tests for {@link Lexer}.
+ * Unit tests for {@link Parser}.
  *
  * @author Luc Maisonobe
  */
@@ -33,50 +32,139 @@ public class ParserTest {
 
     @Test
     public void testNotAUnit() {
-        Assert.assertSame(Unit.NONE, Parser.parse("n/a"));
+        Assert.assertNull(Parser.buildTermsList("n/a"));
     }
 
     @Test
-    public void testND() {
-        // nd does not mean "not defined", but nano-day…
-        checkReference("nd",
-                       Prefix.NANO.getFactor() * Constants.JULIAN_DAY,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+    public void testOne() {
+        final List<PowerTerm> terms = Parser.buildTermsList("1");
+        Assert.assertEquals(1, terms.size());
+        checkTerm(terms.get(0), 1, "1", 1, 1);
     }
 
     @Test
-    public void testPredefinedUnit() {
-        checkReference("MHz",
-                       1.0e6,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+    public void testOneCompositeMultiplication() {
+        final List<PowerTerm> terms = Parser.buildTermsList("1×2s");
+        Assert.assertEquals(2, terms.size());
+        checkTerm(terms.get(0), 1, "1", 1, 1);
+        checkTerm(terms.get(1), 2, "s", 1, 1);
+    }
+
+    @Test
+    public void testOneCompositeDivision() {
+        final List<PowerTerm> terms = Parser.buildTermsList("1/2s");
+        Assert.assertEquals(2, terms.size());
+        checkTerm(terms.get(0), 1,   "1",  1, 1);
+        checkTerm(terms.get(1), 0.5, "s", -1, 1);
+    }
+
+    @Test
+    public void testNumber() {
+        final List<PowerTerm> terms = Parser.buildTermsList("#/y");
+        Assert.assertEquals(2, terms.size());
+        checkTerm(terms.get(0), 1,  "#", 1, 1);
+        checkTerm(terms.get(1), 1, "y", -1, 1);
+    }
+
+    @Test
+    public void testIntegerPrefix() {
+        final List<PowerTerm> terms = Parser.buildTermsList("2rev/d²");
+        Assert.assertEquals(2, terms.size());
+        checkTerm(terms.get(0), 2, "rev", 1, 1);
+        checkTerm(terms.get(1), 1,  "d", -2, 1);
+    }
+
+    @Test
+    public void testSimpleFactor() {
+        final List<PowerTerm> terms = Parser.buildTermsList("kg/3s");
+        Assert.assertEquals(2, terms.size());
+        checkTerm(terms.get(0), 1,          "kg", 1, 1);
+        checkTerm(terms.get(1), 1.0 / 3.0,  "s", -1, 1);
+    }
+
+    @Test
+    public void testFinalFactor() {
+        final List<PowerTerm> terms = Parser.buildTermsList("kg/3");
+        Assert.assertEquals(2, terms.size());
+        checkTerm(terms.get(0), 1,          "kg", 1, 1);
+        checkTerm(terms.get(1), 1.0 / 3.0,  "1", -1, 1);
+    }
+
+    @Test
+    public void testCompositeFactor() {
+        final List<PowerTerm> terms = Parser.buildTermsList("3kg*N/5(s·2A)");
+        Assert.assertEquals(4, terms.size());
+        checkTerm(terms.get(0), 3,          "kg", 1, 1);
+        checkTerm(terms.get(1), 1,          "N",  1, 1);
+        checkTerm(terms.get(2), 1.0 / 5.0,  "s", -1, 1);
+        checkTerm(terms.get(3), 1.0 / 2.0,  "A", -1, 1);
     }
 
     @Test
     public void testSquareRoot() {
-        checkReference("km/√d",
-                       1000.0 / FastMath.sqrt(Constants.JULIAN_DAY),
-                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+        final List<PowerTerm> terms = Parser.buildTermsList("abcd¹/1√ef");
+        Assert.assertEquals(2, terms.size());
+        checkTerm(terms.get(0), 1, "abcd", 1, 1);
+        checkTerm(terms.get(1), 1, "ef", -1, 2);
     }
 
     @Test
     public void testChain() {
-        checkReference("kg.m.s⁻¹",
-                       1.0,
-                       Fraction.ONE, Fraction.ONE, Fraction.MINUS_ONE, Fraction.ZERO);
+        final List<PowerTerm> terms = Parser.buildTermsList("kg.m^(3/4)·s⁻¹");
+        Assert.assertEquals(3, terms.size());
+        checkTerm(terms.get(0), 1, "kg", 1, 1);
+        checkTerm(terms.get(1), 1,  "m", 3, 4);
+        checkTerm(terms.get(2), 1, "s", -1, 1);
     }
 
     @Test
     public void testExponents() {
-        checkReference("µas^(2/5)/(h**(2)×m)³",
-                       FastMath.pow(FastMath.toRadians(1.0 / 3.6e9), 0.4) / FastMath.pow(3600, 6),
-                       Fraction.ZERO, new Fraction(-3, 1), new Fraction(-6, 1), new Fraction(2, 5));
+        final List<PowerTerm> terms = Parser.buildTermsList("µas^⅖/(h**(2)×8m.√A)³");
+        Assert.assertEquals(4, terms.size());
+        checkTerm(terms.get(0), 1,           "µas", 2, 5);
+        checkTerm(terms.get(1), 1,            "h", -6, 1);
+        checkTerm(terms.get(2), 1.0 / 512.0,  "m", -3, 1);
+        checkTerm(terms.get(3), 1,            "A", -3, 2);
     }
 
     @Test
     public void testCompoundInSquareRoot() {
-        checkReference("km/√(kg.s)",
-                       1000.0,
-                       new Fraction(-1, 2), Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+        final List<PowerTerm> terms = Parser.buildTermsList("km/√(kg.s)");
+        Assert.assertEquals(3, terms.size());
+        checkTerm(terms.get(0), 1,  "km", 1, 1);
+        checkTerm(terms.get(1), 1, "kg", -1, 2);
+        checkTerm(terms.get(2), 1,  "s", -1, 2);
+    }
+
+    @Test
+    public void testLeftAssociativity() {
+        final List<PowerTerm> terms1 = Parser.buildTermsList("(kg/m)/s²");
+        Assert.assertEquals(3, terms1.size());
+        checkTerm(terms1.get(0), 1,  "kg", 1, 1);
+        checkTerm(terms1.get(1), 1,  "m", -1, 1);
+        checkTerm(terms1.get(2), 1,  "s", -2, 1);
+        final List<PowerTerm> terms2 = Parser.buildTermsList("kg/(m/s²)");
+        Assert.assertEquals(3, terms2.size());
+        checkTerm(terms2.get(0), 1,  "kg", 1, 1);
+        checkTerm(terms2.get(1), 1,  "m", -1, 1);
+        checkTerm(terms2.get(2), 1,   "s", 2, 1);
+        final List<PowerTerm> terms3 = Parser.buildTermsList("kg/m/s²");
+        Assert.assertEquals(3, terms3.size());
+        checkTerm(terms3.get(0), 1,  "kg", 1, 1);
+        checkTerm(terms3.get(1), 1,  "m", -1, 1);
+        checkTerm(terms3.get(2), 1,  "s", -2, 1);
+    }
+
+    @Test
+    public void testCcsdsRoot() {
+        final List<PowerTerm> terms1 = Parser.buildTermsList("km**0.5/s");
+        Assert.assertEquals(2, terms1.size());
+        checkTerm(terms1.get(0), 1,  "km", 1, 2);
+        checkTerm(terms1.get(1), 1,  "s", -1, 1);
+        final List<PowerTerm> terms2 = Parser.buildTermsList("km/s**0.5");
+        Assert.assertEquals(2, terms2.size());
+        checkTerm(terms2.get(0), 1,  "km", 1, 1);
+        checkTerm(terms2.get(1), 1,  "s", -1, 2);
     }
 
     @Test
@@ -105,11 +193,6 @@ public class ParserTest {
     }
 
     @Test
-    public void testSpuriousFactor() {
-        expectFailure("kg/3s");
-    }
-
-    @Test
     public void testMissingUnit() {
         expectFailure("km/√");
     }
@@ -120,27 +203,28 @@ public class ParserTest {
     }
 
     @Test
-    public void testRootAndParenthesisedPower() {
-        checkReference("km/√(d³)",
-                       1000.0 / (Constants.JULIAN_DAY * FastMath.sqrt(Constants.JULIAN_DAY)),
-                       Fraction.ZERO, Fraction.ONE, new Fraction(-3, 2), Fraction.ZERO);
+    public void testMissingTerm() {
+        expectFailure("m/2√");
     }
 
-    private void checkReference(final String unitSpecification, final double scale,
-                                final Fraction mass, final Fraction length,
-                                final Fraction time, final Fraction angle) {
-        final Unit unit = Parser.parse(unitSpecification);
-        Assert.assertEquals(unitSpecification, unit.toString());
-        Assert.assertEquals(scale,  unit.getScale(), 1.0e-10 * scale);
-        Assert.assertEquals(mass,   unit.getMass());
-        Assert.assertEquals(length, unit.getLength());
-        Assert.assertEquals(time,   unit.getTime());
-        Assert.assertEquals(angle,  unit.getAngle());
+    @Test
+    public void testRootAndParenthesisedPower() {
+        final List<PowerTerm> terms = Parser.buildTermsList("km/√(d³)");
+        Assert.assertEquals(2, terms.size());
+        checkTerm(terms.get(0), 1,  "km", 1, 1);
+        checkTerm(terms.get(1), 1,  "d", -3, 2);
+    }
+
+    private void checkTerm(final PowerTerm term, double scale, final String base, final int numerator, final int denominator) {
+        Assert.assertEquals(scale,       term.getScale(), 1.0e-12);
+        Assert.assertEquals(base,        term.getBase().toString());
+        Assert.assertEquals(numerator,   term.getExponent().getNumerator());
+        Assert.assertEquals(denominator, term.getExponent().getDenominator());
     }
 
     private void expectFailure(final String unitSpecification) {
         try {
-            Parser.parse(unitSpecification);
+            Parser.buildTermsList(unitSpecification);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNKNOWN_UNIT, oe.getSpecifier());

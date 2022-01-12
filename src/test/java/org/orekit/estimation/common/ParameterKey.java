@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -157,6 +157,7 @@ public enum ParameterKey {
     PV_OUTLIER_REJECTION_STARTING_ITERATION,
     SATELLITE_ID_IN_RINEX_FILES,
     MEASUREMENTS_FILES,
+    MEASUREMENTS_FILES_SEQUENTIAL,
     SINEX_POSITION_FILE,
     SINEX_ECC_FILE,
     OUTPUT_BASE_NAME,

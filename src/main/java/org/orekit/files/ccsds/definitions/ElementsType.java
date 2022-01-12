@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,14 +22,19 @@ import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.ocm.OcmFile;
+import org.orekit.files.ccsds.ndm.odm.ocm.Ocm;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
 
-/** Orbit element set type used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
+/** Orbit element set type used in CCSDS {@link Ocm Orbit Comprehensive Messages}.
  * @see <a href="https://sanaregistry.org/r/orbital_elements">SANA registry for orbital elements</a>
  * @author Luc Maisonobe
  * @since 11.0
@@ -95,11 +100,44 @@ public enum ElementsType {
 
     /** Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIAL("Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr)",
-                "km", "n/a", "n/a", "°", "n/a", "n/a", "n/a"),
+                "km", "n/a", "n/a", "°", "n/a", "n/a", "n/a") {
+        /** {@inheritDoc} */
+        @Override
+        @DefaultDataContext
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+            if (elements[6] < 0) {
+                // retrograde
+                throw new OrekitException(OrekitMessages.CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL,
+                                          EQUINOCTIAL.name());
+            }
+            return new EquinoctialOrbit(elements[0], elements[1], elements[2],
+                                        elements[5], elements[4], // BEWARE! the inversion here is intentional
+                                        elements[3], PositionAngle.MEAN,
+                                        FramesFactory.getGCRF(), date, mu).
+                            getPVCoordinates();
+        }
+    },
 
     /** Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIALMOD("Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr)",
-                   "km", "n/a", "n/a", "°", "n/a", "n/a", "n/a"),
+                   "km", "n/a", "n/a", "°", "n/a", "n/a", "n/a") {
+        /** {@inheritDoc} */
+        @Override
+        @DefaultDataContext
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+            if (elements[6] < 0) {
+                // retrograde
+                throw new OrekitException(OrekitMessages.CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL,
+                                          EQUINOCTIALMOD.name());
+            }
+            final double oMe2 = 1.0 - elements[1] * elements[1] - elements[2] * elements[2];
+            return new EquinoctialOrbit(elements[0] / oMe2, elements[1], elements[2],
+                                        elements[5], elements[4], // BEWARE! the inversion here is intentional
+                                        elements[3], PositionAngle.TRUE,
+                                        FramesFactory.getGCRF(), date, mu).
+                            getPVCoordinates();
+        }
+    },
 
     /** Geodetic elements (λ, ΦGD, β, A, h, vre). */
     GEODETIC("Geodetic elements (λ, ΦGD, β, A, h, vre)",
@@ -107,11 +145,33 @@ public enum ElementsType {
 
     /** Keplerian 6-element classical set (a, e, i, Ω, ω, ν). */
     KEPLERIAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν)",
-              "km", "n/a", "°", "°", "°", "°"),
+              "km", "n/a", "°", "°", "°", "°") {
+        /** {@inheritDoc} */
+        @Override
+        @DefaultDataContext
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+            return new KeplerianOrbit(elements[0], elements[1], elements[2],
+                                      elements[4], elements[3], // BEWARE! the inversion here is intentional
+                                      elements[5], PositionAngle.TRUE,
+                                      FramesFactory.getGCRF(), date, mu).
+                   getPVCoordinates();
+        }
+    },
 
     /** Keplerian 6-element classical set (a, e, i, Ω, ω, M). */
     KEPLERIANMEAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M)",
-                  "km", "n/a", "°", "°", "°", "°"),
+                  "km", "n/a", "°", "°", "°", "°") {
+        /** {@inheritDoc} */
+        @Override
+        @DefaultDataContext
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+            return new KeplerianOrbit(elements[0], elements[1], elements[2],
+                                      elements[4], elements[3], // BEWARE! the inversion here is intentional
+                                      elements[5], PositionAngle.MEAN,
+                                      FramesFactory.getGCRF(), date, mu).
+                   getPVCoordinates();
+        }
+    },
 
     /** Modified spherical 6-element set (λ, δ, β, A, r, v). */
     LDBARV("Modified spherical 6-element set (λ, δ, β, A, r, v)",

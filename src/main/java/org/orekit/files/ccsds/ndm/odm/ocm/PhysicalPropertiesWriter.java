@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,14 +55,14 @@ class PhysicalPropertiesWriter extends AbstractWriter {
         // physical properties block
         generator.writeComments(phys.getComments());
 
-        generator.writeEntry(PhysicalPropertiesKey.MANUFACTURER.name(), phys.getManufacturer(), false);
-        generator.writeEntry(PhysicalPropertiesKey.BUS_MODEL.name(),    phys.getBusModel(),     false);
-        generator.writeEntry(PhysicalPropertiesKey.DOCKED_WITH.name(),  phys.getDockedWith(),   false);
+        generator.writeEntry(PhysicalPropertiesKey.MANUFACTURER.name(), phys.getManufacturer(), null, false);
+        generator.writeEntry(PhysicalPropertiesKey.BUS_MODEL.name(),    phys.getBusModel(),     null, false);
+        generator.writeEntry(PhysicalPropertiesKey.DOCKED_WITH.name(),  phys.getDockedWith(),         false);
 
         // drag
-        generator.writeEntry(PhysicalPropertiesKey.DRAG_CONST_AREA.name(),  phys.getDragConstantArea(), Units.M2,        false);
-        generator.writeEntry(PhysicalPropertiesKey.DRAG_COEFF_NOM.name(),   phys.getNominalDragCoefficient(), Unit.ONE,  false);
-        generator.writeEntry(PhysicalPropertiesKey.DRAG_UNCERTAINTY.name(), phys.getDragUncertainty(), Unit.PERCENT,     false);
+        generator.writeEntry(PhysicalPropertiesKey.DRAG_CONST_AREA.name(),  phys.getDragConstantArea(), Units.M2,    false);
+        generator.writeEntry(PhysicalPropertiesKey.DRAG_COEFF_NOM.name(),   phys.getDragCoefficient(), Unit.ONE,     false);
+        generator.writeEntry(PhysicalPropertiesKey.DRAG_UNCERTAINTY.name(), phys.getDragUncertainty(), Unit.PERCENT, false);
 
         // mass
         generator.writeEntry(PhysicalPropertiesKey.INITIAL_WET_MASS.name(), phys.getInitialWetMass(), Unit.KILOGRAM, false);
@@ -70,18 +70,18 @@ class PhysicalPropertiesWriter extends AbstractWriter {
         generator.writeEntry(PhysicalPropertiesKey.DRY_MASS.name(),         phys.getDryMass(), Unit.KILOGRAM,        false);
 
         // Optimally Enclosing Box
-        generator.writeEntry(PhysicalPropertiesKey.OEB_PARENT_FRAME.name(),       phys.getOebParentFrame().getName(),           false);
-        generator.writeEntry(PhysicalPropertiesKey.OEB_PARENT_FRAME_EPOCH.name(), timeConverter, phys.getOebParentFrameEpoch(), false);
-        generator.writeEntry(PhysicalPropertiesKey.OEB_Q1.name(),                 phys.getOebQ().getQ1(), Unit.ONE,             false);
-        generator.writeEntry(PhysicalPropertiesKey.OEB_Q2.name(),                 phys.getOebQ().getQ2(), Unit.ONE,             false);
-        generator.writeEntry(PhysicalPropertiesKey.OEB_Q3.name(),                 phys.getOebQ().getQ3(), Unit.ONE,             false);
-        generator.writeEntry(PhysicalPropertiesKey.OEB_QC.name(),                 phys.getOebQ().getQ0(), Unit.ONE,             false);
-        generator.writeEntry(PhysicalPropertiesKey.OEB_MAX.name(),                phys.getOebMax(), Unit.METRE,                 false);
-        generator.writeEntry(PhysicalPropertiesKey.OEB_INT.name(),                phys.getOebIntermediate(), Unit.METRE,        false);
-        generator.writeEntry(PhysicalPropertiesKey.OEB_MIN.name(),                phys.getOebMin(), Unit.METRE,                 false);
-        generator.writeEntry(PhysicalPropertiesKey.AREA_ALONG_OEB_MAX.name(),     phys.getOebAreaAlongMax(), Units.M2,          false);
-        generator.writeEntry(PhysicalPropertiesKey.AREA_ALONG_OEB_INT.name(),     phys.getOebAreaAlongIntermediate(), Units.M2, false);
-        generator.writeEntry(PhysicalPropertiesKey.AREA_ALONG_OEB_MIN.name(),     phys.getOebAreaAlongMin(), Units.M2,          false);
+        generator.writeEntry(PhysicalPropertiesKey.OEB_PARENT_FRAME.name(),       phys.getOebParentFrame().getName(),           null, false);
+        generator.writeEntry(PhysicalPropertiesKey.OEB_PARENT_FRAME_EPOCH.name(), timeConverter, phys.getOebParentFrameEpoch(),       false);
+        generator.writeEntry(PhysicalPropertiesKey.OEB_Q1.name(),                 phys.getOebQ().getQ1(), Unit.ONE,                   false);
+        generator.writeEntry(PhysicalPropertiesKey.OEB_Q2.name(),                 phys.getOebQ().getQ2(), Unit.ONE,                   false);
+        generator.writeEntry(PhysicalPropertiesKey.OEB_Q3.name(),                 phys.getOebQ().getQ3(), Unit.ONE,                   false);
+        generator.writeEntry(PhysicalPropertiesKey.OEB_QC.name(),                 phys.getOebQ().getQ0(), Unit.ONE,                   false);
+        generator.writeEntry(PhysicalPropertiesKey.OEB_MAX.name(),                phys.getOebMax(), Unit.METRE,                       false);
+        generator.writeEntry(PhysicalPropertiesKey.OEB_INT.name(),                phys.getOebIntermediate(), Unit.METRE,              false);
+        generator.writeEntry(PhysicalPropertiesKey.OEB_MIN.name(),                phys.getOebMin(), Unit.METRE,                       false);
+        generator.writeEntry(PhysicalPropertiesKey.AREA_ALONG_OEB_MAX.name(),     phys.getOebAreaAlongMax(), Units.M2,                false);
+        generator.writeEntry(PhysicalPropertiesKey.AREA_ALONG_OEB_INT.name(),     phys.getOebAreaAlongIntermediate(), Units.M2,       false);
+        generator.writeEntry(PhysicalPropertiesKey.AREA_ALONG_OEB_MIN.name(),     phys.getOebAreaAlongMin(), Units.M2,                false);
 
         // collision probability
         generator.writeEntry(PhysicalPropertiesKey.AREA_MIN_FOR_PC.name(), phys.getMinAreaForCollisionProbability(), Units.M2, false);
@@ -94,9 +94,9 @@ class PhysicalPropertiesWriter extends AbstractWriter {
         generator.writeEntry(PhysicalPropertiesKey.RCS_MAX.name(), phys.getMaxRcs(), Units.M2, false);
 
         // solar radiation pressure
-        generator.writeEntry(PhysicalPropertiesKey.SRP_CONST_AREA.name(),        phys.getSrpConstantArea(), Units.M2,       false);
-        generator.writeEntry(PhysicalPropertiesKey.SOLAR_RAD_COEFF.name(),       phys.getNominalSrpCoefficient(), Unit.ONE, false);
-        generator.writeEntry(PhysicalPropertiesKey.SOLAR_RAD_UNCERTAINTY.name(), phys.getSrpUncertainty(), Unit.PERCENT,    false);
+        generator.writeEntry(PhysicalPropertiesKey.SRP_CONST_AREA.name(),        phys.getSrpConstantArea(), Units.M2,    false);
+        generator.writeEntry(PhysicalPropertiesKey.SOLAR_RAD_COEFF.name(),       phys.getSrpCoefficient(), Unit.ONE,     false);
+        generator.writeEntry(PhysicalPropertiesKey.SOLAR_RAD_UNCERTAINTY.name(), phys.getSrpUncertainty(), Unit.PERCENT, false);
 
         // visual magnitude
         generator.writeEntry(PhysicalPropertiesKey.VM_ABSOLUTE.name(),     phys.getVmAbsolute(), Unit.ONE,    false);
@@ -106,17 +106,17 @@ class PhysicalPropertiesWriter extends AbstractWriter {
         generator.writeEntry(PhysicalPropertiesKey.REFLECTIVITY.name(),    phys.getReflectivity(), Unit.ONE,  false);
 
         // attitude
-        generator.writeEntry(PhysicalPropertiesKey.ATT_CONTROL_MODE.name(),  phys.getAttitudeControlMode(),                    false);
-        generator.writeEntry(PhysicalPropertiesKey.ATT_ACTUATOR_TYPE.name(), phys.getAttitudeActuatorType(),                   false);
+        generator.writeEntry(PhysicalPropertiesKey.ATT_CONTROL_MODE.name(),  phys.getAttitudeControlMode(),       null,        false);
+        generator.writeEntry(PhysicalPropertiesKey.ATT_ACTUATOR_TYPE.name(), phys.getAttitudeActuatorType(),      null,        false);
         generator.writeEntry(PhysicalPropertiesKey.ATT_KNOWLEDGE.name(),     phys.getAttitudeKnowledgeAccuracy(), Unit.DEGREE, false);
-        generator.writeEntry(PhysicalPropertiesKey.ATT_CONTROL.name(),       phys.getAttitudeControlAccuracy(), Unit.DEGREE,   false);
-        generator.writeEntry(PhysicalPropertiesKey.ATT_POINTING.name(),      phys.getAttitudePointingAccuracy(), Unit.DEGREE,  false);
+        generator.writeEntry(PhysicalPropertiesKey.ATT_CONTROL.name(),       phys.getAttitudeControlAccuracy(),   Unit.DEGREE, false);
+        generator.writeEntry(PhysicalPropertiesKey.ATT_POINTING.name(),      phys.getAttitudePointingAccuracy(),  Unit.DEGREE, false);
 
         // maneuvers
-        generator.writeEntry(PhysicalPropertiesKey.AVG_MANEUVER_FREQ.name(), phys.getManeuversPerYear(), Units.NB_PER_Y, false);
-        generator.writeEntry(PhysicalPropertiesKey.MAX_THRUST.name(),        phys.getMaxThrust(), Unit.NEWTON,           false);
-        generator.writeEntry(PhysicalPropertiesKey.DV_BOL.name(),            phys.getBolDv(), Units.KM_PER_S,            false);
-        generator.writeEntry(PhysicalPropertiesKey.DV_REMAINING.name(),      phys.getRemainingDv(), Units.KM_PER_S,      false);
+        generator.writeEntry(PhysicalPropertiesKey.AVG_MANEUVER_FREQ.name(), phys.getManeuversFrequency(), Units.NB_PER_Y, false);
+        generator.writeEntry(PhysicalPropertiesKey.MAX_THRUST.name(),        phys.getMaxThrust(),          Unit.NEWTON,    false);
+        generator.writeEntry(PhysicalPropertiesKey.DV_BOL.name(),            phys.getBolDv(),              Units.KM_PER_S, false);
+        generator.writeEntry(PhysicalPropertiesKey.DV_REMAINING.name(),      phys.getRemainingDv(),        Units.KM_PER_S, false);
 
         // inertia
         final RealMatrix inertia = phys.getInertiaMatrix();

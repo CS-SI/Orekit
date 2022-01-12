@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,7 +84,7 @@ public class UnixCompressFilterTest {
         final byte[] array = new byte[] { (byte) 0x1f, (byte) 0x9d, (byte) 0x90, (byte) 0x0a, (byte) 0x00 };
         DataSource filtered = new UnixCompressFilter().
                         filter(new DataSource("empty-line.Z", () -> new ByteArrayInputStream(array)));
-        InputStream is = filtered.getStreamOpener().openOnce();
+        InputStream is = filtered.getOpener().openStreamOnce();
         Assert.assertEquals('\n', is.read());
         for (int i = 0; i < 1000; ++i) {
             Assert.assertEquals(-1,   is.read());
@@ -137,9 +135,7 @@ public class UnixCompressFilterTest {
         DataSource filtered = new UnixCompressFilter().
                              filter(new DataSource(name,
                                                   () -> Utils.class.getClassLoader().getResourceAsStream(name)));
-        try (InputStream is = filtered.getStreamOpener().openOnce();
-             InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-             BufferedReader br = new BufferedReader(isr)) {
+        try (BufferedReader br = new BufferedReader(filtered.getOpener().openReaderOnce())) {
             int lines = 0;
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lines;
@@ -154,8 +150,8 @@ public class UnixCompressFilterTest {
             array[i] = (byte) bytes[i];
         }
         DataSource filtered = new UnixCompressFilter().
-                        filter(new DataSource(name, () -> new ByteArrayInputStream(array)));
-        InputStream is = filtered.getStreamOpener().openOnce();
+                              filter(new DataSource(name, () -> new ByteArrayInputStream(array)));
+        InputStream is = filtered.getOpener().openStreamOnce();
         List<Integer> output = new ArrayList<>();
         while (true) {
             boolean shouldWork = is.available() > 0;

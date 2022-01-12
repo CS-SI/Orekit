@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -130,7 +130,7 @@ public class IodLambert {
 
         // Exception if t2 < t1
         if (tau < 0.0) {
-            throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, t1, t2);
+            throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, t1, t2, -tau);
         }
 
         // normalizing constants

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,14 @@
 package org.orekit.propagation.conversion;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.utils.ParameterDriver;
 
 public class TLEConverterTest {
@@ -28,7 +32,6 @@ public class TLEConverterTest {
     @Test
     public void testDeselectOrbitals() {
 
-        Utils.setDataRoot("regular-data");
         final TLE tle = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
                                 "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
         
@@ -41,4 +44,37 @@ public class TLEConverterTest {
             Assert.assertFalse(driver.isSelected());
         }
     }
+
+    @Test
+    public void testIssue859() {
+
+        // INTELSAT 25 TLE taken from Celestrak the 2021-11-24T07:45:00.000
+        // Because the satellite eccentricity and inclination are closed to zero, this satellite
+        // reach convergence issues when converting the spacecraft's state to TLE.
+        final TLE tle = new TLE("1 33153U 08034A   21327.46310733 -.00000207  00000+0  00000+0 0  9990",
+                                "2 33153   0.0042  20.7353 0003042 213.9370 323.2156  1.00270917 48929");
+
+        // Verify convergence issue
+        final TLEPropagatorBuilder propagatorBuilderError = new TLEPropagatorBuilder(tle, PositionAngle.MEAN, 1.);
+        try {
+            propagatorBuilderError.buildPropagator(propagatorBuilderError.getSelectedNormalizedParameters());
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_COMPUTE_TLE, oe.getSpecifier());
+        }
+
+        // Now try using different convergence threshold
+        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(tle, PositionAngle.MEAN, 1., 2.0e-4, 10000);
+        final TLEPropagator propagator = propagatorBuilder.buildPropagator(propagatorBuilderError.getSelectedNormalizedParameters());
+        final TLE newTLE = propagator.getTLE();
+
+        // Verify
+        Assert.assertEquals(0.0, newTLE.getDate().durationFrom(tle.getDate()), Utils.epsilonTest);
+
+    }
+
+    @Before
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
-
-import java.util.stream.Collectors;
 
 import org.orekit.files.ccsds.definitions.DutyCycleType;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -45,16 +43,7 @@ public enum ManeuverHistoryMetadataKey {
     MAN_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setManNextID)),
 
     /** Basis of this maneuver history data. */
-    MAN_BASIS((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setManBasis(ManBasis.valueOf(token.getContentAsUppercaseString()));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    MAN_BASIS((token, context, container) -> token.processAsEnum(ManBasis.class, container::setManBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this maneuver is based.*/
     MAN_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setManBasisID)),
@@ -77,24 +66,15 @@ public enum ManeuverHistoryMetadataKey {
     /** Reference frame of the maneuver. */
     MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setManReferenceFrame, context, true, true, false)),
 
-    /** Epoch of the {@link #COV_REF_FRAME orbit reference frame}. */
+    /** Epoch of the {@link #MAN_REF_FRAME maneuver reference frame}. */
     MAN_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setManFrameEpoch, context)),
 
     /** Origin of maneuver gravitational assist body. */
     GRAV_ASSIST_NAME((token, context, container) -> token.processAsCenter(container::setGravitationalAssist,
-                                                                         context.getDataContext().getCelestialBodies())),
+                                                                          context.getDataContext().getCelestialBodies())),
 
     /** Type of duty cycle. */
-    DC_TYPE((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setDcType(DutyCycleType.valueOf(token.getContentAsUppercaseString()));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    DC_TYPE((token, context, container) -> token.processAsEnum(DutyCycleType.class, container::setDcType)),
 
     /** Start time of duty cycle-based maneuver window. */
     DC_WIN_OPEN((token, context, container) -> token.processAsDate(container::setDcWindowOpen, context)),
@@ -118,42 +98,33 @@ public enum ManeuverHistoryMetadataKey {
     DC_REF_TIME((token, context, container) -> token.processAsDate(container::setDcRefTime, context)),
 
     /** Duty cycle pulse "ON" duration. */
-    DC_TIME_PULSE_DURATION((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setDcTimePulseDuration)),
+    DC_TIME_PULSE_DURATION((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                container::setDcTimePulseDuration)),
 
     /** Duty cycle elapsed time between start of a pulse and start of next pulse. */
-    DC_TIME_PULSE_PERIOD((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setDcTimePulsePeriod)),
+    DC_TIME_PULSE_PERIOD((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                              container::setDcTimePulsePeriod)),
 
     /** Reference direction for triggering duty cycle. */
     DC_REF_DIR((token, context, container) -> token.processAsVector(container::setDcRefDir)),
 
-    /** Spacecraft body frame in which {@link #dcBodyTrigger} is specified. */
+    /** Spacecraft body frame in which {@link #DC_BODY_TRIGGER} is specified. */
     DC_BODY_FRAME((token, context, container) -> token.processAsFrame(f -> container.setDcBodyFrame(f.asSpacecraftBodyFrame()),
-                                                                     context, false, false, true)),
+                                                                      context, false, false, true)),
 
-    /** Direction in {@link #dcBodyFrame body frame} for triggering duty cycle. */
+    /** Direction in {@link #DC_BODY_FRAME body frame} for triggering duty cycle. */
     DC_BODY_TRIGGER((token, context, container) -> token.processAsVector(container::setDcBodyTrigger)),
 
     /** Phase angle of pulse start. */
-    DC_PA_START_ANGLE((token, context, container) -> token.processAsAngle(container::setDcPhaseStartAngle)),
+    DC_PA_START_ANGLE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                           container::setDcPhaseStartAngle)),
 
     /** Phase angle of pulse stop. */
-    DC_PA_STOP_ANGLE((token, context, container) -> token.processAsAngle(container::setDcPhaseStopAngle)),
+    DC_PA_STOP_ANGLE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                          container::setDcPhaseStopAngle)),
 
     /** Maneuver elements of information. */
-    MAN_COMPOSITION((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setManComposition(token.getContentAsNormalizedList().
-                                            stream().
-                                            map(s -> s.replace(' ', '_')).
-                                            map(s -> ManeuverFieldType.valueOf(s)).
-                                            collect(Collectors.toList()));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    MAN_COMPOSITION((token, context, container) -> token.processAsEnumsList(ManeuverFieldType.class, container::setManComposition)),
 
     /** SI units for each elements of the maneuver. */
     MAN_UNITS((token, context, container) -> token.processAsUnitList(container::setManUnits));

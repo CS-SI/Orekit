@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
@@ -29,7 +30,7 @@ import org.orekit.files.ccsds.section.XmlStructureProcessingState;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.utils.IERSConventions;
 
@@ -53,7 +54,7 @@ import org.orekit.utils.IERSConventions;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
+public class TdmParser extends AbstractConstituentParser<Tdm, TdmParser> {
 
     /** Converter for {@link RangeUnits#RU Range Units} (may be null). */
     private final RangeUnitsConverter converter;
@@ -79,18 +80,19 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildTdmParser(RangeUnitsConverter)
-     * parserBuilder.buildTdmParser(converter)}.
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildTdmParser()
+     * parserBuilder.buildTdmParser()}.
      * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
      * are no range observations in {@link RangeUnits#RU Range Units})
      */
-    public TdmParser(final IERSConventions conventions, final boolean simpleEOP,
-                     final DataContext dataContext, final RangeUnitsConverter converter) {
-        super(TdmFile.ROOT, TdmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
+    public TdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                     final ParsedUnitsBehavior parsedUnitsBehavior, final RangeUnitsConverter converter) {
+        super(Tdm.ROOT, Tdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
         this.converter = converter;
     }
 
@@ -103,44 +105,44 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header             = new Header();
+        header             = new Header(2.0);
         segments           = new ArrayList<>();
         metadata           = null;
         context            = null;
         observationsBlock  = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(TdmFile.ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(Tdm.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public TdmFile build() {
-        return new TdmFile(header, segments, getConventions(), getDataContext());
+    public Tdm build() {
+        return new Tdm(header, segments, getConventions(), getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        anticipateNext(new HeaderProcessingState(this));
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inHeader() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean finalizeHeader() {
-        header.checkMandatoryEntries();
+        header.validate(header.getFormatVersion());
         return true;
     }
 
@@ -151,24 +153,25 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
             return false;
         }
         metadata  = new TdmMetadata();
-        context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, () -> null,
-                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
-        setFallback(this::processMetadataToken);
+        context   = new ContextBinding(
+            this::getConventions, this::isSimpleEOP,
+            this::getDataContext, this::getParsedUnitsBehavior,
+            () -> null, metadata::getTimeSystem, () -> 0.0, () -> 1.0);
+        anticipateNext(this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean finalizeMetadata() {
-        metadata.checkMandatoryEntries();
+        metadata.validate(header.getFormatVersion());
         return true;
     }
 
@@ -176,14 +179,14 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     @Override
     public boolean prepareData() {
         observationsBlock = new ObservationsBlock();
-        setFallback(this::processDataToken);
+        anticipateNext(this::processDataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inData() {
-        setFallback(structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -229,7 +232,7 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
                        TdmDataKey.valueOf(token.getName()).process(token, context, observationsBlock);
             } catch (IllegalArgumentException iae) {
                 // observation
-                return Observationtype.valueOf(token.getName()).process(token, context, converter, metadata, observationsBlock);
+                return ObservationType.valueOf(token.getName()).process(token, context, converter, metadata, observationsBlock);
             }
         } catch (IllegalArgumentException iae) {
             // token has not been recognized

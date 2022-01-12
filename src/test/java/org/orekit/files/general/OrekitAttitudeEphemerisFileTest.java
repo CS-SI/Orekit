@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -45,10 +44,10 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
-import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSegment;
 import org.orekit.files.ccsds.ndm.adm.aem.AttitudeWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
@@ -63,7 +62,6 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class OrekitAttitudeEphemerisFileTest {
@@ -143,18 +141,17 @@ public class OrekitAttitudeEphemerisFileTest {
         Assert.assertEquals(refRot.getQ2(), attitude.getRotation().getQ2(), quaternionTolerance);
         Assert.assertEquals(refRot.getQ3(), attitude.getRotation().getQ3(), quaternionTolerance);
 
-        String tempAemFile = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAemFile), StandardCharsets.UTF_8)) {
+        String tempAem = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAem), StandardCharsets.UTF_8)) {
             new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                               null, dummyMetadata(), FileFormat.KVN, "").write(writer, ephemerisFile);
+                               null, dummyMetadata(), FileFormat.KVN, "", 60).write(writer, ephemerisFile);
         }
 
-        AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFromFile =
-                        new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
-                        parseMessage(new DataSource(tempAemFile));
-        Files.delete(Paths.get(tempAemFile));
+        AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFrom =
+                        new ParserBuilder().buildAemParser().parseMessage(new DataSource(tempAem));
+        Files.delete(Paths.get(tempAem));
         
-        segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
+        segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getAngularCoordinates().size());
@@ -236,8 +233,8 @@ public class OrekitAttitudeEphemerisFileTest {
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
-                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                                          "GYRO 1"));
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO_FRAME, "1"),
+                                                          "GYRO FRAME 1"));
         metadata.getEndpoints().setA2b(true);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));

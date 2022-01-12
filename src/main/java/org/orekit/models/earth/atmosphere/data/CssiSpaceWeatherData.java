@@ -145,8 +145,13 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
      * @param date date to bracket
      */
     private void bracketDate(final AbsoluteDate date) {
-        if (date.durationFrom(firstDate) < 0 || date.durationFrom(lastDate) > 0) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
+        if (date.durationFrom(firstDate) < 0) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                    date, firstDate, lastDate, firstDate.durationFrom(date));
+        }
+        if (date.durationFrom(lastDate) > 0) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                    date, firstDate, lastDate, date.durationFrom(lastDate));
         }
 
         // don't search if the cached selection is fine
@@ -158,7 +163,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         final List<TimeStamped> neigbors = data.getNeighbors(date).collect(Collectors.toList());
         previousParam = (LineParameters) neigbors.get(0);
         nextParam = (LineParameters) neigbors.get(1);
-        if (previousParam.getDate().compareTo(date) > 0) {
+        if (previousParam.getDate().compareTo(date) > 0) { // TODO delete dead code
             /**
              * Throwing exception if neighbors are unbalanced because we are at the
              * beginning of the data set
@@ -193,13 +198,10 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         // Interpolating two neighboring daily fluxes
         // get the neighboring dates
         bracketDate(date);
-        return getLinearInterpolation(date, previousParam.getF107Adj(), nextParam.getF107Adj());
+        return getLinearInterpolation(date, previousParam.getF107Obs(), nextParam.getF107Obs());
     }
 
-    /** {@inheritDoc}
-     * FIXME not sure if the mean flux for DTM2000 should be computed differently
-     * than the average flux for NRLMSISE00
-     */
+    /** {@inheritDoc} */
     public double getMeanFlux(final AbsoluteDate date) {
         return getAverageFlux(date);
     }
@@ -254,18 +256,18 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
      * Gets the daily flux on the current day.
      *
      * @param date the current date
-     * @return the daily F10.7 flux (adjusted)
+     * @return the daily F10.7 flux (observed)
      */
     private double getDailyFluxOnDay(final AbsoluteDate date) {
         if (date.compareTo(lastDailyPredictedDate) <= 0) {
             // Getting the value for the previous day
             bracketDate(date);
-            return previousParam.getF107Adj();
+            return previousParam.getF107Obs();
         } else {
             // Only monthly data is available, better interpolate between two months
             // get the neighboring dates
             bracketDate(date);
-            return getLinearInterpolation(date, previousParam.getF107Adj(), nextParam.getF107Adj());
+            return getLinearInterpolation(date, previousParam.getF107Obs(), nextParam.getF107Obs());
         }
     }
 
@@ -273,12 +275,12 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     public double getAverageFlux(final AbsoluteDate date) {
         if (date.compareTo(lastDailyPredictedDate) <= 0) {
             bracketDate(date);
-            return previousParam.getCtr81Adj();
+            return previousParam.getCtr81Obs();
         } else {
             // Only monthly data is available, better interpolate between two months
             // get the neighboring dates
             bracketDate(date);
-            return getLinearInterpolation(date, previousParam.getCtr81Adj(), nextParam.getCtr81Adj());
+            return getLinearInterpolation(date, previousParam.getCtr81Obs(), nextParam.getCtr81Obs());
         }
     }
 

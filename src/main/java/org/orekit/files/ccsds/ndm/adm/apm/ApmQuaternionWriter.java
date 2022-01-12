@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,11 +58,11 @@ class ApmQuaternionWriter extends AbstractWriter {
         generator.writeEntry(ApmQuaternionKey.EPOCH.name(), timeConverter, quaternion.getEpoch(), true);
 
         // endpoints
-        generator.writeEntry(ApmQuaternionKey.Q_FRAME_A.name(), quaternion.getEndpoints().getFrameA().getName(), true);
-        generator.writeEntry(ApmQuaternionKey.Q_FRAME_B.name(), quaternion.getEndpoints().getFrameB().getName(), true);
+        generator.writeEntry(ApmQuaternionKey.Q_FRAME_A.name(), quaternion.getEndpoints().getFrameA().getName(), null, true);
+        generator.writeEntry(ApmQuaternionKey.Q_FRAME_B.name(), quaternion.getEndpoints().getFrameB().getName(), null, true);
         generator.writeEntry(ApmQuaternionKey.Q_DIR.name(),
                              quaternion.getEndpoints().isA2b() ? AttitudeEndoints.A2B : AttitudeEndoints.B2A,
-                             true);
+                             null, true);
 
         // quaternion
         final Quaternion q = quaternion.getQuaternion();

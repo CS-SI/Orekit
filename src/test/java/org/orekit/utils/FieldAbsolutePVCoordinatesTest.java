@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
@@ -122,7 +122,7 @@ public class FieldAbsolutePVCoordinatesTest {
     	doTestTaylorProvider(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestPVOnlyConstructor(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPVOnlyConstructor(Field<T> field) {
         //setup
         FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame frame = FramesFactory.getEME2000();
@@ -144,7 +144,7 @@ public class FieldAbsolutePVCoordinatesTest {
         Assert.assertEquals(FieldVector3D.getZero(field), actual.getAcceleration());
     }
     
-    private <T extends RealFieldElement<T>> void doTestPVCoordinatesCopyConstructor(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPVCoordinatesCopyConstructor(Field<T> field) {
         //setup
         FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame frame = FramesFactory.getEME2000();
@@ -165,7 +165,7 @@ public class FieldAbsolutePVCoordinatesTest {
         Assert.assertEquals(FieldVector3D.getZero(field), actual.getAcceleration());
     }
     
-    private <T extends RealFieldElement<T>> void doTestLinearConstructors(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestLinearConstructors(Field<T> field) {
         Frame frame = FramesFactory.getEME2000();
         final T one = field.getOne();
         FieldAbsolutePVCoordinates<T> pv1 = new FieldAbsolutePVCoordinates<>(frame,FieldAbsoluteDate.getCCSDSEpoch(field),
@@ -198,7 +198,7 @@ public class FieldAbsolutePVCoordinatesTest {
                 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void doTestToDerivativeStructureVector1(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToDerivativeStructureVector1(Field<T> field) {
         final T one = field.getOne();
         FieldVector3D<FieldDerivativeStructure<T>> fv =
                         new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
@@ -244,7 +244,7 @@ public class FieldAbsolutePVCoordinatesTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestToDerivativeStructureVector2(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToDerivativeStructureVector2(Field<T> field) {
         final T one = field.getOne();
         FieldVector3D<FieldDerivativeStructure<T>> fv =
                         new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
@@ -297,7 +297,7 @@ public class FieldAbsolutePVCoordinatesTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestToUnivariateDerivative1Vector(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToUnivariateDerivative1Vector(Field<T> field) {
         final T one = field.getOne();
         FieldVector3D<FieldUnivariateDerivative1<T>> fv =
                         new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
@@ -343,7 +343,7 @@ public class FieldAbsolutePVCoordinatesTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestToUnivariateDerivative2Vector(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToUnivariateDerivative2Vector(Field<T> field) {
         final T one = field.getOne();
         FieldVector3D<FieldUnivariateDerivative2<T>> fv =
                         new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
@@ -396,7 +396,7 @@ public class FieldAbsolutePVCoordinatesTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestShift(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShift(Field<T> field) {
         final T one = field.getOne();
         FieldVector3D<T> p1 = new FieldVector3D<>(one, one.multiply(0.1), one.multiply(10.0));
         FieldVector3D<T> v1 = new FieldVector3D<>(one.multiply(-1.0), one.multiply(-0.1), one.multiply(-10));
@@ -409,7 +409,7 @@ public class FieldAbsolutePVCoordinatesTest {
         Assert.assertEquals(0.0, FieldAbsolutePVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(new Vector3D(-6, -0.6, -60)).getNorm().getReal(), 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void doTestToString(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToString(Field<T> field) {
         final T one = field.getOne();
         FieldAbsolutePVCoordinates<T> pv =
                         new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
@@ -420,7 +420,7 @@ public class FieldAbsolutePVCoordinatesTest {
         Assert.assertEquals("{2000-01-01T11:58:55.816, P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolatePolynomialPVA(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInterpolatePolynomialPVA(Field<T> field) {
         final T one = field.getOne();
         Random random = new Random(0xfe3945fcb8bf47cel);
         FieldAbsoluteDate<T> t0 = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -466,7 +466,7 @@ public class FieldAbsolutePVCoordinatesTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolatePolynomialPV(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInterpolatePolynomialPV(Field<T> field) {
     	final T one = field.getOne();
         Random random = new Random(0xae7771c9933407bdl);
         FieldAbsoluteDate<T> t0 = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -512,7 +512,7 @@ public class FieldAbsolutePVCoordinatesTest {
     }
 
   
-    private <T extends RealFieldElement<T>> void doTestInterpolatePolynomialPositionOnly(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInterpolatePolynomialPositionOnly(Field<T> field) {
     	final T one = field.getOne();
         Random random = new Random(0x88740a12e4299003l);
         FieldAbsoluteDate<T> t0 = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -555,7 +555,7 @@ public class FieldAbsolutePVCoordinatesTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolateNonPolynomial(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestInterpolateNonPolynomial(Field<T> field) {
     	final T one = field.getOne();
     	FieldAbsoluteDate<T> t0 = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame frame = FramesFactory.getEME2000();
@@ -587,7 +587,7 @@ public class FieldAbsolutePVCoordinatesTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestSamePV(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSamePV(Field<T> field) {
         //setup
     	final T one = field.getOne();
     	FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -604,7 +604,7 @@ public class FieldAbsolutePVCoordinatesTest {
     }
 
     
-    private <T extends RealFieldElement<T>> void doTestTaylorProvider(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestTaylorProvider(Field<T> field) {
         //setup
     	final T one = field.getOne();
     	FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -628,7 +628,7 @@ public class FieldAbsolutePVCoordinatesTest {
         return new PolynomialFunction(coeff);
     }
 
-    private <T extends RealFieldElement<T>> void checkPV(FieldAbsolutePVCoordinates<T> expected, FieldAbsolutePVCoordinates<T> real, double epsilon) {
+    private <T extends CalculusFieldElement<T>> void checkPV(FieldAbsolutePVCoordinates<T> expected, FieldAbsolutePVCoordinates<T> real, double epsilon) {
         Assert.assertEquals(expected.getDate(), real.getDate());
         Assert.assertEquals(expected.getPosition().getX().getReal(),     real.getPosition().getX().getReal(),     epsilon);
         Assert.assertEquals(expected.getPosition().getY().getReal(),     real.getPosition().getY().getReal(),     epsilon);

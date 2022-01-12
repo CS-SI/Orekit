@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.models.earth.troposphere;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -65,7 +65,7 @@ public interface DiscreteTroposphericModel {
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    <T extends RealFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
 
     /** Get the drivers for tropospheric model parameters.
      * @return drivers for tropospheric model parameters
@@ -89,7 +89,7 @@ public interface DiscreteTroposphericModel {
      * @param <T> type of the elements
      * @return tropospheric model parameters
      */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
         final List<ParameterDriver> drivers = getParametersDrivers();
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {

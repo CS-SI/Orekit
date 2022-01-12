@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.FieldDenseOutputModel;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.orekit.errors.OrekitException;
@@ -33,6 +33,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
@@ -40,11 +41,11 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * later retrieval.
  *
  * <p>
- * Instances of this class are built and then must be fed with the results
- * provided by {@link org.orekit.propagation.Propagator Propagator} objects
- * configured in {@link org.orekit.propagation.Propagator#setEphemerisMode()
- * ephemeris generation mode}. Once propagation is o, random access to any
- * intermediate state of the orbit throughout the propagation range is possible.
+ * Instances of this class are built automatically when the {@link
+ * org.orekit.propagation.FieldPropagator#getEphemerisGenerator()
+ * getEphemerisGenerator} method has been called. They are created when propagation is over.
+ * Random access to any intermediate state of the orbit throughout the propagation range is
+ * possible afterwards through this object.
  * </p>
  * <p>
  * A typical use case is for numerically integrated orbits, which can be used by
@@ -66,7 +67,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
+public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     extends FieldAbstractAnalyticalPropagator<T> implements FieldBoundedPropagator<T> {
 
     /** Event detection requires evaluating the state slightly before / past an event. */
@@ -96,7 +97,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     private FieldDenseOutputModel<T> model;
 
     /** Unmanaged additional states that must be simply copied. */
-    private final Map<String, T[]> unmanaged;
+    private final FieldArrayDictionary<T> unmanaged;
 
     /** Creates a new instance of IntegratedEphemeris.
      * @param startDate Start date of the integration (can be minDate or maxDate)
@@ -108,14 +109,42 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
+     * @deprecated as of 11.1, replaced by {@link #FieldIntegratedEphemeris(FieldAbsoluteDate,
+     * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType,
+     * FieldDenseOutputModel, FieldArrayDictionary, List, String[])}
      */
+    @Deprecated
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
                                final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
                                final FieldStateMapper<T> mapper, final PropagationType type,
                                final FieldDenseOutputModel<T> model,
                                final Map<String, T[]> unmanaged,
-                               final List<FieldAdditionalStateProvider<T>> providers,
+                               final List<org.orekit.propagation.FieldAdditionalStateProvider<T>> providers,
                                final String[] equations) {
+        this(startDate, minDate, maxDate, mapper, type, model,
+             new FieldArrayDictionary<>(startDate.getField(), unmanaged),
+             providers, equations);
+    }
+
+    /** Creates a new instance of IntegratedEphemeris.
+     * @param startDate Start date of the integration (can be minDate or maxDate)
+     * @param minDate first date of the range
+     * @param maxDate last date of the range
+     * @param mapper mapper between raw double components and spacecraft state
+     * @param type type of orbit to output (mean or osculating)
+     * @param model underlying raw mathematical model
+     * @param unmanaged unmanaged additional states that must be simply copied
+     * @param providers generators for pre-integrated states
+     * @param equations names of additional equations
+     * @since 11.1
+     */
+    public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
+                                    final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
+                                    final FieldStateMapper<T> mapper, final PropagationType type,
+                                    final FieldDenseOutputModel<T> model,
+                                    final FieldArrayDictionary<T> unmanaged,
+                                    final List<FieldAdditionalStateProvider<T>> providers,
+                                    final String[] equations) {
 
         super(startDate.getField(), mapper.getAttitudeProvider());
 
@@ -126,6 +155,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         this.type      = type;
         this.model     = model;
         this.unmanaged = unmanaged;
+
         // set up the pre-integrated providers
         for (final FieldAdditionalStateProvider<T> provider : providers) {
             addAdditionalStateProvider(provider);
@@ -133,7 +163,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
 
         // set up providers to map the final elements of the model array to additional states
         for (int i = 0; i < equations.length; ++i) {
-            addAdditionalStateProvider(new LocalProvider(equations[i], i));
+            addAdditionalStateProvider(new LocalGenerator(equations[i], i));
         }
 
     }
@@ -147,11 +177,15 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
 
         // compare using double precision instead of FieldAbsoluteDate<T>.compareTo(...)
         // because time is expressed as a double when searching for events
-        if (date.compareTo(minDate.shiftedBy(-EXTRAPOLATION_TOLERANCE)) < 0 ||
-                date.compareTo(maxDate.shiftedBy(EXTRAPOLATION_TOLERANCE)) > 0 ) {
+        if (date.compareTo(minDate.shiftedBy(-EXTRAPOLATION_TOLERANCE)) < 0) {
             // date is outside of supported range
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
-                                           date, minDate, maxDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                    date, minDate, maxDate, minDate.durationFrom(date).getReal());
+        }
+        if (date.compareTo(maxDate.shiftedBy(EXTRAPOLATION_TOLERANCE)) > 0) {
+            // date is outside of supported range
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                    date, minDate, maxDate, date.durationFrom(maxDate).getReal());
         }
 
         return model.getInterpolatedState(date.durationFrom(startDate));
@@ -165,7 +199,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                                os.getPrimaryState(), os.getPrimaryDerivative(),
                                                                type);
-        for (Map.Entry<String, T[]> initial : unmanaged.entrySet()) {
+        for (FieldArrayDictionary<T>.Entry initial : unmanaged.getData()) {
             state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }
         return state;
@@ -228,8 +262,8 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
-    /** Local provider for additional state data. */
-    private class LocalProvider implements FieldAdditionalStateProvider<T> {
+    /** Local generator for additional state data. */
+    private class LocalGenerator implements FieldAdditionalStateProvider<T> {
 
         /** Name of the additional state. */
         private final String name;
@@ -241,7 +275,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
          * @param name name of the additional state
          * @param index index of the additional state
          */
-        LocalProvider(final String name, final int index) {
+        LocalGenerator(final String name, final int index) {
             this.name  = name;
             this.index = index;
         }

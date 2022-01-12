@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -217,15 +217,15 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         templateTLE.getParametersDrivers().get(0).setSelected(false);
         
         // Default for test is Cartesian
-        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final OrbitType orbitType = OrbitType.CARTESIAN;
         
-        // Initial orbital Keplerian covariance matrix
-        final RealMatrix keplerianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e2, 1e-1, 1e-0, 1e-0, 1e-0, 1e1
+        // Initial orbital Cartesian covariance matrix
+        final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1e4, 4e3, 1, 5e-3, 6e-5, 1e-4
         });
         
         // Orbital Cartesian process noise matrix (Q)
-        final RealMatrix keplerianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
+        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
         });
         
@@ -239,14 +239,14 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Kalman orbit determination run.
         ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
-                                               keplerianOrbitalP, keplerianOrbitalQ,
+                                               cartesianOrbitalP, cartesianOrbitalQ,
                                                null, null,
                                                measurementP, measurementQ);
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 3997m
-        final double distanceAccuracy = 280.65;
-        final double velocityAccuracy = 0.046;
+        final double distanceAccuracy = 300.38;
+        final double velocityAccuracy = 0.148;
 
         // Tests
         
@@ -300,7 +300,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final long nbRange = 95;
         // Batch LS values
         //final double[] RefStatRange = { -67.7496, 87.1117, 6.4482E-5, 33.6349 };
-        final double[] RefStatRange = { -102.6947, 213.8392, 10.1282, 69.0727 };
+        final double[] RefStatRange = { -70.790, 55.667, 5.873, 36.540 };
         Assert.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);
@@ -331,35 +331,35 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         templateTLE.getParametersDrivers().get(0).setSelected(false);
         
         // Default for test is Cartesian
-        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final OrbitType orbitType = OrbitType.CARTESIAN;
         
         // Initial orbital Keplerian covariance matrix
-        final RealMatrix keplerianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e2, 1e-1, 1e-0, 1e-0, 1e-0, 1e1
+        final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1e4, 4e3, 1, 5e-3, 6e-5, 1e-4
         });
         
         // Orbital Cartesian process noise matrix (Q)
-        final RealMatrix keplerianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
+        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
         });
         
         // Initial measurement covariance matrix and process noise matrix
         final RealMatrix measurementP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-           1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.  
+           1., 1., 1., 1., 1., 1. 
         });
         final RealMatrix measurementQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6
+            1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6
          });
 
         // Kalman orbit determination run.
         ResultKalman kalmanGNSS = runKalman(input, orbitType, print,
-                                            keplerianOrbitalP, keplerianOrbitalQ,
+                                            cartesianOrbitalP, cartesianOrbitalQ,
                                             null, null,
                                             measurementP, measurementQ);
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 1053.6m
-        final double distanceAccuracy = 72.9;
+        final double distanceAccuracy = 67.33;
 
         // Tests
         
@@ -389,31 +389,10 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
                               "ΔP [m]", dP);
         }
 
-        // Test on measurements parameters
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
-        list.addAll(kalmanGNSS.getMeasurementsParameters().getDrivers());
-        sortParametersChanges(list);
-
-        final double[] measurementParameters = { 2.3540, 55.4291, 4.9712, 35.4758,
-                                                 0.7182, 28.2173, 0.2795, 11.8881,
-                                                 0.0000, 12.0015, 2.5834, 38.8237};
-        Assert.assertEquals(measurementParameters[0], list.get(0).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[1], list.get(1).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[2], list.get(2).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[3], list.get(3).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[4], list.get(4).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[5], list.get(5).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[6], list.get(6).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[7], list.get(7).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[8], list.get(8).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[9], list.get(9).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[10], list.get(10).getValue(), distanceAccuracy);
-        Assert.assertEquals(measurementParameters[11], list.get(11).getValue(), distanceAccuracy);
-
         //test on statistic for the range residuals
         final long nbRange = 8211;
         
-        final double[] RefStatRange = { -24.3338, 77.9223, -2.1498, 7.0392 };
+        final double[] RefStatRange = { -44.073, 51.349, 0.242, 8.602 };
         Assert.assertEquals(nbRange, kalmanGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], kalmanGNSS.getRangeStat().getMin(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[1], kalmanGNSS.getRangeStat().getMax(),               distanceAccuracy);

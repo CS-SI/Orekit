@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,19 +70,19 @@ public class ApmData implements Data {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        quaternionBlock.checkMandatoryEntries();
+    public void validate(final double version) {
+        quaternionBlock.validate(version);
         if (eulerBlock != null) {
-            eulerBlock.checkMandatoryEntries();
+            eulerBlock.validate(version);
         }
         if (spinStabilizedBlock != null) {
-            spinStabilizedBlock.checkMandatoryEntries();
+            spinStabilizedBlock.validate(version);
         }
         if (spacecraftParameters != null) {
-            spacecraftParameters.checkMandatoryEntries();
+            spacecraftParameters.validate(version);
         }
         for (final Maneuver maneuver : maneuvers) {
-            maneuver.checkMandatoryEntries();
+            maneuver.validate(version);
         }
     }
 

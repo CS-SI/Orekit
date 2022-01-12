@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
@@ -30,7 +31,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 
@@ -45,8 +46,10 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Patch points along the trajectory. */
     private List<SpacecraftState> patchedSpacecraftStates;
 
-    /** Derivatives linked to the Propagators. */
-    private final List<AdditionalEquations> additionalEquations;
+    /** Derivatives linked to the Propagators.
+     * @since 11.1
+     */
+    private final List<AdditionalDerivativesProvider> additionalDerivativesProviders;
 
     /** List of Propagators. */
     private final List<NumericalPropagator> propagatorList;
@@ -89,13 +92,39 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector.
      * @param additionalName name of the additional equations
+     * @deprecated as of 11.1, replaced by {@link #AbstractMultipleShooting(List, List, double, List, double, String)}
+     */
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
+                                       final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
+                                       final double arcDuration, final double tolerance, final String additionalName) {
+        this(initialGuessList, propagatorList, arcDuration,
+             additionalEquations.
+                 stream().
+                 map(ae -> ae instanceof AdditionalDerivativesProvider ?
+                           (AdditionalDerivativesProvider) ae :
+                           new org.orekit.propagation.integration.AdditionalEquationsAdapter(ae, () -> propagatorList.get(0).getInitialState())).
+                 collect(Collectors.toList()),
+             tolerance, additionalName);
+    }
+
+    /** Simple Constructor.
+     * <p> Standard constructor for multiple shooting </p>
+     * @param initialGuessList initial patch points to be corrected.
+     * @param propagatorList list of propagators associated to each patch point.
+     * @param additionalDerivativesProviders list of additional derivatives providers linked to propagatorList.
+     * @param arcDuration initial guess of the duration of each arc.
+     * @param tolerance convergence tolerance on the constraint vector.
+     * @param additionalName name of the additional equations
+     * @since 11.1
      */
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                       final List<AdditionalEquations> additionalEquations, final double arcDuration,
+                                       final double arcDuration, final List<AdditionalDerivativesProvider> additionalDerivativesProviders,
                                        final double tolerance, final String additionalName) {
         this.patchedSpacecraftStates = initialGuessList;
         this.propagatorList = propagatorList;
-        this.additionalEquations = additionalEquations;
+        this.additionalDerivativesProviders = additionalDerivativesProviders;
         this.additionalName = additionalName;
         // Should check if propagatorList.size() = initialGuessList.size() - 1
         final int propagationNumber = initialGuessList.size() - 1;
@@ -476,7 +505,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             // SpacecraftState initialization
             final SpacecraftState initialState = patchedSpacecraftStates.get(i);
 
-            final SpacecraftState augmentedInitialState = getAugmentedInitialState(initialState, additionalEquations.get(i));
+            final SpacecraftState augmentedInitialState = getAugmentedInitialState(initialState, additionalDerivativesProviders.get(i));
 
             // Propagator initialization
             propagatorList.get(i).setInitialState(augmentedInitialState);
@@ -498,13 +527,13 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      */
     private double[][] getStateTransitionMatrix(final SpacecraftState s) {
         // Additional states
-        final Map<String, double[]> map = s.getAdditionalStates();
+        final DoubleArrayDictionary dictionary = s.getAdditionalStatesValues();
         // Initialize state transition matrix
         final int        dim  = 6;
         final double[][] phiM = new double[dim][dim];
 
         // Loop on entry set
-        for (final Map.Entry<String, double[]> entry : map.entrySet()) {
+        for (final DoubleArrayDictionary.Entry entry : dictionary.getData()) {
             // Extract entry name
             final String name = entry.getKey();
             if (additionalName.equals(name)) {
@@ -600,7 +629,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      *  @return augmentedSP SpacecraftState with the additional state within.
      */
     protected abstract SpacecraftState getAugmentedInitialState(SpacecraftState initialState,
-                                                                AdditionalEquations additionalEquations2);
+                                                                AdditionalDerivativesProvider additionalEquations2);
 
 
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -44,7 +44,7 @@ import org.orekit.utils.Constants;
  * @author Thomas Paulet (field translation)
  * @since 11.0
  */
-public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
+public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<T> {
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -143,7 +143,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param parameters SGP4 and SDP4 model parameters
-     * @see #FieldDeepSDP4(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
+     * @see #FieldDeepSDP4(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
     public FieldDeepSDP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,
@@ -172,6 +172,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
     protected void luniSolarTermsComputation() {
 
         final T zero = tle.getPerigeeArgument().getField().getZero();
+        final T pi   = zero.getPi();
 
         final FieldSinCos<T> scg  = FastMath.sinCos(tle.getPerigeeArgument());
         final T sing = scg.sin();
@@ -209,7 +210,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         zsinil = FastMath.sqrt(1.0 - zcosil * zcosil);
         zsinhl = 0.089683511 * stem / zsinil;
         zcoshl = FastMath.sqrt(1.0 - zsinhl * zsinhl);
-        zmol = MathUtils.normalizeAngle(c_minus_gam, FastMath.PI);
+        zmol = MathUtils.normalizeAngle(c_minus_gam, pi.getReal());
 
         double zx = 0.39785416 * stem / zsinil;
         final double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
@@ -217,7 +218,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         final SinCos scZx = FastMath.sinCos(zx);
         zcosgl = scZx.cos();
         zsingl = scZx.sin();
-        zmos = MathUtils.normalizeAngle(6.2565837 + 0.017201977 * daysSince1900, FastMath.PI);
+        zmos = MathUtils.normalizeAngle(6.2565837 + 0.017201977 * daysSince1900, pi.getReal());
 
         // Do solar terms
         savtsn = zero.add(1e20);
@@ -289,7 +290,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             si = s2.multiply(zn).multiply(z11.add(z13));
             sl = s3.multiply(-zn).multiply(z1.add(z3).subtract(14).subtract(e0sq.multiply(6)));
             sgh = s4.multiply(zn).multiply(z31.add(z33).subtract(6));
-            if (tle.getI().getReal() < (FastMath.PI / 60.0)) {
+            if (tle.getI().getReal() < pi.divide(60.0).getReal()) {
                 // inclination smaller than 3 degrees
                 sh = zero;
             } else {
@@ -312,7 +313,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
                 sse = se;
                 ssi = si;
                 ssl = sl;
-                ssh = (tle.getI().getReal() < (FastMath.PI / 60.0)) ? zero : sh.divide(sini0);
+                ssh = (tle.getI().getReal() < pi.divide(60.0).getReal()) ? zero : sh.divide(sini0);
                 ssg = sgh.subtract(cosi0.multiply(ssh));
                 se2 = ee2;
                 si2 = xi2;
@@ -341,8 +342,8 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         sse = sse.add(se);
         ssi = ssi.add(si);
         ssl = ssl.add(sl);
-        ssg = ssg.add(sgh).subtract((tle.getI().getReal() < (FastMath.PI / 60.0)) ? zero : (cosi0.divide(sini0).multiply(sh)));
-        ssh = ssh.add((tle.getI().getReal() < (FastMath.PI / 60.0)) ? zero : sh.divide(sini0));
+        ssg = ssg.add(sgh).subtract((tle.getI().getReal() < pi.divide(60.0).getReal()) ? zero : (cosi0.divide(sini0).multiply(sh)));
+        ssh = ssh.add((tle.getI().getReal() < pi.divide(60.0).getReal()) ? zero : sh.divide(sini0));
 
 
 

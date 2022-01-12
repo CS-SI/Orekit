@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,8 +29,9 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
-import org.orekit.gnss.navigation.QZSSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.QZSSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
 import org.orekit.time.GNSSDate;
 
 public class Rtcm1044Test {
@@ -89,7 +90,7 @@ public class Rtcm1044Test {
         final QZSSNavigationMessage qzssMessage   = ephemerisData.getQzssNavigationMessage();
 
         // Verify propagator initialization
-        final QZSSPropagator propagator = new QZSSPropagator.Builder(qzssMessage).build();
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(qzssMessage).build();
         Assert.assertNotNull(propagator);
         Assert.assertEquals(0.0, qzssMessage.getDate().
                             durationFrom(new GNSSDate(qzssMessage.getWeek(), 1000.0 * qzssMessage.getTime(), SatelliteSystem.QZSS).getDate()), eps);

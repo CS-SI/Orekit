@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
@@ -172,7 +172,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
      * @param <T> type fo the field elements
      * @return position-velocity-acceleration at specified date
      */
-    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getPositionVelocityAcceleration(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getPositionVelocityAcceleration(final FieldAbsoluteDate<T> date) {
 
         final T zero = date.getField().getZero();
         final T one  = date.getField().getOne();

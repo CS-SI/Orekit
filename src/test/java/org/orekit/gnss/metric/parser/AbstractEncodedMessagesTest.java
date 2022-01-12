@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.gnss.metric.parser;
 
 import java.util.Random;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -127,7 +128,7 @@ public abstract class AbstractEncodedMessagesTest {
             int index = 0;
             int size  = 0;
             for (int remaining = bits.length; remaining > 0; remaining -= size) {
-                size = Math.min(remaining, 1 + random.nextInt(63));
+                size = FastMath.min(remaining, 1 + random.nextInt(63));
                 long ref = 0l;
                 for (int k = 0; k < size; ++k) {
                     ref = (ref << 1) | bits[index++];

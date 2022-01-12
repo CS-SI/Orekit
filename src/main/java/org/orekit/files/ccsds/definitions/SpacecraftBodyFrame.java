@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,8 +27,15 @@ public class SpacecraftBodyFrame {
 
     /** Equipment on which the frame is located. */
     public enum BaseEquipment {
-        /** Actuator reference frame: could denote reaction wheels, solar arrays, thrusters, etc.. */
+
+        /** Accelerometer. */
+        ACC,
+
+        /** Actuator: could denote reaction wheels, solar arrays, thrusters, etc.. */
         ACTUATOR,
+
+        /** Autonomous Star Tracker. */
+        AST,
 
         /** Coarse Sun Sensor. */
         CSS,
@@ -36,14 +43,35 @@ public class SpacecraftBodyFrame {
         /** Digital Sun Sensor. */
         DSS,
 
-        /** Gyroscope. */
+        /** Earth Sensor Assembly. */
+        ESA,
+
+        /** Gyro reference frame (this name was used in ADM V1.0 (CCSDS 504.0-B-1). */
         GYRO,
+
+        /** Gyro reference frame (this name is used in SANA registry https://sanaregistry.org/r/spacecraft_body_reference_frames/). */
+        GYRO_FRAME,
+
+        /** Inertial Measurement Unit. */
+        IMU_FRAME,
 
         /** Instrument. */
         INSTRUMENT,
 
+        /** Magnetic Torque Assembly. */
+        MTA,
+
+        /** Reaction Wheel. */
+        RW,
+
+        /** Solar Array. */
+        SA,
+
         /** Spacecraft Body. */
         SC_BODY,
+
+        /** Sensor. */
+        SENSOR,
 
         /** Star Tracker. */
         STARTRACKER,
@@ -84,14 +112,14 @@ public class SpacecraftBodyFrame {
 
     /** {@inheritDoc}
      * <p>
-     * The CCSDS composite name combines the {@link #getgetBaseEquipment base equipment}
+     * The CCSDS composite name combines the {@link #getBaseEquipment() base equipment}
      * and the {@link #getLabel()}
      * </p>
-     * @return CCSDS composite name, as a normalized string
+     * @return CCSDS composite name
      */
     @Override
     public String toString() {
-        return getBaseEquipment().name().replace('_', ' ') + " " + getLabel();
+        return getBaseEquipment().name() + "_" + getLabel();
     }
 
     /** Build an instance from a normalized descriptor.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.L2Frame;
 
 
 public class CenterNameTest {
@@ -45,6 +49,32 @@ public class CenterNameTest {
                 // expected
             }
         }
+    }
+
+    @Test
+    public void testGuess() {
+        Assert.assertEquals("SATURN",
+                            CenterName.guessCenter(CelestialBodyFactory.getSaturn().getBodyOrientedFrame()));
+        Assert.assertEquals("MERCURY",
+                            CenterName.guessCenter(CelestialBodyFactory.getMercury().getInertiallyOrientedFrame()));
+        Assert.assertEquals("PLANET-X",
+                            CenterName.guessCenter(new ModifiedFrame(FramesFactory.getEME2000(), CelestialBodyFrame.EME2000,
+                                                                     CelestialBodyFactory.getMars(), "PLANET-X")));
+        Assert.assertEquals("SOLAR SYSTEM BARYCENTER",
+                            CenterName.guessCenter(FramesFactory.getICRF()));
+        Assert.assertEquals("EARTH",
+                            CenterName.guessCenter(Frame.getRoot()));
+        Assert.assertEquals("EARTH",
+                            CenterName.guessCenter(FramesFactory.getTOD(true)));
+        Assert.assertEquals("UNKNOWN",
+                            CenterName.guessCenter(new L2Frame(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth())));
+    }
+
+    @Test
+    public void testMap() {
+        Assert.assertEquals(CenterName.SATURN,
+                            CenterName.map(CelestialBodyFactory.getSaturn().getBodyOrientedFrame()));
+        Assert.assertNull(CenterName.map(new L2Frame(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth())));
     }
 
     @Before

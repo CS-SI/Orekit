@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,7 @@ import org.hipparchus.util.Pair;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
@@ -60,6 +61,11 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
     /** Builders for propagators. */
     private final OrbitDeterminationPropagatorBuilder[] builders;
+
+    /** Array of each builder's selected orbit drivers.
+     * @since 11.1
+     */
+    private final ParameterDriversList[] estimatedOrbitalParameters;
 
     /** Array of each builder's selected propagation drivers. */
     private final ParameterDriversList[] estimatedPropagationParameters;
@@ -106,8 +112,10 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
     /** Model function value. */
     private RealVector value;
 
-    /** Mappers for extracting Jacobians from integrated states. */
-    private final AbstractJacobiansMapper[] mappers;
+    /** Harvesters for extracting State Transition Matrices and Jacobians from integrated states.
+     * @since 11.1
+     */
+    private final MatricesHarvester[] harvesters;
 
     /** Model function Jacobian. */
     private RealMatrix jacobian;
@@ -117,23 +125,41 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
-     * @param mappers jacobian mappers
+     * @param harvesters harvesters for matrices (ignored since 11.1)
+     * @param observer observer to be notified at model calls
+     * @deprecated as of 11.1, replaced by [@link #AbstractBatchLSModel(OrbitDeterminationPropagatorBuilder[],
+     * List, ParameterDriversList, ModelObserver)}
+     */
+    @Deprecated
+    public AbstractBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
+                                final List<ObservedMeasurement<?>> measurements,
+                                final ParameterDriversList estimatedMeasurementsParameters,
+                                final MatricesHarvester[] harvesters,
+                                final ModelObserver observer) {
+        this(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
+    }
+
+    /**
+     * Constructor.
+     * @param propagatorBuilders builders to use for propagation
+     * @param measurements measurements
+     * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
     public AbstractBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
-                                final AbstractJacobiansMapper[] mappers,
                                 final ModelObserver observer) {
 
         this.builders                        = propagatorBuilders.clone();
         this.measurements                    = measurements;
         this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
+        this.estimatedOrbitalParameters      = new ParameterDriversList[builders.length];
         this.estimatedPropagationParameters  = new ParameterDriversList[builders.length];
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
-        this.mappers                         = mappers.clone();
+        this.harvesters                      = new MatricesHarvester[builders.length];
 
         // allocate vector and matrix
         int rows = 0;
@@ -226,20 +252,32 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
     }
 
     /** Configure the propagator to compute derivatives.
+     * @param propagator {@link Propagator} to configure
+     * @return harvester harvester to retrive the State Transition Matrix and Jacobian Matrix
+     */
+    protected MatricesHarvester configureHarvester(final Propagator propagator) {
+        // FIXME: this default implementation is only intended for version 11.1 to delegate to a deprecated method
+        // it should be removed in 12.0 when configureDerivatives is removed
+        return configureDerivatives(propagator);
+    }
+
+    /** Configure the propagator to compute derivatives.
      * @param propagators {@link Propagator} to configure
      * @return mapper for this propagator
+     * @deprecated as of 11.1, replaced by {@link #configureHarvester(Propagator)}
      */
+    @Deprecated
     protected abstract AbstractJacobiansMapper configureDerivatives(Propagator propagators);
 
     /** Configure the current estimated orbits.
      * <p>
      * For DSST orbit determination, short period derivatives are also calculated.
      * </p>
-     * @param mapper Jacobian mapper
+     * @param harvester harvester for matrices
      * @param propagator the orbit propagator
      * @return the current estimated orbits
      */
-    protected abstract Orbit configureOrbits(AbstractJacobiansMapper mapper, Propagator propagator);
+    protected abstract Orbit configureOrbits(MatricesHarvester harvester, Propagator propagator);
 
     /** {@inheritDoc} */
     @Override
@@ -249,8 +287,8 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         final Propagator[] propagators = createPropagators(point);
         final Orbit[] orbits = new Orbit[propagators.length];
         for (int i = 0; i < propagators.length; ++i) {
-            mappers[i] = configureDerivatives(propagators[i]);
-            orbits[i]  = configureOrbits(mappers[i], propagators[i]);
+            harvesters[i] = configureHarvester(propagators[i]);
+            orbits[i]     = configureOrbits(harvesters[i], propagators[i]);
         }
         final PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
@@ -277,6 +315,32 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
         return new Pair<RealVector, RealMatrix>(value, jacobian);
 
+    }
+
+    /** Get the selected orbital drivers for a propagatorBuilder.
+     * @param iBuilder index of the builder in the builders' array
+     * @return the list of selected orbital drivers for propagatorBuilder of index iBuilder
+     * @since 11.1
+     */
+    public ParameterDriversList getSelectedOrbitalParametersDriversForBuilder(final int iBuilder) {
+
+        // Lazy evaluation, create the list only if it hasn't been created yet
+        if (estimatedOrbitalParameters[iBuilder] == null) {
+
+            // Gather the drivers
+            final ParameterDriversList selectedOrbitalDrivers = new ParameterDriversList();
+            for (final DelegatingDriver delegating : builders[iBuilder].getOrbitalParametersDrivers().getDrivers()) {
+                if (delegating.isSelected()) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        selectedOrbitalDrivers.add(driver);
+                    }
+                }
+            }
+
+            // Add the list of selected orbital parameters drivers to the array
+            estimatedOrbitalParameters[iBuilder] = selectedOrbitalDrivers;
+        }
+        return estimatedOrbitalParameters[iBuilder];
     }
 
     /** Get the selected propagation drivers for a propagatorBuilder.
@@ -386,19 +450,16 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
-            // compute derivatives used by analytical orbit determination methods
-            mappers[p].analyticalDerivatives(evaluationStates[k]);
-
             // Jacobian of the measurement with respect to initial orbital state
-            final double[][] aYY0 = new double[6][6];
-            mappers[p].getStateJacobian(evaluationStates[k], aYY0);
-            final RealMatrix dYdY0 = new Array2DRowRealMatrix(aYY0, false);
-            final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
-            for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
-                int jOrb = orbitsStartColumns[p];
-                for (int j = 0; j < dMdY0.getColumnDimension(); ++j) {
-                    final ParameterDriver driver = builders[p].getOrbitalParametersDrivers().getDrivers().get(j);
-                    if (driver.isSelected()) {
+            final ParameterDriversList selectedOrbitalDrivers = getSelectedOrbitalParametersDriversForBuilder(p);
+            final int nbOrbParams = selectedOrbitalDrivers.getNbParams();
+            if (nbOrbParams > 0) {
+                final RealMatrix dYdY0 = harvesters[p].getStateTransitionMatrix(evaluationStates[k]);
+                final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
+                for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
+                    int jOrb = orbitsStartColumns[p];
+                    for (int j = 0; j < dMdY0.getColumnDimension(); ++j) {
+                        final ParameterDriver driver = selectedOrbitalDrivers.getDrivers().get(j);
                         jacobian.setEntry(index + i, jOrb++,
                                           weight[i] * dMdY0.getEntry(i, j) / sigma[i] * driver.getScale());
                     }
@@ -408,10 +469,8 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             // Jacobian of the measurement with respect to propagation parameters
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
             final int nbParams = selectedPropagationDrivers.getNbParams();
-            if ( nbParams > 0) {
-                final double[][] aYPp  = new double[6][nbParams];
-                mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
-                final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
+            if (nbParams > 0) {
+                final RealMatrix dYdPp = harvesters[p].getParametersJacobian(evaluationStates[k]);
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {

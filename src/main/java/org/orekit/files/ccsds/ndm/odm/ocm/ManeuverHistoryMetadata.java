@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -149,8 +149,8 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
 
     /** {@inheritDoc} */
     @Override
-    public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+    public void validate(final double version) {
+        super.validate(version);
         checkNotNull(manID,          ManeuverHistoryMetadataKey.MAN_ID);
         checkNotNull(manDeviceID,    ManeuverHistoryMetadataKey.MAN_DEVICE_ID);
 
@@ -355,15 +355,15 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
         this.manReferenceFrame = manReferenceFrame;
     }
 
-    /** Get epoch of the {@link #getManRefFrame() maneuver reference frame}.
-     * @return epoch of the {@link #getManRefFrame() maneuver reference frame}
+    /** Get epoch of the {@link #getManReferenceFrame() maneuver reference frame}.
+     * @return epoch of the {@link #getManReferenceFrame() maneuver reference frame}
      */
     public AbsoluteDate getManFrameEpoch() {
         return manFrameEpoch;
     }
 
-    /** Set epoch of the {@link #getManRefFrame() maneuver reference frame}.
-     * @param manFrameEpoch epoch of the {@link #getManRefFrame() maneuver reference frame}
+    /** Set epoch of the {@link #getManReferenceFrame() maneuver reference frame}.
+     * @param manFrameEpoch epoch of the {@link #getManReferenceFrame() maneuver reference frame}
      */
     public void setManFrameEpoch(final AbsoluteDate manFrameEpoch) {
         refuseFurtherComments();

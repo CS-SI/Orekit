@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,15 +20,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.annotation.DefaultDataContext;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.data.DataContext;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldAngularCoordinates;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Converter for TLE propagator.
  * @author Luc Maisonobe
@@ -39,93 +46,83 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 class TLEGradientConverter extends AbstractGradientConverter {
 
     /** Fixed dimension of the state. */
-    private static final int FREE_STATE_PARAMETERS = 6;
+    public static final int FREE_STATE_PARAMETERS = 6;
 
-    /** Initial TLE. */
+    /** Current TLE. */
     private final TLE tle;
 
-    /** List of TLE propagators. */
-    private final List<FieldTLEPropagator<Gradient>> gPropagators;
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /** TEME frame. */
+    private final Frame teme;
+
+    /** Attitude provider. */
+    private final AttitudeProvider provider;
+
+    /** States with various number of additional propagation parameters. */
+    private final List<FieldSpacecraftState<Gradient>> gStates;
 
     /** Simple constructor.
-     *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param tle initial TLE
+     * @param propagator TLE propagator used to access initial orbit
      */
-    @DefaultDataContext
-    TLEGradientConverter(final TLE tle) {
+    TLEGradientConverter(final TLEPropagator propagator) {
+
         super(FREE_STATE_PARAMETERS);
 
-        // Initial TLE
-        this.tle = tle;
+        // TLE and related parameters
+        this.tle  = propagator.getTLE();
+        this.teme = propagator.getFrame();
+        this.utc  = tle.getUtc();
 
-        // Convert the initial TLE to a Gradient TLE
-        final FieldTLE<Gradient> gTLE = getGradientTLE();
+        // Attitude provider
+        this.provider = propagator.getAttitudeProvider();
 
-        // TLE model parameters (can be estimated or not)
-        final Gradient[] parameters = gTLE.getParameters(gTLE.getE().getField());
+        // Spacecraft state
+        final SpacecraftState state = propagator.getInitialState();
 
-        // Initialize list of TLE propagators
-        gPropagators = new ArrayList<>();
-        gPropagators.add(FieldTLEPropagator.selectExtrapolator(gTLE, parameters));
+        // Position always has derivatives
+        final Vector3D pos = state.getPVCoordinates().getPosition();
+        final FieldVector3D<Gradient> posG = new FieldVector3D<>(Gradient.variable(FREE_STATE_PARAMETERS, 0, pos.getX()),
+                                                                 Gradient.variable(FREE_STATE_PARAMETERS, 1, pos.getY()),
+                                                                 Gradient.variable(FREE_STATE_PARAMETERS, 2, pos.getZ()));
+
+        // Velocity may have derivatives or not
+        final Vector3D vel = state.getPVCoordinates().getVelocity();
+        final FieldVector3D<Gradient> velG = new FieldVector3D<>(Gradient.variable(FREE_STATE_PARAMETERS, 3, vel.getX()),
+                                                                 Gradient.variable(FREE_STATE_PARAMETERS, 4, vel.getY()),
+                                                                 Gradient.variable(FREE_STATE_PARAMETERS, 5, vel.getZ()));
+
+        // Acceleration never has derivatives
+        final Vector3D acc = state.getPVCoordinates().getAcceleration();
+        final FieldVector3D<Gradient> accG = new FieldVector3D<>(Gradient.constant(FREE_STATE_PARAMETERS, acc.getX()),
+                                                                 Gradient.constant(FREE_STATE_PARAMETERS, acc.getY()),
+                                                                 Gradient.constant(FREE_STATE_PARAMETERS, acc.getZ()));
+
+        // Mass never has derivatives
+        final Gradient gM = Gradient.constant(FREE_STATE_PARAMETERS, state.getMass());
+
+        final Gradient gMu = Gradient.constant(FREE_STATE_PARAMETERS, TLEPropagator.getMU());
+
+        final FieldOrbit<Gradient> gOrbit =
+                        new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posG, velG, accG),
+                                                  state.getFrame(), gMu);
+
+        // Attitude
+        final FieldAttitude<Gradient> gAttitude = provider.getAttitude(gOrbit, gOrbit.getDate(), gOrbit.getFrame());
+
+        // Initialize the list with the state having 0 force model parameters
+        gStates = new ArrayList<>();
+        gStates.add(new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
+
     }
 
-    /** Convert the initial TLE into a Gradient TLE.
-     *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @return the gradient version of the initial TLE
+    /** Get the state with the number of parameters consistent with TLE model.
+     * @return state with the number of parameters consistent with TLE model
      */
-    @DefaultDataContext
-    public FieldTLE<Gradient> getGradientTLE() {
+    public FieldSpacecraftState<Gradient> getState() {
 
-        // keplerian elements always has derivatives
-        final Gradient meanMotion   = Gradient.variable(FREE_STATE_PARAMETERS, 0, tle.getMeanMotion());
-        final Gradient ge           = Gradient.variable(FREE_STATE_PARAMETERS, 1, tle.getE());
-        final Gradient gi           = Gradient.variable(FREE_STATE_PARAMETERS, 2, tle.getI());
-        final Gradient graan        = Gradient.variable(FREE_STATE_PARAMETERS, 3, tle.getRaan());
-        final Gradient gpa          = Gradient.variable(FREE_STATE_PARAMETERS, 4, tle.getPerigeeArgument());
-        final Gradient gMeanAnomaly = Gradient.variable(FREE_STATE_PARAMETERS, 5, tle.getMeanAnomaly());
-
-        // date
-        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(meanMotion.getField(), tle.getDate());
-
-        // TLE parameters
-        final int satelliteNumber         = tle.getSatelliteNumber();
-        final char classification         = tle.getClassification();
-        final int launchYear              = tle.getLaunchYear();
-        final int launchNumber            = tle.getLaunchNumber();
-        final String launchPiece          = tle.getLaunchPiece();
-        final int ephemerisType           = tle.getEphemerisType();
-        final int elementNumber           = tle.getElementNumber();
-        final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
-        final double bStar                = tle.getBStar();
-
-        // mean motion derivatives are not computed
-        final Gradient meanMotionFirstDerivative = Gradient.constant(FREE_STATE_PARAMETERS, tle.getMeanMotionFirstDerivative());
-        final Gradient meanMotionSecondDerivative = Gradient.constant(FREE_STATE_PARAMETERS, tle.getMeanMotionSecondDerivative());
-
-
-        // gradient TLE
-        final FieldTLE<Gradient> gtle = new FieldTLE<>(satelliteNumber, classification,
-                        launchYear, launchNumber, launchPiece, ephemerisType, elementNumber, fieldDate,
-                        meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative, ge, gi, gpa, graan, gMeanAnomaly,
-                        revolutionNumberAtEpoch, bStar);
-
-        return gtle;
-    }
-
-    /** Get the state with the number of parameters consistent with model.
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @return state with the number of parameters consistent with force model
-     */
-    @DefaultDataContext
-    public FieldTLEPropagator<Gradient> getPropagator() {
-
-        // count the required number of parameters
+        // Count the required number of parameters
         int nbParams = 0;
         for (final ParameterDriver driver : tle.getParametersDrivers()) {
             if (driver.isSelected()) {
@@ -133,82 +130,52 @@ class TLEGradientConverter extends AbstractGradientConverter {
             }
         }
 
-        // fill in intermediate slots
-        while (gPropagators.size() < nbParams + 1) {
-            gPropagators.add(null);
+        // Fill in intermediate slots
+        while (gStates.size() < nbParams + 1) {
+            gStates.add(null);
         }
 
-        if (gPropagators.get(nbParams) == null) {
-            // it is the first time we need this number of parameters
-            // we need to create the state
+        if (gStates.get(nbParams) == null) {
+            // It is the first time we need this number of parameters
+            // We need to create the state
             final int freeParameters = FREE_STATE_PARAMETERS + nbParams;
-            final FieldTLEPropagator<Gradient> p0 = gPropagators.get(0);
+            final FieldSpacecraftState<Gradient> s0 = gStates.get(0);
 
-            // TLE with derivative parameters
-            final FieldTLE<Gradient> tle0 = p0.getTLE();
-            final Gradient gMeanMotion  = extend(tle0.getMeanMotion(), freeParameters);
-            final Gradient ge           = extend(tle0.getE(), freeParameters);
-            final Gradient gi           = extend(tle0.getI(), freeParameters);
-            final Gradient graan        = extend(tle0.getRaan(), freeParameters);
-            final Gradient gpa          = extend(tle0.getPerigeeArgument(), freeParameters);
-            final Gradient gMeanAnomaly = extend(tle0.getMeanAnomaly(), freeParameters);
+            // Orbit
+            final FieldPVCoordinates<Gradient> pv0 = s0.getPVCoordinates();
+            final FieldOrbit<Gradient> gOrbit =
+                            new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(s0.getDate().toAbsoluteDate(),
+                                                                                          extend(pv0.getPosition(),     freeParameters),
+                                                                                          extend(pv0.getVelocity(),     freeParameters),
+                                                                                          extend(pv0.getAcceleration(), freeParameters)),
+                                                      s0.getFrame(),
+                                                      extend(s0.getMu(), freeParameters));
 
-            // date
-            final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(gMeanMotion.getField(), tle.getDate());
-
-            // TLE parameters
-            final int satelliteNumber         = tle.getSatelliteNumber();
-            final char classification         = tle.getClassification();
-            final int launchYear              = tle.getLaunchYear();
-            final int launchNumber            = tle.getLaunchNumber();
-            final String launchPiece          = tle.getLaunchPiece();
-            final int ephemerisType           = tle.getEphemerisType();
-            final int elementNumber           = tle.getElementNumber();
-            final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
-            final double bStar                = tle.getBStar();
-
-            final Gradient meanMotionFirstDerivative  = extend(tle0.getMeanMotionFirstDerivative(), freeParameters);
-            final Gradient meanMotionSecondDerivative = extend(tle0.getMeanMotionSecondDerivative(), freeParameters);
-
-            // initialize the new TLE
-            final FieldTLE<Gradient> gTLE = new FieldTLE<>(satelliteNumber, classification,
-                            launchYear, launchNumber, launchPiece, ephemerisType, elementNumber, fieldDate,
-                            gMeanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative, ge, gi, gpa, graan, gMeanAnomaly,
-                            revolutionNumberAtEpoch, bStar);
-
-            // orbit propagator
-            final FieldTLEPropagator<Gradient> p1 = FieldTLEPropagator.selectExtrapolator(gTLE, gTLE.getParameters(gMeanMotion.getField()));
-
-            // attitude
-            final FieldAngularCoordinates<Gradient> ac1 = p1.getInitialState().getAttitude().getOrientation();
+            // Attitude
+            final FieldAngularCoordinates<Gradient> ac0 = s0.getAttitude().getOrientation();
             final FieldAttitude<Gradient> gAttitude =
-                            new FieldAttitude<>(p1.getInitialState().getAttitude().getReferenceFrame(),
-                                                new TimeStampedFieldAngularCoordinates<>(p1.getInitialState().getOrbit().getDate(),
-                                                                                         extend(ac1.getRotation(), freeParameters),
-                                                                                         extend(ac1.getRotationRate(), freeParameters),
-                                                                                         extend(ac1.getRotationAcceleration(), freeParameters)));
-            // mass
-            final Gradient gM = extend(p1.getInitialState().getMass(), freeParameters);
+                            new FieldAttitude<>(s0.getAttitude().getReferenceFrame(),
+                                                new TimeStampedFieldAngularCoordinates<>(gOrbit.getDate(),
+                                                                                         extend(ac0.getRotation(), freeParameters),
+                                                                                         extend(ac0.getRotationRate(), freeParameters),
+                                                                                         extend(ac0.getRotationAcceleration(), freeParameters)));
 
-            final FieldSpacecraftState<Gradient> s1 = new FieldSpacecraftState<>(p1.getInitialState().getOrbit(), gAttitude, gM);
-            p1.resetInitialState(s1);
-            gPropagators.set(nbParams, p1);
+            // Mass
+            final Gradient gM = extend(s0.getMass(), freeParameters);
 
+            gStates.set(nbParams, new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
         }
 
-        return gPropagators.get(nbParams);
+        return gStates.get(nbParams);
 
     }
 
     /** Get the model parameters.
-     *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param gTLE gradient TLE compliant with parameter drivers
-     * @return force model parameters
+     * @param state state as returned by {@link #getState(TLE)}
+     * @return TLE model parameters
      */
-    public Gradient[] getParameters(final FieldTLE<Gradient> gTLE) {
-        final int freeParameters = gTLE.getE().getFreeParameters();
+    public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state) {
+        final int freeParameters = state.getMass().getFreeParameters();
         final List<ParameterDriver> drivers = tle.getParametersDrivers();
         final Gradient[] parameters = new Gradient[drivers.size()];
         int index = FREE_STATE_PARAMETERS;
@@ -221,14 +188,40 @@ class TLEGradientConverter extends AbstractGradientConverter {
         return parameters;
     }
 
-    /**
-     * Compute the gradient of the semi-major axis given the satellite mean motion.
-     * @param meanMotion satellite mean motion
-     * @return the semi-major axis
+    /** Get the converted TLE propagator.
+     * @param state state as returned by {@link #getState(TLE)}
+     * @param parameters model parameters as returned by {@link #getParameters(FieldSpacecraftState, TLE)}
+     * @return the converted propagator
      */
-    public static Gradient computeA(final Gradient meanMotion) {
-        // Compute semi-major axis from TLE with the 3rd Kepler's law.
-        return meanMotion.multiply(meanMotion).reciprocal().multiply(TLEPropagator.getMU()).cbrt();
+    public FieldTLEPropagator<Gradient> getPropagator(final FieldSpacecraftState<Gradient> state,
+                                                      final Gradient[] parameters) {
+
+        // Zero
+        final Gradient zero = state.getA().getField().getZero();
+
+        // Template TLE
+        final int satelliteNumber         = tle.getSatelliteNumber();
+        final char classification         = tle.getClassification();
+        final int launchYear              = tle.getLaunchYear();
+        final int launchNumber            = tle.getLaunchNumber();
+        final String launchPiece          = tle.getLaunchPiece();
+        final int ephemerisType           = tle.getEphemerisType();
+        final int elementNumber           = tle.getElementNumber();
+        final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
+        final double bStar                = tle.getBStar();
+
+        // Initialize the new TLE
+        final FieldTLE<Gradient> templateTLE = new FieldTLE<>(satelliteNumber, classification,
+                        launchYear, launchNumber, launchPiece, ephemerisType, elementNumber, state.getDate(),
+                        zero, zero, zero, zero, zero, zero, zero, zero,
+                        revolutionNumberAtEpoch, bStar, utc);
+
+        // TLE
+        final FieldTLE<Gradient> gTLE = FieldTLE.stateToTLE(state, templateTLE, utc, teme);
+
+        // Return the "Field" propagator
+        return FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme, parameters);
+
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.utils;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -94,7 +94,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     /** Builds a rotation/rotation rate/rotation acceleration triplet.
      * @param rotation rotation
      * @param rotationRate rotation rate Ω (rad/s)
-     * @param rotationAcceleration rotation acceleration dΩ/dt (rad²/s²)
+     * @param rotationAcceleration rotation acceleration dΩ/dt (rad/s²)
      */
     public AngularCoordinates(final Rotation rotation,
                               final Vector3D rotationRate, final Vector3D rotationAcceleration) {
@@ -598,7 +598,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     }
 
     /** Get the rotation acceleration.
-     * @return the rotation acceleration vector dΩ/dt (rad²/s²).
+     * @return the rotation acceleration vector dΩ/dt (rad/s²).
      */
     public Vector3D getRotationAcceleration() {
         return rotationAcceleration;
@@ -702,7 +702,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @return a new pv coordinates which is the image of u by the rotation
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
+    public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
 
         final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
         final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
@@ -725,7 +725,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @return a new pv coordinates which is the image of u by the rotation
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
+    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
 
         final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
         final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);

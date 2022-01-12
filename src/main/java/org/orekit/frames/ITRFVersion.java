@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.frames;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -271,7 +271,7 @@ public enum ITRFVersion {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return provider.getTransform(date);
         }
 

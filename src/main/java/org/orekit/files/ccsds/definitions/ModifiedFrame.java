@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -109,7 +109,7 @@ public class ModifiedFrame extends Frame {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(
+        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(
                 final FieldAbsoluteDate<T> date) {
             return new FieldTransform<>(
                     date,

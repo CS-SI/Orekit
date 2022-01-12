@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.data;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.MathUtils.SumAndResidual;
@@ -99,7 +99,7 @@ public class PoissonSeries {
      * @param <T> type fo the field elements
      * @return value of the series
      */
-    public <T extends RealFieldElement<T>> T value(final FieldBodiesElements<T> elements) {
+    public <T extends CalculusFieldElement<T>> T value(final FieldBodiesElements<T> elements) {
 
         // polynomial part
         final T tc = elements.getTC();
@@ -139,14 +139,14 @@ public class PoissonSeries {
          * @param <S> the type of the field elements
          * @return value of the series
          */
-        <S extends RealFieldElement<S>> S[] value(FieldBodiesElements<S> elements);
+        <S extends CalculusFieldElement<S>> S[] value(FieldBodiesElements<S> elements);
 
         /** Evaluate time derivative of a set of Poisson series.
          * @param elements bodies elements for nutation
          * @param <S> the type of the field elements
          * @return time derivative of the series
          */
-        <S extends RealFieldElement<S>> S[] derivative(FieldBodiesElements<S> elements);
+        <S extends CalculusFieldElement<S>> S[] derivative(FieldBodiesElements<S> elements);
 
     }
 
@@ -259,7 +259,7 @@ public class PoissonSeries {
 
             /** {@inheritDoc} */
             @Override
-            public <S extends RealFieldElement<S>> S[] value(final FieldBodiesElements<S> elements) {
+            public <S extends CalculusFieldElement<S>> S[] value(final FieldBodiesElements<S> elements) {
 
                // non-polynomial part
                 final S[] v = MathArrays.buildArray(elements.getTC().getField(), polynomials.length);
@@ -281,7 +281,7 @@ public class PoissonSeries {
 
             /** {@inheritDoc} */
             @Override
-            public <S extends RealFieldElement<S>> S[] derivative(final FieldBodiesElements<S> elements) {
+            public <S extends CalculusFieldElement<S>> S[] derivative(final FieldBodiesElements<S> elements) {
 
                // non-polynomial part
                 final S[] v = MathArrays.buildArray(elements.getTC().getField(), polynomials.length);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,6 +41,7 @@ import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Header;
@@ -125,21 +126,21 @@ public class StreamingOemWriterTest {
         for (final String ex : files) {
             final DataSource source0 =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
-            OemFile oemFile = parser.parseMessage(source0);
+            Oem oem = parser.parseMessage(source0);
 
-            OemSatelliteEphemeris satellite = oemFile.getSatellites().values().iterator().next();
+            OemSatelliteEphemeris satellite = oem.getSatellites().values().iterator().next();
             OemSegment ephemerisBlock = satellite.getSegments().get(0);
             double step = ephemerisBlock.
                           getMetadata().
                           getStopTime().
                           durationFrom(ephemerisBlock.getMetadata().getStartTime()) /
                           (ephemerisBlock.getCoordinates().size() - 1);
-            String originator = oemFile.getHeader().getOriginator();
-            OemSegment block = oemFile.getSegments().get(0);
+            String originator = oem.getHeader().getOriginator();
+            OemSegment block = oem.getSegments().get(0);
             String objectName = block.getMetadata().getObjectName();
             String objectID = block.getMetadata().getObjectID();
 
-            Header header = new Header();
+            Header header = new Header(3.0);
             header.setOriginator(originator);
             OemMetadata metadata = new OemMetadata(1);
             metadata.setObjectName(objectName);
@@ -153,25 +154,31 @@ public class StreamingOemWriterTest {
 
             // check using the Propagator / StepHandler interface
             final StringBuilder buffer1 = new StringBuilder();
-            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, OemWriter.KVN_PADDING_WIDTH, "some-name"),
+            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, OemWriter.KVN_PADDING_WIDTH, "some-name", 60),
                                                                new WriterBuilder().buildOemWriter(),
                                                                header, metadata);
             BoundedPropagator propagator = satellite.getPropagator();
-            propagator.setMasterMode(step, writer.newSegment());
+            propagator.setStepHandler(step, writer.newSegment());
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
+            writer.close();
 
             // verify
             final DataSource source1 = new DataSource("buffer",
                                                     () -> new ByteArrayInputStream(buffer1.toString().getBytes(StandardCharsets.UTF_8)));
-            OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                     null, CelestialBodyFactory.getEarth().getGM(), 1).
+            Oem generatedOem = new ParserBuilder().
+                                       withConventions(IERSConventions.IERS_2010).
+                                       withSimpleEOP(true).
+                                       withDataContext(DataContext.getDefault()).
+                                       withMu(CelestialBodyFactory.getEarth().getGM()).
+                                       withDefaultInterpolationDegree(1).
+                                       buildOemParser().
                                        parseMessage(source1);
-            compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
+            compareOems(oem, generatedOem, POSITION_PRECISION, VELOCITY_PRECISION);
 
             // check calling the methods directly
             final StringBuilder buffer2 = new StringBuilder();
             OemWriter oemWriter = new WriterBuilder().buildOemWriter();
-            try (Generator generator = new KvnGenerator(buffer2, OemWriter.KVN_PADDING_WIDTH, "another-name")) {
+            try (Generator generator = new KvnGenerator(buffer2, OemWriter.KVN_PADDING_WIDTH, "another-name", 60)) {
                 oemWriter.writeHeader(generator, header);
                 metadata.setObjectName(objectName);
                 metadata.setStartTime(block.getStart());
@@ -187,10 +194,16 @@ public class StreamingOemWriterTest {
             // verify
             final DataSource source2 = new DataSource("buffer",
                                                     () -> new ByteArrayInputStream(buffer2.toString().getBytes(StandardCharsets.UTF_8)));
-            generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                             null, CelestialBodyFactory.getEarth().getGM(), 1).
+            generatedOem = new ParserBuilder().
+                               withConventions(IERSConventions.IERS_2010).
+                               withSimpleEOP(true).
+                               withDataContext(DataContext.getDefault()).
+                               withMu(CelestialBodyFactory.getEarth().getGM()).
+                               withDefaultInterpolationDegree(1).
+                               withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+                               buildOemParser().
                                parseMessage(source2);
-            compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
+            compareOems(oem, generatedOem, POSITION_PRECISION, VELOCITY_PRECISION);
 
         }
 
@@ -227,7 +240,7 @@ public class StreamingOemWriterTest {
         assertEquals(meta1.getTimeSystem().name(),    meta2.getTimeSystem().name());
     }
 
-    static void compareOemFiles(OemFile file1, OemFile file2, double p_tol, double v_tol) {
+    static void compareOems(Oem file1, Oem file2, double p_tol, double v_tol) {
         assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
         assertEquals(file1.getSegments().size(), file2.getSegments().size());
         for (int i = 0; i < file1.getSegments().size(); i++) {

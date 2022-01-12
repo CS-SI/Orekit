@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 import org.orekit.time.AbsoluteDate;
 
 
-/** The Observation class contains the data from an observation line.<p>
+/** The Observation class contains the data from an observation line.
  * <p>
  * It is not an Orekit object yet. It is a simple container holding:
  * </p>
@@ -44,7 +44,7 @@ import org.orekit.time.AbsoluteDate;
 public class Observation {
 
     /** Type of the observation. */
-    private final Observationtype type;
+    private final ObservationType type;
 
     /** Epoch: the timetag of the observation. */
     private final AbsoluteDate epoch;
@@ -57,7 +57,7 @@ public class Observation {
      * @param epoch the timetag
      * @param measurement the measurement (in SI units, converted from TDM)
      */
-    public Observation(final Observationtype type, final AbsoluteDate epoch, final double measurement) {
+    public Observation(final ObservationType type, final AbsoluteDate epoch, final double measurement) {
         this.type        = type;
         this.epoch       = epoch;
         this.measurement = measurement;
@@ -66,7 +66,7 @@ public class Observation {
     /** Get the type of observation.
      * @return type of observation
      */
-    public Observationtype getType() {
+    public ObservationType getType() {
         return type;
     }
 

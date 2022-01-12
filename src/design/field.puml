@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@
       Field<T> getField()
     }
 
-    interface "RealFieldElement<T>" as RealFieldElement_T_ {
+    interface "CalculusFieldElement<T>" as CalculusFieldElement_T_ {
       T sin()
       T cos()
       ...
@@ -69,13 +69,13 @@
           +double taylor(double[] delta)
         }
 
-        FieldElement_T_     <..      RealFieldElement_T_
-        RealFieldElement_T_     <..      DerivativeStructure
+        FieldElement_T_     <..      CalculusFieldElement_T_
+        CalculusFieldElement_T_     <..      DerivativeStructure
         DSFactory           --> DerivativeStructure : creates
     }
 
     package util #DDEBD8  {
-       RealFieldElement_T_     <..      Tuple
+       CalculusFieldElement_T_     <..      Tuple
     }
 
   }
@@ -83,7 +83,7 @@
   package org.orekit.propagation #ECEBD8 {
       interface "FieldPropagator<T>" as FieldPropagator_T_ {
       }
-      RealFieldElement_T_ <-- FieldPropagator_T_
+      CalculusFieldElement_T_ <-- FieldPropagator_T_
   }
 
 @enduml

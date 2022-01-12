@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.attitudes;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -49,7 +49,7 @@ public interface AttitudeBuilder {
      * @return filtered attitude
      * @param <T> the type of the field elements
      */
-    <T extends RealFieldElement<T>> FieldAttitude<T> build(Frame frame,
+    <T extends CalculusFieldElement<T>> FieldAttitude<T> build(Frame frame,
                                                            FieldPVCoordinatesProvider<T> pvProv,
                                                            TimeStampedFieldAngularCoordinates<T> rawAttitude);
 

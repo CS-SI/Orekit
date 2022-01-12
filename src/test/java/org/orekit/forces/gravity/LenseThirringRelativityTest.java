@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -186,7 +186,6 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
         Gradient mu  = Gradient.constant(freeParameters, Constants.EIGEN5C_EARTH_MU);
 
         Field<Gradient> field = a_0.getField();
-        Gradient zero = field.getZero();
 
         FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
 
@@ -207,7 +206,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
+        integrator.setInitialStepSize(60);
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);

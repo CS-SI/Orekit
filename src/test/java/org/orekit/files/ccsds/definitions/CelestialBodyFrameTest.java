@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -132,6 +132,43 @@ public class CelestialBodyFrameTest {
         Frame fakeICRF = new Frame(FramesFactory.getGCRF(), Transform.IDENTITY,
                                    CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial");
         MatcherAssert.assertThat(CelestialBodyFrame.map(fakeICRF), CoreMatchers.is(CelestialBodyFrame.ICRF));
+    }
+
+    @Test
+    public void testNoConventions() {
+        for (final CelestialBodyFrame cbf : CelestialBodyFrame.values()) {
+            if (cbf == CelestialBodyFrame.EME2000 || cbf == CelestialBodyFrame.J2000 ||
+                cbf == CelestialBodyFrame.GCRF    || cbf == CelestialBodyFrame.ICRF ||
+                cbf == CelestialBodyFrame.MCI     || cbf == CelestialBodyFrame.TEME) {
+                Assert.assertNotNull(cbf.getFrame(null, false, DataContext.getDefault()));
+            } else {
+                try {
+                    cbf.getFrame(null, false, DataContext.getDefault());
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException oe) {
+                    Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testParse() {
+        Assert.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("EME2000"));
+        Assert.assertEquals(CelestialBodyFrame.ITRF2014, CelestialBodyFrame.parse("ITRF2014"));
+        Assert.assertEquals(CelestialBodyFrame.ITRF1997, CelestialBodyFrame.parse("ITRF97"));
+        try {
+            Assert.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("ITRF00"));
+            Assert.fail("an exception should have been thrown");
+        } catch (IllegalArgumentException iae) {
+            Assert.assertTrue(iae.getMessage().contains("ITRF00"));
+        }
+        try {
+            CelestialBodyFrame.parse("ITRF");
+            Assert.fail("an exception should have been thrown");
+        } catch (IllegalArgumentException iae) {
+            Assert.assertTrue(iae.getMessage().contains("ITRF"));
+        }
     }
 
     /**
