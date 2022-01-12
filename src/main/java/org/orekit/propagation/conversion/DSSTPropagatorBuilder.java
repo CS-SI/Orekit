@@ -127,14 +127,14 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * @return the type of the orbit used for the propagation
      */
     public PropagationType getPropagationType() {
-    	return propagationType;
+        return propagationType;
     }
 
     /** Get the type of the elements used to define the orbital state (mean or osculating).
      * @return the type of the elements used to define the orbital state
      */
     public PropagationType getStateType() {
-    	return stateType;
+        return stateType;
     }
 
     /** Create a copy of a DSSTPropagatorBuilder object.
@@ -223,8 +223,8 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * @param orbitType orbit type (MEAN or OSCULATING)
      */
     public void resetOrbit(final Orbit newOrbit, final PropagationType orbitType) {
-    	this.stateType = orbitType;
-    	super.resetOrbit(newOrbit);
+        this.stateType = orbitType;
+        super.resetOrbit(newOrbit);
     }
 
     /** {@inheritDoc} */
@@ -286,8 +286,8 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                                 final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                                 final ParameterDriversList estimatedMeasurementsParameters,
                                                 final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-    	// FIXME: remove in 12.0 when DSSTKalmanModel is removed
-    	return new org.orekit.estimation.sequential.DSSTKalmanModel(propagatorBuilders,
+        // FIXME: remove in 12.0 when DSSTKalmanModel is removed
+        return new org.orekit.estimation.sequential.DSSTKalmanModel(propagatorBuilders,
                                                                     covarianceMatricesProviders,
                                                                     estimatedMeasurementsParameters,
                                                                     measurementProcessNoiseMatrix,

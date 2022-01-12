@@ -33,7 +33,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 /** {@link org.orekit.propagation.sampling.OrekitStepHandler Step handler} picking up
- * {@link ObservedMeasurement measurements} for the {@link SemiAnalyticalKalmanEstimator}
+ * {@link ObservedMeasurement measurements} for the {@link SemiAnalyticalKalmanEstimator}.
  * @author Julie Bayard
  * @author Bryan Cazabonne
  * @author Maxime Journot
@@ -59,13 +59,15 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
     private KalmanObserver observer;
 
     /** Simple constructor.
-     * @param model least squares model
-     * @param precompensated underlying measurements
+     * @param model semi-analytical kalman model
+     * @param filter kalman filter instance
+     * @param observedMeasurements list of observed measurements
+     * @param referenceDate reference date
      */
-	public EskfMeasurementHandler(final SemiAnalyticalKalmanModel model,
-			                      final ExtendedKalmanFilter<MeasurementDecorator> filter,
-			                      final List<ObservedMeasurement<?>> observedMeasurements,
-			                      final AbsoluteDate referenceDate) {
+    public EskfMeasurementHandler(final SemiAnalyticalKalmanModel model,
+                                  final ExtendedKalmanFilter<MeasurementDecorator> filter,
+                                  final List<ObservedMeasurement<?>> observedMeasurements,
+                                  final AbsoluteDate referenceDate) {
         this.model                = model;
         this.filter               = filter;
         this.observer             = model.getObserver();
@@ -73,20 +75,20 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
         this.referenceDate        = referenceDate;
     }
 
-	/** {@inheritDoc} */
-	@Override
-	public void init(final SpacecraftState s0, final AbsoluteDate t) {
-		this.index = 0;
-		// Initialize short periodic terms.
-		model.initializeShortPeriodicTerms(s0);
-		model.updateShortPeriods(s0);
-	}
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        this.index = 0;
+        // Initialize short periodic terms.
+        model.initializeShortPeriodicTerms(s0);
+        model.updateShortPeriods(s0);
+    }
 
     /** {@inheritDoc} */
-	@Override
-	public void handleStep(final OrekitStepInterpolator interpolator) {
+    @Override
+    public void handleStep(final OrekitStepInterpolator interpolator) {
 
-		// Current date
+        // Current date
         final AbsoluteDate currentDate = interpolator.getCurrentState().getDate();
 
         // Update the short period terms with the current MEAN state
@@ -97,7 +99,7 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
 
             try {
 
-            	// Update the norminal state with the interpolated parameters
+                // Update the norminal state with the interpolated parameters
                 model.updateNominalSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(index).getDate()));
 
                 // Process the current observation
@@ -123,7 +125,7 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
         // Reset the initial state of the propagator
         model.finalizeOperationsObservationGrid();
 
-	}
+    }
 
     /** Decorate an observed measurement.
      * <p>

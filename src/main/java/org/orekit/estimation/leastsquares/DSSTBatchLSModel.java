@@ -109,8 +109,8 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
         dsstHarvester.initializeFieldShortPeriodTerms(initial);
         // Compute short period derivatives at the beginning of the iteration
         if (propagationType == PropagationType.OSCULATING) {
-        	dsstHarvester.updateFieldShortPeriodTerms(initial);
-        	dsstHarvester.setReferenceState(initial);
+            dsstHarvester.updateFieldShortPeriodTerms(initial);
+            dsstHarvester.setReferenceState(initial);
         }
         // Compute short period derivatives at the beginning of the iteration
         harvester.setReferenceState(initial);

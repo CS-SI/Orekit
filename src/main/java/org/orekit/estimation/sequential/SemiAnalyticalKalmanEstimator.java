@@ -80,10 +80,9 @@ public class SemiAnalyticalKalmanEstimator {
     /** Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
      * @param propagatorBuilder propagator builder used to evaluate the orbit.
-     * @param processNoiseMatrixProvider provider for process noise matrix
+     * @param covarianceMatrixProvider provider for process noise matrix
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @param observer observer for Kalman Filter estimations
      */
     public SemiAnalyticalKalmanEstimator(final MatrixDecomposer decomposer,
                                          final DSSTPropagatorBuilder propagatorBuilder,
@@ -96,7 +95,7 @@ public class SemiAnalyticalKalmanEstimator {
 
         // Build the process model and measurement model
         this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilder, covarianceMatrixProvider,
-        	                                              estimatedMeasurementParameters,  measurementProcessNoiseMatrix);
+                                                          estimatedMeasurementParameters,  measurementProcessNoiseMatrix);
 
         // Extended Kalman Filter of Hipparchus
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
@@ -195,7 +194,7 @@ public class SemiAnalyticalKalmanEstimator {
      */
     public DSSTPropagator processMeasurements(final List<ObservedMeasurement<?>> observedMeasurements) {
         try {
-        	processModel.setObserver(observer);
+            processModel.setObserver(observer);
             return processModel.processMeasurements(observedMeasurements, filter);
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);

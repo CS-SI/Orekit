@@ -75,7 +75,6 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
 
     /** Simple constructor.
      * @param stmName name of the Cartesian STM additional state
-     * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param forceModels force models used in propagation
      * @param attitudeProvider attitude provider used in propagation
      */

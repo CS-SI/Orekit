@@ -705,16 +705,16 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     *  </p>
     *  @param shortPeriodTerms short periodic terms
     */
-   public void setShortPeriodTerms(final List<ShortPeriodTerms> shortPeriodTerms) {
-       mapper.setShortPeriodTerms(shortPeriodTerms);
-   }
+    public void setShortPeriodTerms(final List<ShortPeriodTerms> shortPeriodTerms) {
+        mapper.setShortPeriodTerms(shortPeriodTerms);
+    }
 
    /** Get the short periodic terms.
     *  @return the short periodic terms
     */
-   public List<ShortPeriodTerms> getShortPeriodTerms() {
-       return mapper.getShortPeriodTerms();
-   }
+    public List<ShortPeriodTerms> getShortPeriodTerms() {
+        return mapper.getShortPeriodTerms();
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -958,7 +958,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         for (ShortPeriodTerms spt : mapper.getShortPeriodTerms()) {
             final double[] shortPeriodic = spt.value(meanState.getOrbit());
             for (int i = 0; i < shortPeriodic.length; i++) {
-            	sptValue[i] += shortPeriodic[i];
+                sptValue[i] += shortPeriodic[i];
             }
         }
         return sptValue;

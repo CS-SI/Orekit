@@ -144,18 +144,18 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      */
     public RealMatrix getB1() {
 
-    	// Initialize B1
-    	final RealMatrix B1 = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
+        // Initialize B1
+        final RealMatrix B1 = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
 
         // add the short period terms
         for (int i = 0; i < STATE_DIMENSION; i++) {
             for (int j = 0; j < STATE_DIMENSION; j++) {
-            	B1.addToEntry(i, j, shortPeriodDerivativesStm[i][j]);
+                B1.addToEntry(i, j, shortPeriodDerivativesStm[i][j]);
             }
         }
 
         // Return B1
-    	return B1;
+        return B1;
 
     }
 
@@ -168,7 +168,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      * @return the B2 jacobian matrix
      */
     public RealMatrix getB2(final SpacecraftState state) {
-    	return super.getStateTransitionMatrix(state);
+        return super.getStateTransitionMatrix(state);
     }
 
     /** Get the Jacobian matrix B3 (B3 = ∂Y/∂P).
@@ -180,7 +180,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      * @return the B3 jacobian matrix
      */
     public RealMatrix getB3(final SpacecraftState state) {
-    	return super.getParametersJacobian(state);
+        return super.getParametersJacobian(state);
     }
 
     /** Get the Jacobian matrix B4 (B4 = ∂εη/∂c).
@@ -188,12 +188,11 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      * B4 represents the partial derivatives of the short period motion
      * with respect to the estimated propagation parameters.
      * </p>
-     * @param state spacecraft state
      * @return the B4 jacobian matrix
      */
     public RealMatrix getB4() {
 
-    	// Initialize B4
+        // Initialize B4
         final List<String> names = getJacobiansColumnsNames();
         final RealMatrix B4 = MatrixUtils.createRealMatrix(STATE_DIMENSION, columnsNames.size());
 
@@ -201,12 +200,12 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
         for (int j = 0; j < names.size(); ++j) {
             final double[] column = shortPeriodDerivativesJacobianColumns.get(names.get(j));
             for (int i = 0; i < STATE_DIMENSION; i++) {
-            	B4.addToEntry(i, j, column[i]);
+                B4.addToEntry(i, j, column[i]);
             }
         }
 
         // Return B4
-    	return B4;
+        return B4;
 
     }
 
@@ -230,13 +229,13 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      */
     public void initializeFieldShortPeriodTerms(final SpacecraftState reference) {
 
-    	// Converter
+        // Converter
         final DSSTGradientConverter converter = new DSSTGradientConverter(reference, propagator.getAttitudeProvider());
 
         // Loop on force models
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
-        	// Convert to Gradient
+            // Convert to Gradient
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
             final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
@@ -252,15 +251,15 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      * @param reference current mean spacecraft state
      */
     @SuppressWarnings("unchecked")
-	public void updateFieldShortPeriodTerms(final SpacecraftState reference) {
+    public void updateFieldShortPeriodTerms(final SpacecraftState reference) {
 
-    	// Converter
+        // Converter
         final DSSTGradientConverter converter = new DSSTGradientConverter(reference, propagator.getAttitudeProvider());
 
         // Loop on force models
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
-        	// Convert to Gradient
+            // Convert to Gradient
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
             final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
 
