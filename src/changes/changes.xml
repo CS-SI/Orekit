@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="andrewsgoetz" type="add">
+        Added Automatic-Module-Name "org.orekit" to JAR manifest to improve usability
+        of Orekit by modular Java projects.
+      </action>
       <action dev="bryan" type="fix" issue="874">
         Fixed initialization of maneuver trigger events when using EventBasedManeuverTriggers.
       </action>
