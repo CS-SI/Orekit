@@ -205,15 +205,15 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 4.6e-2;
+        final double   posEps            = 6.2e-2;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.8e-5;
+        final double   velEps            = 2.0e-5;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assert.assertEquals(0.0, observer.getMeanResidual(), 3.89e-3);
+        Assert.assertEquals(0.0, observer.getMeanResidual(), 8.51-3);
     }
 
     /**
@@ -297,15 +297,15 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 4.1e-2;
+        final double   posEps            = 7.7e-2;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.8e-5;
+        final double   velEps            = 2.5e-5;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assert.assertEquals(0.0, observer.getMeanResidual(), 3.95e-3);
+        Assert.assertEquals(0.0, observer.getMeanResidual(), 8.81e-3);
     }
 
     /** Observer for Kalman estimation. */
