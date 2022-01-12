@@ -81,6 +81,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
                 filter(d -> d.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)).
                 forEach(d -> d.setSelected(true)));
         final MatricesHarvester   harvester1   = propagator1.setupMatricesComputation("stm", null, null);
+        initializeShortPeriod(harvester1, propagator1);
         final SpacecraftState     state1       = propagator1.propagate(t0.shiftedBy(dt));
         final RealMatrix          stm1         = harvester1.getStateTransitionMatrix(state1);
         final RealMatrix          jacobian1    = harvester1.getParametersJacobian(state1);
@@ -91,7 +92,6 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         // some additional providers for test coverage
         final DSSTStateTransitionMatrixGenerator dummyStmGenerator =
                         new DSSTStateTransitionMatrixGenerator("dummy-1",
-                                                               propagator2.getPropagationType(),
                                                                Collections.emptyList(),
                                                                propagator2.getAttitudeProvider());
         propagator2.addAdditionalDerivativesProvider(dummyStmGenerator);
@@ -115,6 +115,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
                 filter(d -> d.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)).
                 forEach(d -> d.setSelected(true)));
         final MatricesHarvester   harvester2   = propagator2.setupMatricesComputation("stm", null, null);
+        initializeShortPeriod(harvester2, propagator2);
         final SpacecraftState     intermediate = propagator2.propagate(t0.shiftedBy(dt / 2));
         final RealMatrix          stmI         = harvester2.getStateTransitionMatrix(intermediate);
         final RealMatrix          jacobianI    = harvester2.getParametersJacobian(intermediate);
@@ -282,6 +283,14 @@ public class DSSTStateTransitionMatrixGeneratorTest {
 
         propagator.setInitialState(new SpacecraftState(orbit), type);
         return propagator;
+    }
+
+    private void initializeShortPeriod(final MatricesHarvester harvester, final DSSTPropagator propagator) {
+        // Mean orbit
+        final SpacecraftState initial = propagator.initialIsOsculating() ?
+                       DSSTPropagator.computeMeanState(propagator.getInitialState(), propagator.getAttitudeProvider(), propagator.getAllForceModels()) :
+                    	   propagator.getInitialState();
+        ((DSSTHarvester) harvester).initializeFieldShortPeriodTerms(initial); // Initial state is MEAN
     }
 
     /** Test to ensure correct Jacobian values.

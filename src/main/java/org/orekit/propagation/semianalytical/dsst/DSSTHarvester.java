@@ -272,7 +272,6 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
     public void setReferenceState(final SpacecraftState reference) {
 
@@ -288,16 +287,10 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
-            final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
-
             final Gradient zero = dsState.getDate().getField().getZero();
-            final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-            shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(auxiliaryElements, propagator.getPropagationType(), dsParameters));
-            forceModel.updateShortPeriodTerms(dsParameters, dsState);
             final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
-            for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
+            for (final FieldShortPeriodTerms<Gradient> spt : fieldShortPeriodTerms) {
                 final Gradient[] spVariation = spt.value(dsState.getOrbit());
                 for (int i = 0; i < spVariation .length; i++) {
                     shortPeriod[i] = shortPeriod[i].add(spVariation[i]);

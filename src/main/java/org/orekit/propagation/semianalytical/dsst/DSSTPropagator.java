@@ -379,8 +379,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
         if (stmGenerator == null) {
             // this is the first time we need the STM generate, create it
-            stmGenerator = new DSSTStateTransitionMatrixGenerator(harvester.getStmName(), getPropagationType(),
-                                                                  getAllForceModels(), getAttitudeProvider());
+            stmGenerator = new DSSTStateTransitionMatrixGenerator(harvester.getStmName(),
+                                                                  getAllForceModels(),
+                                                                  getAttitudeProvider());
             addAdditionalDerivativesProvider(stmGenerator);
         }
 

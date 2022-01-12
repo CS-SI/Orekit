@@ -27,7 +27,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -65,9 +64,6 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     /** Name of the Cartesian STM additional state. */
     private final String stmName;
 
-    /** Type of the orbit used for the propagation.*/
-    private PropagationType propagationType;
-
     /** Force models used in propagation. */
     private final List<DSSTForceModel> forceModels;
 
@@ -83,11 +79,9 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
      * @param forceModels force models used in propagation
      * @param attitudeProvider attitude provider used in propagation
      */
-    DSSTStateTransitionMatrixGenerator(final String stmName, final PropagationType propagationType,
-                                       final List<DSSTForceModel> forceModels,
+    DSSTStateTransitionMatrixGenerator(final String stmName, final List<DSSTForceModel> forceModels,
                                        final AttitudeProvider attitudeProvider) {
         this.stmName           = stmName;
-        this.propagationType   = propagationType;
         this.forceModels       = forceModels;
         this.attitudeProvider  = attitudeProvider;
         this.partialsObservers = new HashMap<>();
@@ -199,8 +193,6 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
             final Gradient[] parameters = converter.getParameters(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
-            // "field" initialization of the force model if it was not done before
-            forceModel.initializeShortPeriodTerms(auxiliaryElements, propagationType, parameters);
             final Gradient[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
             final double[] derivativesA  = meanElementRate[0].getGradient();
             final double[] derivativesEx = meanElementRate[1].getGradient();
