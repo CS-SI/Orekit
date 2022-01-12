@@ -94,9 +94,12 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
         final double[] dAcczdR1i = acc.getZ().getGradient();
         final double[] v = centralToBodyVelocity.toArray();
 
-        return new double[] {dAccxdR1i[0] * v[0] + dAccxdR1i[0] * v[1] + dAccxdR1i[0] * v[2],
-            dAccydR1i[0] * v[0] + dAccydR1i[0] * v[1] + dAccydR1i[0] * v[2],
-            dAcczdR1i[0] * v[0] + dAcczdR1i[0] * v[1] + dAcczdR1i[0] * v[2]};
+        return new double[] {
+            dAccxdR1i[0] * v[0] + dAccxdR1i[1] * v[1] + dAccxdR1i[2] * v[2],
+            dAccydR1i[0] * v[0] + dAccydR1i[1] * v[1] + dAccydR1i[2] * v[2],
+            dAcczdR1i[0] * v[0] + dAcczdR1i[1] * v[1] + dAcczdR1i[2] * v[2]
+        };
+
     }
 
 }
