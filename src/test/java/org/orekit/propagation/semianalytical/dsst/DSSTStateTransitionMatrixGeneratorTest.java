@@ -308,6 +308,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         propagatorMEAN.setMu(provider.getMu());
         SpacecraftState initialStateMEAN = propagatorMEAN.getInitialState();
         DSSTHarvester harvesterMEAN = (DSSTHarvester) propagatorMEAN.setupMatricesComputation("stm", null, null);
+        initializeShortPeriod(harvesterMEAN, propagatorMEAN);
         propagatorMEAN.
         getAllForceModels().
         forEach(fm -> fm.
@@ -335,6 +336,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         propagatorOSC.setMu(provider.getMu());
         final SpacecraftState initialStateOSC = propagatorOSC.getInitialState();
         DSSTHarvester harvesterOSC = (DSSTHarvester) propagatorOSC.setupMatricesComputation("stm", null, null);
+        initializeShortPeriod(harvesterOSC, propagatorOSC);
         propagatorOSC.
         getAllForceModels().
         forEach(fm -> fm.
