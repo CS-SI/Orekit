@@ -47,6 +47,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+@Deprecated
 public class DSSTKalmanModelTest {
 
     /** Orbit type for propagation. */

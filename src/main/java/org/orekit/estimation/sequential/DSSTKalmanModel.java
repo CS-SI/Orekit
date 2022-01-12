@@ -35,7 +35,9 @@ import org.orekit.utils.ParameterDriversList;
  * @author Maxime Journot
  * @author Bryan Cazabonne
  * @since 10.0
+ * @deprecated as of 11.1, replaced by {@link SemiAnalyticalKalmanModel}
  */
+@Deprecated
 public class DSSTKalmanModel extends AbstractKalmanModel {
 
     /** Kalman process model constructor.

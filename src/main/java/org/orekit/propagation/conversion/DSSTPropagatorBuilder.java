@@ -281,13 +281,17 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("deprecation")
     public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                                                 final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                                 final ParameterDriversList estimatedMeasurementsParameters,
                                                 final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        // DSST propagator has its own implementation of the Kalman Filter
-    	// This method will be never used
-    	return null;
+    	// FIXME: remove in 12.0 when DSSTKalmanModel is removed
+    	return new org.orekit.estimation.sequential.DSSTKalmanModel(propagatorBuilders,
+                                                                    covarianceMatricesProviders,
+                                                                    estimatedMeasurementsParameters,
+                                                                    measurementProcessNoiseMatrix,
+                                                                    propagationType, stateType);
     }
 
     /** Check if Newtonian attraction force model is available.
