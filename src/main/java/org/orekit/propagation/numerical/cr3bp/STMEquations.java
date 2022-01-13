@@ -74,14 +74,9 @@ public class STMEquations
     public SpacecraftState setInitialPhi(final SpacecraftState s) {
         final int stateDimension = 36;
         final double[] phi = new double[stateDimension];
-        for (int i = 0; i < stateDimension; ++i) {
-            phi[i] = 0.0;
-        }
-
         for (int i = 0; i < stateDimension; i = i + 7) {
             phi[i] = 1.0;
         }
-
         return s.addAdditionalState(name, phi);
     }
 

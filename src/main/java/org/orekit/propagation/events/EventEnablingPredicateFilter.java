@@ -126,6 +126,15 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
         return new EventEnablingPredicateFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);
     }
 
+    /**
+     * Get the wrapped raw detector.
+     * @return the wrapped raw detector
+     * @since 11.1
+     */
+    public EventDetector getDetector() {
+        return rawDetector;
+    }
+
     /**  {@inheritDoc} */
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {

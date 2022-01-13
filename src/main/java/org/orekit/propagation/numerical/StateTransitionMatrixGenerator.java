@@ -125,23 +125,28 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
                                                     final OrbitType orbitType,
                                                     final PositionAngle positionAngle) {
 
-        if (dYdY0 != null) {
+        final RealMatrix nonNullDYdY0;
+        if (dYdY0 == null) {
+            nonNullDYdY0 = MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION);
+        } else {
             if (dYdY0.getRowDimension() != STATE_DIMENSION ||
                             dYdY0.getColumnDimension() != STATE_DIMENSION) {
                 throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
                                           dYdY0.getRowDimension(), dYdY0.getColumnDimension(),
                                           STATE_DIMENSION, STATE_DIMENSION);
             }
+            nonNullDYdY0 = dYdY0;
         }
 
         // convert to Cartesian STM
-        final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
-        orbitType.convertType(state.getOrbit()).getJacobianWrtCartesian(positionAngle, dYdC);
-        final RealMatrix dCdY0 = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).
-                                 getSolver().
-                                 solve(dYdY0 == null ?
-                                       MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION) :
-                                       dYdY0);
+        final RealMatrix dCdY0;
+        if (state.isOrbitDefined()) {
+            final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
+            orbitType.convertType(state.getOrbit()).getJacobianWrtCartesian(positionAngle, dYdC);
+            dCdY0 = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).getSolver().solve(nonNullDYdY0);
+        } else {
+            dCdY0 = nonNullDYdY0;
+        }
 
         // flatten matrix
         final double[] flat = new double[STATE_DIMENSION * STATE_DIMENSION];

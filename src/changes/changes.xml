@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="837">
+        Added getters for raw detectors in event shifter, slope filter and predicate filter.
+      </action>
       <action dev="bryan" type="fix" issue="874">
         Fixed initialization of maneuver trigger events when using EventBasedManeuverTriggers.
       </action>
