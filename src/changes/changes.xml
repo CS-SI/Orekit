@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="evan" type="add" issue="881">
+        Add AbsoluteDate.toStringWithoutUtcOffset(TimeScale, int) and
+        DateTimeComponents.toStringWithoutUtcOffset(int, int) to emulate
+        AbsoluteDate.toString() from Orekit 10.
+      </action>
       <action dev="evan" type="fix" issue="880">
         Fix UTC offset in DateTimeComponents.toString(int, int)
       </action>
