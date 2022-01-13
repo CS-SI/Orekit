@@ -1455,4 +1455,31 @@ public class AbsoluteDate
         return this.getComponents(utc).toStringRfc3339();
     }
 
+    /**
+     * Return a string representation of this date-time, rounded to the given precision.
+     *
+     * <p>The format used is ISO8601 without the UTC offset.</p>
+     *
+     * <p>Calling {@code toStringWithoutUtcOffset(DataContext.getDefault().getTimeScales().getUTC(),
+     * 3)} will emulate the behavior of {@link #toString()} in Orekit 10 and earlier. Note
+     * this method is more accurate as it correctly handles rounding during leap seconds.
+     *
+     * @param timeScale      to use to compute components.
+     * @param fractionDigits the number of digits to include after the decimal point in
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must be
+     *                       greater than or equal to {@code 0}.
+     * @return string representation of this date, time, and UTC offset
+     * @see #toString(TimeScale)
+     * @see #toStringRfc3339(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
+     * @see DateTimeComponents#toStringWithoutUtcOffset(int, int)
+     * @since 11.1
+     */
+    public String toStringWithoutUtcOffset(final TimeScale timeScale,
+                                           final int fractionDigits) {
+        return this.getComponents(timeScale)
+                .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
+    }
+
 }
