@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="849">
+        Added detector to FieldEventHandler.init arguments list.
+      </action>
       <action dev="luc" type="fix" issue="837">
         Added getters for raw detectors in event shifter, slope filter and predicate filter.
       </action>

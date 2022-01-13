@@ -70,9 +70,10 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
 
     /** {@inheritDoc} */
     public void init(final FieldSpacecraftState<T> s0,
-                     final FieldAbsoluteDate<T> t) {
+                     final FieldAbsoluteDate<T> t,
+                     final D detector) {
         forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
-        getHandler().init(s0, t);
+        getHandler().init(s0, t, detector);
     }
 
     /** {@inheritDoc} */
