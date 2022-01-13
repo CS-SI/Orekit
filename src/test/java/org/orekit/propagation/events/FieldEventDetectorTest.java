@@ -70,8 +70,7 @@ public class FieldEventDetectorTest {
         doTestEventHandlerInit(Decimal64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field)
-            {
+    private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field) {
 
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
