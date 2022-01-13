@@ -309,7 +309,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
                 }
             }
             roundedDate = new DateComponents(j2000);
-            roundedTime = new TimeComponents(hour, minute, second);
+            roundedTime = new TimeComponents(hour, minute, second, time.getMinutesFromUTC());
         }
         return roundedDate.toString() + 'T' +
                 roundedTime.toStringWithoutUtcOffset(secondsFormat) +

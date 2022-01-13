@@ -195,4 +195,14 @@ public class DateTimeComponentsTest {
         MatcherAssert.assertThat(dtc.toString(minuteDuration, 14), CoreMatchers.is(full));
     }
 
+    @Test
+    public void testToStringRoundingUtcOffset() {
+        DateTimeComponents dtc =
+                new DateTimeComponents(new DateComponents(2000, 12, 31), new TimeComponents(23, 59, 59.9, -92));
+        MatcherAssert.assertThat(dtc.toString(60), CoreMatchers.is("2000-12-31T23:59:59.900-01:32"));
+        MatcherAssert.assertThat(dtc.toString(60, 3), CoreMatchers.is("2000-12-31T23:59:59.900-01:32"));
+        MatcherAssert.assertThat(dtc.toString(60, 0), CoreMatchers.is("2001-01-01T00:00:00-01:32"));
+        MatcherAssert.assertThat(dtc.toString(60, 14), CoreMatchers.is("2000-12-31T23:59:59.90000000000000-01:32"));
+    }
+
 }
