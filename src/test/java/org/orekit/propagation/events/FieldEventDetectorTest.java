@@ -101,8 +101,9 @@ public class FieldEventDetectorTest {
             }
 
             @Override
-            public void init(FieldSpacecraftState<T> initialState,
-                             FieldAbsoluteDate<T> target) {
+            public void init(final FieldSpacecraftState<T> initialState,
+                             final FieldAbsoluteDate<T> target,
+                             final FieldDateDetector<T> detector) {
                 initCalled = true;
             }
         };

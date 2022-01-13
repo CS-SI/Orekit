@@ -222,7 +222,9 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
 
         /** {@inheritDoc} */
         @Override
-        public void init(final FieldSpacecraftState<S> initialState, final FieldAbsoluteDate<S> target) {
+        public void init(final FieldSpacecraftState<S> initialState,
+                         final FieldAbsoluteDate<S> target,
+                         final D detector) {
             forward = target.isAfterOrEqualTo(initialState);
             initializeResetters(initialState, target);
         }
