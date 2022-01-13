@@ -95,7 +95,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector.
      * @param additionalName name of the additional equations
-     * @deprecated as of 11.1, replaced by {@link #AbstractMultipleShooting(List, List, double, double, String)}
+     * @deprecated as of 11.1, replaced by {@link #AbstractMultipleShooting(List, List, double, double, int, String)}
      */
     @Deprecated
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
