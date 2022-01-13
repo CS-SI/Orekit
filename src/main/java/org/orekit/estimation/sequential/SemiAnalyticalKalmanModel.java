@@ -198,7 +198,6 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                 if (!estimatedPropagationParametersNames.contains(driverName)) {
                     estimatedPropagationParametersNames.add(driverName);
                 }
-                columns++;
             }
 
         }
