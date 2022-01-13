@@ -125,6 +125,15 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
         return new EventSlopeFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }
 
+    /**
+     * Get the wrapped raw detector.
+     * @return the wrapped raw detector
+     * @since 11.1
+     */
+    public EventDetector getDetector() {
+        return rawDetector;
+    }
+
     /**  {@inheritDoc} */
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {

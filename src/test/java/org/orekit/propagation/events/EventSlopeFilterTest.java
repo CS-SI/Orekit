@@ -80,6 +80,7 @@ public class EventSlopeFilterTest {
         final EventSlopeFilter<EclipseDetector> filter =
                 new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS).
                 withMaxIter(200);
+        Assert.assertSame(detector, filter.getDetector());
         Assert.assertEquals(200, filter.getMaxIterationCount());
 
         propagator.clearEventsDetectors();

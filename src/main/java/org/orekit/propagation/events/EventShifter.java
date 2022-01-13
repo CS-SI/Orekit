@@ -112,6 +112,15 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
                                    detector, useShiftedStates, -increasingOffset, -decreasingOffset);
     }
 
+    /**
+     * Get the detector for the raw unshifted event.
+     * @return the detector for the raw unshifted event
+     * @since 11.1
+     */
+    public EventDetector getDetector() {
+        return detector;
+    }
+
     /** Get the increasing events time shift.
      * @return increasing events time shift
      */
