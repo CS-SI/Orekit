@@ -119,6 +119,7 @@ public class EventEnablingPredicateFilterTest {
                                     }
                 }).withMaxCheck(60.0);
 
+        Assert.assertSame(raw, aboveGroundElevationDetector.getDetector());
         Assert.assertEquals(0.001, raw.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(1.0e-6, aboveGroundElevationDetector.getThreshold(), 1.0e-15);
