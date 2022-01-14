@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added an orbit normalization feature.
+      </action>
       <action dev="luc" type="fix" issue="849">
         Added detector to FieldEventHandler.init arguments list.
       </action>
