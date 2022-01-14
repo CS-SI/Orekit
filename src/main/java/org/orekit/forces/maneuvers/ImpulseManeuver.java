@@ -234,7 +234,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
             final double newMass = oldState.getMass() * FastMath.exp(-sign * deltaV.getNorm() / im.vExhaust);
 
             // pack everything in a new state
-            SpacecraftState newState = new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
+            SpacecraftState newState = new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
                                                            attitude, newMass);
             for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesValues().getData()) {
                 newState = newState.addAdditionalState(entry.getKey(), entry.getValue());

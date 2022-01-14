@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="836">
+        Use the orbit normalization feature to reduce discontinuities across impulsive maneuvers.
+      </action>
+      <action dev="luc" type="add">
+        Added an orbit normalization feature.
+      </action>
       <action dev="evan" type="add" issue="881">
         Add AbsoluteDate.toStringWithoutUtcOffset(TimeScale, int) and
         DateTimeComponents.toStringWithoutUtcOffset(int, int) to emulate
