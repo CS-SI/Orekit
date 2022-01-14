@@ -102,9 +102,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                    final PositionAngle type,
-                                                                    final T[] stateVector,
-                                                                    final T[] stateVectorDot) {
+                                                                        final PositionAngle type,
+                                                                        final T[] stateVector,
+                                                                        final T[] stateVectorDot) {
 
             final TimeStampedFieldPVCoordinates<T> pv = orbit.getPVCoordinates();
             final FieldVector3D<T>                 p  = pv.getPosition();
@@ -132,10 +132,10 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldCartesianOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                                      final T[] stateVectorDot,
-                                                                                      final PositionAngle type,
-                                                                                      final FieldAbsoluteDate<T> date,
-                                                                                      final T mu, final Frame frame) {
+                                                                                          final T[] stateVectorDot,
+                                                                                          final PositionAngle type,
+                                                                                          final FieldAbsoluteDate<T> date,
+                                                                                          final T mu, final Frame frame) {
             final FieldVector3D<T> p = new FieldVector3D<>(stateVector[0], stateVector[1], stateVector[2]);
             final FieldVector3D<T> v = new FieldVector3D<>(stateVector[3], stateVector[4], stateVector[5]);
             final FieldVector3D<T> a;
@@ -234,9 +234,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                    final PositionAngle type,
-                                                                    final T[] stateVector,
-                                                                    final T[] stateVectorDot) {
+                                                                        final PositionAngle type,
+                                                                        final T[] stateVector,
+                                                                        final T[] stateVectorDot) {
 
             final FieldCircularOrbit<T> circularOrbit = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(orbit);
 
@@ -265,9 +265,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                                     final T[] stateVectorDot, final PositionAngle type,
-                                                                                     final FieldAbsoluteDate<T> date,
-                                                                                     final T mu, final Frame frame) {
+                                                                                         final T[] stateVectorDot, final PositionAngle type,
+                                                                                         final FieldAbsoluteDate<T> date,
+                                                                                         final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldCircularOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -371,9 +371,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                    final PositionAngle type,
-                                                                    final T[] stateVector,
-                                                                    final T[] stateVectorDot) {
+                                                                        final PositionAngle type,
+                                                                        final T[] stateVector,
+                                                                        final T[] stateVectorDot) {
 
             final FieldEquinoctialOrbit<T> equinoctialOrbit =
                 (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
@@ -403,10 +403,10 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                                        final T[] stateVectorDot,
-                                                                                        final PositionAngle type,
-                                                                                        final FieldAbsoluteDate<T> date,
-                                                                                        final T mu, final Frame frame) {
+                                                                                            final T[] stateVectorDot,
+                                                                                            final PositionAngle type,
+                                                                                            final FieldAbsoluteDate<T> date,
+                                                                                            final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldEquinoctialOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -511,9 +511,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                    final PositionAngle type,
-                                                                    final T[] stateVector,
-                                                                    final T[] stateVectorDot) {
+                                                                        final PositionAngle type,
+                                                                        final T[] stateVector,
+                                                                        final T[] stateVectorDot) {
             final FieldKeplerianOrbit<T> keplerianOrbit =
                             (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
 
@@ -542,10 +542,10 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                                      final T[] stateVectorDot,
-                                                                                      final PositionAngle type,
-                                                                                      final FieldAbsoluteDate<T> date,
-                                                                                      final T mu, final Frame frame) {
+                                                                                          final T[] stateVectorDot,
+                                                                                          final PositionAngle type,
+                                                                                          final FieldAbsoluteDate<T> date,
+                                                                                          final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldKeplerianOrbit<>(stateVector[0], stateVector[1], stateVector[2],
