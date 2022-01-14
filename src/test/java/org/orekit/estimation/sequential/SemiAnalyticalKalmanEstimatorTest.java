@@ -18,7 +18,10 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
@@ -43,6 +46,7 @@ import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
@@ -55,6 +59,64 @@ public class SemiAnalyticalKalmanEstimatorTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testMathRuntimeException() {
+
+        // Create context
+        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        // Create initial orbit and DSST propagator builder
+        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final boolean       perfectStart  = true;
+        final double        minStep       = 120.0;
+        final double        maxStep       = 1200.0;
+        final double        dP            = 1.;
+
+        // Propagator builder for measurement generation
+        final DSSTPropagatorBuilder builder = context.createBuilder(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart, minStep, maxStep, dP);
+
+        // Create perfect range measurements
+        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
+        final List<ObservedMeasurement<?>> measurements =
+                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                                                                   new DSSTRangeMeasurementCreator(context),
+                                                                   0.0, 6.0, 60.0);
+        // DSST propagator builder (used for orbit determination)
+        final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
+
+        // Equinictial covariance matrix initialization
+        final RealMatrix equinoctialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            0., 0., 0., 0., 0., 0.
+        });
+
+        // Jacobian of the orbital parameters w/r to Cartesian
+        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final double[][] dYdC = new double[6][6];
+        initialOrbit.getJacobianWrtCartesian(PositionAngle.MEAN, dYdC);
+        final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
+
+        // Equinoctial initial covariance matrix
+        final RealMatrix initialP = Jac.multiply(equinoctialP.multiply(Jac.transpose()));
+
+        // Process noise matrix is set to 0 here
+        RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
+
+        // Build the Kalman filter
+        final SemiAnalyticalKalmanEstimator kalman = new SemiAnalyticalKalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        decomposer(new QRDecomposer(1.0e-15)).
+                        build();
+        kalman.setObserver(estimation -> {
+            throw new MathRuntimeException(LocalizedCoreFormats.INTERNAL_ERROR, "me");
+        });
+
+        try {
+            kalman.processMeasurements(measurements);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(LocalizedCoreFormats.INTERNAL_ERROR, oe.getSpecifier());
         }
     }
 
@@ -85,6 +147,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
                         DSSTEstimationTestUtils.createMeasurements(propagator,
                                                                    new DSSTRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
+        final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
         // DSST propagator builder (used for orbit determination)
         final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
@@ -132,6 +195,14 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            expectedDeltaVel, velEps);
 
         Assert.assertEquals(0.0, observer.getMeanResidual(), 4.98e-8);
+        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assert.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assert.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assert.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assert.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        Assert.assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
     /**
@@ -162,6 +233,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
                         DSSTEstimationTestUtils.createMeasurements(propagator,
                                                                    new DSSTRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
+        final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
         // DSST propagator builder (used for orbit determination)
         final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
@@ -214,6 +286,14 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            expectedDeltaVel, velEps);
 
         Assert.assertEquals(0.0, observer.getMeanResidual(), 8.51-3);
+        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assert.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assert.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assert.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assert.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        Assert.assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
     /**
@@ -250,6 +330,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
                         DSSTEstimationTestUtils.createMeasurements(propagator,
                                                                    new DSSTRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
+        final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
         // DSST propagator builder (used for orbit determination)
         final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
@@ -306,6 +387,14 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            expectedDeltaVel, velEps);
 
         Assert.assertEquals(0.0, observer.getMeanResidual(), 8.81e-3);
+        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assert.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assert.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assert.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assert.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        Assert.assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
     /** Observer for Kalman estimation. */

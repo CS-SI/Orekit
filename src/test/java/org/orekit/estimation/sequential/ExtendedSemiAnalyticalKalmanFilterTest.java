@@ -159,6 +159,14 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         Assert.assertEquals(0.0, statY.getMax(),  0.029);
         Assert.assertEquals(0.0, statX.getMax(),  0.033);
 
+        // Check that "physical" matrices are null
+        final KalmanEstimation estimation = observer.getEstimation();
+        Assert.assertNotNull(estimation.getPhysicalEstimatedState());
+        Assert.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
+        Assert.assertNotNull(estimation.getPhysicalKalmanGain());
+        Assert.assertNotNull(estimation.getPhysicalMeasurementJacobian());
+        Assert.assertNotNull(estimation.getPhysicalStateTransitionMatrix());
+
     }
 
     /**
@@ -474,6 +482,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         private StreamingStatistics statY;
         private StreamingStatistics statZ;
 
+        /** Kalman estimation. */
+        private KalmanEstimation estimation;
+
         /**
          * Constructor.
          * @param startEpoch start epoch
@@ -526,8 +537,14 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
 
             }
 
+            this.estimation = estimation;
+
         }
 
+        /**
+         * Get the statistics on the X coordinate residuals.
+         * @return the statistics on the X coordinate residuals
+         */
         public StreamingStatistics getXStatistics() {
         	if (print) {
         		System.out.println("Min X res (m): " + statX.getMin() + " Max X res (m): " + statX.getMax() + " Mean X res (m): " + statX.getMean() + " STD: " + statX.getStandardDeviation());
@@ -535,6 +552,10 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         	return statX;
         }
 
+        /**
+         * Get the statistics on the Y coordinate residuals.
+         * @return the statistics on the Y coordinate residuals
+         */
         public StreamingStatistics getYStatistics() {
         	if (print) {
         		System.out.println("Min Y res (m): " + statY.getMin() + " Max Y res (m): " + statY.getMax() + " Mean Y res (m): " + statY.getMean() + " STD: " + statY.getStandardDeviation());
@@ -542,11 +563,23 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         	return statY;
         }
 
+        /**
+         * Get the statistics on the Z coordinate residuals.
+         * @return the statistics on the Z coordinate residuals
+         */
         public StreamingStatistics getZStatistics() {
         	if (print) {
         		System.out.println("Min Z res (m): " + statZ.getMin() + " Max Z res (m): " + statZ.getMax() + " Mean Z res (m): " + statZ.getMean() + " STD: " + statZ.getStandardDeviation());
         	}
         	return statZ;
+        }
+
+        /**
+         * Get the Kalman estimation.
+         * @return the Kalman estimation
+         */
+        public KalmanEstimation getEstimation() {
+            return estimation;
         }
 
     }
