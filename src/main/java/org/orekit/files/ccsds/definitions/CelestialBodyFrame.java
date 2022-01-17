@@ -208,6 +208,7 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1996. */
     ITRF1996 {
+
         /** {@inheritDoc} */
         @Override
         public String getName() {
@@ -229,6 +230,7 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1994. */
     ITRF1994 {
+
         /** {@inheritDoc} */
         @Override
         public String getName() {
@@ -250,6 +252,7 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1993. */
     ITRF1993 {
+
         /** {@inheritDoc} */
         @Override
         public String getName() {
@@ -271,6 +274,7 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1992. */
     ITRF1992 {
+
         /** {@inheritDoc} */
         @Override
         public String getName() {
@@ -292,6 +296,7 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1991. */
     ITRF1991 {
+
         /** {@inheritDoc} */
         @Override
         public String getName() {
@@ -313,6 +318,7 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1990. */
     ITRF1990 {
+
         /** {@inheritDoc} */
         @Override
         public String getName() {
@@ -334,6 +340,7 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1989. */
     ITRF1989 {
+
         /** {@inheritDoc} */
         @Override
         public String getName() {
