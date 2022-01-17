@@ -114,7 +114,7 @@ public class FrameFacade {
      */
     public static FrameFacade map(final Frame frame) {
         final CelestialBodyFrame cbf = CelestialBodyFrame.map(frame);
-        return new FrameFacade(frame, cbf, null, null, cbf.name());
+        return new FrameFacade(frame, cbf, null, null, cbf.getName());
     }
 
     /** Simple constructor.
@@ -138,7 +138,7 @@ public class FrameFacade {
             final CelestialBodyFrame cbf = CelestialBodyFrame.parse(name);
             if (allowCelestial) {
                 return new FrameFacade(cbf.getFrame(conventions, simpleEOP, dataContext),
-                                       cbf, null, null, cbf.name());
+                                       cbf, null, null, cbf.getName());
             }
         } catch (IllegalArgumentException iaeC) {
             try {
