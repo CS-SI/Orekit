@@ -24,7 +24,6 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
-import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
@@ -63,11 +62,17 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
+    protected MatricesHarvester configureHarvester(final Propagator propagator) {
+        return ((TLEPropagator) propagator).setupMatricesComputation(STM_NAME, null, null);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     @Deprecated
     protected TLEJacobiansMapper configureDerivatives(final Propagator propagator) {
 
-        final TLEPartialDerivativesEquations partials =
-                        new TLEPartialDerivativesEquations(STM_NAME, (TLEPropagator) propagator);
+        final org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations partials =
+                        new org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations(STM_NAME, (TLEPropagator) propagator);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
