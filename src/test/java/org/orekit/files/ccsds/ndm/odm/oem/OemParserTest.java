@@ -823,12 +823,12 @@ public class OemParserTest {
 
         // frames to check
         List<Pair<String, Frame>> frames = new ArrayList<>();
-        frames.add(new Pair<>("ITRF-1993", FramesFactory.getITRF(ITRFVersion.ITRF_1993, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF-1997", FramesFactory.getITRF(ITRFVersion.ITRF_1997, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF2000",  FramesFactory.getITRF(ITRFVersion.ITRF_2000, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF2005",  FramesFactory.getITRF(ITRFVersion.ITRF_2005, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF2008",  FramesFactory.getITRF(ITRFVersion.ITRF_2008, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF2014",  FramesFactory.getITRF(ITRFVersion.ITRF_2014, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF-93",  FramesFactory.getITRF(ITRFVersion.ITRF_1993, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF-97",  FramesFactory.getITRF(ITRFVersion.ITRF_1997, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2000", FramesFactory.getITRF(ITRFVersion.ITRF_2000, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2005", FramesFactory.getITRF(ITRFVersion.ITRF_2005, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2008", FramesFactory.getITRF(ITRFVersion.ITRF_2008, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2014", FramesFactory.getITRF(ITRFVersion.ITRF_2014, conventions, simpleEop)));
 
         for (Pair<String, Frame> frame : frames) {
             final String frameName = frame.getFirst();
@@ -843,7 +843,7 @@ public class OemParserTest {
 
             // verify
             OemSegment segment = actual.getSegments().get(0);
-            Assert.assertEquals(frameName.replace("-", ""),
+            Assert.assertEquals(frameName,
                                 segment.getMetadata().getReferenceFrame().getName());
             // check expected frame
             Frame actualFrame = segment.getFrame();
