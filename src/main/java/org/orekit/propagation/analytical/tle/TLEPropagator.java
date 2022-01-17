@@ -16,7 +16,12 @@
  */
 package org.orekit.propagation.analytical.tle;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
@@ -31,11 +36,14 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 
 /** This class provides elements to propagate TLE's.
@@ -164,6 +172,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     // CHECKSTYLE: resume VisibilityModifier check
 
+    /** Harvester for State Transition Matrix and Jacobian matrix. */
+    private TLEHarvester harvester;
+
     /** TLE frame. */
     private final Frame teme;
 
@@ -199,10 +210,11 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
                             final Frame teme) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
-        this.tle  = initialTLE;
-        this.teme = teme;
-        this.mass = mass;
-        this.utc = initialTLE.getUtc();
+        this.tle       = initialTLE;
+        this.teme      = teme;
+        this.mass      = mass;
+        this.utc       = initialTLE.getUtc();
+        this.harvester = null;
 
         initializeCommons();
         sxpInitialize();
@@ -579,6 +591,32 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** {@inheritDoc} */
     public Frame getFrame() {
         return teme;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
+                                                      final DoubleArrayDictionary initialJacobianColumns) {
+        if (stmName == null) {
+            throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
+        }
+        harvester = new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
+        return harvester;
+    }
+
+    /**
+     * Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
+     * @return names of the parameters (i.e. columns) of the Jacobian matrix
+     */
+    protected List<String> getJacobiansColumnsNames() {
+        final List<String> columnsNames = new ArrayList<>();
+        for (final ParameterDriver driver : tle.getParametersDrivers()) {
+            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
+                columnsNames.add(driver.getName());
+            }
+        }
+        Collections.sort(columnsNames);
+        return columnsNames;
     }
 
 }

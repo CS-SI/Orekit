@@ -77,11 +77,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                     0.0, 9.44e-08,
-                                     0.0, 3.57e-07,
-                                     0.0, 7.81e-09,
-                                     0.0, 2.74e-12);
+        TLEEstimationTestUtils.checkFit(context, estimator, 1, 1,
+                                        0.0, 1.0e-15,
+                                        0.0, 1.0e-15,
+                                        0.0, 4.97e-6,
+                                        0.0, 2.32e-9);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -121,11 +121,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                     0.0, 4.35e-09,
-                                     0.0, 3.08e-08,
-                                     0.0, 6.99e-10,
-                                     0.0, 1.46e-12);
+        TLEEstimationTestUtils.checkFit(context, estimator, 1, 1,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 4.97e-6,
+                                     0.0, 2.32e-9);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -214,10 +214,10 @@ public class TLEBatchLSEstimatorTest {
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         TLEEstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                        0.0, 2.29e-6,
-                                        0.0, 4.90e-6,
-                                        0.0, 2.75e-6,
-                                        0.0, 2.84e-10);
+                                        0.0, 1.67e-5,
+                                        0.0, 5.11e-5,
+                                        0.0, 1.77e-5,
+                                        0.0, 2.96e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -336,7 +336,7 @@ public class TLEBatchLSEstimatorTest {
                                      0.0, 0.26,
                                      0.0, 0.52,
                                      0.0, 4.42e-4,
-                                     0.0, 1.46e-7);
+                                     0.0, 1.48e-7);
     }
 
 }

@@ -177,9 +177,9 @@ public class TLEKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 0.29; // With numerical propagator: 1.77e-4;
+        final double   posEps            = 0.32; // With numerical propagator: 1.77e-4;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 6.19e-5; // With numerical propagator: 7.93e-8;
+        final double   velEps            = 7.45e-5; // With numerical propagator: 7.93e-8;
         TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -253,9 +253,9 @@ public class TLEKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 0.67; // With numerical propagator: 4.57e-3;
+        final double   posEps            = 0.69; // With numerical propagator: 4.57e-3;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.66e-4; // With numerical propagator: 7.29e-6;
+        final double   velEps            = 2.69e-4; // With numerical propagator: 7.29e-6;
         TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,

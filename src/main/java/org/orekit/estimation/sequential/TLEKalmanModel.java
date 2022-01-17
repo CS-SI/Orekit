@@ -22,9 +22,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
-import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
@@ -73,13 +71,7 @@ public class TLEKalmanModel extends AbstractKalmanModel {
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
             final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
-            final TLEPartialDerivativesEquations pde = new TLEPartialDerivativesEquations(equationName, (TLEPropagator) getReferenceTrajectories()[k]);
-
-            // Reset the Jacobians
-            final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();
-            final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-            ((TLEPropagator) getReferenceTrajectories()[k]).resetInitialState(stateWithDerivatives);
-            harvesters[k] = pde.getMapper();
+            harvesters[k] = ((TLEPropagator) getReferenceTrajectories()[k]).setupMatricesComputation(equationName, null, null);
         }
 
         // Update Jacobian harvesters
