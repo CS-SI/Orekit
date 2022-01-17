@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="878">
+        Fixed writing of ITRF frames before 2000 when generating CCSDS files.
+      </action>
       <action dev="luc" type="fix" issue="836">
         Use the orbit normalization feature to reduce discontinuities across impulsive maneuvers.
       </action>
