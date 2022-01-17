@@ -83,6 +83,11 @@ public class OemWriterTest extends AbstractWriterTest<Header, OemSegment, Oem> {
     }
 
     @Test
+    public void testWriteExample9() {
+        doTest("/ccsds/odm/oem/OEMExample9.txt");
+    }
+
+    @Test
     public void testIssue839() {
         doTest("/ccsds/odm/oem/OEM-Issue839.txt");
     }
