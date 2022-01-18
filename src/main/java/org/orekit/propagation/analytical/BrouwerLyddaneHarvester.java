@@ -26,7 +26,7 @@ import org.orekit.utils.DoubleArrayDictionary;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddaneHarvester extends AbstractAnalyticalMatricesHarvester {
+class BrouwerLyddaneHarvester extends AbstractAnalyticalMatricesHarvester {
 
     /** Propagator bound to this harvester. */
     private final BrouwerLyddanePropagator propagator;
