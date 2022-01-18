@@ -29,7 +29,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddaneGradientConverter extends AbstractAnalyticalGradientConverter {
+class BrouwerLyddaneGradientConverter extends AbstractAnalyticalGradientConverter {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;
