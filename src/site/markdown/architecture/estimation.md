@@ -126,7 +126,8 @@ want to use the estimated covariance and state vector of an orbit determination 
 the results of the daily orbit determination.
 
 The two batch least squares estimator implementations in Orekit are compatible to work with a `NumericalPropagator`, a
-`DSSTPropagator`, a `TLEPropagator`, an `EcksteinHechlerPropagator`, or a `BrouwerLyddanePropagator`.
+`DSSTPropagator`, a `TLEPropagator`, an `EcksteinHechlerPropagator`, a `BrouwerLyddanePropagator`,
+or a `KeplerianPropagator`.
 
 ### Kalman filter
 
