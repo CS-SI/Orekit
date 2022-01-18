@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap.Transition;
 
 public class TimeSpanMapTest {
 
@@ -333,6 +334,93 @@ public class TimeSpanMapTest {
         Assert.assertEquals(10.0, last.getDate().durationFrom(ref), 1.0e-15);
         Assert.assertEquals( 9, last.getBefore().intValue());
         Assert.assertEquals(10, last.getAfter().intValue());
+
+    }
+
+    @Test
+    public void tesFirstLastEmpty() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        Assert.assertNull(map.getFirstTransition());
+        Assert.assertNull(map.getLastTransition());
+        Assert.assertSame(map.getFirstSpan(), map.getLastSpan());
+        Assert.assertNull(map.getFirstSpan().getStartTransition());
+        Assert.assertNull(map.getFirstSpan().getEndTransition());
+        Assert.assertNull(map.getFirstSpan().previous());
+        Assert.assertNull(map.getLastSpan().next());
+    }
+
+    @Test
+    public void testSpansNavigation() {
+        final AbsoluteDate ref = AbsoluteDate.ARBITRARY_EPOCH;
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0), false);
+        map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0), false);
+        map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0), false);
+        map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0), false);
+        map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
+        Assert.assertNull(map.getFirstSpan().previous());
+        Assert.assertNull(map.getLastSpan().next());
+
+        TimeSpanMap.Span<Integer> span = map.getFirstSpan();
+        Assert.assertEquals(0, span.getData().intValue());
+        span = span.next();
+        Assert.assertEquals(2, span.getData().intValue());
+        span = span.next();
+        Assert.assertEquals(3, span.getData().intValue());
+        span = span.next();
+        Assert.assertEquals(5, span.getData().intValue());
+        span = span.next();
+        Assert.assertEquals(9, span.getData().intValue());
+        span = span.next();
+        Assert.assertEquals(10, span.getData().intValue());
+        Assert.assertNull(span.next());
+        span = span.previous();
+        Assert.assertEquals(9, span.getData().intValue());
+        span = span.previous();
+        Assert.assertEquals(5, span.getData().intValue());
+        span = span.previous();
+        Assert.assertEquals(3, span.getData().intValue());
+        span = span.previous();
+        Assert.assertEquals(2, span.getData().intValue());
+        span = span.previous();
+        Assert.assertEquals(0, span.getData().intValue());
+        Assert.assertNull(span.previous());
+
+    }
+
+    @Test
+    public void testTransitionsNavigation() {
+        final AbsoluteDate ref = AbsoluteDate.ARBITRARY_EPOCH;
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0), false);
+        map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0), false);
+        map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0), false);
+        map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0), false);
+        map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
+
+        Assert.assertEquals( 2.0, map.getFirstTransition().getDate().durationFrom(ref), 1.0e-15);
+        Assert.assertEquals(10.0, map.getLastTransition().getDate().durationFrom(ref), 1.0e-15);
+
+        Transition<Integer> transition = map.getLastTransition();
+        Assert.assertEquals(10.0, transition.getDate().durationFrom(ref), 1.0e-15);
+        transition = transition.previous();
+        Assert.assertEquals( 9.0, transition.getDate().durationFrom(ref), 1.0e-15);
+        transition = transition.previous();
+        Assert.assertEquals( 5.0, transition.getDate().durationFrom(ref), 1.0e-15);
+        transition = transition.previous();
+        Assert.assertEquals( 3.0, transition.getDate().durationFrom(ref), 1.0e-15);
+        transition = transition.previous();
+        Assert.assertEquals( 2.0, transition.getDate().durationFrom(ref), 1.0e-15);
+        Assert.assertNull(transition.previous());
+        transition = transition.next();
+        Assert.assertEquals( 3.0, transition.getDate().durationFrom(ref), 1.0e-15);
+        transition = transition.next();
+        Assert.assertEquals( 5.0, transition.getDate().durationFrom(ref), 1.0e-15);
+        transition = transition.next();
+        Assert.assertEquals( 9.0, transition.getDate().durationFrom(ref), 1.0e-15);
+        transition = transition.next();
+        Assert.assertEquals(10.0, transition.getDate().durationFrom(ref), 1.0e-15);
+        Assert.assertNull(transition.next());
 
     }
 

@@ -299,6 +299,38 @@ public class TimeSpanMap<T> {
         }
     }
 
+    /** Get the first (earliest) transition.
+     * @return first (earliest) transition, or null if there are no transitions
+     * @since 11.1
+     */
+    public Transition<T> getFirstTransition() {
+        return hasSingleDummyTransition() ? null : data.first();
+    }
+
+    /** Get the last (latest) transition.
+     * @return last (latest) transition, or null if there are no transitions
+     * @since 11.1
+     */
+    public Transition<T> getLastTransition() {
+        return hasSingleDummyTransition() ? null : data.last();
+    }
+
+    /** Get the first (earliest) span.
+     * @return first (earliest) span
+     * @since 11.1
+     */
+    public Span<T> getFirstSpan() {
+        return data.first().getSpanBefore();
+    }
+
+    /** Get the last (latest) span.
+     * @return last (latest) span
+     * @since 11.1
+     */
+    public Span<T> getLastSpan() {
+        return data.last().getSpanAfter();
+    }
+
     /** Extract a range of the map.
      * <p>
      * The object returned will be a new independent instance that will contain
@@ -422,6 +454,22 @@ public class TimeSpanMap<T> {
             return date;
         }
 
+        /** Get the previous transition.
+         * @return previous transition, or null if this transition was the first one
+         * @since 11.1
+         */
+        public Transition<S> previous() {
+            return before.getStartTransition();
+        }
+
+        /** Get the next transition.
+         * @return next transition, or null if this transition was the last one
+         * @since 11.1
+         */
+        public Transition<S> next() {
+            return after.getEndTransition();
+        }
+
         /** Get the entry valid before transition.
          * @return entry valid before transition
          * @see #getSpanBefore()
@@ -490,6 +538,22 @@ public class TimeSpanMap<T> {
          */
         public S getData() {
             return data;
+        }
+
+        /** Get the previous time span.
+         * @return previous time span, or null if this time span was the first one
+         * @since 11.1
+         */
+        public Span<S> previous() {
+            return start == null ? null : start.getSpanBefore();
+        }
+
+        /** Get the next time span.
+         * @return next time span, or null if this time span was the last one
+         * @since 11.1
+         */
+        public Span<S> next() {
+            return end == null ? null : end.getSpanAfter();
         }
 
         /** Get the start of this time span.
