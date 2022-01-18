@@ -16,10 +16,12 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -35,10 +37,13 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AbstractMatricesHarvester;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -96,7 +101,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * in the multiplications/divisions sequences.
      * </p>
      */
-    private static final double SCALE = FastMath.scalb(1.0, -20);
+    private static final double SCALE = FastMath.scalb(1.0, -32);
 
     /** Beta constant used by T2 function. */
     private static final double BETA = FastMath.scalb(100, -11);
@@ -608,11 +613,57 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     }
 
     /**
+     * Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
+     */
+    public double getMu() {
+        return mu;
+    }
+
+    /**
+     * Get the un-normalized zonal coefficients.
+     * @return the un-normalized zonal coefficients
+     */
+    public double[] getCk0() {
+        return ck0;
+    }
+
+    /**
+     * Get the reference radius of the central body attraction model.
+     * @return the reference radius in meters
+     */
+    public double getReferenceRadius() {
+        return referenceRadius;
+    }
+
+    /**
      * Get the parameters driver for propagation model.
      * @return drivers for propagation model
      */
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(M2Driver);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        return new BrouwerLyddaneHarvester(this, stmName, initialStm, initialJacobianColumns);
+    }
+
+    /**
+     * Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
+     * @return names of the parameters (i.e. columns) of the Jacobian matrix
+     */
+    protected List<String> getJacobiansColumnsNames() {
+        final List<String> columnsNames = new ArrayList<>();
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
+                columnsNames.add(driver.getName());
+            }
+        }
+        Collections.sort(columnsNames);
+        return columnsNames;
     }
 
     /** Local class for Brouwer-Lyddane model. */
