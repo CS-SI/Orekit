@@ -309,6 +309,33 @@ public class TimeSpanMapTest {
 
     }
 
+    @Test
+    public void testTransitionToSpanLink() {
+        final AbsoluteDate ref = AbsoluteDate.ARBITRARY_EPOCH;
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0), false);
+        map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0), false);
+        map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0), false);
+        map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0), false);
+        map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
+
+        TimeSpanMap.Transition<Integer> first = map.getSpan(ref.shiftedBy(-99.0)).getEndTransition();
+        Assert.assertEquals(2.0, first.getDate().durationFrom(ref), 1.0e-15);
+        Assert.assertEquals(0, first.getBefore().intValue());
+        Assert.assertEquals(2, first.getAfter().intValue());
+
+        TimeSpanMap.Transition<Integer> middle = map.getSpan(ref.shiftedBy(6.0)).getStartTransition();
+        Assert.assertEquals( 5.0, middle.getDate().durationFrom(ref), 1.0e-15);
+        Assert.assertEquals( 3, middle.getBefore().intValue());
+        Assert.assertEquals( 5, middle.getAfter().intValue());
+
+        TimeSpanMap.Transition<Integer> last = map.getSpan(ref.shiftedBy(+99.0)).getStartTransition();
+        Assert.assertEquals(10.0, last.getDate().durationFrom(ref), 1.0e-15);
+        Assert.assertEquals( 9, last.getBefore().intValue());
+        Assert.assertEquals(10, last.getAfter().intValue());
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
