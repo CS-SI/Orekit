@@ -17,9 +17,18 @@
 package org.orekit.propagation.conversion;
 
 
+import java.util.List;
+
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.AnalyticalBatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.AbstractKalmanModel;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -29,6 +38,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Builder for Brouwer-Lyddane propagator.
  * <p>
@@ -59,7 +69,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
+public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
 
     /** Parameters scaling factor.
      * <p>
@@ -251,6 +261,24 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
         // Return
         return propagator;
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
+                                             final List<ObservedMeasurement<?>> measurements,
+                                             final ParameterDriversList estimatedMeasurementsParameters,
+                                             final ModelObserver observer) {
+        return new AnalyticalBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                                final ParameterDriversList estimatedMeasurementsParameters,
+                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }
