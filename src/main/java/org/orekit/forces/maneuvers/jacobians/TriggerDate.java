@@ -271,9 +271,9 @@ public class TriggerDate
         // store contribution factor for derivatives scm = ±(∂y₁/∂y₀)⁻¹ fₘ(t₁, y₁)
         final double[] c = new QRDecomposition(dY1dY0, DECOMPOSITION_THRESHOLD).getSolver().solve(rhs).toArray();
         if (forward) {
-            contribution.addValidAfter(c, state.getDate());
+            contribution.addValidAfter(c, state.getDate(), false);
         } else {
-            contribution.addValidBefore(c, state.getDate());
+            contribution.addValidBefore(c, state.getDate(), false);
         }
 
         // return unchanged state

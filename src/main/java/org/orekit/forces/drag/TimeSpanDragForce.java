@@ -181,7 +181,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         dragSensitiveTimeSpanMap.addValidBefore(changeDragParameterDriversNames(dragSensitive,
                                                                                 latestValidityDate,
                                                                                 DATE_BEFORE),
-                                                latestValidityDate);
+                                                latestValidityDate, false);
     }
 
     /** Add a DragSensitive entry valid after a limit date.<br>
@@ -195,7 +195,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         dragSensitiveTimeSpanMap.addValidAfter(changeDragParameterDriversNames(dragSensitive,
                                                                                earliestValidityDate,
                                                                                DATE_AFTER),
-                                               earliestValidityDate);
+                                               earliestValidityDate, false);
     }
 
     /** Get the {@link DragSensitive} model valid at a date.

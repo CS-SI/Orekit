@@ -108,7 +108,7 @@ public class AntexLoader {
             final TimeSpanMap<SatelliteAntenna> existing =
                             findSatelliteAntenna(antenna.getSatelliteSystem(), antenna.getPrnNumber());
             // this is an update for a satellite antenna, with new time span
-            existing.addValidAfter(antenna, antenna.getValidFrom());
+            existing.addValidAfter(antenna, antenna.getValidFrom(), false);
         } catch (OrekitException oe) {
             // this is a new satellite antenna
             satellitesAntennas.add(new TimeSpanMap<>(antenna));

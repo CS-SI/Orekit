@@ -168,7 +168,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
      * (must be different from <b>all</b> dates already used for transitions)
      */
     public void addAccelerationModelValidBefore(final AccelerationModel accelerationModel, final AbsoluteDate latestValidityDate) {
-        accelerationModelTimeSpanMap.addValidBefore(accelerationModel, latestValidityDate);
+        accelerationModelTimeSpanMap.addValidBefore(accelerationModel, latestValidityDate, false);
     }
 
     /** Add a AccelerationModel entry valid after a limit date.<br>
@@ -184,7 +184,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
      * (must be different from <b>all</b> dates already used for transitions)
      */
     public void addAccelerationModelValidAfter(final AccelerationModel accelerationModel, final AbsoluteDate earliestValidityDate) {
-        accelerationModelTimeSpanMap.addValidAfter(accelerationModel, earliestValidityDate);
+        accelerationModelTimeSpanMap.addValidAfter(accelerationModel, earliestValidityDate, false);
     }
 
     /** Get the {@link AccelerationModel} model valid at a date.

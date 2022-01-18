@@ -125,7 +125,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
         troposphericModelMap.addValidBefore(changeTroposphericParameterDriversNames(model,
                                                                                     latestValidityDate,
                                                                                     DATE_BEFORE),
-                                            latestValidityDate);
+                                            latestValidityDate, false);
     }
 
     /** Add a EstimatedTroposphericModel entry valid after a limit date.<br>
@@ -139,7 +139,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
         troposphericModelMap.addValidAfter(changeTroposphericParameterDriversNames(model,
                                                                                    earliestValidityDate,
                                                                                    DATE_AFTER),
-                                           earliestValidityDate);
+                                           earliestValidityDate, false);
     }
 
     /** Get the {@link EstimatedTroposphericModel} model valid at a date.

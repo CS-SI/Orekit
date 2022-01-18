@@ -196,9 +196,9 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
         @Override
         public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
             if (forward) {
-                getFirings().addValidAfter(increasing, s.getDate());
+                getFirings().addValidAfter(increasing, s.getDate(), false);
             } else {
-                getFirings().addValidBefore(!increasing, s.getDate());
+                getFirings().addValidBefore(!increasing, s.getDate(), false);
             }
             notifyResetters(s, increasing);
             return Action.RESET_STATE;
@@ -233,9 +233,9 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
         @Override
         public Action eventOccurred(final FieldSpacecraftState<S> s, final D detector, final boolean increasing) {
             if (forward) {
-                getFirings().addValidAfter(increasing, s.getDate().toAbsoluteDate());
+                getFirings().addValidAfter(increasing, s.getDate().toAbsoluteDate(), false);
             } else {
-                getFirings().addValidBefore(!increasing, s.getDate().toAbsoluteDate());
+                getFirings().addValidBefore(!increasing, s.getDate().toAbsoluteDate(), false);
             }
             notifyResetters(s, increasing);
             return Action.RESET_STATE;

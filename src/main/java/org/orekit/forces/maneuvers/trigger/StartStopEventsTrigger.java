@@ -301,9 +301,9 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
             if (increasing) {
                 // the event is meaningful for maneuver firing
                 if (forward) {
-                    getFirings().addValidAfter(true, s.getDate());
+                    getFirings().addValidAfter(true, s.getDate(), false);
                 } else {
-                    getFirings().addValidBefore(false, s.getDate());
+                    getFirings().addValidBefore(false, s.getDate(), false);
                 }
                 notifyResetters(s, true);
                 return Action.RESET_STATE;
@@ -340,9 +340,9 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
             if (increasing) {
                 // the event is meaningful for maneuver firing
                 if (forward) {
-                    getFirings().addValidAfter(false, s.getDate());
+                    getFirings().addValidAfter(false, s.getDate(), false);
                 } else {
-                    getFirings().addValidBefore(true, s.getDate());
+                    getFirings().addValidBefore(true, s.getDate(), false);
                 }
                 notifyResetters(s, false);
                 return Action.RESET_STATE;
@@ -383,9 +383,9 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
             if (increasing) {
                 // the event is meaningful for maneuver firing
                 if (forward) {
-                    getFirings().addValidAfter(true, s.getDate().toAbsoluteDate());
+                    getFirings().addValidAfter(true, s.getDate().toAbsoluteDate(), false);
                 } else {
-                    getFirings().addValidBefore(false, s.getDate().toAbsoluteDate());
+                    getFirings().addValidBefore(false, s.getDate().toAbsoluteDate(), false);
                 }
                 notifyResetters(s, true);
                 return Action.RESET_STATE;
@@ -426,9 +426,9 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
             if (increasing) {
                 // the event is meaningful for maneuver firing
                 if (forward) {
-                    getFirings().addValidAfter(false, s.getDate().toAbsoluteDate());
+                    getFirings().addValidAfter(false, s.getDate().toAbsoluteDate(), false);
                 } else {
-                    getFirings().addValidBefore(true, s.getDate().toAbsoluteDate());
+                    getFirings().addValidBefore(true, s.getDate().toAbsoluteDate(), false);
                 }
                 notifyResetters(s, false);
                 return Action.RESET_STATE;

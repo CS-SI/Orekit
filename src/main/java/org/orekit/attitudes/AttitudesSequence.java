@@ -413,10 +413,10 @@ public class AttitudesSequence implements AttitudeProvider {
 
                     // prepare transition
                     final AbsoluteDate transitionEnd = date.shiftedBy(transitionTime);
-                    activated.addValidAfter(new TransitionProvider(s.getAttitude(), transitionEnd), date);
+                    activated.addValidAfter(new TransitionProvider(s.getAttitude(), transitionEnd), date, false);
 
                     // prepare future law after transition
-                    activated.addValidAfter(future, transitionEnd);
+                    activated.addValidAfter(future, transitionEnd, false);
 
                     // notify about the switch
                     if (switchHandler != null) {
@@ -436,10 +436,10 @@ public class AttitudesSequence implements AttitudeProvider {
                     }
 
                     // prepare transition
-                    activated.addValidBefore(new TransitionProvider(sAttitude, date), date);
+                    activated.addValidBefore(new TransitionProvider(sAttitude, date), date, false);
 
                     // prepare past law before transition
-                    activated.addValidBefore(past, sOrbit.getDate());
+                    activated.addValidBefore(past, sOrbit.getDate(), false);
 
                     // notify about the switch
                     if (switchHandler != null) {

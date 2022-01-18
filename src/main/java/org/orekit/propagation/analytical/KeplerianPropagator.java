@@ -165,9 +165,9 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         if (forward) {
-            states.addValidAfter(state, state.getDate());
+            states.addValidAfter(state, state.getDate(), false);
         } else {
-            states.addValidBefore(state, state.getDate());
+            states.addValidBefore(state, state.getDate(), false);
         }
         stateChanged(state);
     }

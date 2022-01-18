@@ -67,9 +67,9 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
         if (isFiringOnInitialState(initialState, forward)) {
             if (forward) {
-                firings.addValidAfter(Boolean.TRUE, initialState.getDate());
+                firings.addValidAfter(Boolean.TRUE, initialState.getDate(), false);
             } else {
-                firings.addValidBefore(Boolean.TRUE, initialState.getDate());
+                firings.addValidBefore(Boolean.TRUE, initialState.getDate(), false);
             }
         }
 
@@ -92,9 +92,9 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
         if (isFiringOnInitialState(initialState.toSpacecraftState(), forward)) {
             if (forward) {
-                firings.addValidAfter(Boolean.TRUE, initialState.getDate().toAbsoluteDate());
+                firings.addValidAfter(Boolean.TRUE, initialState.getDate().toAbsoluteDate(), false);
             } else {
-                firings.addValidBefore(Boolean.TRUE, initialState.getDate().toAbsoluteDate());
+                firings.addValidBefore(Boolean.TRUE, initialState.getDate().toAbsoluteDate(), false);
             }
         }
 

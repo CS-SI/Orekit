@@ -511,9 +511,9 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
         final BLModel newModel = computeMeanParameters((KeplerianOrbit) OrbitType.KEPLERIAN.convertType(state.getOrbit()),
                                                        state.getMass());
         if (forward) {
-            models.addValidAfter(newModel, state.getDate());
+            models.addValidAfter(newModel, state.getDate(), false);
         } else {
-            models.addValidBefore(newModel, state.getDate());
+            models.addValidBefore(newModel, state.getDate(), false);
         }
         stateChanged(state);
     }

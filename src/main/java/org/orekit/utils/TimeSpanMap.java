@@ -26,9 +26,39 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
 
 /** Container for objects that apply to spans of time.
-
+ * <p>
+ * Time span maps can be seen either as an ordered collection of
+ * {@link Span time spans} or as an ordered collection
+ * of {@link Transition transitions}. Both views are dual one to
+ * each other. A time span extends from one transition to the
+ * next one, and a transition separates one time span from the
+ * next one. Each time span contains one entry that is valid during
+ * the time span; this entry may be null if nothing is valid during
+ * this time span.
+ * </p>
+ * <p>
+ * Typical uses of {@link TimeSpanMap} are to hold piecewise data, like for
+ * example an orbit count that changes at ascending nodes (in which case the
+ * entry would be an {@link Integer}), or a visibility status between several
+ * objects (in which case the entry would be a {@link Boolean}) or a drag
+ * coefficient that is expected to be estimated daily or three-hourly (this is
+ * how {@link org.orekit.forces.drag.TimeSpanDragForce TimeSpanDragForce} is
+ * implemented).
+ * </p>
+ * <p>
+ * Time span maps are built progressively. At first, they contain one
+ * {@link Span time span} only whose validity extends from past infinity to
+ * future infinity. Then new entries are added, associated with transition dates,
+ * in order to build up the complete map. The transition dates can be either the start
+ * of validity (when calling {@link #addValidAfter(Object, AbsoluteDate, boolean)}),
+ * or the end of the validity (when calling {#link {@link #addValidBefore(Object,
+ * AbsoluteDate, boolean)}). Entries are often added at one end only (and mainly
+ * in chronological order), but this is not required. It is possible for example
+ * to first set up a map that cover a large range (say one day), and then to insert
+ * intermediate dates using for example propagation and event detectors to carve out
+ * some parts. This is akin to the way Binary Space Partitioning Trees work.
+ * </p>
  * @param <T> Type of the data.
-
  * @author Luc Maisonobe
  * @since 7.1
  */
@@ -40,36 +70,68 @@ public class TimeSpanMap<T> {
     /** Create a map containing a single object, initially valid throughout the timeline.
      * <p>
      * The real validity of this first entry will be truncated as other
-     * entries are either {@link #addValidBefore(Object, AbsoluteDate)
-     * added before} it or {@link #addValidAfter(Object, AbsoluteDate)
+     * entries are either {@link #addValidBefore(Object, AbsoluteDate, boolean)
+     * added before} it or {@link #addValidAfter(Object, AbsoluteDate, boolean)
      * added after} it.
      * </p>
      * @param entry entry (initially valid throughout the timeline)
      */
     public TimeSpanMap(final T entry) {
         data = new TreeSet<Transition<T>>(new ChronologicalComparator());
-        data.add(new Transition<T>(AbsoluteDate.ARBITRARY_EPOCH, entry, entry));
+        data.add(new Transition<>(AbsoluteDate.ARBITRARY_EPOCH, entry, entry));
     }
 
     /** Add an entry valid before a limit date.
      * <p>
-     * As an entry is valid, it truncates the validity of the neighboring
+     * Calling this method is equivalent to call {@link #addValidAfter(Object,
+     * AbsoluteDate, boolean) addValidAfter(entry, latestValidityDate, false)}.
+     * </p>
+     * @param entry entry to add
+     * @param latestValidityDate date before which the entry is valid
+     * (must be different from <em>all</em> dates already used for transitions)
+     * @deprecated as of 11.1, replaced by {@link #addValidBefore(Object, AbsoluteDate, boolean)}
+     */
+    @Deprecated
+    public void addValidBefore(final T entry, final AbsoluteDate latestValidityDate) {
+        addValidBefore(entry, latestValidityDate, false);
+    }
+
+    /** Add an entry valid before a limit date.
+     * <p>
+     * As an entry is valid, it truncates or overrides the validity of the neighboring
      * entries already present in the map.
      * </p>
      * <p>
      * The transition dates should be entered only once, either
      * by a call to this method or by a call to {@link #addValidAfter(Object,
-     * AbsoluteDate)}. Repeating a transition date will lead to unexpected
+     * AbsoluteDate, boolean)}. Repeating a transition date will lead to unexpected
      * result and is not supported.
      * </p>
      * <p>
-     * Using addValidBefore(entry, t) will make 'entry' valid in ]-∞, t[ (note the open bracket).
+     * If the map already contains transitions that occur earlier than {@code latestValidityDate},
+     * the {@code erasesEarlier} parameter controls what to do with them. Lets consider
+     * the time span [tₖ ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
+     * {@code latestValidityDate} prior to the call to the method (i.e. tₖ &lt;
+     * {@code latestValidityDate} &lt; tₖ₊₁).
+     * <ul>
+     *  <li>if {@code erasesEarlier} is {@code true}, then all earlier transitions
+     *      up to and including tₖ are erased, and the {@code entry} will be valid from past infinity
+     *      to {@code latestValidityDate}</li>
+     *  <li>if {@code erasesEarlier} is {@code false}, then all earlier transitions
+     *      are preserved, and the {@code entry} will be valid from tₖ
+     *      to {@code latestValidityDate}</li>
+     *  </ul>
+     *  In both cases, the existing entry eₖ time span will be truncated and will be valid
+     *  only from {@code latestValidityDate} to tₖ₊₁.
      * </p>
      * @param entry entry to add
      * @param latestValidityDate date before which the entry is valid
      * (must be different from <em>all</em> dates already used for transitions)
+     * @param erasesEarlier if true, the entry erases all existing transitions
+     * that are earlier than {@code latestValidityDate}
+     * @since 11.1
      */
-    public void addValidBefore(final T entry, final AbsoluteDate latestValidityDate) {
+    public void addValidBefore(final T entry, final AbsoluteDate latestValidityDate, final boolean erasesEarlier) {
 
         if (data.size() == 1) {
             final Transition<T> single = data.first();
@@ -77,44 +139,82 @@ public class TimeSpanMap<T> {
                 // the single entry was a dummy one, without a real transition
                 // we replace it entirely
                 data.clear();
-                data.add(new Transition<T>(latestValidityDate, entry, single.getAfter()));
+                data.add(new Transition<>(latestValidityDate, entry, single.getAfter()));
                 return;
             }
         }
 
-        final Transition<T> previous =
-                data.floor(new Transition<T>(latestValidityDate, entry, null));
+        final Transition<T> previous = data.floor(new Transition<>(latestValidityDate, null, null));
         if (previous == null) {
             // the new transition will be the first one
-            data.add(new Transition<T>(latestValidityDate, entry, data.first().getBefore()));
+            data.add(new Transition<>(latestValidityDate, entry, data.first().getBefore()));
         } else {
-            // the new transition will be after the previous one
-            data.remove(previous);
-            data.add(new Transition<T>(previous.date,      previous.getBefore(), entry));
-            data.add(new Transition<T>(latestValidityDate, entry,                previous.getAfter()));
+            if (erasesEarlier) {
+                // remove all transitions up to and including previous
+                while (data.pollFirst() != previous) {
+                    // empty
+                }
+            } else {
+                // the new transition will be after the previous one
+                data.remove(previous);
+                data.add(new Transition<>(previous.date, previous.getBefore(), entry));
+            }
+            data.add(new Transition<>(latestValidityDate, entry, previous.getAfter()));
         }
 
     }
 
     /** Add an entry valid after a limit date.
      * <p>
-     * As an entry is valid, it truncates the validity of the neighboring
+     * Calling this method is equivalent to call {@link #addValidAfter(Object,
+     * AbsoluteDate, boolean) addValidAfter(entry, earliestValidityDate, false)}.
+     * </p>
+     * @param entry entry to add
+     * @param earliestValidityDate date after which the entry is valid
+     * (must be different from <em>all</em> dates already used for transitions)
+     * @deprecated as of 11.1, replaced by {@link #addValidAfter(Object, AbsoluteDate, boolean)}
+     */
+    @Deprecated
+    public void addValidAfter(final T entry, final AbsoluteDate earliestValidityDate) {
+        addValidAfter(entry, earliestValidityDate, false);
+    }
+
+    /** Add an entry valid after a limit date.
+     * <p>
+     * As an entry is valid, it truncates or overrides the validity of the neighboring
      * entries already present in the map.
      * </p>
      * <p>
      * The transition dates should be entered only once, either
      * by a call to this method or by a call to {@link #addValidBefore(Object,
-     * AbsoluteDate)}. Repeating a transition date will lead to unexpected
+     * AbsoluteDate, boolean)}. Repeating a transition date will lead to unexpected
      * result and is not supported.
      * </p>
      * <p>
-     * Using addValidAfter(entry, t) will make 'entry' valid [t, +∞[ (note the closed bracket).
+     * If the map already contains transitions that occur earlier than {@code earliestValidityDate},
+     * the {@code erasesEarlier} parameter controls what to do with them. Lets consider
+     * the time span [tₖ ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
+     * {@code earliestValidityDate} prior to the call to the method (i.e. tₖ &lt;
+     * {@code earliestValidityDate} &lt; tₖ₊₁).
+     * <ul>
+     *  <li>if {@code erasesEarlier} is {@code true}, then all earlier transitions
+     *      up to and including tₖ are erased, and the {@code entry} will be valid from past infinity
+     *      to {@code earliestValidityDate}</li>
+     *  <li>if {@code erasesEarlier} is {@code false}, then all earlier transitions
+     *      are preserved, and the {@code entry} will be valid from tₖ
+     *      to {@code earliestValidityDate}</li>
+     *  </ul>
+     *  In both cases, the existing entry eₖ time span will be truncated and will be valid
+     *  only from {@code earliestValidityDate} to tₖ₊₁.
      * </p>
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid
      * (must be different from <em>all</em> dates already used for transitions)
+     * @param erasesLater if true, the entry erases all existing transitions
+     * that are later than {@code earliestValidityDate}
+     * @since 11.1
      */
-    public void addValidAfter(final T entry, final AbsoluteDate earliestValidityDate) {
+    public void addValidAfter(final T entry, final AbsoluteDate earliestValidityDate, final boolean erasesLater) {
 
         if (data.size() == 1) {
             final Transition<T> single = data.first();
@@ -122,21 +222,27 @@ public class TimeSpanMap<T> {
                 // the single entry was a dummy one, without a real transition
                 // we replace it entirely
                 data.clear();
-                data.add(new Transition<T>(earliestValidityDate, single.getBefore(), entry));
+                data.add(new Transition<>(earliestValidityDate, single.getBefore(), entry));
                 return;
             }
         }
 
-        final Transition<T> next =
-                data.ceiling(new Transition<T>(earliestValidityDate, entry, null));
+        final Transition<T> next = data.ceiling(new Transition<>(earliestValidityDate, null, null));
         if (next == null) {
             // the new transition will be the last one
-            data.add(new Transition<T>(earliestValidityDate, data.last().getAfter(), entry));
+            data.add(new Transition<>(earliestValidityDate, data.last().getAfter(), entry));
         } else {
-            // the new transition will be before the next one
-            data.remove(next);
-            data.add(new Transition<T>(earliestValidityDate, next.getBefore(), entry));
-            data.add(new Transition<T>(next.date,            entry,            next.getAfter()));
+            if (erasesLater) {
+                // remove all transitions down to and including next
+                while (data.pollLast() != next) {
+                    // empty
+                }
+            } else {
+                // the new transition will be before the next one
+                data.remove(next);
+                data.add(new Transition<>(next.date, entry, next.getAfter()));
+            }
+            data.add(new Transition<>(earliestValidityDate, next.getBefore(), entry));
         }
 
     }
@@ -146,7 +252,7 @@ public class TimeSpanMap<T> {
      * @return valid entry at specified date
      */
     public T get(final AbsoluteDate date) {
-        final Transition<T> previous = data.floor(new Transition<T>(date, null, null));
+        final Transition<T> previous = data.floor(new Transition<>(date, null, null));
         if (previous == null) {
             // there are no transition before the specified date
             // return the first valid entry
@@ -162,7 +268,7 @@ public class TimeSpanMap<T> {
      * @since 9.3
      */
     public Span<T> getSpan(final AbsoluteDate date) {
-        final Transition<T> previous = data.floor(new Transition<T>(date, null, null));
+        final Transition<T> previous = data.floor(new Transition<>(date, null, null));
         if (previous == null) {
             // there are no transition before the specified date
             // return the first valid entry
@@ -201,8 +307,8 @@ public class TimeSpanMap<T> {
      */
     public TimeSpanMap<T> extractRange(final AbsoluteDate start, final AbsoluteDate end) {
 
-        final NavigableSet<Transition<T>> inRange = data.subSet(new Transition<T>(start, null, null), true,
-                                                                new Transition<T>(end,   null, null), true);
+        final NavigableSet<Transition<T>> inRange = data.subSet(new Transition<>(start, null, null), true,
+                                                                new Transition<>(end,   null, null), true);
         if (inRange.isEmpty()) {
             // there are no transitions at all in the range
             // we need to pick up the only valid object
@@ -211,7 +317,7 @@ public class TimeSpanMap<T> {
 
         final TimeSpanMap<T> range = new TimeSpanMap<>(inRange.first().before);
         for (final Transition<T> transition : inRange) {
-            range.addValidAfter(transition.after, transition.getDate());
+            range.addValidAfter(transition.after, transition.getDate(), false);
         }
 
         return range;

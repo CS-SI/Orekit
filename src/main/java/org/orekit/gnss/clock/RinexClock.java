@@ -572,7 +572,7 @@ public class RinexClock {
         if (referenceClocks == null) {
             referenceClocks = new TimeSpanMap<List<ReferenceClock>>(referenceClockList);
         }
-        referenceClocks.addValidAfter(referenceClockList, startDate);
+        referenceClocks.addValidAfter(referenceClockList, startDate, false);
     }
 
     /** Getter for the frame name.
