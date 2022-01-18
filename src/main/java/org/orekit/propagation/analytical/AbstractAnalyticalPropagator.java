@@ -385,7 +385,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @since 11.1
      */
     protected List<String> getJacobiansColumnsNames() {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     /** Internal PVCoordinatesProvider for attitude computation. */
