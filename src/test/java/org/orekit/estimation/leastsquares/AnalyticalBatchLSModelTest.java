@@ -41,7 +41,7 @@ import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class TLEBatchLSModelTest {
+public class AnalyticalBatchLSModelTest {
 
     @Test
     public void testPerfectValue() {
@@ -87,8 +87,7 @@ public class TLEBatchLSModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final TLEBatchLSModel model = new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters,
-                                                          modelObserver);
+        final AnalyticalBatchLSModel model = new AnalyticalBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
         
@@ -149,8 +148,7 @@ public class TLEBatchLSModelTest {
                 // Do nothing here 
             }
         };
-        final TLEBatchLSModel model = new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters,
-                                                          modelObserver);
+        final AnalyticalBatchLSModel model = new AnalyticalBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         // Test forward propagation flag to false
         assertEquals(false, model.isForwardPropagation());
     }

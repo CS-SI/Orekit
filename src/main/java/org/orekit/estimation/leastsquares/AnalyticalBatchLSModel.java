@@ -22,30 +22,23 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
 
-/** Bridge between {@link ObservedMeasurement measurements} and {@link
+/**
+ * Bridge between {@link ObservedMeasurement measurements} and {@link
  * org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem
  * least squares problems}.
- * <p>
- * This class is an adaption of the {@link BatchLSModel} class
- * but for the {@link TLEPropagator TLE propagator}.
- * </p>
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
  * @author Thomas Paulet
- * @since 11.0
- * @deprecated as of 11.1, replaced by {@link AnalyticalBatchLSModel}
+ * @since 11.1
  */
-@Deprecated
-public class TLEBatchLSModel extends AbstractBatchLSModel {
+public class AnalyticalBatchLSModel extends AbstractBatchLSModel {
 
     /** Name of the State Transition Matrix state. */
-    private static final String STM_NAME = TLEBatchLSModel.class.getName() + "-derivatives";
+    private static final String STM_NAME = AnalyticalBatchLSModel.class.getName() + "-derivatives";
 
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
@@ -53,10 +46,10 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public TLEBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
-                           final List<ObservedMeasurement<?>> measurements,
-                           final ParameterDriversList estimatedMeasurementsParameters,
-                           final ModelObserver observer) {
+    public AnalyticalBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
+                                  final List<ObservedMeasurement<?>> measurements,
+                                  final ParameterDriversList estimatedMeasurementsParameters,
+                                  final ModelObserver observer) {
         // call super constructor
         super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
     }
@@ -64,30 +57,22 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
     /** {@inheritDoc} */
     @Override
     protected MatricesHarvester configureHarvester(final Propagator propagator) {
-        return ((TLEPropagator) propagator).setupMatricesComputation(STM_NAME, null, null);
+        return propagator.setupMatricesComputation(STM_NAME, null, null);
     }
 
     /** {@inheritDoc} */
     @Override
     @Deprecated
-    protected TLEJacobiansMapper configureDerivatives(final Propagator propagator) {
-
-        final org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations partials =
-                        new org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations(STM_NAME, (TLEPropagator) propagator);
-
-        // add the derivatives to the initial state
-        final SpacecraftState rawState = propagator.getInitialState();
-        final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        propagator.resetInitialState(stateWithDerivatives);
-
-        return partials.getMapper();
-
+    protected AbstractJacobiansMapper configureDerivatives(final Propagator propagators) {
+        // This deprecated method is replaced by configureHarvester() method
+        // Therefore there is no risk to return a null value here
+        return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected Orbit configureOrbits(final MatricesHarvester harvester, final Propagator propagator) {
-        // Directly return the propagator's initial state
+    protected Orbit configureOrbits(final MatricesHarvester harvester,
+                                    final Propagator propagator) {
         return propagator.getInitialState().getOrbit();
     }
 
