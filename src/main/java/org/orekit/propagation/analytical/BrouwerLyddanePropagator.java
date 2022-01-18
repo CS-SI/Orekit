@@ -625,7 +625,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @return the un-normalized zonal coefficients
      */
     public double[] getCk0() {
-        return ck0;
+        return ck0.clone();
     }
 
     /**

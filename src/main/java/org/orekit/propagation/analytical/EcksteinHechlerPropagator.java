@@ -567,7 +567,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @since 11.1
      */
     public double[] getCk0() {
-        return ck0;
+        return ck0.clone();
     }
 
     /**
