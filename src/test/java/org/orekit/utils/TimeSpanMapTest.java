@@ -40,6 +40,7 @@ public class TimeSpanMapTest {
         Assert.assertSame(single, map.get(AbsoluteDate.JULIAN_EPOCH));
         Assert.assertSame(single, map.get(AbsoluteDate.MODIFIED_JULIAN_EPOCH));
         Assert.assertSame(single, map.get(AbsoluteDate.PAST_INFINITY));
+        Assert.assertEquals(0, map.getTransitionsNumber());
     }
 
     @Test
@@ -93,7 +94,7 @@ public class TimeSpanMapTest {
 
     @Deprecated
     @Test
-    public void testDeprecated() {
+    public void testDeprecatedAddValid() {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
         TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
         map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0));
@@ -113,6 +114,15 @@ public class TimeSpanMapTest {
         Assert.assertEquals( 9, map.get(ref.shiftedBy(  9.9)).intValue());
         Assert.assertEquals(10, map.get(ref.shiftedBy( 10.1)).intValue());
         Assert.assertEquals(10, map.get(ref.shiftedBy(100.0)).intValue());
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecatedNavigableMap() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        Assert.assertEquals(0, map.getTransitionsNumber());
+        Assert.assertEquals(1, map.getTransitions().size());
+        Assert.assertSame(AbsoluteDate.ARBITRARY_EPOCH, map.getTransitions().first().getDate());
     }
 
     @Test
@@ -139,6 +149,7 @@ public class TimeSpanMapTest {
         final StringBuilder builder = new StringBuilder();
         map.forEach(i -> builder.append(' ').append(i));
         Assert.assertEquals(" 0 2 3 5 9 10", builder.toString());
+        Assert.assertEquals(5, map.getTransitionsNumber());
     }
 
     @Test
@@ -169,6 +180,7 @@ public class TimeSpanMapTest {
         final StringBuilder builder = new StringBuilder();
         map.forEach(i -> builder.append(' ').append(i));
         Assert.assertEquals(" 5 7", builder.toString());
+        Assert.assertEquals(3, map.getTransitionsNumber());
     }
 
     @Test
@@ -181,7 +193,7 @@ public class TimeSpanMapTest {
         map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0), false);
         map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
         TimeSpanMap<Integer> range = map.extractRange(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
-        Assert.assertEquals(map.getTransitions().size(), range.getTransitions().size());
+        Assert.assertEquals(map.getTransitionsNumber(), range.getTransitionsNumber());
     }
 
     @Test
@@ -194,7 +206,7 @@ public class TimeSpanMapTest {
         map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0), false);
         map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
         TimeSpanMap<Integer> range = map.extractRange(ref.shiftedBy(6), ref.shiftedBy(8));
-        Assert.assertEquals(1, range.getTransitions().size());
+        Assert.assertEquals(0, range.getTransitionsNumber());
         Assert.assertEquals(5, range.get(ref.shiftedBy(-10000)).intValue());
         Assert.assertEquals(5, range.get(ref.shiftedBy(+10000)).intValue());
     }
@@ -209,7 +221,7 @@ public class TimeSpanMapTest {
         map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0), false);
         map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
         TimeSpanMap<Integer> range = map.extractRange(AbsoluteDate.PAST_INFINITY, ref.shiftedBy(8));
-        Assert.assertEquals(3, range.getTransitions().size());
+        Assert.assertEquals(3, range.getTransitionsNumber());
         Assert.assertEquals( 0, range.get(ref.shiftedBy( -1.0)).intValue());
         Assert.assertEquals( 0, range.get(ref.shiftedBy(  1.9)).intValue());
         Assert.assertEquals( 2, range.get(ref.shiftedBy(  2.1)).intValue());
@@ -232,7 +244,7 @@ public class TimeSpanMapTest {
         map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0), false);
         map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
         TimeSpanMap<Integer> range = map.extractRange(ref.shiftedBy(4), AbsoluteDate.FUTURE_INFINITY);
-        Assert.assertEquals(3, range.getTransitions().size());
+        Assert.assertEquals(3, range.getTransitionsNumber());
         Assert.assertEquals( 3, range.get(ref.shiftedBy(-99.0)).intValue());
         Assert.assertEquals( 3, range.get(ref.shiftedBy(  4.9)).intValue());
         Assert.assertEquals( 5, range.get(ref.shiftedBy(  5.1)).intValue());
@@ -253,7 +265,7 @@ public class TimeSpanMapTest {
         map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0), false);
         map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
         TimeSpanMap<Integer> range = map.extractRange(ref.shiftedBy(4), ref.shiftedBy(8));
-        Assert.assertEquals(1, range.getTransitions().size());
+        Assert.assertEquals(1, range.getTransitionsNumber());
         Assert.assertEquals( 3, range.get(ref.shiftedBy(-99.0)).intValue());
         Assert.assertEquals( 3, range.get(ref.shiftedBy(  4.9)).intValue());
         Assert.assertEquals( 5, range.get(ref.shiftedBy(  5.1)).intValue());

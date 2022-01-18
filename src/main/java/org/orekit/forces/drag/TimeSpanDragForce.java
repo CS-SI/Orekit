@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.NavigableSet;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -232,9 +232,19 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
 
     /** Get the {@link Transition}s of the drag sensitive time span map.
      * @return the {@link Transition}s for the drag sensitive time span map
+     * @deprecated as of 11.1, replaced by {@link #getFirstSpan()}
      */
+    @Deprecated
     public NavigableSet<Transition<DragSensitive>> getTransitions() {
         return dragSensitiveTimeSpanMap.getTransitions();
+    }
+
+    /** Get the first {@link Span time span} of the drag sensitive time span map.
+     * @return the first {@link Span time span} of the drag sensitive time span map
+     * @since 11.1
+     */
+    public Span<DragSensitive> getFirstSpan() {
+        return dragSensitiveTimeSpanMap.getFirstSpan();
     }
 
     /** {@inheritDoc} */
@@ -362,23 +372,15 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
 
         // Get all transitions from the TimeSpanMap
         final List<ParameterDriver> listParameterDrivers = new ArrayList<>();
-        final NavigableSet<Transition<DragSensitive>> dragSensitiveTransitions =  getTransitions();
 
-        // Loop on the transitions
-        for (Transition<DragSensitive> transition : dragSensitiveTransitions) {
-            // Add all the "before" parameter drivers of each transition
-            for (ParameterDriver driver : transition.getBefore().getDragParametersDrivers()) {
+        // Loop on the spans
+        for (Span<DragSensitive> span = getFirstSpan(); span != null; span = span.next()) {
+            // Add all the parameter drivers of the span
+            for (ParameterDriver driver : span.getData().getDragParametersDrivers()) {
                 // Add the driver only if the name does not exist already
                 if (!findByName(listParameterDrivers, driver.getName())) {
                     listParameterDrivers.add(driver);
                 }
-            }
-        }
-        // Finally, add the "after" parameter drivers of the last transition
-        for (ParameterDriver driver : dragSensitiveTransitions.last().getAfter().getDragParametersDrivers()) {
-            // Adds only if the name does not exist already
-            if (!findByName(listParameterDrivers, driver.getName())) {
-                listParameterDrivers.add(driver);
             }
         }
 

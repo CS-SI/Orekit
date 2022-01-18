@@ -383,7 +383,7 @@ public class AttitudesSequence implements AttitudeProvider {
             // reset the transition parameters (this will be done once for each switch,
             //  despite doing it only once would have sufficient; its not really a problem)
             forward = t.durationFrom(s0.getDate()) >= 0.0;
-            if (activated.getTransitions().size() > 1) {
+            if (activated.getTransitionsNumber() > 0) {
                 // remove transitions that will be overridden during upcoming propagation
                 if (forward) {
                     activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate().shiftedBy(transitionTime));

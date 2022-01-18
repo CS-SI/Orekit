@@ -681,7 +681,7 @@ public class ClockFileParserTest {
         final AbsoluteDate endDate2 = new AbsoluteDate(1994, 7, 14, 21, 59, 0.0, gps);
         
         // Check number of time spans
-        Assert.assertEquals(1, referenceClocksMap.getTransitions().size());
+        Assert.assertEquals(1, referenceClocksMap.getTransitionsNumber());
         
         // Get the two lists of reference clocks
         final List<ReferenceClock> referenceClocks1 = referenceClocksMap.get(new AbsoluteDate(1994, 7, 14, 15, 0, 0.0, gps));

@@ -89,6 +89,14 @@ public class TimeSpanMap<T> {
 
     }
 
+    /** Get the number of transitions.
+     * @return number of transitions
+     * @since 11.1
+     */
+    public int getTransitionsNumber() {
+        return hasSingleDummyTransition() ? 0 : data.size();
+    }
+
     /** Check if the map has a single dummy transition.
      * @return true if the transition has a single dummy transition
      * @since 11.1
@@ -374,7 +382,10 @@ public class TimeSpanMap<T> {
 
     /** Get an unmodifiable view of the sorted transitions.
      * @return unmodifiable view of the sorted transitions
+     * @deprecated as of 11.1, replaced by {@link #getFirstSpan()}, {@link #getLastSpan()},
+     * {@link #getFirstTransition()}, {@link #getLastTransition()}, and {@link #getTransitionsNumber()}
      */
+    @Deprecated
     public NavigableSet<Transition<T>> getTransitions() {
         return Collections.unmodifiableNavigableSet(data);
     }

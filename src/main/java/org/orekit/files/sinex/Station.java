@@ -118,7 +118,7 @@ public class Station {
      */
     public AbsoluteDate getValidFrom() {
         if (validFrom == null) {
-            validFrom = eccentricitiesTimeSpanMap.getTransitions().first().getDate();
+            validFrom = eccentricitiesTimeSpanMap.getFirstTransition().getDate();
         }
         return validFrom;
     }
@@ -137,7 +137,7 @@ public class Station {
      */
     public AbsoluteDate getValidUntil() {
         if (validUntil == null) {
-            validUntil = eccentricitiesTimeSpanMap.getTransitions().last().getDate();
+            validUntil = eccentricitiesTimeSpanMap.getLastTransition().getDate();
         }
         return validUntil;
     }
