@@ -173,7 +173,7 @@ public class TimeSpanMapTest {
     @Test
     public void testExtractRangeInfinity() {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
-        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));        
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
         map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0), false);
         map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0), false);
         map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0), false);
@@ -186,7 +186,7 @@ public class TimeSpanMapTest {
     @Test
     public void testExtractRangeSingleEntry() {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
-        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));        
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
         map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0), false);
         map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0), false);
         map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0), false);
@@ -201,7 +201,7 @@ public class TimeSpanMapTest {
     @Test
     public void testExtractFromPastInfinity() {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
-        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));        
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
         map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0), false);
         map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0), false);
         map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0), false);
@@ -224,7 +224,7 @@ public class TimeSpanMapTest {
     @Test
     public void testExtractToFutureInfinity() {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
-        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));        
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
         map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0), false);
         map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0), false);
         map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0), false);
@@ -245,7 +245,7 @@ public class TimeSpanMapTest {
     @Test
     public void testExtractIntermediate() {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
-        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));        
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
         map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0), false);
         map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0), false);
         map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0), false);
@@ -259,6 +259,54 @@ public class TimeSpanMapTest {
         Assert.assertEquals( 5, range.get(ref.shiftedBy(  8.9)).intValue());
         Assert.assertEquals( 5, range.get(ref.shiftedBy(  9.1)).intValue());
         Assert.assertEquals( 5, range.get(ref.shiftedBy(999.9)).intValue());
+    }
+
+    @Test
+    public void testSpanToTransitionLinkEmpty() {
+        TimeSpanMap.Span<Integer> span = new TimeSpanMap<>(1).getSpan(AbsoluteDate.ARBITRARY_EPOCH);
+        Assert.assertEquals(1, span.getData().intValue());
+        Assert.assertSame(AbsoluteDate.PAST_INFINITY, span.getStart());
+        Assert.assertNull(span.getStartTransition());
+        Assert.assertSame(AbsoluteDate.FUTURE_INFINITY, span.getEnd());
+        Assert.assertNull(span.getEndTransition());
+    }
+
+    @Test
+    public void testSpanToTransitionLink() {
+        final AbsoluteDate ref = AbsoluteDate.ARBITRARY_EPOCH;
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0), false);
+        map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0), false);
+        map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0), false);
+        map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0), false);
+        map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
+
+        TimeSpanMap.Span<Integer> first = map.getSpan(ref.shiftedBy(-99.0));
+        Assert.assertEquals(0, first.getData().intValue());
+        Assert.assertSame(AbsoluteDate.PAST_INFINITY, first.getStart());
+        Assert.assertNull(first.getStartTransition());
+        Assert.assertEquals(2.0, first.getEnd().durationFrom(ref), 1.0e-15);
+        Assert.assertNotNull(first.getEndTransition());
+
+        TimeSpanMap.Span<Integer> middle = map.getSpan(ref.shiftedBy(6.0));
+        Assert.assertEquals(5, middle.getData().intValue());
+        Assert.assertEquals(5.0, middle.getStart().durationFrom(ref), 1.0e-15);
+        Assert.assertNotNull(middle.getStartTransition());
+        Assert.assertEquals(9.0, middle.getEnd().durationFrom(ref), 1.0e-15);
+        Assert.assertNotNull(middle.getEndTransition());
+        Assert.assertSame(middle.getStartTransition().getAfter(), middle.getEndTransition().getBefore());
+        Assert.assertEquals(3, middle.getStartTransition().getBefore().intValue());
+        Assert.assertEquals(5, middle.getStartTransition().getAfter().intValue());
+        Assert.assertEquals(5, middle.getEndTransition().getBefore().intValue());
+        Assert.assertEquals(9, middle.getEndTransition().getAfter().intValue());
+
+        TimeSpanMap.Span<Integer> last = map.getSpan(ref.shiftedBy(+99.0));
+        Assert.assertEquals(10, last.getData().intValue());
+        Assert.assertEquals(10.0, last.getStart().durationFrom(ref), 1.0e-15);
+        Assert.assertNotNull(last.getStartTransition());
+        Assert.assertSame(AbsoluteDate.FUTURE_INFINITY, last.getEnd());
+        Assert.assertNull(last.getEndTransition());
+
     }
 
     @Before

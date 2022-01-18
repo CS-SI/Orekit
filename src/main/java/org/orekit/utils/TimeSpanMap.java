@@ -268,18 +268,23 @@ public class TimeSpanMap<T> {
      * @since 9.3
      */
     public Span<T> getSpan(final AbsoluteDate date) {
+
+        if (data.size() == 1) {
+            final Transition<T> single = data.first();
+            if (single.getBefore() == single.getAfter()) {
+                // the single entry was a dummy one, without a real transition
+                return new Span<>(single.getBefore(), null, null);
+            }
+        }
+
         final Transition<T> previous = data.floor(new Transition<>(date, null, null));
         if (previous == null) {
             // there are no transition before the specified date
             // return the first valid entry
-            return new Span<>(data.first().getBefore(),
-                              AbsoluteDate.PAST_INFINITY,
-                              data.first().getDate());
+            return new Span<>(data.first().getBefore(), null, data.first());
         } else {
             final Transition<T> next = data.higher(previous);
-            return new Span<>(previous.getAfter(),
-                              previous.getDate(),
-                              next == null ? AbsoluteDate.FUTURE_INFINITY : next.getDate());
+            return new Span<>(previous.getAfter(), previous, next == null ? null : next);
         }
     }
 
@@ -426,18 +431,18 @@ public class TimeSpanMap<T> {
         /** Valid data. */
         private final S data;
 
-        /** Start of validity for the data. */
-        private final AbsoluteDate start;
+        /** Start of validity for the data (null if span extends to past infinity). */
+        private Transition<S> start;
 
-        /** End of validity for the data. */
-        private final AbsoluteDate end;
+        /** End of validity for the data (null if span extends to future infinity). */
+        private Transition<S> end;
 
         /** Simple constructor.
          * @param data valid data
-         * @param start start of validity for the data
-         * @param end end of validity for the data
+         * @param start transition at start of validity for the data (null if span extends to past infinity)
+         * @param end transition at end of validity for the data (null if span extends to future infinity)
          */
-        private Span(final S data, final AbsoluteDate start, final AbsoluteDate end) {
+        private Span(final S data, final Transition<S> start, final Transition<S> end) {
             this.data  = data;
             this.start = start;
             this.end   = end;
@@ -451,16 +456,38 @@ public class TimeSpanMap<T> {
         }
 
         /** Get the start of this time span.
-         * @return start of this time span
+         * @return start of this time span (will be {@link AbsoluteDate#PAST_INFINITY}
+         * if {@link #getStartTransition() returns null)
+         * @see #getStartTransition()
          */
         public AbsoluteDate getStart() {
+            return start == null ? AbsoluteDate.PAST_INFINITY : start.getDate();
+        }
+
+        /** Get the transition at start of this time span.
+         * @return transition at start of this time span (null if span extends to past infinity)
+         * @see #getStart()
+         * @since 11.1
+         */
+        public Transition<S> getStartTransition() {
             return start;
         }
 
         /** Get the end of this time span.
-         * @return end of this time span
+         * @return end of this time span (will be {@link AbsoluteDate#FUTURE_INFINITY}
+         * if {@link #getEndTransition() returns null)
+         * @see #getEndTransition()
          */
         public AbsoluteDate getEnd() {
+            return end == null ? AbsoluteDate.FUTURE_INFINITY : end.getDate();
+        }
+
+        /** Get the transition at end of this time span.
+         * @return transition at end of this time span (null if span extends to future infinity)
+         * @see #getEnd()
+         * @since 11.1
+         */
+        public Transition<S> getEndTransition() {
             return end;
         }
 
