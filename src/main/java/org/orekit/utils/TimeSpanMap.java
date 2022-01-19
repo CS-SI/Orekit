@@ -16,7 +16,6 @@
  */
 package org.orekit.utils;
 
-import java.util.Collections;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.function.Consumer;
@@ -59,14 +58,20 @@ import org.orekit.time.TimeStamped;
  * detectors to carve out some parts. This is akin to the way Binary Space Partitioning
  * Trees work.
  * </p>
+ * <p>
+ * Since 11.1, this class is thread-safe
+ * </p>
  * @param <T> Type of the data.
  * @author Luc Maisonobe
  * @since 7.1
  */
 public class TimeSpanMap<T> {
 
-    /** Container for the data. */
-    private final NavigableSet<Transition<T>> data;
+    /** Reference to last accessed data. */
+    private Span<T> current;
+
+    /** Number of time spans. */
+    private int nbSpans;
 
     /** Create a map containing a single object, initially valid throughout the timeline.
      * <p>
@@ -78,33 +83,20 @@ public class TimeSpanMap<T> {
      * @param entry entry (initially valid throughout the timeline)
      */
     public TimeSpanMap(final T entry) {
-
-        // prepare a single dummy transition
-        final Transition<T> dummy = new Transition<>(AbsoluteDate.ARBITRARY_EPOCH);
-        final Span<T>       span   = new Span<>(entry);
-        dummy.before = span; // don't call dummy.setBefore(span) to preserve span.start == null
-        dummy.after  = span; // don't call dummy.setAfter(span) to preserve span.end == null
-
-        data = new TreeSet<>(new ChronologicalComparator());
-        data.add(dummy);
-
+        current = new Span<>(entry);
+        nbSpans = 1;
     }
 
-    /** Get the number of transitions.
-     * @return number of transitions
+    /** Get the number of spans.
+     * <p>
+     * The number of spans is always at least 1. The number of transitions
+     * is always 1 less than the number of spans.
+     * </p>
+     * @return number of spans
      * @since 11.1
      */
-    public int getTransitionsNumber() {
-        return hasSingleDummyTransition() ? 0 : data.size();
-    }
-
-    /** Check if the map has a single dummy transition.
-     * @return true if the transition has a single dummy transition
-     * @since 11.1
-     */
-    boolean hasSingleDummyTransition() {
-        return data.size() == 1 &&
-               data.first().getSpanBefore().getData() == data.first().getSpanAfter().getData();
+    public synchronized int getSpansNumber() {
+        return nbSpans;
     }
 
     /** Add an entry valid before a limit date.
@@ -149,49 +141,50 @@ public class TimeSpanMap<T> {
      * that are earlier than {@code latestValidityDate}
      * @since 11.1
      */
-    public void addValidBefore(final T entry, final AbsoluteDate latestValidityDate, final boolean erasesEarlier) {
+    public synchronized void addValidBefore(final T entry, final AbsoluteDate latestValidityDate, final boolean erasesEarlier) {
+
+        // update current reference to transition date
+        locate(latestValidityDate);
+
+        if (erasesEarlier) {
+
+            // drop everything before date
+            current.start = null;
+
+            // update count
+            nbSpans = 0;
+            for (Span<T> span = current; span != null; span = span.next()) {
+                ++nbSpans;
+            }
+
+        }
 
         final Span<T> span = new Span<>(entry);
 
-        if (hasSingleDummyTransition()) {
-            // change the single dummy transition into a real transition
-            final Transition<T> single = data.first();
-            single.date = latestValidityDate;
-            single.setBefore(span);
-            single.setAfter(single.getSpanAfter()); // just for resetting single.after.start to non-null
-            return;
-        }
-
-        final Transition<T> current = new Transition<>(latestValidityDate);
-        current.setBefore(span);
-
-        final Transition<T> previous = data.floor(current);
-        if (previous == null) {
-            // the new transition will be the first one
-            current.setAfter(data.first().getSpanBefore());
-            data.add(current);
-        } else if (previous.getDate().equals(latestValidityDate)) {
-            // we already have a transition at the exact same date
+        final Transition<T> start = current.getStartTransition();
+        if (start != null && start.getDate().equals(latestValidityDate)) {
+            // the transition at start of the current span is at the exact same date
             // we update it, without adding a new transition
-            final Transition<T> effectivePrevious = previous.getSpanBefore().getStartTransition();
-            if (effectivePrevious != null) {
-                effectivePrevious.setAfter(span);
+            if (start.previous() != null) {
+                start.previous().setAfter(span);
             }
-            previous.setBefore(span); // remember here previous is not really previous, it's current
-            return;
+            start.setBefore(span);
         } else {
-            current.setAfter(previous.getSpanAfter());
-            if (erasesEarlier) {
-                // remove all transitions up to and including previous
-                while (data.pollFirst() != previous) {
-                    // empty
-                }
-            } else {
-                // the new transition will be after the previous one
-                previous.setAfter(span);
+
+            if (current.getStartTransition() != null) {
+                current.getStartTransition().setAfter(span);
             }
-            data.add(current);
+
+            // we need to add a new transition somewhere inside the current span
+            final Transition<T> transition = new Transition<>(latestValidityDate);
+            transition.setBefore(span);
+            transition.setAfter(current);
+            ++nbSpans;
+
         }
+
+        // we consider the last added transition as the new current one
+        current = span;
 
     }
 
@@ -237,112 +230,145 @@ public class TimeSpanMap<T> {
      * that are later than {@code earliestValidityDate}
      * @since 11.1
      */
-    public void addValidAfter(final T entry, final AbsoluteDate earliestValidityDate, final boolean erasesLater) {
+    public synchronized void addValidAfter(final T entry, final AbsoluteDate earliestValidityDate, final boolean erasesLater) {
+
+        // update current reference to transition date
+        locate(earliestValidityDate);
+
+        if (erasesLater) {
+
+            // drop everything after date
+            current.end = null;
+
+            // update count
+            nbSpans = 0;
+            for (Span<T> span = current; span != null; span = span.previous()) {
+                ++nbSpans;
+            }
+
+        }
 
         final Span<T> span = new Span<>(entry);
-
-        if (hasSingleDummyTransition()) {
-            // change the single dummy transition into a real transition
-            final Transition<T> single = data.first();
-            single.date = earliestValidityDate;
-            single.setBefore(single.getSpanBefore()); // just for resetting single.before.end to non-null
-            single.setAfter(span);
-            return;
+        if (current.getEndTransition() != null) {
+            current.getEndTransition().setBefore(span);
         }
 
-        final Transition<T> current = new Transition<>(earliestValidityDate);
-        current.setAfter(span);
-
-        final Transition<T> next = data.ceiling(current);
-        if (next == null) {
-            // the new transition will be the last one
-            current.setBefore(data.last().getSpanAfter());
-            data.add(current);
-        } else if (next.getDate().equals(earliestValidityDate)) {
-            // we already have a transition at the exact same date
+        final Transition<T> start = current.getStartTransition();
+        if (start != null && start.getDate().equals(earliestValidityDate)) {
+            // the transition at start of the current span is at the exact same date
             // we update it, without adding a new transition
-            final Transition<T> effectiveNext = next.getSpanAfter().getEndTransition();
-            if (effectiveNext != null) {
-                effectiveNext.setBefore(span);
-            }
-            next.setAfter(span); // remember here next is not really next, it's current
-            return;
+            start.setAfter(span);
         } else {
-            current.setBefore(next.getSpanBefore());
-            if (erasesLater) {
-                // remove all transitions down to and including next
-                while (data.pollLast() != next) {
-                    // empty
-                }
-            } else {
-                // the new transition will be before the next one
-                next.setBefore(span);
-            }
-            data.add(current);
+            // we need to add a new transition somewhere inside the current span
+            final Transition<T> transition = new Transition<>(earliestValidityDate);
+            transition.setBefore(current);
+            transition.setAfter(span);
+            ++nbSpans;
         }
+
+        // we consider the last added transition as the new current one
+        current = span;
 
     }
 
     /** Get the entry valid at a specified date.
+     * <p>
+     * The expected complexity is O(1) for successive calls with
+     * neighboring dates, which is the more frequent use in propagation
+     * or orbit determination applications, and O(n) for random calls.
+     * </p>
      * @param date date at which the entry must be valid
      * @return valid entry at specified date
+     * @see #getSpan(AbsoluteDate)
      */
-    public T get(final AbsoluteDate date) {
+    public synchronized T get(final AbsoluteDate date) {
         return getSpan(date).getData();
     }
 
     /** Get the time span containing a specified date.
+     * <p>
+     * The expected complexity is O(1) for successive calls with
+     * neighboring dates, which is the more frequent use in propagation
+     * or orbit determination applications, and O(n) for random calls.
+     * </p>
      * @param date date belonging to the desired time span
      * @return time span containing the specified date
      * @since 9.3
      */
-    public Span<T> getSpan(final AbsoluteDate date) {
+    public synchronized Span<T> getSpan(final AbsoluteDate date) {
+        locate(date);
+        return current;
+    }
 
-        if (hasSingleDummyTransition()) {
-            // both spans before and after the dummy transition are the same
-            return data.first().getSpanBefore();
+    /** Locate the time span containing a specified date.
+     * <p>
+     * The {@link current} field is updated to the located span.
+     * After the method returns, {@code current.getStart()} is either
+     * null or its date is before or equal to date, and {@code
+     * current.getEnd()} is either null or its date is after date.
+     * </p>
+     * @param date date belonging to the desired time span
+     */
+    private synchronized void locate(final AbsoluteDate date) {
+
+        while (current.getStart().isAfter(date)) {
+            // current span is too late
+            current = current.previous();
         }
 
-        final Transition<T> previous = data.floor(new Transition<>(date));
-        if (previous == null) {
-            // there are no transition before the specified date
-            // return the first valid entry
-            return data.first().getSpanBefore();
-        } else {
-            return previous.getSpanAfter();
+        while (current.getEnd().isBeforeOrEqualTo(date)) {
+
+            final Span<T> next = current.next();
+            if (next == null) {
+                // this happens when date is FUTURE_INFINITY
+                return;
+            }
+
+            // current span is too early
+            current = next;
+
         }
+
     }
 
     /** Get the first (earliest) transition.
      * @return first (earliest) transition, or null if there are no transitions
      * @since 11.1
      */
-    public Transition<T> getFirstTransition() {
-        return hasSingleDummyTransition() ? null : data.first();
+    public synchronized Transition<T> getFirstTransition() {
+        return getFirstSpan().getEndTransition();
     }
 
     /** Get the last (latest) transition.
      * @return last (latest) transition, or null if there are no transitions
      * @since 11.1
      */
-    public Transition<T> getLastTransition() {
-        return hasSingleDummyTransition() ? null : data.last();
+    public synchronized Transition<T> getLastTransition() {
+        return getLastSpan().getStartTransition();
     }
 
     /** Get the first (earliest) span.
      * @return first (earliest) span
      * @since 11.1
      */
-    public Span<T> getFirstSpan() {
-        return data.first().getSpanBefore();
+    public synchronized Span<T> getFirstSpan() {
+        Span<T> span = current;
+        while (span.getStartTransition() != null) {
+            span = span.previous();
+        }
+        return span;
     }
 
     /** Get the last (latest) span.
      * @return last (latest) span
      * @since 11.1
      */
-    public Span<T> getLastSpan() {
-        return data.last().getSpanAfter();
+    public synchronized Span<T> getLastSpan() {
+        Span<T> span = current;
+        while (span.getEndTransition() != null) {
+            span = span.next();
+        }
+        return span;
     }
 
     /** Extract a range of the map.
@@ -367,54 +393,45 @@ public class TimeSpanMap<T> {
      * @return a new instance with all transitions restricted to the specified range
      * @since 9.2
      */
-    public TimeSpanMap<T> extractRange(final AbsoluteDate start, final AbsoluteDate end) {
+    public synchronized TimeSpanMap<T> extractRange(final AbsoluteDate start, final AbsoluteDate end) {
 
-        final NavigableSet<Transition<T>> inRange =
-                        data.subSet(new Transition<>(start), true, new Transition<>(end), true);
-        if (inRange.isEmpty()) {
-            // there are no transitions at all in the range
-            // we need to pick up the only valid object
-            return new TimeSpanMap<>(get(start));
-        }
-
-        final TimeSpanMap<T> range = new TimeSpanMap<>(inRange.first().before.getData());
-        for (final Transition<T> transition : inRange) {
-            range.addValidAfter(transition.after.getData(), transition.getDate(), false);
+        Span<T> span = getSpan(start);
+        final TimeSpanMap<T> range = new TimeSpanMap<>(span.getData());
+        while (span.getEndTransition() != null && span.getEndTransition().getDate().isBeforeOrEqualTo(end)) {
+            span = span.next();
+            range.addValidAfter(span.getData(), span.getStartTransition().getDate(), false);
         }
 
         return range;
 
     }
 
-    /** Get an unmodifiable view of the sorted transitions.
-     * @return unmodifiable view of the sorted transitions
+    /** Get copy of the sorted transitions.
+     * @return copy of the sorted transitions
      * @deprecated as of 11.1, replaced by {@link #getFirstSpan()}, {@link #getLastSpan()},
-     * {@link #getFirstTransition()}, {@link #getLastTransition()}, and {@link #getTransitionsNumber()}
+     * {@link #getFirstTransition()}, {@link #getLastTransition()}, and {@link #getSpansNumber()}
      */
     @Deprecated
-    public NavigableSet<Transition<T>> getTransitions() {
-        return Collections.unmodifiableNavigableSet(data);
+    public synchronized NavigableSet<Transition<T>> getTransitions() {
+        final NavigableSet<Transition<T>> set = new TreeSet<>(new ChronologicalComparator());
+        for (Transition<T> transition = getFirstTransition(); transition != null; transition = transition.next()) {
+            set.add(transition);
+        }
+        return set;
     }
 
     /**
-     * Performs an action for each element of map.
+     * Performs an action for each non-null element of map.
      * <p>
      * The action is performed chronologically.
      * </p>
-     * @param action action to perform on the elements
+     * @param action action to perform on the non-null elements
      * @since 10.3
      */
-    public void forEach(final Consumer<T> action) {
-        boolean first = true;
-        for (Transition<T> transition : data) {
-            if (first) {
-                if (transition.getBefore() != null) {
-                    action.accept(transition.getBefore());
-                }
-                first = false;
-            }
-            if (transition.getAfter() != null) {
-                action.accept(transition.getAfter());
+    public synchronized void forEach(final Consumer<T> action) {
+        for (Span<T> span = getFirstSpan(); span != null; span = span.next()) {
+            if (span.getData() != null) {
+                action.accept(span.getData());
             }
         }
     }
@@ -422,7 +439,7 @@ public class TimeSpanMap<T> {
     /** Class holding transition times.
      * <p>
      * This data type is dual to {@link Span}, it is
-     * focused one transition date, and gives access to
+     * focused on one transition date, and gives access to
      * surrounding valid data whereas {@link Span} is focused
      * on one valid data, and gives access to surrounding
      * transition dates.

@@ -239,7 +239,7 @@ public class SinexLoader {
                                     final Station station = getStation(parseString(line, 1, 4));
 
                                     // check if it is the first eccentricity entry for this station
-                                    if (station.getEccentricitiesTimeSpanMap().getTransitionsNumber() == 0) {
+                                    if (station.getEccentricitiesTimeSpanMap().getSpansNumber() == 1) {
                                         // we are parsing eccentricity data for a new station
                                         firstEcc = true;
                                     }
