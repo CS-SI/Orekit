@@ -19,7 +19,6 @@ package org.orekit.propagation.numerical;
 import java.util.Arrays;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -35,7 +34,6 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
@@ -46,7 +44,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
-import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -780,14 +777,6 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             return new Vector3D(accX, accY, accZ);
         }
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
-                                                        final DoubleArrayDictionary initialJacobianColumns) {
-        // FIXME: not implemented as of 11.1
-        throw new UnsupportedOperationException();
     }
 
 }

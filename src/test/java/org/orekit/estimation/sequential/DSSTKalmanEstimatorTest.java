@@ -30,11 +30,11 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.DSSTRangeMeasurementCreator;
-import org.orekit.estimation.measurements.DSSTRangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
+import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
@@ -146,7 +146,7 @@ public class DSSTKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
@@ -225,7 +225,7 @@ public class DSSTKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
                                                                1.0, 3.0, 300.0);
 
         // Add antenna offset to the measurements
@@ -306,12 +306,12 @@ public class DSSTKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurementsRange =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, false, 3.2e-10),
+                                                               new RangeRateMeasurementCreator(context, false, 3.2e-10),
                                                                1.0, 3.0, 300.0);
 
         // Concatenate measurements
@@ -355,9 +355,9 @@ public class DSSTKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 6.21e-3; // With numerical propagator: 1.2e-6;
+        final double   posEps            = 9.93e-8; // With numerical propagator: 1.2e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.15e-6; // With numerical propagator: 4.2e-10;
+        final double   velEps            = 4.13e-11; // With numerical propagator: 4.2e-10;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -388,7 +388,7 @@ public class DSSTKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         // Build the Kalman filter
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();

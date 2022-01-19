@@ -340,6 +340,23 @@ public class GPSPropagatorTest {
     }
 
     @Test
+    public void testStmAndJacobian() {
+        // Builds the GPSPropagator from the almanac
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).
+                        attitudeProvider(Utils.defaultLaw()).
+                        mass(1521.0).
+                        eci(FramesFactory.getEME2000()).
+                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                        build();
+        try {
+            propagator.setupMatricesComputation("stm", null, null);
+            Assert.fail("an exception should have been thrown");
+        } catch (UnsupportedOperationException uoe) {
+            // expected
+        }
+    }
+
+    @Test
     public void testIssue544() {
         // Builds the GPSPropagator from the almanac
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
