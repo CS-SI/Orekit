@@ -21,7 +21,7 @@ import java.util.List;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
-import org.orekit.estimation.leastsquares.AnalyticalBatchLSModel;
+import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.AbstractKalmanModel;
@@ -214,7 +214,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                              final List<ObservedMeasurement<?>> measurements,
                                              final ParameterDriversList estimatedMeasurementsParameters,
                                              final ModelObserver observer) {
-        return new AnalyticalBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     /** {@inheritDoc} */
