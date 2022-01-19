@@ -133,7 +133,7 @@ public class AntexLoader {
                         satellitesAntennas.
                         stream().
                         filter(m -> {
-                            final SatelliteAntenna first = m.getTransitions().first().getBefore();
+                            final SatelliteAntenna first = m.getFirstSpan().getData();
                             return first.getSatelliteSystem() == satelliteSystem &&
                                    first.getPrnNumber() == prnNumber;
                         }).findFirst();
