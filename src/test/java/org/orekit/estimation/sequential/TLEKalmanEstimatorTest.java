@@ -33,8 +33,8 @@ import org.orekit.estimation.TLEEstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TLERangeMeasurementCreator;
-import org.orekit.estimation.measurements.TLERangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
@@ -144,7 +144,7 @@ public class TLEKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
@@ -214,7 +214,7 @@ public class TLEKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
                                                                1.0, 3.0, 300.0);
 
         // Add antenna offset to the measurements
@@ -285,12 +285,12 @@ public class TLEKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurementsRange =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // Concatenate measurements
@@ -327,9 +327,9 @@ public class TLEKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 0.48; // With numerical propagator: 1.2e-6;
+        final double   posEps            = 0.45; // With numerical propagator: 1.2e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.95e-4; // With numerical propagator: 4.2e-10;
+        final double   velEps            = 1.86e-4; // With numerical propagator: 4.2e-10;
         TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -359,7 +359,7 @@ public class TLEKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         // Build the Kalman filter
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
