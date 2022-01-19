@@ -48,15 +48,16 @@ import org.orekit.time.TimeStamped;
  * <p>
  * Time span maps are built progressively. At first, they contain one
  * {@link Span time span} only whose validity extends from past infinity to
- * future infinity. Then new entries are added, associated with transition dates,
- * in order to build up the complete map. The transition dates can be either the start
- * of validity (when calling {@link #addValidAfter(Object, AbsoluteDate, boolean)}),
- * or the end of the validity (when calling {#link {@link #addValidBefore(Object,
- * AbsoluteDate, boolean)}). Entries are often added at one end only (and mainly
- * in chronological order), but this is not required. It is possible for example
- * to first set up a map that cover a large range (say one day), and then to insert
- * intermediate dates using for example propagation and event detectors to carve out
- * some parts. This is akin to the way Binary Space Partitioning Trees work.
+ * future infinity. Then new entries are added one at a time, associated with
+ * transition dates, in order to build up the complete map. The transition dates
+ * can be either the start of validity (when calling {@link #addValidAfter(Object,
+ * AbsoluteDate, boolean)}), or the end of the validity (when calling {@link
+ * #addValidBefore(Object, AbsoluteDate, boolean)}). Entries are often added at one
+ * end only (and mainly in chronological order), but this is not required. It is
+ * possible for example to first set up a map that cover a large range (say one day),
+ * and then to insert intermediate dates using for example propagation and event
+ * detectors to carve out some parts. This is akin to the way Binary Space Partitioning
+ * Trees work.
  * </p>
  * @param <T> Type of the data.
  * @author Luc Maisonobe
@@ -102,7 +103,8 @@ public class TimeSpanMap<T> {
      * @since 11.1
      */
     boolean hasSingleDummyTransition() {
-        return data.size() == 1 && data.first().getSpanBefore() == data.first().getSpanAfter();
+        return data.size() == 1 &&
+               data.first().getSpanBefore().getData() == data.first().getSpanAfter().getData();
     }
 
     /** Add an entry valid before a limit date.
@@ -112,7 +114,6 @@ public class TimeSpanMap<T> {
      * </p>
      * @param entry entry to add
      * @param latestValidityDate date before which the entry is valid
-     * (must be different from <em>all</em> dates already used for transitions)
      * @deprecated as of 11.1, replaced by {@link #addValidBefore(Object, AbsoluteDate, boolean)}
      */
     @Deprecated
@@ -124,12 +125,6 @@ public class TimeSpanMap<T> {
      * <p>
      * As an entry is valid, it truncates or overrides the validity of the neighboring
      * entries already present in the map.
-     * </p>
-     * <p>
-     * The transition dates should be entered only once, either
-     * by a call to this method or by a call to {@link #addValidAfter(Object,
-     * AbsoluteDate, boolean)}. Repeating a transition date will lead to unexpected
-     * result and is not supported.
      * </p>
      * <p>
      * If the map already contains transitions that occur earlier than {@code latestValidityDate},
@@ -150,7 +145,6 @@ public class TimeSpanMap<T> {
      * </p>
      * @param entry entry to add
      * @param latestValidityDate date before which the entry is valid
-     * (must be different from <em>all</em> dates already used for transitions)
      * @param erasesEarlier if true, the entry erases all existing transitions
      * that are earlier than {@code latestValidityDate}
      * @since 11.1
@@ -175,6 +169,16 @@ public class TimeSpanMap<T> {
         if (previous == null) {
             // the new transition will be the first one
             current.setAfter(data.first().getSpanBefore());
+            data.add(current);
+        } else if (previous.getDate().equals(latestValidityDate)) {
+            // we already have a transition at the exact same date
+            // we update it, without adding a new transition
+            final Transition<T> effectivePrevious = previous.getSpanBefore().getStartTransition();
+            if (effectivePrevious != null) {
+                effectivePrevious.setAfter(span);
+            }
+            previous.setBefore(span); // remember here previous is not really previous, it's current
+            return;
         } else {
             current.setAfter(previous.getSpanAfter());
             if (erasesEarlier) {
@@ -186,8 +190,8 @@ public class TimeSpanMap<T> {
                 // the new transition will be after the previous one
                 previous.setAfter(span);
             }
+            data.add(current);
         }
-        data.add(current);
 
     }
 
@@ -198,7 +202,6 @@ public class TimeSpanMap<T> {
      * </p>
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid
-     * (must be different from <em>all</em> dates already used for transitions)
      * @deprecated as of 11.1, replaced by {@link #addValidAfter(Object, AbsoluteDate, boolean)}
      */
     @Deprecated
@@ -210,12 +213,6 @@ public class TimeSpanMap<T> {
      * <p>
      * As an entry is valid, it truncates or overrides the validity of the neighboring
      * entries already present in the map.
-     * </p>
-     * <p>
-     * The transition dates should be entered only once, either
-     * by a call to this method or by a call to {@link #addValidBefore(Object,
-     * AbsoluteDate, boolean)}. Repeating a transition date will lead to unexpected
-     * result and is not supported.
      * </p>
      * <p>
      * If the map already contains transitions that occur earlier than {@code earliestValidityDate},
@@ -236,7 +233,6 @@ public class TimeSpanMap<T> {
      * </p>
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid
-     * (must be different from <em>all</em> dates already used for transitions)
      * @param erasesLater if true, the entry erases all existing transitions
      * that are later than {@code earliestValidityDate}
      * @since 11.1
@@ -261,6 +257,16 @@ public class TimeSpanMap<T> {
         if (next == null) {
             // the new transition will be the last one
             current.setBefore(data.last().getSpanAfter());
+            data.add(current);
+        } else if (next.getDate().equals(earliestValidityDate)) {
+            // we already have a transition at the exact same date
+            // we update it, without adding a new transition
+            final Transition<T> effectiveNext = next.getSpanAfter().getEndTransition();
+            if (effectiveNext != null) {
+                effectiveNext.setBefore(span);
+            }
+            next.setAfter(span); // remember here next is not really next, it's current
+            return;
         } else {
             current.setBefore(next.getSpanBefore());
             if (erasesLater) {
@@ -272,8 +278,8 @@ public class TimeSpanMap<T> {
                 // the new transition will be before the next one
                 next.setBefore(span);
             }
+            data.add(current);
         }
-        data.add(current);
 
     }
 

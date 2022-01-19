@@ -436,6 +436,74 @@ public class TimeSpanMapTest {
 
     }
 
+    @Test
+    public void testDuplicatedBeforeAfterAtEnd() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        map.addValidBefore(-1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        map.addValidAfter(+1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        Assert.assertEquals(1, map.getTransitionsNumber());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
+        Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
+    }
+
+    @Test
+    public void testDuplicatedBeforeAfterMiddle() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        map.addValidBefore(-2, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-2), false);
+        map.addValidAfter(+2, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+2), false);
+        map.addValidBefore(-1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        map.addValidAfter(+1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        Assert.assertEquals(3, map.getTransitionsNumber());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
+        Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
+    }
+
+    @Test
+    public void testDuplicatedBeforeBefore() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        map.addValidBefore(-2, AbsoluteDate.ARBITRARY_EPOCH, false); // first call at ARBITRARY_EPOCH
+        map.addValidAfter(0, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-2), false);
+        map.addValidBefore(-1, AbsoluteDate.ARBITRARY_EPOCH, false); // second call at ARBITRARY_EPOCH
+        Assert.assertEquals(2, map.getTransitionsNumber());
+        Assert.assertEquals(-2, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-10)).intValue());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
+        Assert.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)));
+    }
+
+    @Test
+    public void testDuplicatedAfterBeforeAtEnd() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        map.addValidAfter(+1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        map.addValidBefore(-1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        Assert.assertEquals(1, map.getTransitionsNumber());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
+        Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
+    }
+
+    @Test
+    public void testDuplicatedAfterBeforeMiddle() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        map.addValidBefore(-2, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-2), false);
+        map.addValidAfter(+2, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+2), false);
+        map.addValidAfter(+1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        map.addValidBefore(-1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        Assert.assertEquals(3, map.getTransitionsNumber());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
+        Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
+    }
+
+    @Test
+    public void testDuplicatedAfterAfter() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        map.addValidAfter(+2, AbsoluteDate.ARBITRARY_EPOCH, false); // first call at ARBITRARY_EPOCH
+        map.addValidBefore(0, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+2), false);
+        map.addValidAfter(+1, AbsoluteDate.ARBITRARY_EPOCH, false); // second call at ARBITRARY_EPOCH
+        Assert.assertEquals(2, map.getTransitionsNumber());
+        Assert.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)));
+        Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
+        Assert.assertEquals(+2, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+10)).intValue());
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
