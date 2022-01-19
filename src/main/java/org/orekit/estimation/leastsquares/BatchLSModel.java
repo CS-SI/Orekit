@@ -56,7 +56,7 @@ public class BatchLSModel extends AbstractBatchLSModel {
     /** {@inheritDoc} */
     @Override
     protected MatricesHarvester configureHarvester(final Propagator propagator) {
-        return ((NumericalPropagator) propagator).setupMatricesComputation(STM_NAME, null, null);
+        return propagator.setupMatricesComputation(STM_NAME, null, null);
     }
 
     /** {@inheritDoc} */

@@ -36,6 +36,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
@@ -172,9 +173,6 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     // CHECKSTYLE: resume VisibilityModifier check
 
-    /** Harvester for State Transition Matrix and Jacobian matrix. */
-    private TLEHarvester harvester;
-
     /** TLE frame. */
     private final Frame teme;
 
@@ -214,7 +212,6 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         this.teme      = teme;
         this.mass      = mass;
         this.utc       = initialTLE.getUtc();
-        this.harvester = null;
 
         initializeCommons();
         sxpInitialize();
@@ -595,13 +592,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     @Override
-    public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
-                                                      final DoubleArrayDictionary initialJacobianColumns) {
-        if (stmName == null) {
-            throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
-        }
-        harvester = new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
-        return harvester;
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        return new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
     }
 
     /**

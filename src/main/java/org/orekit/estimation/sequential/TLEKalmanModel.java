@@ -37,7 +37,9 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @author Thomas Paulet
  * @since 11.0
+ * @deprecated as of 11.1, replaced by {@link KalmanModel}
  */
+@Deprecated
 public class TLEKalmanModel extends AbstractKalmanModel {
 
     /** Kalman process model constructor (package private).

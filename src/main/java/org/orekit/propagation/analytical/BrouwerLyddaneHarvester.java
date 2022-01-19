@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.analytical.tle;
+package org.orekit.propagation.analytical;
 
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
-import org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester;
 import org.orekit.utils.DoubleArrayDictionary;
 
-/** Harvester between two-dimensional Jacobian matrices and
- * one-dimensional {@link TLEPropagator}.
- * @author Thomas Paulet
+/**
+ * Harvester between two-dimensional Jacobian matrices and
+ * one-dimensional {@link BrouwerLyddanePropagator}.
+ *
  * @author Bryan Cazabonne
  * @since 11.1
  */
-class TLEHarvester extends AbstractAnalyticalMatricesHarvester {
+class BrouwerLyddaneHarvester extends AbstractAnalyticalMatricesHarvester {
 
     /** Propagator bound to this harvester. */
-    private final TLEPropagator propagator;
+    private final BrouwerLyddanePropagator propagator;
 
     /** Simple constructor.
      * <p>
@@ -46,8 +45,8 @@ class TLEHarvester extends AbstractAnalyticalMatricesHarvester {
      * if null or if some selected parameters are missing from the dictionary, the corresponding
      * initial column is assumed to be 0
      */
-    TLEHarvester(final TLEPropagator propagator, final String stmName,
-                 final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
+    BrouwerLyddaneHarvester(final BrouwerLyddanePropagator propagator, final String stmName,
+                            final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
         super(propagator, stmName, initialStm, initialJacobianColumns);
         this.propagator = propagator;
     }
@@ -55,7 +54,7 @@ class TLEHarvester extends AbstractAnalyticalMatricesHarvester {
     /** {@inheritDoc} */
     @Override
     public AbstractAnalyticalGradientConverter getGradientConverter() {
-        return new TLEGradientConverter(propagator);
+        return new BrouwerLyddaneGradientConverter(propagator);
     }
 
 }
