@@ -466,10 +466,9 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
 
         // Get all transitions
         final List<AbsoluteDate> listDates = new ArrayList<>();
-        final NavigableSet<Transition<DragSensitive>> dragSensitiveTransitions =  getTransitions();
 
         // Extract all the transitions' dates
-        for (Transition<DragSensitive> transition : dragSensitiveTransitions) {
+        for (Transition<DragSensitive> transition = getFirstSpan().getEndTransition(); transition != null; transition = transition.next()) {
             listDates.add(transition.getDate());
         }
         // Return the array of transition dates
