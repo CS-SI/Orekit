@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Queue;
 
 import org.hipparchus.exception.MathRuntimeException;
-import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ExpandableODE;
 import org.hipparchus.ode.ODEIntegrator;
@@ -49,11 +48,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
-import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -111,9 +108,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     private PropagationType propagationType;
 
-    /** Harvester for State Transition Matrix and Jacobian matrix. */
-    private AbstractMatricesHarvester harvester;
-
     /** Build a new instance.
      * @param integrator numerical integrator to use for propagation.
      * @param propagationType type of orbit to output (mean or osculating).
@@ -126,7 +120,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         this.integrator                = integrator;
         this.propagationType           = propagationType;
         this.resetAtEnd                = true;
-        this.harvester                 = null;
     }
 
     /** Allow/disallow resetting the initial state at end of propagation.
@@ -311,37 +304,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     public List<AdditionalDerivativesProvider> getAdditionalDerivativesProviders() {
         return Collections.unmodifiableList(additionalDerivativesProviders);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
-                                                      final DoubleArrayDictionary initialJacobianColumns) {
-        if (stmName == null) {
-            throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
-        }
-        harvester = createHarvester(stmName, initialStm, initialJacobianColumns);
-        return harvester;
-    }
-
-    /** Create the harvester suitable for propagator.
-     * @param stmName State Transition Matrix state name
-     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
-     * if null (which is the most frequent case), assumed to be 6x6 identity
-     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
-     * if null or if some selected parameters are missing from the dictionary, the corresponding
-     * initial column is assumed to be 0
-     * @return harvester to retrieve computed matrices during and after propagation
-     * @since 11.1
-     */
-    protected abstract AbstractMatricesHarvester createHarvester(String stmName, RealMatrix initialStm,
-                                                                 DoubleArrayDictionary initialJacobianColumns);
-
-    /** Get the harvester.
-     * @return harvester, or null if it was not created
-     */
-    protected AbstractMatricesHarvester getHarvester() {
-        return harvester;
     }
 
     /** {@inheritDoc} */

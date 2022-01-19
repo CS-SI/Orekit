@@ -31,10 +31,11 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.TLEContext;
 import org.orekit.estimation.TLEEstimationTestUtils;
 import org.orekit.estimation.measurements.EstimationsProvider;
+import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.TLERangeMeasurementCreator;
-import org.orekit.estimation.measurements.TLERangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -156,7 +157,7 @@ public class TLEBatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -246,7 +247,7 @@ public class TLEBatchLSEstimatorTest {
                                                                                propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -309,11 +310,16 @@ public class TLEBatchLSEstimatorTest {
 
         final List<ObservedMeasurement<?>> measurementsRange =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
         // concat measurements
@@ -332,11 +338,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        TLEEstimationTestUtils.checkFit(context, estimator, 3, 6,
-                                     0.0, 0.26,
-                                     0.0, 0.52,
-                                     0.0, 4.42e-4,
-                                     0.0, 1.48e-7);
+        TLEEstimationTestUtils.checkFit(context, estimator, 4, 5,
+                                     0.0, 5.2e-6,
+                                     0.0, 3.3e-5,
+                                     0.0, 6.1e-6,
+                                     0.0, 2.5e-9);
     }
 
 }

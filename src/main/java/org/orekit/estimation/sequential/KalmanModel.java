@@ -23,7 +23,6 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.numerical.JacobiansMapper;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriversList;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
@@ -63,7 +62,7 @@ public class KalmanModel extends AbstractKalmanModel {
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
             final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
-            harvesters[k] = ((NumericalPropagator) getReferenceTrajectories()[k]).setupMatricesComputation(equationName, null, null);
+            harvesters[k] = getReferenceTrajectories()[k].setupMatricesComputation(equationName, null, null);
         }
 
         // Update Jacobian harvesters
