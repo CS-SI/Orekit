@@ -321,8 +321,6 @@ public class BrouwerLyddaneEstimationTestUtils {
             Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
 
             for (int i = 0; i < 3; i++) {
-                System.out.println(sigmas[i]);
-                System.out.println(sigmas[i+3]);
                 Assert.assertEquals(expectedSigmasPos[k][i], sigmas[i],   sigmaPosEps[k]);
                 Assert.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);
             }
