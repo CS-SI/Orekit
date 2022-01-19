@@ -570,7 +570,7 @@ public class RinexClock {
     public void addReferenceClockList(final List<ReferenceClock> referenceClockList,
                                       final AbsoluteDate startDate) {
         if (referenceClocks == null) {
-            referenceClocks = new TimeSpanMap<List<ReferenceClock>>(referenceClockList);
+            referenceClocks = new TimeSpanMap<>(null);
         }
         referenceClocks.addValidAfter(referenceClockList, startDate, false);
     }
