@@ -16,12 +16,14 @@
  */
 package org.orekit.propagation.analytical;
 
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -190,6 +192,13 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     /** {@inheritDoc}*/
     protected double getMass(final AbsoluteDate date) {
         return states.get(date).getMass();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        return new KeplerianHarvester(this, stmName, initialStm, initialJacobianColumns);
     }
 
 }

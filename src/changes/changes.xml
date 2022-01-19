@@ -33,7 +33,7 @@
       </action>
       <action dev="bryan" type="add">
         Added a new and simpler API for State Transition Matrix and Jacobian
-        matrix computation for TLEPropagator.
+        matrix computation for analytical orbit propagators.
       </action>
       <action dev="bryan" type="fix" issue="878">
         Fixed writing of ITRF frames before 2000 when generating CCSDS files.

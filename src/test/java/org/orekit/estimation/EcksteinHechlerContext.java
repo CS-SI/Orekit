@@ -25,44 +25,36 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.radiation.RadiationSensitive;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
-import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class Context implements StationDataProvider {
-    public IERSConventions                      conventions;
-    public OneAxisEllipsoid                     earth;
-    public CelestialBody                        sun;
-    public CelestialBody                        moon;
-    public RadiationSensitive                   radiationSensitive;
-    public DragSensitive                        dragSensitive;
-    public NormalizedSphericalHarmonicsProvider gravity;
-    public TimeScale                            utc;
-    public UT1Scale                             ut1;
-    public Orbit                                initialOrbit;
-    public StationDisplacement[]                displacements;
-    public List<GroundStation>                  stations;
+public class EcksteinHechlerContext implements StationDataProvider {
+
+    public IERSConventions                        conventions;
+    public OneAxisEllipsoid                       earth;
+    public CelestialBody                          sun;
+    public CelestialBody                          moon;
+    public UnnormalizedSphericalHarmonicsProvider gravity;
+    public TimeScale                              utc;
+    public UT1Scale                               ut1;
+    public Orbit                                  initialOrbit;
+    public StationDisplacement[]                  displacements;
+    public List<GroundStation>                    stations;
     // Stations for turn-around range
     // Map entry = primary station
     // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
 
-    public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
-                                                    final boolean perfectStart,
-                                                    final double minStep, final double maxStep, final double dP,
-                                                    final Force... forces) {
+    public EcksteinHechlerPropagatorBuilder createBuilder(final PositionAngle angleType, final boolean perfectStart, final double dP) {
 
         final Orbit startOrbit;
         if (perfectStart) {
@@ -79,14 +71,12 @@ public class Context implements StationDataProvider {
                                                                 initialOrbit.getDate(),
                                                                 initialOrbit.getMu());
         }
-        final NumericalPropagatorBuilder propagatorBuilder =
-                        new NumericalPropagatorBuilder(orbitType.convertType(startOrbit),
-                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       positionAngle, dP);
-        for (Force force : forces) {
-            propagatorBuilder.addForceModel(force.getForceModel(this));
-        }
 
+        // Initialize builder
+        final EcksteinHechlerPropagatorBuilder propagatorBuilder =
+                        new EcksteinHechlerPropagatorBuilder(startOrbit, gravity, angleType, dP);
+
+        // Return
         return propagatorBuilder;
 
     }

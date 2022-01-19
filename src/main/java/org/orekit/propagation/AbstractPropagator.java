@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -62,12 +63,16 @@ public abstract class AbstractPropagator implements Propagator {
     /** Initial state. */
     private SpacecraftState initialState;
 
+    /** Harvester for State Transition Matrix and Jacobian matrix. */
+    private AbstractMatricesHarvester harvester;
+
     /** Build a new instance.
      */
     protected AbstractPropagator() {
-        multiplexer        = new StepHandlerMultiplexer();
+        multiplexer              = new StepHandlerMultiplexer();
         additionalStateProviders = new ArrayList<>();
-        unmanagedStates    = new HashMap<>();
+        unmanagedStates          = new HashMap<>();
+        harvester                = null;
     }
 
     /** Set a start date.
@@ -135,6 +140,41 @@ public abstract class AbstractPropagator implements Propagator {
     @Override
     public List<AdditionalStateProvider> getAdditionalStateProviders() {
         return Collections.unmodifiableList(additionalStateProviders);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
+                                                      final DoubleArrayDictionary initialJacobianColumns) {
+        if (stmName == null) {
+            throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
+        }
+        harvester = createHarvester(stmName, initialStm, initialJacobianColumns);
+        return harvester;
+    }
+
+    /** Create the harvester suitable for propagator.
+     * @param stmName State Transition Matrix state name
+     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
+     * if null (which is the most frequent case), assumed to be 6x6 identity
+     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
+     * if null or if some selected parameters are missing from the dictionary, the corresponding
+     * initial column is assumed to be 0
+     * @return harvester to retrieve computed matrices during and after propagation
+     * @since 11.1
+     */
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        // FIXME: not implemented as of 11.1
+        throw new UnsupportedOperationException();
+    }
+
+    /** Get the harvester.
+     * @return harvester, or null if it was not created
+     * @since 11.1
+     */
+    protected AbstractMatricesHarvester getHarvester() {
+        return harvester;
     }
 
     /** Update state by adding unmanaged states.

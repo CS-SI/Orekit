@@ -156,19 +156,6 @@ public class KeplerianPropagatorTest {
     }
 
     @Test
-    public void testStmAndJacobian() {
-        AbsoluteDate initDate = AbsoluteDate.GPS_EPOCH;
-        Orbit ic = new KeplerianOrbit(6378137 + 500e3, 1e-3, 0, 0, 0, 0, PositionAngle.TRUE, FramesFactory.getGCRF(), initDate, mu);
-        Propagator propagator = new KeplerianPropagator(ic);
-        try {
-            propagator.setupMatricesComputation("stm", null, null);
-            Assert.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uoe) {
-            // expected
-        }
-    }
-
-    @Test
     public void sameDateCartesian() {
 
         // Definition of initial conditions with position and velocity

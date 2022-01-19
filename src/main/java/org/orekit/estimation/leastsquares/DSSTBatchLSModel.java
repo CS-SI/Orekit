@@ -75,7 +75,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
     /** {@inheritDoc} */
     @Override
     protected MatricesHarvester configureHarvester(final Propagator propagator) {
-        return ((DSSTPropagator) propagator).setupMatricesComputation(STM_NAME, null, null);
+        return propagator.setupMatricesComputation(STM_NAME, null, null);
     }
 
     /** {@inheritDoc} */
