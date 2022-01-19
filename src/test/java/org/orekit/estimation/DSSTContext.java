@@ -39,7 +39,7 @@ import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class DSSTContext {
+public class DSSTContext implements StationDataProvider {
 
     public IERSConventions                        conventions;
     public OneAxisEllipsoid                       earth;
@@ -108,6 +108,11 @@ public class DSSTContext {
                                                    altitude);
         return new GroundStation(new TopocentricFrame(earth, gp, name),
                                  ut1.getEOPHistory(), displacements);
+    }
+
+    @Override
+    public List<GroundStation> getStations() {
+        return stations;
     }
 
 }
