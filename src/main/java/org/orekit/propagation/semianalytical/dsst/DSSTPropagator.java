@@ -379,8 +379,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
         if (stmGenerator == null) {
             // this is the first time we need the STM generate, create it
-            stmGenerator = new DSSTStateTransitionMatrixGenerator(harvester.getStmName(), getPropagationType(),
-                                                                  getAllForceModels(), getAttitudeProvider());
+            stmGenerator = new DSSTStateTransitionMatrixGenerator(harvester.getStmName(),
+                                                                  getAllForceModels(),
+                                                                  getAttitudeProvider());
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
@@ -697,6 +698,24 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         return mapper.getSatelliteRevolution();
     }
 
+    /** Override the default value short periodic terms.
+    *  <p>
+    *  By default, short periodic terms are initialized before
+    *  the numerical integration of the mean orbital elements.
+    *  </p>
+    *  @param shortPeriodTerms short periodic terms
+    */
+    public void setShortPeriodTerms(final List<ShortPeriodTerms> shortPeriodTerms) {
+        mapper.setShortPeriodTerms(shortPeriodTerms);
+    }
+
+   /** Get the short periodic terms.
+    *  @return the short periodic terms
+    */
+    public List<ShortPeriodTerms> getShortPeriodTerms() {
+        return mapper.getShortPeriodTerms();
+    }
+
     /** {@inheritDoc} */
     @Override
     public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
@@ -926,6 +945,25 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         return mapper;
 
     }
+
+
+    /** Get the short period terms value.
+     * @param meanState the mean state
+     * @return shortPeriodTerms short period terms
+     * @since 7.1
+     */
+    public double[] getShortPeriodTermsValue(final SpacecraftState meanState) {
+        final double[] sptValue = new double[6];
+
+        for (ShortPeriodTerms spt : mapper.getShortPeriodTerms()) {
+            final double[] shortPeriodic = spt.value(meanState.getOrbit());
+            for (int i = 0; i < shortPeriodic.length; i++) {
+                sptValue[i] += shortPeriodic[i];
+            }
+        }
+        return sptValue;
+    }
+
 
     /** Internal mapper using mean parameters plus short periodic terms. */
     private static class MeanPlusShortPeriodicMapper extends StateMapper {
