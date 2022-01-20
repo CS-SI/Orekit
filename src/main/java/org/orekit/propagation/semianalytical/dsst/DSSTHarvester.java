@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -35,9 +36,10 @@ import org.orekit.utils.ParameterDriver;
 /** Harvester between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
  * @author Luc Maisonobe
+ * @author Bryan Cazabonne
  * @since 11.1
  */
-class DSSTHarvester extends AbstractMatricesHarvester {
+public class DSSTHarvester extends AbstractMatricesHarvester {
 
     /** Retrograde factor I.
      *  <p>
@@ -66,6 +68,9 @@ class DSSTHarvester extends AbstractMatricesHarvester {
     /** Columns names for parameters. */
     private List<String> columnsNames;
 
+    /** Field short periodic terms. */
+    private List<FieldShortPeriodTerms<Gradient>> fieldShortPeriodTerms;
+
     /** Simple constructor.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the
@@ -86,6 +91,7 @@ class DSSTHarvester extends AbstractMatricesHarvester {
         this.propagator                            = propagator;
         this.shortPeriodDerivativesStm             = new double[STATE_DIMENSION][STATE_DIMENSION];
         this.shortPeriodDerivativesJacobianColumns = new DoubleArrayDictionary();
+        this.fieldShortPeriodTerms                 = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
@@ -129,6 +135,80 @@ class DSSTHarvester extends AbstractMatricesHarvester {
 
     }
 
+    /** Get the Jacobian matrix B1 (B1 = ∂εη/∂Y).
+     * <p>
+     * B1 represents the partial derivatives of the short period motion
+     * with respect to the mean equinoctial elements.
+     * </p>
+     * @return the B1 jacobian matrix
+     */
+    public RealMatrix getB1() {
+
+        // Initialize B1
+        final RealMatrix B1 = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
+
+        // add the short period terms
+        for (int i = 0; i < STATE_DIMENSION; i++) {
+            for (int j = 0; j < STATE_DIMENSION; j++) {
+                B1.addToEntry(i, j, shortPeriodDerivativesStm[i][j]);
+            }
+        }
+
+        // Return B1
+        return B1;
+
+    }
+
+    /** Get the Jacobian matrix B2 (B2 = ∂Y/∂Y₀).
+     * <p>
+     * B2 represents the partial derivatives of the mean equinoctial elements
+     * with respect to the initial ones.
+     * </p>
+     * @param state spacecraft state
+     * @return the B2 jacobian matrix
+     */
+    public RealMatrix getB2(final SpacecraftState state) {
+        return super.getStateTransitionMatrix(state);
+    }
+
+    /** Get the Jacobian matrix B3 (B3 = ∂Y/∂P).
+     * <p>
+     * B3 represents the partial derivatives of the mean equinoctial elements
+     * with respect to the estimated propagation parameters.
+     * </p>
+     * @param state spacecraft state
+     * @return the B3 jacobian matrix
+     */
+    public RealMatrix getB3(final SpacecraftState state) {
+        return super.getParametersJacobian(state);
+    }
+
+    /** Get the Jacobian matrix B4 (B4 = ∂εη/∂c).
+     * <p>
+     * B4 represents the partial derivatives of the short period motion
+     * with respect to the estimated propagation parameters.
+     * </p>
+     * @return the B4 jacobian matrix
+     */
+    public RealMatrix getB4() {
+
+        // Initialize B4
+        final List<String> names = getJacobiansColumnsNames();
+        final RealMatrix B4 = MatrixUtils.createRealMatrix(STATE_DIMENSION, names.size());
+
+        // add the short period terms
+        for (int j = 0; j < names.size(); ++j) {
+            final double[] column = shortPeriodDerivativesJacobianColumns.get(names.get(j));
+            for (int i = 0; i < STATE_DIMENSION; i++) {
+                B4.addToEntry(i, j, column[i]);
+            }
+        }
+
+        // Return B4
+        return B4;
+
+    }
+
     /** Freeze the names of the Jacobian columns.
      * <p>
      * This method is called when proagation starts, i.e. when configuration is completed
@@ -144,20 +224,61 @@ class DSSTHarvester extends AbstractMatricesHarvester {
         return columnsNames == null ? propagator.getJacobiansColumnsNames() : columnsNames;
     }
 
-    /** {@inheritDoc} */
+    /** Initialize the short periodic terms for the "field" elements.
+     * @param reference current mean spacecraft state
+     */
+    public void initializeFieldShortPeriodTerms(final SpacecraftState reference) {
+
+        // Converter
+        final DSSTGradientConverter converter = new DSSTGradientConverter(reference, propagator.getAttitudeProvider());
+
+        // Loop on force models
+        for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
+
+            // Convert to Gradient
+            final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+            final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
+            final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
+
+            // Initialize the "Field" short periodic terms in OSCULATING mode
+            fieldShortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, dsParameters));
+
+        }
+
+    }
+
+    /** Update the short periodic terms for the "field" elements.
+     * @param reference current mean spacecraft state
+     */
     @SuppressWarnings("unchecked")
+    public void updateFieldShortPeriodTerms(final SpacecraftState reference) {
+
+        // Converter
+        final DSSTGradientConverter converter = new DSSTGradientConverter(reference, propagator.getAttitudeProvider());
+
+        // Loop on force models
+        for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
+
+            // Convert to Gradient
+            final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+            final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
+
+            // Update the short periodic terms for the current force model
+            forceModel.updateShortPeriodTerms(dsParameters, dsState);
+
+        }
+
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void setReferenceState(final SpacecraftState reference) {
-
-        if (propagator.getPropagationType() == PropagationType.MEAN) {
-            // nothing to do
-            return;
-        }
 
         // reset derivatives to zero
         for (final double[] row : shortPeriodDerivativesStm) {
             Arrays.fill(row, 0.0);
         }
+
         shortPeriodDerivativesJacobianColumns.clear();
 
         final DSSTGradientConverter converter = new DSSTGradientConverter(reference, propagator.getAttitudeProvider());
@@ -166,16 +287,10 @@ class DSSTHarvester extends AbstractMatricesHarvester {
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
-            final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
-
             final Gradient zero = dsState.getDate().getField().getZero();
-            final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-            shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(auxiliaryElements, propagator.getPropagationType(), dsParameters));
-            forceModel.updateShortPeriodTerms(dsParameters, dsState);
             final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
-            for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
+            for (final FieldShortPeriodTerms<Gradient> spt : fieldShortPeriodTerms) {
                 final Gradient[] spVariation = spt.value(dsState.getOrbit());
                 for (int i = 0; i < spVariation .length; i++) {
                     shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
