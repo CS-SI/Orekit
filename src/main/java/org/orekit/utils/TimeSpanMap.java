@@ -124,6 +124,7 @@ public class TimeSpanMap<T> {
      * the time span [tₖ ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
      * {@code latestValidityDate} prior to the call to the method (i.e. tₖ &lt;
      * {@code latestValidityDate} &lt; tₖ₊₁).
+     * </p>
      * <ul>
      *  <li>if {@code erasesEarlier} is {@code true}, then all earlier transitions
      *      up to and including tₖ are erased, and the {@code entry} will be valid from past infinity
@@ -132,8 +133,9 @@ public class TimeSpanMap<T> {
      *      are preserved, and the {@code entry} will be valid from tₖ
      *      to {@code latestValidityDate}</li>
      *  </ul>
-     *  In both cases, the existing entry eₖ time span will be truncated and will be valid
-     *  only from {@code latestValidityDate} to tₖ₊₁.
+     * <p>
+     * In both cases, the existing entry eₖ time span will be truncated and will be valid
+     * only from {@code latestValidityDate} to tₖ₊₁.
      * </p>
      * @param entry entry to add
      * @param latestValidityDate date before which the entry is valid
@@ -210,6 +212,7 @@ public class TimeSpanMap<T> {
      * the time span [tₖ ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
      * {@code earliestValidityDate} prior to the call to the method (i.e. tₖ &lt;
      * {@code earliestValidityDate} &lt; tₖ₊₁).
+     * </p>
      * <ul>
      *  <li>if {@code erasesEarlier} is {@code true}, then all earlier transitions
      *      up to and including tₖ are erased, and the {@code entry} will be valid from past infinity
@@ -218,8 +221,9 @@ public class TimeSpanMap<T> {
      *      are preserved, and the {@code entry} will be valid from tₖ
      *      to {@code earliestValidityDate}</li>
      *  </ul>
-     *  In both cases, the existing entry eₖ time span will be truncated and will be valid
-     *  only from {@code earliestValidityDate} to tₖ₊₁.
+     * <p>
+     * In both cases, the existing entry eₖ time span will be truncated and will be valid
+     * only from {@code earliestValidityDate} to tₖ₊₁.
      * </p>
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid
@@ -647,7 +651,7 @@ public class TimeSpanMap<T> {
 
         /** Get the start of this time span.
          * @return start of this time span (will be {@link AbsoluteDate#PAST_INFINITY}
-         * if {@link #getStartTransition() returns null)
+         * if {@link #getStartTransition()} returns null)
          * @see #getStartTransition()
          */
         public AbsoluteDate getStart() {
@@ -665,7 +669,7 @@ public class TimeSpanMap<T> {
 
         /** Get the end of this time span.
          * @return end of this time span (will be {@link AbsoluteDate#FUTURE_INFINITY}
-         * if {@link #getEndTransition() returns null)
+         * if {@link #getEndTransition()} returns null)
          * @see #getEndTransition()
          */
         public AbsoluteDate getEnd() {
