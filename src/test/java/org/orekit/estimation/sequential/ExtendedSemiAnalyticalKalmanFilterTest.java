@@ -71,7 +71,12 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-
+/**
+ * Validation against real data of the ESKF. This test is a short version of the one presented in:
+ * "Cazabonne B., Bayard J., Journot M., and Cefola P. J., A Semi-analytical Approach for Orbit
+ *  Determination based on Extended Kalman Filter, AAS Paper 21-614, AAS/AIAA Astrodynamics
+ *  Specialist Conference, Big Sky, August 2021."
+ */
 public class ExtendedSemiAnalyticalKalmanFilterTest {
 
 	/** Print. */
