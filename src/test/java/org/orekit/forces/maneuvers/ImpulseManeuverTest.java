@@ -59,7 +59,7 @@ public class ImpulseManeuverTest {
     @Test
     public void testInclinationManeuver() {
         final Orbit initialOrbit =
-            new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
+            new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0 + 4 * FastMath.PI,
                                PositionAngle.MEAN, FramesFactory.getEME2000(),
                                new AbsoluteDate(new DateComponents(2008, 06, 23),
                                                 new TimeComponents(14, 18, 37),
@@ -77,6 +77,7 @@ public class ImpulseManeuverTest {
                                                                       new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));
         Assert.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
+        Assert.assertEquals(0.442476 + 6 * FastMath.PI, ((KeplerianOrbit) propagated.getOrbit()).getLv(), 1.0e-6);
     }
 
     @Test

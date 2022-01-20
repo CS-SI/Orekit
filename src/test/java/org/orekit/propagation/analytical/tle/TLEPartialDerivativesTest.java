@@ -41,6 +41,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+@Deprecated
 public class TLEPartialDerivativesTest {
     
     

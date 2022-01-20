@@ -37,6 +37,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 11.0
  */
+@Deprecated
 public class TLEPartialDerivativesEquations {
 
     /** Propagator computing state evolution. */

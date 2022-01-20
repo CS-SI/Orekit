@@ -21,6 +21,30 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="bryan" type="add">
+        Added a new and simpler API for State Transition Matrix and Jacobian
+        matrix computation for analytical orbit propagators.
+      </action>
+      <action dev="bryan" type="fix" issue="878">
+        Fixed writing of ITRF frames before 2000 when generating CCSDS files.
+      </action>
+      <action dev="luc" type="fix" issue="836">
+        Use the orbit normalization feature to reduce discontinuities across impulsive maneuvers.
+      </action>
+      <action dev="luc" type="add">
+        Added an orbit normalization feature.
+      </action>
+      <action dev="evan" type="add" issue="881">
+        Add AbsoluteDate.toStringWithoutUtcOffset(TimeScale, int) and
+        DateTimeComponents.toStringWithoutUtcOffset(int, int) to emulate
+        AbsoluteDate.toString() from Orekit 10.
+      </action>
+      <action dev="evan" type="fix" issue="880">
+        Fix UTC offset in DateTimeComponents.toString(int, int)
+      </action>
+      <action dev="luc" type="fix" issue="849">
+        Added detector to FieldEventHandler.init arguments list.
+      </action>
       <action dev="luc" type="fix" issue="837">
         Added getters for raw detectors in event shifter, slope filter and predicate filter.
       </action>

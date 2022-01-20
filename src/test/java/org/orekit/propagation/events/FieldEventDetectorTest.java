@@ -70,8 +70,7 @@ public class FieldEventDetectorTest {
         doTestEventHandlerInit(Decimal64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field)
-            {
+    private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field) {
 
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -101,8 +100,9 @@ public class FieldEventDetectorTest {
             }
 
             @Override
-            public void init(FieldSpacecraftState<T> initialState,
-                             FieldAbsoluteDate<T> target) {
+            public void init(final FieldSpacecraftState<T> initialState,
+                             final FieldAbsoluteDate<T> target,
+                             final FieldDateDetector<T> detector) {
                 initCalled = true;
             }
         };

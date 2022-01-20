@@ -741,6 +741,15 @@ public class CartesianOrbitTest {
 
     }
 
+    @Test
+    public void testNormalize() {
+        final Vector3D position = new Vector3D(42164140, 0, 0);
+        final PVCoordinates pv  = new PVCoordinates(position,
+                                       new Vector3D(0, FastMath.sqrt(mu / position.getNorm()), 0));
+        final Orbit orbit = new CartesianOrbit(pv, FramesFactory.getEME2000(), date, mu);
+        Assert.assertSame(orbit, orbit.getType().normalize(orbit, null));
+    }
+
     @Before
     public void setUp() {
 

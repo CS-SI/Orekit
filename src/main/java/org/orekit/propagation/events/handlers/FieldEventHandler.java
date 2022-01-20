@@ -49,11 +49,33 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends C
      * </p>
      * @param initialState initial state
      * @param target target date for the propagation
-     *
+     * @deprecated as of 11.1, replaced by {@link #init(FieldSpacecraftState, FieldAbsoluteDate, FieldEventDetector)}
+     */
+    default void init(final FieldSpacecraftState<T> initialState,
+                      final FieldAbsoluteDate<T> target) {
+        // nothing by default
+    }
+
+    /** Initialize event handler at the start of a propagation.
+     * <p>
+     * This method is called once at the start of the propagation. It
+     * may be used by the event handler to initialize some internal data
+     * if needed.
+     * </p>
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param initialState initial state
+     * @param target target date for the propagation
+     * @param detector event detector related to the event handler
+     * @since 11.1
      */
     default void init(FieldSpacecraftState<T> initialState,
-                      FieldAbsoluteDate<T> target) {
-        // nothing by default
+                      FieldAbsoluteDate<T> target,
+                      final KK detector) {
+        // TODO remove the default implementation in 12.0
+        //       when init(initialState, target) is removed
+        init(initialState, target);
     }
 
     /**

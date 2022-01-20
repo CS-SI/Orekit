@@ -36,6 +36,7 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventState;
@@ -376,6 +377,15 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
         }
+    }
+
+    /**
+     * Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
+     * @return names of the parameters (i.e. columns) of the Jacobian matrix
+     * @since 11.1
+     */
+    protected List<String> getJacobiansColumnsNames() {
+        return Collections.emptyList();
     }
 
     /** Internal PVCoordinatesProvider for attitude computation. */
