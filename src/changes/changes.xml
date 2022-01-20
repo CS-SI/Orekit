@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="julie,bryan,maxime" type="add" issue="823">
+        Added the Extended Semi-analytical Kalman Filter.
+      </action>
       <action dev="luc" type="fix" issue="875">
         Allow empty comments in CCSDS messages
       </action>

@@ -43,6 +43,7 @@ class PickUpHandler implements OrekitStepHandler, DSSTStateTransitionMatrixGener
                          final String accParamName, final String columnName) {
         this.propagator   = propagator;
         this.harvester    = propagator.setupMatricesComputation("stm", null, null);
+        initializeShortPeriod();
         this.pickUpDate   = pickUpDate;
         this.accParamName = accParamName;
         this.columnName   = columnName;
@@ -110,6 +111,15 @@ class PickUpHandler implements OrekitStepHandler, DSSTStateTransitionMatrixGener
         dYdY0 = harvester.getStateTransitionMatrix(state);
         dYdP  = harvester.getParametersJacobian(state); // may be null
         s0    = state;
+    }
+
+
+    private void initializeShortPeriod() {
+        // Mean orbit
+        final SpacecraftState initial = propagator.initialIsOsculating() ?
+                       DSSTPropagator.computeMeanState(propagator.getInitialState(), propagator.getAttitudeProvider(), propagator.getAllForceModels()) :
+                    	   propagator.getInitialState();
+        ((DSSTHarvester) harvester).initializeFieldShortPeriodTerms(initial); // Initial state is MEAN
     }
 
 }

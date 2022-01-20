@@ -25,6 +25,7 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.semianalytical.dsst.DSSTHarvester;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
@@ -100,10 +101,17 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
     protected Orbit configureOrbits(final MatricesHarvester harvester, final Propagator propagator) {
         // Cast
         final DSSTPropagator dsstPropagator = (DSSTPropagator) propagator;
+        final DSSTHarvester  dsstHarvester  = (DSSTHarvester) harvester;
         // Mean orbit
         final SpacecraftState initial = dsstPropagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(dsstPropagator.getInitialState(), dsstPropagator.getAttitudeProvider(), dsstPropagator.getAllForceModels()) :
                        dsstPropagator.getInitialState();
+        dsstHarvester.initializeFieldShortPeriodTerms(initial);
+        // Compute short period derivatives at the beginning of the iteration
+        if (propagationType == PropagationType.OSCULATING) {
+            dsstHarvester.updateFieldShortPeriodTerms(initial);
+            dsstHarvester.setReferenceState(initial);
+        }
         // Compute short period derivatives at the beginning of the iteration
         harvester.setReferenceState(initial);
         return initial.getOrbit();
