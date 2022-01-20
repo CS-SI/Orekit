@@ -219,9 +219,9 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
             estimator = new OffsetEstimator(orbit, delta);
             delta     = estimator.delta(orbit);
             if (isForward()) {
-                offsetEstimators.addValidAfter(estimator, handover.getDate());
+                offsetEstimators.addValidAfter(estimator, handover.getDate(), false);
             } else {
-                offsetEstimators.addValidBefore(estimator, handover.getDate());
+                offsetEstimators.addValidBefore(estimator, handover.getDate(), false);
             }
 
         }

@@ -21,6 +21,16 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="884">
+        Deprecated TimeSpanMap.getTransitions()
+      </action>
+      <action dev="luc" type="fix" issue="885">
+        Allow to enter the same transition date in TimeSpanMap several times
+      </action>
+      <action dev="luc" type="fix" issue="833">
+        Added a way to erase all earlier/later transitions when adding an entry
+        and added addValidBetween to TimeSpanMap.
+      </action>
       <action dev="bryan" type="add">
         Added a new and simpler API for State Transition Matrix and Jacobian
         matrix computation for analytical orbit propagators.

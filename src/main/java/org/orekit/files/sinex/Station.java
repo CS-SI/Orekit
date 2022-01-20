@@ -118,7 +118,7 @@ public class Station {
      */
     public AbsoluteDate getValidFrom() {
         if (validFrom == null) {
-            validFrom = eccentricitiesTimeSpanMap.getTransitions().first().getDate();
+            validFrom = eccentricitiesTimeSpanMap.getFirstTransition().getDate();
         }
         return validFrom;
     }
@@ -137,7 +137,7 @@ public class Station {
      */
     public AbsoluteDate getValidUntil() {
         if (validUntil == null) {
-            validUntil = eccentricitiesTimeSpanMap.getTransitions().last().getDate();
+            validUntil = eccentricitiesTimeSpanMap.getLastTransition().getDate();
         }
         return validUntil;
     }
@@ -227,7 +227,7 @@ public class Station {
      * @since 11.1
      */
     public void addStationEccentricitiesValidBefore(final Vector3D entry, final AbsoluteDate latestValidityDate) {
-        eccentricitiesTimeSpanMap.addValidBefore(entry, latestValidityDate);
+        eccentricitiesTimeSpanMap.addValidBefore(entry, latestValidityDate, false);
     }
 
     /** Add a station eccentricity vector entry valid after a limit date.<br>
@@ -239,7 +239,7 @@ public class Station {
      * @since 11.1
      */
     public void addStationEccentricitiesValidAfter(final Vector3D entry, final AbsoluteDate earliestValidityDate) {
-        eccentricitiesTimeSpanMap.addValidAfter(entry, earliestValidityDate);
+        eccentricitiesTimeSpanMap.addValidAfter(entry, earliestValidityDate, false);
     }
 
     /**

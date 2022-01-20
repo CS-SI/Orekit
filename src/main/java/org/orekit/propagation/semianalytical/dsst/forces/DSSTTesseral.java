@@ -1735,12 +1735,12 @@ public class DSSTTesseral implements DSSTForceModel {
             final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
             final int compare = first.compareTo(last);
             if (compare < 0) {
-                slots.addValidAfter(slot, first);
+                slots.addValidAfter(slot, first, false);
             } else if (compare > 0) {
-                slots.addValidBefore(slot, first);
+                slots.addValidBefore(slot, first, false);
             } else {
                 // single date, valid for all time
-                slots.addValidAfter(slot, AbsoluteDate.PAST_INFINITY);
+                slots.addValidAfter(slot, AbsoluteDate.PAST_INFINITY, false);
             }
             return slot;
         }
