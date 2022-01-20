@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="875">
+        Allow empty comments in CCSDS messages
+      </action>
       <action dev="luc" type="fix" issue="884">
         Deprecated TimeSpanMap.getTransitions()
       </action>
