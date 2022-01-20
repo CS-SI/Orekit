@@ -854,4 +854,17 @@ public class OemParserTest {
         }
     }
 
+    @Test
+    public void testEmptyComments() {
+        final String name = "/ccsds/odm/oem/ISS.resampled.truncated.txt";
+        final ParserBuilder builder = new ParserBuilder();
+        final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final Oem iss = builder.buildOemParser().parseMessage(source);
+        Assert.assertEquals("1998-067-A", iss.getSegments().get(0).getMetadata().getObjectID());
+        Assert.assertEquals(23, iss.getSegments().get(0).getData().getComments().size());
+        Assert.assertEquals("", iss.getSegments().get(0).getData().getComments().get(13));
+        Assert.assertEquals("", iss.getSegments().get(0).getData().getComments().get(20));
+        Assert.assertEquals(25, iss.getSegments().get(0).getData().getCoordinates().size());
+    }
+
 }
