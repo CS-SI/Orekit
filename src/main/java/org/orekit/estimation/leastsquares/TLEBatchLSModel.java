@@ -31,15 +31,11 @@ import org.orekit.utils.ParameterDriversList;
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
  * org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem
  * least squares problems}.
- * <p>
- * This class is an adaption of the {@link BatchLSModel} class
- * but for the {@link TLEPropagator TLE propagator}.
- * </p>
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
  * @author Thomas Paulet
  * @since 11.0
- * @deprecated as of 11.1, replaced by {@link AnalyticalBatchLSModel}
+ * @deprecated as of 11.1, replaced by {@link BatchLSModel}
  */
 @Deprecated
 public class TLEBatchLSModel extends AbstractBatchLSModel {

@@ -73,7 +73,7 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends C
     default void init(FieldSpacecraftState<T> initialState,
                       FieldAbsoluteDate<T> target,
                       final KK detector) {
-        // TODO: remove the default implementation in 12.0
+        // TODO remove the default implementation in 12.0
         //       when init(initialState, target) is removed
         init(initialState, target);
     }
