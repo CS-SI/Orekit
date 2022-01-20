@@ -470,9 +470,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         final EHModel newModel = computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                        state.getMass());
         if (forward) {
-            models.addValidAfter(newModel, state.getDate());
+            models.addValidAfter(newModel, state.getDate(), false);
         } else {
-            models.addValidBefore(newModel, state.getDate());
+            models.addValidBefore(newModel, state.getDate(), false);
         }
         stateChanged(state);
     }

@@ -158,10 +158,10 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
             // store either status or its opposite according to propagation direction
             if (forward) {
                 // forward propagation
-                feasibility.addValidAfter(statusAfter, s.getDate());
+                feasibility.addValidAfter(statusAfter, s.getDate(), false);
             } else {
                 // backward propagation
-                feasibility.addValidBefore(!statusAfter, s.getDate());
+                feasibility.addValidBefore(!statusAfter, s.getDate(), false);
             }
 
             // delegate to wrapped detector
