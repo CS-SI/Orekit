@@ -29,7 +29,7 @@
       </action>
       <action dev="luc" type="fix" issue="833">
         Added a way to erase all earlier/later transitions when adding an entry
-        to a TimeSpanMap.
+        and added addValidBetween to TimeSpanMap.
       </action>
       <action dev="bryan" type="add">
         Added a new and simpler API for State Transition Matrix and Jacobian

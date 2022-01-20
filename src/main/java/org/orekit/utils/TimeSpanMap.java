@@ -176,10 +176,7 @@ public class TimeSpanMap<T> {
             }
 
             // we need to add a new transition somewhere inside the current span
-            final Transition<T> transition = new Transition<>(latestValidityDate);
-            transition.setBefore(span);
-            transition.setAfter(current);
-            ++nbSpans;
+            insertTransition(latestValidityDate, span, current);
 
         }
 
@@ -260,11 +257,56 @@ public class TimeSpanMap<T> {
             start.setAfter(span);
         } else {
             // we need to add a new transition somewhere inside the current span
-            final Transition<T> transition = new Transition<>(earliestValidityDate);
-            transition.setBefore(current);
-            transition.setAfter(span);
-            ++nbSpans;
+            insertTransition(earliestValidityDate, current, span);
         }
+
+        // we consider the last added transition as the new current one
+        current = span;
+
+    }
+
+    /** Add an entry valid between two limit dates.
+     * <p>
+     * As an entry is valid, it truncates or overrides the validity of the neighboring
+     * entries already present in the map.
+     * </p>
+     * @param entry entry to add
+     * @param earliestValidityDate date after which the entry is valid
+     * @param latestValidityDate date before which the entry is valid
+     * @since 11.1
+     */
+    public synchronized void addValidBetween(final T entry, final AbsoluteDate earliestValidityDate, final AbsoluteDate latestValidityDate) {
+
+        // locate spans at earliest and latest dates
+        locate(earliestValidityDate);
+        Span<T> latest = current;
+        while (latest.getEndTransition() != null && latest.getEnd().isBeforeOrEqualTo(latestValidityDate)) {
+            latest = latest.next();
+            --nbSpans;
+        }
+        if (latest == current) {
+            // the interval splits one transition in the middle, we need to duplicate the instance
+            latest = new Span<>(current.data);
+            if (current.getEndTransition() != null) {
+                current.getEndTransition().setBefore(latest);
+            }
+        }
+
+        final Span<T> span = new Span<>(entry);
+
+        // manage earliest transition
+        final Transition<T> start = current.getStartTransition();
+        if (start != null && start.getDate().equals(earliestValidityDate)) {
+            // the transition at start of the current span is at the exact same date
+            // we update it, without adding a new transition
+            start.setAfter(span);
+        } else {
+            // we need to add a new transition somewhere inside the current span
+            insertTransition(earliestValidityDate, current, span);
+        }
+
+        // manage latest transition
+        insertTransition(latestValidityDate, span, latest);
 
         // we consider the last added transition as the new current one
         current = span;
@@ -329,6 +371,19 @@ public class TimeSpanMap<T> {
 
         }
 
+    }
+
+    /** Insert a transition.
+     * @param date transition date
+     * @param before span before transition
+     * @param after span after transition
+     * @since 11.1
+     */
+    private void insertTransition(final AbsoluteDate date, final Span<T> before, final Span<T> after) {
+        final Transition<T> transition = new Transition<>(date);
+        transition.setBefore(before);
+        transition.setAfter(after);
+        ++nbSpans;
     }
 
     /** Get the first (earliest) transition.

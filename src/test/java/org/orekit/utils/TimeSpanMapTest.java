@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeSpanMap.Transition;
 
 public class TimeSpanMapTest {
@@ -32,6 +33,7 @@ public class TimeSpanMapTest {
     public void testSingleEntry() {
         String single = "single";
         TimeSpanMap<String> map = new TimeSpanMap<>(single);
+        checkCountConsistency(map);
         Assert.assertSame(single, map.get(AbsoluteDate.CCSDS_EPOCH));
         Assert.assertSame(single, map.get(AbsoluteDate.FIFTIES_EPOCH));
         Assert.assertSame(single, map.get(AbsoluteDate.FUTURE_INFINITY));
@@ -49,8 +51,10 @@ public class TimeSpanMapTest {
     public void testForwardAdd() {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
         TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        checkCountConsistency(map);
         for (int i = 1; i < 100; ++i) {
             map.addValidAfter(Integer.valueOf(i), ref.shiftedBy(i), false);
+            checkCountConsistency(map);
         }
         Assert.assertEquals(0, map.get(ref.shiftedBy(-1000.0)).intValue());
         Assert.assertEquals(0, map.get(ref.shiftedBy( -100.0)).intValue());
@@ -75,14 +79,17 @@ public class TimeSpanMapTest {
         }
         Assert.assertEquals(99, map.get(ref.shiftedBy(  100.0)).intValue());
         Assert.assertEquals(99, map.get(ref.shiftedBy( 1000.0)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
     public void testBackwardAdd() {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
         TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        checkCountConsistency(map);
         for (int i = -1; i > -100; --i) {
             map.addValidBefore(Integer.valueOf(i), ref.shiftedBy(i), false);
+            checkCountConsistency(map);
         }
         Assert.assertEquals(0, map.get(ref.shiftedBy( 1000.0)).intValue());
         Assert.assertEquals(0, map.get(ref.shiftedBy(  100.0)).intValue());
@@ -92,6 +99,7 @@ public class TimeSpanMapTest {
         }
         Assert.assertEquals(-99, map.get(ref.shiftedBy( -100.0)).intValue());
         Assert.assertEquals(-99, map.get(ref.shiftedBy(-1000.0)).intValue());
+        checkCountConsistency(map);
     }
 
     @Deprecated
@@ -164,6 +172,7 @@ public class TimeSpanMapTest {
         map.forEach(i -> builder.append(' ').append(i));
         Assert.assertEquals(" 0 2 3 5 9 10", builder.toString());
         Assert.assertEquals(6, map.getSpansNumber());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -195,6 +204,125 @@ public class TimeSpanMapTest {
         map.forEach(i -> builder.append(' ').append(i));
         Assert.assertEquals(" 5 7", builder.toString());
         Assert.assertEquals(4, map.getSpansNumber());
+        checkCountConsistency(map);
+    }
+
+    @Test
+    public void testAddBetweenEmpty() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidBetween(1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-2), AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+2));
+        Assert.assertEquals(3, map.getSpansNumber());
+        Assert.assertEquals(0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-3)).intValue());
+        Assert.assertEquals(1, map.get(AbsoluteDate.ARBITRARY_EPOCH).intValue());
+        Assert.assertEquals(0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+3)).intValue());
+        checkCountConsistency(map);
+    }
+
+    @Test
+    public void testAddBetweenBefore() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidBefore(1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        map.addValidBetween(7, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-4), AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-2));
+        Assert.assertEquals(4, map.getSpansNumber());
+        Assert.assertEquals(1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-5)).intValue());
+        Assert.assertEquals(7, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-3)).intValue());
+        Assert.assertEquals(1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
+        Assert.assertEquals(0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+3)).intValue());
+        checkCountConsistency(map);
+    }
+
+    @Test
+    public void testAddBetweenAfter() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidBefore(1, AbsoluteDate.ARBITRARY_EPOCH, false);
+        map.addValidBetween(7, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4));
+        Assert.assertEquals(4, map.getSpansNumber());
+        Assert.assertEquals(1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-3)).intValue());
+        Assert.assertEquals(0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy( 1)).intValue());
+        Assert.assertEquals(7, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy( 3)).intValue());
+        Assert.assertEquals(0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy( 5)).intValue());
+        checkCountConsistency(map);
+    }
+
+    @Test
+    public void testAddBetweenCoveringAll() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidAfter(1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1), false);
+        map.addValidAfter(2, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), false);
+        map.addValidAfter(3, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(3), false);
+        map.addValidAfter(4, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4), false);
+        map.addValidAfter(5, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(5), false);
+        Assert.assertEquals(6, map.getSpansNumber());
+        map.addValidBetween(-1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1), AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(6));
+        Assert.assertEquals( 3, map.getSpansNumber());
+        Assert.assertEquals( 0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-5)).intValue());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy( 2)).intValue());
+        Assert.assertEquals( 5, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+7)).intValue());
+        checkCountConsistency(map);
+    }
+
+    @Test
+    public void testAddBetweenCoveringSome() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidAfter(1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1), false);
+        map.addValidAfter(2, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), false);
+        map.addValidAfter(3, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(3), false);
+        map.addValidAfter(4, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4), false);
+        map.addValidAfter(5, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(5), false);
+        Assert.assertEquals(6, map.getSpansNumber());
+        map.addValidBetween(-1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1.5), AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4.5));
+        Assert.assertEquals(5, map.getSpansNumber());
+        Assert.assertEquals( 0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(0.75)).intValue());
+        Assert.assertEquals( 1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1.25)).intValue());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1.75)).intValue());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4.25)).intValue());
+        Assert.assertEquals( 4, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4.75)).intValue());
+        Assert.assertEquals( 5, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(5.25)).intValue());
+        checkCountConsistency(map);
+    }
+
+    @Test
+    public void testAddBetweenSplittingOneSpanOnly() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidAfter(1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1), false);
+        map.addValidAfter(2, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), false);
+        map.addValidAfter(3, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(3), false);
+        map.addValidAfter(4, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4), false);
+        map.addValidAfter(5, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(5), false);
+        Assert.assertEquals(6, map.getSpansNumber());
+        map.addValidBetween(-1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2.25), AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2.75));
+        Assert.assertEquals(8, map.getSpansNumber());
+        Assert.assertEquals( 0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(0.75)).intValue());
+        Assert.assertEquals( 1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1.99)).intValue());
+        Assert.assertEquals( 2, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2.01)).intValue());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2.50)).intValue());
+        Assert.assertEquals( 2, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2.99)).intValue());
+        Assert.assertEquals( 3, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(3.01)).intValue());
+        Assert.assertEquals( 4, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4.25)).intValue());
+        Assert.assertEquals( 5, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(5.25)).intValue());
+        checkCountConsistency(map);
+    }
+
+    @Test
+    public void testAddBetweenExistingDates() {
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
+        map.addValidAfter(1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1), false);
+        map.addValidAfter(2, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), false);
+        map.addValidAfter(3, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(3), false);
+        map.addValidAfter(4, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4), false);
+        map.addValidAfter(5, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(5), false);
+        Assert.assertEquals(6, map.getSpansNumber());
+        map.addValidBetween(-1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4));
+        Assert.assertEquals(5, map.getSpansNumber());
+        Assert.assertEquals( 0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(0.99)).intValue());
+        Assert.assertEquals( 1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1.01)).intValue());
+        Assert.assertEquals( 1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1.99)).intValue());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2.01)).intValue());
+        Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(3.99)).intValue());
+        Assert.assertEquals( 4, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4.01)).intValue());
+        Assert.assertEquals( 4, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(4.99)).intValue());
+        Assert.assertEquals( 5, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(5.01)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -208,6 +336,7 @@ public class TimeSpanMapTest {
         map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0), false);
         TimeSpanMap<Integer> range = map.extractRange(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         Assert.assertEquals(map.getSpansNumber(), range.getSpansNumber());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -223,6 +352,7 @@ public class TimeSpanMapTest {
         Assert.assertEquals(1, range.getSpansNumber());
         Assert.assertEquals(5, range.get(ref.shiftedBy(-10000)).intValue());
         Assert.assertEquals(5, range.get(ref.shiftedBy(+10000)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -246,6 +376,7 @@ public class TimeSpanMapTest {
         Assert.assertEquals( 5, range.get(ref.shiftedBy(  8.9)).intValue());
         Assert.assertEquals( 5, range.get(ref.shiftedBy(  9.1)).intValue());
         Assert.assertEquals( 5, range.get(ref.shiftedBy( 99.0)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -267,6 +398,7 @@ public class TimeSpanMapTest {
         Assert.assertEquals( 9, range.get(ref.shiftedBy(  9.9)).intValue());
         Assert.assertEquals(10, range.get(ref.shiftedBy( 10.1)).intValue());
         Assert.assertEquals(10, range.get(ref.shiftedBy(100.0)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -286,6 +418,7 @@ public class TimeSpanMapTest {
         Assert.assertEquals( 5, range.get(ref.shiftedBy(  8.9)).intValue());
         Assert.assertEquals( 5, range.get(ref.shiftedBy(  9.1)).intValue());
         Assert.assertEquals( 5, range.get(ref.shiftedBy(999.9)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -334,6 +467,8 @@ public class TimeSpanMapTest {
         Assert.assertSame(AbsoluteDate.FUTURE_INFINITY, last.getEnd());
         Assert.assertNull(last.getEndTransition());
 
+        checkCountConsistency(map);
+
     }
 
     @Test
@@ -361,6 +496,8 @@ public class TimeSpanMapTest {
         Assert.assertEquals( 9, last.getBefore().intValue());
         Assert.assertEquals(10, last.getAfter().intValue());
 
+        checkCountConsistency(map);
+
     }
 
     @Test
@@ -373,6 +510,7 @@ public class TimeSpanMapTest {
         Assert.assertNull(map.getFirstSpan().getEndTransition());
         Assert.assertNull(map.getFirstSpan().previous());
         Assert.assertNull(map.getLastSpan().next());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -412,6 +550,8 @@ public class TimeSpanMapTest {
         Assert.assertEquals(0, span.getData().intValue());
         Assert.assertNull(span.previous());
 
+        checkCountConsistency(map);
+
     }
 
     @Test
@@ -448,6 +588,8 @@ public class TimeSpanMapTest {
         Assert.assertEquals(10.0, transition.getDate().durationFrom(ref), 1.0e-15);
         Assert.assertNull(transition.next());
 
+        checkCountConsistency(map);
+
     }
 
     @Test
@@ -458,6 +600,7 @@ public class TimeSpanMapTest {
         Assert.assertEquals(2, map.getSpansNumber());
         Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
         Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -470,6 +613,7 @@ public class TimeSpanMapTest {
         Assert.assertEquals(4, map.getSpansNumber());
         Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
         Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -482,6 +626,7 @@ public class TimeSpanMapTest {
         Assert.assertEquals(-2, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-10)).intValue());
         Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
         Assert.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)));
+        checkCountConsistency(map);
     }
 
     @Test
@@ -492,6 +637,7 @@ public class TimeSpanMapTest {
         Assert.assertEquals(2, map.getSpansNumber());
         Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
         Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -504,6 +650,7 @@ public class TimeSpanMapTest {
         Assert.assertEquals(4, map.getSpansNumber());
         Assert.assertEquals(-1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)).intValue());
         Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
+        checkCountConsistency(map);
     }
 
     @Test
@@ -516,6 +663,16 @@ public class TimeSpanMapTest {
         Assert.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1)));
         Assert.assertEquals(+1, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+1)).intValue());
         Assert.assertEquals(+2, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(+10)).intValue());
+        checkCountConsistency(map);
+    }
+
+    private <T> void checkCountConsistency(final TimeSpanMap<T> map) {
+        final int count1 = map.getSpansNumber();
+        int count2 = 0;
+        for (Span<T> span = map.getFirstSpan(); span != null; span = span.next()) {
+            ++count2;
+        }
+        Assert.assertEquals(count1, count2);
     }
 
     @Before
