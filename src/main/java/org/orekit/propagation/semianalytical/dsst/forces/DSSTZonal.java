@@ -146,9 +146,6 @@ public class DSSTZonal implements DSSTForceModel {
     /** Hansen objects for field elements. */
     private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
-    /** Flag for force model initialization with field elements. */
-    private boolean pendingInitialization;
-
     /** Constructor with default reference values.
      * <p>
      * When this constructor is used, maximum allowed values are used
@@ -204,9 +201,6 @@ public class DSSTZonal implements DSSTForceModel {
 
         // Initialize default values
         this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
-
-
-        pendingInitialization = true;
 
         zonalFieldSPCoefs = new HashMap<>();
         fieldHansen       = new HashMap<>();
@@ -291,24 +285,20 @@ public class DSSTZonal implements DSSTForceModel {
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        if (pendingInitialization == true) {
-            computeMeanElementsTruncations(auxiliaryElements, parameters, field);
+        computeMeanElementsTruncations(auxiliaryElements, parameters, field);
 
-            switch (type) {
-                case MEAN:
-                    maxEccPow = maxEccPowMeanElements;
-                    break;
-                case OSCULATING:
-                    maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
-                    break;
-                default:
-                    throw new OrekitInternalError(null);
-            }
-
-            fieldHansen.put(field, new FieldHansenObjects<>(field));
-
-            pendingInitialization = false;
+        switch (type) {
+            case MEAN:
+                maxEccPow = maxEccPowMeanElements;
+                break;
+            case OSCULATING:
+                maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+                break;
+            default:
+                throw new OrekitInternalError(null);
         }
+
+        fieldHansen.put(field, new FieldHansenObjects<>(field));
 
         final FieldZonalShortPeriodicCoefficients<T> fzspc =
                         new FieldZonalShortPeriodicCoefficients<>(maxFrequencyShortPeriodics,
