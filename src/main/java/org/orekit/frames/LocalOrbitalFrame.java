@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -100,7 +100,7 @@ public class LocalOrbitalFrame extends Frame {
          *
          * @throws UnsupportedOperationException always.
          */
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(
+        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(
                 final FieldAbsoluteDate<T> date) throws UnsupportedOperationException {
             throw new UnsupportedOperationException(
                     "FieldTransforms are not supported for a LocalOrbitalFrame: " + name +

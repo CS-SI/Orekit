@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -41,7 +41,7 @@ import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class Context {
+public class Context implements StationDataProvider {
     public IERSConventions                      conventions;
     public OneAxisEllipsoid                     earth;
     public CelestialBody                        sun;
@@ -55,8 +55,8 @@ public class Context {
     public StationDisplacement[]                displacements;
     public List<GroundStation>                  stations;
     // Stations for turn-around range
-    // Map entry = master station
-    // Map value = slave station associated
+    // Map entry = primary station
+    // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
 
     public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
@@ -98,6 +98,11 @@ public class Context {
                                                    altitude);
         return new GroundStation(new TopocentricFrame(earth, gp, name),
                                  ut1.getEOPHistory(), displacements);
+    }
+
+    @Override
+    public List<GroundStation> getStations() {
+        return stations;
     }
 
 }

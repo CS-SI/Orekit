@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,7 +28,7 @@ public class PositionMeasurementCreator extends MeasurementCreator {
         this.satellite = new ObservableSatellite(0);
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState) {
         final Vector3D p = currentState.getPVCoordinates().getPosition();
         final Position measurement = new Position(currentState.getDate(), p, 1.0, 1.0, satellite);
         Assert.assertEquals(0.0, Vector3D.distance(p, measurement.getPosition()), 1.0e-10);

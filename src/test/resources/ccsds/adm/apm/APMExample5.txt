@@ -1,0 +1,33 @@
+CCSDS_APM_VERS = 1.0
+CREATION_DATE  = 2004-02-14T19:23:57
+ORIGINATOR     = GSFC
+
+OBJECT_NAME    = TRMM
+OBJECT_ID      = 1997-009A
+CENTER_NAME    = EARTH
+TIME_SYSTEM    = UTC
+COMMENT          GEOCENTRIC, CARTESIAN, EARTH FIXED
+
+COMMENT          OBJECT_ID: 1997-009A
+COMMENT          $ITIM = 1997 NOV 21 22:26:18.40000000, $ original launch time
+
+COMMENT          Attitude state quaternion
+EPOCH          = 2004-02-14T14:28:15.1172
+Q_FRAME_A      = SC_BODY_1
+Q_FRAME_B      = ITRF-97
+Q_DIR          = A2B
+
+Q1             = 0.03123
+Q2             = 0.78543
+Q3             = 0.39158
+QC             = 0.47832
+
+COMMENT          Euler rates
+EULER_FRAME_A  = SC_BODY_1
+EULER_FRAME_B  = ITRF-97
+EULER_DIR      = A2B
+EULER_ROT_SEQ  = 312
+RATE_FRAME     = EULER_FRAME_A
+Z_RATE         = 0.02156 [deg/s]
+X_RATE         = 0.1045  [deg/s]
+Y_RATE         = 0.03214 [deg/s]

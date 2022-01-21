@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -27,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** Tridimensional references frames class.
  *
- * <h1> Frame Presentation </h1>
+ * <h2> Frame Presentation </h2>
  * <p>This class is the base class for all frames in OREKIT. The frames are
  * linked together in a tree with some specific frame chosen as the root of the tree.
  * Each frame is defined by {@link Transform transforms} combining any number
@@ -274,7 +274,7 @@ public class Frame implements Serializable {
      * @param <T> the type of the field elements
      * @return transform from the instance to the destination frame
      */
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
 
         if (this == destination) {
             // shortcut for special case that may be frequent
@@ -346,7 +346,7 @@ public class Frame implements Serializable {
     /** Get the unique root frame.
      * @return the unique instance of the root frame
      */
-    protected static Frame getRoot() {
+    public static Frame getRoot() {
         return LazyRootHolder.INSTANCE;
     }
 

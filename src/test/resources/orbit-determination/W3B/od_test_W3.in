@@ -138,6 +138,12 @@ solar.radiation.pressure.cr.estimated = false
 ## SRP area (m^2)
 solar.radiation.pressure.area = 13.12
 
+## Earth's Albedo and Infrared (true/false) [false]
+## It reuses the configuration of the solar radiation pressure for the reflection coefficient
+earth.albedo.infrared = false
+## Angular resolution
+albedo.infrared.angular.resolution = 15.0
+
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = false
 
@@ -162,6 +168,10 @@ polynomial.acceleration.direction.Y  [2] = 0.0
 polynomial.acceleration.direction.Z  [2] = 1.0
 polynomial.acceleration.coefficients [2] = 0.0, 0.0
 polynomial.acceleration.estimated    [2] = true
+
+## Use range and range-rate measurements
+use.range.measurements = true
+use.range.rate.measurements = false
 
 ## On-board range bias (m) [0.0]
 onboard.range.bias     =   5969.0
@@ -191,6 +201,9 @@ on.board.clock.offset.estimated = false
 solid.tides.displacement.correction                   = false
 solid.tides.displacement.remove.permanent.deformation = false
 ocean.loading.correction                              = false
+
+## Use a time span tropospheric model or not
+use.time.span.tropospheric.model = true
 
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] = Fucino
@@ -229,6 +242,11 @@ ground.station.global.mapping.function         [0] = false
 ground.station.niell.mapping.function          [0] = false
 ground.station.range.tropospheric.correction   [0] = true
 ground.station.weather.estimated               [0] = false
+ground.station.range.ionospheric.correction    [0] = false
+ground.station.ionospheric.model.estimated     [0] = false
+ground.station.ionospheric.vtec.estimated      [0] = false
+ground.station.ionospheric.vtec.value          [0] = 10.0
+ground.station.ionospheric.hion.value          [0] = 350e3
 
 ground.station.name                            [1] = Kumsan
 ground.station.latitude                        [1] =   36.1247623774
@@ -266,6 +284,11 @@ ground.station.global.mapping.function         [1] = false
 ground.station.niell.mapping.function          [1] = false
 ground.station.range.tropospheric.correction   [1] = true
 ground.station.weather.estimated               [1] = false
+ground.station.range.ionospheric.correction    [1] = false
+ground.station.ionospheric.model.estimated     [1] = false
+ground.station.ionospheric.vtec.estimated      [1] = false
+ground.station.ionospheric.vtec.value          [1] = 10.0
+ground.station.ionospheric.hion.value          [1] = 350e3
 
 ground.station.name                            [2] = Uralla
 ground.station.latitude                        [2] =  -30.632947613
@@ -303,6 +326,11 @@ ground.station.global.mapping.function         [2] = false
 ground.station.niell.mapping.function          [2] = false
 ground.station.range.tropospheric.correction   [2] = true
 ground.station.weather.estimated               [2] = false
+ground.station.range.ionospheric.correction    [2] = false
+ground.station.ionospheric.model.estimated     [2] = false
+ground.station.ionospheric.vtec.estimated      [2] = false
+ground.station.ionospheric.vtec.value          [2] = 10.0
+ground.station.ionospheric.hion.value          [2] = 350e3
 
 ground.station.name                            [3] = Pretoria
 ground.station.latitude                        [3] =  -25.8854896226
@@ -340,6 +368,11 @@ ground.station.global.mapping.function         [3] = false
 ground.station.niell.mapping.function          [3] = false
 ground.station.range.tropospheric.correction   [3] = true
 ground.station.weather.estimated               [3] = false
+ground.station.range.ionospheric.correction    [3] = false
+ground.station.ionospheric.model.estimated     [3] = false
+ground.station.ionospheric.vtec.estimated      [3] = false
+ground.station.ionospheric.vtec.value          [3] = 10.0
+ground.station.ionospheric.hion.value          [3] = 350e3
 
 ground.station.name                            [4] = CastleRock
 ground.station.latitude                        [4] =   39.2764477379
@@ -377,6 +410,11 @@ ground.station.global.mapping.function         [4] = false
 ground.station.niell.mapping.function          [4] = false
 ground.station.range.tropospheric.correction   [4] = true
 ground.station.weather.estimated               [4] = false
+ground.station.range.ionospheric.correction    [4] = false
+ground.station.ionospheric.model.estimated     [4] = false
+ground.station.ionospheric.vtec.estimated      [4] = false
+ground.station.ionospheric.vtec.value          [4] = 10.0
+ground.station.ionospheric.hion.value          [4] = 350e3
 
 ### Measurements parameters
 range.outlier.rejection.multiplier              = 6

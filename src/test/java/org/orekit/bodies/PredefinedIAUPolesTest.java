@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -45,9 +45,11 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.IAUPoleFactory.OldIAUPole;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
@@ -55,7 +57,7 @@ public class PredefinedIAUPolesTest {
 
     @Test
     public void testGCRFAligned() throws UnsupportedEncodingException, IOException {
-        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER);
+        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
         Assert.assertEquals(0,   Vector3D.distance(pole, Vector3D.PLUS_K), 1.0e-15);
@@ -64,7 +66,7 @@ public class PredefinedIAUPolesTest {
 
     @Test
     public void testSun() throws UnsupportedEncodingException, IOException {
-        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN);
+        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         final double alphaRef    = FastMath.toRadians(286.13);
         final double deltaRef    = FastMath.toRadians(63.87);
@@ -108,7 +110,7 @@ public class PredefinedIAUPolesTest {
                 Rotation rRef = new Rotation(m, 1.0e-10);
 
                 // check pole
-                IAUPole iauPole = PredefinedIAUPoles.getIAUPole(type);
+                IAUPole iauPole = PredefinedIAUPoles.getIAUPole(type, timeScales);
                 Vector3D pole = iauPole.getPole(date2);
                 double w = iauPole.getPrimeMeridianAngle(date2);
                 Assert.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
@@ -132,7 +134,7 @@ public class PredefinedIAUPolesTest {
     @Test
     public void testVersus80Implementation() {
         for (EphemerisType body : EphemerisType.values()) {
-            IAUPole    newPole = PredefinedIAUPoles.getIAUPole(body);
+            IAUPole    newPole = PredefinedIAUPoles.getIAUPole(body, timeScales);
             OldIAUPole oldPole = IAUPoleFactory.getIAUPole(body);
             for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
@@ -145,7 +147,7 @@ public class PredefinedIAUPolesTest {
 
     @Test
     public void testFieldConsistency() {
-        for (IAUPole iaupole : PredefinedIAUPoles.values()) {
+        for (IAUPole iaupole : PredefinedIAUPoles.values(timeScales)) {
             for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
                 final FieldAbsoluteDate<Decimal64> date64 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date);
@@ -162,7 +164,7 @@ public class PredefinedIAUPolesTest {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
         final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 60.0);
-        for (final IAUPole iaupole : PredefinedIAUPoles.values()) {
+        for (final IAUPole iaupole : PredefinedIAUPoles.values(timeScales)) {
 
             UnivariateDifferentiableVectorFunction dPole = differentiator.differentiate(new UnivariateVectorFunction() {
                 @Override
@@ -198,9 +200,12 @@ public class PredefinedIAUPolesTest {
 
     }
 
+    private TimeScales timeScales;
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
+        timeScales = DataContext.getDefault().getTimeScales();
     }
 
 }

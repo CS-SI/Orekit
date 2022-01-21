@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,7 +23,7 @@ import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.estimation.Context;
+import org.orekit.estimation.StationDataProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -34,19 +34,26 @@ import org.orekit.utils.ParameterDriver;
 
 public class RangeRateMeasurementCreator extends MeasurementCreator {
 
-    private final Context context;
+    private final StationDataProvider context;
     private final boolean twoWay;
     private final ObservableSatellite satellite;
 
-    public RangeRateMeasurementCreator(final Context context, boolean twoWay) {
+    public RangeRateMeasurementCreator(final StationDataProvider context, boolean twoWay,
+                                       final double satClockDrift) {
         this.context   = context;
         this.twoWay    = twoWay;
         this.satellite = new ObservableSatellite(0);
+        this.satellite.getClockDriftDriver().setValue(satClockDrift);
+    }
+    
+    public ObservableSatellite getSatellite() {
+        return satellite;
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
-        for (final GroundStation station : context.stations) {
+        for (final GroundStation station : context.getStations()) {
             for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getClockDriftDriver(),
                                                         station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
@@ -60,13 +67,17 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                     driver.setReferenceDate(s0.getDate());
                 }
             }
-
+        }
+        if (satellite.getClockDriftDriver().getReferenceDate() == null) {
+            satellite.getClockDriftDriver().setReferenceDate(s0.getDate());
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
-        for (final GroundStation station : context.stations) {
-
+    public void handleStep(final SpacecraftState currentState) {
+        for (final GroundStation station : context.getStations()) {
+            final double           groundDft = station.getClockDriftDriver().getValue();
+            final double           satDft    = satellite.getClockDriftDriver().getValue();
+            final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
             final Vector3D         position  = currentState.getPVCoordinates().getPosition();
@@ -112,7 +123,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                 // range rate at the date of reception
                 final double rr = twoWay ?
                                           0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
-                                              deltaVr.dotProduct(receptionLOS);
+                                              deltaVr.dotProduct(receptionLOS) + deltaD;
 
                                           addMeasurement(new RangeRate(station, receptionDate,
                                                                        rr,

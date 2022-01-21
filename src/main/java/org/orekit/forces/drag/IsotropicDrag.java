@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,15 @@
  */
 package org.orekit.forces.drag;
 
-import org.hipparchus.RealFieldElement;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -50,7 +51,7 @@ public class IsotropicDrag implements DragSensitive {
     private final double SCALE = FastMath.scalb(1.0, -3);
 
     /** Drivers for drag coefficient parameter. */
-    private final ParameterDriver[] dragParametersDrivers;
+    private final ParameterDriver dragParametersDrivers;
 
     /** Cross section (m²). */
     private final double crossSection;
@@ -71,24 +72,18 @@ public class IsotropicDrag implements DragSensitive {
      */
     public IsotropicDrag(final double crossSection, final double dragCoeff,
                          final double dragCoeffMin, final double dragCoeffMax) {
-        this.dragParametersDrivers     = new ParameterDriver[1];
-        try {
-            // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
-            // the single coefficient may be arbitrary, and even negative
-            dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                           dragCoeff, SCALE,
-                                                           dragCoeffMin, dragCoeffMax);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
+        // the single coefficient may be arbitrary, and even negative
+        this.dragParametersDrivers = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
+                                                         dragCoeff, SCALE,
+                                                         dragCoeffMin, dragCoeffMax);
         this.crossSection = crossSection;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getDragParametersDrivers() {
-        return dragParametersDrivers.clone();
+    public List<ParameterDriver> getDragParametersDrivers() {
+        return Collections.singletonList(dragParametersDrivers);
     }
 
     /** {@inheritDoc} */
@@ -104,7 +99,7 @@ public class IsotropicDrag implements DragSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
         dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final T density,

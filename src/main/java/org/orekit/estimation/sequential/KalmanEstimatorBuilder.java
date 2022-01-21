@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,7 +23,7 @@ import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for a Kalman filter estimator.
@@ -37,13 +37,16 @@ public class KalmanEstimatorBuilder {
     private MatrixDecomposer decomposer;
 
     /** Builders for propagators. */
-    private List<IntegratedPropagatorBuilder> propagatorBuilders;
+    private List<OrbitDeterminationPropagatorBuilder> propagatorBuilders;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
 
     /** Process noise matrices providers. */
     private List<CovarianceMatrixProvider> processNoiseMatricesProviders;
+
+    /** Process noise matrix provider for measurement parameters. */
+    private CovarianceMatrixProvider measurementProcessNoiseMatrix;
 
     /** Default constructor.
      *  Set an extended Kalman filter, with linearized covariance prediction.
@@ -53,11 +56,12 @@ public class KalmanEstimatorBuilder {
         this.propagatorBuilders              = new ArrayList<>();
         this.estimatedMeasurementsParameters = new ParameterDriversList();
         this.processNoiseMatricesProviders   = new ArrayList<>();
+        this.measurementProcessNoiseMatrix   = null;
     }
 
     /** Construct a {@link KalmanEstimator} from the data in this builder.
      * <p>
-     * Before this method is called, {@link #addPropagationConfiguration(IntegratedPropagatorBuilder,
+     * Before this method is called, {@link #addPropagationConfiguration(OrbitDeterminationPropagatorBuilder,
      * CovarianceMatrixProvider) addPropagationConfiguration()} must have been called
      * at least once, otherwise configuration is incomplete and an exception will be raised.
      * </p>
@@ -69,7 +73,7 @@ public class KalmanEstimatorBuilder {
             throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);
         }
         return new KalmanEstimator(decomposer, propagatorBuilders, processNoiseMatricesProviders,
-                                   estimatedMeasurementsParameters);
+                                   estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
     /** Configure the matrix decomposer.
@@ -104,7 +108,7 @@ public class KalmanEstimatorBuilder {
      * @see CovarianceMatrixProvider#getProcessNoiseMatrix(org.orekit.propagation.SpacecraftState,
      * org.orekit.propagation.SpacecraftState) getProcessNoiseMatrix(previous, current)
      */
-    public KalmanEstimatorBuilder addPropagationConfiguration(final IntegratedPropagatorBuilder builder,
+    public KalmanEstimatorBuilder addPropagationConfiguration(final OrbitDeterminationPropagatorBuilder builder,
                                                               final CovarianceMatrixProvider provider) {
         propagatorBuilders.add(builder);
         processNoiseMatricesProviders.add(provider);
@@ -116,11 +120,14 @@ public class KalmanEstimatorBuilder {
      * If this method is not called, no measurement parameters will be estimated.
      * </p>
      * @param estimatedMeasurementsParams The estimated measurements' parameters list.
+     * @param provider covariance matrix provider for the estimated measurement parameters
      * @return this object.
-     *
+     * @since 10.3
      */
-    public KalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams) {
+    public KalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams,
+                                                                  final CovarianceMatrixProvider provider) {
         estimatedMeasurementsParameters = estimatedMeasurementsParams;
+        measurementProcessNoiseMatrix   = provider;
         return this;
     }
 

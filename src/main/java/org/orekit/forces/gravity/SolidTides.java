@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,11 @@
  */
 package org.orekit.forces.gravity;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBody;
@@ -33,6 +34,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.time.TimeScales;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -96,9 +98,10 @@ public class SolidTides extends AbstractForceModel {
                       final double step, final int nbPoints,
                       final IERSConventions conventions, final UT1Scale ut1,
                       final CelestialBody... bodies) {
+        final TimeScales timeScales = ut1.getEOPHistory().getTimeScales();
         final SolidTidesField raw =
                 new SolidTidesField(conventions.getLoveNumbers(),
-                                    conventions.getTideFrequencyDependenceFunction(ut1),
+                                    conventions.getTideFrequencyDependenceFunction(ut1, timeScales),
                                     conventions.getPermanentTide(),
                                     poleTide ? conventions.getSolidPoleTide(ut1.getEOPHistory()) : null,
                                              centralBodyFrame, ae, mu, centralTideSystem, bodies);
@@ -130,7 +133,7 @@ public class SolidTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
         // delegate to underlying attraction model
         return attractionModel.acceleration(s, parameters);
@@ -145,14 +148,14 @@ public class SolidTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         // delegate to underlying attraction model
         return attractionModel.getFieldEventsDetectors(field);
     }
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         // delegate to underlying attraction model
         return attractionModel.getParametersDrivers();
     }

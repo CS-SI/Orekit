@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -132,7 +132,8 @@ public class GLONASSScaleTest {
     @Test
     public void testWrapBeforeLeap() {
         AbsoluteDate t = new AbsoluteDate("2015-07-01T02:59:59.999999", glonass);
-        Assert.assertEquals("2015-07-01T02:59:60.000", t.toString(glonass));
+        Assert.assertEquals("2015-07-01T02:59:60.000+00:00",
+                t.getComponents(glonass).toString(glonass.minuteDuration(t)));
     }
 
     @Test

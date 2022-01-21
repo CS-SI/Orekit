@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,11 +27,13 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -144,8 +146,23 @@ public class DSSTZonal implements DSSTForceModel {
     /** Hansen objects for field elements. */
     private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
-    /** Flag for force model initialization with field elements. */
-    private boolean pendingInitialization;
+    /** Constructor with default reference values.
+     * <p>
+     * When this constructor is used, maximum allowed values are used
+     * for the short periodic coefficients:
+     * </p>
+     * <ul>
+     *    <li> {@link #maxDegreeShortPeriodics} is set to {@code provider.getMaxDegree()} </li>
+     *    <li> {@link #maxEccPowShortPeriodics} is set to {@code min(provider.getMaxDegree() - 1, 4)}.
+     *         This parameter should not exceed 4 as higher values will exceed computer capacity </li>
+     *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code 2 * provider.getMaxDegree() + 1} </li>
+     * </ul>
+     * @param provider provider for spherical harmonics
+     * @since 10.1
+     */
+    public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider) {
+        this(provider, provider.getMaxDegree(), FastMath.min(4, provider.getMaxDegree() - 1), 2 * provider.getMaxDegree() + 1);
+    }
 
     /** Simple constructor.
      * @param provider provider for spherical harmonics
@@ -185,9 +202,6 @@ public class DSSTZonal implements DSSTForceModel {
         // Initialize default values
         this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
 
-
-        pendingInitialization = true;
-
         zonalFieldSPCoefs = new HashMap<>();
         fieldHansen       = new HashMap<>();
 
@@ -223,7 +237,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
+    public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements,
                                              final PropagationType type,
                                              final double[] parameters) {
 
@@ -264,31 +278,27 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      */
     @Override
-    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
+    public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
                                                                                      final T[] parameters) {
 
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        if (pendingInitialization == true) {
-            computeMeanElementsTruncations(auxiliaryElements, parameters, field);
+        computeMeanElementsTruncations(auxiliaryElements, parameters, field);
 
-            switch (type) {
-                case MEAN:
-                    maxEccPow = maxEccPowMeanElements;
-                    break;
-                case OSCULATING:
-                    maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
-                    break;
-                default:
-                    throw new OrekitInternalError(null);
-            }
-
-            fieldHansen.put(field, new FieldHansenObjects<>(field));
-
-            pendingInitialization = false;
+        switch (type) {
+            case MEAN:
+                maxEccPow = maxEccPowMeanElements;
+                break;
+            case OSCULATING:
+                maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+                break;
+            default:
+                throw new OrekitInternalError(null);
         }
+
+        fieldHansen.put(field, new FieldHansenObjects<>(field));
 
         final FieldZonalShortPeriodicCoefficients<T> fzspc =
                         new FieldZonalShortPeriodicCoefficients<>(maxFrequencyShortPeriodics,
@@ -408,7 +418,7 @@ public class DSSTZonal implements DSSTForceModel {
      * @param parameters values of the force model parameters
      * @param field field used by default
      */
-    private <T extends RealFieldElement<T>> void computeMeanElementsTruncations(final FieldAuxiliaryElements<T> auxiliaryElements,
+    private <T extends CalculusFieldElement<T>> void computeMeanElementsTruncations(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                 final T[] parameters,
                                                                                 final Field<T> field) {
 
@@ -529,7 +539,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return new force model context
      */
-    private <T extends RealFieldElement<T>> FieldDSSTZonalContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
+    private <T extends CalculusFieldElement<T>> FieldDSSTZonalContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                     final T[] parameters) {
         return new FieldDSSTZonalContext<>(auxiliaryElements, provider, parameters);
     }
@@ -550,7 +560,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState,
+    public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState,
                                                                   final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                   final T[] parameters) {
 
@@ -577,7 +587,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
         return null;
     }
 
@@ -620,7 +630,7 @@ public class DSSTZonal implements DSSTForceModel {
      * @param udu derivatives of the gravitational potential U
      * @return the mean element rates
      */
-    private <T extends RealFieldElement<T>> T[] computeMeanElementRates(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T[] computeMeanElementRates(final FieldAbsoluteDate<T> date,
                                                                         final FieldDSSTZonalContext<T> context,
                                                                         final FieldUAnddU<T> udu) {
 
@@ -712,7 +722,7 @@ public class DSSTZonal implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+    public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
                                                                        final FieldSpacecraftState<T>... meanStates) {
 
         // Field used by default
@@ -753,10 +763,8 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            gmParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(gmParameterDriver);
     }
 
     /** Generate the values for the D<sub>i</sub> coefficients.
@@ -796,7 +804,7 @@ public class DSSTZonal implements DSSTForceModel {
      * @param field field used by default
      * @param udu derivatives of the gravitational potential U
      */
-    private <T extends RealFieldElement<T>> void computeDiCoefficients(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> void computeDiCoefficients(final FieldAbsoluteDate<T> date,
                                                                        final FieldSlot<T> slot,
                                                                        final FieldDSSTZonalContext<T> context,
                                                                        final Field<T> field,
@@ -1081,7 +1089,7 @@ public class DSSTZonal implements DSSTForceModel {
      * @param field field used by default
      * @param udu derivatives of the gravitational potential U
      */
-    private <T extends RealFieldElement<T>> void computeCijSijCoefficients(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> void computeCijSijCoefficients(final FieldAbsoluteDate<T> date,
                                                                            final FieldSlot<T> slot,
                                                                            final FieldFourierCjSjCoefficients<T> cjsj,
                                                                            final T[][] rhoSigma,
@@ -1385,7 +1393,7 @@ public class DSSTZonal implements DSSTForceModel {
      * @param field field used by default
      * @return array containing ρ<sub>j</sub> and σ<sub>j</sub>
      */
-    private <T extends RealFieldElement<T>> T[][] computeRhoSigmaCoefficients(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T[][] computeRhoSigmaCoefficients(final FieldAbsoluteDate<T> date,
                                                                               final FieldSlot<T> slot,
                                                                               final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                               final Field<T> field) {
@@ -1463,10 +1471,14 @@ public class DSSTZonal implements DSSTForceModel {
             final Slot         slot  = new Slot(maxFrequencyShortPeriodics, interpolationPoints);
             final AbsoluteDate first = meanStates[0].getDate();
             final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
-            if (first.compareTo(last) <= 0) {
-                slots.addValidAfter(slot, first);
+            final int compare = first.compareTo(last);
+            if (compare < 0) {
+                slots.addValidAfter(slot, first, false);
+            } else if (compare > 0) {
+                slots.addValidBefore(slot, first, false);
             } else {
-                slots.addValidBefore(slot, first);
+                // single date, valid for all time
+                slots.addValidAfter(slot, AbsoluteDate.PAST_INFINITY, false);
             }
             return slot;
         }
@@ -1494,12 +1506,11 @@ public class DSSTZonal implements DSSTForceModel {
             for (int j = 1; j <= maxFrequencyShortPeriodics; j++) {
                 final double[] c = slot.cij[j].value(meanOrbit.getDate());
                 final double[] s = slot.sij[j].value(meanOrbit.getDate());
-                final double cos = FastMath.cos(j * L);
-                final double sin = FastMath.sin(j * L);
+                final SinCos sc  = FastMath.sinCos(j * L);
                 for (int i = 0; i < 6; i++) {
                     // add corresponding term to the short periodic variation
-                    shortPeriodicVariation[i] += c[i] * cos;
-                    shortPeriodicVariation[i] += s[i] * sin;
+                    shortPeriodicVariation[i] += c[i] * sc.cos();
+                    shortPeriodicVariation[i] += s[i] * sc.sin();
                 }
             }
 
@@ -1575,7 +1586,7 @@ public class DSSTZonal implements DSSTForceModel {
     *
     * @author Lucian Barbulescu
     */
-    private static class FieldZonalShortPeriodicCoefficients <T extends RealFieldElement<T>> implements FieldShortPeriodTerms<T> {
+    private static class FieldZonalShortPeriodicCoefficients <T extends CalculusFieldElement<T>> implements FieldShortPeriodTerms<T> {
 
         /** Maximum value for j index. */
         private final int maxFrequencyShortPeriodics;
@@ -1639,14 +1650,13 @@ public class DSSTZonal implements DSSTForceModel {
             }
 
             for (int j = 1; j <= maxFrequencyShortPeriodics; j++) {
-                final T[] c = slot.cij[j].value(meanOrbit.getDate());
-                final T[] s = slot.sij[j].value(meanOrbit.getDate());
-                final T cos = FastMath.cos(L.multiply(j));
-                final T sin = FastMath.sin(L.multiply(j));
+                final T[]            c   = slot.cij[j].value(meanOrbit.getDate());
+                final T[]            s   = slot.sij[j].value(meanOrbit.getDate());
+                final FieldSinCos<T> sc  = FastMath.sinCos(L.multiply(j));
                 for (int i = 0; i < 6; i++) {
                     // add corresponding term to the short periodic variation
-                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(c[i].multiply(cos));
-                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(s[i].multiply(sin));
+                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(c[i].multiply(sc.cos()));
+                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(s[i].multiply(sc.sin()));
                 }
             }
 
@@ -2523,7 +2533,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  Those coefficients are given in Danielson paper by expressions 4.1-(13) to 4.1.-(16b)
      *  </p>
      */
-    private class FieldFourierCjSjCoefficients <T extends RealFieldElement<T>> {
+    private class FieldFourierCjSjCoefficients <T extends CalculusFieldElement<T>> {
 
         /** The G<sub>js</sub>, H<sub>js</sub>, I<sub>js</sub> and J<sub>js</sub> polynomials. */
         private final FieldGHIJjsPolynomials<T> ghijCoef;
@@ -3404,7 +3414,7 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    private static class FieldSlot <T extends RealFieldElement<T>> {
+    private static class FieldSlot <T extends CalculusFieldElement<T>> {
 
         /**The coefficients D<sub>i</sub>.
          * <p>
@@ -3660,7 +3670,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  [dU/da, dU/dk, dU/dh, dU/dα, dU/dβ, dU/dγ]
      *  </p>
      */
-    private class FieldUAnddU <T extends RealFieldElement<T>> {
+    private class FieldUAnddU <T extends CalculusFieldElement<T>> {
 
          /** The current value of the U function. <br/>
           * Needed for the short periodic contribution */
@@ -3882,7 +3892,7 @@ public class DSSTZonal implements DSSTForceModel {
     /** Computes init values of the Hansen Objects.
      * @param <T> type of the elements
      */
-    private class FieldHansenObjects<T extends RealFieldElement<T>> {
+    private class FieldHansenObjects<T extends CalculusFieldElement<T>> {
 
         /** An array that contains the objects needed to build the Hansen coefficients. <br/>
          * The index is s*/

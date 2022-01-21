@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -55,7 +55,6 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -158,12 +157,7 @@ public class JacobianPropagatorConverterTest {
         // the 10 minutes offset implies even the first point is influenced by model parameters
         final List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
         Propagator propagator = builder.buildPropagator(normalized);
-        propagator.setMasterMode(60.0, new OrekitFixedStepHandler() {
-            @Override
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
-                sample.add(currentState);
-            }
-        });
+        propagator.setStepHandler(60.0, currentState -> sample.add(currentState));
         propagator.propagate(orbit.getDate().shiftedBy(600.0), orbit.getDate().shiftedBy(4200.0));
 
         JacobianPropagatorConverter  fitter = new JacobianPropagatorConverter(builder, 1.0e-3, 5000);

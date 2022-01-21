@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -59,6 +59,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
@@ -72,8 +73,14 @@ import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
@@ -83,6 +90,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class EcksteinHechlerPropagatorTest {
+
+    private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
 
     @Test
     public void sameDateCartesian() {
@@ -510,7 +519,7 @@ public class EcksteinHechlerPropagatorTest {
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
-            public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+            public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                                 FieldAbsoluteDate<T> date, Frame frame)
                 {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
@@ -653,10 +662,9 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         final double step = 100.0;
-        propagator.setMasterMode(step, new OrekitFixedStepHandler() {
+        propagator.setStepHandler(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+            public void handleStep(SpacecraftState currentState) {
                 if (previous != null) {
                     Assert.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
@@ -759,6 +767,78 @@ public class EcksteinHechlerPropagatorTest {
                                               fittedOrbit.getPVCoordinates().getPosition()),
                             0.1);
 
+    }
+
+    @Test
+    public void testIssue504() {
+        // LEO orbit
+        final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+        final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2018, 07, 15), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final SpacecraftState initialState =  new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
+                                                                                       FramesFactory.getEME2000(),
+                                                                                       initDate,
+                                                                                       3.986004415E14));
+
+        // Mean state computation
+        final List<DSSTForceModel> models = new ArrayList<>();
+        models.add(new DSSTZonal(provider));
+        final SpacecraftState meanState = DSSTPropagator.computeMeanState(initialState, DEFAULT_LAW, models);
+
+        // Initialize Eckstein-Hechler model with mean state
+        final EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(meanState.getOrbit(), provider, PropagationType.MEAN);
+        final SpacecraftState finalState = propagator.propagate(initDate);
+
+        // Verify
+        Assert.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
+        Assert.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
+        Assert.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
+        Assert.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
+        Assert.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(initialState.getPVCoordinates().getPosition(),
+                                              finalState.getPVCoordinates().getPosition()),
+                            11.4);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(initialState.getPVCoordinates().getVelocity(),
+                                              finalState.getPVCoordinates().getVelocity()),
+                            4.2e-2);
+    }
+
+    @Test
+    public void testIssue504Bis() {
+        // LEO orbit
+        final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+        final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2018, 07, 15), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final SpacecraftState initialState =  new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
+                                                                                       FramesFactory.getEME2000(),
+                                                                                       initDate,
+                                                                                       3.986004415E14));
+
+        // Mean state computation
+        final List<DSSTForceModel> models = new ArrayList<>();
+        models.add(new DSSTZonal(provider));
+        final SpacecraftState meanState = DSSTPropagator.computeMeanState(initialState, DEFAULT_LAW, models);
+
+        // Initialize Eckstein-Hechler model with mean state
+        final EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(meanState.getOrbit(), DEFAULT_LAW, 458.6, provider, PropagationType.MEAN);
+        final SpacecraftState finalState = propagator.propagate(initDate);
+
+        // Verify
+        Assert.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
+        Assert.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
+        Assert.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
+        Assert.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
+        Assert.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(initialState.getPVCoordinates().getPosition(),
+                                              finalState.getPVCoordinates().getPosition()),
+                            11.4);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(initialState.getPVCoordinates().getVelocity(),
+                                              finalState.getPVCoordinates().getVelocity()),
+                            4.2e-2);
     }
 
     private static double tangLEmLv(double Lv, double ex, double ey) {

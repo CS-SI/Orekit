@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,14 +18,16 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.FieldTransform;
@@ -125,7 +127,7 @@ class JPLCelestialBody implements CelestialBody {
      * @param <T> type fo the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
      */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
                                                                                              final Frame frame) {
 
         // apply the scale factor to raw position-velocity
@@ -147,6 +149,7 @@ class JPLCelestialBody implements CelestialBody {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTOCelestialBody(supportedNames, generateType, name);
     }
@@ -217,7 +220,7 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
                     // compute translation from parent frame to self
                     final FieldPVCoordinates<T> pv = getPVCoordinates(date, definingFrame);
@@ -259,6 +262,7 @@ class JPLCelestialBody implements CelestialBody {
          * </p>
          * @return data transfer object that will be serialized
          */
+        @DefaultDataContext
         private Object writeReplace() {
             return new DTOInertialFrame(supportedNames, generateType, name);
         }
@@ -294,7 +298,7 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                     final double dt = 10.0;
                     final T w0 = iauPole.getPrimeMeridianAngle(date);
                     final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
@@ -314,6 +318,7 @@ class JPLCelestialBody implements CelestialBody {
          * </p>
          * @return data transfer object that will be serialized
          */
+        @DefaultDataContext
         private Object writeReplace() {
             return new DTOBodyFrame(supportedNames, generateType, name);
         }
@@ -321,6 +326,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private abstract static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -354,7 +360,8 @@ class JPLCelestialBody implements CelestialBody {
             try {
                 // first try to use the factory, in order to avoid building a new instance
                 // each time we deserialize and have the object properly cached
-                final CelestialBody factoryProvided = CelestialBodyFactory.getBody(name);
+                final CelestialBody factoryProvided =
+                        DataContext.getDefault().getCelestialBodies().getBody(name);
                 if (factoryProvided instanceof JPLCelestialBody) {
                     final JPLCelestialBody jplBody = (JPLCelestialBody) factoryProvided;
                     if (supportedNames.equals(jplBody.supportedNames) && generateType == jplBody.generateType) {
@@ -376,6 +383,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Specialization of the data transfer object for complete celestial body serialization. */
+    @DefaultDataContext
     private static class DTOCelestialBody extends DataTransferObject {
 
         /** Serializable UID. */
@@ -400,6 +408,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Specialization of the data transfer object for inertially oriented frame serialization. */
+    @DefaultDataContext
     private static class DTOInertialFrame extends DataTransferObject {
 
         /** Serializable UID. */
@@ -424,6 +433,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Specialization of the data transfer object for body oriented frame serialization. */
+    @DefaultDataContext
     private static class DTOBodyFrame extends DataTransferObject {
 
         /** Serializable UID. */

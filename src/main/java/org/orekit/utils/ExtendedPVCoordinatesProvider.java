@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -34,7 +34,7 @@ public interface ExtendedPVCoordinatesProvider extends PVCoordinatesProvider {
      * @param field field for the argument and value
      * @return converted function
      */
-    default <T extends RealFieldElement<T>> FieldPVCoordinatesProvider<T> toFieldPVCoordinatesProvider(Field<T> field) {
+    default <T extends CalculusFieldElement<T>> FieldPVCoordinatesProvider<T> toFieldPVCoordinatesProvider(Field<T> field) {
         return this::getPVCoordinates;
     }
 
@@ -44,7 +44,7 @@ public interface ExtendedPVCoordinatesProvider extends PVCoordinatesProvider {
      * @param <T> type for the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
      */
-    <T extends RealFieldElement<T>>TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date,
+    <T extends CalculusFieldElement<T>>TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date,
                                                                                      Frame frame);
 
 }

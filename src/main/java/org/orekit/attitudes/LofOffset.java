@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.attitudes;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -83,15 +83,15 @@ public class LofOffset implements AttitudeProvider {
      *
      *   // note the call to revert and the conventions in the following statement
      *   double[] anglesV = offsetProper.revert().getAngles(order, RotationConvention.VECTOR_OPERATOR);
-     *   System.out.println(alpha1 + " == " + anglesV[0]);
-     *   System.out.println(alpha2 + " == " + anglesV[1]);
-     *   System.out.println(alpha3 + " == " + anglesV[2]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha1, anglesV[0]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha2, anglesV[1]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha3, anglesV[2]);
      *
      *   // note the conventions in the following statement
      *   double[] anglesF = offsetProper.getAngles(order, RotationConvention.FRAME_TRANSFORM);
-     *   System.out.println(alpha1 + " == " + anglesF[0]);
-     *   System.out.println(alpha2 + " == " + anglesF[1]);
-     *   System.out.println(alpha3 + " == " + anglesF[2]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha1, anglesF[0]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha2, anglesF[1]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha3, anglesF[2]);
      * </pre>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
      * @param type type of Local Orbital Frame
@@ -134,7 +134,7 @@ public class LofOffset implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
                                                                         final Frame frame) {
 

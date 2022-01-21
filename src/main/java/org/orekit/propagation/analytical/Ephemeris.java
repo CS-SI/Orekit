@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -26,6 +25,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -33,6 +33,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -79,11 +80,13 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * by up to the 1ms {@link #DEFAULT_EXTRAPOLATION_THRESHOLD_SEC default
      * extrapolation threshold}.
      * </p>
+     *
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
           * @exception MathIllegalArgumentException if the number of states is smaller than
      * the number of points to use in interpolation
      * @see #Ephemeris(List, int, double)
+     * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
         throws MathIllegalArgumentException {
@@ -91,19 +94,41 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /** Constructor with tabulated states.
+     *
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
      * @param extrapolationThreshold the largest time difference in seconds between
      * the start or stop boundary of the ephemeris bounds to be doing extrapolation
-          * @exception MathIllegalArgumentException if the number of states is smaller than
+     * @exception MathIllegalArgumentException if the number of states is smaller than
      * the number of points to use in interpolation
      * @since 9.0
+     * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints,
                      final double extrapolationThreshold)
         throws MathIllegalArgumentException {
+        this(states, interpolationPoints, extrapolationThreshold,
+                // if states is empty an exception will be thrown in the other constructor
+                states.isEmpty() ? null : InertialProvider.of(states.get(0).getFrame()));
+    }
 
-        super(DEFAULT_LAW);
+    /** Constructor with tabulated states.
+     * @param states tabulates states
+     * @param interpolationPoints number of points to use in interpolation
+     * @param extrapolationThreshold the largest time difference in seconds between
+     * the start or stop boundary of the ephemeris bounds to be doing extrapolation
+     * @param attitudeProvider attitude law to use.
+     * @exception MathIllegalArgumentException if the number of states is smaller than
+     * the number of points to use in interpolation
+     * @since 10.1
+     */
+    public Ephemeris(final List<SpacecraftState> states,
+                     final int interpolationPoints,
+                     final double extrapolationThreshold,
+                     final AttitudeProvider attitudeProvider)
+        throws MathIllegalArgumentException {
+
+        super(attitudeProvider);
 
         if (states.size() < interpolationPoints) {
             throw new MathIllegalArgumentException(LocalizedCoreFormats.INSUFFICIENT_DIMENSION,
@@ -115,8 +140,11 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         maxDate = states.get(states.size() - 1).getDate();
         frame = s0.getFrame();
 
-        final Set<String> names0 = s0.getAdditionalStates().keySet();
-        additional = names0.toArray(new String[names0.size()]);
+        final List<DoubleArrayDictionary.Entry> as = s0.getAdditionalStatesValues().getData();
+        additional = new String[as.size()];
+        for (int i = 0; i < additional.length; ++i) {
+            additional[i] = as.get(i).getKey();
+        }
 
         // check all states handle the same additional states
         for (final SpacecraftState state : states) {
@@ -187,7 +215,16 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             pvProvider.setCurrentState(evaluatedState);
             final Attitude calculatedAttitude = attitudeProvider.getAttitude(pvProvider, date,
                                                                              evaluatedState.getFrame());
-            return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude, evaluatedState.getMass());
+
+            // Verify if orbit is defined
+            if (evaluatedState.isOrbitDefined()) {
+                return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude, evaluatedState.getMass(),
+                                           evaluatedState.getAdditionalStatesValues(), evaluatedState.getAdditionalStatesDerivatives());
+            } else {
+                return new SpacecraftState(evaluatedState.getAbsPVA(), calculatedAttitude, evaluatedState.getMass(),
+                                           evaluatedState.getAdditionalStatesValues(), evaluatedState.getAdditionalStatesDerivatives());
+            }
+
         }
     }
 
@@ -309,7 +346,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             if (FastMath.abs(dt) > closeEnoughTimeInSec) {
 
                 // used in case of attitude transition, the attitude computed is not at the current date.
-                final Ephemeris ephemeris = new Ephemeris(states, interpolationPoints, extrapolationThreshold);
+                final Ephemeris ephemeris = new Ephemeris(states, interpolationPoints, extrapolationThreshold, null);
                 return ephemeris.getPVCoordinates(date, f);
             }
 

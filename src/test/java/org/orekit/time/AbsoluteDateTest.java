@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,19 +19,26 @@ package org.orekit.time;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -52,6 +59,7 @@ public class AbsoluteDateTest {
         Assert.assertEquals(315964819000l,     AbsoluteDate.QZSS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(1136073633000l,    AbsoluteDate.BEIDOU_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(820443629000l,     AbsoluteDate.GLONASS_EPOCH.toDate(tai).getTime());
+        Assert.assertEquals(935280019000l,     AbsoluteDate.IRNSS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
     }
 
@@ -75,6 +83,8 @@ public class AbsoluteDateTest {
                             AbsoluteDate.BEIDOU_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("1995-12-31T21:00:00.000",
                             AbsoluteDate.GLONASS_EPOCH.toString(TimeScalesFactory.getUTC()));
+        Assert.assertEquals("1999-08-21T23:59:47.000",
+                AbsoluteDate.IRNSS_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1970-01-01T00:00:00.000",
@@ -172,18 +182,24 @@ public class AbsoluteDateTest {
     public void testTimeZoneDisplay() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final AbsoluteDate date = new AbsoluteDate("2000-01-01T01:01:01.000", utc);
-        Assert.assertEquals("2000-01-01T01:01:01.000",       date.toString());
+        Assert.assertEquals("2000-01-01T01:01:01.000Z",      date.toString());
         Assert.assertEquals("2000-01-01T11:01:01.000+10:00", date.toString( 600));
         Assert.assertEquals("1999-12-31T23:01:01.000-02:00", date.toString(-120));
+        Assert.assertEquals("2000-01-01T01:01:01.000+00:00", date.toString(0));
 
         // winter time, Europe is one hour ahead of UTC
-        final TimeZone tz = TimeZone.getTimeZone("Europe/Paris");
+        TimeZone tz = TimeZone.getTimeZone("Europe/Paris");
         Assert.assertEquals("2001-01-22T11:30:00.000+01:00",
                             new AbsoluteDate("2001-01-22T10:30:00", utc).toString(tz));
 
         // summer time, Europe is two hours ahead of UTC
         Assert.assertEquals("2001-06-23T11:30:00.000+02:00",
                             new AbsoluteDate("2001-06-23T09:30:00", utc).toString(tz));
+
+        // check with UTC
+        tz = TimeZone.getTimeZone("UTC");
+        Assert.assertEquals("2001-06-23T09:30:00.000+00:00",
+                new AbsoluteDate("2001-06-23T09:30:00", utc).toString(tz));
 
     }
 
@@ -278,13 +294,13 @@ public class AbsoluteDateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2002, 01, 01),
                                              new TimeComponents(00, 00, 01),
                                              utc);
-        Assert.assertEquals("2002-01-01T00:00:01.000", date.toString());
+        Assert.assertEquals("2002-01-01T00:00:01.000Z", date.toString());
     }
 
     @Test
     public void test1970() {
         AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
-        Assert.assertEquals("1970-01-01T00:00:00.000", date.toString());
+        Assert.assertEquals("1970-01-01T00:00:00.000Z", date.toString());
     }
 
     @Test
@@ -628,17 +644,145 @@ public class AbsoluteDateTest {
         Assert.assertTrue(AbsoluteDate.JULIAN_EPOCH.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
         Assert.assertTrue(AbsoluteDate.J2000_EPOCH.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
         Assert.assertTrue(AbsoluteDate.J2000_EPOCH.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
+        Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.PAST_INFINITY) == 0);
         Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) < 0);
         Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) < 0);
         Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
         Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
         Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) > 0);
         Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
+        Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) == 0);
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
-        Assert.assertEquals("5881610-07-11T23:59:59.999",  AbsoluteDate.FUTURE_INFINITY.toString());
-        Assert.assertEquals("-5877490-03-03T00:00:00.000", AbsoluteDate.PAST_INFINITY.toString());
+        Assert.assertTrue(Double.isNaN(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.FUTURE_INFINITY)));
+        Assert.assertTrue(Double.isNaN(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
+        Assert.assertEquals("5881610-07-11T23:59:59.999Z",  AbsoluteDate.FUTURE_INFINITY.toString());
+        Assert.assertEquals("-5877490-03-03T00:00:00.000Z", AbsoluteDate.PAST_INFINITY.toString());
+        Assert.assertEquals(true, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
+        Assert.assertEquals(true, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
+        Assert.assertEquals(false, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
+        Assert.assertEquals(false, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
+
+        Assert.assertTrue(AbsoluteDate.J2000_EPOCH.durationFrom(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY))
+                          == Double.POSITIVE_INFINITY);
+        Assert.assertTrue(AbsoluteDate.J2000_EPOCH.durationFrom(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY))
+                          == Double.NEGATIVE_INFINITY);
+
+    }
+
+    @Test
+    public void testCompareTo() {
+        // check long time spans
+        AbsoluteDate epoch =
+                new AbsoluteDate(2000, 1, 1, 12, 0, 0, TimeScalesFactory.getTAI());
+        Assert.assertTrue(AbsoluteDate.JULIAN_EPOCH.compareTo(epoch) < 0);
+        Assert.assertTrue(epoch.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
+        // check short time spans
+        AbsoluteDate d = epoch;
+        double epsilon = 1.0 - FastMath.nextDown(1.0);
+        Assert.assertTrue(d.compareTo(d.shiftedBy(epsilon)) < 0);
+        Assert.assertTrue(d.compareTo(d.shiftedBy(0)) == 0);
+        Assert.assertTrue(d.compareTo(d.shiftedBy(-epsilon)) > 0);
+        // check date with negative offset
+        d = epoch.shiftedBy(496891466)
+                .shiftedBy(0.7320114066633323)
+                .shiftedBy(-19730.732011406664);
+        // offset is 0 in d1
+        AbsoluteDate d1 = epoch.shiftedBy(496891466 - 19730);
+        Assert.assertTrue(d.compareTo(d1) < 0);
+        // decrement epoch, now offset is 0.999... in d1
+        d1 = d1.shiftedBy(-1e-16);
+        Assert.assertTrue("" + d.durationFrom(d1), d.compareTo(d1) < 0);
+        // check large dates
+        // these tests fail due to long overflow in durationFrom() Bug #584
+        // d = new AbsoluteDate(epoch, Long.MAX_VALUE);
+        // Assert.assertEquals(-1, epoch.compareTo(d));
+        // Assert.assertTrue(d.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
+        // d = new AbsoluteDate(epoch, Long.MIN_VALUE);
+        // Assert.assertTrue(epoch.compareTo(d) > 0);
+        // Assert.assertTrue(d.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
+    }
+
+    @Test
+    public void testIsEqualTo() {
+        Assert.assertTrue(present.isEqualTo(present));
+        Assert.assertTrue(present.isEqualTo(presentToo));
+        Assert.assertFalse(present.isEqualTo(past));
+        Assert.assertFalse(present.isEqualTo(future));
+    }
+
+    @Test
+    public void testIsCloseTo() {
+        double tolerance = 10;
+        TimeStamped closeToPresent = new AnyTimeStamped(present.shiftedBy(5));
+        Assert.assertTrue(present.isCloseTo(present, tolerance));
+        Assert.assertTrue(present.isCloseTo(presentToo, tolerance));
+        Assert.assertTrue(present.isCloseTo(closeToPresent, tolerance));
+        Assert.assertFalse(present.isCloseTo(past, tolerance));
+        Assert.assertFalse(present.isCloseTo(future, tolerance));
+    }
+
+    @Test
+    public void testIsBefore() {
+        Assert.assertFalse(present.isBefore(past));
+        Assert.assertFalse(present.isBefore(present));
+        Assert.assertFalse(present.isBefore(presentToo));
+        Assert.assertTrue(present.isBefore(future));
+    }
+
+    @Test
+    public void testIsAfter() {
+        Assert.assertTrue(present.isAfter(past));
+        Assert.assertFalse(present.isAfter(present));
+        Assert.assertFalse(present.isAfter(presentToo));
+        Assert.assertFalse(present.isAfter(future));
+    }
+
+    @Test
+    public void testIsBeforeOrEqualTo() {
+        Assert.assertFalse(present.isBeforeOrEqualTo(past));
+        Assert.assertTrue(present.isBeforeOrEqualTo(present));
+        Assert.assertTrue(present.isBeforeOrEqualTo(presentToo));
+        Assert.assertTrue(present.isBeforeOrEqualTo(future));
+    }
+
+    @Test
+    public void testIsAfterOrEqualTo() {
+        Assert.assertTrue(present.isAfterOrEqualTo(past));
+        Assert.assertTrue(present.isAfterOrEqualTo(present));
+        Assert.assertTrue(present.isAfterOrEqualTo(presentToo));
+        Assert.assertFalse(present.isAfterOrEqualTo(future));
+    }
+
+    @Test
+    public void testIsBetween() {
+        Assert.assertTrue(present.isBetween(past, future));
+        Assert.assertTrue(present.isBetween(future, past));
+        Assert.assertFalse(past.getDate().isBetween(present, future));
+        Assert.assertFalse(past.getDate().isBetween(future, present));
+        Assert.assertFalse(future.getDate().isBetween(past, present));
+        Assert.assertFalse(future.getDate().isBetween(present, past));
+        Assert.assertFalse(present.isBetween(present, future));
+        Assert.assertFalse(present.isBetween(past, present));
+        Assert.assertFalse(present.isBetween(past, past));
+        Assert.assertFalse(present.isBetween(present, present));
+        Assert.assertFalse(present.isBetween(present, presentToo));
+    }
+
+    @Test
+    public void testIsBetweenOrEqualTo() {
+        Assert.assertTrue(present.isBetweenOrEqualTo(past, future));
+        Assert.assertTrue(present.isBetweenOrEqualTo(future, past));
+        Assert.assertFalse(past.getDate().isBetweenOrEqualTo(present, future));
+        Assert.assertFalse(past.getDate().isBetweenOrEqualTo(future, present));
+        Assert.assertFalse(future.getDate().isBetweenOrEqualTo(past, present));
+        Assert.assertFalse(future.getDate().isBetweenOrEqualTo(present, past));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, future));
+        Assert.assertTrue(present.isBetweenOrEqualTo(past, present));
+        Assert.assertFalse(present.isBetweenOrEqualTo(past, past));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, present));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, presentToo));
     }
 
     @Test
@@ -726,7 +870,7 @@ public class AbsoluteDateTest {
         Assert.assertEquals(  30, components.getDate().getDay());
         Assert.assertEquals(  23, components.getTime().getHour());
         Assert.assertEquals(  59, components.getTime().getMinute());
-        Assert.assertEquals(  60 - Precision.EPSILON,
+        Assert.assertEquals(  60 - Precision.EPSILON,  // misleading as 60.0 - eps = 60.0
                             components.getTime().getSecond(), 1.0e-15);
     }
 
@@ -744,15 +888,16 @@ public class AbsoluteDateTest {
         Assert.assertEquals(   7, dtc.getTime().getHour());
         Assert.assertEquals(  54, dtc.getTime().getMinute());
         Assert.assertEquals(60 - 9.094947e-13, dtc.getTime().getSecond(), 1.0e-15);
-        Assert.assertEquals("2015-09-30T07:55:00.000",
+        Assert.assertEquals("2015-09-30T07:54:59.99999999999909",
                             date.toString(utc));
         AbsoluteDate beforeMidnight = new AbsoluteDate(2008, 2, 29, 23, 59, 59.9994, utc);
         AbsoluteDate stillBeforeMidnight = beforeMidnight.shiftedBy(2.0e-4);
         Assert.assertEquals(59.9994, beforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
         Assert.assertEquals(59.9996, stillBeforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
-        Assert.assertEquals("2008-02-29T23:59:59.999", beforeMidnight.toString(utc));
-        Assert.assertEquals("2008-03-01T00:00:00.000", stillBeforeMidnight.toString(utc));
+        Assert.assertEquals("2008-02-29T23:59:59.9994", beforeMidnight.toString(utc));
+        Assert.assertEquals("2008-02-29T23:59:59.9996", stillBeforeMidnight.toString(utc));
     }
+
 
     @Test
     public void testLastLeapOutput() {
@@ -773,8 +918,8 @@ public class AbsoluteDateTest {
         Assert.assertEquals(  23,        t.getComponents(utc).getTime().getHour());
         Assert.assertEquals(  59,        t.getComponents(utc).getTime().getMinute());
         Assert.assertEquals(  59.999999, t.getComponents(utc).getTime().getSecond(), 1.0e-6);
-        Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
-        Assert.assertEquals("2015-07-01T02:59:60.000", t.toString(TimeScalesFactory.getGLONASS()));
+        Assert.assertEquals("2015-06-30T23:59:59.999999", t.toString(utc));
+        Assert.assertEquals("2015-07-01T02:59:59.999999", t.toString(TimeScalesFactory.getGLONASS()));
     }
 
     @Test
@@ -798,8 +943,10 @@ public class AbsoluteDateTest {
             AbsoluteDate.createMJDDate(mjd, seconds + 1.0, utc);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER, oiae.getSpecifier());
-            Assert.assertEquals(86401.5, ((Double) oiae.getParts()[0]).doubleValue(), 1.0e-10);
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL, oiae.getSpecifier());
+            Assert.assertEquals(86400.5, (Double) oiae.getParts()[0], 0);
+            Assert.assertEquals(0, ((Number) oiae.getParts()[1]).doubleValue(), 0);
+            Assert.assertEquals(86400, ((Number) oiae.getParts()[2]).doubleValue(), 0);
         }
 
     }
@@ -818,12 +965,441 @@ public class AbsoluteDateTest {
 
     }
 
+    @Test
+    public void testGetComponentsIssue681and676and694() {
+        // setup
+        AbsoluteDate date = new AbsoluteDate(2009, 1, 1, utc);
+        double zeroUlp = FastMath.nextUp(0.0);
+        double oneUlp = FastMath.ulp(1.0);
+        double sixtyUlp = FastMath.ulp(60.0);
+        double one = FastMath.nextDown(1.0);
+        double sixty = FastMath.nextDown(60.0);
+        double sixtyOne = FastMath.nextDown(61.0);
+
+        // actions + verify
+        // translate back to AbsoluteDate has up to half an ULP of error,
+        // except when truncated when the error can be up to 1 ULP.
+        check(date, 2009, 1, 1, 0, 0, 0, 1, 0, 0);
+        check(date.shiftedBy(zeroUlp), 2009, 1, 1, 0, 0, zeroUlp, 0.5, 0, 0);
+        check(date.shiftedBy(oneUlp), 2009, 1, 1, 0, 0, oneUlp, 0.5, 0, 0);
+        check(date.shiftedBy(one), 2009, 1, 1, 0, 0, one, 0.5, 0, 0);
+        // I could also see rounding to a valid time as being reasonable here
+        check(date.shiftedBy(59).shiftedBy(one), 2009, 1, 1, 0, 0, sixty, 1, 0, 0);
+        check(date.shiftedBy(86399).shiftedBy(one), 2009, 1, 1, 23, 59, sixty, 1, 0, 0);
+        check(date.shiftedBy(-zeroUlp), 2009, 1, 1, 0, 0, 0, 0.5, 0, 0);
+        check(date.shiftedBy(-oneUlp), 2008, 12, 31, 23, 59, sixtyOne, 1, 0, 0);
+        check(date.shiftedBy(-1).shiftedBy(zeroUlp), 2008, 12, 31, 23, 59, 60.0, 0.5, 0, 0);
+        check(date.shiftedBy(-1).shiftedBy(-zeroUlp), 2008, 12, 31, 23, 59, 60.0, 0.5, 0, 0);
+        check(date.shiftedBy(-1).shiftedBy(-oneUlp), 2008, 12, 31, 23, 59, 60.0, 0.5, 0, 0);
+        check(date.shiftedBy(-1).shiftedBy(-sixtyUlp), 2008, 12, 31, 23, 59, sixty, 0.5, 0, 0);
+        check(date.shiftedBy(-61).shiftedBy(zeroUlp), 2008, 12, 31, 23, 59, zeroUlp, 0.5, 0, 0);
+        check(date.shiftedBy(-61).shiftedBy(oneUlp), 2008, 12, 31, 23, 59, oneUlp, 0.5, 0, 0);
+
+        // check UTC weirdness.
+        // These have more error because of additional multiplications and additions
+        // up to 2 ULPs or ulp(60.0) of error.
+        AbsoluteDate d = new AbsoluteDate(1966, 1, 1, utc);
+        double ratePost = 0.0025920 / Constants.JULIAN_DAY;
+        double factorPost = ratePost / (1 + ratePost);
+        double ratePre = 0.0012960 / Constants.JULIAN_DAY;
+        double factorPre = ratePre / (1 + ratePre);
+        check(d, 1966, 1, 1, 0, 0, 0, 1, 0, 0);
+        check(d.shiftedBy(zeroUlp), 1966, 1, 1, 0, 0, 0, 0.5, 0, 0);
+        check(d.shiftedBy(oneUlp), 1966, 1, 1, 0, 0, oneUlp, 0.5, 0, 0);
+        check(d.shiftedBy(one), 1966, 1, 1, 0, 0, one * (1 - factorPost), 0.5, 2, 0);
+        check(d.shiftedBy(59).shiftedBy(one), 1966, 1, 1, 0, 0, sixty * (1 - factorPost), 1, 1, 0);
+        check(d.shiftedBy(86399).shiftedBy(one), 1966, 1, 1, 23, 59, sixty - 86400 * factorPost, 1, 1, 0);
+        check(d.shiftedBy(-zeroUlp), 1966, 1, 1, 0, 0, 0, 0.5, 0, 0);
+        // actual leap is small ~1e-16, but during a leap rounding up to 60.0 is ok
+        check(d.shiftedBy(-oneUlp), 1965, 12, 31, 23, 59, 60.0, 1, 0, 0);
+        check(d.shiftedBy(-1).shiftedBy(zeroUlp), 1965, 12, 31, 23, 59, 59 + factorPre, 0.5, 0, 0);
+        check(d.shiftedBy(-1).shiftedBy(-zeroUlp), 1965, 12, 31, 23, 59, 59 + factorPre, 0.5, 0, 0);
+        check(d.shiftedBy(-1).shiftedBy(-oneUlp), 1965, 12, 31, 23, 59, 59 + factorPre, 0.5, 0, 0);
+        check(d.shiftedBy(-1).shiftedBy(-sixtyUlp), 1965, 12, 31, 23, 59, 59 + (1 + sixtyUlp) * factorPre, 0.5, 1, 0);
+        // since second ~= 0 there is significant cancellation
+        check(d.shiftedBy(-60).shiftedBy(zeroUlp), 1965, 12, 31, 23, 59, 60 * factorPre, 0, 0, sixtyUlp);
+        check(d.shiftedBy(-60).shiftedBy(oneUlp), 1965, 12, 31, 23, 59, (oneUlp - oneUlp * factorPre) + 60 * factorPre, 0.5, 0, sixtyUlp);
+
+        // check first whole second leap
+        AbsoluteDate d2 = new AbsoluteDate(1972, 7, 1, utc);
+        check(d2, 1972, 7, 1, 0, 0, 0, 1, 0, 0);
+        check(d2.shiftedBy(zeroUlp), 1972, 7, 1, 0, 0, zeroUlp, 0.5, 0, 0);
+        check(d2.shiftedBy(oneUlp), 1972, 7, 1, 0, 0, oneUlp, 0.5, 0, 0);
+        check(d2.shiftedBy(one), 1972, 7, 1, 0, 0, one, 0.5, 0, 0);
+        check(d2.shiftedBy(59).shiftedBy(one), 1972, 7, 1, 0, 0, sixty, 1, 0, 0);
+        check(d2.shiftedBy(86399).shiftedBy(one), 1972, 7, 1, 23, 59, sixty, 1, 0, 0);
+        check(d2.shiftedBy(-zeroUlp), 1972, 7, 1, 0, 0, 0, 0.5, 0, 0);
+        check(d2.shiftedBy(-oneUlp), 1972, 6, 30, 23, 59, sixtyOne, 1, 0, 0);
+        check(d2.shiftedBy(-1).shiftedBy(zeroUlp), 1972, 6, 30, 23, 59, 60.0, 0.5, 0, 0);
+        check(d2.shiftedBy(-1).shiftedBy(-zeroUlp), 1972, 6, 30, 23, 59, 60.0, 0.5, 0, 0);
+        check(d2.shiftedBy(-1).shiftedBy(-oneUlp), 1972, 6, 30, 23, 59, 60.0, 0.5, 0, 0);
+        check(d2.shiftedBy(-1).shiftedBy(-sixtyUlp), 1972, 6, 30, 23, 59, sixty, 0.5, 0, 0);
+        check(d2.shiftedBy(-61).shiftedBy(zeroUlp), 1972, 6, 30, 23, 59, zeroUlp, 0.5, 0, 0);
+        check(d2.shiftedBy(-61).shiftedBy(oneUlp), 1972, 6, 30, 23, 59, oneUlp, 0.5, 0, 0);
+
+        // check first leap second, which was actually 1.422818 s.
+        AbsoluteDate d3 = AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1230724800);
+        check(d3, 1960, 12, 31, 23, 59, 60, 0.5, 0, 0);
+        AbsoluteDate d4 = new AbsoluteDate(1961, 1, 1, utc);
+        check(d4, 1961, 1, 1, 0, 0, 0, 0.5, 0, 0);
+        // FIXME something wrong because a date a smidgen before 1961-01-01 is not in a leap second
+        //check(d4.shiftedBy(-oneUlp), 1960, 12, 31, 23, 59, 61.422818, 0.5, 0, 0);
+
+        // check NaN, this is weird that NaNs have valid ymdhm, but not second.
+        DateTimeComponents actual = date.shiftedBy(Double.NaN).getComponents(utc);
+        DateComponents dc = actual.getDate();
+        TimeComponents tc = actual.getTime();
+        MatcherAssert.assertThat(dc.getYear(), CoreMatchers.is(2009));
+        MatcherAssert.assertThat(dc.getMonth(), CoreMatchers.is(1));
+        MatcherAssert.assertThat(dc.getDay(), CoreMatchers.is(1));
+        MatcherAssert.assertThat(tc.getHour(), CoreMatchers.is(0));
+        MatcherAssert.assertThat(tc.getMinute(), CoreMatchers.is(0));
+        MatcherAssert.assertThat("second", tc.getSecond(), CoreMatchers.is(Double.NaN));
+        MatcherAssert.assertThat(tc.getMinutesFromUTC(), CoreMatchers.is(0));
+        final double difference = new AbsoluteDate(actual, utc).durationFrom(date);
+        MatcherAssert.assertThat(difference, CoreMatchers.is(Double.NaN));
+    }
+
+    private void check(AbsoluteDate date,
+                       int year, int month, int day, int hour, int minute, double second,
+                       double roundTripUlps, final int secondUlps, final double absTol) {
+        DateTimeComponents actual = date.getComponents(utc);
+        DateComponents d = actual.getDate();
+        TimeComponents t = actual.getTime();
+        MatcherAssert.assertThat(d.getYear(), CoreMatchers.is(year));
+        MatcherAssert.assertThat(d.getMonth(), CoreMatchers.is(month));
+        MatcherAssert.assertThat(d.getDay(), CoreMatchers.is(day));
+        MatcherAssert.assertThat(t.getHour(), CoreMatchers.is(hour));
+        MatcherAssert.assertThat(t.getMinute(), CoreMatchers.is(minute));
+        MatcherAssert.assertThat("second", t.getSecond(),
+                OrekitMatchers.numberCloseTo(second, absTol, secondUlps));
+        MatcherAssert.assertThat(t.getMinutesFromUTC(), CoreMatchers.is(0));
+        final double tol = FastMath.ulp(second) * roundTripUlps;
+        final double difference = new AbsoluteDate(actual, utc).durationFrom(date);
+        MatcherAssert.assertThat(difference,
+                OrekitMatchers.closeTo(0, FastMath.max(absTol, tol)));
+    }
+
+    /** Check {@link AbsoluteDate#toStringRfc3339(TimeScale)}. */
+    @Test
+    public void testToStringRfc3339() {
+        // setup
+        AbsoluteDate date = new AbsoluteDate(2009, 1, 1, utc);
+        double one = FastMath.nextDown(1.0);
+        double zeroUlp = FastMath.nextUp(0.0);
+        double oneUlp = FastMath.ulp(1.0);
+        //double sixty = FastMath.nextDown(60.0);
+        double sixtyUlp = FastMath.ulp(60.0);
+
+        // action
+        // test midnight
+        check(date, "2009-01-01T00:00:00Z");
+        check(date.shiftedBy(1), "2009-01-01T00:00:01Z");
+        // test digits and rounding
+        check(date.shiftedBy(12.3456789123456789), "2009-01-01T00:00:12.34567891234568Z");
+        check(date.shiftedBy(0.0123456789123456789), "2009-01-01T00:00:00.01234567891235Z");
+        // test min and max values
+        check(date.shiftedBy(zeroUlp), "2009-01-01T00:00:00Z");
+        check(date.shiftedBy(59.0).shiftedBy(one), "2009-01-01T00:00:59.99999999999999Z");
+        check(date.shiftedBy(86399).shiftedBy(one), "2009-01-01T23:59:59.99999999999999Z");
+        check(date.shiftedBy(oneUlp), "2009-01-01T00:00:00Z");
+        check(date.shiftedBy(one), "2009-01-01T00:00:01Z");
+        check(date.shiftedBy(-zeroUlp), "2009-01-01T00:00:00Z");
+        // test leap
+        check(date.shiftedBy(-oneUlp), "2008-12-31T23:59:60.99999999999999Z");
+        check(date.shiftedBy(-1).shiftedBy(one), "2008-12-31T23:59:60.99999999999999Z");
+        check(date.shiftedBy(-0.5), "2008-12-31T23:59:60.5Z");
+        check(date.shiftedBy(-1).shiftedBy(zeroUlp), "2008-12-31T23:59:60Z");
+        check(date.shiftedBy(-1), "2008-12-31T23:59:60Z");
+        check(date.shiftedBy(-1).shiftedBy(-zeroUlp), "2008-12-31T23:59:60Z");
+        check(date.shiftedBy(-1).shiftedBy(-oneUlp), "2008-12-31T23:59:60Z");
+        check(date.shiftedBy(-2), "2008-12-31T23:59:59Z");
+        check(date.shiftedBy(-1).shiftedBy(-sixtyUlp), "2008-12-31T23:59:59.99999999999999Z");
+        check(date.shiftedBy(-61).shiftedBy(zeroUlp), "2008-12-31T23:59:00Z");
+        check(date.shiftedBy(-61).shiftedBy(oneUlp), "2008-12-31T23:59:00Z");
+        // test UTC weirdness
+        // These have more error because of additional multiplications and additions
+        // up to 2 ULPs or ulp(60.0) of error.
+        // toStringRFC3339 only has 14 digits of precision after the decimal point
+        final DecimalFormat format = new DecimalFormat("00.##############", new DecimalFormatSymbols(Locale.US));
+        AbsoluteDate d = new AbsoluteDate(1966, 1, 1, utc);
+        double ratePost = 0.0025920 / Constants.JULIAN_DAY;
+        double factorPost = ratePost / (1 + ratePost);
+        double ratePre = 0.0012960 / Constants.JULIAN_DAY;
+        double factorPre = ratePre / (1 + ratePre);
+        check(d, "1966-01-01T00:00:00Z"); //, 1, 0, 0);
+        check(d.shiftedBy(zeroUlp), "1966-01-01T00:00:00Z"); //, 0.5, 0, 0);
+        check(d.shiftedBy(oneUlp), "1966-01-01T00:00:00Z"); //, oneUlp, 0.5, 0, 0);
+        check(d.shiftedBy(one), "1966-01-01T00:00:" + format.format( one * (1 - factorPost)) + "Z"); //, 0.5, 2, 0);
+        // one ulp of error
+        check(d.shiftedBy(59).shiftedBy(one), "1966-01-01T00:00:59.99999820000005Z"); // + format.format( sixty * (1 - factorPost)) + "Z"); //, 1, 1, 0);
+        // one ulp of error
+        check(d.shiftedBy(86399).shiftedBy(one), "1966-01-01T23:59:59.99740800007776Z"); // + format.format( sixty - 86400 * factorPost) + "Z"); //, 1, 1, 0);
+        check(d.shiftedBy(-zeroUlp), "1966-01-01T00:00:00Z"); // , 0.5, 0, 0);
+        // actual leap is small ~1e-16, but during a leap rounding up to 60.0 is ok
+        check(d.shiftedBy(-oneUlp), "1965-12-31T23:59:60Z"); // , 1, 0, 0);
+        check(d.shiftedBy(-1).shiftedBy(zeroUlp), "1965-12-31T23:59:" + format.format( 59 + factorPre) + "Z"); //, 0.5, 0, 0);
+        check(d.shiftedBy(-1).shiftedBy(-zeroUlp), "1965-12-31T23:59:" + format.format( 59 + factorPre) + "Z"); //, 0.5, 0, 0);
+        check(d.shiftedBy(-1).shiftedBy(-oneUlp), "1965-12-31T23:59:" + format.format( 59 + factorPre) + "Z"); //, 0.5, 0, 0);
+        // one ulp of error
+        check(d.shiftedBy(-1).shiftedBy(-sixtyUlp), "1965-12-31T23:59:59.00000001499999Z"); // + format.format( 59 + (1 + sixtyUlp) * factorPre) + "Z"); //, 0.5, 1, 0);
+        // since second ~= 0 there is significant cancellation
+        check(d.shiftedBy(-60).shiftedBy(zeroUlp), "1965-12-31T23:59:" + format.format( 60 * factorPre) + "Z"); //, 0, 0, sixtyUlp);
+        check(d.shiftedBy(-60).shiftedBy(oneUlp), "1965-12-31T23:59:" + format.format( (oneUlp - oneUlp * factorPre) + 60 * factorPre) + "Z"); //, 0.5, 0, sixtyUlp);
+
+        // check first leap second, which was actually 1.422818 s.
+        check(new AbsoluteDate(1961, 1, 1, utc), "1961-01-01T00:00:00Z"); //, 0.5, 0, 0);
+        AbsoluteDate d3 = AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1230724800);
+        check(d3, "1960-12-31T23:59:60Z"); ///, 0.5, 0, 0);
+        // FIXME something wrong because a date a smidgen before 1961-01-01 is not in a leap second
+        //check(d3.shiftedBy(FastMath.nextDown(1.422818)), "1960-12-31T23:59:61.422818Z"); //, 0.5, 0, 0);
+
+        // test proleptic
+        check(new AbsoluteDate(123, 4, 5, 6, 7, 8.9, utc), "0123-04-05T06:07:08.9Z");
+
+        // there is not way to produce valid RFC3339 for these cases
+        // I would rather print something useful than throw an exception
+        // so these cases don't check for a correct answer, just an informative one
+        check(new AbsoluteDate(-123, 4, 5, 6, 7, 8.9, utc), "-123-04-05T06:07:08.9Z");
+        check(new AbsoluteDate(-1230, 4, 5, 6, 7, 8.9, utc), "-1230-04-05T06:07:08.9Z");
+        // test far future
+        check(new AbsoluteDate(12300, 4, 5, 6, 7, 8.9, utc), "12300-04-05T06:07:08.9Z");
+        // test infinity
+        check(AbsoluteDate.FUTURE_INFINITY, "5881610-07-11T23:59:59.999Z");
+        check(AbsoluteDate.PAST_INFINITY, "-5877490-03-03T00:00:00Z");
+        // test NaN
+        if ("1.8".equals(System.getProperty("java.specification.version"))) {
+            // \uFFFD is "�", the unicode replacement character
+            // that is what DecimalFormat uses instead of "NaN"
+            check(date.shiftedBy(Double.NaN), "2009-01-01T00:00:\uFFFDZ");
+        } else {
+            check(date.shiftedBy(Double.NaN), "2009-01-01T00:00:NaNZ");
+        }
+    }
+
+    private void check(final AbsoluteDate d, final String s) {
+        MatcherAssert.assertThat(d.toStringRfc3339(utc),
+                CoreMatchers.is(s));
+        MatcherAssert.assertThat(d.getComponents(utc).toStringRfc3339(),
+                CoreMatchers.is(s));
+    }
+
+
+    /** Check {@link AbsoluteDate#toString()}. */
+    @Test
+    public void testToString() {
+        // setup
+        AbsoluteDate date = new AbsoluteDate(2009, 1, 1, utc);
+        double one = FastMath.nextDown(1.0);
+        double zeroUlp = FastMath.nextUp(0.0);
+        double oneUlp = FastMath.ulp(1.0);
+        //double sixty = FastMath.nextDown(60.0);
+        double sixtyUlp = FastMath.ulp(60.0);
+
+        // action
+        // test midnight
+        checkToString(date, "2009-01-01T00:00:00.000");
+        checkToString(date.shiftedBy(1), "2009-01-01T00:00:01.000");
+        // test digits and rounding
+        checkToString(date.shiftedBy(12.3456789123456789), "2009-01-01T00:00:12.34567891234568");
+        checkToString(date.shiftedBy(0.0123456789123456789), "2009-01-01T00:00:00.01234567891235");
+        // test min and max values
+        checkToString(date.shiftedBy(zeroUlp), "2009-01-01T00:00:00.000");
+        // Orekit 10.1 rounds up
+        checkToString(date.shiftedBy(59.0).shiftedBy(one), "2009-01-01T00:00:59.99999999999999");
+        // Orekit 10.1 rounds up
+        checkToString(date.shiftedBy(86399).shiftedBy(one), "2009-01-01T23:59:59.99999999999999");
+        checkToString(date.shiftedBy(oneUlp), "2009-01-01T00:00:00.000");
+        checkToString(date.shiftedBy(one), "2009-01-01T00:00:01.000");
+        checkToString(date.shiftedBy(-zeroUlp), "2009-01-01T00:00:00.000");
+        // test leap
+        // Orekit 10.1 throw OIAE, 10.2 rounds up
+        checkToString(date.shiftedBy(-oneUlp), "2008-12-31T23:59:60.99999999999999");
+        // Orekit 10.1 rounds up
+        checkToString(date.shiftedBy(-1).shiftedBy(one), "2008-12-31T23:59:60.99999999999999");
+        checkToString(date.shiftedBy(-0.5), "2008-12-31T23:59:60.500");
+        checkToString(date.shiftedBy(-1).shiftedBy(zeroUlp), "2008-12-31T23:59:60.000");
+        checkToString(date.shiftedBy(-1), "2008-12-31T23:59:60.000");
+        checkToString(date.shiftedBy(-1).shiftedBy(-zeroUlp), "2008-12-31T23:59:60.000");
+        checkToString(date.shiftedBy(-1).shiftedBy(-oneUlp), "2008-12-31T23:59:60.000");
+        checkToString(date.shiftedBy(-2), "2008-12-31T23:59:59.000");
+        // Orekit 10.1 rounds up
+        checkToString(date.shiftedBy(-1).shiftedBy(-sixtyUlp), "2008-12-31T23:59:59.99999999999999");
+        checkToString(date.shiftedBy(-61).shiftedBy(zeroUlp), "2008-12-31T23:59:00.000");
+        checkToString(date.shiftedBy(-61).shiftedBy(oneUlp), "2008-12-31T23:59:00.000");
+        // test UTC weirdness
+        // These have more error because of additional multiplications and additions
+        // up to 2 ULPs or ulp(60.0) of error.
+        // toStringRFC3339 only has 14 digits of precision after the decimal point
+        final DecimalFormat format = new DecimalFormat("00.##############", new DecimalFormatSymbols(Locale.US));
+        AbsoluteDate d = new AbsoluteDate(1966, 1, 1, utc);
+        double ratePost = 0.0025920 / Constants.JULIAN_DAY;
+        double factorPost = ratePost / (1 + ratePost);
+        double ratePre = 0.0012960 / Constants.JULIAN_DAY;
+        double factorPre = ratePre / (1 + ratePre);
+        checkToString(d, "1966-01-01T00:00:00.000"); //, 1, 0, 0);
+        checkToString(d.shiftedBy(zeroUlp), "1966-01-01T00:00:00.000"); //, 0.5, 0, 0);
+        checkToString(d.shiftedBy(oneUlp), "1966-01-01T00:00:00.000"); //, oneUlp, 0.5, 0, 0);
+        checkToString(d.shiftedBy(one), "1966-01-01T00:00:" + format.format( one * (1 - factorPost))); //, 0.5, 2, 0);
+        // Orekit 10.1 rounds up
+        checkToString(d.shiftedBy(59).shiftedBy(one), "1966-01-01T00:00:" + format.format( 60 * (1 - factorPost))); //  + "Z"); //, 1, 1, 0);
+        // one ulp of error
+        checkToString(d.shiftedBy(86399).shiftedBy(one), "1966-01-01T23:59:" + format.format( 60 - 86400 * factorPost)); //  + "Z"); //, 1, 1, 0);
+        checkToString(d.shiftedBy(-zeroUlp), "1966-01-01T00:00:00.000"); // , 0.5, 0, 0);
+        // actual leap is small ~1e-16, but during a leap rounding up to 60.0 is ok
+        checkToString(d.shiftedBy(-oneUlp), "1965-12-31T23:59:60.000"); // , 1, 0, 0);
+        checkToString(d.shiftedBy(-1).shiftedBy(zeroUlp), "1965-12-31T23:59:" + format.format( 59 + factorPre) ); //, 0.5, 0, 0);
+        checkToString(d.shiftedBy(-1).shiftedBy(-zeroUlp), "1965-12-31T23:59:" + format.format( 59 + factorPre) ); //, 0.5, 0, 0);
+        checkToString(d.shiftedBy(-1).shiftedBy(-oneUlp), "1965-12-31T23:59:" + format.format( 59 + factorPre) ); //, 0.5, 0, 0);
+        // one ulp of error
+        checkToString(d.shiftedBy(-1).shiftedBy(-sixtyUlp), "1965-12-31T23:59:59.00000001499999"); // + format.format(59 + factorPre)+ "Z"); //, 0.5, 1, 0);
+        // since second ~= 0 there is significant cancellation
+        checkToString(d.shiftedBy(-60).shiftedBy(zeroUlp), "1965-12-31T23:59:" + format.format( 60 * factorPre) ); //, 0, 0, sixtyUlp);
+        checkToString(d.shiftedBy(-60).shiftedBy(oneUlp), "1965-12-31T23:59:" + format.format( (oneUlp - oneUlp * factorPre) + 60 * factorPre) ); //, 0.5, 0, sixtyUlp);
+
+        // check first leap second, which was actually 1.422818 s.
+        checkToString(new AbsoluteDate(1961, 1, 1, utc), "1961-01-01T00:00:00.000"); //, 0.5, 0, 0);
+        AbsoluteDate d3 = AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1230724800);
+        checkToString(d3, "1960-12-31T23:59:60.000"); ///, 0.5, 0, 0);
+        // FIXME something wrong because a date a smidgen before 1961-01-01 is not in a leap second
+        //checkToString(d3.shiftedBy(FastMath.nextDown(1.422818)), "1960-12-31T23:59:61.423"); //, 0.5, 0, 0);
+
+        // test proleptic
+        checkToString(new AbsoluteDate(123, 4, 5, 6, 7, 8.9, utc), "0123-04-05T06:07:08.900");
+
+        // there is not way to produce valid RFC3339 for these cases
+        // I would rather print something useful than throw an exception
+        // so these cases don't check for a correct answer, just an informative one
+        checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, 8.9, utc), "-0123-04-05T06:07:08.900");
+        checkToString(new AbsoluteDate(-1230, 4, 5, 6, 7, 8.9, utc), "-1230-04-05T06:07:08.900");
+        // test far future
+        checkToString(new AbsoluteDate(12300, 4, 5, 6, 7, 8.9, utc), "12300-04-05T06:07:08.900");
+        // test infinity
+        checkToString(AbsoluteDate.FUTURE_INFINITY, "5881610-07-11T23:59:59.999");
+        checkToString(AbsoluteDate.PAST_INFINITY, "-5877490-03-03T00:00:00.000");
+        // test NaN
+        if ("1.8".equals(System.getProperty("java.specification.version"))) {
+            // \uFFFD is "�", the unicode replacement character
+            // that is what DecimalFormat used instead of "NaN" up to Java 8
+            checkToString(date.shiftedBy(Double.NaN), "2009-01-01T00:00:\uFFFD");
+        } else {
+            checkToString(date.shiftedBy(Double.NaN), "2009-01-01T00:00:NaN");
+        }
+    }
+
+    private void checkToString(final AbsoluteDate d, final String s) {
+        MatcherAssert.assertThat(d.toString(), CoreMatchers.is(s + "Z"));
+        MatcherAssert.assertThat(d.getComponents(utc).toString(), CoreMatchers.is(s + "+00:00"));
+    }
+
+    @Test
+    public void testToStringWithoutUtcOffset() {
+        // setup
+        AbsoluteDate date = new AbsoluteDate(2009, 1, 1, utc);
+        double one = FastMath.nextDown(1.0);
+        double zeroUlp = FastMath.nextUp(0.0);
+        double oneUlp = FastMath.ulp(1.0);
+        //double sixty = FastMath.nextDown(60.0);
+        double sixtyUlp = FastMath.ulp(60.0);
+
+        // action
+        // test midnight
+        checkToStringNoOffset(date, "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(1), "2009-01-01T00:00:01.000");
+        // test digits and rounding
+        checkToStringNoOffset(date.shiftedBy(12.3456789123456789), "2009-01-01T00:00:12.346");
+        checkToStringNoOffset(date.shiftedBy(0.0123456789123456789), "2009-01-01T00:00:00.012");
+        // test min and max values
+        checkToStringNoOffset(date.shiftedBy(zeroUlp), "2009-01-01T00:00:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(59.0).shiftedBy(one), "2009-01-01T00:01:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(86399).shiftedBy(one), "2009-01-02T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(oneUlp), "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(one), "2009-01-01T00:00:01.000");
+        checkToStringNoOffset(date.shiftedBy(-zeroUlp), "2009-01-01T00:00:00.000");
+        // test leap
+        // Orekit 10.1 throw OIAE, 10.2 rounds up
+        checkToStringNoOffset(date.shiftedBy(-oneUlp), "2009-01-01T00:00:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(one), "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(-0.5), "2008-12-31T23:59:60.500");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(zeroUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-zeroUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-oneUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-2), "2008-12-31T23:59:59.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-sixtyUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-61).shiftedBy(zeroUlp), "2008-12-31T23:59:00.000");
+        checkToStringNoOffset(date.shiftedBy(-61).shiftedBy(oneUlp), "2008-12-31T23:59:00.000");
+    }
+
+
+    private void checkToStringNoOffset(final AbsoluteDate d, final String s) {
+        MatcherAssert.assertThat(d.toStringWithoutUtcOffset(utc, 3), CoreMatchers.is(s));
+        MatcherAssert.assertThat(
+                d.getComponents(utc).toStringWithoutUtcOffset(utc.minuteDuration(d), 3),
+                CoreMatchers.is(s));
+    }
+
+    /**
+     * Check {@link AbsoluteDate#toString()} when UTC throws an exception. This ~is~ was
+     * the most common issue new and old users face.
+     */
+    @Test
+    public void testToStringException() {
+        Utils.setDataRoot("no-data");
+        try {
+            DataContext.getDefault().getTimeScales().getUTC();
+            Assert.fail("Expected Exception");
+        } catch (OrekitException e) {
+            // expected
+            Assert.assertEquals(e.getSpecifier(), OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
+        }
+        // try some unusual values
+        MatcherAssert.assertThat(present.toString(), CoreMatchers.is("2000-01-01T12:00:32.000 TAI"));
+        MatcherAssert.assertThat(present.shiftedBy(Double.POSITIVE_INFINITY).toString(),
+                CoreMatchers.is("5881610-07-11T23:59:59.999 TAI"));
+        MatcherAssert.assertThat(present.shiftedBy(Double.NEGATIVE_INFINITY).toString(),
+                CoreMatchers.is("-5877490-03-03T00:00:00.000 TAI"));
+        String nan = "1.8".equals(System.getProperty("java.specification.version")) ? "\uFFFD" : "NaN";
+        MatcherAssert.assertThat(present.shiftedBy(Double.NaN).toString(),
+                CoreMatchers.is("2000-01-01T12:00:" + nan + " TAI"));
+        // infinity is special cased, but I can make AbsoluteDate.offset larger than
+        // Long.MAX_VALUE see #584
+        AbsoluteDate d = present.shiftedBy(1e300).shiftedBy(1e300).shiftedBy(1e300);
+        MatcherAssert.assertThat(d.toString(),
+                CoreMatchers.is("(-9223372036854775779 + 3.0E300) seconds past epoch"));
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
+        present = new AbsoluteDate(new DateComponents(2000, 1, 1),
+                                    new TimeComponents(12, 00, 00), utc);
+        presentToo = new AnyTimeStamped(present.shiftedBy(0));
+        past = new AnyTimeStamped(present.shiftedBy(-1000));
+        future = new AnyTimeStamped(present.shiftedBy(1000));
     }
 
     private TimeScale utc;
+    private AbsoluteDate present;
+    private AnyTimeStamped past;
+    private AnyTimeStamped presentToo;
+    private AnyTimeStamped future;
+
+    static class AnyTimeStamped implements TimeStamped {
+        AbsoluteDate date;
+        public AnyTimeStamped(AbsoluteDate date) {
+            this.date = date;
+        }
+
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
+    }
 
 }

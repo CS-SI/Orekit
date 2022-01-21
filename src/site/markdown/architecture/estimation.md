@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2022 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -11,8 +11,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-Orbit Determination
-===================
+
+# Orbit Determination
 
 The `org.orekit.estimation` package provides classes to manage orbit determination.
     
@@ -116,6 +116,19 @@ and Jacobians from the propagator side, calls the measurement methods to get the
 derivatives on the measurements side, and fetches the least squares estimator with the combined values, to be
 provided back to the Hipparchus least squares solver, thus closing the loop.
 
+The `SequentialBatchLSEstimator` class creates an implementation of a sequential batch least squares estimator engine
+to perform an orbit determination based on existing least square results (i.e., state and covariance). When an orbit
+determination has already been estimated and new measurements are given, it is not efficient to re-optimize the whole problem.
+Only considering the new measures while optimizing will neither give good results as the old measurements will not be
+taken into account. Thus, a sequential estimator is used to estimate the orbit, which uses the old results of the estimation
+and the new measurements. The `SequentialBatchLSEstimator` class can also be used in satellite operations when operators
+want to use the estimated covariance and state vector of an orbit determination performed the day before to improve
+the results of the daily orbit determination.
+
+The two batch least squares estimator implementations in Orekit are compatible to work with a `NumericalPropagator`, a
+`DSSTPropagator`, a `TLEPropagator`, an `EcksteinHechlerPropagator`, a `BrouwerLyddanePropagator`,
+or a `KeplerianPropagator`.
+
 ### Kalman filter
 
 ![kalman filter overview class diagram](../images/design/kalman-overview-class-diagram.png)
@@ -145,7 +158,16 @@ will be more realistic than a basic constant matrix.
 
 For even more accurate representations, users are free to set up their own models, which could go up to
 evaluating the effect of each force models. This is done by providing a custom implementation of
-`ProcessNoiseMatrixProvider`.
+`CovarianceMatrixProvider`.
+
+Because the DSST orbit propagator uses large step size to perform the numerical integration
+of the equations of motion for the mean equinoctial elements (e.g., half-day for GEO satellites), it
+is not suitable for a classical Extended Kalman Filter orbit determination. The classical Kalman filter
+algorithm needs to re-initialize the orbital state at each observation epoch. However, the time difference
+between two observations is usually much smaller than the DSST step size. In order to take advantage of the
+DSST theory within a recursive filter orbit determination, Orekit implements the Extended Semi-analytical Kalman Filter.
+
+![semi-analytical kalman filter overview class diagram](../images/design/extended-semi-analytical-kalman-filter-diagram.png)
 
 ### Estimated parameters
 

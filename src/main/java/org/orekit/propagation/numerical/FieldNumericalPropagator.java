@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,14 +21,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -41,11 +42,10 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
@@ -66,7 +66,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * <p>The configuration parameters that can be set are:</p>
  * <ul>
  *   <li>the initial spacecraft state ({@link #setInitialState(FieldSpacecraftState)})</li>
- *   <li>the central attraction coefficient ({@link #setMu(RealFieldElement)})</li>
+ *   <li>the central attraction coefficient ({@link #setMu(CalculusFieldElement)})</li>
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
  *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
@@ -80,10 +80,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(FieldEventDetector)},
  *   {@link #clearEventsDetectors()})</li>
- *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- *   {@link #setMasterMode(RealFieldElement, org.orekit.propagation.sampling.FieldOrekitFixedStepHandler)},
- *   {@link #setMasterMode(org.orekit.propagation.sampling.FieldOrekitStepHandler)},
- *   {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
+ *   <li>the binding logic with the rest of the application ({@link #getMultiplexer()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
  * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
@@ -145,7 +142,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends FieldAbstractIntegratedPropagator<T> {
+public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractIntegratedPropagator<T> {
 
     /** Force models used during the extrapolation of the FieldOrbit<T>, without Jacobians. */
     private final List<ForceModel> forceModels;
@@ -165,21 +162,50 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * for {@link #setOrbitType(OrbitType) propagation
      * orbit type} and {@link PositionAngle#TRUE} for {@link
      * #setPositionAngleType(PositionAngle) position angle type}.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param integrator numerical integrator to use for propagation.
      * @param field Field used by default
+     * @see #FieldNumericalPropagator(Field, FieldODEIntegrator, AttitudeProvider)
      */
+    @DefaultDataContext
     public FieldNumericalPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator) {
+        this(field, integrator, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Create a new instance of NumericalPropagator, based on orbit definition mu.
+     * After creation, the instance is empty, i.e. the attitude provider is set to an
+     * unspecified default law and there are no perturbing forces at all.
+     * This means that if {@link #addForceModel addForceModel} is not
+     * called after creation, the integrated orbit will follow a Keplerian
+     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
+     * for {@link #setOrbitType(OrbitType) propagation
+     * orbit type} and {@link PositionAngle#TRUE} for {@link
+     * #setPositionAngleType(PositionAngle) position angle type}.
+     * @param field Field used by default
+     * @param integrator numerical integrator to use for propagation.
+     * @param attitudeProvider attitude law to use.
+     * @since 10.1
+     */
+    public FieldNumericalPropagator(final Field<T> field,
+                                    final FieldODEIntegrator<T> integrator,
+                                    final AttitudeProvider attitudeProvider) {
         super(field, integrator, PropagationType.MEAN);
         this.field = field;
         forceModels = new ArrayList<ForceModel>();
         initMapper(field);
-        setAttitudeProvider(DEFAULT_LAW);
+        setAttitudeProvider(attitudeProvider);
         setMu(field.getZero().add(Double.NaN));
-        setSlaveMode();
+        clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }
 
+    /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
+     * @param ignoreCentralAttraction if true, {@link NewtonianAttraction} is <em>not</em>
+     * added automatically if missing
+     */
     public void setIgnoreCentralAttraction(final boolean ignoreCentralAttraction) {
         this.ignoreCentralAttraction = ignoreCentralAttraction;
     }
@@ -225,7 +251,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * a Keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
      * @see #removeForceModels()
-     * @see #setMu(RealFieldElement)
+     * @see #setMu(CalculusFieldElement)
      */
     public void addForceModel(final ForceModel model) {
 
@@ -234,7 +260,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
             try {
                 // ensure we are notified of any mu change
-                model.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+                model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver) {
@@ -281,7 +307,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @return list of perturbing force models, with Newtonian attraction being the
      * last one
      * @see #addForceModel(ForceModel)
-     * @see #setMu(RealFieldElement)
+     * @see #setMu(CalculusFieldElement)
      * @since 9.1
      */
     public List<ForceModel> getAllForceModels() {
@@ -477,11 +503,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         /** {@inheritDoc} */
         @Override
         public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
-            final SpacecraftState stateD  = initialState.toSpacecraftState();
-            final AbsoluteDate    targetD = target.toAbsoluteDate();
-            for (final ForceModel forceModel : forceModels) {
-                forceModel.init(stateD, targetD);
-            }
+            forceModels.forEach(fm -> fm.init(initialState, target));
         }
 
         /** {@inheritDoc} */
@@ -524,11 +546,11 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
                 if (mu.getReal() > 0) {
                     // velocity derivative is Newtonian acceleration
                     final FieldVector3D<T> position = currentState.getPVCoordinates().getPosition();
-                    final double r2         = position.getNormSq().getReal();
-                    final double coeff      = -mu.getReal() / (r2 * FastMath.sqrt(r2));
-                    yDot[3] = yDot[3].add(coeff * position.getX().getReal());
-                    yDot[4] = yDot[4].add(coeff * position.getY().getReal());
-                    yDot[5] = yDot[5].add(coeff * position.getZ().getReal());
+                    final T r2         = position.getNormSq();
+                    final T coeff      = r2.multiply(r2.sqrt()).reciprocal().negate().multiply(mu);
+                    yDot[3] = yDot[3].add(coeff.multiply(position.getX()));
+                    yDot[4] = yDot[4].add(coeff.multiply(position.getY()));
+                    yDot[5] = yDot[5].add(coeff.multiply(position.getZ()));
                 }
 
             } else {
@@ -583,15 +605,42 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-          * @param <T> elements type
+     * @param <T> elements type
      */
-    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type) {
+    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type) {
 
         // estimate the scalar velocity error
         final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
         final T r2 = pv.getPosition().getNormSq();
         final T v  = pv.getVelocity().getNorm();
         final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
+
+        return tolerances(dP, dV, orbit, type);
+
+    }
+
+    /** Estimate tolerance vectors for integrators when propagating in orbits.
+     * <p>
+     * The errors are estimated from partial derivatives properties of orbits,
+     * starting from scalar position and velocity errors specified by the user.
+     * <p>
+     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
+     * are only local estimates, not global ones. So some care must be taken when using
+     * these tolerances. Setting 1mm as a position error does NOT mean the tolerances
+     * will guarantee a 1mm error position after several orbits integration.
+     * </p>
+     * @param <T> elements type
+     * @param dP user specified position error
+     * @param dV user specified velocity error
+     * @param orbit reference orbit
+     * @param type propagation type for the meaning of the tolerance vectors elements
+     * (it may be different from {@code orbit.getType()})
+     * @return a two rows array, row 0 being the absolute tolerance error and row 1
+     * being the relative tolerance error
+     * @since 10.3
+     */
+    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
+                                                                        final FieldOrbit<T> orbit, final OrbitType type) {
 
         final double[] absTol = new double[7];
         final double[] relTol = new double[7];
@@ -630,11 +679,9 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         }
 
-        Arrays.fill(relTol, dP.divide(r2.sqrt()).getReal());
+        Arrays.fill(relTol, dP.divide(orbit.getPVCoordinates().getPosition().getNormSq().sqrt()).getReal());
 
-        return new double[][]{
-            absTol, relTol
-        };
+        return new double[][] { absTol, relTol };
 
     }
 

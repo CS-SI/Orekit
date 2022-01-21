@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,26 +21,27 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.function.Supplier;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.Unit;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /** Loader for IERS rapid data and prediction file in XML format (finals file).
@@ -59,78 +60,76 @@ import org.xml.sax.helpers.DefaultHandler;
  * </p>
  * @author Luc Maisonobe
  */
-class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
+class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
+        implements EOPHistoryLoader {
 
-    /** Conversion factor for milli-arc seconds entries. */
-    private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
+    /** Millisecond unit. */
+    private static final Unit MILLI_SECOND = Unit.parse("ms");
 
-    /** Conversion factor for milli seconds entries. */
-    private static final double MILLI_SECONDS_TO_SECONDS = 1.0 / 1000.0;
+    /** Milli arcsecond unit. */
+    private static final Unit MILLI_ARC_SECOND = Unit.parse("mas");
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Build a loader for IERS XML EOP files.
+    /**
+     * Build a loader for IERS XML EOP files.
+     *
      * @param supportedNames regular expression for supported files names
+     * @param manager        provides access to the XML EOP files.
+     * @param utcSupplier    UTC time scale.
      */
-    RapidDataAndPredictionXMLLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+    RapidDataAndPredictionXMLLoader(final String supportedNames,
+                                    final DataProvidersManager manager,
+                                    final Supplier<TimeScale> utcSupplier) {
+        super(supportedNames, manager, utcSupplier);
     }
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
-        final Parser parser = new Parser(converter);
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
-        history.addAll(parser.history);
+        final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
+                ITRFVersionLoader.SUPPORTED_NAMES,
+                getDataProvidersManager());
+        final Parser parser = new Parser(converter, itrfVersionProvider, getUtc());
+        final EopParserLoader loader = new EopParserLoader(parser);
+        this.feed(loader);
+        history.addAll(loader.getEop());
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
-
-        /** Converter for nutation corrections. */
-        private final IERSConventions.NutationCorrectionConverter converter;
-
-        /** Configuration for ITRF versions. */
-        private final ITRFVersionLoader itrfVersionLoader;
+    static class Parser extends AbstractEopParser {
 
         /** History entries. */
-        private final List<EOPEntry> history;
+        private List<EOPEntry> history;
 
-        /** Simple constructor.
-         * @param converter converter to use
+        /**
+         * Simple constructor.
+         *
+         * @param converter           converter to use
+         * @param itrfVersionProvider to use for determining the ITRF version of the EOP.
+         * @param utc                 time scale for parsing dates.
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter) {
-            this.converter         = converter;
-            this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
-            this.history           = new ArrayList<EOPEntry>();
+        Parser(final IERSConventions.NutationCorrectionConverter converter,
+               final ItrfVersionProvider itrfVersionProvider,
+               final TimeScale utc) {
+            super(converter, itrfVersionProvider, utc);
         }
 
         /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        public void loadData(final InputStream input, final String name)
+        @Override
+        public Collection<EOPEntry> parse(final InputStream input, final String name)
             throws IOException, OrekitException {
             try {
-                // set up a reader for line-oriented bulletin B files
-                final XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-                reader.setContentHandler(new EOPContentHandler(name));
-                // disable external entities
-                reader.setEntityResolver((publicId, systemId) -> new InputSource());
+                this.history = new ArrayList<>();
+                // set up a parser for line-oriented bulletin B files
+                final SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 
                 // read all file, ignoring header
-                reader.parse(new InputSource(new InputStreamReader(input, StandardCharsets.UTF_8)));
+                parser.parse(new InputSource(new InputStreamReader(input, StandardCharsets.UTF_8)),
+                             new EOPContentHandler(name));
 
-            } catch (SAXException se) {
-                if ((se.getCause() != null) && (se.getCause() instanceof OrekitException)) {
-                    throw (OrekitException) se.getCause();
-                }
-                throw new OrekitException(se, LocalizedCoreFormats.SIMPLE_MESSAGE, se.getMessage());
-            } catch (ParserConfigurationException pce) {
-                throw new OrekitException(pce, LocalizedCoreFormats.SIMPLE_MESSAGE, pce.getMessage());
+                return history;
+
+            } catch (SAXException | ParserConfigurationException e) {
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getMessage());
             }
         }
 
@@ -190,7 +189,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
             private final String name;
 
             /** Buffer for read characters. */
-            private final StringBuffer buffer;
+            private final StringBuilder buffer;
 
             /** Indicator for daily data XML format or final data XML format. */
             private DataFileContent content;
@@ -203,7 +202,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
              */
             EOPContentHandler(final String name) {
                 this.name   = name;
-                this.buffer = new StringBuffer();
+                this.buffer = new StringBuilder();
             }
 
             /** {@inheritDoc} */
@@ -241,7 +240,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                 if (content == DataFileContent.DAILY) {
                     startDailyElement(qName, atts);
                 } else if (content == DataFileContent.FINAL) {
-                    startFinalElement(qName, atts);
+                    startFinalElement(qName);
                 }
 
             }
@@ -264,9 +263,8 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
 
             /** Handle end of an element in a final data file.
              * @param qName name of the element
-             * @param atts element attributes
              */
-            private void startFinalElement(final String qName, final Attributes atts) {
+            private void startFinalElement(final String qName) {
                 if (qName.equals(EOP_SET_ELT)) {
                     // reset EOP data
                     resetEOPData();
@@ -296,16 +294,11 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
 
             /** {@inheritDoc} */
             @Override
-            public void endElement(final String uri, final String localName, final String qName)
-                throws SAXException {
-                try {
-                    if (content == DataFileContent.DAILY) {
-                        endDailyElement(qName);
-                    } else if (content == DataFileContent.FINAL) {
-                        endFinalElement(qName);
-                    }
-                } catch (OrekitException oe) {
-                    throw new SAXException(oe);
+            public void endElement(final String uri, final String localName, final String qName) {
+                if (content == DataFileContent.DAILY) {
+                    endDailyElement(qName);
+                } else if (content == DataFileContent.FINAL) {
+                    endFinalElement(qName);
                 }
             }
 
@@ -313,56 +306,56 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
              * @param qName name of the element
              */
             private void endDailyElement(final String qName) {
-                if (qName.equals(DATE_YEAR_ELT) && (buffer.length() > 0)) {
+                if (qName.equals(DATE_YEAR_ELT) && buffer.length() > 0) {
                     year = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(DATE_MONTH_ELT) && (buffer.length() > 0)) {
+                } else if (qName.equals(DATE_MONTH_ELT) && buffer.length() > 0) {
                     month = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(DATE_DAY_ELT) && (buffer.length() > 0)) {
+                } else if (qName.equals(DATE_DAY_ELT) && buffer.length() > 0) {
                     day = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
+                } else if (qName.equals(MJD_ELT) && buffer.length() > 0) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                               TimeScalesFactory.getUTC());
+                                               getUtc());
                 } else if (qName.equals(UT1_M_UTC_ELT)) {
-                    dtu1 = overwrite(dtu1, 1.0);
+                    dtu1 = overwrite(dtu1, Unit.SECOND);
                 } else if (qName.equals(LOD_ELT)) {
-                    lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
+                    lod = overwrite(lod, MILLI_SECOND);
                 } else if (qName.equals(X_ELT)) {
-                    x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
+                    x = overwrite(x, Unit.ARC_SECOND);
                 } else if (qName.equals(Y_ELT)) {
-                    y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
+                    y = overwrite(y, Unit.ARC_SECOND);
                 } else if (qName.equals(DPSI_ELT)) {
-                    dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dpsi = overwrite(dpsi, MILLI_ARC_SECOND);
                 } else if (qName.equals(DEPSILON_ELT)) {
-                    deps = overwrite(deps, MILLI_ARC_SECONDS_TO_RADIANS);
+                    deps = overwrite(deps, MILLI_ARC_SECOND);
                 } else if (qName.equals(DX_ELT)) {
-                    dx   = overwrite(dx, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dx   = overwrite(dx, MILLI_ARC_SECOND);
                 } else if (qName.equals(DY_ELT)) {
-                    dy   = overwrite(dy, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dy   = overwrite(dy, MILLI_ARC_SECOND);
                 } else if (qName.equals(POLE_ELT) || qName.equals(UT_ELT) || qName.equals(NUTATION_ELT)) {
                     inBulletinA = false;
                 } else if (qName.equals(DATA_EOP_ELT)) {
                     checkDates();
-                    if ((!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) && (!Double.isNaN(x)) && (!Double.isNaN(y))) {
+                    if (!Double.isNaN(dtu1) && !Double.isNaN(lod) && !Double.isNaN(x) && !Double.isNaN(y)) {
                         final double[] equinox;
                         final double[] nro;
                         if (Double.isNaN(dpsi)) {
                             nro = new double[] {
                                 dx, dy
                             };
-                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
+                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 dpsi, deps
                             };
-                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion()));
+                                                 configuration.getVersion(), mjdDate));
                     }
                 }
             }
@@ -371,76 +364,76 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
              * @param qName name of the element
              */
             private void endFinalElement(final String qName) {
-                if (qName.equals(DATE_ELT) && (buffer.length() > 0)) {
+                if (qName.equals(DATE_ELT) && buffer.length() > 0) {
                     final String[] fields = buffer.toString().split("-");
                     if (fields.length == 3) {
                         year  = Integer.parseInt(fields[0]);
                         month = Integer.parseInt(fields[1]);
                         day   = Integer.parseInt(fields[2]);
                     }
-                } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
+                } else if (qName.equals(MJD_ELT) && buffer.length() > 0) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                               TimeScalesFactory.getUTC());
+                                               getUtc());
                 } else if (qName.equals(UT1_U_UTC_ELT)) {
-                    dtu1 = overwrite(dtu1, 1.0);
+                    dtu1 = overwrite(dtu1, Unit.SECOND);
                 } else if (qName.equals(LOD_ELT)) {
-                    lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
+                    lod = overwrite(lod, MILLI_SECOND);
                 } else if (qName.equals(X_ELT)) {
-                    x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
+                    x = overwrite(x, Unit.ARC_SECOND);
                 } else if (qName.equals(Y_ELT)) {
-                    y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
+                    y = overwrite(y, Unit.ARC_SECOND);
                 } else if (qName.equals(DPSI_ELT)) {
-                    dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dpsi = overwrite(dpsi, MILLI_ARC_SECOND);
                 } else if (qName.equals(DEPSILON_ELT)) {
-                    deps = overwrite(deps, MILLI_ARC_SECONDS_TO_RADIANS);
+                    deps = overwrite(deps, MILLI_ARC_SECOND);
                 } else if (qName.equals(DX_ELT)) {
-                    dx   = overwrite(dx, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dx   = overwrite(dx, MILLI_ARC_SECOND);
                 } else if (qName.equals(DY_ELT)) {
-                    dy   = overwrite(dy, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dy   = overwrite(dy, MILLI_ARC_SECOND);
                 } else if (qName.equals(BULLETIN_A_ELT)) {
                     inBulletinA = false;
                 } else if (qName.equals(EOP_SET_ELT)) {
                     checkDates();
-                    if ((!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) && (!Double.isNaN(x)) && (!Double.isNaN(y))) {
+                    if (!Double.isNaN(dtu1) && !Double.isNaN(lod) && !Double.isNaN(x) && !Double.isNaN(y)) {
                         final double[] equinox;
                         final double[] nro;
                         if (Double.isNaN(dpsi)) {
                             nro = new double[] {
                                 dx, dy
                             };
-                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
+                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 dpsi, deps
                             };
-                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion()));
+                                                 configuration.getVersion(), mjdDate));
                     }
                 }
             }
 
             /** Overwrite a value if it is not set or if we are in a bulletinB.
              * @param oldValue old value to overwrite (may be NaN)
-             * @param factor multiplicative factor to apply to raw read data
+             * @param units units of raw data
              * @return a new value
              */
-            private double overwrite(final double oldValue, final double factor) {
+            private double overwrite(final double oldValue, final Unit units) {
                 if (buffer.length() == 0) {
                     // there is nothing to overwrite with
                     return oldValue;
-                } else if (inBulletinA && (!Double.isNaN(oldValue))) {
+                } else if (inBulletinA && !Double.isNaN(oldValue)) {
                     // the value is already set and bulletin A values have a low priority
                     return oldValue;
                 } else {
                     // either the value is not set or it is a high priority bulletin B value
-                    return Double.parseDouble(buffer.toString()) * factor;
+                    return units.toSI(Double.parseDouble(buffer.toString()));
                 }
             }
 
@@ -453,21 +446,28 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                 }
             }
 
-        }
-
-        /** Enumerate for data file content. */
-        private enum DataFileContent {
-
-            /** Unknown content. */
-            UNKNOWN,
-
-            /** Daily data. */
-            DAILY,
-
-            /** Final data. */
-            FINAL;
+            /** {@inheritDoc} */
+            @Override
+            public InputSource resolveEntity(final String publicId, final String systemId) {
+                // disable external entities
+                return new InputSource();
+            }
 
         }
+
+    }
+
+    /** Enumerate for data file content. */
+    private enum DataFileContent {
+
+        /** Unknown content. */
+        UNKNOWN,
+
+        /** Daily data. */
+        DAILY,
+
+        /** Final data. */
+        FINAL
 
     }
 

@@ -1,5 +1,5 @@
 /* Copyright 2010-2011 Centre National d'Études Spatiales
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,18 +19,19 @@ package org.orekit.propagation.numerical;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
+/** {@link AdditionalDerivativesProvider derivatives provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
  * <p>
  * This set of equations are automatically added to a {@link NumericalPropagator numerical propagator}
@@ -60,8 +61,14 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
+ * @deprecated as of 11.1, replaced by {@link
+ * org.orekit.propagation.Propagator#setupMatricesComputation(String,
+ * org.hipparchus.linear.RealMatrix, org.orekit.utils.DoubleArrayDictionary)}
  */
-public class PartialDerivativesEquations implements AdditionalEquations {
+@Deprecated
+public class PartialDerivativesEquations
+    implements AdditionalDerivativesProvider,
+               org.orekit.propagation.integration.AdditionalEquations {
 
     /** Propagator computing state evolution. */
     private final NumericalPropagator propagator;
@@ -82,7 +89,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
      * the propagator by calling its {@link
-     * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
+     * NumericalPropagator#addAdditionalDerivativesProvider(AdditionalDerivativesProvider)} method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
      * @param name name of the partial derivatives equations
@@ -94,12 +101,19 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
-        propagator.addAdditionalEquations(this);
+        propagator.addAdditionalDerivativesProvider(this);
     }
 
     /** {@inheritDoc} */
     public String getName() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        freezeParametersSelection();
+        return 6 * (6 + selected.getNbParams());
     }
 
     /** Freeze the selected parameters from the force models.
@@ -214,8 +228,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
                                       stateDim, dY1dP.length);
         }
-        if ((dY1dP == null && selected.getNbParams() != 0) ||
-            (dY1dP != null && selected.getNbParams() != dY1dP[0].length)) {
+        if (dY1dP == null && selected.getNbParams() != 0 ||
+            dY1dP != null && selected.getNbParams() != dY1dP[0].length) {
             throw new OrekitException(new OrekitException(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
                                                           dY1dP == null ? 0 : dY1dP[0].length, selected.getNbParams()));
         }
@@ -247,7 +261,20 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        AdditionalDerivativesProvider.super.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        System.arraycopy(derivatives(s), 0, pDot, 0, pDot.length);
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    public double[] derivatives(final SpacecraftState s) {
 
         // initialize acceleration Jacobians to zero
         final int paramDim = selected.getNbParams();
@@ -256,20 +283,20 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         final double[][] dAccdPos   = new double[dim][dim];
         final double[][] dAccdVel   = new double[dim][dim];
 
-        final DSConverter fullConverter    = new DSConverter(s, 6, propagator.getAttitudeProvider());
-        final DSConverter posOnlyConverter = new DSConverter(s, 3, propagator.getAttitudeProvider());
+        final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(s, 6, propagator.getAttitudeProvider());
+        final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(s, 3, propagator.getAttitudeProvider());
 
         // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
         for (final ForceModel forceModel : propagator.getAllForceModels()) {
 
-            final DSConverter converter = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
-            final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
-            final DerivativeStructure[] parameters = converter.getParameters(dsState, forceModel);
+            final NumericalGradientConverter converter = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
+            final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
 
-            final FieldVector3D<DerivativeStructure> acceleration = forceModel.acceleration(dsState, parameters);
-            final double[] derivativesX = acceleration.getX().getAllDerivatives();
-            final double[] derivativesY = acceleration.getY().getAllDerivatives();
-            final double[] derivativesZ = acceleration.getZ().getAllDerivatives();
+            final FieldVector3D<Gradient> acceleration = forceModel.acceleration(dsState, parameters);
+            final double[] derivativesX = acceleration.getX().getGradient();
+            final double[] derivativesY = acceleration.getY().getGradient();
+            final double[] derivativesZ = acceleration.getZ().getGradient();
 
             // update Jacobians with respect to state
             addToRow(derivativesX, 0, converter.getFreeStateParameters(), dAccdPos, dAccdVel);
@@ -280,10 +307,10 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
                     final int parameterIndex = map.get(driver);
-                    ++index;
                     dAccdParam[0][parameterIndex] += derivativesX[index];
                     dAccdParam[1][parameterIndex] += derivativesY[index];
                     dAccdParam[2][parameterIndex] += derivativesZ[index];
+                    ++index;
                 }
             }
 
@@ -316,6 +343,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // copy C and E into Adot and Bdot
         final int stateDim = 6;
         final double[] p = s.getAdditionalState(getName());
+        final double[] pDot = new double[p.length];
         System.arraycopy(p, dim * stateDim, pDot, 0, dim * stateDim);
 
         // compute Cdot and Ddot
@@ -370,9 +398,16 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         }
 
-        // these equations have no effect on the main state itself
-        return null;
+        return pDot;
 
+    }
+
+    /** Get the flag for the initialization of the state jacobian.
+     * @return true if the state jacobian is initialized
+     * @since 10.2
+     */
+    public boolean isInitialize() {
+        return initialized;
     }
 
     /** Fill Jacobians rows.
@@ -387,11 +422,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                           final double[][] dAccdPos, final double[][] dAccdVel) {
 
         for (int i = 0; i < 3; ++i) {
-            dAccdPos[index][i] += derivatives[i + 1];
+            dAccdPos[index][i] += derivatives[i];
         }
         if (freeStateParameters > 3) {
             for (int i = 0; i < 3; ++i) {
-                dAccdVel[index][i] += derivatives[i + 4];
+                dAccdVel[index][i] += derivatives[i + 3];
             }
         }
 

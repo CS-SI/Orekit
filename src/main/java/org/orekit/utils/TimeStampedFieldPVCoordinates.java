@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,13 +19,18 @@ package org.orekit.utils;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link FieldPVCoordinates}.
@@ -34,8 +39,8 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 7.0
  */
-public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
-    extends FieldPVCoordinates<T> {
+public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
+    extends FieldPVCoordinates<T> implements FieldTimeStamped<T> {
 
     /** The date. */
     private final FieldAbsoluteDate<T> date;
@@ -574,17 +579,17 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * have consistent derivation orders.
      * </p>
      * @param date date of the built coordinates
+     * @param <U> type of the derivative
      * @param p vector with time-derivatives embedded within the coordinates
      */
-    public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
-                                         final FieldVector3D<FieldDerivativeStructure<T>> p) {
+    public <U extends FieldDerivative<T, U>> TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
+                                                                           final FieldVector3D<U> p) {
         super(p);
         this.date = date;
     }
 
-    /** Get the date.
-     * @return date
-     */
+    /** {@inheritDoc} */
+    @Override
     public FieldAbsoluteDate<T> getDate() {
         return date;
     }
@@ -641,7 +646,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         TimeStampedFieldPVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                      final CartesianDerivativesFilter filter,
                                                      final Collection<TimeStampedFieldPVCoordinates<T>> sample) {
@@ -668,7 +673,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         TimeStampedFieldPVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                      final CartesianDerivativesFilter filter,
                                                      final Stream<TimeStampedFieldPVCoordinates<T>> sample) {
@@ -733,21 +738,26 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                             getAcceleration().toVector3D());
     }
 
-    /** Return a string representation of this position/velocity pair.
-     * @return string representation of this position/velocity pair
+    /** Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @return string representation of this.
      */
+    @Override
+    @DefaultDataContext
     public String toString() {
-        final String comma = ", ";
-        return new StringBuffer().append('{').append(date).append(", P(").
-                                  append(getPosition().getX().getReal()).append(comma).
-                                  append(getPosition().getY().getReal()).append(comma).
-                                  append(getPosition().getZ().getReal()).append("), V(").
-                                  append(getVelocity().getX().getReal()).append(comma).
-                                  append(getVelocity().getY().getReal()).append(comma).
-                                  append(getVelocity().getZ().getReal()).append("), A(").
-                                  append(getAcceleration().getX().getReal()).append(comma).
-                                  append(getAcceleration().getY().getReal()).append(comma).
-                                  append(getAcceleration().getZ().getReal()).append(")}").toString();
+        return toTimeStampedPVCoordinates().toString();
+    }
+
+    /**
+     * Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * @param utc time scale used to print the date.
+     * @return string representation of this.
+     */
+    public String toString(final TimeScale utc) {
+        return toTimeStampedPVCoordinates().toString(utc);
     }
 
 }

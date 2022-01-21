@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -34,7 +34,7 @@ import org.hipparchus.util.MathArrays;
  * @author Lucian Barbulescu
  * @author Bryan Cazabonne
  */
-public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
+public class FieldHansenZonalLinear <T extends CalculusFieldElement<T>> {
 
     /** The number of coefficients that will be computed with a set of roots. */
     private static final int SLICE = 10;

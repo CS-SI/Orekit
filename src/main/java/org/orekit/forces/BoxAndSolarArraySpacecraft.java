@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,15 +19,15 @@ package org.orekit.forces;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.drag.DragSensitive;
@@ -594,21 +594,25 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getDragParametersDrivers() {
-        return liftParameterDriver == null ?
-               new ParameterDriver[] {
-                   dragParameterDriver
-               } : new ParameterDriver[] {
-                   dragParameterDriver, liftParameterDriver
-               };
+    public List<ParameterDriver> getDragParametersDrivers() {
+        // Initialize list of drag parameter drivers
+        final List<ParameterDriver> drivers = new ArrayList<>();
+        drivers.add(dragParameterDriver);
+        // Verify if the driver for lift ratio parameter is defined
+        if (liftParameterDriver != null) {
+            drivers.add(liftParameterDriver);
+        }
+        return drivers;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getRadiationParametersDrivers() {
-        return new ParameterDriver[] {
-            absorptionParameterDriver, reflectionParameterDriver
-        };
+    public List<ParameterDriver> getRadiationParametersDrivers() {
+        // Initialize list of drag parameter drivers
+        final List<ParameterDriver> drivers = new ArrayList<>();
+        drivers.add(absorptionParameterDriver);
+        drivers.add(reflectionParameterDriver);
+        return drivers;
     }
 
     /** Get solar array normal in spacecraft frame.
@@ -624,7 +628,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
             final double alpha = rotationRate * date.durationFrom(referenceDate);
-            return new Vector3D(FastMath.cos(alpha), saX, FastMath.sin(alpha), saY);
+            final SinCos scAlpha = FastMath.sinCos(alpha);
+            return new Vector3D(scAlpha.cos(), saX, scAlpha.sin(), saY);
         }
 
         // compute orientation for best lighting
@@ -652,7 +657,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @return solar array normal in spacecraft frame
      * @param <T> type of the field elements
      */
-    public synchronized <T extends RealFieldElement<T>> FieldVector3D<T> getNormal(final FieldAbsoluteDate<T> date,
+    public synchronized <T extends CalculusFieldElement<T>> FieldVector3D<T> getNormal(final FieldAbsoluteDate<T> date,
                                                                                    final Frame frame,
                                                                                    final FieldVector3D<T> position,
                                                                                    final FieldRotation<T> rotation) {
@@ -680,47 +685,6 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                    s.multiply(d).negate(), new FieldVector3D<>(date.getField(), saZ));
 
     }
-
-    /** Get solar array normal in spacecraft frame.
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @return solar array normal in spacecraft frame
-     * @deprecated Method not used anymore, should have been deleted in 9.0 but was left over. To be deleted in the next major version.
-     */
-    @Deprecated
-    public synchronized FieldVector3D<DerivativeStructure> getNormal(final AbsoluteDate date, final Frame frame,
-                                                                     final FieldVector3D<DerivativeStructure> position,
-                                                                     final FieldRotation<DerivativeStructure> rotation) {
-
-        final DerivativeStructure zero = position.getX().getField().getZero();
-
-        if (referenceDate != null) {
-            // use a simple rotation at fixed rate
-            final DerivativeStructure alpha = zero.add(rotationRate * date.durationFrom(referenceDate));
-            return new FieldVector3D<>(alpha.cos(), saX, alpha.sin(), saY);
-        }
-
-        // compute orientation for best lighting
-        final FieldVector3D<DerivativeStructure> sunInert =
-                position.subtract(sun.getPVCoordinates(date, frame).getPosition()).negate().normalize();
-        final FieldVector3D<DerivativeStructure> sunSpacecraft = rotation.applyTo(sunInert);
-        final DerivativeStructure d = FieldVector3D.dotProduct(sunSpacecraft, saZ);
-        final DerivativeStructure f = d.multiply(d).subtract(1).negate();
-        if (f.getValue() < Precision.EPSILON) {
-            // extremely rare case: the sun is along solar array rotation axis
-            // (there will not be much output power ...)
-            // we set up an arbitrary normal
-            return new FieldVector3D<>(position.getX().getField(), saZ.orthogonal());
-        }
-
-        final DerivativeStructure s = f.sqrt().reciprocal();
-        return new FieldVector3D<>(s, sunSpacecraft,
-                                   s.multiply(d).negate(), new FieldVector3D<>(zero.getField(), saZ));
-
-    }
-
 
     /** {@inheritDoc} */
     @Override
@@ -804,7 +768,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
         dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final  T density, final FieldVector3D<T> relativeVelocity,
@@ -848,7 +812,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
         radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
@@ -931,7 +895,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param <T> type of the field elements
      * @return contribution of the facet to force in spacecraft frame
      */
-    private <T extends RealFieldElement<T>> FieldVector3D<T>
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T>
         facetRadiationAcceleration(final FieldVector3D<T> normal, final double area, final FieldVector3D<T> fluxSat,
                                    final T dot, final T[] parameters) {
 

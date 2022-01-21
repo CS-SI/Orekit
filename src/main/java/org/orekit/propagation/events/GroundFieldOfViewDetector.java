@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.frames.Frame;
+import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -59,6 +60,7 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
      *
      * @param frame the reference frame attached to the sensor.
      * @param fov   Field Of View of the sensor.
+     * @since 10.1
      */
     public GroundFieldOfViewDetector(final Frame frame,
                                      final FieldOfView fov) {
@@ -111,12 +113,11 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
         return this.frame;
     }
 
-    /**
-     * Get the Field Of View.
-     *
+    /** Get the Field Of View.
      * @return Field Of View
+     * @since 10.1
      */
-    public FieldOfView getFieldOfView() {
+    public FieldOfView getFOV() {
         return fov;
     }
 
@@ -124,10 +125,10 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
      * {@inheritDoc}
      *
      * <p> The g function value is the angular offset between the satellite and
-     * the {@link FieldOfView#offsetFromBoundary(Vector3D) Field Of View
-     * boundary}. It is negative if the satellite is visible within the Field Of
-     * View and positive if it is outside of the Field Of View, including the
-     * margin. </p>
+     * the {@link FieldOfView#offsetFromBoundary(Vector3D, double, VisibilityTrigger)
+     * Field Of View boundary}. It is negative if the satellite is visible within
+     * the Field Of View and positive if it is outside of the Field Of View,
+     * including the margin. </p>
      *
      * <p> As per the previous definition, when the satellite enters the Field
      * Of View, a decreasing event is generated, and when the satellite leaves
@@ -137,7 +138,7 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
 
         // get line of sight in sensor frame
         final Vector3D los = s.getPVCoordinates(this.frame).getPosition();
-        return this.fov.offsetFromBoundary(los);
+        return this.fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
 
     }
 

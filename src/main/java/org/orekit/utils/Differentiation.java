@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -86,8 +86,8 @@ public class Differentiation {
 
     /** Differentiate a vector function using finite differences.
      * @param function function to differentiate
-     * @param provider attitude provider to use for modified states
      * @param dimension dimension of the vector value of the function
+     * @param provider attitude provider to use for modified states
      * @param orbitType type used to map the orbit to a one dimensional array
      * @param positionAngle type of the position angle used for orbit mapping to array
      * @param dP user specified position error, used for step size computation for finite differences

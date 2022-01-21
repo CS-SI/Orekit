@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,12 @@
  */
 package org.orekit.propagation.conversion;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -26,7 +30,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -45,6 +48,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -66,6 +70,27 @@ public class NumericalConverterTest {
     private ForceModel drag;
     private Atmosphere atmosphere;
     private double crossSection;
+
+    @Test
+    public void testIssue598() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
+                                                       dp54Builder,
+                                                       PositionAngle.TRUE, 1.0);
+        builder.addForceModel(gravity);
+        // Verify that there is no Newtonian attration force model
+        assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Build the Numerical propagator (not used here)
+        builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        // Verify the addition of the Newtonian attraction force model
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Add a new force model to ensure the Newtonian attraction stay at the last position
+        builder.addForceModel(drag);
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+    }
 
     @Test
     public void testOnlyCartesianAllowed() {
@@ -185,6 +210,78 @@ public class NumericalConverterTest {
         checkFit(teBuilder);
     }
 
+    @Test
+    public void testAdditionalEquations() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
+                                                       dp54Builder,
+                                                       PositionAngle.TRUE, 1.0);
+        builder.addForceModel(drag);
+        builder.addForceModel(gravity);
+
+        // Add additional equations
+        builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
+
+            public String getName() {
+                return "linear";
+            }
+
+            public int getDimension() {
+                return 1;
+            }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
+        });
+
+        builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
+
+    	    public String getName() {
+    	        return "linear";
+    	    }
+
+            public int getDimension() {
+                return 1;
+            }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
+        });
+
+        try {
+            // Build the numerical propagator
+            builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+        }
+    }
+    
+    @Test
+    public void testDeselectOrbitals() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
+                                                       dp54Builder,
+                                                       PositionAngle.TRUE, 1.0);
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertTrue(driver.isSelected());
+        }
+        builder.deselectDynamicParameters();
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertFalse(driver.isSelected());
+        }
+    }
+
     protected void checkFit(final Orbit orbit, final double duration,
                             final double stepSize, final double threshold,
                             final double expectedRMS,
@@ -270,7 +367,7 @@ public class NumericalConverterTest {
 
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
-        builder.setAttitudeProvider(InertialProvider.EME2000_ALIGNED);
+        builder.setAttitudeProvider(Utils.defaultLaw());
         builder.setMass(1000.0);
 
         JacobianPropagatorConverter fitter = new JacobianPropagatorConverter(builder, 1.0, 500);
@@ -339,6 +436,11 @@ public class NumericalConverterTest {
 
         propagator.addForceModel(gravity);
         propagator.addForceModel(drag);
+    }
+
+    private boolean hasNewtonianAttraction(final List<ForceModel> forceModels) {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof NewtonianAttraction;
     }
 
 }

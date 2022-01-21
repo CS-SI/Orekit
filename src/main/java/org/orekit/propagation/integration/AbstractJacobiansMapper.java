@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,16 +16,20 @@
  */
 package org.orekit.propagation.integration;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.RealMatrix;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
 /** Base class for jacobian mapper.
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public abstract class AbstractJacobiansMapper {
+public abstract class AbstractJacobiansMapper implements MatricesHarvester {
 
     /** State dimension, fixed to 6.
      * @since 9.0
@@ -43,7 +47,7 @@ public abstract class AbstractJacobiansMapper {
      * @param parameters selected parameters for Jacobian computation
      */
     protected AbstractJacobiansMapper(final String name, final ParameterDriversList parameters) {
-        this.name = name;
+        this.name       = name;
         this.parameters = parameters;
     }
 
@@ -64,22 +68,50 @@ public abstract class AbstractJacobiansMapper {
     /** Compute the length of the one-dimensional additional state array needed.
      * @return length of the one-dimensional additional state array
      */
-    public abstract int getAdditionalStateDimension();
+    public int getAdditionalStateDimension() {
+        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
+    }
 
-    /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
-     * <p>
-     * For a {@link DSSTPropagator DSST propagator}, state parameters and parameters used for derivatives are the same,
-     * so the Jocabian is simply the identity.
-     * </p>
-     * <p>
-     * For {@link NumericalPropagator Numerical propagator}, parameters used for derivatives are cartesian
-     * and they can be different from state parameters because the numerical propagator can accept different type
-     * of orbits.
-     * </p>
-     * @param state spacecraft state
-     * @return conversion Jacobian
+    /** Not used anymore.
+     * @param s spacecraft state
+     * @deprecated as of 11.1, not used anymore
      */
-    protected abstract double[][] getConversionJacobian(SpacecraftState state);
+    @Deprecated
+    public void analyticalDerivatives(final SpacecraftState s) {
+        // nothing by default
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setReferenceState(final SpacecraftState reference) {
+        // nothing by default
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
+        final double[][] dYdY0 = new double[STATE_DIMENSION][STATE_DIMENSION];
+        getStateJacobian(s, dYdY0);
+        return new Array2DRowRealMatrix(dYdY0, false);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getParametersJacobian(final SpacecraftState s) {
+        if (getParameters() == 0) {
+            return null;
+        } else {
+            final double[][] dYdP = new double[STATE_DIMENSION][getParameters()];
+            getParametersJacobian(s, dYdP);
+            return new Array2DRowRealMatrix(dYdP, false);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<String> getJacobiansColumnsNames() {
+        return parameters.getDrivers().stream().map(d -> d.getName()).collect(Collectors.toList());
+    }
 
     /** Set the Jacobian with respect to state into a one-dimensional additional state array.
      * @param state spacecraft state
@@ -96,12 +128,12 @@ public abstract class AbstractJacobiansMapper {
      * <p>
      * This method extract the data from the {@code state} and put it in the
      * {@code dYdY0} array.
-     * </p>
+     * <p>
      * @param state spacecraft state
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
      * @see #getParametersJacobian(SpacecraftState, double[][])
      */
-    public abstract void getStateJacobian(SpacecraftState state,  double[][] dYdY0);
+    public abstract void getStateJacobian(SpacecraftState state, double[][] dYdY0);
 
     /** Get the Jacobian with respect to parameters from a one-dimensional additional state array.
      * <p>

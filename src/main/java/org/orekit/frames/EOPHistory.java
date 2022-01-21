@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,16 +25,19 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScales;
 import org.orekit.time.TimeStamped;
 import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.Constants;
@@ -47,11 +50,12 @@ import org.orekit.utils.TimeStampedGenerator;
 
 /** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
  * @author Pascal Parraud
+ * @author Evan Ward
  */
 public class EOPHistory implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131010L;
+    private static final long serialVersionUID = 20191119L;
 
     /** Number of points to use in interpolation. */
     private static final int INTERPOLATION_POINTS = 4;
@@ -72,27 +76,56 @@ public class EOPHistory implements Serializable {
     /** Correction to apply to EOP (may be null). */
     private final transient TimeVectorFunction tidalCorrection;
 
+    /** Time scales to use when computing corrections. */
+    private final transient TimeScales timeScales;
+
+    /** Simple constructor.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param conventions IERS conventions to which EOP refers
+     * @param data the EOP data to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @see #EOPHistory(IERSConventions, Collection, boolean, TimeScales)
+     */
+    @DefaultDataContext
+    protected EOPHistory(final IERSConventions conventions,
+                         final Collection<? extends EOPEntry> data,
+                         final boolean simpleEOP) {
+        this(conventions, data, simpleEOP, DataContext.getDefault().getTimeScales());
+    }
+
     /** Simple constructor.
      * @param conventions IERS conventions to which EOP refers
      * @param data the EOP data to use
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param timeScales to use when computing EOP corrections.
+     * @since 10.1
      */
-    protected EOPHistory(final IERSConventions conventions,
-                         final Collection<EOPEntry> data,
-                         final boolean simpleEOP) {
-        this(conventions, data, simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection()));
+    public EOPHistory(final IERSConventions conventions,
+                      final Collection<? extends EOPEntry> data,
+                      final boolean simpleEOP,
+                      final TimeScales timeScales) {
+        this(conventions,
+                data,
+                simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection(timeScales)),
+                timeScales);
     }
 
     /** Simple constructor.
      * @param conventions IERS conventions to which EOP refers
      * @param data the EOP data to use
      * @param tidalCorrection correction to apply to EOP
+     * @param timeScales to use when computing EOP corrections.
+     * @since 10.1
      */
     private EOPHistory(final IERSConventions conventions,
-                         final Collection<EOPEntry> data,
-                         final TimeVectorFunction tidalCorrection) {
+                       final Collection<? extends EOPEntry> data,
+                       final TimeVectorFunction tidalCorrection,
+                       final TimeScales timeScales) {
         this.conventions      = conventions;
         this.tidalCorrection  = tidalCorrection;
+        this.timeScales = timeScales;
         if (data.size() >= INTERPOLATION_POINTS) {
             // enough data to interpolate
             cache = new ImmutableTimeStampedCache<EOPEntry>(INTERPOLATION_POINTS, data);
@@ -104,18 +137,38 @@ public class EOPHistory implements Serializable {
         }
     }
 
+    /**
+     * Determine if this history uses simplified EOP corrections.
+     *
+     * @return {@code true} if tidal corrections are ignored, {@code false} otherwise.
+     */
+    public boolean isSimpleEop() {
+        return tidalCorrection == null;
+    }
+
+    /**
+     * Get the time scales used in computing EOP corrections.
+     *
+     * @return set of time scales.
+     * @since 10.1
+     */
+    public TimeScales getTimeScales() {
+        return timeScales;
+    }
+
     /** Get non-interpolating version of the instance.
      * @return non-interpolatig version of the instance
      */
     public EOPHistory getNonInterpolatingEOPHistory() {
-        return new EOPHistory(conventions, getEntries(), conventions.getEOPTidalCorrection());
+        return new EOPHistory(conventions, getEntries(),
+                conventions.getEOPTidalCorrection(timeScales), timeScales);
     }
 
     /** Check if the instance uses interpolation on tidal corrections.
      * @return true if the instance uses interpolation on tidal corrections
      */
     public boolean usesInterpolation() {
-        return tidalCorrection != null && tidalCorrection instanceof CachedCorrection;
+        return tidalCorrection instanceof CachedCorrection;
     }
 
     /** Get the IERS conventions to which these EOP apply.
@@ -175,7 +228,7 @@ public class EOPHistory implements Serializable {
      * @return UT1-UTC in seconds (0 if date is outside covered range)
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> T getUT1MinusUTC(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T getUT1MinusUTC(final FieldAbsoluteDate<T> date) {
 
         //check if there is data for date
         final AbsoluteDate absDate = date.toAbsoluteDate();
@@ -235,7 +288,11 @@ public class EOPHistory implements Serializable {
             if (neighbor.getUT1MinusUTC() - firstDUT > 0.9) {
                 // there was a leap second between the entries
                 dut = neighbor.getUT1MinusUTC() - 1.0;
-                if (neighbor.getDate().compareTo(date) <= 0) {
+                // UTCScale considers the discontinuity to occur at the start of the leap
+                // second so this code must use the same convention. EOP entries are time
+                // stamped at midnight UTC so 1 second before is the start of the leap
+                // second.
+                if (neighbor.getDate().shiftedBy(-1).compareTo(date) <= 0) {
                     beforeLeap = false;
                 }
             } else {
@@ -258,7 +315,7 @@ public class EOPHistory implements Serializable {
     }
 
     /** Local class for DUT1 interpolation, crossing leaps safely. */
-    private static class FieldDUT1Interpolator<T extends RealFieldElement<T>> implements Consumer<EOPEntry> {
+    private static class FieldDUT1Interpolator<T extends CalculusFieldElement<T>> implements Consumer<EOPEntry> {
 
         /** DUT at first entry. */
         private double firstDUT;
@@ -361,7 +418,7 @@ public class EOPHistory implements Serializable {
      * @return LoD in seconds (0 if date is outside covered range)
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> T getLOD(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T getLOD(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -418,7 +475,7 @@ public class EOPHistory implements Serializable {
      * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
-    public <T extends RealFieldElement<T>> FieldPoleCorrection<T> getPoleCorrection(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldPoleCorrection<T> getPoleCorrection(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -470,7 +527,7 @@ public class EOPHistory implements Serializable {
      * @return nutation correction in longitude ΔΨ and in obliquity Δε
      * (zero if date is outside covered range)
      */
-    public <T extends RealFieldElement<T>> T[] getEquinoxNutationCorrection(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T[] getEquinoxNutationCorrection(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -511,7 +568,7 @@ public class EOPHistory implements Serializable {
      * @return nutation correction in Celestial Intermediat Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
-    public <T extends RealFieldElement<T>> T[] getNonRotatinOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T[] getNonRotatinOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 
@@ -559,9 +616,10 @@ public class EOPHistory implements Serializable {
         for (final TimeStamped current : this.cache.getAll()) {
 
             // compare the dates of preceding and current entries
-            if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
-                throw new OrekitException(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES,
-                                          preceding.getDate(), current.getDate());
+            if (preceding != null && (current.getDate().durationFrom(preceding.getDate())) > maxGap) {
+                throw new OrekitException(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP,
+                                          preceding.getDate(), current.getDate(),
+                                          current.getDate().durationFrom(preceding.getDate()));
             }
 
             // prepare next iteration
@@ -627,7 +685,7 @@ public class EOPHistory implements Serializable {
      * @param <T> type of the field elements
      * @return interpolated value
      */
-    private <T extends RealFieldElement<T>> T interpolate(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T interpolate(final FieldAbsoluteDate<T> date,
                                                           final AbsoluteDate aDate,
                                                           final Function<EOPEntry, Double> selector) {
         try {
@@ -686,7 +744,7 @@ public class EOPHistory implements Serializable {
      * @param <T> type of the field elements
      * @return interpolated value
      */
-    private <T extends RealFieldElement<T>> T[] interpolate(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T[] interpolate(final FieldAbsoluteDate<T> date,
                                                             final AbsoluteDate aDate,
                                                             final Function<EOPEntry, Double> selector1,
                                                             final Function<EOPEntry, Double> selector2) {
@@ -715,11 +773,13 @@ public class EOPHistory implements Serializable {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(conventions, getEntries(), tidalCorrection == null);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -832,7 +892,7 @@ public class EOPHistory implements Serializable {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
             try {
 
                 final AbsoluteDate aDate = date.toAbsoluteDate();

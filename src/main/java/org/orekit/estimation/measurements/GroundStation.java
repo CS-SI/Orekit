@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,8 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.Map;
 
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -42,7 +41,6 @@ import org.orekit.frames.Transform;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.ParameterDriver;
 
@@ -89,6 +87,9 @@ public class GroundStation {
     /** Suffix for ground station position and clock offset parameters names. */
     public static final String OFFSET_SUFFIX = "-offset";
 
+    /** Suffix for ground clock drift parameters name. */
+    public static final String DRIFT_SUFFIX = "-drift-clock";
+
     /** Suffix for ground station intermediate frame name. */
     public static final String INTERMEDIATE_SUFFIX = "-intermediate";
 
@@ -125,6 +126,9 @@ public class GroundStation {
 
     /** Driver for clock offset. */
     private final ParameterDriver clockOffsetDriver;
+
+    /** Driver for clock drift. */
+    private final ParameterDriver clockDriftDriver;
 
     /** Driver for position offset along the East axis. */
     private final ParameterDriver eastOffsetDriver;
@@ -185,7 +189,8 @@ public class GroundStation {
             throw new OrekitException(OrekitMessages.NO_EARTH_ORIENTATION_PARAMETERS);
         }
 
-        final UT1Scale baseUT1 = TimeScalesFactory.getUT1(eopHistory);
+        final UT1Scale baseUT1 = eopHistory.getTimeScales()
+                .getUT1(eopHistory.getConventions(), eopHistory.isSimpleEop());
         this.estimatedEarthFrameProvider = new EstimatedEarthFrameProvider(baseUT1);
         this.estimatedEarthFrame = new Frame(baseFrame.getParent(), estimatedEarthFrameProvider,
                                              baseFrame.getParent() + "-estimated");
@@ -193,7 +198,9 @@ public class GroundStation {
         if (displacements.length == 0) {
             arguments = null;
         } else {
-            arguments = eopHistory.getConventions().getNutationArguments(estimatedEarthFrameProvider.getEstimatedUT1());
+            arguments = eopHistory.getConventions().getNutationArguments(
+                    estimatedEarthFrameProvider.getEstimatedUT1(),
+                    eopHistory.getTimeScales());
         }
 
         this.displacements = displacements.clone();
@@ -201,6 +208,10 @@ public class GroundStation {
         this.clockOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-clock",
                                                      0.0, CLOCK_OFFSET_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
+        this.clockDriftDriver = new ParameterDriver(baseFrame.getName() + DRIFT_SUFFIX,
+                                                    0.0, CLOCK_OFFSET_SCALE,
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, POSITION_OFFSET_SCALE,
@@ -230,6 +241,14 @@ public class GroundStation {
      */
     public ParameterDriver getClockOffsetDriver() {
         return clockOffsetDriver;
+    }
+
+    /** Get a driver allowing to change station clock drift (which is related to measurement date).
+     * @return driver for station clock drift
+     * @since 10.3
+     */
+    public ParameterDriver getClockDriftDriver() {
+        return clockDriftDriver;
     }
 
     /** Get a driver allowing to change station position along East axis.
@@ -460,23 +479,23 @@ public class GroundStation {
      * </p>
      * @param inertial inertial frame to transform to
      * @param clockDate date of the transform as read by the ground station clock (i.e. clock offset <em>not</em> compensated)
-     * @param factory factory for the derivatives
+     * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the estimated parameters in derivatives computations
      * @return transform between offset frame and inertial frame, at <em>real</em> measurement
      * date (i.e. with clock, Earth and station offsets applied)
-     * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, DSFactory, Map)
-     * @since 9.3
+     * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, int, Map)
+     * @since 10.2
      */
-    public FieldTransform<DerivativeStructure> getOffsetToInertial(final Frame inertial,
-                                                                   final AbsoluteDate clockDate,
-                                                                   final DSFactory factory,
-                                                                   final Map<String, Integer> indices) {
+    public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
+                                                        final AbsoluteDate clockDate,
+                                                        final int freeParameters,
+                                                        final Map<String, Integer> indices) {
         // take clock offset into account
-        final DerivativeStructure offset = clockOffsetDriver.getValue(factory, indices);
-        final FieldAbsoluteDate<DerivativeStructure> offsetCompensatedDate =
-                        new FieldAbsoluteDate<DerivativeStructure>(clockDate, offset.negate());
+        final Gradient offset = clockOffsetDriver.getValue(freeParameters, indices);
+        final FieldAbsoluteDate<Gradient> offsetCompensatedDate =
+                        new FieldAbsoluteDate<>(clockDate, offset.negate());
 
-        return getOffsetToInertial(inertial, offsetCompensatedDate, factory, indices);
+        return getOffsetToInertial(inertial, offsetCompensatedDate, freeParameters, indices);
     }
 
     /** Get the transform between offset frame and inertial frame with derivatives.
@@ -488,37 +507,36 @@ public class GroundStation {
      * </p>
      * @param inertial inertial frame to transform to
      * @param offsetCompensatedDate date of the transform, clock offset and its derivatives already compensated
-     * @param factory factory for the derivatives
+     * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the estimated parameters in derivatives computations
      * @return transform between offset frame and inertial frame, at specified date
-     * @see #getOffsetToInertial(Frame, AbsoluteDate, DSFactory, Map)
-     * @since 9.0
+     * @since 10.2
      */
-    public FieldTransform<DerivativeStructure> getOffsetToInertial(final Frame inertial,
-                                                                   final FieldAbsoluteDate<DerivativeStructure> offsetCompensatedDate,
-                                                                   final DSFactory factory,
-                                                                   final Map<String, Integer> indices) {
+    public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
+                                                        final FieldAbsoluteDate<Gradient> offsetCompensatedDate,
+                                                        final int freeParameters,
+                                                        final Map<String, Integer> indices) {
 
-        final Field<DerivativeStructure>         field = factory.getDerivativeField();
-        final FieldVector3D<DerivativeStructure> zero  = FieldVector3D.getZero(field);
-        final FieldVector3D<DerivativeStructure> plusI = FieldVector3D.getPlusI(field);
-        final FieldVector3D<DerivativeStructure> plusK = FieldVector3D.getPlusK(field);
+        final Field<Gradient>         field = offsetCompensatedDate.getField();
+        final FieldVector3D<Gradient> zero  = FieldVector3D.getZero(field);
+        final FieldVector3D<Gradient> plusI = FieldVector3D.getPlusI(field);
+        final FieldVector3D<Gradient> plusK = FieldVector3D.getPlusK(field);
 
         // take Earth offsets into account
-        final FieldTransform<DerivativeStructure> intermediateToBody =
-                        estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, factory, indices).getInverse();
+        final FieldTransform<Gradient> intermediateToBody =
+                        estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
 
         // take station offsets into account
-        final DerivativeStructure  x          = eastOffsetDriver.getValue(factory, indices);
-        final DerivativeStructure  y          = northOffsetDriver.getValue(factory, indices);
-        final DerivativeStructure  z          = zenithOffsetDriver.getValue(factory, indices);
+        final Gradient  x          = eastOffsetDriver.getValue(freeParameters, indices);
+        final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices);
+        final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices);
         final BodyShape            baseShape  = baseFrame.getParentShape();
         final Transform            baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
 
-        FieldVector3D<DerivativeStructure>            origin   = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
+        FieldVector3D<Gradient> origin = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
         origin = origin.add(computeDisplacement(offsetCompensatedDate.toAbsoluteDate(), origin.toVector3D()));
-        final FieldGeodeticPoint<DerivativeStructure> originGP = baseShape.transform(origin, baseShape.getBodyFrame(), offsetCompensatedDate);
-        final FieldTransform<DerivativeStructure> offsetToIntermediate =
+        final FieldGeodeticPoint<Gradient> originGP = baseShape.transform(origin, baseShape.getBodyFrame(), offsetCompensatedDate);
+        final FieldTransform<Gradient> offsetToIntermediate =
                         new FieldTransform<>(offsetCompensatedDate,
                                              new FieldTransform<>(offsetCompensatedDate,
                                                                   new FieldRotation<>(plusI, plusK,
@@ -527,7 +545,7 @@ public class GroundStation {
                                              new FieldTransform<>(offsetCompensatedDate, origin));
 
         // combine all transforms together
-        final FieldTransform<DerivativeStructure> bodyToInert        = baseFrame.getParent().getTransformTo(inertial, offsetCompensatedDate);
+        final FieldTransform<Gradient> bodyToInert = baseFrame.getParent().getTransformTo(inertial, offsetCompensatedDate);
 
         return new FieldTransform<>(offsetCompensatedDate,
                                     offsetToIntermediate,

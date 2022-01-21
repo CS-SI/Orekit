@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -116,11 +116,13 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
         // check index in in the range of the data
         if (i < 0) {
+            final AbsoluteDate earliest = this.getEarliest().getDate();
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                                                this.getEarliest().getDate());
+                    earliest, central, earliest.durationFrom(central));
         } else if (i >= this.data.size()) {
+            final AbsoluteDate latest = this.getLatest().getDate();
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                this.getLatest().getDate());
+                    latest, central, central.durationFrom(latest));
         }
 
         // force unbalanced range if necessary
@@ -155,14 +157,17 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         return i;
     }
 
+    /** {@inheritDoc} */
     public int getNeighborsSize() {
         return this.neighborsSize;
     }
 
+    /** {@inheritDoc} */
     public T getEarliest() {
         return this.data.get(0);
     }
 
+    /** {@inheritDoc} */
     public T getLatest() {
         return this.data.get(this.data.size() - 1);
     }

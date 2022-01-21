@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,13 +16,13 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Terrestrial Time as defined by IAU(1991) recommendation IV.
  * <p>Coordinate time at the surface of the Earth. IT is the
  * successor of Ephemeris Time TE.</p>
  * <p>By convention, TT = TAI + 32.184 s.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
@@ -48,7 +48,7 @@ public class TTScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
         return date.getField().getZero().add(OFFSET);
     }
 

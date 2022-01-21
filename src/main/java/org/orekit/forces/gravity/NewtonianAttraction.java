@@ -1,5 +1,5 @@
 /* Copyright 2010-2011 Centre National d'Études Spatiales
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,15 +16,15 @@
  */
 package org.orekit.forces.gravity;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -57,15 +57,9 @@ public class NewtonianAttraction extends AbstractForceModel {
      * @param mu central attraction coefficient (m^3/s^2)
      */
     public NewtonianAttraction(final double mu) {
-        try {
-            gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                    mu, MU_SCALE,
-                                                    0.0, Double.POSITIVE_INFINITY);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
-
+        gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                mu, MU_SCALE,
+                                                0.0, Double.POSITIVE_INFINITY);
     }
 
     /** {@inheritDoc} */
@@ -86,7 +80,7 @@ public class NewtonianAttraction extends AbstractForceModel {
      * @param field field to which the state belongs
      * @return mu central attraction coefficient (m³/s²)
      */
-    public <T extends RealFieldElement<T>> T getMu(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> T getMu(final Field<T> field) {
         final T zero = field.getZero();
         return zero.add(gmParameterDriver.getValue());
     }
@@ -99,7 +93,7 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
                                                                 final FieldTimeDerivativesEquations<T> adder) {
         final Field<T> field = s.getDate().getField();
         adder.addKeplerContribution(getMu(field));
@@ -115,7 +109,7 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
         final T mu = parameters[0];
         final T r2 = s.getPVCoordinates().getPosition().getNormSq();
@@ -130,16 +124,14 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            gmParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(gmParameterDriver);
     }
 
 }

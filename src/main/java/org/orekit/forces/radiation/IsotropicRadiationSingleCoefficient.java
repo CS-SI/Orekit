@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,15 @@
  */
 package org.orekit.forces.radiation;
 
-import org.hipparchus.RealFieldElement;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -72,16 +73,11 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     */
     public IsotropicRadiationSingleCoefficient(final double crossSection, final double cr,
                                                final double crMin, final double crMax) {
-        try {
-            // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
-            // the single coefficient may be arbitrary, and even negative
-            reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                            cr, SCALE,
-                                                            crMin, crMax);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
+        // the single coefficient may be arbitrary, and even negative
+        reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                        cr, SCALE,
+                                                        crMin, crMax);
 
         this.crossSection = crossSection;
 
@@ -89,10 +85,8 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getRadiationParametersDrivers() {
-        return new ParameterDriver[] {
-            reflectionParameterDriver
-        };
+    public List<ParameterDriver> getRadiationParametersDrivers() {
+        return Collections.singletonList(reflectionParameterDriver);
     }
 
     /** {@inheritDoc} */
@@ -106,7 +100,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
         radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,

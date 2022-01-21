@@ -1,5 +1,5 @@
 /* Copyright 2010-2011 Centre National d'Études Spatiales
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -44,7 +44,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * p may also have an influence on the equations of motion themselves that should be accumulated
  * to the main state derivatives (for example an equation linked to a complex thrust model may
  * induce an acceleration and a mass change), the {@link #computeDerivatives(FieldSpacecraftState,
- * RealFieldElement[]) computeDerivatives} method can return a double array that will be
+ * CalculusFieldElement[]) computeDerivatives} method can return a double array that will be
  * <em>added</em> to the main state derivatives. This means these equations can be used as an
  * additional force model if needed. If the additional parameters have no influence at all on
  * the main spacecraft state, a null reference may be returned.
@@ -56,10 +56,12 @@ import org.orekit.time.FieldAbsoluteDate;
  * org.orekit.propagation.numerical.FieldNumericalPropagator numerical propagator}.
  * </p>
  * @see AbstractIntegratedPropagator
- * @see org.orekit.propagation.AdditionalStateProvider
+ * @see org.orekit.propagation.FieldAdditionalStateProvider
  * @author Luc Maisonobe
+ * @deprecated as of 11.1, replaced by {@link FieldAdditionalDerivativesProvider}
  */
-public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
+@Deprecated
+public interface FieldAdditionalEquations<T extends CalculusFieldElement<T>> {
 
     /** Get the name of the additional state.
      * @return name of the additional state
@@ -71,7 +73,7 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      *
      * <p>
      * This method will be called once at propagation start,
-     * before any calls to {@link #computeDerivatives(FieldSpacecraftState , RealFieldElement[])}.
+     * before any calls to {@link #computeDerivatives(FieldSpacecraftState , CalculusFieldElement[])}.
      * </p>
      *
      * <p>

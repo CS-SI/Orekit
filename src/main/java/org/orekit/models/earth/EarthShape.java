@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,6 @@
 package org.orekit.models.earth;
 
 import org.orekit.bodies.BodyShape;
-import org.orekit.models.earth.ReferenceEllipsoid;
 
 /**
  * All models of Earth's shape have some common properties that are not shared with

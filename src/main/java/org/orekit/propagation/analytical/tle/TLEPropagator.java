@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,21 +16,35 @@
  */
 package org.orekit.propagation.analytical.tle;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.AbstractMatricesHarvester;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 
 /** This class provides elements to propagate TLE's.
@@ -63,7 +77,10 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** Initial state. */
-    protected final TLE tle;
+    protected TLE tle;
+
+    /** UTC time scale. */
+    protected final TimeScale utc;
 
     /** final RAAN. */
     protected double xnode;
@@ -163,17 +180,39 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     private final double mass;
 
     /** Protected constructor for derived classes.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialTLE the unique TLE to propagate
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @see #TLEPropagator(TLE, AttitudeProvider, double, Frame)
      */
+    @DefaultDataContext
     protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                             final double mass) {
+        this(initialTLE, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
+    }
+
+    /** Protected constructor for derived classes.
+     * @param initialTLE the unique TLE to propagate
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
+     * @since 10.1
+     */
+    protected TLEPropagator(final TLE initialTLE,
+                            final AttitudeProvider attitudeProvider,
+                            final double mass,
+                            final Frame teme) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
-        this.tle  = initialTLE;
-        this.teme = FramesFactory.getTEME();
-        this.mass = mass;
+        this.tle       = initialTLE;
+        this.teme      = teme;
+        this.mass      = mass;
+        this.utc       = initialTLE.getUtc();
+
         initializeCommons();
         sxpInitialize();
         // set the initial state
@@ -183,21 +222,61 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Selects the extrapolator to use with the selected TLE.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param tle the TLE to propagate.
      * @return the correct propagator.
+     * @see #selectExtrapolator(TLE, Frames)
      */
+    @DefaultDataContext
     public static TLEPropagator selectExtrapolator(final TLE tle) {
-        return selectExtrapolator(tle, DEFAULT_LAW, DEFAULT_MASS);
+        return selectExtrapolator(tle, DataContext.getDefault().getFrames());
+    }
+
+    /** Selects the extrapolator to use with the selected TLE.
+     * @param tle the TLE to propagate.
+     * @param frames set of Frames to use in the propagator.
+     * @return the correct propagator.
+     * @since 10.1
+     */
+    public static TLEPropagator selectExtrapolator(final TLE tle, final Frames frames) {
+        return selectExtrapolator(
+                tle,
+                InertialProvider.of(frames.getTEME()),
+                DEFAULT_MASS,
+                frames.getTEME());
+    }
+
+    /** Selects the extrapolator to use with the selected TLE.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param tle the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @return the correct propagator.
+     * @see #selectExtrapolator(TLE, AttitudeProvider, double, Frame)
+     */
+    @DefaultDataContext
+    public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
+                                                   final double mass) {
+        return selectExtrapolator(tle, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.
      * @param tle the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
      * @return the correct propagator.
+     * @since 10.1
      */
-    public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
-                                                   final double mass) {
+    public static TLEPropagator selectExtrapolator(final TLE tle,
+                                                   final AttitudeProvider attitudeProvider,
+                                                   final double mass,
+                                                   final Frame teme) {
 
         final double a1 = FastMath.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
         final double cosi0 = FastMath.cos(tle.getI());
@@ -212,9 +291,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
         // Period >= 225 minutes is deep space
         if (MathUtils.TWO_PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
-            return new DeepSDP4(tle, attitudeProvider, mass);
+            return new DeepSDP4(tle, attitudeProvider, mass, teme);
         } else {
-            return new SGP4(tle, attitudeProvider, mass);
+            return new SGP4(tle, attitudeProvider, mass, teme);
         }
     }
 
@@ -241,8 +320,11 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     private void initializeCommons() {
 
+        // Sine and cosine of inclination
+        final SinCos scI0 = FastMath.sinCos(tle.getI());
+
         final double a1 = FastMath.pow(TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
-        cosi0 = FastMath.cos(tle.getI());
+        cosi0 = scI0.cos();
         theta2 = cosi0 * cosi0;
         final double x3thm1 = 3.0 * theta2 - 1.0;
         e0sq = tle.getE() * tle.getE();
@@ -292,7 +374,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         c2 = coef1 * xn0dp * (a0dp * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
              0.75 * TLEConstants.CK2 * tsi / psisq * x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
         c1 = tle.getBStar() * c2;
-        sini0 = FastMath.sin(tle.getI());
+        sini0 = scI0.sin();
 
         final double x1mth2 = 1.0 - theta2;
 
@@ -332,15 +414,18 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     private PVCoordinates computePVCoordinates() {
 
+        // Sine and cosine of final perigee argument
+        final SinCos scOmega = FastMath.sinCos(omega);
+
         // Long period periodics
-        final double axn = e * FastMath.cos(omega);
+        final double axn = e * scOmega.cos();
         double temp = 1.0 / (a * (1.0 - e * e));
         final double xlcof = 0.125 * TLEConstants.A3OVK2 * sini0 * (3.0 + 5.0 * cosi0) / (1.0 + cosi0);
         final double aycof = 0.25 * TLEConstants.A3OVK2 * sini0;
         final double xll = temp * xlcof * axn;
         final double aynl = temp * aycof;
         final double xlt = xl + xll;
-        final double ayn = e * FastMath.sin(omega) + aynl;
+        final double ayn = e * scOmega.sin() + aynl;
         final double elsq = axn * axn + ayn * ayn;
         final double capu = MathUtils.normalizeAngle(xlt - xnode, FastMath.PI);
         double epw = capu;
@@ -365,8 +450,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
             boolean doSecondOrderNewtonRaphson = true;
 
-            sinEPW = FastMath.sin( epw);
-            cosEPW = FastMath.cos( epw);
+            final SinCos scEPW = FastMath.sinCos(epw);
+            sinEPW = scEPW.sin();
+            cosEPW = scEPW.cos();
             ecosE = axn * cosEPW + ayn * sinEPW;
             esinE = axn * sinEPW - ayn * cosEPW;
             final double f = capu - epw + esinE;
@@ -414,17 +500,20 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         final double xinck = i + 1.5 * temp2 * cosi0 * sini0 * cos2u;
 
         // Orientation vectors
-        final double sinuk = FastMath.sin(uk);
-        final double cosuk = FastMath.cos(uk);
-        final double sinik = FastMath.sin(xinck);
-        final double cosik = FastMath.cos(xinck);
-        final double sinnok = FastMath.sin(xnodek);
-        final double cosnok = FastMath.cos(xnodek);
+        final SinCos scuk   = FastMath.sinCos(uk);
+        final SinCos scik   = FastMath.sinCos(xinck);
+        final SinCos scnok  = FastMath.sinCos(xnodek);
+        final double sinuk  = scuk.sin();
+        final double cosuk  = scuk.cos();
+        final double sinik  = scik.sin();
+        final double cosik  = scik.cos();
+        final double sinnok = scnok.sin();
+        final double cosnok = scnok.cos();
         final double xmx = -sinnok * cosik;
         final double xmy = cosnok * cosik;
-        final double ux = xmx * sinuk + cosnok * cosuk;
-        final double uy = xmy * sinuk + sinnok * cosuk;
-        final double uz = sinik * sinuk;
+        final double ux  = xmx * sinuk + cosnok * cosuk;
+        final double uy  = xmy * sinuk + sinnok * cosuk;
+        final double uz  = sinik * sinuk;
 
         // Position and velocity
         final double cr = 1000 * rk * TLEConstants.EARTH_RADIUS;
@@ -457,9 +546,21 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     protected abstract void sxpPropagate(double t);
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * For TLE propagator, calling this method is only recommended
+     * for covariance propagation when the new <code>state</code>
+     * differs from the previous one by only adding the additional
+     * state containing the derivatives.
+     * </p>
+     */
     public void resetInitialState(final SpacecraftState state) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+        super.resetInitialState(state);
+        super.setStartDate(state.getDate());
+        final TLE newTLE = TLE.stateToTLE(state, tle, utc, teme);
+        this.tle = newTLE;
+        initializeCommons();
+        sxpInitialize();
     }
 
     /** {@inheritDoc} */
@@ -487,6 +588,28 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** {@inheritDoc} */
     public Frame getFrame() {
         return teme;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        return new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
+    }
+
+    /**
+     * Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
+     * @return names of the parameters (i.e. columns) of the Jacobian matrix
+     */
+    protected List<String> getJacobiansColumnsNames() {
+        final List<String> columnsNames = new ArrayList<>();
+        for (final ParameterDriver driver : tle.getParametersDrivers()) {
+            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
+                columnsNames.add(driver.getName());
+            }
+        }
+        Collections.sort(columnsNames);
+        return columnsNames;
     }
 
 }

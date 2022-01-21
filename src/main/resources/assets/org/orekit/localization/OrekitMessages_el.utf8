@@ -1,4 +1,4 @@
-# internal error, please notify development team by creating an issue at {0}
+# internal error, please notify development team by creating a new topic at {0}
 INTERNAL_ERROR = <MISSING TRANSLATION>
 
 # altitude ({0} m) is below the {1} m allowed threshold
@@ -18,6 +18,12 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = σχεδόν κρίσιμα κεκλιμέν�
 
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS =  αδύνατο να υπολογιστούν οι Eckstein-Hechler μέσες παράμετροι μετά από {0} επαναλήψεις
+
+# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = αδύνατο να υπολογιστούν οι Brouwer-Lyddane μέσες παράμετροι μετά από {0} επαναλήψεις
+
+# unable to compute TLE after {0} iterations
+UNABLE_TO_COMPUTE_TLE =  αδύνατο να υπολογιστούν οι TLE μετά από {0} επαναλήψεις
 
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = null γονέας πλαισiου {0} 
@@ -40,8 +46,8 @@ FRAME_NO_NTH_ANCESTOR = το πλαίσιο {0} έχει βάθος {1}, δεν 
 # ITRF frame {0} not found
 NO_SUCH_ITRF_FRAME = <MISSING TRANSLATION>
 
-# unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = μη υποστηριζόμενο τοπικό τροχιακό πλαίσιο,υποστηριζόμενοι τύποι {0} και {1}  
+# unsupported local orbital frame {0}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = μη υποστηριζόμενο τοπικό τροχιακό πλαίσιο {0}
 
 # non pseudo-inertial frame "{0}"
 NON_PSEUDO_INERTIAL_FRAME = το μη ψευδο-αδρανειακό σύστημα "{0}"
@@ -64,6 +70,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = καμία φορτωμένη Παρά�
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = ελλιπείς Παράμετροι Προσανατολισμού της Γης μεταξύ {0} και{1}  
 
+# missing Earth Orientation Parameters between {0} and {1}, gap is {2,number,0.0##############E0} s
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = <MISSING TRANSLATION>
+
 # missing Earth Orientation Parameters
 NO_EARTH_ORIENTATION_PARAMETERS = <MISSING TRANSLATION>
 
@@ -75,6 +84,9 @@ INCONSISTENT_DATES_IN_IERS_FILE = μη έγκυρες ημερομηνίες σ�
 
 # unexpected data after line {0} in file {1}: {2}
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = απροσδόκητα δεδομένα μετά από τη γραμμή {0} στο αρχείο {1}: {2}
+
+# unexpected data at line {0} in file {1}
+UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
 
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = μη χρονολογικές ημερομηνίες στο αρχείο {0}, γραμμή {1}
@@ -96,6 +108,9 @@ UNEXPECTED_END_OF_FILE_AFTER_LINE =  απρόσμενο τέλος αρχείο�
 
 # unable to parse line {0} of file {1}:\n{2}
 UNABLE_TO_PARSE_LINE_IN_FILE = αδύνατο να αναλύσει τη γραμμή {0} του αρχείου {1}:\n{2}
+
+# unable to parse element {0} at line {1}, file {2}
+UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
 
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = αδύνατο να βρεθεί το αρχείο {0}
@@ -139,8 +154,8 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = πολύ μεγάλος βαθμός (n = {
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = πολύ μεγάλη τάξη (m = {0}, δυνατή μέγιστη τάξη είναι {1})
 
-# several reference dates ({0} and {1}) found in gravity field file {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = διάφορες ημερομηνίες αναφοράς ({0} και {1}) βρέθηκαν στο αρχείο βαρυτικού πεδίου {2}
+# several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
 
 # no TLE data available for object {0}
 NO_TLE_FOR_OBJECT = κανένα δεδομένο TLE διαθέσιμο για το αντικείμενο {0}
@@ -199,6 +214,9 @@ NON_EXISTENT_TIME = μη έγκυρη ώρα {0}
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = αριθμός δευτερολέπτων εκτός εύρους: {0}
 
+# out of range seconds number: {0} is not in [{1}, {2}]
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
+
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = μη έγκυρος τύπος γωνίας, γωνίες που υποστηρίζονται {0}, {1} και {2}
 
@@ -220,11 +238,8 @@ FRAMES_MISMATCH =  Το πλαίσιο ({0}) δεν αντιστοιχεί στ�
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = H αρχική κατάσταση δεν προσδιορίζεται για την τροχιά διάδοσης 
 
-# propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = Ο αλγόριθμος προσομοίωσης κίνησης του δορυφόρου (propagator) δεν είναι σε εφήμερη φάση παραγωγής
-
-# event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
-EVENT_DATE_TOO_CLOSE = ημερομηνία γεγονότος {0}, μεγαλύτερη από {1} μείον {3} δευτερόλεπτα και μικρότερη από {2} συν {3} δευτερόλεπτα, δεν μπορεί να προστεθεί
+# target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
+EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION>
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = αδύνατο να διαβάσει καταγραφή επικεφαλίδος από το JPL δυαδικό αρχείο {0}
@@ -252,6 +267,12 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = ημερομηνία εκτός εύρου�
 
 # out of range date for ephemerides: {0}, [{1}, {2}]
 OUT_OF_RANGE_EPHEMERIDES_DATE = ημερομηνία εκτός εύρους για εφημερίδες: {0}, [{1}, {2}]
+
+# out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = <MISSING TRANSLATION>
+
+# out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = <MISSING TRANSLATION>
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
 UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = απροσδόκητες υψομετρικές τιμές: ({0} και {1}), για ένα αζιμούθιο: {2}
@@ -301,6 +322,12 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = μη έγκυρο πεδίου χρόνο
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = ελλιπής ημερομηνία της υπηρεσίας για την ημερομηνία CCSDS
 
+# missing mandatory key {0} in CCSDS file {1}
+CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
+
+# key {0} is not allowed in format version {1}
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = μη αναμενόμενη λέξη-κλειδί στη γραμμή {0} του CCSDS αρχείου {1}: \ n {2}
 
@@ -313,29 +340,20 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = δεν υπάρχει μάζα διαστημι�
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = δεν υπάρχουν IERs συμβάσεις που έχουν οριστεί πριν από την ανάλυση
 
-# frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = το πλαίσιο {0} δεν είναι έγκυρο στο πλαίσιο αρχείου ODM
+# frame {0} is not valid in this CCSDS file context
+CCSDS_INVALID_FRAME = το πλαίσιο {0} δεν είναι έγκυρο στο πλαίσιο αρχείου CCSDS
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = μη έγκυρα συστήματα του χρόνου στα μπλοκ εφημερίδων: {0} ≠ {1}
-
-# Inconsistent time systems in the observations blocks: {0} ≠ {1}
-CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
-
-# Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
-CCSDS_TDM_INCONSISTENT_DATA_LINE = <MISSING TRANSLATION>
+CCSDS_INCONSISTENT_TIME_SYSTEMS = μη έγκυρα συστήματα του χρόνου: {0} ≠ {1}
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = <MISSING TRANSLATION>
 
-# Parameter {0} needs a time system to be interpreted
+# no Range Units converter configured for parsing Tracking Data Message
+CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
+
+# Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
-
-# Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
-CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = <MISSING TRANSLATION>
-
-# TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
-CCSDS_TDM_UNKNOWN_FORMAT = <MISSING TRANSLATION>
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = το όνομα "{0}" χρησιμοποιείται ήδη για μια επιπλέον κατάσταση
@@ -364,6 +382,12 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = <MISSING TRANSLATION>
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = μη αναμενόμενο τέλος αρχείου στο αρχείο sp3 (μετά από τη γραμμή {0})
 
+# unsupported clock file version {0}
+CLOCK_FILE_UNSUPPORTED_VERSION = μη υποστηριζόμενη έκδοση αρχείου ρολογιού {0}
+
+# unsupported navigation messages file version {0}
+NAVIGATION_FILE_UNSUPPORTED_VERSION = <MISSING TRANSLATION>
+
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ανύπαρκτο γεωμαγνητικό μοντέλο {0} για το έτος {1}
 
@@ -382,17 +406,17 @@ NOT_ENOUGH_CACHED_NEIGHBORS = πολύ μικρός αριθμός των προ
 # no cached entries
 NO_CACHED_ENTRIES = καμία προσωρινά αποθηκευμένη καταχώρηση
 
-# generated entries not sorted: {0} > {1}
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = οι παράγωγες είσοδοι δεν είναι ταξινομημένες: {0} > {1}
+# generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = κανένα δεδομένο δεν έχει παραχθεί γύρω από την ημερομηνία: {0}
 
-# unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = αδύνατο να δημιουργήσει νέα δεδομένα πριν από {0}
+# unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
 
-# unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = αδύνατο να δημιουργήσει νέα δεδομένα μετά από {0}
+# unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = αδύνατο να υπολογίστει υπερβολική εκκεντρική ανωμαλία από τη μέση ανωμαλία μετά από {0} επαναλήψεις
@@ -439,23 +463,44 @@ NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = <MISSING TRANSLATION>
 # only {0} GNSS orbits are provided while {1} are needed to compute the DOP
 NOT_ENOUGH_GNSS_FOR_DOP = <MISSING TRANSLATION>
 
-# the CCSDS time system {0} has no corresponding Orekit TimeScale.
-CCSDS_NO_CORRESPONDING_TIME_SCALE = <MISSING TRANSLATION>
-
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 
+# inconsistent time systems in the attitude blocks: {0} ≠ {1}
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+
+# attitude type {0} in CCSDS AEM files is not implemented in Orekit
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+
+# invalid rotation sequence {0} at line {1} of file {2}
+CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+
+# element set type {0} ({1}) is not supported yet
+CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = <MISSING TRANSLATION>
+
+# retrograde factor not supported in element set {0}
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
+
+# element set type {0} ({1}) expects {2} elements
+CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+
+# wrong number of units for maneuver {0}
+CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+
+# missing time field for maneuver {0}
+CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
+
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = <MISSING TRANSLATION>
+
+# Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
+NOT_ENOUGH_ATTITUDE_PROVIDERS = <MISSING TRANSLATION>
 
 # argument {0} cannot be null
 NULL_ARGUMENT = <MISSING TRANSLATION>
 
 # value {0} not found in {1}
 VALUE_NOT_FOUND = <MISSING TRANSLATION>
-
-# Ephemeris file format does not support multiple space objects
-EPHEMERIS_FILE_NO_MULTI_SUPPORT = <MISSING TRANSLATION>
 
 # Klobuchar coefficients α or β could not be loaded from {0}
 KLOBUCHAR_ALPHA_BETA_NOT_LOADED = <MISSING TRANSLATION>
@@ -474,6 +519,12 @@ STATION_NOT_FOUND = <MISSING TRANSLATION>
 
 # unknown satellite system {0}
 UNKNOWN_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+
+# unknown time system {0}
+UNKNOWN_TIME_SYSTEM = άγνωστο σύστημα χρόνου {0}
+
+# unknown clock data type {0}
+UNKNOWN_CLOCK_DATA_TYPE = άγνωστος τύπος δεδομένων ρολογιού {0}
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = <MISSING TRANSLATION>
@@ -541,6 +592,12 @@ NO_TEC_DATA_IN_FILE_FOR_DATE = <MISSING TRANSLATION>
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = <MISSING TRANSLATION>
 
+# file {0} does not contain latitude or longitude bondaries in its header section
+NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = <MISSING TRANSLATION>
+
+# file {0} does not contain epoch of first or last map in its header section
+NO_EPOCH_IN_IONEX_HEADER = <MISSING TRANSLATION>
+
 # The first column of itrf-versions.conf is a plain prefix that is matched against the
 # name of each loaded file. It should not contain any regular expression syntax or
 # directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".
@@ -549,5 +606,149 @@ ITRF_VERSIONS_PREFIX_ONLY = <MISSING TRANSLATION>
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
 CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = <MISSING TRANSLATION>
 
+# STEC integration did not converge
+STEC_INTEGRATION_DID_NOT_CONVERGE = <MISSING TRANSLATION>
+
+# MODIP grid not be loaded from {0}
+MODIP_GRID_NOT_LOADED = <MISSING TRANSLATION>
+
+# NeQuick coefficient f2 or fm3 not be loaded from {0}
+NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
+
 # file {0} is not a supported Hatanaka-compressed file
 NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
+
+# Cannot compute around {0}
+CANNOT_COMPUTE_LAGRANGIAN = <MISSING TRANSLATION>
+
+# The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
+TRAJECTORY_NOT_CROSSING_XZPLANE = <MISSING TRANSLATION>
+
+# The multiple shooting problem is underconstrained : {0} free variables, {1} constraints
+MULTIPLE_SHOOTING_UNDERCONSTRAINED = <MISSING TRANSLATION>
+
+# invalid measurement types {0} and {1} for the combination of measurements {2}
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
+
+# frequencies {0} and {1} are incompatibles for the {2} combination
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
+
+# observations are not in chronological order: {0} is {2,number,0.0##############E0} s after {1}
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+
+# Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
+EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
+
+# Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+
+# observations are not in the same plane
+NON_COPLANAR_POINTS = <MISSING TRANSLATION>
+
+# invalid parameter {0}: {1} not in range [{2}, {3}]
+INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+
+# The parameter {0} should not be null in {1}
+PARAMETER_NOT_SET = <MISSING TRANSLATION>
+
+# {0} is not implemented
+FUNCTION_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+
+# Impossible to execute {0} with {1} set to {2}
+INVALID_TYPE_FOR_FUNCTION = <MISSING TRANSLATION>
+
+# No data could be parsed from file {0}
+NO_DATA_IN_FILE = <MISSING TRANSLATION>
+
+# Unexpected end of CPF file (after line {0})
+CPF_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>
+
+# Unexpected file format. Must be {0} but is {1}
+UNEXPECTED_FORMAT_FOR_ILRS_FILE = <MISSING TRANSLATION>
+
+# Invalid range indicator {0} in CRD file header
+INVALID_RANGE_INDICATOR_IN_CRD_FILE = <MISSING TRANSLATION>
+
+# Unexpected end of CRD file (after line {0})
+CRD_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>
+
+# end of encoded message reached
+END_OF_ENCODED_MESSAGE = <MISSING TRANSLATION>
+
+# too large data type ({0} bits)
+TOO_LARGE_DATA_TYPE = <MISSING TRANSLATION>
+
+# unknown encoded message number {0}
+UNKNOWN_ENCODED_MESSAGE_NUMBER = <MISSING TRANSLATION>
+
+# unknown authentication method: {0}
+UNKNOWN_AUTHENTICATION_METHOD = <MISSING TRANSLATION>
+
+# unknown carrier phase code: {0}
+UNKNOWN_CARRIER_PHASE_CODE = <MISSING TRANSLATION>
+
+# unknown data format: {0}
+UNKNOWN_DATA_FORMAT = <MISSING TRANSLATION>
+
+# unknown navigation system: {0}
+UNKNOWN_NAVIGATION_SYSTEM = <MISSING TRANSLATION>
+
+# data stream {0} requires a NMEA fix data
+STREAM_REQUIRES_NMEA_FIX = <MISSING TRANSLATION>
+
+# failed authentication for mountpoint {0}
+FAILED_AUTHENTICATION = <MISSING TRANSLATION>
+
+# error connecting to {0}: {1}
+CONNECTION_ERROR = <MISSING TRANSLATION>
+
+# unexpected content type {0}
+UNEXPECTED_CONTENT_TYPE = <MISSING TRANSLATION>
+
+# cannot parse GNSS data from {0}
+CANNOT_PARSE_GNSS_DATA = <MISSING TRANSLATION>
+
+# unknown host {0}
+UNKNOWN_HOST = <MISSING TRANSLATION>
+
+# error parsing sourcetable line {0} from {1}: {2}
+SOURCETABLE_PARSE_ERROR = <MISSING TRANSLATION>
+
+# cannot parse sourcetable from {0}
+CANNOT_PARSE_SOURCETABLE = <MISSING TRANSLATION>
+
+# mount point {0} is already connected
+MOUNPOINT_ALREADY_CONNECTED = <MISSING TRANSLATION>
+
+# missing header from {0}: {1}
+MISSING_HEADER = <MISSING TRANSLATION>
+
+# {0} is not a valid international designator
+NOT_VALID_INTERNATIONAL_DESIGNATOR = <MISSING TRANSLATION>
+
+# value for key {0} has not been initialized
+UNINITIALIZED_VALUE_FOR_KEY = <MISSING TRANSLATION>
+
+# unknown unit {0}
+UNKNOWN_UNIT = <MISSING TRANSLATION>
+
+# units {0} and {1} are not compatible
+INCOMPATIBLE_UNITS = <MISSING TRANSLATION>
+
+# missing velocity data
+MISSING_VELOCITY = <MISSING TRANSLATION>
+
+# attempt to generate file {0} with a formatting error
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
+
+# {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
+FIND_ROOT = <MISSING TRANSLATION>
+
+# backward propagation not allowed here
+BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
+
+# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
+
+# inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
+INCONSISTENT_SELECTION = <MISSING TRANSLATION>

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -34,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -72,7 +71,7 @@ public class FieldDSSTThirdBodyTest {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field)  {
+    private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field)  {
         
         final T zero = field.getZero();
         
@@ -107,7 +106,7 @@ public class FieldDSSTThirdBodyTest {
         // Force model parameters
         final T[] parameters = moon.getParameters(field);
         // Initialize force model
-        moon.initialize(auxiliaryElements,
+        moon.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
 
         final T[] elements = MathArrays.buildArray(field, 7);
@@ -133,7 +132,7 @@ public class FieldDSSTThirdBodyTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
         final T zero = field.getZero();
  
         final FieldSpacecraftState<T> meanState = getGEOState(field);
@@ -151,7 +150,7 @@ public class FieldDSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters(field)));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field)));
             force.updateShortPeriodTerms(force.getParameters(field), meanState);
         }
 
@@ -203,40 +202,40 @@ public class FieldDSSTThirdBodyTest {
         forces.add(sun);
                         
         // Converter for derivatives
-        final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
 
         // Compute state Jacobian using directly the method
         final double[][] shortPeriodJacobian = new double[6][6];
         for (DSSTForceModel force : forces) {
             
             // Field parameters
-            final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(force);
-            final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, force);
+            final FieldSpacecraftState<Gradient> dsState = converter.getState(force);
+            final Gradient[] dsParameters                = converter.getParameters(dsState, force);
             
-            final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
+            final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
             
             // Array for short period terms
-            final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
-            final DerivativeStructure zero = dsState.getA().getField().getZero();
+            final Gradient[] shortPeriod = new Gradient[6];
+            final Gradient zero = dsState.getA().getField().getZero();
             Arrays.fill(shortPeriod, zero);
             
-            final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-            shortPeriodTerms.addAll(force.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+            final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
             force.updateShortPeriodTerms(dsParameters, dsState);
             
-            for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
-                final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+            for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
+                final Gradient[] spVariation = spt.value(dsState.getOrbit());
                 for (int i = 0; i < spVariation .length; i++) {
                     shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
                 }
             }
             
-            final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
-            final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
-            final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
-            final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
-            final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
-            final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+            final double[] derivativesASP  = shortPeriod[0].getGradient();
+            final double[] derivativesExSP = shortPeriod[1].getGradient();
+            final double[] derivativesEySP = shortPeriod[2].getGradient();
+            final double[] derivativesHxSP = shortPeriod[3].getGradient();
+            final double[] derivativesHySP = shortPeriod[4].getGradient();
+            final double[] derivativesLSP  = shortPeriod[5].getGradient();
 
             // Update Jacobian with respect to state
             addToRow(derivativesASP,  0, shortPeriodJacobian);
@@ -330,51 +329,51 @@ public class FieldDSSTThirdBodyTest {
         }
       
         // Converter for derivatives
-        final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
         
         final double[][] shortPeriodJacobian = new double[6][1];
       
         for (final DSSTForceModel forceModel : forces) {
             
             // Field parameters
-            final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
-            final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, forceModel);
+            final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+            final Gradient[] dsParameters                = converter.getParameters(dsState, forceModel);
           
-            final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
+            final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
           
             // Zero
-            final DerivativeStructure zero = dsState.getDate().getField().getZero();
+            final Gradient zero = dsState.getDate().getField().getZero();
           
             // Compute Jacobian using directly the method
-            final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-            shortPeriodTerms.addAll(forceModel.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+            final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
+            shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
             forceModel.updateShortPeriodTerms(dsParameters, dsState);
-            final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
+            final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
-            for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
-                final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+            for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
+                final Gradient[] spVariation = spt.value(dsState.getOrbit());
                 for (int i = 0; i < spVariation .length; i++) {
                     shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
                 }
             }
         
-            final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
-            final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
-            final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
-            final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
-            final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
-            final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+            final double[] derivativesASP  = shortPeriod[0].getGradient();
+            final double[] derivativesExSP = shortPeriod[1].getGradient();
+            final double[] derivativesEySP = shortPeriod[2].getGradient();
+            final double[] derivativesHxSP = shortPeriod[3].getGradient();
+            final double[] derivativesHySP = shortPeriod[4].getGradient();
+            final double[] derivativesLSP  = shortPeriod[5].getGradient();
           
             int index = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
-                    ++index;
                     shortPeriodJacobian[0][0] += derivativesASP[index];
                     shortPeriodJacobian[1][0] += derivativesExSP[index];
                     shortPeriodJacobian[2][0] += derivativesEySP[index];
                     shortPeriodJacobian[3][0] += derivativesHxSP[index];
                     shortPeriodJacobian[4][0] += derivativesHySP[index];
                     shortPeriodJacobian[5][0] += derivativesLSP[index];
+                    ++index;
                 }
             }
         }
@@ -435,7 +434,7 @@ public class FieldDSSTThirdBodyTest {
       
     }
 
-    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
                     
         final T zero = field.getZero();
         // No shadow at this date
@@ -462,7 +461,7 @@ public class FieldDSSTThirdBodyTest {
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             double[] parameters = force.getParameters();
-            shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
             force.updateShortPeriodTerms(parameters, state);
         }
         
@@ -526,7 +525,7 @@ public class FieldDSSTThirdBodyTest {
                           final double[][] jacobian) {
 
         for (int i = 0; i < 6; i++) {
-            jacobian[index][i] += derivatives[i + 1];
+            jacobian[index][i] += derivatives[i];
         }
 
     }

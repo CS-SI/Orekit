@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,9 +19,8 @@ package org.orekit.estimation.measurements;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -245,7 +244,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         final T zero = date.getField().getZero();
 
@@ -265,27 +264,28 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** Get the transform with derivatives.
      * @param date date of the transform
-     * @param factory factory for the derivatives
+     * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the estimated parameters in derivatives computations
      * @return computed transform with derivatives
+     * @since 10.2
      */
-    public FieldTransform<DerivativeStructure> getTransform(final FieldAbsoluteDate<DerivativeStructure> date,
-                                                            final DSFactory factory,
-                                                            final Map<String, Integer> indices) {
+    public FieldTransform<Gradient> getTransform(final FieldAbsoluteDate<Gradient> date,
+                                                 final int freeParameters,
+                                                 final Map<String, Integer> indices) {
 
         // prime meridian shift parameters
-        final DerivativeStructure theta    = linearModel(factory, date,
-                                                         primeMeridianOffsetDriver, primeMeridianDriftDriver,
-                                                         indices);
-        final DerivativeStructure thetaDot = primeMeridianDriftDriver.getValue(factory, indices);
+        final Gradient theta    = linearModel(freeParameters, date,
+                                              primeMeridianOffsetDriver, primeMeridianDriftDriver,
+                                              indices);
+        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices);
 
         // pole shift parameters
-        final DerivativeStructure xpNeg    = linearModel(factory, date,
+        final Gradient xpNeg    = linearModel(freeParameters, date,
                                                          polarOffsetXDriver, polarDriftXDriver, indices).negate();
-        final DerivativeStructure ypNeg    = linearModel(factory, date,
+        final Gradient ypNeg    = linearModel(freeParameters, date,
                                                          polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final DerivativeStructure xpNegDot = polarDriftXDriver.getValue(factory, indices).negate();
-        final DerivativeStructure ypNegDot = polarDriftYDriver.getValue(factory, indices).negate();
+        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices).negate();
+        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices).negate();
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
@@ -302,7 +302,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @param <T> type of the field elements
      * @return computed transform with derivatives
      */
-    private <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
                                                                            final T theta, final T thetaDot,
                                                                            final T xpNeg, final T xpNegDot,
                                                                            final T ypNeg, final T ypNegDot) {
@@ -357,7 +357,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @return current value of the linear model
      * @param <T> type of the filed elements
      */
-    private <T extends RealFieldElement<T>> T linearModel(final FieldAbsoluteDate<T> date,
+    private <T extends CalculusFieldElement<T>> T linearModel(final FieldAbsoluteDate<T> date,
                                                           final ParameterDriver offsetDriver,
                                                           final ParameterDriver driftDriver) {
         if (offsetDriver.getReferenceDate() == null) {
@@ -371,23 +371,24 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
     }
 
     /** Evaluate a parametric linear model.
-     * @param factory factory for the derivatives
+     * @param freeParameters total number of free parameters in the gradient
      * @param date current date
      * @param offsetDriver driver for the offset parameter
      * @param driftDriver driver for the drift parameter
      * @param indices indices of the estimated parameters in derivatives computations
      * @return current value of the linear model
+     * @since 10.2
      */
-    private DerivativeStructure linearModel(final DSFactory factory, final FieldAbsoluteDate<DerivativeStructure> date,
-                                            final ParameterDriver offsetDriver, final ParameterDriver driftDriver,
-                                            final Map<String, Integer> indices) {
+    private Gradient linearModel(final int freeParameters, final FieldAbsoluteDate<Gradient> date,
+                                 final ParameterDriver offsetDriver, final ParameterDriver driftDriver,
+                                 final Map<String, Integer> indices) {
         if (offsetDriver.getReferenceDate() == null) {
             throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
                                       offsetDriver.getName());
         }
-        final DerivativeStructure dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final DerivativeStructure offset = offsetDriver.getValue(factory, indices);
-        final DerivativeStructure drift  = driftDriver.getValue(factory, indices);
+        final Gradient dt     = date.durationFrom(offsetDriver.getReferenceDate());
+        final Gradient offset = offsetDriver.getValue(freeParameters, indices);
+        final Gradient drift  = driftDriver.getValue(freeParameters, indices);
         return dt.multiply(drift).add(offset);
     }
 
@@ -422,7 +423,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
             final T dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver).divide(EARTH_ANGULAR_VELOCITY);
             return baseUT1.offsetFromTAI(date).add(dut1);
         }

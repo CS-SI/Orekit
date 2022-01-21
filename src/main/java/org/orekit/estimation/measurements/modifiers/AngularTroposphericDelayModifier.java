@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -56,17 +56,6 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         tropoModel = model;
     }
 
-    /** Get the station height above mean sea level.
-     *
-     * @param station  ground station (or measuring station)
-     * @return the measuring station height above sea level, m
-     */
-    private double getStationHeightAMSL(final GroundStation station) {
-        // FIXME heigth should be computed with respect to geoid WGS84+GUND = EGM2008 for example
-        final double height = station.getBaseFrame().getPoint().getAltitude();
-        return height;
-    }
-
     /** Compute the measurement error due to Troposphere.
      * @param station station
      * @param state spacecraft state
@@ -84,11 +73,8 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
 
         // only consider measures above the horizon
         if (elevation > 0.0) {
-            // altitude AMSL in meters
-            final double height = getStationHeightAMSL(station);
-
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation, height, tropoModel.getParameters(), state.getDate());
+            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(), state.getDate());
 
             // one-way measurement.
             return delay;

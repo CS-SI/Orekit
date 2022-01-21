@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -35,10 +35,14 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue.Event;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.sampling.FieldOrekitStepHandler;
+import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -48,7 +52,7 @@ import org.orekit.utils.Constants;
  *
  * @author Evan Ward
  */
-public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>>{
+public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElement<T>>{
 
     public static final double mu = Constants.EIGEN5C_EARTH_MU;
     public static final Frame eci = FramesFactory.getGCRF();
@@ -173,6 +177,112 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         List<Event<FieldEventDetector<T>, T>> events2 = handler2.getEvents();
         Assert.assertEquals(1, events2.size());
         Assert.assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+    }
+
+    /**
+     * Previously there were some branches when tryAdvance() returned false but did not
+     * set {@code t0 = t}. This allowed the order of events to not be chronological and to
+     * detect events that should not have occurred, both of which are problems.
+     */
+    @Test
+    public void testSimultaneousEventsReset() {
+        // setup
+        double tol = 1e-10;
+        FieldPropagator<T> propagator = getPropagator(10);
+        boolean[] firstEventOccurred = {false};
+        List<FieldRecordAndContinue.Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+
+        TimeDetector detector1 = new TimeDetector(5)
+                .withMaxCheck(v(10))
+                .withThreshold(v(tol))
+                .withHandler(new Handler<FieldEventDetector<T>>(events, Action.RESET_STATE) {
+                    @Override
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
+                        firstEventOccurred[0] = true;
+                        return super.eventOccurred(s, detector, increasing);
+                    }
+
+                    @Override
+                    public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
+                        return oldState;
+                    }
+                });
+        propagator.addEventDetector(detector1);
+        // this detector changes it's g function definition when detector1 fires
+        FieldFunctionalDetector<T> detector2 = new FieldFunctionalDetector<>(field)
+                .withMaxCheck(v(1))
+                .withThreshold(v(tol))
+                .withHandler(new FieldRecordAndContinue<>(events))
+                .withFunction(state -> {
+                            if (firstEventOccurred[0]) {
+                                return new TimeDetector(1, 3, 5).g(state);
+                            }
+                            return new TimeDetector(5).g(state);
+                        }
+                );
+        propagator.addEventDetector(detector2);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(20));
+
+        // verify
+        // order is important to make sure the test checks what it is supposed to
+        Assert.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(detector1, events.get(0).getDetector());
+        Assert.assertEquals(5, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(detector2, events.get(1).getDetector());
+        Assert.assertEquals(2, events.size());
+    }
+
+    /**
+     * When two event detectors have a discontinuous event caused by a {@link
+     * Action#RESET_STATE} or {@link Action#RESET_DERIVATIVES}. The two event detectors
+     * would each say they had an event that had to be handled before the other one, but
+     * neither would actually back up at all. For #684.
+     */
+    @Test
+    public void testSimultaneousDiscontinuousEventsAfterReset() {
+        // setup
+        double t = FastMath.PI;
+        double tol = 1e-10;
+        FieldPropagator<T> propagator = getPropagator(10);
+        List<FieldRecordAndContinue.Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
+                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngle.TRUE, eci, epoch.shiftedBy(t), v(mu)));
+
+        TimeDetector resetDetector = new TimeDetector(t)
+                .withHandler(new ResetHandler<>(events, newState))
+                .withMaxCheck(v(10))
+                .withThreshold(v(tol));
+        propagator.addEventDetector(resetDetector);
+        List<FieldEventDetector<T>> detectors = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            FieldFunctionalDetector<T> detector1 = new FieldFunctionalDetector<>(field)
+                    .withFunction(s -> s.getA().subtract(10e6))
+                    .withThreshold(v(tol))
+                    .withMaxCheck(v(10))
+                    .withHandler(new FieldRecordAndContinue<>(events));
+            propagator.addEventDetector(detector1);
+            detectors.add(detector1);
+        }
+
+        // action
+        propagator.propagate(epoch.shiftedBy(10));
+
+        // verify
+        Assert.assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tol);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(resetDetector, events.get(0).getDetector());
+        // next two events can occur in either order
+        Assert.assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tol);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(detectors.get(0), events.get(1).getDetector());
+        Assert.assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tol);
+        Assert.assertTrue(events.get(2).isIncreasing());
+        Assert.assertEquals(detectors.get(1), events.get(2).getDetector());
+        Assert.assertEquals(events.size(), 3);
     }
 
     /**
@@ -1033,6 +1143,71 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         Assert.assertSame(detectorA, events.get(0).getDetector());
     }
 
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandler() {
+        // setup
+        double tolerance = 1e-18;
+        FieldPropagator<T> propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(5)
+                .withHandler(new Handler<>(Action.CONTINUE))
+                .withThreshold(v(tolerance)));
+        StepHandler<T> stepHandler = new StepHandler<>();
+        propagator.setStepHandler(stepHandler);
+
+        // action
+        FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(10));
+
+        // verify
+        Assert.assertEquals(10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        FieldOrekitStepInterpolator<T> interpolator = stepHandler.interpolators.get(0);
+        Assert.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assert.assertEquals(5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(2, stepHandler.interpolators.size());
+    }
+
+    /**
+     * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
+     * null}.
+     */
+    @Test
+    public void testEventCausedByDerivativesReset() {
+        // setup
+        TimeDetector detectorA = new TimeDetector(15.0)
+                .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
+                    @Override
+                    public FieldSpacecraftState<T> resetState(TimeDetector d,
+                                                              FieldSpacecraftState<T> s) {
+                        return null;
+                    }
+                })
+                .withMaxCheck(v(10))
+                .withThreshold(v(1e-6));
+        FieldPropagator<T> propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+
+        try {
+            // action
+            propagator.propagate(epoch.shiftedBy(20.0));
+            Assert.fail("Expected Exception");
+        } catch (NullPointerException e) {
+            // expected
+        }
+    }
+
+
     /* The following tests are copies of the above tests, except that they propagate in
      * the reverse direction and all the signs on the time values are negated.
      */
@@ -1137,6 +1312,112 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         List<Event<FieldEventDetector<T>, T>> events2 = handler2.getEvents();
         Assert.assertEquals(1, events2.size());
         Assert.assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+    }
+
+    /**
+     * Previously there were some branches when tryAdvance() returned false but did not
+     * set {@code t0 = t}. This allowed the order of events to not be chronological and to
+     * detect events that should not have occurred, both of which are problems.
+     */
+    @Test
+    public void testSimultaneousEventsResetReverse() {
+        // setup
+        double tol = 1e-10;
+        FieldPropagator<T> propagator = getPropagator(10);
+        boolean[] firstEventOccurred = {false};
+        List<FieldRecordAndContinue.Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+
+        TimeDetector detector1 = new TimeDetector(-5)
+                .withMaxCheck(v(10))
+                .withThreshold(v(tol))
+                .withHandler(new Handler<FieldEventDetector<T>>(events, Action.RESET_STATE) {
+                    @Override
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
+                        firstEventOccurred[0] = true;
+                        return super.eventOccurred(s, detector, increasing);
+                    }
+
+                    @Override
+                    public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
+                        return oldState;
+                    }
+                });
+        propagator.addEventDetector(detector1);
+        // this detector changes it's g function definition when detector1 fires
+        FieldFunctionalDetector<T> detector2 = new FieldFunctionalDetector<>(field)
+                .withMaxCheck(v(1))
+                .withThreshold(v(tol))
+                .withHandler(new FieldRecordAndContinue<>(events))
+                .withFunction(state -> {
+                            if (firstEventOccurred[0]) {
+                                return new TimeDetector(-1, -3, -5).g(state);
+                            }
+                            return new TimeDetector(-5).g(state);
+                        }
+                );
+        propagator.addEventDetector(detector2);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-20));
+
+        // verify
+        // order is important to make sure the test checks what it is supposed to
+        Assert.assertEquals(-5, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(detector1, events.get(0).getDetector());
+        Assert.assertEquals(-5, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(detector2, events.get(1).getDetector());
+        Assert.assertEquals(2, events.size());
+    }
+
+    /**
+     * When two event detectors have a discontinuous event caused by a {@link
+     * Action#RESET_STATE} or {@link Action#RESET_DERIVATIVES}. The two event detectors
+     * would each say they had an event that had to be handled before the other one, but
+     * neither would actually back up at all. For #684.
+     */
+    @Test
+    public void testSimultaneousDiscontinuousEventsAfterResetReverse() {
+        // setup
+        double t = -FastMath.PI;
+        double tol = 1e-10;
+        FieldPropagator<T> propagator = getPropagator(10);
+        List<FieldRecordAndContinue.Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
+                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngle.TRUE, eci, epoch.shiftedBy(t), v(mu)));
+
+        TimeDetector resetDetector = new TimeDetector(t)
+                .withHandler(new ResetHandler<>(events, newState))
+                .withMaxCheck(v(10))
+                .withThreshold(v(tol));
+        propagator.addEventDetector(resetDetector);
+        List<FieldEventDetector<T>> detectors = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            FieldFunctionalDetector<T> detector1 = new FieldFunctionalDetector<>(field)
+                    .withFunction(s -> s.getA().subtract(10e6))
+                    .withThreshold(v(tol))
+                    .withMaxCheck(v(10))
+                    .withHandler(new FieldRecordAndContinue<>(events));
+            propagator.addEventDetector(detector1);
+            detectors.add(detector1);
+        }
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-10));
+
+        // verify
+        Assert.assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tol);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(resetDetector, events.get(0).getDetector());
+        // next two events can occur in either order
+        Assert.assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tol);
+        Assert.assertFalse(events.get(1).isIncreasing());
+        Assert.assertEquals(detectors.get(0), events.get(1).getDetector());
+        Assert.assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tol);
+        Assert.assertFalse(events.get(2).isIncreasing());
+        Assert.assertEquals(detectors.get(1), events.get(2).getDetector());
+        Assert.assertEquals(events.size(), 3);
     }
 
     /**
@@ -1990,6 +2271,70 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         Assert.assertSame(detectorA, events.get(0).getDetector());
     }
 
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandlerReverse() {
+        // setup
+        double tolerance = 1e-18;
+        FieldPropagator<T> propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(-5)
+                .withHandler(new Handler<>(Action.CONTINUE))
+                .withThreshold(v(tolerance)));
+        StepHandler<T> stepHandler = new StepHandler<>();
+        propagator.setStepHandler(stepHandler);
+
+        // action
+        FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(-10));
+
+        // verify
+        Assert.assertEquals(-10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(-10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(-10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        FieldOrekitStepInterpolator<T> interpolator = stepHandler.interpolators.get(0);
+        Assert.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(-5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assert.assertEquals(-5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(-10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
+        Assert.assertEquals(2, stepHandler.interpolators.size());
+    }
+
+    /**
+     * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
+     * null}.
+     */
+    @Test
+    public void testEventCausedByDerivativesResetReverse() {
+        // setup
+        TimeDetector detectorA = new TimeDetector(-15.0)
+                .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
+                    @Override
+                    public FieldSpacecraftState<T> resetState(TimeDetector d,
+                                                              FieldSpacecraftState<T> s) {
+                        return null;
+                    }
+                })
+                .withMaxCheck(v(10))
+                .withThreshold(v(1e-6));
+        FieldPropagator<T> propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+
+        try {
+            // action
+            propagator.propagate(epoch.shiftedBy(-20.0));
+            Assert.fail("Expected Exception");
+        } catch (NullPointerException e) {
+            // expected
+        }
+    }
+
 
 
     /* utility classes and methods */
@@ -2026,7 +2371,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
     }
 
     /** Trigger an event at a particular time. */
-    private class TimeDetector extends FieldAbstractDetector<TimeDetector, T> {
+    protected class TimeDetector extends FieldAbstractDetector<TimeDetector, T> {
 
         /** time of the event to trigger. */
         private final List<FieldAbsoluteDate<T>> eventTs;
@@ -2118,7 +2463,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
 
         @Override
         public T g(FieldSpacecraftState<T> s) {
-            return FastMath.signum(g.g(s));
+            return FastMath.sign(g.g(s));
         }
 
         @Override
@@ -2205,6 +2550,63 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
             return this.action;
         }
 
+    }
+
+    private class ResetHandler<D extends FieldEventDetector<T>> extends Handler<D> {
+
+        private final FieldSpacecraftState<T> newState;
+        private final int times;
+        private long i = 0;
+
+        public ResetHandler(List<Event<D, T>> events, FieldSpacecraftState<T> newState) {
+            this(events, newState, Integer.MAX_VALUE);
+        }
+
+        public ResetHandler(List<Event<D, T>> events, FieldSpacecraftState<T> newState, int times) {
+            super(events, Action.RESET_STATE);
+            this.newState = newState;
+            this.times = times;
+        }
+
+        @Override
+        public Action eventOccurred(final FieldSpacecraftState<T> s, final D detector, final boolean increasing) {
+            super.eventOccurred(s, detector, increasing);
+            if (i++ < times) {
+                return Action.RESET_STATE;
+            }
+            return Action.CONTINUE;
+        }
+
+        @Override
+        public FieldSpacecraftState<T> resetState(D detector, FieldSpacecraftState<T> oldState) {
+            Assert.assertEquals(0, newState.getDate().durationFrom(oldState.getDate()).getReal(), 0);
+            return newState;
+        }
+    }
+
+    private static class StepHandler<D extends CalculusFieldElement<D>>
+            implements FieldOrekitStepHandler<D> {
+
+        private FieldSpacecraftState<D> initialState;
+        private FieldAbsoluteDate<D> targetDate;
+        private List<FieldOrekitStepInterpolator<D>> interpolators = new ArrayList<>();
+        private FieldSpacecraftState<D> finalState;
+
+        @Override
+        public void init(FieldSpacecraftState<D> s0, FieldAbsoluteDate<D> t) {
+            initialState = s0;
+            targetDate = t;
+        }
+
+        @Override
+        public void handleStep(FieldOrekitStepInterpolator<D> interpolator) {
+            interpolators.add(interpolator);
+        }
+
+        @Override
+        public void finish(FieldSpacecraftState<D> finalState) {
+            this.finalState = finalState;
+        }
     }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,8 +36,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -152,7 +150,7 @@ public class EphemerisEventsTest {
 
         AbsoluteDate computeEnd = new AbsoluteDate(finalDate, -1000.0);
 
-        ephem.setSlaveMode();
+        ephem.clearStepHandlers();
         SpacecraftState state = ephem.propagate(computeEnd);
         Assert.assertEquals(computeEnd, state.getDate());
         Assert.assertEquals(14, inEclipsecounter);

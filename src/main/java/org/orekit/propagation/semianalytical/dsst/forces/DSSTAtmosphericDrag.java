@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.List;
+
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
@@ -51,14 +53,22 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     /** Upper limit for atmospheric drag (m) . */
     private static final double ATMOSPHERE_ALTITUDE_MAX = 1000000.;
 
-    /** Atmospheric model. */
-    private final Atmosphere atmosphere;
-
-    /** Spacecraft shape. */
-    private final DragSensitive spacecraft;
+    /** Atmospheric drag force model. */
+    private final DragForce drag;
 
     /** Critical distance from the center of the central body for entering/leaving the atmosphere. */
     private final double     rbar;
+
+    /** Simple constructor with custom force.
+     * @param force atmospheric drag force model
+     * @param mu central attraction coefficient
+     */
+    public DSSTAtmosphericDrag(final DragForce force, final double mu) {
+        //Call to the constructor from superclass using the numerical drag model as ForceModel
+        super("DSST-drag-", GAUSS_THRESHOLD, force, mu);
+        this.drag = force;
+        this.rbar = ATMOSPHERE_ALTITUDE_MAX + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+    }
 
     /** Simple constructor assuming spherical spacecraft.
      * @param atmosphere atmospheric model
@@ -79,18 +89,14 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft, final double mu) {
 
         //Call to the constructor from superclass using the numerical drag model as ForceModel
-        super("DSST-drag-", GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft), mu);
-
-        this.atmosphere = atmosphere;
-        this.spacecraft = spacecraft;
-        this.rbar = ATMOSPHERE_ALTITUDE_MAX + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+        this(new DragForce(atmosphere, spacecraft), mu);
     }
 
     /** Get the atmospheric model.
      * @return atmosphere model
      */
     public Atmosphere getAtmosphere() {
-        return atmosphere;
+        return drag.getAtmosphere();
     }
 
     /** Get the critical distance.
@@ -111,7 +117,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
         return null;
     }
 
@@ -127,8 +133,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final double apogee  = auxiliaryElements.getSma() * (1. + auxiliaryElements.getEcc());
         // Trajectory entirely within of the atmosphere
         if (apogee < rbar) {
-            return new double[]{-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
-                                FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
+            return new double[] { -FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
+                                  FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0) };
         }
         // Else, trajectory partialy within of the atmosphere
         final double fb = FastMath.acos(((auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc() * auxiliaryElements.getEcc()) / rbar) - 1.) / auxiliaryElements.getEcc());
@@ -137,11 +143,10 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
+    protected <T extends CalculusFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
                                                              final FieldAuxiliaryElements<T> auxiliaryElements) {
 
         final Field<T> field = state.getDate().getField();
-        final T zero = field.getZero();
 
         final T[] tab = MathArrays.buildArray(field, 2);
 
@@ -153,8 +158,10 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final T apogee  = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().add(1.));
         // Trajectory entirely within of the atmosphere
         if (apogee.getReal() < rbar) {
-            tab[0] = auxiliaryElements.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
-            tab[1] = auxiliaryElements.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+            final T zero = field.getZero();
+            final T pi   = zero.getPi();
+            tab[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(pi);
+            tab[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(pi);
             return tab;
         }
         // Else, trajectory partialy within of the atmosphere
@@ -167,8 +174,9 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected ParameterDriver[] getParametersDriversWithoutMu() {
-        return spacecraft.getDragParametersDrivers();
+    @Override
+    protected List<ParameterDriver> getParametersDriversWithoutMu() {
+        return drag.getParametersDrivers();
     }
 
     /** Get spacecraft shape.
@@ -176,7 +184,14 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      * @return spacecraft shape
      */
     public DragSensitive getSpacecraft() {
-        return spacecraft;
+        return drag.getSpacecraft();
     }
 
+    /** Get drag force.
+     *
+     * @return drag force
+     */
+    public DragForce getDrag() {
+        return drag;
+    }
 }

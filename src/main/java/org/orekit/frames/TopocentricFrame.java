@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -75,10 +76,10 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                             final String name) {
 
         super(parentShape.getBodyFrame(),
-              new Transform(AbsoluteDate.J2000_EPOCH,
-                            new Transform(AbsoluteDate.J2000_EPOCH,
+              new Transform(AbsoluteDate.ARBITRARY_EPOCH,
+                            new Transform(AbsoluteDate.ARBITRARY_EPOCH,
                                           parentShape.transform(point).negate()),
-                            new Transform(AbsoluteDate.J2000_EPOCH,
+                            new Transform(AbsoluteDate.ARBITRARY_EPOCH,
                                           new Rotation(point.getEast(), point.getZenith(),
                                                        Vector3D.PLUS_I, Vector3D.PLUS_K),
                                           Vector3D.ZERO)),
@@ -107,7 +108,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return surface point defining the origin of the frame
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getPoint(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getPoint(final Field<T> field) {
         final T zero = field.getZero();
         return new FieldGeodeticPoint<>(zero.add(point.getLatitude()),
                                         zero.add(point.getLongitude()),
@@ -199,7 +200,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return elevation of the point
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> T getElevation(final FieldVector3D<T> extPoint, final Frame frame,
+    public <T extends CalculusFieldElement<T>> T getElevation(final FieldVector3D<T> extPoint, final Frame frame,
                                                           final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
@@ -246,7 +247,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return azimuth of the point
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> T getAzimuth(final FieldVector3D<T> extPoint, final Frame frame,
+    public <T extends CalculusFieldElement<T>> T getAzimuth(final FieldVector3D<T> extPoint, final Frame frame,
                                                         final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
@@ -288,7 +289,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return range (distance) of the point
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> T getRange(final FieldVector3D<T> extPoint, final Frame frame,
+    public <T extends CalculusFieldElement<T>> T getRange(final FieldVector3D<T> extPoint, final Frame frame,
                                                       final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
@@ -327,7 +328,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return range rate of the point (positive if point departs from frame)
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> T getRangeRate(final FieldPVCoordinates<T> extPV, final Frame frame,
+    public <T extends CalculusFieldElement<T>> T getRangeRate(final FieldPVCoordinates<T> extPV, final Frame frame,
                                                           final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
@@ -387,14 +388,12 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      */
     public GeodeticPoint pointAtDistance(final double azimuth, final double elevation,
                                          final double distance) {
-        final double cosAz = FastMath.cos(azimuth);
-        final double sinAz = FastMath.sin(azimuth);
-        final double cosEl = FastMath.cos(elevation);
-        final double sinEl = FastMath.sin(elevation);
-        final Vector3D  observed = new Vector3D(distance * cosEl * sinAz,
-                                                distance * cosEl * cosAz,
-                                                distance * sinEl);
-        return parentShape.transform(observed, this, AbsoluteDate.J2000_EPOCH);
+        final SinCos scAz  = FastMath.sinCos(azimuth);
+        final SinCos scEl  = FastMath.sinCos(elevation);
+        final Vector3D  observed = new Vector3D(distance * scEl.cos() * scAz.sin(),
+                                                distance * scEl.cos() * scAz.cos(),
+                                                distance * scEl.sin());
+        return parentShape.transform(observed, this, AbsoluteDate.ARBITRARY_EPOCH);
     }
 
     /** Get the {@link PVCoordinates} of the topocentric frame origin in the selected frame.

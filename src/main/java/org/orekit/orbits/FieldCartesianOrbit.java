@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,14 +18,11 @@ package org.orekit.orbits;
 
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -33,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -78,11 +76,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
  */
-public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
-
-    /** Factory for first time derivatives. */
-    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES =
-                    new HashMap<>();
+public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 
     /** Indicator for non-Keplerian acceleration. */
     private final transient boolean hasNonKeplerianAcceleration;
@@ -104,7 +98,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position, velocity and acceleration of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
@@ -122,11 +116,6 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         field = pvaCoordinates.getPosition().getX().getField();
         zero = field.getZero();
         one = field.getOne();
-
-        if (!FACTORIES.containsKey(field)) {
-            FACTORIES.put(field, new FDSFactory<>(field, 1, 1));
-        }
-
     }
 
     /** Constructor from Cartesian parameters.
@@ -134,7 +123,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
@@ -166,11 +155,6 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         field = op.getA().getField();
         zero = field.getZero();
         one = field.getOne();
-
-        if (!FACTORIES.containsKey(field)) {
-            FACTORIES.put(field, new FDSFactory<>(field, 1, 1));
-        }
-
     }
 
     /** {@inheritDoc} */
@@ -194,30 +178,24 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
     }
 
-    /** Get position with derivatives.
-     * @return position with derivatives
+    /** Get the position/velocity with derivatives.
+     * @return position/velocity with derivatives
+     * @since 10.2
      */
-    private FieldVector3D<FieldDerivativeStructure<T>> getPositionDS() {
-        final FieldVector3D<T> p = getPVCoordinates().getPosition();
-        final FieldVector3D<T> v = getPVCoordinates().getVelocity();
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(field);
-        return new FieldVector3D<>(factory.build(p.getX(), v.getX()),
-                                   factory.build(p.getY(), v.getY()),
-                                   factory.build(p.getZ(), v.getZ()));
-    }
-
-    /** Get velocity with derivatives.
-     * @return velocity with derivatives
-     */
-    private FieldVector3D<FieldDerivativeStructure<T>> getVelocityDS() {
-        final FieldVector3D<T> v = getPVCoordinates().getVelocity();
-        final FieldVector3D<T> a = getPVCoordinates().getAcceleration();
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(field);
-        return new FieldVector3D<>(factory.build(v.getX(), a.getX()),
-                                   factory.build(v.getY(), a.getY()),
-                                   factory.build(v.getZ(), a.getZ()));
+    private FieldPVCoordinates<FieldUnivariateDerivative2<T>> getPVDerivatives() {
+        // PVA coordinates
+        final FieldPVCoordinates<T> pva = getPVCoordinates();
+        final FieldVector3D<T>      p   = pva.getPosition();
+        final FieldVector3D<T>      v   = pva.getVelocity();
+        final FieldVector3D<T>      a   = pva.getAcceleration();
+        // Field coordinates
+        final FieldVector3D<FieldUnivariateDerivative2<T>> pG = new FieldVector3D<>(new FieldUnivariateDerivative2<>(p.getX(), v.getX(), a.getX()),
+                                                             new FieldUnivariateDerivative2<>(p.getY(), v.getY(), a.getY()),
+                                                             new FieldUnivariateDerivative2<>(p.getZ(), v.getZ(), a.getZ()));
+        final FieldVector3D<FieldUnivariateDerivative2<T>> vG = new FieldVector3D<>(new FieldUnivariateDerivative2<>(v.getX(), a.getX(), zero),
+                                                             new FieldUnivariateDerivative2<>(v.getY(), a.getY(), zero),
+                                                             new FieldUnivariateDerivative2<>(v.getZ(), a.getZ(), zero));
+        return new FieldPVCoordinates<>(pG, vG);
     }
 
     /** {@inheritDoc} */
@@ -231,10 +209,11 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** {@inheritDoc} */
     public T getADot() {
         if (hasDerivatives()) {
-            final FieldDerivativeStructure<T> r  = getPositionDS().getNorm();
-            final FieldDerivativeStructure<T> V2 = getVelocityDS().getNormSq();
-            final FieldDerivativeStructure<T> a  = r.divide(r.multiply(V2).divide(getMu()).subtract(2).negate());
-            return a.getPartialDerivative(1);
+            final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
+            final FieldUnivariateDerivative2<T> r  = pv.getPosition().getNorm();
+            final FieldUnivariateDerivative2<T> V2 = pv.getVelocity().getNormSq();
+            final FieldUnivariateDerivative2<T> a  = r.divide(r.multiply(V2).divide(getMu()).subtract(2).negate());
+            return a.getDerivative(1);
         } else {
             return null;
         }
@@ -261,16 +240,15 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** {@inheritDoc} */
     public T getEDot() {
         if (hasDerivatives()) {
-            final FieldVector3D<FieldDerivativeStructure<T>> pvP   = getPositionDS();
-            final FieldVector3D<FieldDerivativeStructure<T>> pvV   = getVelocityDS();
-            final FieldDerivativeStructure<T> r       = getPositionDS().getNorm();
-            final FieldDerivativeStructure<T> V2      = getVelocityDS().getNormSq();
-            final FieldDerivativeStructure<T> rV2OnMu = r.multiply(V2).divide(getMu());
-            final FieldDerivativeStructure<T> a       = r.divide(rV2OnMu.negate().add(2));
-            final FieldDerivativeStructure<T> eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(a.multiply(getMu()).sqrt());
-            final FieldDerivativeStructure<T> eCE     = rV2OnMu.subtract(1);
-            final FieldDerivativeStructure<T> e       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
-            return e.getPartialDerivative(1);
+            final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
+            final FieldUnivariateDerivative2<T> r       = pv.getPosition().getNorm();
+            final FieldUnivariateDerivative2<T> V2      = pv.getVelocity().getNormSq();
+            final FieldUnivariateDerivative2<T> rV2OnMu = r.multiply(V2).divide(getMu());
+            final FieldUnivariateDerivative2<T> a       = r.divide(rV2OnMu.negate().add(2));
+            final FieldUnivariateDerivative2<T> eSE     = FieldVector3D.dotProduct(pv.getPosition(), pv.getVelocity()).divide(a.multiply(getMu()).sqrt());
+            final FieldUnivariateDerivative2<T> eCE     = rV2OnMu.subtract(1);
+            final FieldUnivariateDerivative2<T> e       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
+            return e.getDerivative(1);
         } else {
             return null;
         }
@@ -284,10 +262,11 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** {@inheritDoc} */
     public T getIDot() {
         if (hasDerivatives()) {
-            final FieldVector3D<FieldDerivativeStructure<T>> momentum =
-                            FieldVector3D.crossProduct(getPositionDS(), getVelocityDS());
-            final FieldDerivativeStructure<T> i = FieldVector3D.angle(Vector3D.PLUS_K, momentum);
-            return i.getPartialDerivative(1);
+            final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
+            final FieldVector3D<FieldUnivariateDerivative2<T>> momentum =
+                            FieldVector3D.crossProduct(pv.getPosition(), pv.getVelocity());
+            final FieldUnivariateDerivative2<T> i = FieldVector3D.angle(Vector3D.PLUS_K, momentum);
+            return i.getDerivative(1);
         } else {
             return null;
         }
@@ -324,7 +303,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final double x = w.getX().getReal();
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
-        if (((x * x + y * y) == 0) && z < 0) {
+        if ((x * x + y * y) == 0 && z < 0) {
             return zero.add(Double.NaN);
         }
         return w.getY().negate().divide(w.getZ().add(1));
@@ -333,17 +312,18 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** {@inheritDoc} */
     public T getHxDot() {
         if (hasDerivatives()) {
-            final FieldVector3D<FieldDerivativeStructure<T>> w =
-                            FieldVector3D.crossProduct(getPositionDS(), getVelocityDS()).normalize();
+            final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
+            final FieldVector3D<FieldUnivariateDerivative2<T>> w =
+                            FieldVector3D.crossProduct(pv.getPosition(), pv.getVelocity()).normalize();
             // Check for equatorial retrograde orbit
             final double x = w.getX().getValue().getReal();
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return zero.add(Double.NaN);
             }
-            final FieldDerivativeStructure<T> hx = w.getY().negate().divide(w.getZ().add(1));
-            return hx.getPartialDerivative(1);
+            final FieldUnivariateDerivative2<T> hx = w.getY().negate().divide(w.getZ().add(1));
+            return hx.getDerivative(1);
         } else {
             return null;
         }
@@ -356,7 +336,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final double x = w.getX().getReal();
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
-        if (((x * x + y * y) == 0) && z < 0) {
+        if ((x * x + y * y) == 0 && z < 0) {
             return zero.add(Double.NaN);
         }
         return  w.getX().divide(w.getZ().add(1));
@@ -365,17 +345,18 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** {@inheritDoc} */
     public T getHyDot() {
         if (hasDerivatives()) {
-            final FieldVector3D<FieldDerivativeStructure<T>> w =
-                            FieldVector3D.crossProduct(getPositionDS(), getVelocityDS()).normalize();
+            final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
+            final FieldVector3D<FieldUnivariateDerivative2<T>> w =
+                            FieldVector3D.crossProduct(pv.getPosition(), pv.getVelocity()).normalize();
             // Check for equatorial retrograde orbit
             final double x = w.getX().getValue().getReal();
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return zero.add(Double.NaN);
             }
-            final FieldDerivativeStructure<T> hy = w.getX().divide(w.getZ().add(1));
-            return hy.getPartialDerivative(1);
+            final FieldUnivariateDerivative2<T> hy = w.getX().divide(w.getZ().add(1));
+            return hy.getDerivative(1);
         } else {
             return null;
         }
@@ -489,19 +470,21 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // the following equations rely on the specific choice of u explained above,
         // some coefficients that vanish to 0 in this case have already been removed here
-        final T ex      = eCE.subtract(e2).multiply(a).divide(r);
-        final T s       = e2.negate().add(1).sqrt();
-        final T ey      = s.negate().multiply(eSE).multiply(a).divide(r);
-        final T beta    = s.add(1).reciprocal();
-        final T thetaE0 = ey.add(eSE.multiply(beta).multiply(ex)).atan2(r.divide(a).add(ex).subtract(eSE.multiply(beta).multiply(ey)));
-        final T thetaM0 = thetaE0.subtract(ex.multiply(thetaE0.sin())).add(ey.multiply(thetaE0.cos()));
+        final T              ex        = eCE.subtract(e2).multiply(a).divide(r);
+        final T              s         = e2.negate().add(1).sqrt();
+        final T              ey        = s.negate().multiply(eSE).multiply(a).divide(r);
+        final T              beta      = s.add(1).reciprocal();
+        final T              thetaE0   = ey.add(eSE.multiply(beta).multiply(ex)).atan2(r.divide(a).add(ex).subtract(eSE.multiply(beta).multiply(ey)));
+        final FieldSinCos<T> scThetaE0 = FastMath.sinCos(thetaE0);
+        final T              thetaM0   = thetaE0.subtract(ex.multiply(scThetaE0.sin())).add(ey.multiply(scThetaE0.cos()));
 
         // compute in-plane shifted eccentric argument
-        final T sqrtMmuOA = a.reciprocal().multiply(getMu()).sqrt();
-        final T thetaM1   = thetaM0.add(sqrtMmuOA.divide(a).multiply(dt));
-        final T thetaE1   = meanToEccentric(thetaM1, ex, ey);
-        final T cTE       = thetaE1.cos();
-        final T sTE       = thetaE1.sin();
+        final T              sqrtMmuOA = a.reciprocal().multiply(getMu()).sqrt();
+        final T              thetaM1   = thetaM0.add(sqrtMmuOA.divide(a).multiply(dt));
+        final T              thetaE1   = meanToEccentric(thetaM1, ex, ey);
+        final FieldSinCos<T> scTE      = FastMath.sinCos(thetaE1);
+        final T              cTE       = scTE.cos();
+        final T              sTE       = scTE.sin();
 
         // compute shifted in-plane Cartesian coordinates
         final T exey   = ex.multiply(ey);
@@ -628,11 +611,10 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         T thetaEMthetaM = zero;
         int    iter          = 0;
         do {
-            final T cosThetaE = thetaE.cos();
-            final T sinThetaE = thetaE.sin();
+            final FieldSinCos<T> scThetaE = FastMath.sinCos(thetaE);
 
-            final T f2 = ex.multiply(sinThetaE).subtract(ey.multiply(cosThetaE));
-            final T f1 = one.subtract(ex.multiply(cosThetaE)).subtract(ey.multiply(sinThetaE));
+            final T f2 = ex.multiply(scThetaE.sin()).subtract(ey.multiply(scThetaE.cos()));
+            final T f1 = one.subtract(ex.multiply(scThetaE.cos())).subtract(ey.multiply(scThetaE.sin()));
             final T f0 = thetaEMthetaM.subtract(f2);
 
             final T f12 = f1.multiply(2.0);
@@ -664,16 +646,19 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
+        // Field value of pi
+        final T pi = ecc.getPi();
+
         // Initial guess
         T H;
         if (ecc.getReal() < 1.6) {
-            if ((-FastMath.PI < M.getReal() && M.getReal() < 0.) || M.getReal() > FastMath.PI) {
+            if (-pi.getReal() < M.getReal() && M.getReal() < 0. || M.getReal() > pi.getReal()) {
                 H = M.subtract(ecc);
             } else {
                 H = M.add(ecc);
             }
         } else {
-            if (ecc.getReal() < 3.6 && FastMath.abs(M.getReal()) > FastMath.PI) {
+            if (ecc.getReal() < 3.6 && FastMath.abs(M.getReal()) > pi.getReal()) {
                 H = M.subtract(ecc.copySign(M));
             } else {
                 H = M.divide(ecc.subtract(1.));
@@ -760,7 +745,18 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @return a string representation of this object
      */
     public String toString() {
-        return "Cartesian parameters: " + getPVCoordinates().toString();
+        // use only the six defining elements, like the other Orbit.toString() methods
+        final String comma = ", ";
+        final PVCoordinates pv = getPVCoordinates().toPVCoordinates();
+        final Vector3D p = pv.getPosition();
+        final Vector3D v = pv.getVelocity();
+        return "Cartesian parameters: {P(" +
+                p.getX() + comma +
+                p.getY() + comma +
+                p.getZ() + "), V(" +
+                v.getX() + comma +
+                v.getY() + comma +
+                v.getZ() + ")}";
     }
 
     @Override

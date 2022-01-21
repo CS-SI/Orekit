@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 
@@ -36,7 +36,7 @@ import org.hipparchus.exception.NullArgumentException;
  *  {@link ArrayList} of {@link Complex} number, the C<sub>j</sub>(k, h) being
  *  represented by the real and the S<sub>j</sub>(k, h) by the imaginary part.
  */
-public class FieldCjSjCoefficient <T extends RealFieldElement<T>> {
+public class FieldCjSjCoefficient <T extends CalculusFieldElement<T>> {
 
     /** Zero for initialization. /*/
     private final T zero;
@@ -133,7 +133,7 @@ public class FieldCjSjCoefficient <T extends RealFieldElement<T>> {
         jLast = j;
     }
 
-    private static class FieldComplex <T extends RealFieldElement<T>> {
+    private static class FieldComplex <T extends CalculusFieldElement<T>> {
 
         /** The imaginary part. */
         private final T imaginary;

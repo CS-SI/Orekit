@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,11 +16,12 @@
  */
 package org.orekit.attitudes;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -29,27 +30,69 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
- * This class handles an inertial attitude provider.
+ * This class handles an attitude provider aligned with a frame or a fixed offset to it.
+ * Contrary to the name the frame need not be an inertial frame.
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
  */
 public class InertialProvider implements AttitudeProvider {
 
-
-    /** Dummy attitude provider, perfectly aligned with the EME2000 frame. */
-    public static final InertialProvider EME2000_ALIGNED =
-        new InertialProvider(Rotation.IDENTITY);
-
     /** Fixed satellite frame. */
     private final Frame satelliteFrame;
 
     /** Creates new instance.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param rotation rotation from EME2000 to the desired satellite frame
+     * @see #InertialProvider(Rotation, Frame)
      */
+    @DefaultDataContext
     public InertialProvider(final Rotation rotation) {
+        this(rotation, DataContext.getDefault().getFrames().getEME2000());
+    }
+
+    /**
+     * Creates new instance aligned with the given frame.
+     *
+     * @param frame the reference frame for the attitude.
+     */
+    public InertialProvider(final Frame frame) {
+        // it is faster to use the frame directly here rather than call the other
+        // constructor because of the == shortcut in frame.getTransformTo
+        this.satelliteFrame = frame;
+    }
+
+    /**
+     * Creates new instance with a fixed attitude in the given frame.
+     *
+     * @param rotation  rotation from {@code reference} to the desired satellite frame
+     * @param reference frame for {@code rotation}.
+     * @since 10.1
+     */
+    public InertialProvider(final Rotation rotation,
+                            final Frame reference) {
         satelliteFrame =
-            new Frame(FramesFactory.getEME2000(), new Transform(AbsoluteDate.J2000_EPOCH, rotation),
-                      null, false);
+            new Frame(reference,
+                    new Transform(AbsoluteDate.ARBITRARY_EPOCH, rotation), null, false);
+    }
+
+    /**
+     * Creates an attitude provider aligned with the given frame. The frame does not need
+     * to be inertial.
+     *
+     * <p>This attitude provider returned by this method is designed to be as fast as
+     * possible for when attitude is irrelevant while still being a valid implementation
+     * of {@link AttitudeProvider}. To ensure good performance the specified attitude
+     * reference frame should be the same frame used for propagation so that computing the
+     * frame transformation is trivial.
+     *
+     * @param satelliteFrame with which the satellite is aligned.
+     * @return new attitude provider aligned with the given frame.
+     * @since 11.0
+     */
+    public static AttitudeProvider of(final Frame satelliteFrame) {
+        return new InertialProvider(satelliteFrame);
     }
 
     /** {@inheritDoc} */
@@ -60,7 +103,7 @@ public class InertialProvider implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>>FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>>FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
         final FieldTransform<T> t = frame.getTransformTo(satelliteFrame, date);
         return new FieldAttitude<>(date, frame, t.getRotation(), t.getRotationRate(), t.getRotationAcceleration());

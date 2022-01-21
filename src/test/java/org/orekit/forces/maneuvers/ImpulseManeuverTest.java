@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -38,12 +39,15 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.NodeDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -55,7 +59,7 @@ public class ImpulseManeuverTest {
     @Test
     public void testInclinationManeuver() {
         final Orbit initialOrbit =
-            new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
+            new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0 + 4 * FastMath.PI,
                                PositionAngle.MEAN, FramesFactory.getEME2000(),
                                new AbsoluteDate(new DateComponents(2008, 06, 23),
                                                 new TimeComponents(14, 18, 37),
@@ -68,11 +72,12 @@ public class ImpulseManeuverTest {
         final double vApo = FastMath.sqrt(mu * (1 - e) / (a * (1 + e)));
         double dv = 0.99 * FastMath.tan(i) * vApo;
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit,
-                                                                 new LofOffset(initialOrbit.getFrame(), LOFType.VVLH));
+                                                                 new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS));
         propagator.addEventDetector(new ImpulseManeuver<NodeDetector>(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
                                                                       new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));
         Assert.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
+        Assert.assertEquals(0.442476 + 6 * FastMath.PI, ((KeplerianOrbit) propagated.getOrbit()).getLv(), 1.0e-6);
     }
 
     @Test
@@ -234,7 +239,7 @@ public class ImpulseManeuverTest {
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
-        Assert.assertEquals(1, finalState.getAdditionalStates().size());
+        Assert.assertEquals(1, finalState.getAdditionalStatesValues().size());
         Assert.assertEquals(-1.0, finalState.getAdditionalState("testOnly")[0], 1.0e-15);
 
     }
@@ -271,9 +276,8 @@ public class ImpulseManeuverTest {
         DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-3, 60, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(initialOrbit.getType());
-        PartialDerivativesEquations pde = new PartialDerivativesEquations("derivatives", propagator);
-        final SpacecraftState initialState = pde.setInitialJacobians(new SpacecraftState(initialOrbit, initialAttitude));
-        propagator.resetInitialState(initialState);
+        MatricesHarvester harvester = propagator.setupMatricesComputation("derivatives", null, null);
+        propagator.resetInitialState(new SpacecraftState(initialOrbit, initialAttitude));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));
         InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
@@ -282,14 +286,13 @@ public class ImpulseManeuverTest {
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
-        Assert.assertEquals(1, finalState.getAdditionalStates().size());
+        Assert.assertEquals(1, finalState.getAdditionalStatesValues().size());
         Assert.assertEquals(36, finalState.getAdditionalState("derivatives").length);
 
-        double[][] stateTransitionMatrix = new double[6][6];
-        pde.getMapper().getStateJacobian(finalState, stateTransitionMatrix);
+        RealMatrix stateTransitionMatrix = harvester.getStateTransitionMatrix(finalState);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
-                double sIJ = stateTransitionMatrix[i][j];
+                double sIJ = stateTransitionMatrix.getEntry(i, j);
                 if (j == i) {
                     // dPi/dPj and dVi/dVj are roughly 1 for small propagation times
                     Assert.assertEquals(1.0, sIJ, 2.0e-4);
@@ -305,9 +308,81 @@ public class ImpulseManeuverTest {
 
     }
 
+    /**
+     * The test is inspired by the example given by melvina user in the Orekit forum.
+     * https://forum.orekit.org/t/python-error-using-impulsemaneuver-with-positionangledetector/771
+     */
+    @Test
+    public void testIssue663() {
+
+        // Initial orbit
+        final Orbit initialOrbit =
+                        new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
+                                           PositionAngle.MEAN, FramesFactory.getEME2000(),
+                                           new AbsoluteDate(new DateComponents(2008, 06, 23),
+                                                            new TimeComponents(14, 18, 37),
+                                                            TimeScalesFactory.getUTC()),
+                                           3.986004415e14);
+        // create maneuver's trigger
+        final InitializationDetector trigger = new InitializationDetector();
+
+        // create maneuver
+        final AttitudeProvider attitudeOverride = new LofOffset(FramesFactory.getEME2000(), LOFType.TNW);
+        final Vector3D         deltaVSat        = Vector3D.PLUS_I;
+        final double           isp              = 1500.0;
+        final ImpulseManeuver<InitializationDetector> maneuver = new ImpulseManeuver<>(trigger, attitudeOverride, deltaVSat, isp);
+
+        // add maneuver to propagator
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, attitudeOverride);
+        propagator.addEventDetector(maneuver);
+
+        // propagation
+        Assert.assertFalse(trigger.initialized);
+        propagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
+        Assert.assertTrue(trigger.initialized);
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
+    }
+
+    /** Private detector used for testing issue #663. */
+    private class InitializationDetector extends AbstractDetector<InitializationDetector> {
+
+        /** Flag for detector initialization. */
+        private boolean initialized;
+
+        /**
+         * Constructor.
+         */
+        InitializationDetector() {
+            super(AbstractDetector.DEFAULT_MAXCHECK, AbstractDetector.DEFAULT_THRESHOLD,
+                  AbstractDetector.DEFAULT_MAX_ITER, new StopOnIncreasing<InitializationDetector>());
+            this.initialized = false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            super.init(s0, t);
+            this.initialized = true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double g(SpacecraftState s) {
+            return 1;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected InitializationDetector create(double newMaxCheck, double newThreshold, int newMaxIter,
+                                                EventHandler<? super InitializationDetector> newHandler) {
+            return new InitializationDetector();
+        }
+        
     }
 
 }

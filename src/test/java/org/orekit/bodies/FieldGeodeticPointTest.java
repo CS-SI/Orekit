@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.bodies;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.FastMath;
@@ -32,7 +32,7 @@ import org.junit.Test;
 public class FieldGeodeticPointTest {
 
     /**
-     * check {@link FieldGeodeticPoint#GeodeticPoint(RealFieldElement, RealFieldElement, RealFieldElement)} angle
+     * check {@link FieldGeodeticPoint#GeodeticPoint(CalculusFieldElement, CalculusFieldElement, CalculusFieldElement)} angle
      * normalization.
      */
     @Test
@@ -57,7 +57,7 @@ public class FieldGeodeticPointTest {
     }
 
     /**
-     * check {@link FieldGeodeticPoint#GeodeticPoint(RealFieldElement, RealFieldElement, RealFieldElement)} for
+     * check {@link FieldGeodeticPoint#GeodeticPoint(CalculusFieldElement, CalculusFieldElement, CalculusFieldElement)} for
      * several different angles.
      */
     @Test

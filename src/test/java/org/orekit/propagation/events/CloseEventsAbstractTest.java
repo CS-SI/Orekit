@@ -37,6 +37,8 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.RecordAndContinue.Event;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -82,7 +84,7 @@ public abstract class CloseEventsAbstractTest {
         // all three times. Then we get a non bracketing exception.
         Propagator propagator = getPropagator(10.0);
 
-        double t1 = 49, t2 = t1 + 1e-15, t3 = t1 + 4.9;
+        double t1 = 49, t2 = FastMath.nextUp(t1), t3 = t1 + 4.9;
         List<Event<EventDetector>> events = new ArrayList<>();
         TimeDetector detector1 = new TimeDetector(t1)
                 .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
@@ -162,6 +164,112 @@ public abstract class CloseEventsAbstractTest {
         List<Event<EventDetector>> events2 = handler2.getEvents();
         Assert.assertEquals(1, events2.size());
         Assert.assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+    }
+
+    /**
+     * Previously there were some branches when tryAdvance() returned false but did not
+     * set {@code t0 = t}. This allowed the order of events to not be chronological and to
+     * detect events that should not have occurred, both of which are problems.
+     */
+    @Test
+    public void testSimultaneousEventsReset() {
+        // setup
+        double tol = 1e-10;
+        Propagator propagator = getPropagator(10);
+        boolean[] firstEventOccurred = {false};
+        List<Event<EventDetector>> events = new ArrayList<>();
+
+        TimeDetector detector1 = new TimeDetector(5)
+                .withMaxCheck(10)
+                .withThreshold(tol)
+                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                        firstEventOccurred[0] = true;
+                        return super.eventOccurred(s, detector, increasing);
+                    }
+
+                    @Override
+                    public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+                        return oldState;
+                    }
+                });
+        propagator.addEventDetector(detector1);
+        // this detector changes it's g function definition when detector1 fires
+        FunctionalDetector detector2 = new FunctionalDetector()
+                .withMaxCheck(1)
+                .withThreshold(tol)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> {
+                            if (firstEventOccurred[0]) {
+                                return new TimeDetector(1, 3, 5).g(state);
+                            }
+                            return new TimeDetector(5).g(state);
+                        }
+                );
+        propagator.addEventDetector(detector2);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(20));
+
+        // verify
+        // order is important to make sure the test checks what it is supposed to
+        Assert.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(detector1, events.get(0).getDetector());
+        Assert.assertEquals(5, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(detector2, events.get(1).getDetector());
+        Assert.assertEquals(2, events.size());
+    }
+
+    /**
+     * When two event detectors have a discontinuous event caused by a {@link
+     * Action#RESET_STATE} or {@link Action#RESET_DERIVATIVES}. The two event detectors
+     * would each say they had an event that had to be handled before the other one, but
+     * neither would actually back up at all. For #684.
+     */
+    @Test
+    public void testSimultaneousDiscontinuousEventsAfterReset() {
+        // setup
+        double t = FastMath.PI;
+        double tol = 1e-10;
+        Propagator propagator = getPropagator(10);
+        List<Event<EventDetector>> events = new ArrayList<>();
+        SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
+                42e6, 0, 0, 0, 0, 0, PositionAngle.TRUE, eci, epoch.shiftedBy(t), mu));
+
+        TimeDetector resetDetector = new TimeDetector(t)
+                .withHandler(new ResetHandler<>(events, newState))
+                .withMaxCheck(10)
+                .withThreshold(tol);
+        propagator.addEventDetector(resetDetector);
+        List<EventDetector> detectors = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            FunctionalDetector detector1 = new FunctionalDetector()
+                    .withFunction(s -> s.getA() - 10e6)
+                    .withThreshold(tol)
+                    .withMaxCheck(10)
+                    .withHandler(new RecordAndContinue<>(events));
+            propagator.addEventDetector(detector1);
+            detectors.add(detector1);
+        }
+
+        // action
+        propagator.propagate(epoch.shiftedBy(10));
+
+        // verify
+        Assert.assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch), tol);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(resetDetector, events.get(0).getDetector());
+        // next two events can occur in either order
+        Assert.assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch), tol);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(detectors.get(0), events.get(1).getDetector());
+        Assert.assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch), tol);
+        Assert.assertTrue(events.get(2).isIncreasing());
+        Assert.assertEquals(detectors.get(1), events.get(2).getDetector());
+        Assert.assertEquals(events.size(), 3);
     }
 
     /**
@@ -940,6 +1048,71 @@ public abstract class CloseEventsAbstractTest {
         Assert.assertSame(detectorA, events.get(0).getDetector());
     }
 
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandler() {
+        // setup
+        double tolerance = 1e-18;
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(5)
+                .withHandler(new Handler<>(Action.CONTINUE))
+                .withThreshold(tolerance));
+        StepHandler stepHandler = new StepHandler();
+        propagator.setStepHandler(stepHandler);
+        AbsoluteDate target = epoch.shiftedBy(10);
+
+        // action
+        SpacecraftState finalState = propagator.propagate(target);
+
+        // verify
+        Assert.assertEquals(10.0, finalState.getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(10.0, stepHandler.targetDate.durationFrom(epoch), tolerance);
+        Assert.assertEquals(10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch), tolerance);
+        OrekitStepInterpolator interpolator = stepHandler.interpolators.get(0);
+        Assert.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assert.assertEquals(5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(2, stepHandler.interpolators.size());
+    }
+
+    /**
+     * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
+     * null}.
+     */
+    @Test
+    public void testEventCausedByDerivativesReset() {
+        // setup
+        TimeDetector detectorA = new TimeDetector(15.0)
+                .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
+                    @Override
+                    public SpacecraftState resetState(TimeDetector d, SpacecraftState s) {
+                        return null;
+                    }
+                })
+                .withMaxCheck(10)
+                .withThreshold(1e-6);
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+
+        try {
+            // action
+            propagator.propagate(epoch.shiftedBy(20.0));
+            Assert.fail("Expected Exception");
+        } catch (NullPointerException e) {
+            // expected
+        }
+    }
+
+
     /* The following tests are copies of the above tests, except that they propagate in
      * the reverse direction and all the signs on the time values are negated.
      */
@@ -1044,6 +1217,63 @@ public abstract class CloseEventsAbstractTest {
         List<Event<EventDetector>> events2 = handler2.getEvents();
         Assert.assertEquals(1, events2.size());
         Assert.assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+    }
+
+    /**
+     * Previously there were some branches when tryAdvance() returned false but did not
+     * set {@code t0 = t}. This allowed the order of events to not be chronological and to
+     * detect events that should not have occurred, both of which are problems.
+     */
+    @Test
+    public void testSimultaneousEventsResetReverse() {
+        // setup
+        double tol = 1e-10;
+        Propagator propagator = getPropagator(10);
+        boolean[] firstEventOccurred = {false};
+        List<Event<EventDetector>> events = new ArrayList<>();
+
+        TimeDetector detector1 = new TimeDetector(-5)
+                .withMaxCheck(10)
+                .withThreshold(tol)
+                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                        firstEventOccurred[0] = true;
+                        return super.eventOccurred(s, detector, increasing);
+                    }
+
+                    @Override
+                    public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+                        return oldState;
+                    }
+                });
+        propagator.addEventDetector(detector1);
+        // this detector changes it's g function definition when detector1 fires
+        FunctionalDetector detector2 = new FunctionalDetector()
+                .withMaxCheck(1)
+                .withThreshold(tol)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> {
+                            if (firstEventOccurred[0]) {
+                                return new TimeDetector(-1, -3, -5).g(state);
+                            }
+                            return new TimeDetector(-5).g(state);
+                        }
+                );
+        propagator.addEventDetector(detector2);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-20));
+
+        // verify
+        // order is important to make sure the test checks what it is supposed to
+        Assert.assertEquals(-5, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(detector1, events.get(0).getDetector());
+        Assert.assertEquals(-5, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(detector2, events.get(1).getDetector());
+        Assert.assertEquals(2, events.size());
     }
 
     /**
@@ -1824,6 +2054,68 @@ public abstract class CloseEventsAbstractTest {
         Assert.assertSame(detectorA, events.get(0).getDetector());
     }
 
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandlerReverse() {
+        // setup
+        double tolerance = 1e-18;
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(-5)
+                .withHandler(new Handler<>(Action.CONTINUE))
+                .withThreshold(tolerance));
+        StepHandler stepHandler = new StepHandler();
+        propagator.setStepHandler(stepHandler);
+
+        // action
+        SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(-10));
+
+        // verify
+        Assert.assertEquals(-10.0, finalState.getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(-10.0, stepHandler.targetDate.durationFrom(epoch), tolerance);
+        Assert.assertEquals(-10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch), tolerance);
+        OrekitStepInterpolator interpolator = stepHandler.interpolators.get(0);
+        Assert.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(-5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assert.assertEquals(-5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(-10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(2, stepHandler.interpolators.size());
+    }
+
+    /**
+     * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
+     * null}.
+     */
+    @Test
+    public void testEventCausedByDerivativesResetReverse() {
+        // setup
+        TimeDetector detectorA = new TimeDetector(-15.0)
+                .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
+                    @Override
+                    public SpacecraftState resetState(TimeDetector d, SpacecraftState s) {
+                        return null;
+                    }
+                })
+                .withMaxCheck(10)
+                .withThreshold(1e-6);
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+
+        try {
+            // action
+            propagator.propagate(epoch.shiftedBy(-20.0));
+            Assert.fail("Expected Exception");
+        } catch (NullPointerException e) {
+            // expected
+        }
+    }
 
 
     /* utility classes and methods */
@@ -1851,7 +2143,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     /** Trigger an event at a particular time. */
-    private static class TimeDetector extends AbstractDetector<TimeDetector> {
+    protected static class TimeDetector extends AbstractDetector<TimeDetector> {
 
         /** time of the event to trigger. */
         private final List<AbsoluteDate> eventTs;
@@ -2025,6 +2317,62 @@ public abstract class CloseEventsAbstractTest {
             return this.action;
         }
 
+    }
+
+    private static class ResetHandler<T extends EventDetector> extends Handler<T> {
+
+        private final SpacecraftState newState;
+        private final int times;
+        private long i = 0;
+
+        public ResetHandler(List<Event<T>> events, SpacecraftState newState) {
+            this(events, newState, Integer.MAX_VALUE);
+        }
+
+        public ResetHandler(List<Event<T>> events, SpacecraftState newState, int times) {
+            super(events, Action.RESET_STATE);
+            this.newState = newState;
+            this.times = times;
+        }
+
+        @Override
+        public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
+            super.eventOccurred(s, detector, increasing);
+            if (i++ < times) {
+                return Action.RESET_STATE;
+            }
+            return Action.CONTINUE;
+        }
+
+        @Override
+        public SpacecraftState resetState(T detector, SpacecraftState oldState) {
+            Assert.assertEquals(0, newState.getDate().durationFrom(oldState.getDate()), 0);
+            return newState;
+        }
+    }
+
+    private static class StepHandler implements OrekitStepHandler {
+
+        private SpacecraftState initialState;
+        private AbsoluteDate targetDate;
+        private List<OrekitStepInterpolator> interpolators = new ArrayList<>();
+        private SpacecraftState finalState;
+
+        @Override
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            initialState = s0;
+            targetDate = t;
+        }
+
+        @Override
+        public void handleStep(OrekitStepInterpolator interpolator) {
+            interpolators.add(interpolator);
+        }
+
+        @Override
+        public void finish(SpacecraftState finalState) {
+            this.finalState = finalState;
+        }
     }
 
 }

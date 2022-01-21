@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,8 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
@@ -29,10 +30,12 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.gnss.GPSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ElevationMask;
@@ -41,11 +44,12 @@ import org.orekit.utils.IERSConventions;
 
 public class DOPComputerTest {
 
-    private static OneAxisEllipsoid earth;
-    private static GeodeticPoint location;
+    private OneAxisEllipsoid earth;
+    private GeodeticPoint location;
+    private TimeScale     utc;
 
-    @BeforeClass
-    public static void setUpBeforeClass() {
+    @Before
+    public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss");
         // Defines the Earth shape
@@ -54,6 +58,14 @@ public class DOPComputerTest {
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Defines the location where to compute the DOP
         location = new GeodeticPoint(FastMath.toRadians(43.6), FastMath.toRadians(1.45), 0.);
+        utc = TimeScalesFactory.getUTC();
+    }
+
+    @After
+    public void tearDown() {
+        earth    = null;
+        location = null;
+        utc      = null;
     }
 
     @Test
@@ -65,8 +77,7 @@ public class DOPComputerTest {
         Assert.assertNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 2, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 2, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
@@ -92,8 +103,7 @@ public class DOPComputerTest {
         Assert.assertNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 13, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 13, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
@@ -118,8 +128,7 @@ public class DOPComputerTest {
         Assert.assertNotNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 7, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 7, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
@@ -144,8 +153,7 @@ public class DOPComputerTest {
         Assert.assertNotNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 10, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 10, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
@@ -170,8 +178,7 @@ public class DOPComputerTest {
         Assert.assertNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getTlePropagators());
@@ -203,8 +210,7 @@ public class DOPComputerTest {
         final DOPComputer computer = DOPComputer.create(earth, location);
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0., utc);
         // Computes the DOP with all the SV from the GPS constellation
         computer.compute(date, gps);
     }
@@ -218,7 +224,7 @@ public class DOPComputerTest {
         // Creates the GPS propagators from the almanacs
         final List<Propagator> propagators = new ArrayList<Propagator>();
         for (GPSAlmanac almanac: almanacs) {
-            propagators.add(new GPSPropagator.Builder(almanac).build());
+            propagators.add(new GNSSPropagatorBuilder(almanac).build());
         }
         return propagators;
     }

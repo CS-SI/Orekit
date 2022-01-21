@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,9 +27,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -38,7 +41,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.TimeSpanMap;
 
 /**
@@ -56,19 +59,45 @@ public class AntexLoader {
     /** Default supported files name pattern for antex files. */
     public static final String DEFAULT_ANTEX_SUPPORTED_NAMES = "^\\w{5}(?:_\\d{4})?\\.atx$";
 
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
+
     /** Satellites antennas. */
     private final List<TimeSpanMap<SatelliteAntenna>> satellitesAntennas;
 
     /** Receivers antennas. */
     private final List<ReceiverAntenna> receiversAntennas;
 
-    /** Simple constructor.
+    /** GPS time scale. */
+    private final TimeScale gps;
+
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
+     *
      * @param supportedNames regular expression for supported files names
+     * @see #AntexLoader(String, DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public AntexLoader(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales().getGPS());
+    }
+
+    /**
+     * Construct a loader by specifying the source of ANTEX auxiliary data files.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @param gps the GPS time scale to use when loading the ANTEX files.
+     * @since 10.1
+     */
+    public AntexLoader(final String supportedNames,
+                       final DataProvidersManager dataProvidersManager,
+                       final TimeScale gps) {
+        this.gps = gps;
         satellitesAntennas = new ArrayList<>();
         receiversAntennas  = new ArrayList<>();
-        DataProvidersManager.getInstance().feed(supportedNames, new Parser());
+        dataProvidersManager.feed(supportedNames, new Parser());
     }
 
     /** Add a satellite antenna.
@@ -79,7 +108,7 @@ public class AntexLoader {
             final TimeSpanMap<SatelliteAntenna> existing =
                             findSatelliteAntenna(antenna.getSatelliteSystem(), antenna.getPrnNumber());
             // this is an update for a satellite antenna, with new time span
-            existing.addValidAfter(antenna, antenna.getValidFrom());
+            existing.addValidAfter(antenna, antenna.getValidFrom(), false);
         } catch (OrekitException oe) {
             // this is a new satellite antenna
             satellitesAntennas.add(new TimeSpanMap<>(antenna));
@@ -104,7 +133,7 @@ public class AntexLoader {
                         satellitesAntennas.
                         stream().
                         filter(m -> {
-                            final SatelliteAntenna first = m.getTransitions().first().getBefore();
+                            final SatelliteAntenna first = m.getFirstSpan().getData();
                             return first.getSatelliteSystem() == satelliteSystem &&
                                    first.getPrnNumber() == prnNumber;
                         }).findFirst();
@@ -156,10 +185,10 @@ public class AntexLoader {
         public void loadData(final InputStream input, final String name)
             throws IOException, OrekitException {
 
+            int                              lineNumber           = 0;
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
                 // placeholders for parsed data
-                int                              lineNumber           = 0;
                 SatelliteSystem                  satelliteSystem      = null;
                 String                           antennaType          = null;
                 SatelliteType                    satelliteType        = null;
@@ -285,7 +314,7 @@ public class AntexLoader {
                                                          parseInt(line,    18,  6),
                                                          parseInt(line,    24,  6),
                                                          parseDouble(line, 30, 13),
-                                                         TimeScalesFactory.getGPS());
+                                                         gps);
                             break;
                         case "VALID UNTIL" :
                             validUntil = new AbsoluteDate(parseInt(line,     0,  6),
@@ -294,7 +323,7 @@ public class AntexLoader {
                                                           parseInt(line,    18,  6),
                                                           parseInt(line,    24,  6),
                                                           parseDouble(line, 30, 13),
-                                                          TimeScalesFactory.getGPS());
+                                                          gps);
                             break;
                         case "SINEX CODE" :
                             sinexCode = parseString(line, 0, 10);
@@ -307,7 +336,7 @@ public class AntexLoader {
                                     grid2D = new double[1 + (int) FastMath.round(2 * FastMath.PI / azimuthStep)][grid1D.length];
                                 }
                             } catch (IllegalArgumentException iae) {
-                                throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
+                                throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                           parseString(line, 3, 3), name, lineNumber);
                             }
                             inFrequency = true;
@@ -325,6 +354,13 @@ public class AntexLoader {
                                 throw new OrekitException(OrekitMessages.MISMATCHED_FREQUENCIES,
                                                           name, lineNumber, frequency, endFrequency);
 
+                            }
+
+                            // Check if the number of frequencies has been parsed
+                            if (patterns == null) {
+                                // null object, an OrekitException is thrown
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, name, line);
                             }
 
                             final PhaseCenterVariationFunction phaseCenterVariation;
@@ -367,7 +403,7 @@ public class AntexLoader {
                             break;
                         default :
                             if (inFrequency) {
-                                final String[] fields = line.trim().split("\\s+");
+                                final String[] fields = SEPARATOR.split(line.trim());
                                 if (fields.length != grid1D.length + 1) {
                                     throw new OrekitException(OrekitMessages.WRONG_COLUMNS_NUMBER,
                                                               name, lineNumber, grid1D.length + 1, fields.length);
@@ -394,7 +430,11 @@ public class AntexLoader {
                     }
                 }
 
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          lineNumber, name, "tot");
             }
+
         }
 
         /** Extract a string from a line.

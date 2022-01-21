@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,8 +19,9 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -28,7 +29,6 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
@@ -87,9 +87,9 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
      * @param parameters ionospheric model parameters
      * @return the measurement error due to ionosphere
      */
-    private <T extends RealFieldElement<T>> T rangeErrorIonosphericModel(final GroundStation station,
-                                                                         final FieldSpacecraftState<T> state,
-                                                                         final T[] parameters) {
+    private <T extends CalculusFieldElement<T>> T rangeErrorIonosphericModel(final GroundStation station,
+                                                                             final FieldSpacecraftState<T> state,
+                                                                             final T[] parameters) {
         // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // Delay in meters
@@ -101,16 +101,12 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
     * automatic differentiation.
     *
     * @param derivatives ionospheric delay derivatives
-    * @param freeStateParameters dimension of the state.
     *
     * @return Jacobian of the delay wrt state
     */
-    private double[][] rangeErrorJacobianState(final double[] derivatives, final int freeStateParameters) {
+    private double[][] rangeErrorJacobianState(final double[] derivatives) {
         final double[][] finiteDifferencesJacobian = new double[1][6];
-        for (int i = 0; i < freeStateParameters; i++) {
-            // First element is the value of the delay
-            finiteDifferencesJacobian[0][i] = derivatives[i + 1];
-        }
+        System.arraycopy(derivatives, 0, finiteDifferencesJacobian[0], 0, 6);
         return finiteDifferencesJacobian;
     }
 
@@ -149,14 +145,13 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
     * @return derivative of the delay wrt ionospheric model parameters
     */
     private double[] rangeErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
-        // 0                               -> value of the delay
-        // 1 ... freeStateParameters       -> derivatives of the delay wrt state
-        // freeStateParameters + 1 ... n   -> derivatives of the delay wrt ionospheric parameters
-        final int dim = derivatives.length - 1 - freeStateParameters;
+        // 0 ... freeStateParameters - 1 -> derivatives of the delay wrt state
+        // freeStateParameters ... n     -> derivatives of the delay wrt ionospheric parameters
+        final int dim = derivatives.length - freeStateParameters;
         final double[] rangeError = new double[dim];
 
         for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[1 + freeStateParameters + i];
+            rangeError[i] = derivatives[freeStateParameters + i];
         }
 
         return rangeError;
@@ -170,77 +165,78 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
 
     @Override
     public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {
-        final TurnAroundRange measurement   = estimated.getObservedMeasurement();
-        final GroundStation   masterStation = measurement.getMasterStation();
-        final GroundStation   slaveStation  = measurement.getSlaveStation();
-        final SpacecraftState state         = estimated.getStates()[0];
+        final TurnAroundRange measurement      = estimated.getObservedMeasurement();
+        final GroundStation   primaryStation   = measurement.getPrimaryStation();
+        final GroundStation   secondaryStation = measurement.getSecondaryStation();
+        final SpacecraftState state            = estimated.getStates()[0];
 
         final double[] oldValue = estimated.getEstimatedValue();
 
         // Update estimated derivatives with Jacobian of the measure wrt state
-        final IonosphericDSConverter converter = new IonosphericDSConverter(state, 6, Propagator.DEFAULT_LAW);
-        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(ionoModel);
-        final DerivativeStructure[] dsParameters = converter.getParameters(dsState, ionoModel);
-        final DerivativeStructure masterDSDelay = rangeErrorIonosphericModel(masterStation, dsState, dsParameters);
-        final DerivativeStructure slaveDSDelay = rangeErrorIonosphericModel(slaveStation, dsState, dsParameters);
-        final double[] masterDerivatives = masterDSDelay.getAllDerivatives();
-        final double[] slaveDerivatives  = masterDSDelay.getAllDerivatives();
+        final IonosphericGradientConverter converter =
+                new IonosphericGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+        final FieldSpacecraftState<Gradient> gState = converter.getState(ionoModel);
+        final Gradient[] gParameters        = converter.getParameters(gState, ionoModel);
+        final Gradient primaryGDelay        = rangeErrorIonosphericModel(primaryStation, gState, gParameters);
+        final Gradient secondaryGDelay      = rangeErrorIonosphericModel(secondaryStation, gState, gParameters);
+        final double[] primaryDerivatives   = primaryGDelay.getGradient();
+        final double[] secondaryDerivatives = secondaryGDelay.getGradient();
 
-        final double[][] masterDjac = rangeErrorJacobianState(masterDerivatives, converter.getFreeStateParameters());
-        final double[][] slaveDjac  = rangeErrorJacobianState(slaveDerivatives, converter.getFreeStateParameters());
+        final double[][] primaryDjac      = rangeErrorJacobianState(primaryDerivatives);
+        final double[][] secondaryDjac    = rangeErrorJacobianState(secondaryDerivatives);
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-                stateDerivatives[irow][jcol] += masterDjac[irow][jcol] + slaveDjac[irow][jcol];
+                stateDerivatives[irow][jcol] += primaryDjac[irow][jcol] + secondaryDjac[irow][jcol];
             }
         }
         estimated.setStateDerivatives(0, stateDerivatives);
 
-        int indexMaster = 0;
+        int indexPrimary = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt ionospheric parameters
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] derivatives = rangeErrorParameterDerivative(masterDerivatives, converter.getFreeStateParameters());
-                parameterDerivative += derivatives[indexMaster];
+                final double[] derivatives = rangeErrorParameterDerivative(primaryDerivatives, converter.getFreeStateParameters());
+                parameterDerivative += derivatives[indexPrimary];
                 estimated.setParameterDerivatives(driver, parameterDerivative);
-                indexMaster += 1;
+                indexPrimary += 1;
             }
 
         }
 
-        int indexSlave = 0;
+        int indexSecondary = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt ionospheric parameters
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] derivatives = rangeErrorParameterDerivative(slaveDerivatives, converter.getFreeStateParameters());
-                parameterDerivative += derivatives[indexSlave];
+                final double[] derivatives = rangeErrorParameterDerivative(secondaryDerivatives, converter.getFreeStateParameters());
+                parameterDerivative += derivatives[indexSecondary];
                 estimated.setParameterDerivatives(driver, parameterDerivative);
-                indexSlave += 1;
+                indexSecondary += 1;
             }
 
         }
 
-        // Update derivatives with respect to master station position
-        for (final ParameterDriver driver : Arrays.asList(masterStation.getClockOffsetDriver(),
-                                                          masterStation.getEastOffsetDriver(),
-                                                          masterStation.getNorthOffsetDriver(),
-                                                          masterStation.getZenithOffsetDriver())) {
+        // Update derivatives with respect to primary station position
+        for (final ParameterDriver driver : Arrays.asList(primaryStation.getClockOffsetDriver(),
+                                                          primaryStation.getEastOffsetDriver(),
+                                                          primaryStation.getNorthOffsetDriver(),
+                                                          primaryStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += rangeErrorParameterDerivative(masterStation, driver, state);
+                parameterDerivative += rangeErrorParameterDerivative(primaryStation, driver, state);
                 estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
 
-        // Update derivatives with respect to slave station position
-        for (final ParameterDriver driver : Arrays.asList(slaveStation.getEastOffsetDriver(),
-                                                          slaveStation.getNorthOffsetDriver(),
-                                                          slaveStation.getZenithOffsetDriver())) {
+        // Update derivatives with respect to secondary station position
+        for (final ParameterDriver driver : Arrays.asList(secondaryStation.getEastOffsetDriver(),
+                                                          secondaryStation.getNorthOffsetDriver(),
+                                                          secondaryStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += rangeErrorParameterDerivative(slaveStation, driver, state);
+                parameterDerivative += rangeErrorParameterDerivative(secondaryStation, driver, state);
                 estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
@@ -248,7 +244,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
         // Update estimated value taking into account the ionospheric delay.
         // The ionospheric delay is directly added to the TurnAroundRange.
         final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] + masterDSDelay.getReal() + slaveDSDelay.getReal();
+        newValue[0] = newValue[0] + primaryGDelay.getReal() + secondaryGDelay.getReal();
         estimated.setEstimatedValue(newValue);
     }
 

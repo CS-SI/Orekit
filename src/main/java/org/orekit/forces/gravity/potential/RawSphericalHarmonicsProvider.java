@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,7 +25,7 @@ import org.orekit.time.TimeStamped;
  * either {@link NormalizedSphericalHarmonicsProvider} or
  * {@link SphericalHarmonicsProvider} implementations.
  * </p>
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Luc Maisonobe
  * @since 6.0
  */
@@ -53,6 +53,15 @@ public interface RawSphericalHarmonicsProvider extends SphericalHarmonicsProvide
         double getRawSnm(int n, int m);
 
     }
+
+    /** Get the offset from {@link #getReferenceDate reference date} for the harmonics.
+     * @param date current date
+     * @return offset between current date and reference date if there is a reference
+     * date, or 0.0 if there are no reference dates (i.e. if {@link #getReferenceDate}
+     * returns null)
+     * @since 11.1
+     */
+    double getOffset(AbsoluteDate date);
 
     /**
      * Get the raw spherical harmonic coefficients on a specific date.

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,10 +28,12 @@ import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.geometry.spherical.twod.Vertex;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Transform;
+import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.models.earth.tessellation.DivertedSingularityAiming;
 import org.orekit.models.earth.tessellation.EllipsoidTessellator;
 import org.orekit.propagation.SpacecraftState;
@@ -95,6 +97,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param body body on which the geographic zone is defined
      * @param zone geographic zone to consider
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
+     * @since 10.1
      */
     public FootprintOverlapDetector(final FieldOfView fov,
                                     final OneAxisEllipsoid body,
@@ -137,9 +140,10 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         this.sampledZone  = sampledZone;
 
         final EnclosingBall<Sphere2D, S2Point> cap = zone.getEnclosingCap();
+        final SinCos sc = FastMath.sinCos(cap.getRadius());
         this.capCenter    = cap.getCenter().getVector();
-        this.capCos       = FastMath.cos(cap.getRadius());
-        this.capSin       = FastMath.sin(cap.getRadius());
+        this.capCos       = sc.cos();
+        this.capSin       = sc.sin();
 
     }
 
@@ -207,8 +211,9 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
 
     /** Get the Field Of View.
      * @return Field Of View
+     * @since 10.1
      */
-    public FieldOfView getFieldOfView() {
+    public FieldOfView getFOV() {
         return fov;
     }
 
@@ -275,7 +280,8 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
             if (Vector3D.dotProduct(lineOfSightBody, point.getZenith()) <= 0) {
                 // spacecraft is above this sample point local horizon
                 // get line of sight in spacecraft frame
-                final double offset = fov.offsetFromBoundary(bodyToSc.transformVector(lineOfSightBody));
+                final double offset = fov.offsetFromBoundary(bodyToSc.transformVector(lineOfSightBody),
+                                                             0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
                 value = FastMath.min(value, offset);
             }
         }

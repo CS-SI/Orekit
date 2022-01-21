@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -59,7 +59,7 @@ public class AngularAzElTest {
                                                                new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Prepare statistics for right-ascension/declination values difference
         final StreamingStatistics azDiffStat = new StreamingStatistics();
@@ -107,7 +107,7 @@ public class AngularAzElTest {
                                                                new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Compute measurements.
         double[] AzerrorsP = new double[3 * measurements.size()];
@@ -216,7 +216,7 @@ public class AngularAzElTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
 

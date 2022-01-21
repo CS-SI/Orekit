@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -101,7 +101,7 @@ public class HelmertTransformationTest {
         Frame itrf2000 =
                 HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000.createTransformedITRF(itrf2008, "2000");
         Frame itrf97 =
-                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_97.createTransformedITRF(itrf2008, "97");
+                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_1997.createTransformedITRF(itrf2008, "97");
         Vector3D pos97 = new Vector3D(1234567.8, 2345678.9, 3456789.0);
 
         // check the Helmert transformation as per ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP
@@ -132,7 +132,7 @@ public class HelmertTransformationTest {
         Frame itrf2000 =
                 HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000.createTransformedITRF(itrf2008, "2000");
         Frame itrf93 =
-                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_93.createTransformedITRF(itrf2008, "93");
+                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_1993.createTransformedITRF(itrf2008, "93");
         Vector3D pos93 = new Vector3D(1234567.8, 2345678.9, 3456789.0);
 
         // check the Helmert transformation as per ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP

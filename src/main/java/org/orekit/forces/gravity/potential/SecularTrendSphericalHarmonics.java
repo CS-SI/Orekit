@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,9 +17,6 @@
 package org.orekit.forces.gravity.potential;
 
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
 
 /** Simple implementation of {@link RawSphericalHarmonicsProvider} for gravity fields with secular trend.
  * @author Luc Maisonobe
@@ -46,10 +43,10 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
      * @param sTrend secular trend of the sine coefficients (s<sup>-1</sup>)
      */
     SecularTrendSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
-                                          final DateComponents referenceDate,
+                                          final AbsoluteDate referenceDate,
                                           final double[][] cTrend, final double[][] sTrend) {
         this.provider      = provider;
-        this.referenceDate = new AbsoluteDate(referenceDate, TimeComponents.H12, TimeScalesFactory.getTT());
+        this.referenceDate = referenceDate;
         this.cTrend        = cTrend;
         this.sTrend        = sTrend;
     }
@@ -75,11 +72,13 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     public AbsoluteDate getReferenceDate() {
         return referenceDate;
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     public double getOffset(final AbsoluteDate date) {
         return date.durationFrom(referenceDate);
     }
@@ -93,7 +92,7 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
     public RawSphericalHarmonics onDate(final AbsoluteDate date) {
         final RawSphericalHarmonics harmonics = provider.onDate(date);
         //compute date offset from reference
-        final double dateOffset = getOffset(date);
+        final double dateOffset = provider.getOffset(date);
         return new RawSphericalHarmonics() {
 
             @Override

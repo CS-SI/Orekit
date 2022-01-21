@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -27,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  */
 public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
-                                            T extends RealFieldElement<T>> implements FieldEventDetector<T> {
+                                            T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
 
     /** Default maximum checking interval (s). */
     public static final double DEFAULT_MAXCHECK = 600;
@@ -69,10 +69,11 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
-        getHandler().init(s0, t);
+        getHandler().init(s0, t, (D) this);
     }
 
     /** {@inheritDoc} */

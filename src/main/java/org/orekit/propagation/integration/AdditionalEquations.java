@@ -1,5 +1,5 @@
 /* Copyright 2010-2011 Centre National d'Études Spatiales
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -59,7 +59,9 @@ import org.orekit.time.AbsoluteDate;
  * @see AbstractIntegratedPropagator
  * @see org.orekit.propagation.AdditionalStateProvider
  * @author Luc Maisonobe
+ * @deprecated as of 11.1, replaced by {@link AdditionalDerivativesProvider}
  */
+@Deprecated
 public interface AdditionalEquations {
 
     /** Get the name of the additional state.

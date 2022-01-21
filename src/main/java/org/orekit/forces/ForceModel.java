@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,11 @@
  */
 package org.orekit.forces;
 
+import java.util.List;
 import java.util.stream.Stream;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
@@ -30,6 +31,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** This interface represents a force modifying spacecraft motion.
@@ -67,7 +69,7 @@ public interface ForceModel {
      * Initialize the force model at the start of propagation. This method will be called
      * before any calls to {@link #addContribution(SpacecraftState, TimeDerivativesEquations)},
      * {@link #addContribution(FieldSpacecraftState, FieldTimeDerivativesEquations)},
-     * {@link #acceleration(SpacecraftState, double[])} or {@link #acceleration(FieldSpacecraftState, RealFieldElement[])}
+     * {@link #acceleration(SpacecraftState, double[])} or {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[])}
      *
      * <p> The default implementation of this method does nothing.</p>
      *
@@ -75,6 +77,22 @@ public interface ForceModel {
      * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
      */
     default void init(SpacecraftState initialState, AbsoluteDate target) {
+    }
+
+    /**
+     * Initialize the force model at the start of propagation. This method will be called
+     * before any calls to {@link #addContribution(SpacecraftState, TimeDerivativesEquations)},
+     * {@link #addContribution(FieldSpacecraftState, FieldTimeDerivativesEquations)},
+     * {@link #acceleration(SpacecraftState, double[])} or {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[])}
+     *
+     * <p> The default implementation of this method does nothing.</p>
+     *
+     * @param initialState spacecraft state at the start of propagation.
+     * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
+     * @param <T> type of the elements
+     */
+    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+        init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
     /** Compute the contribution of the force model to the perturbing
@@ -96,7 +114,7 @@ public interface ForceModel {
      * @param adder object where the contribution should be added
      * @param <T> type of the elements
      */
-    default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
+    default <T extends CalculusFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField())));
     }
 
@@ -105,10 +123,10 @@ public interface ForceModel {
      * @since 9.0
      */
     default double[] getParameters() {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.length];
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].getValue();
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue();
         }
         return parameters;
     }
@@ -119,11 +137,11 @@ public interface ForceModel {
      * @return force model parameters
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
         }
         return parameters;
     }
@@ -151,7 +169,7 @@ public interface ForceModel {
      * @param <T> type of the elements
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
 
     /** Get the discrete events related to the model.
      * @return stream of events detectors
@@ -160,21 +178,21 @@ public interface ForceModel {
 
     /** Get the discrete events related to the model.
      * @param field field to which the state belongs
-     * @param <T> extends RealFieldElement&lt;T&gt;
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return stream of events detectors
      */
-    <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
+    <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
 
     /** Get the drivers for force model parameters.
      * @return drivers for force model parameters
      * @since 8.0
      */
-    ParameterDriver[] getParametersDrivers();
+    List<ParameterDriver> getParametersDrivers();
 
     /** Get parameter value from its name.
      * @param name parameter name
      * @return parameter value
-          * @since 8.0
+     * @since 8.0
      */
     ParameterDriver getParameterDriver(String name);
 

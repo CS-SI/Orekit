@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,6 @@ package org.orekit.propagation.sampling;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -28,6 +27,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -55,7 +56,7 @@ public class OrekitStepHandlerTest {
 
     @Test
     public void testForwardBackwardStep()
-        throws InterruptedException, ExecutionException {
+        throws InterruptedException, ExecutionException, TimeoutException {
         final AbsoluteDate initialDate = new AbsoluteDate(2014, 01, 01, 00, 00,
                                                           00.000,
                                                           TimeScalesFactory
@@ -84,16 +85,11 @@ public class OrekitStepHandlerTest {
 
         final Propagator kepler = new KeplerianPropagator(initialOrbit);
 
-        kepler.setMasterMode(fixedStepSize, new OrekitFixedStepHandler() {
-            @Override
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
-            }
-        });
+        kepler.setStepHandler(fixedStepSize, currentState -> {});
 
         kepler.propagate(initialDate.shiftedBy(propagationTime));
 
         final double stepSizeInSeconds = 120;
-        final long longestWaitTimeMS = 20;
         ExecutorService service = Executors.newSingleThreadExecutor();
         for (double elapsedTime = 0; elapsedTime <= propagationTime; elapsedTime += stepSizeInSeconds) {
             final double dt = elapsedTime;
@@ -106,9 +102,7 @@ public class OrekitStepHandlerTest {
                     }
                 });
 
-            Thread.sleep(longestWaitTimeMS);
-            assertTrue(stateFuture.isDone());
-            SpacecraftState finalState = stateFuture.get();
+            SpacecraftState finalState = stateFuture.get(5, TimeUnit.SECONDS);
             assertNotNull(finalState);
         }
     }
@@ -137,20 +131,17 @@ public class OrekitStepHandlerTest {
         // action and verify
         Queue<Boolean> expected =
                 new ArrayDeque<>(Arrays.asList(false, false, false, true, true, false));
-        propagator.setMasterMode(new OrekitStepHandler() {
-            @Override
-            public void handleStep(OrekitStepInterpolator interpolator, boolean isLast) {
-                assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
-                assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
-            }
+        propagator.setStepHandler(interpolator -> {
+            assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
+            assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
         });
         final AbsoluteDate end = date.shiftedBy(120);
         assertEquals(end, propagator.propagate(end).getDate());
     }
 
     @Before
-    public void setUp()
-        {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
+
 }

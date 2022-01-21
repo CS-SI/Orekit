@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,11 +19,13 @@ package org.orekit.utils;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -190,7 +192,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         this.frame = absPv1.getFrame();
     }
 
-    /** Builds a AbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a AbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link Derivative}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.
@@ -198,9 +200,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param frame the frame in which the parameters are defined
      * @param date date of the built coordinates
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
-            final FieldVector3D<DerivativeStructure> p) {
+    public <U extends Derivative<U>> AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
+                                                           final FieldVector3D<U> p) {
         super(date, p);
         this.frame = frame;
     }
@@ -369,11 +372,13 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
@@ -391,8 +396,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         private DTO(final AbsolutePVCoordinates absPva) {
 
             // decompose date
-            final double epoch  = FastMath.floor(absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(absPva.getDate().durationFrom(j2000Epoch));
+            final double offset = absPva.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
 
             this.d = new double[] {
                 epoch, offset,
@@ -408,8 +415,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
          * @return replacement {@link AbsolutePVCoordinates}
          */
         private Object readResolve() {
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             return new AbsolutePVCoordinates(frame,
-                                             AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              new Vector3D(d[2], d[3], d[ 4]),
                                              new Vector3D(d[5], d[6], d[ 7]),
                                              new Vector3D(d[8], d[9], d[10]));

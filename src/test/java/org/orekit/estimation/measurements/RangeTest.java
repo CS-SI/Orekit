@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -28,7 +29,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -40,7 +40,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
@@ -79,10 +78,10 @@ public class RangeTest {
         // Run test
         boolean isModifier = false;
         double refErrorsPMedian = 6.5e-10;
-        double refErrorsPMean   = 4.0e-09;
+        double refErrorsPMean   = 4.1e-09;
         double refErrorsPMax    = 2.1e-07;
-        double refErrorsVMedian = 1.8e-04;
-        double refErrorsVMean   = 6.0e-04;
+        double refErrorsVMedian = 2.2e-04;
+        double refErrorsVMean   = 6.2e-04;
         double refErrorsVMax    = 1.3e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
@@ -102,11 +101,11 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsPMedian = 6.3e-10;
-        double refErrorsPMean   = 3.3e-09;
+        double refErrorsPMedian = 6.2e-10;
+        double refErrorsPMean   = 3.5e-09;
         double refErrorsPMax    = 1.6e-07;
-        double refErrorsVMedian = 1.8e-04;
-        double refErrorsVMean   = 6.0e-04;
+        double refErrorsVMedian = 2.2e-04;
+        double refErrorsVMean   = 6.2e-04;
         double refErrorsVMax    = 1.3e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
@@ -197,9 +196,13 @@ public class RangeTest {
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double groundClockOffset = 1.234e-3;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context, Vector3D.ZERO),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -207,9 +210,9 @@ public class RangeTest {
         final List<Double> absoluteErrors = new ArrayList<Double>();
         final List<Double> relativeErrors = new ArrayList<Double>();
 
-        // Set master mode
+        // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -241,7 +244,7 @@ public class RangeTest {
                     // the real state used for estimation is adjusted according to downlink delay
                     double adjustment = state.getDate().durationFrom(estimated.getStates()[0].getDate());
                     Assert.assertTrue(adjustment > 0.006);
-                    Assert.assertTrue(adjustment < 0.010);
+                    Assert.assertTrue(adjustment < 0.011);
 
                     final double RangeEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError = RangeEstimated-RangeObserved;
@@ -334,9 +337,9 @@ public class RangeTest {
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
 
-        // Set master mode
+        // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -483,9 +486,9 @@ public class RangeTest {
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
 
-        // Set master mode
+        // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -619,9 +622,9 @@ public class RangeTest {
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
 
-        // Set master mode
+        // Set step handler
         // Use a lambda function to implement "handleStep" function
-        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+        propagator.setStepHandler(interpolator -> {
 
             for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -630,14 +633,10 @@ public class RangeTest {
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
                    ) {
 
-                    // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Range) measurement).getStation();
-
                     String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
 
                     // Add modifiers if test implies it
-                    final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
                     final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
                     
                     final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();

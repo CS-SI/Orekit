@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,7 +28,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
@@ -223,7 +223,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
+        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
             getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
             final Field<T> field = date.getField();
             return TimeStampedFieldPVCoordinates.interpolate(date,

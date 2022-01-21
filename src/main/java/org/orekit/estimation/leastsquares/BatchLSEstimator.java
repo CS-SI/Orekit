@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -41,10 +41,10 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriver;
@@ -64,7 +64,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class BatchLSEstimator {
 
     /** Builders for propagator. */
-    private final IntegratedPropagatorBuilder[] builders;
+    private final OrbitDeterminationPropagatorBuilder[] builders;
 
     /** Measurements. */
     private final List<ObservedMeasurement<?>> measurements;
@@ -72,8 +72,8 @@ public class BatchLSEstimator {
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
 
-    /** Convergence threshold on normalized parameters. */
-    private double parametersConvergenceThreshold;
+    /** Convergence checker. */
+    private ConvergenceChecker<LeastSquaresProblem.Evaluation> convergenceChecker;
 
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
@@ -116,16 +116,17 @@ public class BatchLSEstimator {
      * @param propagatorBuilder builders to use for propagation
      */
     public BatchLSEstimator(final LeastSquaresOptimizer optimizer,
-                            final IntegratedPropagatorBuilder... propagatorBuilder) {
+                            final OrbitDeterminationPropagatorBuilder... propagatorBuilder) {
 
         this.builders                       = propagatorBuilder;
         this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
         this.optimizer                      = optimizer;
-        this.parametersConvergenceThreshold = Double.NaN;
         this.lsBuilder                      = new LeastSquaresBuilder();
         this.observer                       = null;
         this.estimations                    = null;
         this.orbits                         = new Orbit[builders.length];
+
+        setParametersConvergenceThreshold(Double.NaN);
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -252,7 +253,7 @@ public class BatchLSEstimator {
         final ParameterDriversList parameters =  new ParameterDriversList();
         for (final  ObservedMeasurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
-                if ((!estimatedOnly) || driver.isSelected()) {
+                if (!estimatedOnly || driver.isSelected()) {
                     parameters.add(driver);
                 }
             }
@@ -286,13 +287,35 @@ public class BatchLSEstimator {
      * the scale is often small (typically about 1 m for orbital positions
      * for example), then the threshold should not be too small. A value
      * of 10⁻³ is often quite accurate.
+     * </p>
+     * <p>
+     * Calling this method overrides any checker that could have been set
+     * beforehand by calling {@link #setConvergenceChecker(ConvergenceChecker)}.
+     * Both methods are mutually exclusive.
+     * </p>
      *
      * @param parametersConvergenceThreshold convergence threshold on
      * normalized parameters (dimensionless, related to parameters scales)
+     * @see #setConvergenceChecker(ConvergenceChecker)
      * @see EvaluationRmsChecker
      */
     public void setParametersConvergenceThreshold(final double parametersConvergenceThreshold) {
-        this.parametersConvergenceThreshold = parametersConvergenceThreshold;
+        setConvergenceChecker((iteration, previous, current) ->
+                              current.getPoint().getLInfDistance(previous.getPoint()) <= parametersConvergenceThreshold);
+    }
+
+    /** Set a custom convergence checker.
+     * <p>
+     * Calling this method overrides any checker that could have been set
+     * beforehand by calling {@link #setParametersConvergenceThreshold(double)}.
+     * Both methods are mutually exclusive.
+     * </p>
+     * @param convergenceChecker convergence checker to set
+     * @see #setParametersConvergenceThreshold(double)
+     * @since 10.1
+     */
+    public void setConvergenceChecker(final ConvergenceChecker<LeastSquaresProblem.Evaluation> convergenceChecker) {
+        this.convergenceChecker = convergenceChecker;
     }
 
     /** Estimate the orbital, propagation and measurements parameters.
@@ -328,7 +351,7 @@ public class BatchLSEstimator {
      * @return propagators configured with estimated orbits as initial states, and all
      * propagators estimated parameters also set
      */
-    public AbstractIntegratedPropagator[] estimate() {
+    public Propagator[] estimate() {
 
         // set reference date for all parameters that lack one (including the not estimated parameters)
         for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {
@@ -388,9 +411,8 @@ public class BatchLSEstimator {
                 BatchLSEstimator.this.estimations = newEstimations;
             }
         };
-        final BatchLSODModel model = builders[0].buildLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
-        //final Model model = new Model(builders, measurements, estimatedMeasurementsParameters,
-                                      //modelObserver);
+        final AbstractBatchLSModel model = builders[0].buildLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+
         lsBuilder.model(model);
 
         // add a validator for orbital parameters
@@ -398,16 +420,7 @@ public class BatchLSEstimator {
                                                    estimatedPropagatorParameters,
                                                    estimatedMeasurementsParameters));
 
-        lsBuilder.checker(new ConvergenceChecker<LeastSquaresProblem.Evaluation>() {
-            /** {@inheritDoc} */
-            @Override
-            public boolean converged(final int iteration,
-                                     final LeastSquaresProblem.Evaluation previous,
-                                     final LeastSquaresProblem.Evaluation current) {
-                final double lInf = current.getPoint().getLInfDistance(previous.getPoint());
-                return lInf <= parametersConvergenceThreshold;
-            }
-        });
+        lsBuilder.checker(convergenceChecker);
 
         // set up the problem to solve
         final LeastSquaresProblem problem = new TappedLSProblem(lsBuilder.build(),
@@ -522,7 +535,7 @@ public class BatchLSEstimator {
         private final LeastSquaresProblem problem;
 
         /** Multivariate function model. */
-        private final BatchLSODModel model;
+        private final AbstractBatchLSModel model;
 
         /** Estimated orbital parameters. */
         private final ParameterDriversList estimatedOrbitalParameters;
@@ -541,7 +554,7 @@ public class BatchLSEstimator {
          * @param estimatedMeasurementsParameters estimated measurements parameters
          */
         TappedLSProblem(final LeastSquaresProblem problem,
-                        final BatchLSODModel model,
+                        final AbstractBatchLSModel model,
                         final ParameterDriversList estimatedOrbitalParameters,
                         final ParameterDriversList estimatedPropagatorParameters,
                         final ParameterDriversList estimatedMeasurementsParameters) {

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 
 
@@ -68,7 +68,7 @@ public class UpperBounds {
      * @param <T> the type of the field elements
      * @return the upper bound D<sub>n</sub><sup>l</sup>(&Chi;)
      */
-    public static <T extends RealFieldElement<T>> T getDnl(final T xx, final T xpl, final int n, final int l) {
+    public static <T extends CalculusFieldElement<T>> T getDnl(final T xx, final T xpl, final int n, final int l) {
         final int lp2 = l + 2;
         if (n > lp2) {
             final int ll = l * l;
@@ -166,7 +166,7 @@ public class UpperBounds {
     * @param <T> the type of the field elements
     * @return the upper bound R<sup>ε</sup><sub>n,m,l</sub>(γ)
     */
-    public static <T extends RealFieldElement<T>> T getRnml(final T gamma,
+    public static <T extends CalculusFieldElement<T>> T getRnml(final T gamma,
                                 final int n, final int l, final int m,
                                 final int eps, final int irf) {
         final T zero = gamma.getField().getZero();

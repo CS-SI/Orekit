@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2022 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,12 +25,9 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
-
-  package data #DDEBD8 {
-    interface DataLoader
-  }
 
   package frames #DDEBD8 {
     class Frame
@@ -83,7 +80,6 @@
 
     abstract class AbstractCelestialBody
 
-    DataLoader           <|.. CelestialBodyLoader
     CelestialBodyLoader  <|-- JPLEphemeridesLoader
     CelestialBody "*"       <-left-o "1" CelestialBodyFactory
     CelestialBodyFactory "1" o--> "*" CelestialBodyLoader
@@ -94,6 +90,11 @@
     AbstractCelestialBody "1" *--> IAUPole
     AbstractCelestialBody <-left- JPLEphemeridesLoader : creates
 
+  }
+
+  package data #DDEBD8 {
+    interface DataLoader
+    CelestialBodyLoader ..|> DataLoader
   }
 
 }

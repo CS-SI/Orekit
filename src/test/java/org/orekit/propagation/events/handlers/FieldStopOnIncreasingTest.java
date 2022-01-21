@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
@@ -47,7 +47,7 @@ public class FieldStopOnIncreasingTest {
         doTestDecreasing(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNoReset(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNoReset(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
@@ -60,7 +60,7 @@ public class FieldStopOnIncreasingTest {
         Assert.assertSame(s, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().resetState(null, s));
     }
 
-    private <T extends RealFieldElement<T>> void doTestIncreasing(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIncreasing(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
@@ -73,7 +73,7 @@ public class FieldStopOnIncreasingTest {
         Assert.assertSame(Action.STOP, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
     }
 
-    private <T extends RealFieldElement<T>> void doTestDecreasing(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDecreasing(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),

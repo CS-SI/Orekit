@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -37,7 +37,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * @author Luc Maisonobe
  * @since 9.0
  */
-public class FieldAltitudeDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldAltitudeDetector<T>, T> {
+public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldAltitudeDetector<T>, T> {
 
     /** Threshold altitude value (m). */
     private final T altitude;

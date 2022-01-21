@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,12 +17,12 @@
 package org.orekit.time;
 
 
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.Decimal64Field;
@@ -37,6 +38,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -49,7 +51,7 @@ public class UTCScaleTest {
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(2020, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        Assert.assertEquals("2020-12-31T23:59:59.000", d1.toString());
+        Assert.assertEquals("2020-12-31T23:59:59.000Z", d1.toString());
     }
 
     @Test
@@ -128,7 +130,8 @@ public class UTCScaleTest {
     @Test
     public void testWrapBeforeLeap() {
         AbsoluteDate t = new AbsoluteDate("2015-06-30T23:59:59.999999", utc);
-        Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
+        Assert.assertEquals("2015-06-30T23:59:60.000+00:00",
+                t.getComponents(utc).toString(utc.minuteDuration(t)));
     }
 
     @Test
@@ -145,6 +148,49 @@ public class UTCScaleTest {
                 // after the minute of the leap
                 Assert.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));
             }
+        }
+    }
+
+    /**
+     * Check the consistency of minute duration with the other data in each offset. Checks
+     * table hard coded in UTCScale.
+     *
+     * @throws ReflectiveOperationException on error.
+     */
+    @Test
+    public void testMinuteDurationConsistentWithLeap() throws ReflectiveOperationException {
+        // setup
+        // get the offsets array, makes this test easier to write
+        Field field = UTCScale.class.getDeclaredField("offsets");
+        field.setAccessible(true);
+        UTCTAIOffset[] offsets = (UTCTAIOffset[]) field.get(utc);
+
+        // action
+        for (UTCTAIOffset offset : offsets) {
+            // average of start and end of leap second, definitely inside
+            final AbsoluteDate start = offset.getDate();
+            final AbsoluteDate end = offset.getValidityStart();
+            AbsoluteDate d = start.shiftedBy(end.durationFrom(start) / 2.0);
+            int excess = utc.minuteDuration(d) - 60;
+            double leap = offset.getLeap();
+            // verify
+            Assert.assertTrue(
+                    "at MJD" + offset.getMJD() + ": " + leap + " <= " + excess,
+                    leap <= excess);
+            Assert.assertTrue(leap > (excess - 1));
+            // before the leap starts but still in the same minute
+            d = start.shiftedBy(-30);
+            int newExcess = utc.minuteDuration(d) - 60;
+            double newLeap = offset.getLeap();
+            // verify
+            Assert.assertTrue(
+                    "at MJD" + offset.getMJD() + ": " + newLeap + " <= " + newExcess,
+                    newLeap <= newExcess);
+            Assert.assertTrue(leap > (excess - 1));
+            Assert.assertEquals(excess, newExcess);
+            Assert.assertEquals(leap, newLeap, 0.0);
+            MatcherAssert.assertThat("" + offset.getValidityStart(), leap,
+                    OrekitMatchers.numberCloseTo(end.durationFrom(start), 1e-16, 1));
         }
     }
 
@@ -395,6 +441,28 @@ public class UTCScaleTest {
         UTCScale deserialized  = (UTCScale) ois.readObject();
         Assert.assertTrue(utc == deserialized);
 
+    }
+
+    @Test
+    public void testFirstAndLast() {
+        // action
+        AbsoluteDate first = utc.getFirstKnownLeapSecond();
+        AbsoluteDate last = utc.getLastKnownLeapSecond();
+
+        // verify
+        //AbsoluteDate d = new AbsoluteDate(1961, 1, 1, utc);
+        Assert.assertEquals(new AbsoluteDate(2015, 6, 30, 23, 59, 60, utc), last);
+        Assert.assertEquals(new AbsoluteDate(1960, 12, 31, 23, 59, 60, utc), first);
+    }
+
+    @Test
+    public void testGetUTCTAIOffsets() {
+        final List<UTCTAIOffset> offsets = utc.getUTCTAIOffsets();
+        Assert.assertEquals(40, offsets.size());
+        final UTCTAIOffset firstOffset = offsets.get(0);
+        final UTCTAIOffset lastOffset = offsets.get(offsets.size() - 1);
+        Assert.assertEquals(37300, firstOffset.getMJD()); // 1961-01-01
+        Assert.assertEquals(57204, lastOffset.getMJD()); // 2015-07-01
     }
 
     @Before

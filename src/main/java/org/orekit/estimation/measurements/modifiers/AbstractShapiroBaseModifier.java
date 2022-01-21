@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -65,7 +65,7 @@ public class AbstractShapiroBaseModifier {
      * @param pvReceiver coordinates of receiver in body-centered frame
      * @return path dilation to add to raw measurement
      */
-    private double shapiroCorrection(final TimeStampedPVCoordinates pvEmitter, final TimeStampedPVCoordinates pvReceiver) {
+    protected double shapiroCorrection(final TimeStampedPVCoordinates pvEmitter, final TimeStampedPVCoordinates pvReceiver) {
         final Vector3D pEmitter  = pvEmitter.getPosition();
         final Vector3D pReceiver = pvReceiver.getPosition();
         final double   rEpR      = pEmitter.getNorm() + pReceiver.getNorm();

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,10 +18,9 @@ package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import java.lang.reflect.Array;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -39,7 +38,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
  * @author Lucian Barbulescu
  * @author Bryan Cazabonne
  */
-public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
+public class FieldHansenTesseralLinear <T extends CalculusFieldElement<T>> {
 
     /** The number of coefficients that will be computed with a set of roots. */
     private static final int SLICE = 10;
@@ -332,9 +331,9 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
         //Ensure that only the needed terms are computed
         final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
         for (int i = 0; i < maxRoots; i++) {
-            final FieldDerivativeStructure<T> hansenKernel = hansenInit[i].getValue(e2, chi, chi2);
+            final FieldGradient<T> hansenKernel = hansenInit[i].getValueGradient(e2, chi, chi2);
             this.hansenRoot[0][i] = hansenKernel.getValue();
-            this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(1);
+            this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(0);
         }
 
         for (int i = 1; i < numSlices; i++) {
@@ -449,7 +448,7 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
      * in Danielson 2.7.3-10 and 3.3-5
      * </p>
      */
-    private static class FieldHansenCoefficientsBySeries <T extends RealFieldElement<T>> {
+    private static class FieldHansenCoefficientsBySeries <T extends CalculusFieldElement<T>> {
 
         /** -n-1 coefficient. */
         private final int mnm1;
@@ -465,9 +464,6 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
 
         /** Polynomial representing the serie. */
         private PolynomialFunction polynomial;
-
-        /** Factory for the DerivativeStructure instances. */
-        private final FDSFactory<T> factory;
 
         /**
          * Class constructor.
@@ -485,7 +481,6 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
             this.j = j;
             this.maxNewcomb = maxHansen;
             this.polynomial = generatePolynomial();
-            this.factory = new FDSFactory<>(field, 1, 1);
         }
 
         /** Computes the value of Hansen kernel and its derivative at e².
@@ -498,17 +493,17 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
          * @param chi2 &Chi;²
          * @return the value of the Hansen coefficient and its derivative for e²
          */
-        public FieldDerivativeStructure<T> getValue(final T e2, final T chi, final T chi2) {
+        private FieldGradient<T> getValueGradient(final T e2, final T chi, final T chi2) {
 
             final T zero = e2.getField().getZero();
             //Estimation of the serie expansion at e2
-            final FieldDerivativeStructure<T> serie = polynomial.value(factory.variable(0, e2));
+            final FieldGradient<T> serie = polynomial.value(FieldGradient.variable(1, 0, e2));
 
             final T value      =  FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getValue()).divide(chi);
             final T coef       = zero.subtract(mnm1 + 1.5);
             final T derivative = coef.multiply(chi2).multiply(value).
-                            add(FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getPartialDerivative(1)).divide(chi));
-            return factory.build(value, derivative);
+                            add(FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getPartialDerivative(0)).divide(chi));
+            return new FieldGradient<T>(value, derivative);
         }
 
         /** Generate the serie expansion in e².

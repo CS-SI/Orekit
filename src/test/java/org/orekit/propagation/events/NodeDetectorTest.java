@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,6 +28,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -70,14 +71,14 @@ public class NodeDetectorTest {
         propagator.addEventDetector(node2);
 
         // First propagation
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(finalDate);
         Assert.assertEquals(2, logger1.getLoggedEvents().size());
         Assert.assertEquals(2, logger2.getLoggedEvents().size());
         logger1.clearLoggedEvents();
         logger2.clearLoggedEvents();
 
-        BoundedPropagator postpro = propagator.getGeneratedEphemeris();
+        BoundedPropagator postpro = generator.getGeneratedEphemeris();
 
         // Post-processing
         postpro.addEventDetector(node1);
@@ -116,6 +117,19 @@ public class NodeDetectorTest {
         double t2 = orbit2.getKeplerianPeriod();
         Assert.assertEquals(t1, t2, t1 / 10000);
         Assert.assertEquals(t2 / 3, detector2.getMaxCheckInterval(), t2 / 10000);
+
+    }
+
+    @Test
+    public void testIssue728() {
+
+        NodeDetector detector1 = new NodeDetector(FramesFactory.getEME2000());
+        Assert.assertEquals(1800.0, detector1.getMaxCheckInterval(), 1.0e-3);
+        Assert.assertEquals(1.0e-3, detector1.getThreshold(), 1.0e-12);
+
+        NodeDetector detector2 = detector1.withMaxCheck(3000.0).withThreshold(1.0e-6);
+        Assert.assertEquals(3000.0, detector2.getMaxCheckInterval(), 1.0e-3);
+        Assert.assertEquals(1.0e-6, detector2.getThreshold(), 1.0e-12);
 
     }
 

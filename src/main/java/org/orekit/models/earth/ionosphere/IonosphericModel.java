@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -75,7 +75,7 @@ public interface IonosphericModel extends Serializable {
      * @param parameters  ionospheric model parameters
      * @return the path delay due to the ionosphere in m
      */
-    <T extends RealFieldElement<T>> T pathDelay(FieldSpacecraftState<T> state, TopocentricFrame baseFrame, double frequency, T[] parameters);
+    <T extends CalculusFieldElement<T>> T pathDelay(FieldSpacecraftState<T> state, TopocentricFrame baseFrame, double frequency, T[] parameters);
 
     /** Get the drivers for ionospheric model parameters.
      * @return drivers for ionospheric model parameters
@@ -99,7 +99,7 @@ public interface IonosphericModel extends Serializable {
      * @param <T> type of the elements
      * @return ionospheric model parameters
      */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
         final List<ParameterDriver> drivers = getParametersDrivers();
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {

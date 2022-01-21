@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -61,7 +61,7 @@ public class PVTest {
                                                                new PVMeasurementCreator(),
                                                                1.0, 3.0, 300.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Prepare statistics for PV values difference
         final StreamingStatistics[] pvDiffStat = new StreamingStatistics[6];
@@ -115,7 +115,7 @@ public class PVTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] errorsP = new double[3 * 6 * measurements.size()];
         double[] errorsV = new double[3 * 6 * measurements.size()];
@@ -218,13 +218,13 @@ public class PVTest {
             // Covariances
             final double[][] P = pv.getCovarianceMatrix();
             // Substract with ref and get the norm
-            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm();
+            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
             
             // Correlation coef
             final double[][] corrCoef = pv.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
-            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm();
+            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
             assertEquals(0., normCorrCoef, eps);
         }
     }
@@ -293,13 +293,13 @@ public class PVTest {
             // Covariances
             final double[][] P = pv.getCovarianceMatrix();
             // Substract with ref and get the norm
-            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm();
+            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
             
             // Correlation coef
             final double[][] corrCoef = pv.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
-            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm();
+            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
             assertEquals(0., normCorrCoef, eps);
         }
     }
@@ -379,13 +379,13 @@ public class PVTest {
             // Covariances
             final double[][] P = pv.getCovarianceMatrix();
             // Substract with ref and get the norm
-            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm();
+            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
             
             // Correlation coef
             final double[][] corrCoef = pv.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
-            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm();
+            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
             assertEquals(0., normCorrCoef, eps);
         }
         
@@ -457,13 +457,13 @@ public class PVTest {
             // Covariances
             final double[][] P = pv.getCovarianceMatrix();
             // Substract with ref and get the norm
-            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm();
+            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
             
             // Correlation coef
             final double[][] corrCoef = pv.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
-            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm();
+            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
             assertEquals(0., normCorrCoef, eps);
         }
         

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -39,14 +39,14 @@ public abstract class StateMapper {
     /** Position angle type. */
     private final PositionAngle angleType;
 
-    /** Attitude provider. */
-    private final AttitudeProvider attitudeProvider;
-
     /** Central attraction coefficient. */
     private final double mu;
 
     /** Inertial frame. */
     private final Frame frame;
+
+    /** Attitude provider. */
+    private AttitudeProvider attitudeProvider;
 
     /** Simple constructor.
      * <p>
@@ -89,11 +89,6 @@ public abstract class StateMapper {
         return orbitType;
     }
 
-    /** Set position angle type.
-     */
-    public void setPositionAngleType() {
-    }
-
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
@@ -120,6 +115,13 @@ public abstract class StateMapper {
      */
     public AttitudeProvider getAttitudeProvider() {
         return attitudeProvider;
+    }
+
+    /** Set the attitude provider.
+     * @param attitudeProvider the provider to set
+     */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** Map the raw double time offset to a date.

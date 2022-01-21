@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,7 +36,7 @@ import org.orekit.time.AbsoluteDate;
  * </code></pre>
  *
  * @author Luc Maisonobe
- * @see GravityFieldFactory
+ * @see GravityFields
  * @since 6.0
  */
 public interface SphericalHarmonicsProvider extends TideSystemProvider {
@@ -63,7 +63,7 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
 
     /** Get the reference date for the harmonics.
      * @return reference date for the harmonics (may be null if no reference date is defined)
-     * @deprecated as of 10.1, this method is deprecated as newer gravity fields are piecewise
+     * @deprecated as of 11.1, this method is deprecated as newer gravity fields may be piecewise
      * and therefore may have more than one reference date, which is used only internally
      */
     @Deprecated
@@ -74,8 +74,7 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
      * @return offset between current date and reference date if there is a reference
      * date, or 0.0 if there are no reference dates (i.e. if {@link #getReferenceDate}
      * returns null)
-     * @deprecated as of 10.1, this method is deprecated as newer gravity fields are piecewise
-     * and therefore may have more than one reference date, which is used only internally
+     * @deprecated as of 11.1, this method has been moved to {@link RawSphericalHarmonicsProvider}
      */
     @Deprecated
     double getOffset(AbsoluteDate date);

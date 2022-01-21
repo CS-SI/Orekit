@@ -1,7 +1,23 @@
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.estimation.sequential;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -26,10 +42,10 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -157,7 +173,7 @@ public class KalmanModelTest {
         // Initialize Kalman
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder, covMatrixProvider);
-        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters);
+        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, null);
         this.kalman = kalmanBuilder.build();
         this.modelLogger = new ModelLogger();
         kalman.setObserver(modelLogger);
@@ -217,10 +233,7 @@ public class KalmanModelTest {
         
         // Set derivatives computation for the propagator
         final String equationName = KalmanEstimator.class.getName() + "-derivatives-";
-        final PartialDerivativesEquations pde = new PartialDerivativesEquations(equationName, propagator);
-        final SpacecraftState rawState = propagator.getInitialState();
-        final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-        propagator.resetInitialState(stateWithDerivatives);
+        final MatricesHarvester harvester = propagator.setupMatricesComputation(equationName, null, null);
         
         // Propagate to range date and get predicted orbit
         final SpacecraftState scPred = propagator.propagate(range.getDate());
@@ -230,13 +243,11 @@ public class KalmanModelTest {
         expPhi = MatrixUtils.createRealIdentityMatrix(M);
         
         // Derivatives of the state vector with respect to initial state vector
-        final double[][] dYdY0 = new double[6][6];
-        pde.getMapper().getStateJacobian(scPred, dYdY0 );
+        final double[][] dYdY0 =  harvester.getStateTransitionMatrix(scPred).getData();
         expPhi.setSubMatrix(dYdY0, 0, 0);
 
         // Derivatives of SRP coef with respect to state
-        final double[][] dYdPp  = new double[6][1];
-        pde.getMapper().getParametersJacobian(scPred, dYdPp);
+        final double[][] dYdPp  = harvester.getParametersJacobian(scPred).getData();
         expPhi.setSubMatrix(dYdPp, 0, 6);
         
         // Estimated cov matrix from last measurement
@@ -265,9 +276,10 @@ public class KalmanModelTest {
     private void checkModelAtT0() {
 
         // Instantiate a Model from attributes
-        final KalmanModel model = new KalmanModel(Arrays.asList(propagatorBuilder),
-                                                  Arrays.asList(covMatrixProvider),
-                                                  estimatedMeasurementsParameters);
+        final KalmanModel model = new KalmanModel(Collections.singletonList(propagatorBuilder),
+                                                  Collections.singletonList(covMatrixProvider),
+                                                  estimatedMeasurementsParameters,
+                                                  null);
 
         // Evaluate at t0
         // --------------
@@ -344,7 +356,7 @@ public class KalmanModelTest {
                                       new SpacecraftState[] {new SpacecraftState(expOrbitPred)}).getEstimatedValue();
 
         // Process PV measurement in Kalman and get model
-        kalman.processMeasurements(Arrays.asList(meas));
+        kalman.processMeasurements(Collections.singletonList(meas));
         KalmanEstimation model = modelLogger.estimation;
         
         // Measurement size

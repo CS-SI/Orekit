@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.estimation.sequential;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -47,6 +47,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+@Deprecated
 public class DSSTKalmanModelTest {
 
     /** Orbit type for propagation. */
@@ -136,7 +137,7 @@ public class DSSTKalmanModelTest {
         // Initialize Kalman
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder, covMatrixProvider);
-        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters);
+        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, null);
         this.kalman = kalmanBuilder.build();
         this.modelLogger = new ModelLogger();
         kalman.setObserver(modelLogger);
@@ -216,11 +217,12 @@ public class DSSTKalmanModelTest {
     private void checkModelAtT0() {
 
         // Instantiate a Model from attributes
-        final DSSTKalmanModel model = new DSSTKalmanModel(Arrays.asList(propagatorBuilder),
-                                                  Arrays.asList(covMatrixProvider),
-                                                  estimatedMeasurementsParameters,
-                                                  PropagationType.MEAN,
-                                                  PropagationType.MEAN);
+        final DSSTKalmanModel model = new DSSTKalmanModel(Collections.singletonList(propagatorBuilder),
+                                                          Collections.singletonList(covMatrixProvider),
+                                                          estimatedMeasurementsParameters,
+                                                          null,
+                                                          PropagationType.MEAN,
+                                                          PropagationType.MEAN);
 
         // Evaluate at t0
         // --------------
@@ -288,7 +290,7 @@ public class DSSTKalmanModelTest {
                                       new SpacecraftState[] {new SpacecraftState(expOrbitPred)}).getEstimatedValue();
 
         // Process PV measurement in Kalman and get model
-        kalman.processMeasurements(Arrays.asList(meas));
+        kalman.processMeasurements(Collections.singletonList(meas));
         KalmanEstimation model = modelLogger.estimation;
         
         // Time

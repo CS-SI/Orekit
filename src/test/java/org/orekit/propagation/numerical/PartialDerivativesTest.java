@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -67,6 +67,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+@Deprecated
 public class PartialDerivativesTest {
 
     @Test
@@ -84,8 +85,7 @@ public class PartialDerivativesTest {
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance,
-                                             OrbitType... orbitTypes)
-        {
+                                             OrbitType... orbitTypes) {
 
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
@@ -123,7 +123,7 @@ public class PartialDerivativesTest {
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
-                propagator.setMasterMode(pickUp);
+                propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 double[][] dYdP = pickUp.getdYdP();
 
@@ -239,7 +239,7 @@ public class PartialDerivativesTest {
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
-                propagator.setMasterMode(pickUp);
+                propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 double[][] dYdY0 = pickUp.getdYdY0();
 
@@ -307,7 +307,7 @@ public class PartialDerivativesTest {
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
-                propagator.setMasterMode(pickUp);
+                propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 double[][] dYdY0 = pickUp.getdYdY0();
 
@@ -589,20 +589,8 @@ public class PartialDerivativesTest {
             return dYdP;
         }
 
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
-
-        public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-            {
-            final SpacecraftState interpolated;
-            if (pickUpDate == null) {
-                // we want to pick up the Jacobians at the end of last step
-                if (isLast) {
-                    interpolated = interpolator.getCurrentState();
-                } else {
-                    return;
-                }
-            } else {
+        public void handleStep(OrekitStepInterpolator interpolator) {
+            if (pickUpDate != null) {
                 // we want to pick up some intermediate Jacobians
                 double dt0 = pickUpDate.durationFrom(interpolator.getPreviousState().getDate());
                 double dt1 = pickUpDate.durationFrom(interpolator.getCurrentState().getDate());
@@ -610,15 +598,20 @@ public class PartialDerivativesTest {
                     // the current step does not cover the pickup date
                     return;
                 } else {
-                    interpolated = interpolator.getInterpolatedState(pickUpDate);
+                    checkState(interpolator.getInterpolatedState(pickUpDate));
                 }
             }
+        }
 
-            Assert.assertEquals(1, interpolated.getAdditionalStates().size());
-            Assert.assertTrue(interpolated.getAdditionalStates().containsKey(mapper.getName()));
-            mapper.getStateJacobian(interpolated, dYdY0);
-            mapper.getParametersJacobian(interpolated, dYdP);
+        public void finish(SpacecraftState finalState) {
+            checkState(finalState);
+        }
 
+        private void checkState(final SpacecraftState state) {
+            Assert.assertEquals(1, state.getAdditionalStatesValues().size());
+            Assert.assertEquals(mapper.getName(), state.getAdditionalStatesValues().getData().get(0).getKey());
+            mapper.getStateJacobian(state, dYdY0);
+            mapper.getParametersJacobian(state, dYdP);
         }
 
     }

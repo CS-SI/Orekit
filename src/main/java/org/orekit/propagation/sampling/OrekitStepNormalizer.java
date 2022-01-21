@@ -34,7 +34,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
     /** Fixed time step. */
     private double h;
 
-    /** Underlying step handler. */
+    /** Underlying fixed step handler. */
     private OrekitFixedStepHandler handler;
 
     /** Last State vector. */
@@ -52,6 +52,22 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
         this.handler   = handler;
         this.lastState = null;
         this.forward   = true;
+    }
+
+    /** Get the fixed time step.
+     * @return fixed time step
+     * @since 11.0
+     */
+    public double getFixedTimeStep() {
+        return h;
+    }
+
+    /** Get the underlying fixed step handler.
+     * @return underlying fixed step handler
+     * @since 11.0
+     */
+    public OrekitFixedStepHandler getFixedStepHandler() {
+        return handler;
     }
 
     /** Determines whether this handler needs dense output.
@@ -80,9 +96,8 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * continuous model valid throughout the propagation range), it
      * should build a local copy using the clone method and store this
      * copy.
-     * @param isLast true if the step is the last one
      */
-    public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
+    public void handleStep(final OrekitStepInterpolator interpolator) {
 
         if (lastState == null) {
             // initialize lastState in the first step case
@@ -103,7 +118,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
         while (nextInStep) {
 
             // output the stored previous step
-            handler.handleStep(lastState, false);
+            handler.handleStep(lastState);
 
             // store the next step
             lastState = interpolator.getInterpolatedState(nextTime);
@@ -113,12 +128,18 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
             nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
 
         }
+    }
 
-        if (isLast) {
-            // there will be no more steps,
-            // the stored one should be flagged as being the last
-            handler.handleStep(lastState, true);
-        }
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final SpacecraftState finalState) {
+
+        // there will be no more steps,
+        // the stored one should be handled now
+        handler.handleStep(lastState);
+
+        // and the final state handled too
+        handler.finish(finalState);
 
     }
 

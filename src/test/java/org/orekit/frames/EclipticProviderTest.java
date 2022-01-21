@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsInstanceOf;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
@@ -122,7 +123,7 @@ public class EclipticProviderTest {
         Frame frame = FramesFactory.getEcliptic(IERSConventions.IERS_2003);
 
         //action + verify
-        Assert.assertThat(frame.getParent().getTransformProvider(),
+        MatcherAssert.assertThat(frame.getParent().getTransformProvider(),
                           IsInstanceOf.instanceOf(MODProvider.class));
     }
 

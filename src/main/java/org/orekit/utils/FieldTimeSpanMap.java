@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,7 +24,7 @@ import java.util.TreeSet;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 
@@ -35,7 +35,7 @@ import org.orekit.time.ChronologicalComparator;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class FieldTimeSpanMap<T, D extends RealFieldElement<D>> {
+public class FieldTimeSpanMap<T, D extends CalculusFieldElement<D>> {
 
     /** Container for the data. */
     private final NavigableSet<Transition<T, D>> data;
@@ -56,7 +56,7 @@ public class FieldTimeSpanMap<T, D extends RealFieldElement<D>> {
     public FieldTimeSpanMap(final T entry, final Field<D> field_n) {
         data = new TreeSet<Transition<T, D>>(new ChronologicalComparator());
         field = field_n;
-        data.add(new Transition<>(new FieldAbsoluteDate<>(field), entry, entry));
+        data.add(new Transition<>(FieldAbsoluteDate.getArbitraryEpoch(field), entry, entry));
     }
 
     /** Add an entry valid before a limit date.
@@ -166,7 +166,7 @@ public class FieldTimeSpanMap<T, D extends RealFieldElement<D>> {
     }
 
     /** Local class holding transition times. */
-    public static class Transition<S, D extends RealFieldElement<D>> implements TimeStamped {
+    public static class Transition<S, D extends CalculusFieldElement<D>> implements TimeStamped {
 
         /** Transition date. */
         private final FieldAbsoluteDate<D> date;

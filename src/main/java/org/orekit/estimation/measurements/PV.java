@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -166,7 +166,7 @@ public class PV extends AbstractMeasurement<PV> {
               new double[] {
                   baseWeight, baseWeight, baseWeight,
                   baseWeight, baseWeight, baseWeight
-              }, Arrays.asList(satellite));
+              }, Collections.singletonList(satellite));
         this.covarianceMatrix = covarianceMatrix.clone();
     }
 
@@ -226,9 +226,7 @@ public class PV extends AbstractMeasurement<PV> {
                                                              final SpacecraftState[] states) {
 
         // PV value
-        final ObservableSatellite      satellite = getSatellites().get(0);
-        final SpacecraftState          state     = states[satellite.getPropagatorIndex()];
-        final TimeStampedPVCoordinates pv        = state.getPVCoordinates();
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
 
         // prepare the evaluation
         final EstimatedMeasurement<PV> estimated =

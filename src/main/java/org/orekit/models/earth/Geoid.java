@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,8 +17,8 @@
 package org.orekit.models.earth;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -34,6 +34,7 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.FieldTransform;
@@ -160,7 +161,7 @@ public class Geoid implements EarthShape {
      *                           potential will be used. It is assumed that the
      *                           {@code geopotential} and the {@code
      *                           referenceEllipsoid} are defined in the same
-     *                           frame. Usually a {@link org.orekit.forces.gravity.potential.GravityFieldFactory#getConstantNormalizedProvider(int,
+     *                           frame. Usually a {@link GravityFields#getConstantNormalizedProvider(int,
      *                           int) constant geopotential} is used to define a
      *                           time-invariant Geoid.
      * @param referenceEllipsoid the normal gravity potential.
@@ -465,7 +466,7 @@ public class Geoid implements EarthShape {
      * specified line. This is accurate when the geoid is slowly varying.
      */
     @Override
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> lineInFrame,
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> lineInFrame,
                                                                                       final FieldVector3D<T> closeInFrame,
                                                                                       final Frame frame,
                                                                                       final FieldAbsoluteDate<T> date) {
@@ -506,7 +507,7 @@ public class Geoid implements EarthShape {
         final T highPoint = maxAbscissa2.sqrt();
 
         // line search function
-        final RealFieldUnivariateFunction<T> heightFunction = z -> {
+        final CalculusFieldUnivariateFunction<T> heightFunction = z -> {
             try {
                 final FieldGeodeticPoint<T> geodetic =
                         transform(line.pointAt(z), bodyFrame, date);
@@ -588,7 +589,7 @@ public class Geoid implements EarthShape {
      * @see <a href="http://en.wikipedia.org/wiki/Orthometric_height">Orthometric_height</a>
      */
     @Override
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point, final Frame frame,
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point, final Frame frame,
                                                                            final FieldAbsoluteDate<T> date) {
         // convert using reference ellipsoid, altitude referenced to ellipsoid
         final FieldGeodeticPoint<T> ellipsoidal = this.getEllipsoid().transform(
@@ -654,7 +655,7 @@ public class Geoid implements EarthShape {
      * @since 9.0
      */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
         try {
             // convert orthometric height to height above ellipsoid using undulation
             // TODO pass in date to allow user to specify
