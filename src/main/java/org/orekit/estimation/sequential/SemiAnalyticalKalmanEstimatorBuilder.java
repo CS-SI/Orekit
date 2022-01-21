@@ -27,6 +27,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Julie Bayard
  * @author Bryan Cazabonne
  * @author Maxime Journot
+ * @since 11.1
  */
 public class SemiAnalyticalKalmanEstimatorBuilder {
 

@@ -37,6 +37,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Julie Bayard
  * @author Bryan Cazabonne
  * @author Maxime Journot
+ * @since 11.1
  */
 public class EskfMeasurementHandler implements OrekitStepHandler {
 
