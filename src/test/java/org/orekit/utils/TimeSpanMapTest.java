@@ -666,6 +666,21 @@ public class TimeSpanMapTest {
         checkCountConsistency(map);
     }
 
+    @Test
+    public void testValidAllTime() {
+        AbsoluteDate ref = AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1);
+        TimeSpanMap<Integer> map = new TimeSpanMap<>(0);
+
+        // action
+        map.addValidAfter(1, ref, false);
+        map.addValidBefore(2, ref, false);
+
+        // verify
+        Assert.assertEquals(1, (int) map.get(ref.shiftedBy(1)));
+        Assert.assertEquals(2, (int) map.get(ref.shiftedBy(-1)));
+        Assert.assertEquals(1, (int) map.get(ref));
+    }
+
     private <T> void checkCountConsistency(final TimeSpanMap<T> map) {
         final int count1 = map.getSpansNumber();
         int count2 = 0;
