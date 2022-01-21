@@ -62,6 +62,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Julie Bayard
  * @author Bryan Cazabonne
  * @author Maxime Journot
+ * @since 11.1
  */
 public class SemiAnalyticalKalmanEstimator {
 
