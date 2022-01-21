@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="andrewsgoetz" type="add">
+        Added Automatic-Module-Name "org.orekit" to JAR manifest to improve usability
+        of Orekit by modular Java projects.
+      </action>
       <action dev="julie,bryan,maxime" type="add" issue="823">
         Added the Extended Semi-analytical Kalman Filter.
       </action>
