@@ -2,6 +2,7 @@ stages:
   - verify
   - visualize
   - deploy
+  - release
 
 default:
   # Default image
@@ -77,6 +78,17 @@ coverage-import:
       cobertura: target/site/cobertura.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
+changelog:
+  stage: verify
+  image: alpine:latest
+  before_script:
+    - apk add libxslt
+  script:
+    - xsltproc .CI/changes2release.xsl src/changes/changes.xml > CHANGELOG.md
+  artifacts:
+    paths:
+      - CHANGELOG.md
+
 # On main branches (develop, release-*, master) the produced artifacts are
 # deployed on the Nexus of the project (https://packages.orekit.org/)
 deploy:artifacts:
@@ -119,3 +131,22 @@ performance:
   trigger: evanward1/orekit-performance
   only:
     - develop@orekit/orekit
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - cat CHANGELOG.md
+  release:
+    tag_name: $CI_COMMIT_TAG
+    description: './CHANGELOG.md'
+    assets:
+      links:
+        - name: orekit-${CI_COMMIT_TAG}.jar
+          url: https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}.jar
+        - name: orekit-${CI_COMMIT_TAG}-javadoc.jar
+          url: https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}-javadoc.jar
+        - name: orekit-${CI_COMMIT_TAG}-sources.jar
+          url: https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}-sources.jar
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^[.0-9]+$/'
