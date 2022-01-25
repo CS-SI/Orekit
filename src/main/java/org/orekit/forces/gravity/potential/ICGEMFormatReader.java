@@ -38,8 +38,10 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.OrekitParseException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
+import org.orekit.utils.TimeSpanMap;
 
 /** Reader for the ICGEM gravity field format.
  *
@@ -143,26 +145,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Indicator for normalized coefficients. */
     private boolean normalized;
 
-    /** Reference date. */
-    private AbsoluteDate referenceDate;
-
-    /** Secular trend of the cosine coefficients. */
-    private final List<List<Double>> cTrend;
-
-    /** Secular trend of the sine coefficients. */
-    private final List<List<Double>> sTrend;
-
-    /** Cosine part of the cosine coefficients pulsation. */
-    private final Map<Double, List<List<Double>>> cCos;
-
-    /** Sine part of the cosine coefficients pulsation. */
-    private final Map<Double, List<List<Double>>> cSin;
-
-    /** Cosine part of the sine coefficients pulsation. */
-    private final Map<Double, List<List<Double>>> sCos;
-
-    /** Sine part of the sine coefficients pulsation. */
-    private final Map<Double, List<List<Double>>> sSin;
+    /** Time map of the harmonics. */
+    private TimeSpanMap<PiecewiseSphericalHarmonics> map;
 
     /** Simple constructor.
      *
@@ -191,13 +175,6 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                              final boolean missingCoefficientsAllowed,
                              final TimeScale timeScale) {
         super(supportedNames, missingCoefficientsAllowed, timeScale);
-        referenceDate = null;
-        cTrend = new ArrayList<>();
-        sTrend = new ArrayList<>();
-        cCos   = new HashMap<>();
-        cSin   = new HashMap<>();
-        sCos   = new HashMap<>();
-        sSin   = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -206,27 +183,21 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
         // reset the indicator before loading any data
         setReadComplete(false);
-        referenceDate = null;
-        cTrend.clear();
-        sTrend.clear();
-        cCos.clear();
-        cSin.clear();
-        sCos.clear();
-        sSin.clear();
+        map = new TimeSpanMap<>(null);
 
         // by default, the field is normalized with unknown tide system
         // (will be overridden later if non-default)
         normalized = true;
         TideSystem tideSystem = TideSystem.UNKNOWN;
 
+        double version   = 1.0;
         boolean inHeader = true;
-        double[][] c     = null;
-        double[][] s     = null;
-        boolean okCoeffs = false;
+        TimeSpanMap<PiecewiseSphericalHarmonics> map = new TimeSpanMap<>(null);
         int lineNumber   = 0;
         String line      = null;
         try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             for (line = r.readLine(); line != null; line = r.readLine()) {
+                boolean parseError = false;
                 ++lineNumber;
                 line = line.trim();
                 if (line.length() == 0) {
@@ -234,10 +205,16 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 }
                 final String[] tab = SEPARATOR.split(line);
                 if (inHeader) {
-                    boolean parseError = false;
                     if (tab.length == 2 && FORMAT.equals(tab[0])) {
                         final Matcher matcher = Pattern.compile(SUPPORTED_FORMAT).matcher(tab[1]);
-                        parseError = !matcher.matches() || Double.parseDouble(matcher.group(1)) > MAX_FORMAT;
+                        if (matcher.matches()) {
+                            version = Double.parseDouble(matcher.group(1));
+                            if (version > MAX_FORMAT) {
+                                parseError = true;
+                            }
+                        } else {
+                            parseError = true;
+                        }
                     } else if (tab.length == 2 && PRODUCT_TYPE.equals(tab[0])) {
                         parseError = !GRAVITY_FIELD.equals(tab[1]);
                     } else if (tab.length == 2 && tab[0].endsWith(GRAVITY_CONSTANT)) {
@@ -277,7 +254,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                                                        lineNumber, name, line);
                     }
                 } else {
-                    if (tab.length == 7 && GFC.equals(tab[0]) || tab.length == 8 && GFCT.equals(tab[0])) {
+                    if (tab.length == 7 && GFC.equals(tab[0]) || (tab.length == 8 || tab.length == 9) && GFCT.equals(tab[0])) {
 
                         final int i = Integer.parseInt(tab[1]);
                         final int j = Integer.parseInt(tab[2]);
@@ -287,19 +264,30 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                             parseCoefficient(tab[4], s, i, j, "S", name);
                             okCoeffs = true;
 
-                            if (tab.length == 8) {
-                                // check the reference date (format yyyymmdd)
-                                final DateComponents localRef = new DateComponents(Integer.parseInt(tab[7].substring(0, 4)),
-                                                                                   Integer.parseInt(tab[7].substring(4, 6)),
-                                                                                   Integer.parseInt(tab[7].substring(6, 8)));
-                                if (referenceDate == null) {
-                                    // first reference found, store it
-                                    referenceDate = toDate(localRef);
-                                } else if (!referenceDate.equals(toDate(localRef))) {
-                                    final AbsoluteDate localDate = toDate(localRef);
-                                    throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
-                                                              referenceDate, localDate, name,
-                                                              localDate.durationFrom(referenceDate));
+                            if (tab.length > 8) {
+                                if (version < 2.0) {
+                                    // before version 2.0, there is only one reference date
+                                    if (tab.length != 8) {
+                                        parseError = true;
+                                    } else {
+                                        final AbsoluteDate lineDate = parseDate(tab[7]);
+                                        if (referenceDate == null) {
+                                            // first reference found, store it
+                                            referenceDate = lineDate;
+                                        } else if (!referenceDate.equals(lineDate)) {
+                                            // we already know the reference date, check this lines does not define a new one
+                                            throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
+                                                                      referenceDate, lineDate, name,
+                                                                      lineDate.durationFrom(referenceDate));
+                                        }
+                                    }
+                                } else {
+                                    // starting with version 2.0, two reference dates define validity intervals
+                                    if (tab.length != 9) {
+                                        parseError = true;
+                                    } else {
+                                        // TODO
+                                    }
                                 }
                             }
 
@@ -353,9 +341,14 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         }
 
                     } else {
+                        parseError = true;
+                    }
+
+                    if (parseError) {
                         throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                        lineNumber, name, line);
                     }
+
                 }
 
             }
@@ -400,39 +393,98 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
                                                      final int degree, final int order) {
 
-        RawSphericalHarmonicsProvider provider = getConstantProvider(wantNormalized, degree, order);
-        if (cTrend.isEmpty() && cCos.isEmpty()) {
-            // there are no time-dependent coefficients
-            return provider;
+        return new RawSphericalHarmonicsProvider() {
+
+            /** {@inheritDoc} */
+            @Override
+            public int getMaxDegree() {
+                return map.getFirstSpan().getData().getConstant().getMaxDegree();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public int getMaxOrder() {
+                return map.getFirstSpan().getData().getConstant().getMaxOrder();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public double getMu() {
+                return map.getFirstSpan().getData().getConstant().getMu();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public double getAe() {
+                return map.getFirstSpan().getData().getConstant().getAe();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public AbsoluteDate getReferenceDate() {
+                return map.getFirstSpan().getData().getConstant().getReferenceDate();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public TideSystem getTideSystem() {
+                return map.getFirstSpan().getData().getConstant().getTideSystem();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public double getOffset(final AbsoluteDate date) {
+                return map.get(date).getConstant().getOffset(date);
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public RawSphericalHarmonics onDate(final AbsoluteDate date) {
+                return map.get(date).onDate(date);
+            }
+
+        };
+
+    }
+
+    /** Parse a reference date.
+     * <p>
+     * The reference dates have either the format yyyymmdd (for 2011 format)
+     * or the format yyyymmdd.xxxx (for format version 2.0). The 2.0 format
+     * is not described anywhere (at least I did not find any references),
+     * but the .xxxx fractional part seems to be hours and minutes chosen
+     * close to some strong earthquakes looking at the dates in Eigen 6S4 file
+     * with non-zero fractional part and the corresponding earthquakes hours
+     * (19850109.1751 vs. 1985-01-09T19:28:21, but it was not really a big quake,
+     * maybe there is a confusion with the 1985 Mexico earthquake at 1985-09-19T13:17:47,
+     * 20020815.0817 vs 2002-08-15:05:30:26, 20041226.0060 vs. 2004-12-26T00:58:53,
+     * 20100227.0735 vs. 2010-02-27T06:34:11, and 20110311.0515 vs. 2011-03-11T05:46:24).
+     * We guess the .0060 fractional part for the 2004 Sumatra-Andaman islands
+     * earthquake results from sloppy rounding when writing the file.
+     * </p>
+     * @param field text field containing the date
+     * @return parsed date
+     * @since 11.1
+     */
+    private AbsoluteDate parseDate(final String field) {
+
+        // check the date part (format yyyymmdd)
+        final DateComponents dc = new DateComponents(Integer.parseInt(field.substring(0, 4)),
+                                                     Integer.parseInt(field.substring(4, 6)),
+                                                     Integer.parseInt(field.substring(6, 8)));
+
+        // check the hour part (format .hhmm, working around checks on minutes)
+        final TimeComponents tc;
+        if (field.length() > 8) {
+            // we convert from hours and minutes here in order to allow
+            // the strange special case found in Eigen 6S4 file with date 20041226.0060
+            tc = new TimeComponents(Integer.parseInt(field.substring(9, 11)) / 24.0 +
+                                    Integer.parseInt(field.substring(11, 13)) / 3600.0);
+        } else {
+            tc = TimeComponents.H00;
         }
 
-        if (!cTrend.isEmpty()) {
-
-            // add the secular trend layer
-            final double[][] cArrayTrend = toArray(cTrend);
-            final double[][] sArrayTrend = toArray(sTrend);
-            rescale(1.0 / Constants.JULIAN_YEAR, normalized, cArrayTrend, sArrayTrend, wantNormalized, cArrayTrend, sArrayTrend);
-            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, cArrayTrend, sArrayTrend);
-
-        }
-
-        for (final Map.Entry<Double, List<List<Double>>> entry : cCos.entrySet()) {
-
-            final double period = entry.getKey();
-
-            // add the pulsating layer for the current period
-            final double[][] cArrayCos = toArray(cCos.get(period));
-            final double[][] sArrayCos = toArray(sCos.get(period));
-            final double[][] cArraySin = toArray(cSin.get(period));
-            final double[][] sArraySin = toArray(sSin.get(period));
-            rescale(1.0, normalized, cArrayCos, sArrayCos, wantNormalized, cArrayCos, sArrayCos);
-            rescale(1.0, normalized, cArraySin, sArraySin, wantNormalized, cArraySin, sArraySin);
-            provider = new PulsatingSphericalHarmonics(provider, period * Constants.JULIAN_YEAR,
-                                                       cArrayCos, cArraySin, sArrayCos, sArraySin);
-
-        }
-
-        return provider;
+        return toDate(dc, tc);
 
     }
 

@@ -122,7 +122,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         this.rawS                       = null;
         this.normalized                 = false;
         this.tideSystem                 = TideSystem.UNKNOWN;
-        this.timeScale = timeScale;
+        this.timeScale                  = timeScale;
     }
 
     /** Get the regular expression for supported files names.
@@ -569,7 +569,19 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @return date.
      */
     protected AbsoluteDate toDate(final DateComponents components) {
-        return new AbsoluteDate(components, TimeComponents.H12, timeScale);
+        return toDate(components, TimeComponents.H12);
+    }
+
+    /**
+     * Create a date from components.
+     *
+     * @param dc dates components.
+     * @param tc time components
+     * @return date.
+     * @since 11.1
+     */
+    protected AbsoluteDate toDate(final DateComponents dc, final TimeComponents tc) {
+        return new AbsoluteDate(dc, tc, timeScale);
     }
 
 }
