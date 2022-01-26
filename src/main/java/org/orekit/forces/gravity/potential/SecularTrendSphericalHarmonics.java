@@ -30,35 +30,67 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
     /** Reference date for the harmonics. */
     private final AbsoluteDate referenceDate;
 
+    /** Converter from triangular to flatten array.
+     * @since 11.1
+     */
+    private final Flattener flattener;
+
     /** Secular trend of the cosine coefficients. */
-    private final double[][] cTrend;
+    private final double[] cTrend;
 
     /** Secular trend of the sine coefficients. */
-    private final double[][] sTrend;
+    private final double[] sTrend;
 
     /** Simple constructor.
      * @param provider underlying provider for the non secular part
      * @param referenceDate reference date for the harmonics (considered to be at 12:00 TT)
      * @param cTrend secular trend of the cosine coefficients (s<sup>-1</sup>)
      * @param sTrend secular trend of the sine coefficients (s<sup>-1</sup>)
+     * @deprecated as of 11.1, replaced by {@link #SecularTrendSphericalHarmonics(RawSphericalHarmonicsProvider,
+     * AbsoluteDate, Flattener, double[], double[])
      */
+    @Deprecated
     SecularTrendSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
-                                          final AbsoluteDate referenceDate,
-                                          final double[][] cTrend, final double[][] sTrend) {
+                                   final AbsoluteDate referenceDate,
+                                   final double[][] cTrend, final double[][] sTrend) {
+        this(provider, referenceDate, buildFlattener(cTrend),
+             buildFlattener(cTrend).flatten(cTrend), buildFlattener(sTrend).flatten(sTrend));
+    }
+
+    /** Simple constructor.
+     * @param provider underlying provider for the non secular part
+     * @param referenceDate reference date for the harmonics (considered to be at 12:00 TT)
+     * @param flattener flattener from triangular to flatten array
+     * @param cTrend secular trend of the cosine coefficients (s<sup>-1</sup>)
+     * @param sTrend secular trend of the sine coefficients (s<sup>-1</sup>)
+     * @since 11.1
+     */
+    SecularTrendSphericalHarmonics(final RawSphericalHarmonicsProvider provider, final AbsoluteDate referenceDate,
+                                   final Flattener flattener, final double[] cTrend, final double[] sTrend) {
         this.provider      = provider;
         this.referenceDate = referenceDate;
+        this.flattener     = flattener;
         this.cTrend        = cTrend;
         this.sTrend        = sTrend;
     }
 
+    /** Get a flattener for a triangular array.
+     * @param triangular triangular array to flatten
+     * @return flattener suited for triangular array dimensions
+     * @since 11.1
+     */
+    private static Flattener buildFlattener(final double[][] triangular) {
+        return new Flattener(triangular.length - 1, triangular[triangular.length - 1].length - 1);
+    }
+
     /** {@inheritDoc} */
     public int getMaxDegree() {
-        return provider.getMaxDegree();
+        return flattener.getDegree();
     }
 
     /** {@inheritDoc} */
     public int getMaxOrder() {
-        return provider.getMaxOrder();
+        return flattener.getOrder();
     }
 
     /** {@inheritDoc} */
@@ -106,9 +138,9 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
                 // retrieve the constant part of the coefficient
                 double cnm = harmonics.getRawCnm(n, m);
 
-                if (n < cTrend.length && m < cTrend[n].length) {
+                if (flattener.withinRange(n, m)) {
                     // add secular trend
-                    cnm += dateOffset * cTrend[n][m];
+                    cnm += dateOffset * cTrend[flattener.index(n, m)];
                 }
 
                 return cnm;
@@ -121,9 +153,9 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
                 // retrieve the constant part of the coefficient
                 double snm = harmonics.getRawSnm(n, m);
 
-                if (n < sTrend.length && m < sTrend[n].length) {
+                if (flattener.withinRange(n, m)) {
                     // add secular trend
-                    snm += dateOffset * sTrend[n][m];
+                    snm += dateOffset * sTrend[flattener.index(n, m)];
                 }
 
                 return snm;

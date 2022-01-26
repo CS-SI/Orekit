@@ -22,7 +22,7 @@ import org.orekit.forces.gravity.potential.RawSphericalHarmonicsProvider.RawSphe
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
-/** Part of a piecewise gravity fields valid for one time interval.
+/** Piecewise gravity fields with time-dependent models in each interval.
  * @author Luc Maisonobe
  * @since 11.1
  */
@@ -37,22 +37,22 @@ class PiecewiseSphericalHarmonics {
     /** Pulsations (rad/s). */
     private final double[] pulsations;
 
-    /** Harmonics. */
-    private final TimeSpanMap<TimeDependentHarmonic[]> harmonics;
+    /** Piecewise parts. */
+    private final TimeSpanMap<PiecewisePart> pieces;
 
     /** Simple constructor.
      * @param constant constant part of the field
      * @param references references dates
      * @param pulsations pulsations (rad/s)
-     * @param harmonics map fo harmonics components
+     * @param pieces piecewise parts
      */
     PiecewiseSphericalHarmonics(final ConstantSphericalHarmonics constant,
                                 final AbsoluteDate[] references, final double[] pulsations,
-                                final TimeSpanMap<TimeDependentHarmonic[]> harmonics) {
+                                final TimeSpanMap<PiecewisePart> pieces) {
         this.constant   = constant;
         this.references = references.clone();
         this.pulsations = pulsations.clone();
-        this.harmonics  = harmonics;
+        this.pieces     = pieces;
     }
 
     /** Get the constant part of the field.
@@ -60,20 +60,6 @@ class PiecewiseSphericalHarmonics {
      */
     public ConstantSphericalHarmonics getConstant() {
         return constant;
-    }
-
-    /** Convert (degree, order) indices to one-dimensional flatten index.
-     * <p>
-     * As the outer loop in {@link org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel}
-     * if on decreasing order and the inner loop is in increasing degree (starting
-     * from the diagonal), the flatten index increases as these loops are performed.
-     * </p>
-     * @param n degree index
-     * @param m order index
-     * @return one-dimensional flatten index
-     */
-    private int index(final int n, final int m) {
-        // TODO
     }
 
     /** Get the raw spherical harmonic coefficients on a specific date.
@@ -86,7 +72,7 @@ class PiecewiseSphericalHarmonics {
         final RawSphericalHarmonics raw = constant.onDate(date);
 
         // select part of the piecewise model that is active at specified date
-        final TimeDependentHarmonic[] active = harmonics.get(date);
+        final PiecewisePart piece = pieces.get(date);
 
         // pre-compute canonical functions
         final double[]   offsets = new double[references.length];
@@ -108,12 +94,12 @@ class PiecewiseSphericalHarmonics {
 
             /** {@inheritDoc} */
             public double getRawCnm(final int n, final int m) {
-                return active[index(n, m)].getRawCnm(raw.getRawCnm(n, m), offsets, sinCos);
+                return raw.getRawCnm(n, m) + piece.computeCnm(n, m, offsets, sinCos);
             }
 
             /** {@inheritDoc} */
             public double getRawSnm(final int n, final int m) {
-                return active[index(n, m)].getRawSnm(raw.getRawSnm(n, m), offsets, sinCos);
+                return raw.getRawSnm(n, m) + piece.computeSnm(n, m, offsets, sinCos);
             }
 
         };

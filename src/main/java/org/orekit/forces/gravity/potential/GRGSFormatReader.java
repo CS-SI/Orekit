@@ -22,8 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,14 +52,26 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
     /** Patterns for lines (the last pattern is repeated for all data lines). */
     private static final Pattern[] LINES;
 
+    /** Flag for Earth data. */
+    private static final int EARTH = 0x1;
+
+    /** Flag for degree/order. */
+    private static final int LIMITS = 0x2;
+
+    /** Flag for coefficients. */
+    private static final int COEFFS = 0x4;
+
     /** Reference date. */
     private AbsoluteDate referenceDate;
 
+    /** Converter from triangular to flat form. */
+    private Flattener dotFlattener;
+
     /** Secular drift of the cosine coefficients. */
-    private final List<List<Double>> cDot;
+    private double[] cDot;
 
     /** Secular drift of the sine coefficients. */
-    private final List<List<Double>> sDot;
+    private double[] sDot;
 
     static {
 
@@ -120,9 +130,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                             final boolean missingCoefficientsAllowed,
                             final TimeScale timeScale) {
         super(supportedNames, missingCoefficientsAllowed, timeScale);
-        referenceDate = null;
-        cDot = new ArrayList<>();
-        sDot = new ArrayList<>();
+        reset();
     }
 
     /** {@inheritDoc} */
@@ -130,10 +138,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         throws IOException, ParseException, OrekitException {
 
         // reset the indicator before loading any data
-        setReadComplete(false);
-        referenceDate = null;
-        cDot.clear();
-        sDot.clear();
+        reset();
 
         //        FIELD - GRIM5, VERSION : C1, november 1999
         //        AE                  1/F                 GM                 OMEGA
@@ -147,9 +152,15 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         // 0  0     .99999999988600E+00  .00000000000000E+00  .153900E-09  .000000E+00
         // 2  0   -0.48416511550920E-03 0.00000000000000E+00  .204904E-10  .000000E+00
 
-        int lineNumber = 0;
-        double[][] c   = null;
-        double[][] s   = null;
+        Flattener flattener  = null;
+        int       dotDegree  = -1;
+        int       dotOrder   = -1;
+        int       flags      = 0;
+        int       lineNumber = 0;
+        double[]  c0         = null;
+        double[]  s0         = null;
+        double[]  c1         = null;
+        double[]  s1         = null;
         try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             for (String line = r.readLine(); line != null; line = r.readLine()) {
 
@@ -166,6 +177,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                     // header line defining ae, 1/f, GM and Omega
                     setAe(parseDouble(matcher.group(1)));
                     setMu(parseDouble(matcher.group(3)));
+                    flags |= EARTH;
                 } else if (lineNumber == 4) {
                     // header line containing the reference date
                     referenceDate  = toDate(
@@ -174,45 +186,81 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                     // header line defining max degree
                     final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(matcher.group(1)));
                     final int order  = FastMath.min(getMaxParseOrder(), degree);
-                    c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
-                    s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                    flattener = new Flattener(degree, order);
+                    c0 = buildFlatArray(flattener, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                    s0 = buildFlatArray(flattener, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                    c1 = buildFlatArray(flattener, 0.0);
+                    s1 = buildFlatArray(flattener, 0.0);
+                    flags |= LIMITS;
                 } else if (lineNumber > 6) {
                     // data line
                     final int i = Integer.parseInt(matcher.group(1).trim());
                     final int j = Integer.parseInt(matcher.group(2).trim());
-                    if (i < c.length && j < c[i].length) {
+                    if (flattener.withinRange(i, j)) {
                         if ("DOT".equals(matcher.group(3).trim())) {
 
                             // store the secular drift coefficients
-                            extendListOfLists(cDot, i, j, 0.0);
-                            extendListOfLists(sDot, i, j, 0.0);
-                            parseCoefficient(matcher.group(4), cDot, i, j, "Cdot", name);
-                            parseCoefficient(matcher.group(5), sDot, i, j, "Sdot", name);
+                            parseCoefficient(matcher.group(4), flattener, c1, i, j, "Cdot", name);
+                            parseCoefficient(matcher.group(5), flattener, s1, i, j, "Sdot", name);
+                            dotDegree = FastMath.max(dotDegree, i);
+                            dotOrder  = FastMath.max(dotOrder,  j);
 
                         } else {
 
                             // store the constant coefficients
-                            parseCoefficient(matcher.group(4), c, i, j, "C", name);
-                            parseCoefficient(matcher.group(5), s, i, j, "S", name);
+                            parseCoefficient(matcher.group(4), flattener, c0, i, j, "C", name);
+                            parseCoefficient(matcher.group(5), flattener, s0, i, j, "S", name);
 
                         }
+                        flags |= COEFFS;
                     }
                 }
 
             }
         }
 
-        if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {
+        if (flags != (EARTH | LIMITS | COEFFS)) {
+            String loaderName = getClass().getName();
+            loaderName = loaderName.substring(loaderName.lastIndexOf('.') + 1);
+            throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
+                                      name, loaderName);
+        }
+
+        if (missingCoefficientsAllowed()) {
             // ensure at least the (0, 0) element is properly set
-            if (Precision.equals(c[0][0], 0.0, 0)) {
-                c[0][0] = 1.0;
+            if (Precision.equals(c0[flattener.index(0, 0)], 0.0, 0)) {
+                c0[flattener.index(0, 0)] = 1.0;
             }
         }
 
-        setRawCoefficients(true, c, s, name);
+        // resize secular drift arrays
+        if (dotDegree >= 0) {
+            dotFlattener = new Flattener(dotDegree, dotOrder);
+            cDot         = new double[dotFlattener.arraySize()];
+            sDot         = new double[dotFlattener.arraySize()];
+            for (int n = 0; n <= dotDegree; ++n) {
+                for (int m = 0; m <= FastMath.min(n, dotOrder); ++m) {
+                    cDot[dotFlattener.index(n, m)] = c1[flattener.index(n, m)];
+                    sDot[dotFlattener.index(n, m)] = s1[flattener.index(n, m)];
+                }
+            }
+        }
+
+        setRawCoefficients(true, flattener, c0, s0, name);
         setTideSystem(TideSystem.UNKNOWN);
         setReadComplete(true);
 
+    }
+
+    /** Reset instance before read.
+     * @since 11.1
+     */
+    private void reset() {
+        setReadComplete(false);
+        referenceDate = null;
+        dotFlattener  = null;
+        cDot          = null;
+        sDot          = null;
     }
 
     /** Get a provider for read spherical harmonics coefficients.
@@ -233,13 +281,11 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         // get the constant part
         RawSphericalHarmonicsProvider provider = getConstantProvider(wantNormalized, degree, order);
 
-        if (!cDot.isEmpty()) {
+        if (dotFlattener != null) {
 
             // add the secular trend layer
-            final double[][] cArray = toArray(cDot);
-            final double[][] sArray = toArray(sDot);
-            rescale(1.0 / Constants.JULIAN_YEAR, true, cArray, sArray, wantNormalized, cArray, sArray);
-            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, cArray, sArray);
+            rescale(dotFlattener, 1.0 / Constants.JULIAN_YEAR, true, wantNormalized, cDot, sDot, cDot, sDot);
+            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, dotFlattener, cDot, sDot);
 
         }
 

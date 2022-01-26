@@ -192,7 +192,6 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
         double version   = 1.0;
         boolean inHeader = true;
-        TimeSpanMap<PiecewiseSphericalHarmonics> map = new TimeSpanMap<>(null);
         int lineNumber   = 0;
         String line      = null;
         try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {

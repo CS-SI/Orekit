@@ -128,19 +128,18 @@ class TimeDependentHarmonic {
         return newArray;
     }
 
-    /** Get a spherical harmonic cosine coefficient.
-     * @param constantCnm constant part of the cosine coefficient
+    /** Compute the time-dependent part of a spherical harmonic cosine coefficient.
      * @param offsets offsets to reference dates in the gravity field
      * @param pulsations angular pulsations in the gravity field
      * @return raw coefficient Cnm
      */
-    public double getRawCnm(final double constantCnm, final double[] offsets, final SinCos[][] pulsations) {
+    public double computeCnm(final double[] offsets, final SinCos[][] pulsations) {
 
-        // linear part
-        double cnm = constantCnm + offsets[trendReferenceIndex] * cTrend;
+        // trend effect
+        double cnm = offsets[trendReferenceIndex] * cTrend;
 
         for (int i = 0; i < pulsationIndices.length; ++i) {
-            // add pulsation
+            // harmonic effect
             final SinCos pulsation = pulsations[referenceIndices[i]][pulsationIndices[i]];
             cnm += cosC[i] * pulsation.cos() + sinC[i] * pulsation.sin();
         }
@@ -149,19 +148,18 @@ class TimeDependentHarmonic {
 
     }
 
-    /** Get a spherical harmonic sine coefficient.
-     * @param constantSnm constant part of the sine coefficient
+    /** Compute the time-dependent part of a spherical harmonic sine coefficient.
      * @param offsets offsets to reference dates in the gravity field
      * @param pulsations angular pulsations in the gravity field
      * @return raw coefficient Snm
      */
-    public double getRawSnm(final double constantSnm, final double[] offsets, final SinCos[][] pulsations) {
+    public double computeSnm(final double[] offsets, final SinCos[][] pulsations) {
 
-        // linear part
-        double snm = constantSnm + offsets[trendReferenceIndex] * sTrend;
+        // trend effect
+        double snm = offsets[trendReferenceIndex] * sTrend;
 
         for (int i = 0; i < pulsationIndices.length; ++i) {
-            // add pulsation
+            // harmonic effect
             final SinCos pulsation = pulsations[referenceIndices[i]][pulsationIndices[i]];
             snm += cosS[i] * pulsation.cos() + sinS[i] * pulsation.sin();
         }

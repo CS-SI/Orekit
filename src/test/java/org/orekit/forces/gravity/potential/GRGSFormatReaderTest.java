@@ -153,6 +153,12 @@ public class GRGSFormatReaderTest {
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile4() {
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-4-grim5.dat", false));
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("potential:regular-data");

@@ -154,6 +154,9 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = degré trop important (n = {0}, le degré d
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordre trop important (n = {0}, l''ordre de potentiel maximal est {1})
 
+# no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
+WRONG_DEGREE_OR_ORDER = pas de terme ({0}, {1}) dans une décomposition en harmoniques sphériques {2}x{3}
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = plusieurs dates de références ({0} et {1} diffèrent de {3,number,0.0##############E0} s) trouvées dans le fichier de champ de gravité {2}
 
