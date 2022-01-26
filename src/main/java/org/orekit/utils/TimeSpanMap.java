@@ -141,9 +141,10 @@ public class TimeSpanMap<T> {
      * @param latestValidityDate date before which the entry is valid
      * @param erasesEarlier if true, the entry erases all existing transitions
      * that are earlier than {@code latestValidityDate}
+     * @return span with added entry
      * @since 11.1
      */
-    public synchronized void addValidBefore(final T entry, final AbsoluteDate latestValidityDate, final boolean erasesEarlier) {
+    public synchronized Span<T> addValidBefore(final T entry, final AbsoluteDate latestValidityDate, final boolean erasesEarlier) {
 
         // update current reference to transition date
         locate(latestValidityDate);
@@ -184,6 +185,8 @@ public class TimeSpanMap<T> {
 
         // we consider the last added transition as the new current one
         current = span;
+
+        return span;
 
     }
 
@@ -229,9 +232,10 @@ public class TimeSpanMap<T> {
      * @param earliestValidityDate date after which the entry is valid
      * @param erasesLater if true, the entry erases all existing transitions
      * that are later than {@code earliestValidityDate}
+     * @return span with added entry
      * @since 11.1
      */
-    public synchronized void addValidAfter(final T entry, final AbsoluteDate earliestValidityDate, final boolean erasesLater) {
+    public synchronized Span<T> addValidAfter(final T entry, final AbsoluteDate earliestValidityDate, final boolean erasesLater) {
 
         // update current reference to transition date
         locate(earliestValidityDate);
@@ -267,6 +271,8 @@ public class TimeSpanMap<T> {
         // we consider the last added transition as the new current one
         current = span;
 
+        return span;
+
     }
 
     /** Add an entry valid between two limit dates.
@@ -277,9 +283,10 @@ public class TimeSpanMap<T> {
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid
      * @param latestValidityDate date before which the entry is valid
+     * @return span with added entry
      * @since 11.1
      */
-    public synchronized void addValidBetween(final T entry, final AbsoluteDate earliestValidityDate, final AbsoluteDate latestValidityDate) {
+    public synchronized Span<T> addValidBetween(final T entry, final AbsoluteDate earliestValidityDate, final AbsoluteDate latestValidityDate) {
 
         // locate spans at earliest and latest dates
         locate(earliestValidityDate);
@@ -314,6 +321,8 @@ public class TimeSpanMap<T> {
 
         // we consider the last added transition as the new current one
         current = span;
+
+        return span;
 
     }
 
