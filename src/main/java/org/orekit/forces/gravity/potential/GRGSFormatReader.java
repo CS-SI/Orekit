@@ -212,8 +212,8 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                             parseCoefficient(matcher.group(5), flattener, s0, i, j, "S", name);
 
                         }
-                        flags |= COEFFS;
                     }
+                    flags |= COEFFS;
                 }
 
             }
@@ -263,29 +263,27 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         sDot          = null;
     }
 
-    /** Get a provider for read spherical harmonics coefficients.
+    /** {@inheritDoc}
      * <p>
      * GRGS fields may include time-dependent parts which are taken into account
      * in the returned provider.
      * </p>
-     * @param wantNormalized if true, the provider will provide normalized coefficients,
-     * otherwise it will provide un-normalized coefficients
-     * @param degree maximal degree
-     * @param order maximal order
-     * @return a new provider
-     * @since 6.0
      */
     public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
                                                      final int degree, final int order) {
 
         // get the constant part
-        RawSphericalHarmonicsProvider provider = getConstantProvider(wantNormalized, degree, order);
+        RawSphericalHarmonicsProvider provider = getBaseProvider(wantNormalized, degree, order);
 
         if (dotFlattener != null) {
 
             // add the secular trend layer
-            rescale(dotFlattener, 1.0 / Constants.JULIAN_YEAR, true, wantNormalized, cDot, sDot, cDot, sDot);
-            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, dotFlattener, cDot, sDot);
+            final double scale = 1.0 / Constants.JULIAN_YEAR;
+            final Flattener rescaledFlattener = new Flattener(FastMath.min(degree, dotFlattener.getDegree()),
+                                                              FastMath.min(order, dotFlattener.getOrder()));
+            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, rescaledFlattener,
+                                                          rescale(scale, wantNormalized, rescaledFlattener, dotFlattener, cDot),
+                                                          rescale(scale, wantNormalized, rescaledFlattener, dotFlattener, sDot));
 
         }
 

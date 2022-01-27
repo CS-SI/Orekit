@@ -39,6 +39,20 @@ class PiecewisePart {
         this.components = components.clone();
     }
 
+    /** Get the maximum supported degree.
+     * @return maximal supported degree
+     */
+    public int getMaxDegree() {
+        return flattener.getDegree();
+    }
+
+    /** Get the maximal supported order.
+     * @return maximal supported order
+     */
+    public int getMaxOrder() {
+        return flattener.getOrder();
+    }
+
     /** Compute the time-dependent part of a spherical harmonic cosine coefficient.
      * @param n degree of the coefficient
      * @param m order of the coefficient
@@ -48,7 +62,8 @@ class PiecewisePart {
      */
     public double computeCnm(final int n, final int m,
                              final double[] offsets, final SinCos[][] pulsations) {
-        return components[flattener.index(n, m)].computeCnm(offsets, pulsations);
+        final TimeDependentHarmonic harmonic = components[flattener.index(n, m)];
+        return harmonic == null ? 0.0 : harmonic.computeCnm(offsets, pulsations);
     }
 
     /** Compute the time-dependent part of a spherical harmonic sine coefficient.
@@ -60,7 +75,8 @@ class PiecewisePart {
      */
     public double computeSnm(final int n, final int m,
                              final double[] offsets, final SinCos[][] pulsations) {
-        return components[flattener.index(n, m)].computeSnm(offsets, pulsations);
+        final TimeDependentHarmonic harmonic = components[flattener.index(n, m)];
+        return harmonic == null ? 0.0 : harmonic.computeSnm(offsets, pulsations);
     }
 
 }

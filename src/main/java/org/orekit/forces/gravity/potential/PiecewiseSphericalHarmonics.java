@@ -18,7 +18,6 @@ package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
-import org.orekit.forces.gravity.potential.RawSphericalHarmonicsProvider.RawSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
@@ -26,7 +25,7 @@ import org.orekit.utils.TimeSpanMap;
  * @author Luc Maisonobe
  * @since 11.1
  */
-class PiecewiseSphericalHarmonics {
+class PiecewiseSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
     /** Constant part of the field. */
     private final ConstantSphericalHarmonics constant;
@@ -39,6 +38,12 @@ class PiecewiseSphericalHarmonics {
 
     /** Piecewise parts. */
     private final TimeSpanMap<PiecewisePart> pieces;
+
+    /** Maximum supported degree. */
+    private final int maxDegree;
+
+    /** Maximum supported order. */
+    private final int maxOrder;
 
     /** Simple constructor.
      * @param constant constant part of the field
@@ -53,6 +58,20 @@ class PiecewiseSphericalHarmonics {
         this.references = references.clone();
         this.pulsations = pulsations.clone();
         this.pieces     = pieces;
+
+        // get limits
+        int d = constant.getMaxDegree();
+        int o = constant.getMaxOrder();
+        for (TimeSpanMap.Span<PiecewisePart> span = pieces.getFirstSpan(); span != null; span = span.next()) {
+            final PiecewisePart piece = span.getData();
+            if (piece != null) {
+                d = FastMath.max(d, piece.getMaxDegree());
+                o = FastMath.max(o, piece.getMaxOrder());
+            }
+        }
+        this.maxDegree = d;
+        this.maxOrder  = o;
+
     }
 
     /** Get the constant part of the field.
@@ -60,6 +79,48 @@ class PiecewiseSphericalHarmonics {
      */
     public ConstantSphericalHarmonics getConstant() {
         return constant;
+    }
+
+    /** {@inheritDoc} */
+    public int getMaxDegree() {
+        return maxDegree;
+    }
+
+    /** {@inheritDoc} */
+    public int getMaxOrder() {
+        return maxOrder;
+    }
+
+    /** {@inheritDoc} */
+    public double getMu() {
+        return constant.getMu();
+    }
+
+    /** {@inheritDoc} */
+    public double getAe() {
+        return constant.getAe();
+    }
+
+    /** {@inheritDoc} */
+    public AbsoluteDate getReferenceDate() {
+        AbsoluteDate last = AbsoluteDate.PAST_INFINITY;
+        for (final AbsoluteDate date : references) {
+            if (date.isAfter(last)) {
+                last = date;
+            }
+        }
+        return last;
+    }
+
+    /** {@inheritDoc} */
+    @Deprecated
+    public double getOffset(final AbsoluteDate date) {
+        return date.durationFrom(references[0]);
+    }
+
+    /** {@inheritDoc} */
+    public TideSystem getTideSystem() {
+        return constant.getTideSystem();
     }
 
     /** Get the raw spherical harmonic coefficients on a specific date.

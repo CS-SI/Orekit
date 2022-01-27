@@ -201,10 +201,10 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                     // store the constant coefficients
                                     parseCoefficient(tab[3], flattener, c0, i, j, "C", name);
                                     parseCoefficient(tab[4], flattener, s0, i, j, "S", name);
-                                    flags |= COEFFS;
 
                                 }
                             }
+                            flags |= COEFFS;
                         }
 
                     }
@@ -275,13 +275,17 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                                      final int degree, final int order) {
 
         // get the constant part
-        RawSphericalHarmonicsProvider provider = getConstantProvider(wantNormalized, degree, order);
+        RawSphericalHarmonicsProvider provider = getBaseProvider(wantNormalized, degree, order);
 
         if (dotFlattener != null) {
 
             // add the secular trend layer
-            rescale(dotFlattener, 1.0 / Constants.JULIAN_YEAR, true, wantNormalized, cDot, sDot, cDot, sDot);
-            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, dotFlattener, cDot, sDot);
+            final double scale = 1.0 / Constants.JULIAN_YEAR;
+            final Flattener rescaledFlattener = new Flattener(FastMath.min(degree, dotFlattener.getDegree()),
+                                                              FastMath.min(order, dotFlattener.getOrder()));
+            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, rescaledFlattener,
+                                                          rescale(scale, wantNormalized, rescaledFlattener, dotFlattener, cDot),
+                                                          rescale(scale, wantNormalized, rescaledFlattener, dotFlattener, sDot));
 
         }
 

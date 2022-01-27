@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.gravity.potential;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
 /** Simple implementation of {@link RawSphericalHarmonicsProvider} for gravity fields with secular trend.
@@ -70,8 +71,8 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
         this.provider      = provider;
         this.referenceDate = referenceDate;
         this.flattener     = flattener;
-        this.cTrend        = cTrend;
-        this.sTrend        = sTrend;
+        this.cTrend        = cTrend.clone();
+        this.sTrend        = sTrend.clone();
     }
 
     /** Get a flattener for a triangular array.
@@ -85,12 +86,12 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     public int getMaxDegree() {
-        return flattener.getDegree();
+        return FastMath.max(flattener.getDegree(), provider.getMaxDegree());
     }
 
     /** {@inheritDoc} */
     public int getMaxOrder() {
-        return flattener.getOrder();
+        return FastMath.max(flattener.getOrder(), provider.getMaxOrder());
     }
 
     /** {@inheritDoc} */
@@ -104,7 +105,6 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
-    @Deprecated
     public AbsoluteDate getReferenceDate() {
         return referenceDate;
     }
@@ -124,7 +124,7 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
     public RawSphericalHarmonics onDate(final AbsoluteDate date) {
         final RawSphericalHarmonics harmonics = provider.onDate(date);
         //compute date offset from reference
-        final double dateOffset = provider.getOffset(date);
+        final double dateOffset = date.durationFrom(referenceDate);
         return new RawSphericalHarmonics() {
 
             @Override

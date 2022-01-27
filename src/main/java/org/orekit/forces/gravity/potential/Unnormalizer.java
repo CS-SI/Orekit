@@ -65,7 +65,6 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
-    @Deprecated
     @Override
     public AbsoluteDate getReferenceDate() {
         return normalized.getReferenceDate();

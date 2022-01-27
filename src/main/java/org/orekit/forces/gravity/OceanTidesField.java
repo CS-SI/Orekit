@@ -127,7 +127,6 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
     public AbsoluteDate getReferenceDate() {
         return AbsoluteDate.ARBITRARY_EPOCH;
     }

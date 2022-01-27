@@ -274,12 +274,17 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         // C0,0 is 1, the central part, since all coefficients are normalized by GM.
         setIfUnset(c, flattener.index(0, 0), 1);
         setIfUnset(s, flattener.index(0, 0), 0);
-        // C1,0, C1,1, and S1,1 are the x,y,z coordinates of the center of mass,
-        // which are 0 since all coefficients are given in an Earth centered frame
-        setIfUnset(c, flattener.index(1, 0), 0);
-        setIfUnset(s, flattener.index(1, 0), 0);
-        setIfUnset(c, flattener.index(1, 1), 0);
-        setIfUnset(s, flattener.index(1, 1), 0);
+
+        if (flattener.getDegree() >= 1) {
+            // C1,0, C1,1, and S1,1 are the x,y,z coordinates of the center of mass,
+            // which are 0 since all coefficients are given in an Earth centered frame
+            setIfUnset(c, flattener.index(1, 0), 0);
+            setIfUnset(s, flattener.index(1, 0), 0);
+            if (flattener.getOrder() >= 1) {
+                setIfUnset(c, flattener.index(1, 1), 0);
+                setIfUnset(s, flattener.index(1, 1), 0);
+            }
+        }
 
         // cosine part
         for (int i = 0; i <= flattener.getDegree(); ++i) {
@@ -362,6 +367,33 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      */
     public abstract RawSphericalHarmonicsProvider getProvider(boolean wantNormalized, int degree, int order);
 
+    /** Get a time-independent provider containing base harmonics coefficients.
+     * <p>
+     * Beware that some coeefficients may be missing here, if they are managed as time-dependent
+     * piecewise models (as in ICGEM V2.0).
+     * </p>
+     * @param wantNormalized if true, the raw provider must provide normalized coefficients,
+     * otherwise it will provide un-normalized coefficients
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return a new provider, with no time-dependent parts
+     * @see #getProvider(boolean, int, int)
+     * @since 11.1
+     */
+    protected ConstantSphericalHarmonics getBaseProvider(final boolean wantNormalized,
+                                                         final int degree, final int order) {
+
+        if (!readComplete) {
+            throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
+        }
+
+        final Flattener truncatedFlattener = new Flattener(degree, order);
+        return new ConstantSphericalHarmonics(ae, mu, tideSystem, truncatedFlattener,
+                                              rescale(1.0, wantNormalized, truncatedFlattener, flattener, rawC),
+                                              rescale(1.0, wantNormalized, truncatedFlattener, flattener, rawS));
+
+    }
+
     /** Get a time-independent provider for read spherical harmonics coefficients.
      * @param wantNormalized if true, the raw provider must provide normalized coefficients,
      * otherwise it will provide un-normalized coefficients
@@ -370,31 +402,12 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @return a new provider, with no time-dependent parts
      * @see #getProvider(boolean, int, int)
      * @since 6.0
+     * @deprecated as of 11.1, not used anymore
      */
+    @Deprecated
     protected ConstantSphericalHarmonics getConstantProvider(final boolean wantNormalized,
                                                              final int degree, final int order) {
-
-        if (!readComplete) {
-            throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
-        }
-
-        if (degree > flattener.getDegree()) {
-            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,
-                                      degree, flattener.getDegree());
-        }
-
-        if (order > flattener.getOrder()) {
-            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD,
-                                      order, flattener.getOrder());
-        }
-
-        // fix normalization
-        final double[] truncatedC = buildFlatArray(flattener, 0.0);
-        final double[] truncatedS = buildFlatArray(flattener, 0.0);
-        rescale(flattener, 1.0, normalized, wantNormalized, rawC, rawS, truncatedC, truncatedS);
-
-        return new ConstantSphericalHarmonics(ae, mu, tideSystem, flattener, truncatedC, truncatedS);
-
+        return getBaseProvider(wantNormalized, degree, order);
     }
 
     /** Get a flattener for a triangular array.
@@ -578,8 +591,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param wantNormalized if true, the rescaled coefficients must be normalized
      * @param rescaledC cosine part of the rescaled coefficients to fill in (may be the originC array)
      * @param rescaledS sine part of the rescaled coefficients to fill in (may be the originS array)
-     * @deprecated as of 11.1, replaced by {@link #rescale(Flattener, double, boolean, boolean,
-     * double[], double[], double[], double[])}
+     * @deprecated as of 11.1, replaced by {@link #rescale(double, boolean, Flattener, Flattener, double[])}
      */
     @Deprecated
     protected static void rescale(final double scale,
@@ -642,58 +654,120 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     }
 
     /** Rescale coefficients arrays.
-     * @param f converter from triangular to flat form
+     * <p>
+     * The normalized/unnormalized nature of original coefficients is inherited from previous parsing.
+     * </p>
      * @param scale general scaling factor to apply to all elements
-     * @param normalizedOrigin if true, the origin coefficients are normalized
-     * @param originC cosine part of the original coefficients
-     * @param originS sine part of the origin coefficients
-     * @param wantNormalized if true, the rescaled coefficients must be normalized
-     * @param rescaledC cosine part of the rescaled coefficients to fill in (may be the originC array)
-     * @param rescaledS sine part of the rescaled coefficients to fill in (may be the originS array)
+     * @param wantNormalized if true, the rescaled coefficients must be normalized,
+     * otherwise they must be un-normalized
+     * @param rescaledFlattener converter from triangular to flat form
+     * @param originalFlattener converter from triangular to flat form
+     * @param original original coefficients
+     * @return rescaled coefficients
      * @since 11.1
      */
-    protected static void rescale(final Flattener f, final double scale,
-                                  final boolean normalizedOrigin, final boolean wantNormalized,
-                                  final double[] originC, final double[] originS,
-                                  final double[] rescaledC, final double[] rescaledS) {
+    protected double[] rescale(final double scale, final boolean wantNormalized, final Flattener rescaledFlattener,
+                               final Flattener originalFlattener, final double[] original) {
 
-        if (wantNormalized == normalizedOrigin) {
-            // apply only the general scaling factor
-            for (int i = 0; i < rescaledC.length; ++i) {
-                rescaledC[i] = originC[i] * scale;
-                rescaledS[i] = originS[i] * scale;
-            }
-        } else {
-
-            // we have to re-scale the coefficients
-            final double[][] factors =
-                            GravityFieldFactory.getUnnormalizationFactors(f.getDegree(), f.getOrder());
-
-            if (wantNormalized) {
-                // normalize the coefficients
-                for (int i = 0; i <= f.getDegree(); ++i) {
-                    final double[] fi  = factors[i];
-                    for (int j = 0; j <= FastMath.min(i, f.getOrder()); ++j) {
-                        final double factor = scale / fi[j];
-                        final int    index  = f.index(i, j);
-                        rescaledC[index] = originC[index] * factor;
-                        rescaledS[index] = originS[index] * factor;
-                    }
-                }
-            } else {
-                // un-normalize the coefficients
-                for (int i = 0; i <= f.getDegree(); ++i) {
-                    final double[] fi  = factors[i];
-                    for (int j = 0; j <= FastMath.min(i, f.getOrder()); ++j) {
-                        final double factor = scale * fi[j];
-                        final int    index  = f.index(i, j);
-                        rescaledC[index] = originC[index] * factor;
-                        rescaledS[index] = originS[index] * factor;
-                    }
-                }
-            }
-
+        if (rescaledFlattener.getDegree() > originalFlattener.getDegree()) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,
+                                      rescaledFlattener.getDegree(), flattener.getDegree());
         }
+
+        if (rescaledFlattener.getOrder() > originalFlattener.getOrder()) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD,
+                                      rescaledFlattener.getOrder(), flattener.getOrder());
+        }
+
+        // scaling and normalization factors
+        final FactorsGenerator generator;
+        if (wantNormalized == normalized) {
+            // the parsed coefficients already match the specified normalization
+            generator = (n, m) -> scale;
+        } else {
+            // we need to normalize/unnormalize parsed coefficients
+            final double[][] unnormalizationFactors =
+                            GravityFieldFactory.getUnnormalizationFactors(rescaledFlattener.getDegree(),
+                                                                          rescaledFlattener.getOrder());
+            generator = wantNormalized ?
+                        (n, m) -> scale / unnormalizationFactors[n][m] :
+                        (n, m) -> scale * unnormalizationFactors[n][m];
+        }
+
+        // perform rescaling
+        final double[] rescaled = buildFlatArray(rescaledFlattener, 0.0);
+        for (int n = 0; n <= rescaledFlattener.getDegree(); ++n) {
+            for (int m = 0; m <= FastMath.min(n, rescaledFlattener.getOrder()); ++m) {
+                final int    rescaledndex  = rescaledFlattener.index(n, m);
+                final int    originalndex  = originalFlattener.index(n, m);
+                rescaled[rescaledndex] = original[originalndex] * generator.factor(n, m);
+            }
+        }
+
+        return rescaled;
+
+    }
+
+    /** Rescale coefficients arrays.
+     * <p>
+     * The normalized/unnormalized nature of original coefficients is inherited from previous parsing.
+     * </p>
+     * @param baseScale scaling factor to apply to base coefficients elements
+     * @param trendScale scaling factor to apply to trend coefficients elements
+     * @param periodicScale scaling factor to apply to periodic coefficients elements
+     * @param wantNormalized if true, the rescaled coefficients must be normalized,
+     * otherwise they must be un-normalized
+     * @param rescaledFlattener converter from triangular to flat form
+     * @param originalFlattener converter from triangular to flat form
+     * @param original original coefficients
+     * @return rescaled coefficients
+     * @since 11.1
+     */
+    protected TimeDependentHarmonic[] rescale(final double baseScale, final double trendScale, final double periodicScale,
+                                              final boolean wantNormalized, final Flattener rescaledFlattener,
+                                              final Flattener originalFlattener, final TimeDependentHarmonic[] original) {
+
+        if (rescaledFlattener.getDegree() > originalFlattener.getDegree()) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,
+                                      rescaledFlattener.getDegree(), flattener.getDegree());
+        }
+
+        if (rescaledFlattener.getOrder() > originalFlattener.getOrder()) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD,
+                                      rescaledFlattener.getOrder(), flattener.getOrder());
+        }
+
+        // scaling and normalization factors
+        final FactorsGenerator generator;
+        if (wantNormalized == normalized) {
+            // the parsed coefficients already match the specified normalization
+            generator = (n, m) -> 1.0;
+        } else {
+            // we need to normalize/unnormalize parsed coefficients
+            final double[][] unnormalizationFactors =
+                            GravityFieldFactory.getUnnormalizationFactors(rescaledFlattener.getDegree(),
+                                                                          rescaledFlattener.getOrder());
+            generator = wantNormalized ?
+                        (n, m) -> 1.0 / unnormalizationFactors[n][m] :
+                        (n, m) -> unnormalizationFactors[n][m];
+        }
+
+        // perform rescaling
+        final TimeDependentHarmonic[] rescaled = new TimeDependentHarmonic[rescaledFlattener.arraySize()];
+        for (int n = 0; n <= rescaledFlattener.getDegree(); ++n) {
+            for (int m = 0; m <= FastMath.min(n, rescaledFlattener.getOrder()); ++m) {
+                final int originalndex = originalFlattener.index(n, m);
+                if (original[originalndex] != null) {
+                    final int    rescaledndex = rescaledFlattener.index(n, m);
+                    final double factor       = generator.factor(n, m);
+                    rescaled[rescaledndex]    = new TimeDependentHarmonic(factor * baseScale, factor * trendScale, factor * periodicScale,
+                                                                          original[originalndex]);
+                }
+            }
+        }
+
+        return rescaled;
+
     }
 
     /**
@@ -716,6 +790,18 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      */
     protected AbsoluteDate toDate(final DateComponents dc, final TimeComponents tc) {
         return new AbsoluteDate(dc, tc, timeScale);
+    }
+
+    /** Generator for normalization/unnormalization factors.
+     * @since 11.1
+     */
+    private interface FactorsGenerator {
+        /** Generator the normalization/unnormalization factors.
+         * @param n degree of the gravity field component
+         * @param m order of the gravity field component
+         * @return factor to apply to term
+         */
+        double factor(int n, int m);
     }
 
 }

@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.gravity.potential;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
 /** Simple implementation of {@link RawSphericalHarmonicsProvider} for constant gravity fields.
@@ -78,6 +79,32 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
         this.flattener  = flattener;
         this.rawC       = rawC;
         this.rawS       = rawS;
+    }
+
+    /** Create a constant provider by freezing a regular provider.
+     * @param freezingDate freezing date
+     * @param raw raw provider to freeze
+     * @since 11.1
+     */
+    ConstantSphericalHarmonics(final AbsoluteDate freezingDate, final RawSphericalHarmonicsProvider raw) {
+
+        this.ae         = raw.getAe();
+        this.mu         = raw.getMu();
+        this.tideSystem = raw.getTideSystem();
+        this.flattener  = new Flattener(raw.getMaxDegree(), raw.getMaxOrder());
+        this.rawC       = new double[flattener.arraySize()];
+        this.rawS       = new double[flattener.arraySize()];
+
+        // freeze the raw provider
+        final RawSphericalHarmonics frozen = raw.onDate(freezingDate);
+        for (int n = 0; n <= flattener.getDegree(); ++n) {
+            for (int m = 0; m <= FastMath.min(n, flattener.getOrder()); ++m) {
+                final int index = flattener.index(n, m);
+                rawC[index] = frozen.getRawCnm(n, m);
+                rawS[index] = frozen.getRawSnm(n, m);
+            }
+        }
+
     }
 
     /** Get a flattener for a triangular array.

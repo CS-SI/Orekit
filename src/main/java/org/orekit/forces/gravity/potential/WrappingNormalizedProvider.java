@@ -64,7 +64,6 @@ class WrappingNormalizedProvider implements NormalizedSphericalHarmonicsProvider
     }
 
     /** {@inheritDoc} */
-    @Deprecated
     @Override
     public AbsoluteDate getReferenceDate() {
         return rawProvider.getReferenceDate();

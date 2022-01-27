@@ -297,7 +297,6 @@ public class Geoid implements EarthShape {
             return this.provider.getAe();
         }
 
-        @Deprecated
         @Override
         public AbsoluteDate getReferenceDate() {
             return this.provider.getReferenceDate();

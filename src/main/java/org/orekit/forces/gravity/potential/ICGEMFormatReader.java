@@ -23,17 +23,18 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.OrekitParseException;
 import org.orekit.time.AbsoluteDate;
@@ -97,6 +98,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Max degree. */
     private static final String MAX_DEGREE              = "max_degree";
 
+    /** Errors indicator. */
+    private static final String ERRORS                  = "errors";
+
     /** Tide system indicator. */
     private static final String TIDE_SYSTEM_INDICATOR   = "tide_system";
 
@@ -139,14 +143,38 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Gravity field coefficient cosine amplitude. */
     private static final String ACOS                    = "acos";
 
+    /** Name of base coefficients. */
+    private static final String BASE_NAMES              = "C/S";
+
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
+
+    /** Flag for Gravitational coefficient. */
+    private static final int MU = 0x1;
+
+    /** Flag for scaling radius. */
+    private static final int AE = 0x2;
+
+    /** Flag for degree/order. */
+    private static final int LIMITS = 0x4;
+
+    /** Flag for errors. */
+    private static final int ERR = 0x8;
+
+    /** Flag for coefficients. */
+    private static final int COEFFS = 0x10;
 
     /** Indicator for normalized coefficients. */
     private boolean normalized;
 
+    /** Reference dates. */
+    private List<AbsoluteDate> referenceDates;
+
+    /** Pulsations. */
+    private List<Double>       pulsations;
+
     /** Time map of the harmonics. */
-    private TimeSpanMap<PiecewiseSphericalHarmonics> map;
+    private TimeSpanMap<Container> containers;
 
     /** Simple constructor.
      *
@@ -183,17 +211,24 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
         // reset the indicator before loading any data
         setReadComplete(false);
-        map = new TimeSpanMap<>(null);
+        containers     = null;
+        referenceDates = new ArrayList<>();
+        pulsations     = new ArrayList<>();
 
         // by default, the field is normalized with unknown tide system
         // (will be overridden later if non-default)
-        normalized = true;
+        normalized            = true;
         TideSystem tideSystem = TideSystem.UNKNOWN;
+        Errors     errors     = Errors.NO;
 
-        double version   = 1.0;
-        boolean inHeader = true;
-        int lineNumber   = 0;
-        String line      = null;
+        double    version        = 1.0;
+        boolean   inHeader       = true;
+        Flattener flattener      = null;
+        int       flags          = 0;
+        double[]  c0             = null;
+        double[]  s0             = null;
+        int       lineNumber     = 0;
+        String    line           = null;
         try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             for (line = r.readLine(); line != null; line = r.readLine()) {
                 boolean parseError = false;
@@ -204,7 +239,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 }
                 final String[] tab = SEPARATOR.split(line);
                 if (inHeader) {
-                    if (tab.length == 2 && FORMAT.equals(tab[0])) {
+                    if (tab.length >= 2 && FORMAT.equals(tab[0])) {
                         final Matcher matcher = Pattern.compile(SUPPORTED_FORMAT).matcher(tab[1]);
                         if (matcher.matches()) {
                             version = Double.parseDouble(matcher.group(1));
@@ -214,20 +249,31 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         } else {
                             parseError = true;
                         }
-                    } else if (tab.length == 2 && PRODUCT_TYPE.equals(tab[0])) {
+                    } else if (tab.length >= 2 && PRODUCT_TYPE.equals(tab[0])) {
                         parseError = !GRAVITY_FIELD.equals(tab[1]);
-                    } else if (tab.length == 2 && tab[0].endsWith(GRAVITY_CONSTANT)) {
+                    } else if (tab.length >= 2 && tab[0].endsWith(GRAVITY_CONSTANT)) {
                         setMu(parseDouble(tab[1]));
-                    } else if (tab.length == 2 && REFERENCE_RADIUS.equals(tab[0])) {
+                        flags |= MU;
+                    } else if (tab.length >= 2 && REFERENCE_RADIUS.equals(tab[0])) {
                         setAe(parseDouble(tab[1]));
-                    } else if (tab.length == 2 && MAX_DEGREE.equals(tab[0])) {
+                        flags |= AE;
+                    } else if (tab.length >= 2 && MAX_DEGREE.equals(tab[0])) {
 
                         final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(tab[1]));
                         final int order  = FastMath.min(getMaxParseOrder(), degree);
-                        c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
-                        s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                        flattener  = new Flattener(degree, order);
+                        c0         = buildFlatArray(flattener, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                        s0         = buildFlatArray(flattener, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                        flags     |= LIMITS;
 
-                    } else if (tab.length == 2 && TIDE_SYSTEM_INDICATOR.equals(tab[0])) {
+                    } else if (tab.length >= 2 && ERRORS.equals(tab[0])) {
+                        try {
+                            errors = Errors.valueOf(tab[1].toUpperCase(Locale.US));
+                            flags |= ERR;
+                        } catch (IllegalArgumentException iae) {
+                            parseError = true;
+                        }
+                    } else if (tab.length >= 2 && TIDE_SYSTEM_INDICATOR.equals(tab[0])) {
                         if (ZERO_TIDE.equals(tab[1])) {
                             tideSystem = TideSystem.ZERO_TIDE;
                         } else if (TIDE_FREE.equals(tab[1])) {
@@ -237,7 +283,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         } else {
                             parseError = true;
                         }
-                    } else if (tab.length == 2 && NORMALIZATION_INDICATOR.equals(tab[0])) {
+                    } else if (tab.length >= 2 && NORMALIZATION_INDICATOR.equals(tab[0])) {
                         if (NORMALIZED.equals(tab[1])) {
                             normalized = true;
                         } else if (UNNORMALIZED.equals(tab[1])) {
@@ -245,213 +291,313 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         } else {
                             parseError = true;
                         }
-                    } else if (tab.length == 2 && END_OF_HEADER.equals(tab[0])) {
-                        inHeader = false;
+                    } else if (tab.length >= 1 && END_OF_HEADER.equals(tab[0])) {
+                        inHeader   = false;
                     }
                     if (parseError) {
                         throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                        lineNumber, name, line);
                     }
-                } else {
-                    if (tab.length == 7 && GFC.equals(tab[0]) || (tab.length == 8 || tab.length == 9) && GFCT.equals(tab[0])) {
+                } else if (dataKeyKnown(tab) && tab.length > 2) {
 
-                        final int i = Integer.parseInt(tab[1]);
-                        final int j = Integer.parseInt(tab[2]);
-                        if (i < c.length && j < c[i].length) {
+                    final int n = Integer.parseInt(tab[1]);
+                    final int m = Integer.parseInt(tab[2]);
+                    flags |= COEFFS;
+                    if (!flattener.withinRange(n, m)) {
+                        // just ignore coefficients we don't need
+                        continue;
+                    }
 
-                            parseCoefficient(tab[3], c, i, j, "C", name);
-                            parseCoefficient(tab[4], s, i, j, "S", name);
-                            okCoeffs = true;
+                    if (tab.length > 4 && GFC.equals(tab[0])) {
+                        // fixed coefficient
 
-                            if (tab.length > 8) {
-                                if (version < 2.0) {
-                                    // before version 2.0, there is only one reference date
-                                    if (tab.length != 8) {
-                                        parseError = true;
-                                    } else {
-                                        final AbsoluteDate lineDate = parseDate(tab[7]);
-                                        if (referenceDate == null) {
-                                            // first reference found, store it
-                                            referenceDate = lineDate;
-                                        } else if (!referenceDate.equals(lineDate)) {
-                                            // we already know the reference date, check this lines does not define a new one
-                                            throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
-                                                                      referenceDate, lineDate, name,
-                                                                      lineDate.durationFrom(referenceDate));
-                                        }
-                                    }
-                                } else {
-                                    // starting with version 2.0, two reference dates define validity intervals
-                                    if (tab.length != 9) {
-                                        parseError = true;
-                                    } else {
-                                        // TODO
-                                    }
-                                }
-                            }
+                        parseCoefficient(tab[3], flattener, c0, n, m, "C", name);
+                        parseCoefficient(tab[4], flattener, s0, n, m, "S", name);
 
-                        }
-                    } else if (tab.length == 7 && (DOT.equals(tab[0]) || TRND.equals(tab[0]))) {
+                    } else if (version < 2.0 && tab.length > 5 + errors.fields && GFCT.equals(tab[0])) {
+                        // base of linear coefficient with infinite time range
 
-                        final int i = Integer.parseInt(tab[1]);
-                        final int j = Integer.parseInt(tab[2]);
-                        if (i < c.length && j < c[i].length) {
-
-                            // store the secular trend coefficients
-                            extendListOfLists(cTrend, i, j, 0.0);
-                            extendListOfLists(sTrend, i, j, 0.0);
-                            parseCoefficient(tab[3], cTrend, i, j, "Ctrend", name);
-                            parseCoefficient(tab[4], sTrend, i, j, "Strend", name);
-
+                        if (containers == null) {
+                            // prepare the single container (it will be populated when next lines are parsed)
+                            containers = new TimeSpanMap<>(new Container(flattener));
                         }
 
-                    } else if (tab.length == 8 && (ASIN.equals(tab[0]) || ACOS.equals(tab[0]))) {
+                        // set the constant coefficients to 0 as they will be managed by the piecewise model
+                        final int globalIndex = flattener.index(n, m);
+                        c0[globalIndex]       = 0.0;
+                        s0[globalIndex]       = 0.0;
 
-                        final int i = Integer.parseInt(tab[1]);
-                        final int j = Integer.parseInt(tab[2]);
-                        if (i < c.length && j < c[i].length) {
+                        // store the single reference date valid for the whole field
+                        final AbsoluteDate lineDate = parseDate(tab[5 + errors.fields]);
+                        final int referenceIndex    = referenceDateIndex(referenceDates, lineDate);
+                        if (referenceIndex != 0) {
+                            // we already know the reference date, check this lines does not define a new one
+                            throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
+                                                      referenceDates.get(0), lineDate, name,
+                                                      lineDate.durationFrom(referenceDates.get(0)));
+                        }
 
-                            // extract arrays corresponding to period
-                            final Double period = Double.valueOf(tab[7]);
-                            if (!cCos.containsKey(period)) {
-                                cCos.put(period, new ArrayList<>());
-                                cSin.put(period, new ArrayList<>());
-                                sCos.put(period, new ArrayList<>());
-                                sSin.put(period, new ArrayList<>());
+                        final Container single = containers.getFirstSpan().getData();
+                        final int       index  = single.flattener.index(n, m);
+                        if (single.components[index] != null) {
+                            throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
+                                                      BASE_NAMES, n, m, name);
+                        }
+                        single.components[index] = new TimeDependentHarmonic(referenceIndex, parseDouble(tab[3]), parseDouble(tab[4]));
+
+
+                    } else if (version >= 2.0 && tab.length > 6 + errors.fields && GFCT.equals(tab[0])) {
+                        // base of linear coefficient with limited time range
+
+                        if (containers == null) {
+                            // prepare empty map to old containers as they are parsed
+                            containers = new TimeSpanMap<>(null);
+                        }
+
+                        // set the constant coefficients to 0 as they will be managed by the piecewise model
+                        final int globalIndex = flattener.index(n, m);
+                        c0[globalIndex]       = 0.0;
+                        s0[globalIndex]       = 0.0;
+
+                        final AbsoluteDate t0 = parseDate(tab[5 + errors.fields]);
+                        final AbsoluteDate t1 = parseDate(tab[6 + errors.fields]);
+
+                        // get the containers active for the specified time range
+                        final List<TimeSpanMap.Span<Container>> active = getActive(flattener, t0, t1);
+                        for (final TimeSpanMap.Span<Container> span : active) {
+                            final Container             container = span.getData();
+                            final int                   index     = container.flattener.index(n, m);
+                            if (container.components[index] != null) {
+                                throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
+                                                          BASE_NAMES, n, m, name);
                             }
-                            final List<List<Double>> cCosPeriod = cCos.get(period);
-                            final List<List<Double>> cSinPeriod = cSin.get(period);
-                            final List<List<Double>> sCosPeriod = sCos.get(period);
-                            final List<List<Double>> sSinPeriod = sSin.get(period);
+                            container.components[index] = new TimeDependentHarmonic(referenceDateIndex(referenceDates, t0),
+                                                                                    parseDouble(tab[3]), parseDouble(tab[4]));
+                        }
 
-                            // store the pulsation coefficients
-                            extendListOfLists(cCosPeriod, i, j, 0.0);
-                            extendListOfLists(cSinPeriod, i, j, 0.0);
-                            extendListOfLists(sCosPeriod, i, j, 0.0);
-                            extendListOfLists(sSinPeriod, i, j, 0.0);
+                    } else if (version < 2.0 && tab.length > 4 && (DOT.equals(tab[0]) || TRND.equals(tab[0]))) {
+                        // slope of linear coefficient with infinite range
+
+                        // store the secular trend coefficients
+                        final Container single = containers.getFirstSpan().getData();
+                        final TimeDependentHarmonic harmonic = single.components[single.flattener.index(n, m)];
+                        if (harmonic == null) {
+                            parseError = true;
+                        } else {
+                            harmonic.setTrend(parseDouble(tab[3]), parseDouble(tab[4]));
+                        }
+
+                    } else if (version >= 2.0 && tab.length > 7 + errors.fields && TRND.equals(tab[0])) {
+                        // slope of linear coefficient with limited range
+
+                        // TODO
+                        throw new OrekitInternalError(null);
+
+                    } else if (version < 2.0 && tab.length > 5 + errors.fields && (ASIN.equals(tab[0]) || ACOS.equals(tab[0]))) {
+                        // periodic coefficient with infinite range
+
+                        final int pulsationIndex = pulsationIndex(pulsations,
+                                                                  MathUtils.TWO_PI / (parseDouble(tab[5 + errors.fields]) * Constants.JULIAN_YEAR));
+
+                        // store the periodic effects coefficients
+                        final Container single = containers.getFirstSpan().getData();
+                        final TimeDependentHarmonic harmonic = single.components[single.flattener.index(n, m)];
+                        if (harmonic == null) {
+                            parseError = true;
+                        } else {
                             if (ACOS.equals(tab[0])) {
-                                parseCoefficient(tab[3], cCosPeriod, i, j, "Ccos", name);
-                                parseCoefficient(tab[4], sCosPeriod, i, j, "SCos", name);
+                                harmonic.addCosine(-1, pulsationIndex, parseDouble(tab[3]), parseDouble(tab[4]));
                             } else {
-                                parseCoefficient(tab[3], cSinPeriod, i, j, "Csin", name);
-                                parseCoefficient(tab[4], sSinPeriod, i, j, "Ssin", name);
+                                harmonic.addSine(-1, pulsationIndex, parseDouble(tab[3]), parseDouble(tab[4]));
                             }
-
                         }
+
+                    } else if (version >= 2.0 && tab.length > 8 + errors.fields && (ASIN.equals(tab[0]) || ACOS.equals(tab[0]))) {
+                        // periodic coefficient with limited range
+
+                        // TODO
+                        throw new OrekitInternalError(null);
 
                     } else {
                         parseError = true;
                     }
 
-                    if (parseError) {
-                        throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                       lineNumber, name, line);
-                    }
+                } else if (dataKeyKnown(tab)) {
+                    // this was an expected data key, but the line is truncated
+                    parseError = true;
+                }
 
+                if (parseError) {
+                    throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                   lineNumber, name, line);
                 }
 
             }
+
         } catch (NumberFormatException nfe) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                       lineNumber, name, line);
         }
 
-
-        if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {
-            // ensure at least the (0, 0) element is properly set
-            if (Precision.equals(c[0][0], 0.0, 0)) {
-                c[0][0] = 1.0;
-            }
-        }
-
-        if (Double.isNaN(getAe()) || Double.isNaN(getMu()) || !okCoeffs) {
+        if (flags != (MU | AE | LIMITS | ERR | COEFFS)) {
             String loaderName = getClass().getName();
             loaderName = loaderName.substring(loaderName.lastIndexOf('.') + 1);
             throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
                                       name, loaderName);
         }
 
-        setRawCoefficients(normalized, c, s, name);
+        if (missingCoefficientsAllowed()) {
+            // ensure at least the (0, 0) element is properly set
+            if (Precision.equals(c0[flattener.index(0, 0)], 0.0, 0)) {
+                c0[flattener.index(0, 0)] = 1.0;
+            }
+        }
+
+        setRawCoefficients(normalized, flattener, c0, s0, name);
         setTideSystem(tideSystem);
         setReadComplete(true);
 
     }
 
-    /** Get a provider for read spherical harmonics coefficients.
-     * <p>
-     * ICGEM fields do include time-dependent parts which are taken into account
-     * in the returned provider.
-     * </p>
-     * @param wantNormalized if true, the provider will provide normalized coefficients,
-     * otherwise it will provide un-normalized coefficients
-     * @param degree maximal degree
-     * @param order maximal order
-     * @return a new provider
-     * @since 6.0
+    /** Check if a line starts with a known data key.
+     * @param tab line fields
+     * @return true if line starts with a known data key
+     * @since 11.1
      */
+    private boolean dataKeyKnown(final String[] tab) {
+        return tab.length > 0 &&
+               (GFC.equals(tab[0])  || GFCT.equals(tab[0]) ||
+                DOT.equals(tab[0])  || TRND.equals(tab[0]) ||
+                ASIN.equals(tab[0]) || ACOS.equals(tab[0]));
+    }
+
+    /** Get the spans with containers active over a time range.
+     * @param flattener converter from triangular form to flat form
+     * @param t0 start of time span
+     * @param t1 end of time span
+     * @return span active from {@code t0} to {@code t1}
+     * @since 11.1
+     */
+    private List<TimeSpanMap.Span<Container>> getActive(final Flattener flattener,
+                                                        final AbsoluteDate t0, final AbsoluteDate t1) {
+
+        final List<TimeSpanMap.Span<Container>> active = new ArrayList<>();
+
+        TimeSpanMap.Span<Container> span = containers.getSpan(t0);
+        if (span.getStart().isBefore(t0)) {
+            if (span.getEnd().isAfterOrEqualTo(t1)) {
+                if (span.getData() == null) {
+                    // the specified time range lies on an empty range
+                    span = containers.addValidBetween(new Container(flattener), t0, t1);
+                } else {
+                    // the specified time range splits an existing container in three parts
+                    containers.addValidAfter(span.getData().copy(), t1, false);
+                    span = containers.addValidAfter(span.getData().copy(), t0, false);
+                }
+            } else {
+                span = containers.addValidAfter(span.getData() == null ? new Container(flattener) : span.getData().copy(),
+                                                t0, false);
+            }
+        }
+
+        while (span.getData() != null && span.getStart().isBefore(t1)) {
+            if (span.getEnd().isAfter(t1)) {
+                // this span extends past t1, we must split it
+                span = containers.addValidBefore(span.getData().copy(), t1, false);
+            }
+            active.add(span);
+            span = span.next();
+        }
+
+        return active;
+
+    }
+
+    /** Get the index of a reference date, adding it if needed.
+     * @param known known reference dates
+     * @param referenceDate reference date to select
+     * @return index of the reference date in the {@code known} list
+     * @since 11.1
+     */
+    private int referenceDateIndex(final List<AbsoluteDate> known, final AbsoluteDate referenceDate) {
+        for (int i = 0; i < known.size(); ++i) {
+            if (known.get(i).equals(referenceDate)) {
+                return i;
+            }
+        }
+        known.add(referenceDate);
+        return known.size() - 1;
+    }
+
+    /** Get the index of a pulsation, adding it if needed.
+     * @param known known pulsations
+     * @param pulsation pulsation to select
+     * @return index of the pulsation in the {@code known} list
+     * @since 11.1
+     */
+    private int pulsationIndex(final List<Double> known, final double pulsation) {
+        for (int i = 0; i < known.size(); ++i) {
+            if (Precision.equals(known.get(i), pulsation, 1)) {
+                return i;
+            }
+        }
+        known.add(pulsation);
+        return known.size() - 1;
+    }
+
+    /** {@inheritDoc} */
     public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
                                                      final int degree, final int order) {
 
-        return new RawSphericalHarmonicsProvider() {
+        // get the constant part of the field
+        final ConstantSphericalHarmonics constant = getBaseProvider(wantNormalized, degree, order);
+        if (containers == null) {
+            // there are no time-dependent parts in the field
+            return constant;
+        }
 
-            /** {@inheritDoc} */
-            @Override
-            public int getMaxDegree() {
-                return map.getFirstSpan().getData().getConstant().getMaxDegree();
-            }
+        // create the shared parts of the model
+        final AbsoluteDate[] dates = new AbsoluteDate[referenceDates.size()];
+        for (int i = 0; i < dates.length; ++i) {
+            dates[i] = referenceDates.get(i);
+        }
+        final double[] puls = new double[pulsations.size()];
+        for (int i = 0; i < puls.length; ++i) {
+            puls[i] = pulsations.get(i);
+        }
 
-            /** {@inheritDoc} */
-            @Override
-            public int getMaxOrder() {
-                return map.getFirstSpan().getData().getConstant().getMaxOrder();
-            }
+        // convert the mutable containers to piecewise parts with desired normalization
+        final TimeSpanMap<PiecewisePart> pieces = new TimeSpanMap<>(null);
+        for (TimeSpanMap.Span<Container> span = containers.getFirstSpan(); span != null; span = span.next()) {
+            final Flattener spanFlattener = span.getData().flattener;
+            final Flattener rescaledFlattener = new Flattener(FastMath.min(degree, spanFlattener.getDegree()),
+                                                              FastMath.min(order, spanFlattener.getOrder()));
+            pieces.addValidBetween(new PiecewisePart(rescaledFlattener,
+                                                     rescale(1.0, 1.0 / Constants.JULIAN_YEAR, 1.0,
+                                                             wantNormalized, rescaledFlattener, span.getData().flattener,
+                                                             span.getData().components)),
+                                   span.getStart(), span.getEnd());
+        }
 
-            /** {@inheritDoc} */
-            @Override
-            public double getMu() {
-                return map.getFirstSpan().getData().getConstant().getMu();
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public double getAe() {
-                return map.getFirstSpan().getData().getConstant().getAe();
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public AbsoluteDate getReferenceDate() {
-                return map.getFirstSpan().getData().getConstant().getReferenceDate();
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public TideSystem getTideSystem() {
-                return map.getFirstSpan().getData().getConstant().getTideSystem();
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public double getOffset(final AbsoluteDate date) {
-                return map.get(date).getConstant().getOffset(date);
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public RawSphericalHarmonics onDate(final AbsoluteDate date) {
-                return map.get(date).onDate(date);
-            }
-
-        };
+        return new PiecewiseSphericalHarmonics(constant, dates, puls, pieces);
 
     }
 
     /** Parse a reference date.
      * <p>
      * The reference dates have either the format yyyymmdd (for 2011 format)
-     * or the format yyyymmdd.xxxx (for format version 2.0). The 2.0 format
-     * is not described anywhere (at least I did not find any references),
-     * but the .xxxx fractional part seems to be hours and minutes chosen
+     * or the format yyyymmdd.xxxx (for format version 2.0).
+     * </p>
+     * <p>
+     * The documentation for 2011 format does not specify the time scales,
+     * but on of the example reads "The reference time t0 is: t0 = 2005.0 y"
+     * when the corresponding field in the data section reads "20050101",
+     * so we assume the dates are consistent with astronomical conventions
+     * and 2005.0 is 2005-01-01T12:00:00 (i.e. noon).
+     * </p>
+     * <p>
+     * The 2.0 format is not described anywhere (at least I did not find any
+     * references), but the .xxxx fractional part seems to be hours and minutes chosen
      * close to some strong earthquakes looking at the dates in Eigen 6S4 file
      * with non-zero fractional part and the corresponding earthquakes hours
      * (19850109.1751 vs. 1985-01-09T19:28:21, but it was not really a big quake,
@@ -480,10 +626,111 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
             tc = new TimeComponents(Integer.parseInt(field.substring(9, 11)) / 24.0 +
                                     Integer.parseInt(field.substring(11, 13)) / 3600.0);
         } else {
-            tc = TimeComponents.H00;
+            // assume astronomical convention for hour
+            tc = TimeComponents.H12;
         }
 
         return toDate(dc, tc);
+
+    }
+
+    /** Temporary container for reading coefficients.
+     * @since 11.1
+     */
+    private static class Container {
+
+        /** Converter between (degree, order) indices and flatten array. */
+        private final Flattener flattener;
+
+        /** Components of the spherical harmonics. */
+        private final TimeDependentHarmonic[] components;
+
+        /** Parsed degree for trend part. */
+        private int parsedTrendDegree;
+
+        /** Parsed order for trend part. */
+        private int parsedTrendOrder;
+
+        /** Parsed degree for harmonic part. */
+        private int parsedHarmonicDegree;
+
+        /** Parsed order for harmonic part. */
+        private int parsedHarmonicOrder;
+
+        /** Build a container with given degree and order.
+         * @param flattener converter between (degree, order) indices and flatten array
+         */
+        Container(final Flattener flattener) {
+            this.flattener            = flattener;
+            this.components           = new TimeDependentHarmonic[flattener.arraySize()];
+            this.parsedTrendDegree    = -1;
+            this.parsedTrendOrder     = -1;
+            this.parsedHarmonicDegree = -1;
+            this.parsedHarmonicOrder  = -1;
+        }
+
+        /** Copy a container.
+         * @return new instance
+         */
+        Container copy() {
+            return resize(flattener.getDegree(), flattener.getOrder());
+        }
+
+        /** Build a resized container.
+         * @param degree degree of the container
+         * @param order order of the container
+         * @return resized container
+         */
+        Container resize(final int degree, final int order) {
+
+            // create new instance
+            final Container resized = new Container(new Flattener(degree, order));
+
+            // copy harmonics
+            for (int n = 0; n <= degree; ++n) {
+                for (int m = 0; m <= FastMath.min(n, order); ++m) {
+                    resized.components[resized.flattener.index(n, m)] = components[flattener.index(n, m)];
+                }
+            }
+
+            // copy parsed limits
+            resized.parsedTrendDegree    = parsedTrendDegree;
+            resized.parsedTrendOrder     = parsedTrendOrder;
+            resized.parsedHarmonicDegree = parsedHarmonicDegree;
+            resized.parsedHarmonicOrder  = parsedHarmonicOrder;
+
+            return resized;
+
+        }
+
+    }
+
+    /** Errors present in the gravity field.
+     * @since 11.1
+     */
+    private enum Errors {
+
+        /** No errors. */
+        NO(0),
+
+        /** Calibrated errors. */
+        CALIBRATED(2),
+
+        /** Formal errors. */
+        FORMAL(2),
+
+        /** Both calibrated and formal. */
+        CALIBRATED_AND_FORMAL(4);
+
+        /** Number of error fields in data lines. */
+        private final int fields;
+
+        /** Simple constructor.
+         * @param fields umber of error fields in data lines
+         */
+        Errors(final int fields) {
+            this.fields = fields;
+        }
 
     }
 

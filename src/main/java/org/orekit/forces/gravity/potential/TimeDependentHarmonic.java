@@ -27,69 +27,156 @@ class TimeDependentHarmonic {
     /** Index of the trend reference in the gravity field. */
     private final int trendReferenceIndex;
 
+    /** Base of the cosine coefficient. */
+    private final double cBase;
+
+    /** Base of the sine coefficient. */
+    private final double sBase;
+
     /** Secular trend of the cosine coefficient. */
-    private final double cTrend;
+    private double cTrend;
 
     /** Secular trend of the sine coefficient. */
-    private final double sTrend;
+    private double sTrend;
 
     /** Indices of the reference dates in the gravity field. */
-    private int[] referenceIndices;
+    private int[] cosReferenceIndices;
 
     /** Indices of the harmonic pulsations in the gravity field. */
-    private int[] pulsationIndices;
+    private int[] cosPulsationIndices;
 
     /** Cosine component of the cosine coefficient. */
     private double[] cosC;
 
-    /** Sine component of the cosine coefficient. */
-    private double[] sinC;
-
     /** Cosine component of the sine coefficient. */
     private double[] cosS;
+
+    /** Indices of the reference dates in the gravity field. */
+    private int[] sinReferenceIndices;
+
+    /** Indices of the harmonic pulsations in the gravity field. */
+    private int[] sinPulsationIndices;
+
+    /** Sine component of the cosine coefficient. */
+    private double[] sinC;
 
     /** Sine component of the sine coefficient. */
     private double[] sinS;
 
-    /** Build a part with only trend.
+    /** Build a part with only base.
      * @param trendReferenceIndex index of the trend reference in the gravity field
-     * @param cTrend secular trend of the cosine coefficient (s⁻¹)
-     * @param sTrend secular trend of the sine coefficient (s⁻¹)
+     * @param cBase base of the cosine coefficient
+     * @param sBase base of the sine coefficient
      */
-    TimeDependentHarmonic(final int trendReferenceIndex, final double cTrend, final double sTrend) {
+    TimeDependentHarmonic(final int trendReferenceIndex, final double cBase, final double sBase) {
+        this(trendReferenceIndex, cBase, sBase, 0, 0);
+    }
 
-        // linear part
-        this.trendReferenceIndex = trendReferenceIndex;
-        this.cTrend              = cTrend;
-        this.sTrend              = sTrend;
+    /** Build a rescaled component.
+     * @param baseScale scaling factor to apply to base coefficients elements
+     * @param trendScale scaling factor to apply to trend coefficients elements
+     * @param periodicScale scaling factor to apply to periodic coefficients elements
+     * @param original original component
+     */
+    TimeDependentHarmonic(final double baseScale, final double trendScale, final double periodicScale,
+                          final TimeDependentHarmonic original) {
 
-        // empty harmonic part
-        this.referenceIndices    = new int[0];
-        this.pulsationIndices    = new int[0];
-        this.cosC                = new double[0];
-        this.sinC                = new double[0];
-        this.cosS                = new double[0];
-        this.sinS                = new double[0];
+        // rescale base
+        this(original.trendReferenceIndex, baseScale * original.cBase, baseScale * original.sBase,
+             original.cosReferenceIndices.length, original.sinReferenceIndices.length);
+
+        // rescale trend
+        cTrend = trendScale * original.cTrend;
+        sTrend = trendScale * original.sTrend;
+
+        // rescale cosine
+        for (int i = 0; i < cosReferenceIndices.length; ++i) {
+            cosReferenceIndices[i] = original.cosReferenceIndices[i];
+            cosPulsationIndices[i] = original.cosPulsationIndices[i];
+            cosC[i]                = periodicScale * original.cosC[i];
+            cosS[i]                = periodicScale * original.cosS[i];
+        }
+
+        // rescale sine
+        for (int i = 0; i < sinReferenceIndices.length; ++i) {
+            sinReferenceIndices[i] = original.sinReferenceIndices[i];
+            sinPulsationIndices[i] = original.sinPulsationIndices[i];
+            sinC[i]                = periodicScale * original.sinC[i];
+            sinS[i]                = periodicScale * original.sinS[i];
+        }
 
     }
 
-    /** Add an harmonic component.
-     * @param referenceIndex index of the reference date in the gravity field
-     * @param pulsationIndex index of the harmonic pulsation in the gravity field
+    /** Build a part with only base.
+     * @param trendReferenceIndex index of the trend reference in the gravity field
+     * @param cBase base of the cosine coefficient
+     * @param sBase base of the sine coefficient
+     * @param cSize initial size of the cosine arrays
+     * @param sSize initial size of the sine arrays
+     */
+    private TimeDependentHarmonic(final int trendReferenceIndex, final double cBase, final double sBase,
+                                  final int cSize, final int sSize) {
+
+        // linear part
+        this.trendReferenceIndex = trendReferenceIndex;
+        this.cBase               = cBase;
+        this.sBase               = sBase;
+        this.cTrend              = 0.0;
+        this.sTrend              = 0.0;
+
+        // cosine component
+        this.cosReferenceIndices = new int[cSize];
+        this.cosPulsationIndices = new int[cSize];
+        this.cosC                = new double[cSize];
+        this.cosS                = new double[cSize];
+
+        // sine component
+        this.sinReferenceIndices = new int[sSize];
+        this.sinPulsationIndices = new int[sSize];
+        this.sinC                = new double[sSize];
+        this.sinS                = new double[sSize];
+
+    }
+
+    /** Set the trend part.
+     * @param cDot secular trend of the cosine coefficient (s⁻¹)
+     * @param sDot secular trend of the sine coefficient (s⁻¹)
+     */
+    public void setTrend(final double cDot, final double sDot) {
+        this.cTrend = cDot;
+        this.sTrend = sDot;
+    }
+
+    /** Add a cosine component.
+     * @param cosReferenceIndex index of the reference date in the gravity field
+     * (if negative, use the trend reference index)
+     * @param cosPulsationIndex index of the harmonic pulsation in the gravity field
      * @param cosineC cosine component of the cosine coefficient
-     * @param sineC sine component of the cosine coefficient
      * @param cosineS cosine component of the sine coefficient
+     */
+    public void addCosine(final int cosReferenceIndex, final int cosPulsationIndex,
+                          final double cosineC, final double cosineS) {
+        final int refIndex = cosReferenceIndex < 0 ? trendReferenceIndex : cosReferenceIndex;
+        this.cosReferenceIndices = addInt(refIndex, this.cosReferenceIndices);
+        this.cosPulsationIndices = addInt(cosPulsationIndex, this.cosPulsationIndices);
+        this.cosC                = addDouble(cosineC,     this.cosC);
+        this.cosS                = addDouble(cosineS,     this.cosS);
+    }
+
+    /** Add a sine component.
+     * @param sinReferenceIndex index of the reference date in the gravity field
+     * (if negative, use the trend reference index)
+     * @param sinPulsationIndex index of the harmonic pulsation in the gravity field
+     * @param sineC sine component of the cosine coefficient
      * @param sineS sine component of the sine coefficient
      */
-    public void addHarmonic(final int referenceIndex, final int pulsationIndex,
-                            final double cosineC, final double sineC,
-                            final double cosineS, final double sineS) {
-        this.referenceIndices = addInt(referenceIndex, this.referenceIndices);
-        this.pulsationIndices = addInt(pulsationIndex, this.pulsationIndices);
-        this.cosC             = addDouble(cosineC,     this.cosC);
-        this.sinC             = addDouble(sineC,       this.sinC);
-        this.cosS             = addDouble(cosineS,     this.cosS);
-        this.sinS             = addDouble(sineS,       this.sinS);
+    public void addSine(final int sinReferenceIndex, final int sinPulsationIndex,
+                        final double sineC, final double sineS) {
+        final int refIndex = sinReferenceIndex < 0 ? trendReferenceIndex : sinReferenceIndex;
+        this.sinReferenceIndices = addInt(refIndex, this.sinReferenceIndices);
+        this.sinPulsationIndices = addInt(sinPulsationIndex, this.sinPulsationIndices);
+        this.sinC                = addDouble(sineC,       this.sinC);
+        this.sinS                = addDouble(sineS,       this.sinS);
     }
 
     /** Add an integer to an array.
@@ -104,7 +191,7 @@ class TimeDependentHarmonic {
      * @return new array
      */
     private static int[] addInt(final int n, final int[] array) {
-        final int[] newArray = new int[array.length];
+        final int[] newArray = new int[array.length + 1];
         System.arraycopy(array, 0, newArray, 0, array.length);
         newArray[array.length] = n;
         return newArray;
@@ -122,7 +209,7 @@ class TimeDependentHarmonic {
      * @return new array
      */
     private static double[] addDouble(final double d, final double[] array) {
-        final double[] newArray = new double[array.length];
+        final double[] newArray = new double[array.length + 1];
         System.arraycopy(array, 0, newArray, 0, array.length);
         newArray[array.length] = d;
         return newArray;
@@ -136,12 +223,16 @@ class TimeDependentHarmonic {
     public double computeCnm(final double[] offsets, final SinCos[][] pulsations) {
 
         // trend effect
-        double cnm = offsets[trendReferenceIndex] * cTrend;
+        double cnm = cBase + offsets[trendReferenceIndex] * cTrend;
 
-        for (int i = 0; i < pulsationIndices.length; ++i) {
-            // harmonic effect
-            final SinCos pulsation = pulsations[referenceIndices[i]][pulsationIndices[i]];
-            cnm += cosC[i] * pulsation.cos() + sinC[i] * pulsation.sin();
+        for (int i = 0; i < cosPulsationIndices.length; ++i) {
+            // cosine effect
+            cnm += cosC[i] * pulsations[cosReferenceIndices[i]][cosPulsationIndices[i]].cos();
+        }
+
+        for (int i = 0; i < sinPulsationIndices.length; ++i) {
+            // sine effect
+            cnm += sinC[i] * pulsations[sinReferenceIndices[i]][sinPulsationIndices[i]].sin();
         }
 
         return cnm;
@@ -156,12 +247,16 @@ class TimeDependentHarmonic {
     public double computeSnm(final double[] offsets, final SinCos[][] pulsations) {
 
         // trend effect
-        double snm = offsets[trendReferenceIndex] * sTrend;
+        double snm = sBase + offsets[trendReferenceIndex] * sTrend;
 
-        for (int i = 0; i < pulsationIndices.length; ++i) {
-            // harmonic effect
-            final SinCos pulsation = pulsations[referenceIndices[i]][pulsationIndices[i]];
-            snm += cosS[i] * pulsation.cos() + sinS[i] * pulsation.sin();
+        for (int i = 0; i < cosPulsationIndices.length; ++i) {
+            // cosine effect
+            snm += cosS[i] * pulsations[cosReferenceIndices[i]][cosPulsationIndices[i]].cos();
+        }
+
+        for (int i = 0; i < sinPulsationIndices.length; ++i) {
+            // sine effect
+            snm += sinS[i] * pulsations[sinReferenceIndices[i]][sinPulsationIndices[i]].sin();
         }
 
         return snm;

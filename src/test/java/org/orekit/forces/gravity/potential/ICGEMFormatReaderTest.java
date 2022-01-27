@@ -157,7 +157,7 @@ public class ICGEMFormatReaderTest {
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
-        int maxUlps = 2;
+        int maxUlps = 3;
         checkValue(harmonics.getUnnormalizedCnm(3, 0),
                    date, 3, 0, 2005, 1, 1, 9.57211326674e-07, -8.37191630994e-12,
                    -1.76087178236e-11, 9.47617140143e-11, 1.06252954726e-11, -9.12524501214e-12,
@@ -241,6 +241,20 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
+    public void testCorruptedFile4() {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("corrupted-4-g007_eigen_coef", false));
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile5() {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("corrupted-5-g007_eigen_coef", false));
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
+    @Test(expected=OrekitException.class)
     public void testInvalidNorm() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_invalid_norm_icgem", false));
@@ -304,19 +318,18 @@ public class ICGEMFormatReaderTest {
                             final double constant, final double trend,
                             final double cosYear, final double sinYear,
                             final double cosHalfYear, final double sinHalfYear,
-                            final int maxUlps)
-        {
+                            final int maxUlps) {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         AbsoluteDate refDate = new AbsoluteDate(refYear, refMonth, refDay, 12, 0, 0, TimeScalesFactory.getTT());
         double dtYear = date.durationFrom(refDate) / Constants.JULIAN_YEAR;
-        double normalized = factor * (constant +
-                                      trend       * dtYear +
-                                      cosYear     * FastMath.cos(MathUtils.TWO_PI * dtYear) +
-                                      sinYear     * FastMath.sin(MathUtils.TWO_PI * dtYear) +
-                                      cosHalfYear * FastMath.cos(MathUtils.TWO_PI * dtYear * 2) +
-                                      sinHalfYear * FastMath.sin(MathUtils.TWO_PI * dtYear * 2));
-        double epsilon = maxUlps * FastMath.ulp(normalized);
-        Assert.assertEquals(normalized, value, epsilon);
+        double unNormalized = factor * (constant +
+                                        trend       * dtYear +
+                                        cosYear     * FastMath.cos(MathUtils.TWO_PI * dtYear) +
+                                        sinYear     * FastMath.sin(MathUtils.TWO_PI * dtYear) +
+                                        cosHalfYear * FastMath.cos(MathUtils.TWO_PI * dtYear * 2) +
+                                        sinHalfYear * FastMath.sin(MathUtils.TWO_PI * dtYear * 2));
+        double epsilon = maxUlps * FastMath.ulp(unNormalized);
+        Assert.assertEquals(unNormalized, value, epsilon);
     }
 
 }

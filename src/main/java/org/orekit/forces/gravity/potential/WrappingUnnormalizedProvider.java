@@ -64,7 +64,6 @@ class WrappingUnnormalizedProvider implements UnnormalizedSphericalHarmonicsProv
     }
 
     /** {@inheritDoc} */
-    @Deprecated
     @Override
     public AbsoluteDate getReferenceDate() {
         return rawProvider.getReferenceDate();
