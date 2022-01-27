@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="andrewsgoetz" type="add">
+        Added Automatic-Module-Name "org.orekit" to JAR manifest to improve usability
+        of Orekit by modular Java projects.
+      </action>
       <action dev="julie,bryan,maxime" type="add" issue="823">
         Added the Extended Semi-analytical Kalman Filter.
       </action>
@@ -30,7 +34,7 @@
       <action dev="luc" type="fix" issue="884">
         Deprecated TimeSpanMap.getTransitions()
       </action>
-      <action dev="luc" type="fix" issue="885">
+      <action dev="luc" type="fix" issue="832,885">
         Allow to enter the same transition date in TimeSpanMap several times
       </action>
       <action dev="luc" type="fix" issue="833">
