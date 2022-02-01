@@ -16,6 +16,7 @@
  */
 package org.orekit.orbits;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.events.Action;
@@ -23,6 +24,7 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -129,7 +131,8 @@ public class CR3BPDifferentialCorrection {
                                                                                      vecRelativeTolerances);
 
         // Propagator definition
-        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        final NumericalPropagator propagator =
+                        new NumericalPropagator(integrator, new InertialProvider(Rotation.IDENTITY, syst.getRotatingFrame()));
 
         // CR3BP has no defined orbit type
         propagator.setOrbitType(null);
