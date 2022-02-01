@@ -54,6 +54,15 @@ public interface RawSphericalHarmonicsProvider extends SphericalHarmonicsProvide
 
     }
 
+    /** Get the offset from {@link #getReferenceDate reference date} for the harmonics.
+     * @param date current date
+     * @return offset between current date and reference date if there is a reference
+     * date, or 0.0 if there are no reference dates (i.e. if {@link #getReferenceDate}
+     * returns null)
+     * @since 11.1
+     */
+    double getOffset(AbsoluteDate date);
+
     /**
      * Get the raw spherical harmonic coefficients on a specific date.
      * @param date to evaluate the spherical harmonics

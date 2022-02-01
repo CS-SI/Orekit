@@ -103,6 +103,7 @@ public enum OrekitMessages implements Localizable {
     MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE("missing gravity field coefficient {0}({1}, {2}) in file {3}"),
     TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD("too large degree (n = {0}, potential maximal degree is {1})"),
     TOO_LARGE_ORDER_FOR_GRAVITY_FIELD("too large order (m = {0}, potential maximal order is {1})"),
+    WRONG_DEGREE_OR_ORDER("no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition"),
     SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD("several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}"),
     NO_TLE_FOR_OBJECT("no TLE data available for object {0}"),
     NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE(

@@ -98,7 +98,7 @@ public class TriggersDerivativesTest {
     @Test
     public void testDerivativeWrtStopTimeKeplerianForward() {
         doTestDerivativeWrtStartStopTime(false, OrbitType.KEPLERIAN, true,
-                                         1.8e-11, 9.7e-12, 2.9e-12, 3.0e-9, 2.6e-9, 1.8e-9);
+                                         1.8e-11, 9.7e-12, 3.0e-12, 2.6e-9, 2.9e-9, 1.8e-9);
     }
 
     @Test

@@ -40,6 +40,7 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         cache = new CachedNormalizedSphericalHarmonicsProvider(raw, step, interpolationPoints, maxSlots, slotSpan, newSlotInterval);
     }
 
+    @Deprecated
     @Test
     public void testGetReferenceDate() {
         AbsoluteDate actualDate = cache.getReferenceDate();
@@ -52,6 +53,7 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         Assert.assertEquals(actualSystem, TideSystem.UNKNOWN);
     }
 
+    @Deprecated
     @Test
     public void testGetOffset() {
         final double epsilon = 1e-12;

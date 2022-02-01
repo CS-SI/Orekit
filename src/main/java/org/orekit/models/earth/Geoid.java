@@ -183,7 +183,7 @@ public class Geoid implements EarthShape {
         this.referenceEllipsoid = referenceEllipsoid;
         this.harmonics = new HolmesFeatherstoneAttractionModel(
                 referenceEllipsoid.getBodyFrame(), potential);
-        this.defaultDate = geopotential.getReferenceDate();
+        this.defaultDate = AbsoluteDate.J2000_EPOCH;
     }
 
     @Override
@@ -302,6 +302,7 @@ public class Geoid implements EarthShape {
             return this.provider.getReferenceDate();
         }
 
+        @Deprecated
         @Override
         public double getOffset(final AbsoluteDate date) {
             return this.provider.getOffset(date);
