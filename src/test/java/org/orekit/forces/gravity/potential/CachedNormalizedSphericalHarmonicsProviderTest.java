@@ -48,6 +48,18 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
     }
 
     @Test
+    public void testLimits() {
+        Assert.assertEquals(2, cache.getMaxDegree());
+        Assert.assertEquals(2, cache.getMaxOrder());
+    }
+
+    @Test
+    public void testBody() {
+        Assert.assertEquals(1, cache.getMu(), 1.0e-15);
+        Assert.assertEquals(1, cache.getAe(), 1.0e-15);
+    }
+
+    @Test
     public void testGetTideSystem() {
         TideSystem actualSystem = cache.getTideSystem();
         Assert.assertEquals(actualSystem, TideSystem.UNKNOWN);
