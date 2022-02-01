@@ -712,9 +712,6 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * <p>
      * The normalized/unnormalized nature of original coefficients is inherited from previous parsing.
      * </p>
-     * @param baseScale scaling factor to apply to base coefficients elements
-     * @param trendScale scaling factor to apply to trend coefficients elements
-     * @param periodicScale scaling factor to apply to periodic coefficients elements
      * @param wantNormalized if true, the rescaled coefficients must be normalized,
      * otherwise they must be un-normalized
      * @param rescaledFlattener converter from triangular to flat form
@@ -723,8 +720,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @return rescaled coefficients
      * @since 11.1
      */
-    protected TimeDependentHarmonic[] rescale(final double baseScale, final double trendScale, final double periodicScale,
-                                              final boolean wantNormalized, final Flattener rescaledFlattener,
+    protected TimeDependentHarmonic[] rescale(final boolean wantNormalized, final Flattener rescaledFlattener,
                                               final Flattener originalFlattener, final TimeDependentHarmonic[] original) {
 
         if (rescaledFlattener.getDegree() > originalFlattener.getDegree()) {
@@ -760,8 +756,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
                 if (original[originalndex] != null) {
                     final int    rescaledndex = rescaledFlattener.index(n, m);
                     final double factor       = generator.factor(n, m);
-                    rescaled[rescaledndex]    = new TimeDependentHarmonic(factor * baseScale, factor * trendScale, factor * periodicScale,
-                                                                          original[originalndex]);
+                    rescaled[rescaledndex]    = new TimeDependentHarmonic(factor, original[originalndex]);
                 }
             }
         }

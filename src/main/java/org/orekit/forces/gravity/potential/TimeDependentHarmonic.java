@@ -73,36 +73,33 @@ class TimeDependentHarmonic {
     }
 
     /** Build a rescaled component.
-     * @param baseScale scaling factor to apply to base coefficients elements
-     * @param trendScale scaling factor to apply to trend coefficients elements
-     * @param periodicScale scaling factor to apply to periodic coefficients elements
+     * @param scale scaling factor to apply to all coefficients elements
      * @param original original component
      */
-    TimeDependentHarmonic(final double baseScale, final double trendScale, final double periodicScale,
-                          final TimeDependentHarmonic original) {
+    TimeDependentHarmonic(final double scale, final TimeDependentHarmonic original) {
 
         // rescale base
-        this(original.trendReferenceIndex, baseScale * original.cBase, baseScale * original.sBase,
+        this(original.trendReferenceIndex, scale * original.cBase, scale * original.sBase,
              original.cosReferenceIndices.length, original.sinReferenceIndices.length);
 
         // rescale trend
-        cTrend = trendScale * original.cTrend;
-        sTrend = trendScale * original.sTrend;
+        cTrend = scale * original.cTrend;
+        sTrend = scale * original.sTrend;
 
         // rescale cosine
         for (int i = 0; i < cosReferenceIndices.length; ++i) {
             cosReferenceIndices[i] = original.cosReferenceIndices[i];
             cosPulsationIndices[i] = original.cosPulsationIndices[i];
-            cosC[i]                = periodicScale * original.cosC[i];
-            cosS[i]                = periodicScale * original.cosS[i];
+            cosC[i]                = scale * original.cosC[i];
+            cosS[i]                = scale * original.cosS[i];
         }
 
         // rescale sine
         for (int i = 0; i < sinReferenceIndices.length; ++i) {
             sinReferenceIndices[i] = original.sinReferenceIndices[i];
             sinPulsationIndices[i] = original.sinPulsationIndices[i];
-            sinC[i]                = periodicScale * original.sinC[i];
-            sinS[i]                = periodicScale * original.sinS[i];
+            sinC[i]                = scale * original.sinC[i];
+            sinS[i]                = scale * original.sinS[i];
         }
 
     }

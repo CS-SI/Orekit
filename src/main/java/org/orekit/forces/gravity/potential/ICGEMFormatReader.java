@@ -34,9 +34,7 @@ import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.OrekitParseException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -295,8 +293,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         inHeader   = false;
                     }
                     if (parseError) {
-                        throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                       lineNumber, name, line);
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, name, line);
                     }
                 } else if (dataKeyKnown(tab) && tab.length > 2) {
 
@@ -350,7 +348,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         // base of linear coefficient with limited time range
 
                         if (containers == null) {
-                            // prepare empty map to old containers as they are parsed
+                            // prepare empty map to hold containers as they are parsed
                             containers = new TimeSpanMap<>(null);
                         }
 
@@ -384,20 +382,35 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         if (harmonic == null) {
                             parseError = true;
                         } else {
-                            harmonic.setTrend(parseDouble(tab[3]), parseDouble(tab[4]));
+                            harmonic.setTrend(parseDouble(tab[3]) / Constants.JULIAN_YEAR,
+                                              parseDouble(tab[4]) / Constants.JULIAN_YEAR);
                         }
 
-                    } else if (version >= 2.0 && tab.length > 7 + errors.fields && TRND.equals(tab[0])) {
+                    } else if (version >= 2.0 && tab.length > 6 + errors.fields && TRND.equals(tab[0])) {
                         // slope of linear coefficient with limited range
 
-                        // TODO
-                        throw new OrekitInternalError(null);
+                        final AbsoluteDate t0 = parseDate(tab[5 + errors.fields]);
+                        final AbsoluteDate t1 = parseDate(tab[6 + errors.fields]);
+
+                        // get the containers active for the specified time range
+                        final List<TimeSpanMap.Span<Container>> active = getActive(flattener, t0, t1);
+                        for (final TimeSpanMap.Span<Container> span : active) {
+                            final Container             container = span.getData();
+                            final int                   index     = container.flattener.index(n, m);
+                            if (container.components[index] == null) {
+                                parseError = true;
+                                break;
+                            } else {
+                                container.components[index].setTrend(parseDouble(tab[3]) / Constants.JULIAN_YEAR,
+                                                                     parseDouble(tab[4]) / Constants.JULIAN_YEAR);
+                            }
+                        }
 
                     } else if (version < 2.0 && tab.length > 5 + errors.fields && (ASIN.equals(tab[0]) || ACOS.equals(tab[0]))) {
                         // periodic coefficient with infinite range
 
-                        final int pulsationIndex = pulsationIndex(pulsations,
-                                                                  MathUtils.TWO_PI / (parseDouble(tab[5 + errors.fields]) * Constants.JULIAN_YEAR));
+                        final double period = parseDouble(tab[5 + errors.fields]) * Constants.JULIAN_YEAR;
+                        final int    pIndex = pulsationIndex(pulsations, MathUtils.TWO_PI / period);
 
                         // store the periodic effects coefficients
                         final Container single = containers.getFirstSpan().getData();
@@ -406,17 +419,39 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                             parseError = true;
                         } else {
                             if (ACOS.equals(tab[0])) {
-                                harmonic.addCosine(-1, pulsationIndex, parseDouble(tab[3]), parseDouble(tab[4]));
+                                harmonic.addCosine(-1, pIndex, parseDouble(tab[3]), parseDouble(tab[4]));
                             } else {
-                                harmonic.addSine(-1, pulsationIndex, parseDouble(tab[3]), parseDouble(tab[4]));
+                                harmonic.addSine(-1, pIndex, parseDouble(tab[3]), parseDouble(tab[4]));
                             }
                         }
 
-                    } else if (version >= 2.0 && tab.length > 8 + errors.fields && (ASIN.equals(tab[0]) || ACOS.equals(tab[0]))) {
+                    } else if (version >= 2.0 && tab.length > 7 + errors.fields && (ASIN.equals(tab[0]) || ACOS.equals(tab[0]))) {
                         // periodic coefficient with limited range
 
-                        // TODO
-                        throw new OrekitInternalError(null);
+                        final AbsoluteDate t0      = parseDate(tab[5 + errors.fields]);
+                        final AbsoluteDate t1      = parseDate(tab[6 + errors.fields]);
+                        final int          tIndex  = referenceDateIndex(referenceDates, t0);
+                        final double       period  = parseDouble(tab[7 + errors.fields]) * Constants.JULIAN_YEAR;
+                        final int          pIndex  = pulsationIndex(pulsations, MathUtils.TWO_PI / period);
+
+                        // get the containers active for the specified time range
+                        final List<TimeSpanMap.Span<Container>> active = getActive(flattener, t0, t1);
+                        for (final TimeSpanMap.Span<Container> span : active) {
+                            final Container             container = span.getData();
+                            final int                   index     = container.flattener.index(n, m);
+                            if (container.components[index] == null) {
+                                parseError = true;
+                                break;
+                            } else {
+                                if (ASIN.equals(tab[0])) {
+                                    container.components[index].addSine(tIndex, pIndex,
+                                                                        parseDouble(tab[3]), parseDouble(tab[4]));
+                                } else {
+                                    container.components[index].addCosine(tIndex, pIndex,
+                                                                          parseDouble(tab[3]), parseDouble(tab[4]));
+                                }
+                            }
+                        }
 
                     } else {
                         parseError = true;
@@ -428,8 +463,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 }
 
                 if (parseError) {
-                    throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                   lineNumber, name, line);
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, name, line);
                 }
 
             }
@@ -491,19 +526,18 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                     span = containers.addValidBetween(new Container(flattener), t0, t1);
                 } else {
                     // the specified time range splits an existing container in three parts
-                    containers.addValidAfter(span.getData().copy(), t1, false);
-                    span = containers.addValidAfter(span.getData().copy(), t0, false);
+                    containers.addValidAfter(copyContainer(span.getData(), flattener), t1, false);
+                    span = containers.addValidAfter(copyContainer(span.getData(), flattener), t0, false);
                 }
             } else {
-                span = containers.addValidAfter(span.getData() == null ? new Container(flattener) : span.getData().copy(),
-                                                t0, false);
+                span = containers.addValidAfter(copyContainer(span.getData(), flattener), t0, false);
             }
         }
 
-        while (span.getData() != null && span.getStart().isBefore(t1)) {
+        while (span.getStart().isBefore(t1)) {
             if (span.getEnd().isAfter(t1)) {
                 // this span extends past t1, we must split it
-                span = containers.addValidBefore(span.getData().copy(), t1, false);
+                span = containers.addValidBefore(copyContainer(span.getData(), flattener), t1, false);
             }
             active.add(span);
             span = span.next();
@@ -511,6 +545,17 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
         return active;
 
+    }
+
+    /** Copy a container.
+     * @param original time span to copy (may be null)
+     * @param flattener converter between triangular and flat forms
+     * @return fresh copy
+     */
+    private Container copyContainer(final Container original, final Flattener flattener) {
+        return original == null ?
+               new Container(flattener) :
+               original.resize(flattener.getDegree(), flattener.getOrder());
     }
 
     /** Get the index of a reference date, adding it if needed.
@@ -569,14 +614,15 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         // convert the mutable containers to piecewise parts with desired normalization
         final TimeSpanMap<PiecewisePart> pieces = new TimeSpanMap<>(null);
         for (TimeSpanMap.Span<Container> span = containers.getFirstSpan(); span != null; span = span.next()) {
-            final Flattener spanFlattener = span.getData().flattener;
-            final Flattener rescaledFlattener = new Flattener(FastMath.min(degree, spanFlattener.getDegree()),
-                                                              FastMath.min(order, spanFlattener.getOrder()));
-            pieces.addValidBetween(new PiecewisePart(rescaledFlattener,
-                                                     rescale(1.0, 1.0 / Constants.JULIAN_YEAR, 1.0,
-                                                             wantNormalized, rescaledFlattener, span.getData().flattener,
-                                                             span.getData().components)),
-                                   span.getStart(), span.getEnd());
+            if (span.getData() != null) {
+                final Flattener spanFlattener = span.getData().flattener;
+                final Flattener rescaledFlattener = new Flattener(FastMath.min(degree, spanFlattener.getDegree()),
+                                                                  FastMath.min(order, spanFlattener.getOrder()));
+                pieces.addValidBetween(new PiecewisePart(rescaledFlattener,
+                                                         rescale(wantNormalized, rescaledFlattener, span.getData().flattener,
+                                                                 span.getData().components)),
+                                       span.getStart(), span.getEnd());
+            }
         }
 
         return new PiecewiseSphericalHarmonics(constant, dates, puls, pieces);
@@ -623,8 +669,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         if (field.length() > 8) {
             // we convert from hours and minutes here in order to allow
             // the strange special case found in Eigen 6S4 file with date 20041226.0060
-            tc = new TimeComponents(Integer.parseInt(field.substring(9, 11)) / 24.0 +
-                                    Integer.parseInt(field.substring(11, 13)) / 3600.0);
+            tc = new TimeComponents(Integer.parseInt(field.substring(9, 11)) * 3600 +
+                                    Integer.parseInt(field.substring(11, 13)) * 60);
         } else {
             // assume astronomical convention for hour
             tc = TimeComponents.H12;
@@ -645,35 +691,12 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         /** Components of the spherical harmonics. */
         private final TimeDependentHarmonic[] components;
 
-        /** Parsed degree for trend part. */
-        private int parsedTrendDegree;
-
-        /** Parsed order for trend part. */
-        private int parsedTrendOrder;
-
-        /** Parsed degree for harmonic part. */
-        private int parsedHarmonicDegree;
-
-        /** Parsed order for harmonic part. */
-        private int parsedHarmonicOrder;
-
         /** Build a container with given degree and order.
          * @param flattener converter between (degree, order) indices and flatten array
          */
         Container(final Flattener flattener) {
-            this.flattener            = flattener;
-            this.components           = new TimeDependentHarmonic[flattener.arraySize()];
-            this.parsedTrendDegree    = -1;
-            this.parsedTrendOrder     = -1;
-            this.parsedHarmonicDegree = -1;
-            this.parsedHarmonicOrder  = -1;
-        }
-
-        /** Copy a container.
-         * @return new instance
-         */
-        Container copy() {
-            return resize(flattener.getDegree(), flattener.getOrder());
+            this.flattener  = flattener;
+            this.components = new TimeDependentHarmonic[flattener.arraySize()];
         }
 
         /** Build a resized container.
@@ -692,12 +715,6 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                     resized.components[resized.flattener.index(n, m)] = components[flattener.index(n, m)];
                 }
             }
-
-            // copy parsed limits
-            resized.parsedTrendDegree    = parsedTrendDegree;
-            resized.parsedTrendOrder     = parsedTrendOrder;
-            resized.parsedHarmonicDegree = parsedHarmonicDegree;
-            resized.parsedHarmonicOrder  = parsedHarmonicOrder;
 
             return resized;
 

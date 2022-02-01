@@ -1,12 +1,12 @@
 
 format                        icgem1.0
-product_type                  gravity_field
+product_type                  invalid
 modelname                     DUMMY
 earth_gravity_constant        0.3986004415E+15
 radius                        0.6378136460E+07
 max_degree                    3
 errors                        calibrated
-norm                          invalid
+norm                          fully_normalized
 tide_system                   zero_tide
  
  

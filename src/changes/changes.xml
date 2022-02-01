@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="448">
+        Added support for ICGEM V2.0 format for piecewise gravity fields
+        that contain discontinuities around major earthquakes, like
+        Eigen 6S4 V2.
+      </action>
       <action dev="andrewsgoetz" type="add">
         Added Automatic-Module-Name "org.orekit" to JAR manifest to improve usability
         of Orekit by modular Java projects.
