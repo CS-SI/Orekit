@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="11.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="722">
+        Prefer values from Bulletin B rather than Bulletin A if both are present
+        in rapid data column format. This handling of priority was already in
+        place for XML file, but not for column format.
+      </action>
       <action dev="luc" type="fix" issue="448">
         Added support for ICGEM V2.0 format for piecewise gravity fields
         that contain discontinuities around major earthquakes, like
