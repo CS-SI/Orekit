@@ -141,6 +141,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     @Override
+    @Deprecated
     public RawSphericalHarmonics onDate(final AbsoluteDate date) {
         //raw (constant) harmonics
         final RawSphericalHarmonics raw = provider.onDate(date);

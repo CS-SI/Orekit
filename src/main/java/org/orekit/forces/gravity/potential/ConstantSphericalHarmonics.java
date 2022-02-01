@@ -146,6 +146,7 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     public double getOffset(final AbsoluteDate date) {
         return 0.0;
     }
