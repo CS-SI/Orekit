@@ -75,9 +75,6 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Format. */
     private static final String FORMAT                  = "format";
 
-    /** Supported formats. */
-    private static final String SUPPORTED_FORMAT        = "icgem(\\d+\\.\\d+)";
-
     /** Maximum supported formats. */
     private static final double MAX_FORMAT              = 2.0;
 
@@ -146,6 +143,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
+
+    /** Pattern for supported formats. */
+    private static final Pattern SUPPORTED_FORMAT = Pattern.compile("icgem(\\d+\\.\\d+)");
 
     /** Flag for Gravitational coefficient. */
     private static final int MU = 0x1;
@@ -238,7 +238,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 final String[] tab = SEPARATOR.split(line);
                 if (inHeader) {
                     if (tab.length >= 2 && FORMAT.equals(tab[0])) {
-                        final Matcher matcher = Pattern.compile(SUPPORTED_FORMAT).matcher(tab[1]);
+                        final Matcher matcher = SUPPORTED_FORMAT.matcher(tab[1]);
                         if (matcher.matches()) {
                             version = Double.parseDouble(matcher.group(1));
                             if (version > MAX_FORMAT) {

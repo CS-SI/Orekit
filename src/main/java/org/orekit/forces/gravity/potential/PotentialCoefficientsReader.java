@@ -690,8 +690,8 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
                             GravityFieldFactory.getUnnormalizationFactors(rescaledFlattener.getDegree(),
                                                                           rescaledFlattener.getOrder());
             generator = wantNormalized ?
-                        (n, m) -> scale / unnormalizationFactors[n][m] :
-                        (n, m) -> scale * unnormalizationFactors[n][m];
+                (n, m) -> scale / unnormalizationFactors[n][m] :
+                (n, m) -> scale * unnormalizationFactors[n][m];
         }
 
         // perform rescaling
@@ -744,8 +744,8 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
                             GravityFieldFactory.getUnnormalizationFactors(rescaledFlattener.getDegree(),
                                                                           rescaledFlattener.getOrder());
             generator = wantNormalized ?
-                        (n, m) -> 1.0 / unnormalizationFactors[n][m] :
-                        (n, m) -> unnormalizationFactors[n][m];
+                (n, m) -> 1.0 / unnormalizationFactors[n][m] :
+                (n, m) -> unnormalizationFactors[n][m];
         }
 
         // perform rescaling
