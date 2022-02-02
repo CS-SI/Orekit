@@ -754,4 +754,4 @@ BACKWARD_PROPAGATION_NOT_ALLOWED = la propagation à rebours n''a pas été auto
 NO_STATION_ECCENTRICITY_FOR_EPOCH = pas d''excentricité station pour la date {0}, l''intervalle de validité est entre {1} et {2}
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
-INCONSISTENT_SELECTION = <MISSING TRANSLATION>
+INCONSISTENT_SELECTION = sélection de paramètres incohérents entre les paires {0}/{1} et {2}/{3}
