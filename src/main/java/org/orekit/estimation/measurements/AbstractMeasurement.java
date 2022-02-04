@@ -348,4 +348,56 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
     }
 
+
+    public static double emittedSignalTimeOfFlight(final TimeStampedPVCoordinates adjustableReceiver,
+                                                   final Vector3D emitterPosition,
+                                                   final AbsoluteDate signalEmissionDate) {
+
+        // initialize emission date search loop assuming the state is already correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge very fast
+        final double offset = signalEmissionDate.getDate().durationFrom(adjustableReceiver.getDate());
+        double delay = -offset;
+
+        // search signal transit date, computing the signal travel in inertial frame
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
+        double delta;
+        int count = 0;
+        do {
+            final double previous   = delay;
+            final Vector3D transitP = adjustableReceiver.shiftedBy(offset + delay).getPosition();
+            delay                   = emitterPosition.distance(transitP) * cReciprocal;
+            delta                   = FastMath.abs(delay - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
+
+        return delay;
+
+    }
+
+
+    public static <T extends CalculusFieldElement<T>> T emittedSignalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableReceiver,
+                                                                                  final FieldVector3D<T> emitterPosition,
+                                                                                  final FieldAbsoluteDate<T> signalEmissionDate) {
+
+        // initialize emission date search loop assuming the state is already correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge very fast
+        final T offset = signalEmissionDate.getDate().durationFrom(adjustableReceiver.getDate());
+        T delay = offset.negate();
+
+        // search signal transit date, computing the signal travel in inertial frame
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
+        double delta;
+        int count = 0;
+        do {
+            final double previous   = delay.getReal();
+            final FieldVector3D<T> transitP = adjustableReceiver.shiftedBy(offset.add(delay)).getPosition();
+            delay                   = emitterPosition.distance(transitP).multiply(cReciprocal);
+            delta                   = FastMath.abs(delay.getReal() - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getReal()));
+
+        return delay;
+
+    }
+
 }
