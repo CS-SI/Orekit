@@ -97,8 +97,6 @@
         * multiple maneuvers
         * state of the art ODE integrators (adaptive stepsize with error control,
           continuous output, switching functions, G-stop, step normalization ...)
-        * computation of Jacobians with respect to orbital parameters and selected
-          force models parameters
         * serialization mechanism to store complete results on persistent storage for
           later use
         * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
@@ -108,8 +106,9 @@
         * atmospheric drag
         * third body attraction
         * radiation pressure with eclipses
-        * computation of Jacobians with respect to orbital parameters and selected
-          force models parameters
+    * computation of Jacobians with respect to orbital parameters and selected
+      model parameters for numerical, semi-analytical, and analytical propagation
+      models
     * trajectories around Lagragian points using CR3BP model
     * tabulated ephemerides
         * file based
@@ -173,7 +172,7 @@
       example to detect events only during selected orbits and not others)
     * events combination with boolean operators
     * ability to run several propagators in parallel and manage their states
-       simultaneously throughout propagation
+      simultaneously throughout propagation
 
   * Attitude
 
@@ -185,6 +184,7 @@
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
     * loading and writing of CCSDS Attitude Data Messages (both AEM, and APM types are supported, in both KVN and XML formats, standalone or in combined NDM)
+    * exporting of attitude ephemeris in CCSDS AEM file format
 
   * Orbit determination
   
@@ -203,11 +203,11 @@
     * parameters estimation
         * orbital parameters estimation (or only a subset if desired)
         * force model parameters estimation (drag coefficients, radiation pressure coefficients,
-          central attraction, maneuver thrust or flow rate)
+          central attraction, maneuver thrust, flow rate or start/stop epoch)
         * measurements parameters estimation (biases, satellite clock offset, station clock offset,
           station position, pole motion and rate, prime meridian correction and rate, total zenith
           delay in tropospheric correction)
-    * can be used with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
+    * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
     * multi-satellites orbit determination
     * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
@@ -268,7 +268,7 @@
   * Orbit file handling
   
     * loading of SP3 orbit files (from version a to d)
-    * loading and writing of CCSDS Orbit Data Messages (both OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
+    * loading and writing of CCSDS Orbit Data Messages (OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format
     * loading of ILRS CPF orbit files
@@ -277,13 +277,14 @@
   
     * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
     * support for CSSI space weather data
-    * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)
+    * tropospheric delay (modified Saastamoinen, estimated, fixed)
+    * tropospheric mapping functions (Vienna 1, Vienna 3, Global, Niell)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
-    * tropospheric model for laser ranging (Marini-Murray)
+    * tropospheric model for laser ranging (Marini-Murray, Mendes-Pavlis)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
-    * Global Ionospheric Map model
+    * Global Ionospheric Map (GIM) model
     * NeQuick ionospheric model
-    * VTEC estimated ionospheric model
+    * VTEC estimated ionospheric model with Single Layer Model (SLM) ionospheric mapping function
     * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field

@@ -60,7 +60,7 @@
       }
 
       class Ellipsoid {
-        +getPlaneSection( Vector3D planePoint, Vector3D planeNormal)
+        +getPlaneSection(Vector3D planePoint, Vector3D planeNormal)
         +isInside(Vector3D point)
         +pointOnLimb(Vector3D observer, Vector3D outside)
       }
