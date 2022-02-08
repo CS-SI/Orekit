@@ -195,6 +195,7 @@ public class Range extends AbstractMeasurement<Range>
         // prepare the evaluation
         final EstimatedMeasurement<Range> estimated;
         final Gradient range;
+        final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
         final Gradient tauD;
 
         if (twoway) {
@@ -222,8 +223,13 @@ public class Range extends AbstractMeasurement<Range>
                                 transitStateDS.toTimeStampedPVCoordinates(),
                                 stationTransit.shiftedBy(tauD).toTimeStampedPVCoordinates()});
 
+                // Range value
+                final Gradient tau = tauD.add(tauU);
+                range = tau.multiply(cOver2);
+
             }
             else if (timespecification == TimeTagSpecificationType.TRANSIT){
+                //get shifted position of participants
                 tauD = emittedSignalTimeOfFlight(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
                 tauU = signalTimeOfFlight(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
                 estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[]{state},
@@ -231,6 +237,8 @@ public class Range extends AbstractMeasurement<Range>
                                 stationObsEpoch.shiftedBy(tauU.negate()).toTimeStampedPVCoordinates(),
                                 pvaDS.toTimeStampedPVCoordinates(),
                                 stationObsEpoch.shiftedBy(tauD).toTimeStampedPVCoordinates()});
+                //use transit state as corrected state
+                range = stationObsEpoch.getPosition().distance(pvaDS.getPosition());
             }
             else {
                 // Downlink delay
@@ -256,12 +264,11 @@ public class Range extends AbstractMeasurement<Range>
                                 stationUplink.toTimeStampedPVCoordinates(),
                                 transitStateDS.toTimeStampedPVCoordinates(),
                                 stationObsEpoch.toTimeStampedPVCoordinates()});
-            }
 
-            // Range value
-            final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
-            final Gradient tau = tauD.add(tauU);
-            range = tau.multiply(cOver2);
+                // Range value
+                final Gradient tau = tauD.add(tauU);
+                range = tau.multiply(cOver2);
+            }
 
         } else {
             // (if state has already been set up to pre-compensate propagation delay,
