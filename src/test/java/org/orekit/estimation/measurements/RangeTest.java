@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.frames.Transform;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
@@ -78,14 +79,14 @@ public class RangeTest {
         // Run test
         boolean isModifier = false;
         double refErrorsPMedian = 6.5e-10;
-        double refErrorsPMean   = 4.1e-09;
-        double refErrorsPMax    = 2.1e-07;
+        double refErrorsPMean = 4.1e-09;
+        double refErrorsPMax = 2.1e-07;
         double refErrorsVMedian = 2.2e-04;
-        double refErrorsVMean   = 6.2e-04;
-        double refErrorsVMax    = 1.3e-02;
+        double refErrorsVMean = 6.2e-04;
+        double refErrorsVMax = 1.3e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
-                                         refErrorsPMedian, refErrorsPMean, refErrorsPMax,
-                                         refErrorsVMedian, refErrorsVMean, refErrorsVMax);
+                refErrorsPMedian, refErrorsPMean, refErrorsPMax,
+                refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
 
     /**
@@ -102,14 +103,14 @@ public class RangeTest {
         // Run test
         boolean isModifier = true;
         double refErrorsPMedian = 6.2e-10;
-        double refErrorsPMean   = 3.5e-09;
-        double refErrorsPMax    = 1.6e-07;
+        double refErrorsPMean = 3.5e-09;
+        double refErrorsPMax = 1.6e-07;
         double refErrorsVMedian = 2.2e-04;
-        double refErrorsVMean   = 6.2e-04;
-        double refErrorsVMax    = 1.3e-02;
+        double refErrorsVMean = 6.2e-04;
+        double refErrorsVMax = 1.3e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
-                                         refErrorsPMedian, refErrorsPMean, refErrorsPMax,
-                                         refErrorsVMedian, refErrorsVMean, refErrorsVMax);
+                refErrorsPMedian, refErrorsPMean, refErrorsPMax,
+                refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
 
     /**
@@ -128,10 +129,10 @@ public class RangeTest {
         // Run test
         boolean isModifier = false;
         double refErrorsMedian = 5.7e-9;
-        double refErrorsMean   = 6.4e-8;
-        double refErrorsMax    = 5.1e-6;
+        double refErrorsMean = 6.4e-8;
+        double refErrorsMax = 5.1e-6;
         this.genericTestParameterDerivatives(isModifier, printResults,
-                                             refErrorsMedian, refErrorsMean, refErrorsMax);
+                refErrorsMedian, refErrorsMean, refErrorsMax);
 
     }
 
@@ -151,10 +152,10 @@ public class RangeTest {
         // Run test
         boolean isModifier = true;
         double refErrorsMedian = 2.9e-8;
-        double refErrorsMean   = 4.9e-7;
-        double refErrorsMax    = 1.5e-5;
+        double refErrorsMean = 4.9e-7;
+        double refErrorsMax = 1.5e-5;
         this.genericTestParameterDerivatives(isModifier, printResults,
-                                             refErrorsMedian, refErrorsMean, refErrorsMax);
+                refErrorsMedian, refErrorsMean, refErrorsMax);
 
     }
 
@@ -174,15 +175,16 @@ public class RangeTest {
         // Run test
         boolean isModifier = true;
         double refErrorsMedian = 1.2e-9;
-        double refErrorsMean   = 1.9e-9;
-        double refErrorsMax    = 6.6e-9;
+        double refErrorsMean = 1.9e-9;
+        double refErrorsMax = 6.6e-9;
         this.genericTestEstimatedParameterDerivatives(isModifier, printResults,
-                                                      refErrorsMedian, refErrorsMean, refErrorsMax);
+                refErrorsMedian, refErrorsMean, refErrorsMax);
 
     }
 
     /**
      * Generic test function for values of the range
+     *
      * @param printResults Print the results ?
      */
     void genericTestValues(final boolean printResults) {
@@ -190,20 +192,20 @@ public class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 0.001);
+                context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+                propagatorBuilder);
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
             station.getClockOffsetDriver().setValue(groundClockOffset);
         }
         final List<ObservedMeasurement<?>> measurements =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, Vector3D.ZERO),
-                                                               1.0, 3.0, 300.0);
+                EstimationTestUtils.createMeasurements(propagator,
+                        new RangeMeasurementCreator(context, Vector3D.ZERO),
+                        1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
@@ -218,8 +220,8 @@ public class RangeTest {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {
+                        (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate()) <= 0.)
+                ) {
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
                     // compensating only part of the downlink delay. This is done
@@ -227,19 +229,19 @@ public class RangeTest {
                     // to velocity. If we had chosen the proper state date, the
                     // range would have depended only on the current position but
                     // not on the current velocity.
-                    final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
-                    final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
-                    final SpacecraftState state     = interpolator.getInterpolatedState(date);
+                    final double meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+                    final AbsoluteDate date = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+                    final SpacecraftState state = interpolator.getInterpolatedState(date);
 
                     // Values of the Range & errors
-                    final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+                    final double RangeObserved = measurement.getObservedValue()[0];
+                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[]{state});
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assert.assertEquals(3, participants.length);
                     Assert.assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[2].getDate().durationFrom(participants[0].getDate()),
-                                        estimated.getEstimatedValue()[0],
-                                        2.0e-8);
+                            estimated.getEstimatedValue()[0],
+                            2.0e-8);
 
                     // the real state used for estimation is adjusted according to downlink delay
                     double adjustment = state.getDate().durationFrom(estimated.getStates()[0].getDate());
@@ -247,9 +249,9 @@ public class RangeTest {
                     Assert.assertTrue(adjustment < 0.011);
 
                     final double RangeEstimated = estimated.getEstimatedValue()[0];
-                    final double absoluteError = RangeEstimated-RangeObserved;
+                    final double absoluteError = RangeEstimated - RangeObserved;
                     absoluteErrors.add(absoluteError);
-                    relativeErrors.add(FastMath.abs(absoluteError)/FastMath.abs(RangeObserved));
+                    relativeErrors.add(FastMath.abs(absoluteError) / FastMath.abs(RangeObserved));
 
                     // Print results on console ?
                     if (printResults) {
@@ -257,10 +259,10 @@ public class RangeTest {
                         String stationName = ((Range) measurement).getStation().getBaseFrame().getName();
 
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19.6f  %19.6f  %13.6e  %13.6e%n",
-                                         stationName, measurementDate, date,
-                                         RangeObserved, RangeEstimated,
-                                         FastMath.abs(RangeEstimated-RangeObserved),
-                                         FastMath.abs((RangeEstimated-RangeObserved)/RangeObserved));
+                                stationName, measurementDate, date,
+                                RangeObserved, RangeEstimated,
+                                FastMath.abs(RangeEstimated - RangeObserved),
+                                FastMath.abs((RangeEstimated - RangeObserved) / RangeObserved));
                     }
 
                 } // End if measurement date between previous and current interpolator step
@@ -270,9 +272,9 @@ public class RangeTest {
         // Print results on console ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19s  %19s  %13s  %13s%n",
-                              "Station", "Measurement Date", "State Date",
-                              "Range observed [m]", "Range estimated [m]",
-                              "ΔRange [m]", "rel ΔRange");
+                    "Station", "Measurement Date", "State Date",
+                    "Range observed [m]", "Range estimated [m]",
+                    "ΔRange [m]", "rel ΔRange");
         }
 
         // Rewind the propagator to initial date
@@ -282,7 +284,7 @@ public class RangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.get(measurements.size() - 1).getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -290,26 +292,26 @@ public class RangeTest {
 
         // Statistics' assertion
         final double absErrorsMedian = new Median().evaluate(absErrors);
-        final double absErrorsMin    = new Min().evaluate(absErrors);
-        final double absErrorsMax    = new Max().evaluate(absErrors);
+        final double absErrorsMin = new Min().evaluate(absErrors);
+        final double absErrorsMax = new Max().evaluate(absErrors);
         final double relErrorsMedian = new Median().evaluate(relErrors);
-        final double relErrorsMax    = new Max().evaluate(relErrors);
+        final double relErrorsMax = new Max().evaluate(relErrors);
 
         // Print the results on console ? Final results
         if (printResults) {
             System.out.println();
-            System.out.println("Absolute errors median: " +  absErrorsMedian);
-            System.out.println("Absolute errors min   : " +  absErrorsMin);
-            System.out.println("Absolute errors max   : " +  absErrorsMax);
-            System.out.println("Relative errors median: " +  relErrorsMedian);
-            System.out.println("Relative errors max   : " +  relErrorsMax);
+            System.out.println("Absolute errors median: " + absErrorsMedian);
+            System.out.println("Absolute errors min   : " + absErrorsMin);
+            System.out.println("Absolute errors max   : " + absErrorsMax);
+            System.out.println("Relative errors median: " + relErrorsMedian);
+            System.out.println("Relative errors max   : " + relErrorsMax);
         }
 
         Assert.assertEquals(0.0, absErrorsMedian, 4.9e-8);
-        Assert.assertEquals(0.0, absErrorsMin,    2.2e-7);
-        Assert.assertEquals(0.0, absErrorsMax,    2.1e-7);
+        Assert.assertEquals(0.0, absErrorsMin, 2.2e-7);
+        Assert.assertEquals(0.0, absErrorsMax, 2.1e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 1.0e-14);
-        Assert.assertEquals(0.0, relErrorsMax,    2.6e-14);
+        Assert.assertEquals(0.0, relErrorsMax, 2.6e-14);
 
 
     }
@@ -321,16 +323,16 @@ public class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 0.001);
+                context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+                propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
+                EstimationTestUtils.createMeasurements(propagator,
+                        new RangeMeasurementCreator(context),
+                        1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
@@ -345,8 +347,8 @@ public class RangeTest {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {
+                        (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate()) <= 0.)
+                ) {
 
                     // Add modifiers if test implies it
                     final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
@@ -361,50 +363,53 @@ public class RangeTest {
                     // to velocity. If we had chosen the proper state date, the
                     // range would have depended only on the current position but
                     // not on the current velocity.
-                    final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
-                    final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
-                    final SpacecraftState state     = interpolator.getInterpolatedState(date);
-                    final double[][]      jacobian  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
+                    final double meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+                    final AbsoluteDate date = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+                    final SpacecraftState state = interpolator.getInterpolatedState(date);
+                    final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[]{state}).getStateDerivatives(0);
 
                     // Jacobian reference value
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) {
-                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                        }
-                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+                                                                    public double[] value(final SpacecraftState state) {
+                                                                        return measurement.estimate(0, 0, new SpacecraftState[]{state}).getEstimatedValue();
+                                                                    }
+                                                                }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                            OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
                     Assert.assertEquals(jacobianRef.length, jacobian.length);
                     Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
-                    double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
-                    double [][] dJacobianRelative = new double[jacobian.length][jacobian[0].length];
+                    double[][] dJacobian = new double[jacobian.length][jacobian[0].length];
+                    double[][] dJacobianRelative = new double[jacobian.length][jacobian[0].length];
                     for (int i = 0; i < jacobian.length; ++i) {
                         for (int j = 0; j < jacobian[i].length; ++j) {
                             dJacobian[i][j] = jacobian[i][j] - jacobianRef[i][j];
-                            dJacobianRelative[i][j] = FastMath.abs(dJacobian[i][j]/jacobianRef[i][j]);
+                            dJacobianRelative[i][j] = FastMath.abs(dJacobian[i][j] / jacobianRef[i][j]);
 
-                            if (j < 3) { errorsP.add(dJacobianRelative[i][j]);
-                            } else { errorsV.add(dJacobianRelative[i][j]); }
+                            if (j < 3) {
+                                errorsP.add(dJacobianRelative[i][j]);
+                            } else {
+                                errorsV.add(dJacobianRelative[i][j]);
+                            }
                         }
                     }
                     // Print values in console ?
                     if (printResults) {
-                        String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName = ((Range) measurement).getStation().getBaseFrame().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                                         "%10.3e  %10.3e  %10.3e  " +
                                         "%10.3e  %10.3e  %10.3e  " +
                                         "%10.3e  %10.3e  %10.3e  " +
                                         "%10.3e  %10.3e  %10.3e%n",
-                                        stationName, measurement.getDate(), date,
-                                        dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
-                                        dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
-                                        dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
-                                        dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
+                                stationName, measurement.getDate(), date,
+                                dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
+                                dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
+                                dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
+                                dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
                     }
                 } // End if measurement date between previous and current interpolator step
             } // End for loop on the measurements
@@ -417,10 +422,10 @@ public class RangeTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Station", "Measurement Date", "State Date",
-                            "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
-                            "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
-                            "rel ΔdVx", "rel ΔdVy", "rel ΔdVz");
+                    "Station", "Measurement Date", "State Date",
+                    "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
+                    "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
+                    "rel ΔdVx", "rel ΔdVy", "rel ΔdVz");
         }
 
         // Rewind the propagator to initial date
@@ -430,26 +435,26 @@ public class RangeTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.get(measurements.size() - 1).getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
         final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
 
         final double errorsPMedian = new Median().evaluate(relErrorsP);
-        final double errorsPMean   = new Mean().evaluate(relErrorsP);
-        final double errorsPMax    = new Max().evaluate(relErrorsP);
+        final double errorsPMean = new Mean().evaluate(relErrorsP);
+        final double errorsPMax = new Max().evaluate(relErrorsP);
         final double errorsVMedian = new Median().evaluate(relErrorsV);
-        final double errorsVMean   = new Mean().evaluate(relErrorsV);
-        final double errorsVMax    = new Max().evaluate(relErrorsV);
+        final double errorsVMean = new Mean().evaluate(relErrorsV);
+        final double errorsVMax = new Max().evaluate(relErrorsV);
 
         // Print the results on console ?
         if (printResults) {
             System.out.println();
             System.out.format(Locale.US, "Relative errors dR/dP -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
-                              errorsPMedian, errorsPMean, errorsPMax);
+                    errorsPMedian, errorsPMean, errorsPMax);
             System.out.format(Locale.US, "Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
-                              errorsVMedian, errorsVMean, errorsVMax);
+                    errorsVMedian, errorsVMean, errorsVMax);
         }
 
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
@@ -466,8 +471,8 @@ public class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 0.001);
+                context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {
@@ -477,11 +482,11 @@ public class RangeTest {
             station.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+                propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
+                EstimationTestUtils.createMeasurements(propagator,
+                        new RangeMeasurementCreator(context),
+                        1.0, 3.0, 300.0);
 
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
@@ -494,8 +499,8 @@ public class RangeTest {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {
+                        (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate()) <= 0.)
+                ) {
 
                     // Add modifiers if test implies it
                     final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
@@ -513,43 +518,43 @@ public class RangeTest {
                     // to velocity. If we had chosen the proper state date, the
                     // range would have depended only on the current position but
                     // not on the current velocity.
-                    final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
-                    final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
-                    final SpacecraftState state     = interpolator.getInterpolatedState(date);
-                    final ParameterDriver[] drivers = new ParameterDriver[] {
-                        station.getClockOffsetDriver(),
-                        station.getEastOffsetDriver(),
-                        station.getNorthOffsetDriver(),
-                        station.getZenithOffsetDriver()
+                    final double meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+                    final AbsoluteDate date = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+                    final SpacecraftState state = interpolator.getInterpolatedState(date);
+                    final ParameterDriver[] drivers = new ParameterDriver[]{
+                            station.getClockOffsetDriver(),
+                            station.getEastOffsetDriver(),
+                            station.getNorthOffsetDriver(),
+                            station.getZenithOffsetDriver()
                     };
 
                     if (printResults) {
-                        String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName = ((Range) measurement).getStation().getBaseFrame().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
-                                          stationName, measurement.getDate(), date);
+                                stationName, measurement.getDate(), date);
                     }
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                        final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
 
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
-                                        Differentiation.differentiate(new ParameterFunction() {
-                                            /** {@inheritDoc} */
-                                            @Override
-                                            public double value(final ParameterDriver parameterDriver) {
-                                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
-                                            }
-                                        }, 3, 20.0 * drivers[i].getScale());
+                                Differentiation.differentiate(new ParameterFunction() {
+                                    /** {@inheritDoc} */
+                                    @Override
+                                    public double value(final ParameterDriver parameterDriver) {
+                                        return measurement.estimate(0, 0, new SpacecraftState[]{state}).getEstimatedValue()[0];
+                                    }
+                                }, 3, 20.0 * drivers[i].getScale());
                         final double ref = dMkdP.value(drivers[i]);
 
                         if (printResults) {
-                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
+                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0] - ref, FastMath.abs((gradient[0] - ref) / ref));
                         }
 
-                        final double relError = FastMath.abs((ref-gradient[0])/ref);
+                        final double relError = FastMath.abs((ref - gradient[0]) / ref);
                         relErrorList.add(relError);
                         Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
@@ -570,30 +575,30 @@ public class RangeTest {
         // Print results ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
-                              "%10s  %10s  %10s  %10s  %10s  %10s  %10s  %10s%n",
-                              "Station", "Measurement Date", "State Date",
-                              "Δt",   "rel Δt",
-                              "ΔdQx", "rel ΔdQx",
-                              "ΔdQy", "rel ΔdQy",
-                              "ΔdQz", "rel ΔdQz");
-         }
+                            "%10s  %10s  %10s  %10s  %10s  %10s  %10s  %10s%n",
+                    "Station", "Measurement Date", "State Date",
+                    "Δt", "rel Δt",
+                    "ΔdQx", "rel ΔdQx",
+                    "ΔdQy", "rel ΔdQy",
+                    "ΔdQz", "rel ΔdQz");
+        }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.get(measurements.size() - 1).getDate());
 
         // Convert error list to double[]
         final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsMedian = new Median().evaluate(relErrors);
-        final double relErrorsMean   = new Mean().evaluate(relErrors);
-        final double relErrorsMax    = new Max().evaluate(relErrors);
+        final double relErrorsMean = new Mean().evaluate(relErrors);
+        final double relErrorsMax = new Max().evaluate(relErrors);
 
         // Print the results on console ?
         if (printResults) {
             System.out.println();
             System.out.format(Locale.US, "Relative errors dR/dQ -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
-                              relErrorsMedian, relErrorsMean, relErrorsMax);
+                    relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
         Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
@@ -603,21 +608,20 @@ public class RangeTest {
     }
 
     void genericTestEstimatedParameterDerivatives(final boolean isModifier, final boolean printResults,
-                                                  final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax)
-                    {
+                                                  final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 0.001);
+                context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        1.0e-6, 60.0, 0.001);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+                propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
+                EstimationTestUtils.createMeasurements(propagator,
+                        new RangeMeasurementCreator(context),
+                        1.0, 3.0, 300.0);
 
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
@@ -630,15 +634,15 @@ public class RangeTest {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {
+                        (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate()) <= 0.)
+                ) {
 
-                    String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                    String stationName = ((Range) measurement).getStation().getBaseFrame().getName();
 
                     // Add modifiers if test implies it
                     final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
-                    final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
-                    
+                    final EstimatedTroposphericModel tropoModel = new EstimatedTroposphericModel(mappingFunction, 5.0);
+
                     final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
                     for (ParameterDriver driver : parameters) {
                         driver.setSelected(true);
@@ -657,39 +661,39 @@ public class RangeTest {
                     // to velocity. If we had chosen the proper state date, the
                     // range would have depended only on the current position but
                     // not on the current velocity.
-                    final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
-                    final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
-                    final SpacecraftState state     = interpolator.getInterpolatedState(date);
-                    final ParameterDriver[] drivers = new ParameterDriver[] {
-                        parameters.get(0)
+                    final double meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+                    final AbsoluteDate date = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+                    final SpacecraftState state = interpolator.getInterpolatedState(date);
+                    final ParameterDriver[] drivers = new ParameterDriver[]{
+                            parameters.get(0)
                     };
 
                     if (printResults) {
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
-                                          stationName, measurement.getDate(), date);
+                                stationName, measurement.getDate(), date);
                     }
 
                     for (int i = 0; i < 1; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                        final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
 
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
-                                        Differentiation.differentiate(new ParameterFunction() {
-                                            /** {@inheritDoc} */
-                                            @Override
-                                            public double value(final ParameterDriver parameterDriver) {
-                                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
-                                            }
-                                        }, 3, 0.1 * drivers[i].getScale());
+                                Differentiation.differentiate(new ParameterFunction() {
+                                    /** {@inheritDoc} */
+                                    @Override
+                                    public double value(final ParameterDriver parameterDriver) {
+                                        return measurement.estimate(0, 0, new SpacecraftState[]{state}).getEstimatedValue()[0];
+                                    }
+                                }, 3, 0.1 * drivers[i].getScale());
                         final double ref = dMkdP.value(drivers[i]);
 
                         if (printResults) {
-                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
+                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0] - ref, FastMath.abs((gradient[0] - ref) / ref));
                         }
 
-                        final double relError = FastMath.abs((ref-gradient[0])/ref);
+                        final double relError = FastMath.abs((ref - gradient[0]) / ref);
                         relErrorList.add(relError);
 //                        Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
@@ -712,28 +716,28 @@ public class RangeTest {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n ",
-                            "Station", "Measurement Date", "State Date",
-                            "ΔdDelay", "rel ΔdDelay",
-                            "ΔdNorthG", "rel ΔdNorthG",
-                            "ΔdEastG", "rel ΔdEastG");
-         }
+                    "Station", "Measurement Date", "State Date",
+                    "ΔdDelay", "rel ΔdDelay",
+                    "ΔdNorthG", "rel ΔdNorthG",
+                    "ΔdEastG", "rel ΔdEastG");
+        }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.get(measurements.size() - 1).getDate());
 
         // Convert error list to double[]
         final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsMedian = new Median().evaluate(relErrors);
-        final double relErrorsMean   = new Mean().evaluate(relErrors);
-        final double relErrorsMax    = new Max().evaluate(relErrors);
+        final double relErrorsMean = new Mean().evaluate(relErrors);
+        final double relErrorsMax = new Max().evaluate(relErrors);
 
         // Print the results on console ?
         if (printResults) {
             System.out.println();
             System.out.format(Locale.US, "Relative errors dR/dQ -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
-                              relErrorsMedian, relErrorsMean, relErrorsMax);
+                    relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
         Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
@@ -742,4 +746,57 @@ public class RangeTest {
 
     }
 
+
+    /**
+     * Test the estimated values when the observed range value is provided at TX (Transmit),
+     * RX (Receive (default)), transit (bounce)
+     */
+    @Test
+    public void testTimeTagSpecifications() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        SpacecraftState state = new SpacecraftState(context.initialOrbit);
+        ObservableSatellite obsSat = new ObservableSatellite(0);
+
+        for (GroundStation gs : context.getStations()) {
+
+            gs.getPrimeMeridianOffsetDriver().setReferenceDate(state.getDate());
+            gs.getPrimeMeridianDriftDriver().setReferenceDate(state.getDate());
+
+            gs.getPolarOffsetXDriver().setReferenceDate(state.getDate());
+            gs.getPolarDriftXDriver().setReferenceDate(state.getDate());
+
+            gs.getPolarOffsetYDriver().setReferenceDate(state.getDate());
+            gs.getPolarDriftYDriver().setReferenceDate(state.getDate());
+
+            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate());
+            TimeStampedPVCoordinates stationPosition = gsToInertialTransform.transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+            double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
+            double staticTimeOfFlight = staticDistance / Constants.SPEED_OF_LIGHT;
+
+            Range rangeTX = new Range(gs, true, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TX);
+            Range rangeRX = new Range(gs, true, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.RX);
+            Range rangeTransit = new Range(gs, true, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TRANSIT);
+
+            EstimatedMeasurement<Range> estRangeTX = rangeTX.estimate(0, 0, new SpacecraftState[]{state});
+            EstimatedMeasurement<Range> estRangeRX = rangeRX.estimate(0, 0, new SpacecraftState[]{state});
+            EstimatedMeasurement<Range> estRangeTransit = rangeTransit.estimate(0, 0, new SpacecraftState[]{state});
+
+            //Calculate Range calculated at transit and receive by shifting the state forward/backwards assuming time of flight = r/c
+            SpacecraftState tx = state.shiftedBy(staticTimeOfFlight);
+            SpacecraftState rx = state.shiftedBy(-staticTimeOfFlight);
+
+            double transitRangeTX = tx.getPVCoordinates().getPosition().distance(stationPosition.shiftedBy(staticTimeOfFlight).getPosition());
+            double transitRangeRX = rx.getPVCoordinates().getPosition().distance(stationPosition.shiftedBy(-staticTimeOfFlight).getPosition());
+            double transitRangeT = state.getPVCoordinates().getPosition().distance(stationPosition.getPosition());
+
+            //Static time of flight does not take into account motion during tof. Very small differences expected however
+            //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
+            Assert.assertEquals("TX", transitRangeTX, estRangeTX.getEstimatedValue()[0], 1e-3);
+            Assert.assertEquals("RX", transitRangeRX, estRangeRX.getEstimatedValue()[0], 1e-3);
+            Assert.assertEquals("Transit", transitRangeT, estRangeTransit.getEstimatedValue()[0], 1e-6);
+        }
+
+    }
 }
