@@ -85,7 +85,7 @@ public class Range extends AbstractMeasurement<Range>
     private final boolean twoway;
 
     /** Enum indicating the time tag specification of a range observation. */
-    private TimeTagSpecificationType timespecification = TimeTagSpecificationType.RX;
+    private final TimeTagSpecificationType timeTagSpecificationType;
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
@@ -95,11 +95,12 @@ public class Range extends AbstractMeasurement<Range>
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided range observation
      * @since 9.3
      */
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                          final double range, final double sigma, final double baseWeight,
-                         final ObservableSatellite satellite) {
+                         final ObservableSatellite satellite, TimeTagSpecificationType timeTagSpecificationType) {
         super(date, range, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getEastOffsetDriver());
@@ -117,6 +118,7 @@ public class Range extends AbstractMeasurement<Range>
         }
         this.station = station;
         this.twoway = twoWay;
+        this.timeTagSpecificationType = timeTagSpecificationType;
     }
 
     /** Simple constructor.
@@ -127,15 +129,12 @@ public class Range extends AbstractMeasurement<Range>
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
-     * @param timeTagSpecificationType specify the timetag configuration of the provided range observation
      * @since 9.3
      */
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                          final double range, final double sigma, final double baseWeight,
-                         final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
-
-        this(station, twoWay, date, range, sigma, baseWeight, satellite);
-        this.timespecification = timeTagSpecificationType;
+                         final ObservableSatellite satellite) {
+        this(station, twoWay, date, range, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
     }
 
 
@@ -202,7 +201,7 @@ public class Range extends AbstractMeasurement<Range>
 
             final Gradient tauU;
 
-            if (timespecification == TimeTagSpecificationType.TX){
+            if (timeTagSpecificationType == TimeTagSpecificationType.TX){
                 //Date = epoch of transmission.
                 //Vary position of receiver -> in case of uplink leg, receiver is satellite
                 tauU = emittedSignalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
@@ -228,8 +227,8 @@ public class Range extends AbstractMeasurement<Range>
                 range = tau.multiply(cOver2);
 
             }
-            else if (timespecification == TimeTagSpecificationType.TRANSIT){
-                //get shifted position of participants
+            else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT){
+                //Calculate time of flight for return measurement participants
                 tauD = emittedSignalTimeOfFlight(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
                 tauU = signalTimeOfFlight(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
                 estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[]{state},
