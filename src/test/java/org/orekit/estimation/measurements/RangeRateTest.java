@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -25,6 +26,7 @@ import org.junit.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
+import org.orekit.frames.Transform;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
@@ -34,11 +36,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
-import org.orekit.utils.Differentiation;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
+import org.orekit.utils.*;
 
 public class RangeRateTest {
 
@@ -720,6 +718,67 @@ public class RangeRateTest {
         }
         Assert.assertEquals(0, maxRelativeError, 2.2e-7);
 
+    }
+
+    /**
+     * Test the estimated values when the observed range rate value is provided at TX (Transmit),
+     * RX (Receive (default)), transit (bounce)
+     */
+    @Test
+    public void testTimeTagSpecifications(){
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        SpacecraftState state = new SpacecraftState(context.initialOrbit);
+        ObservableSatellite obsSat = new ObservableSatellite(0);
+
+        for (GroundStation gs : context.getStations()){
+
+            gs.getPrimeMeridianOffsetDriver().setReferenceDate(state.getDate());
+            gs.getPrimeMeridianDriftDriver().setReferenceDate(state.getDate());
+
+            gs.getPolarOffsetXDriver().setReferenceDate(state.getDate());
+            gs.getPolarDriftXDriver().setReferenceDate(state.getDate());
+
+            gs.getPolarOffsetYDriver().setReferenceDate(state.getDate());
+            gs.getPolarDriftYDriver().setReferenceDate(state.getDate());
+
+            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate());
+            TimeStampedPVCoordinates stationPosition = gsToInertialTransform.transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+            double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
+            double staticTimeOfFlight = staticDistance / Constants.SPEED_OF_LIGHT;
+
+            RangeRate rangeRateTX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, true, obsSat, TimeTagSpecificationType.TX);
+            RangeRate rangeRateRX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, true, obsSat, TimeTagSpecificationType.RX);
+            RangeRate rangeRateTransit = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, true, obsSat, TimeTagSpecificationType.TRANSIT);
+
+            EstimatedMeasurement<RangeRate> estRangeRateTX = rangeRateTX.estimate(0,0,new SpacecraftState[]{state});
+            EstimatedMeasurement<RangeRate> estRangeRateRX = rangeRateRX.estimate(0,0,new SpacecraftState[]{state});
+            EstimatedMeasurement<RangeRate> estRangeRateTransit = rangeRateTransit.estimate(0,0,new SpacecraftState[]{state});
+
+            //Calculate Range Rate calculated at transit and receive by shifting the state forward/backwards assuming time of flight = r/c
+            SpacecraftState tx = state.shiftedBy(staticTimeOfFlight);
+            SpacecraftState rx = state.shiftedBy(-staticTimeOfFlight);
+
+            double transitRangeRateTX = calcRangeRate(tx.getPVCoordinates(), stationPosition.shiftedBy(staticTimeOfFlight));
+            double transitRangeRateRX = calcRangeRate(rx.getPVCoordinates(), stationPosition.shiftedBy(-staticTimeOfFlight));
+            double transitRangeRateT = calcRangeRate(state.getPVCoordinates(), stationPosition);
+
+            //Static time of flight does not take into account motion during tof. Very small differences expected however
+            //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
+            Assert.assertEquals("TX", transitRangeRateTX, estRangeRateTX.getEstimatedValue()[0],1e-6);
+            Assert.assertEquals("RX", transitRangeRateRX, estRangeRateRX.getEstimatedValue()[0],1e-6);
+            Assert.assertEquals("Transit", transitRangeRateT, estRangeRateTransit.getEstimatedValue()[0], 1e-11);
+        }
+
+    }
+
+    // range rate value
+    private double calcRangeRate(TimeStampedPVCoordinates state, TimeStampedPVCoordinates station){
+        Vector3D relativePosition = station.getPosition().subtract(state.getPosition());
+        Vector3D relativeVelocity = station.getVelocity().subtract(state.getVelocity());
+        Vector3D lineOfSight = relativePosition.normalize();
+        return Vector3D.dotProduct(relativeVelocity, lineOfSight);
     }
 
 }
