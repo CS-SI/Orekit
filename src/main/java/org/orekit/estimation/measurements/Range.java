@@ -103,7 +103,7 @@ public class Range extends AbstractMeasurement<Range>
      */
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                          final double range, final double sigma, final double baseWeight,
-                         final ObservableSatellite satellite, TimeTagSpecificationType timeTagSpecificationType) {
+                         final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
         super(date, range, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getEastOffsetDriver());
@@ -204,23 +204,23 @@ public class Range extends AbstractMeasurement<Range>
 
             final Gradient tauU;
 
-            if (timeTagSpecificationType == TimeTagSpecificationType.TX){
+            if (timeTagSpecificationType == TimeTagSpecificationType.TX) {
                 //Date = epoch of transmission.
                 //Vary position of receiver -> in case of uplink leg, receiver is satellite
                 tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
 
                 //Get state at transit
-                TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(tauU);
-                SpacecraftState transitState = state.shiftedBy(tauU.getValue());
+                final TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(tauU);
+                final SpacecraftState transitState = state.shiftedBy(tauU.getValue());
 
                 //Get station at transit - although this is effectively an initial seed for fitting the downlink delay
-                TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
+                final TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
 
                 //project time of flight forwards with 0 offset.
                 tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
 
-                estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[]{transitState},
-                        new TimeStampedPVCoordinates[]{
+                estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[] {transitState},
+                        new TimeStampedPVCoordinates[] {
                                 stationObsEpoch.toTimeStampedPVCoordinates(),
                                 transitStateDS.toTimeStampedPVCoordinates(),
                                 stationTransit.shiftedBy(tauD).toTimeStampedPVCoordinates()});
@@ -230,15 +230,16 @@ public class Range extends AbstractMeasurement<Range>
                 range = tau.multiply(cOver2);
 
             }
-            else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT){
+            else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
                 //Calculate time of flight for return measurement participants
                 tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
                 tauU = signalTimeOfFlight(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
-                estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[]{state},
-                        new TimeStampedPVCoordinates[]{
+                estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[] {state},
+                        new TimeStampedPVCoordinates[] {
                                 stationObsEpoch.shiftedBy(tauU.negate()).toTimeStampedPVCoordinates(),
                                 pvaDS.toTimeStampedPVCoordinates(),
-                                stationObsEpoch.shiftedBy(tauD).toTimeStampedPVCoordinates()});
+                                stationObsEpoch.shiftedBy(tauD).toTimeStampedPVCoordinates()
+                        });
                 //use transit state as corrected state
                 range = stationObsEpoch.getPosition().distance(pvaDS.getPosition());
             }
@@ -261,8 +262,8 @@ public class Range extends AbstractMeasurement<Range>
                         stationObsEpoch.shiftedBy(-tauD.getValue() - tauU.getValue());
 
                 // Prepare the evaluation
-                estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[]{transitState},
-                        new TimeStampedPVCoordinates[]{
+                estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[] {transitState},
+                        new TimeStampedPVCoordinates[] {
                                 stationUplink.toTimeStampedPVCoordinates(),
                                 transitStateDS.toTimeStampedPVCoordinates(),
                                 stationObsEpoch.toTimeStampedPVCoordinates()});
@@ -287,12 +288,11 @@ public class Range extends AbstractMeasurement<Range>
 
 
             estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation,
-                    new SpacecraftState[] {
-                            transitState
-                    }, new TimeStampedPVCoordinates[] {
+                    new SpacecraftState[] {transitState},
+                    new TimeStampedPVCoordinates[] {
                     transitStateDS.toTimeStampedPVCoordinates(),
                     stationObsEpoch.toTimeStampedPVCoordinates()
-            });
+                    });
 
             // Clock offsets
             final ObservableSatellite satellite = getSatellites().get(0);

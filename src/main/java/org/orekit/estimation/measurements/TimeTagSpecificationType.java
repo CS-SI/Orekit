@@ -1,4 +1,4 @@
-package org.orekit.estimation.measurements;/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,33 +15,39 @@ package org.orekit.estimation.measurements;/* Copyright 2002-2022 CS GROUP
  * limitations under the License.
  */
 
+package org.orekit.estimation.measurements;
+
 /**
- * Enumerate for combination of measurements types.
+ * Enumeration for different time tag specification types, specifying the point at which the
+ * measurement epoch is taken from.
  *
  * @author Tommy Fryer
- * @since 10.1
+ * @since 11.1
  */
 public enum TimeTagSpecificationType {
 
-    /** Time tag specification at transit/bounce time. */
+    /** Time tag at transit/bounce time. */
     TRANSIT("Transit"),
 
+    /** Time tag is at time of signal reception. */
     RX("Receive"),
 
+    /** Time tag is at time of signal transmission. */
     TX("Transmit");
 
+    /** Name of time tag specification. */
     private final String name;
 
     /**
      * Constructor.
-     * @param name name of the combination of measurements
+     * @param name name of the time tag specification
      */
     TimeTagSpecificationType(final String name) {
         this.name = name;
     }
 
     /**
-     * Get the name of the combination of measurements.
+     * Get the name of the time tag specification.
      * @return the name
      */
     public String getName() {

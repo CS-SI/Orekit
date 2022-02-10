@@ -67,11 +67,12 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
      * @param baseWeight base weight
      * @param twoway if true, this is a two-way measurement
      * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided range rate observation
      * @since 9.3
      */
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
-                     final boolean twoway, final ObservableSatellite satellite, TimeTagSpecificationType timeTagSpecificationType) {
+                     final boolean twoway, final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
         super(date, rangeRate, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getClockDriftDriver());
@@ -92,7 +93,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
 
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
-                     final boolean twoway, final ObservableSatellite satellite){
+                     final boolean twoway, final ObservableSatellite satellite) {
         this(station, date, rangeRate, sigma, baseWeight, twoway, satellite, TimeTagSpecificationType.RX);
     }
 
@@ -156,26 +157,26 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
             final Gradient tauU;
             final EstimatedMeasurement<RangeRate> evalOneWay2;
 
-            if (timeTagSpecificationType == TimeTagSpecificationType.TX){
+            if (timeTagSpecificationType == TimeTagSpecificationType.TX) {
                 //Date = epoch of transmission.
                 //Vary position of receiver -> in case of uplink leg, receiver is satellite
                 tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
                 //Get state at transit
-                TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(tauU);
+                final TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(tauU);
 
-                SpacecraftState transitState = state.shiftedBy(tauU.getValue());
+                final SpacecraftState transitState = state.shiftedBy(tauU.getValue());
 
                 evalOneWay2 = oneWayTheoreticalEvaluation(iteration, evaluation, false, stationObsEpoch, transitStateDS, transitState, indices, nbParams);
 
                 //Get station at transit - although this is effectively an initial seed for fitting the downlink delay
-                TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
+                final TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
 
                 //project time of flight forwards with 0 offset.
                 tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
 
                 evalOneWay1 = oneWayTheoreticalEvaluation(iteration, evaluation, true, stationTransit.shiftedBy(tauD), transitStateDS, transitState, indices, nbParams);
 
-            } else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT){
+            } else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
                 //In transit obs case, do not correct the value for motion during time of flight.
                 final Gradient transitRangeRate = getRangeRateValue(stationObsEpoch, pvaDS);
 
@@ -234,9 +235,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
             }
             // combine uplink and downlink values
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation, evalOneWay1.getStates(),
-                    new TimeStampedPVCoordinates[]{evalOneWay2.getParticipants()[0],
-                            evalOneWay1.getParticipants()[0],
-                            evalOneWay1.getParticipants()[1]});
+                    new TimeStampedPVCoordinates[] {evalOneWay2.getParticipants()[0],
+                    evalOneWay1.getParticipants()[0],
+                    evalOneWay1.getParticipants()[1]});
             estimated.setEstimatedValue(0.5 * (evalOneWay1.getEstimatedValue()[0] + evalOneWay2.getEstimatedValue()[0]));
 
             // combine uplink and downlink partial derivatives with respect to state
@@ -319,12 +320,11 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> estimated =
                 new EstimatedMeasurement<RangeRate>(this, iteration, evaluation,
-                        new SpacecraftState[] {
-                                transitState
-                        }, new TimeStampedPVCoordinates[] {
+                        new SpacecraftState[] {transitState},
+                        new TimeStampedPVCoordinates[] {
                         (downlink ? transitPV : stationPV).toTimeStampedPVCoordinates(),
                         (downlink ? stationPV : transitPV).toTimeStampedPVCoordinates()
-                });
+                        });
 
         // range rate
         Gradient rangeRate = getRangeRateValue(stationPV, transitPV);
@@ -359,7 +359,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
 
     }
 
-    private static Gradient getRangeRateValue(TimeStampedFieldPVCoordinates<Gradient> stationPV, TimeStampedFieldPVCoordinates<Gradient> transitPV){
+    private static Gradient getRangeRateValue(final TimeStampedFieldPVCoordinates<Gradient> stationPV, final TimeStampedFieldPVCoordinates<Gradient> transitPV) {
         // range rate value
         final FieldVector3D<Gradient> stationPosition  = stationPV.getPosition();
         final FieldVector3D<Gradient> relativePosition = stationPosition.subtract(transitPV.getPosition());
