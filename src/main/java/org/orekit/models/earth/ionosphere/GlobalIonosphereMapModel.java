@@ -548,7 +548,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                 for (line = br.readLine(); line != null; line = br.readLine()) {
                     ++lineNumber;
                     if (line.length() > LABEL_START) {
-                        switch(line.substring(LABEL_START).trim()) {
+                        switch (line.substring(LABEL_START).trim()) {
                             case "EPOCH OF FIRST MAP" :
                                 firstEpoch = parseDate(line);
                                 break;

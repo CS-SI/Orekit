@@ -214,7 +214,7 @@ public class AntexLoader {
 
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     ++lineNumber;
-                    switch(line.substring(LABEL_START).trim()) {
+                    switch (line.substring(LABEL_START).trim()) {
                         case "COMMENT" :
                             // nothing to do
                             break;

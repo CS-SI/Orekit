@@ -322,7 +322,7 @@ public class RinexObservationLoader {
                         while (readLine(reader, false)) {
 
                             if (rinexHeader == null) {
-                                switch(line.substring(LABEL_START).trim()) {
+                                switch (line.substring(LABEL_START).trim()) {
                                     case COMMENT :
                                         // nothing to do
                                         break;
@@ -673,7 +673,7 @@ public class RinexObservationLoader {
 
                         while (readLine(reader, false)) {
                             if (rinexHeader == null) {
-                                switch(line.substring(LABEL_START).trim()) {
+                                switch (line.substring(LABEL_START).trim()) {
                                     case COMMENT :
                                         // nothing to do
                                         break;
@@ -758,7 +758,7 @@ public class RinexObservationLoader {
                                         interval = parseDouble(0, 10);
                                         break;
                                     case TIME_OF_FIRST_OBS :
-                                        switch(satelliteSystem) {
+                                        switch (satelliteSystem) {
                                             case GPS:
                                                 timeScale = timeScales.getGPS();
                                                 break;

@@ -378,7 +378,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         final DerivativeStructure q1DS;
         final DerivativeStructure q2DS;
         final DerivativeStructure q3DS;
-        switch(order) {
+        switch (order) {
             case 0 :
                 factory = new DSFactory(1, order);
                 q0DS = factory.build(q0);
