@@ -379,7 +379,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
         final FieldDerivativeStructure<T> q1DS;
         final FieldDerivativeStructure<T> q2DS;
         final FieldDerivativeStructure<T> q3DS;
-        switch(order) {
+        switch (order) {
             case 0 :
                 factory = new FDSFactory<>(q0.getField(), 1, order);
                 q0DS = factory.build(q0);

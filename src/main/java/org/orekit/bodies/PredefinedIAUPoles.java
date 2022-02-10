@@ -1161,7 +1161,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     public static PredefinedIAUPoles getIAUPole(final EphemerisType body,
                                                 final TimeScales timeScales) {
 
-        switch(body) {
+        switch (body) {
             case SUN :
                 return new Sun(timeScales);
             case MERCURY :
