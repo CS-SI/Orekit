@@ -159,7 +159,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
             if (timeTagSpecificationType == TimeTagSpecificationType.TX){
                 //Date = epoch of transmission.
                 //Vary position of receiver -> in case of uplink leg, receiver is satellite
-                tauU = emittedSignalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
+                tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
                 //Get state at transit
                 TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(tauU);
 
@@ -171,7 +171,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
                 TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
 
                 //project time of flight forwards with 0 offset.
-                tauD = emittedSignalTimeOfFlight(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
+                tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
 
                 evalOneWay1 = oneWayTheoreticalEvaluation(iteration, evaluation, true, stationTransit.shiftedBy(tauD), transitStateDS, transitState, indices, nbParams);
 
@@ -180,7 +180,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
                 final Gradient transitRangeRate = getRangeRateValue(stationObsEpoch, pvaDS);
 
                 //Calculate time of flight for return measurement participants
-                tauD = emittedSignalTimeOfFlight(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
+                tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
                 tauU = signalTimeOfFlight(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
 
                 //shift station forwards to get downlink

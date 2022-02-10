@@ -349,7 +349,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     }
 
 
-    public static double emittedSignalTimeOfFlight(final TimeStampedPVCoordinates adjustableReceiver,
+    public static double signalTimeOfFlightFixedEmission(final TimeStampedPVCoordinates adjustableReceiver,
                                                    final Vector3D emitterPosition,
                                                    final AbsoluteDate signalEmissionDate) {
 
@@ -375,9 +375,9 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     }
 
 
-    public static <T extends CalculusFieldElement<T>> T emittedSignalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableReceiver,
-                                                                                  final FieldVector3D<T> emitterPosition,
-                                                                                  final FieldAbsoluteDate<T> signalEmissionDate) {
+    public static <T extends CalculusFieldElement<T>> T signalTimeOfFlightFixedEmission(final TimeStampedFieldPVCoordinates<T> adjustableReceiver,
+                                                                                        final FieldVector3D<T> emitterPosition,
+                                                                                        final FieldAbsoluteDate<T> signalEmissionDate) {
 
         // initialize emission date search loop assuming the state is already correct
         // this will be true for all but the first orbit determination iteration,

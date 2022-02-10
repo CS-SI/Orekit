@@ -48,8 +48,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </p>
  * <p>
  * The motion of both the station and the spacecraft during the signal
- * flight time are taken into account. The date of the measurement
- * corresponds to the reception on ground of the emitted or reflected signal.
+ * flight time are taken into account. For two way measurements the date of the measurement
+ * corresponds to either the time of signal reception at ground station,
+ * the time of signal bounce arrival or the date of transmission dependent on the time tag specification
+ * enumerated value. If not specified, the time tag specification defaults to receive time.
+ * For one way measurements the date of the measurement is assumed to be a time of signal reception.
  * </p>
  * <p>
  * The clock offsets of both the ground station and the satellite are taken
@@ -58,7 +61,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * date. These offsets have two effects:
  * </p>
  * <ul>
- *   <li>as measurement date is evaluated at reception time, the real physical date
+ *   <li>If measurement date is evaluated at reception time, the real physical date
  *   of the measurement is the observed date to which the receiving ground station
  *   clock offset is subtracted</li>
  *   <li>as range is evaluated using the total signal time of flight, for one-way
@@ -96,7 +99,7 @@ public class Range extends AbstractMeasurement<Range>
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      * @param timeTagSpecificationType specify the timetag configuration of the provided range observation
-     * @since 9.3
+     * @since 11.1
      */
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                          final double range, final double sigma, final double baseWeight,
@@ -204,7 +207,7 @@ public class Range extends AbstractMeasurement<Range>
             if (timeTagSpecificationType == TimeTagSpecificationType.TX){
                 //Date = epoch of transmission.
                 //Vary position of receiver -> in case of uplink leg, receiver is satellite
-                tauU = emittedSignalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
+                tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
 
                 //Get state at transit
                 TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(tauU);
@@ -214,7 +217,7 @@ public class Range extends AbstractMeasurement<Range>
                 TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
 
                 //project time of flight forwards with 0 offset.
-                tauD = emittedSignalTimeOfFlight(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
+                tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
 
                 estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[]{transitState},
                         new TimeStampedPVCoordinates[]{
@@ -229,7 +232,7 @@ public class Range extends AbstractMeasurement<Range>
             }
             else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT){
                 //Calculate time of flight for return measurement participants
-                tauD = emittedSignalTimeOfFlight(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
+                tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
                 tauU = signalTimeOfFlight(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
                 estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[]{state},
                         new TimeStampedPVCoordinates[]{
