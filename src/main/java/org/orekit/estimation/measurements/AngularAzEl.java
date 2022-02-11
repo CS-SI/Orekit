@@ -42,10 +42,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
+public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
+{
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
+
+    /** Enum indicating the time tag specification of a range observation. */
+    private final TimeTagSpecificationType timeTagSpecificationType;
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
@@ -58,7 +62,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
      */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
-                       final ObservableSatellite satellite) {
+                       final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
         super(date, angular, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getEastOffsetDriver());
@@ -71,6 +75,13 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         addParameterDriver(station.getPolarOffsetYDriver());
         addParameterDriver(station.getPolarDriftYDriver());
         this.station = station;
+        this.timeTagSpecificationType = timeTagSpecificationType;
+    }
+
+    public AngularAzEl(final GroundStation station, final AbsoluteDate date,
+                       final double[] angular, final double[] sigma, final double[] baseWeight,
+                       final ObservableSatellite satellite) {
+        this(station, date, angular, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
     }
 
     /** Get the ground station from which measurement is performed.
@@ -113,34 +124,71 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
 
         // Transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final FieldTransform<Gradient> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
-        final FieldAbsoluteDate<Gradient> downlinkDateDS =
-                        offsetToInertialDownlink.getFieldDate();
+        final FieldTransform<Gradient> offsetToInertialObsEpoch =
+                station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+        final FieldAbsoluteDate<Gradient> obsEpochFieldDate =
+                offsetToInertialObsEpoch.getFieldDate();
 
         // Station position/velocity in inertial frame at end of the downlink leg
-        final TimeStampedFieldPVCoordinates<Gradient> stationDownlink =
-                        offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDateDS,
-                                                                                                            zero, zero, zero));
+        final TimeStampedFieldPVCoordinates<Gradient> stationObsEpoch =
+                offsetToInertialObsEpoch.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(obsEpochFieldDate,
+                        zero, zero, zero));
+
+        final TimeStampedFieldPVCoordinates<Gradient> transitStateDS;
+        final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
+        final SpacecraftState transitState;
+        final Gradient tauD;
+
+        if (timeTagSpecificationType == TimeTagSpecificationType.TX) {
+            //Date = epoch of transmission.
+            //Vary position of receiver -> in case of uplink leg, receiver is satellite
+            final Gradient tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
+            //Get state at transit
+            transitStateDS = pvaDS.shiftedBy(tauU);
+            transitState = state.shiftedBy(tauU.getValue());
+
+            //Get station at transit - although this is effectively an initial seed for fitting the downlink delay
+            TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
+
+            //project time of flight forwards with 0 offset.
+            tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
+
+            stationDownlink = stationObsEpoch.shiftedBy(tauU.add(tauD));
+        }
+
+        else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
+            transitStateDS = pvaDS;
+            transitState = state;
+
+            tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
+
+            stationDownlink = stationObsEpoch.shiftedBy(tauD);
+        }
+
+        else {
+            // Compute propagation times
+            // (if state has already been set up to pre-compensate propagation delay,
+            //  we will have delta == tauD and transitState will be the same as state)
+
+            // Downlink delay
+            tauD = signalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), obsEpochFieldDate);
+
+            // Transit state
+            final Gradient delta = obsEpochFieldDate.durationFrom(state.getDate());
+            final Gradient deltaMTauD = tauD.negate().add(delta);
+            transitState = state.shiftedBy(deltaMTauD.getValue());
+
+            // Transit state (re)computed with gradients
+            transitStateDS = pvaDS.shiftedBy(deltaMTauD);
+            stationDownlink = stationObsEpoch;
+        }
+
+        final FieldTransform<Gradient> offsetToInertialDownlink = station.getOffsetToInertial(state.getFrame(), stationDownlink.getDate(), nbParams, indices);
+
         // Station topocentric frame (east-north-zenith) in inertial frame expressed as Gradient
         final FieldVector3D<Gradient> east   = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusI(field));
         final FieldVector3D<Gradient> north  = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusJ(field));
         final FieldVector3D<Gradient> zenith = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusK(field));
-
-        // Compute propagation times
-        // (if state has already been set up to pre-compensate propagation delay,
-        //  we will have delta == tauD and transitState will be the same as state)
-
-        // Downlink delay
-        final Gradient tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
-
-        // Transit state
-        final Gradient        delta        = downlinkDateDS.durationFrom(state.getDate());
-        final Gradient        deltaMTauD   = tauD.negate().add(delta);
-        final SpacecraftState transitState = state.shiftedBy(deltaMTauD.getValue());
-
-        // Transit state (re)computed with derivative structures
-        final TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
 
         // Station-satellite vector expressed in inertial frame
         final FieldVector3D<Gradient> staSat = transitStateDS.getPosition().subtract(stationDownlink.getPosition());
@@ -148,19 +196,19 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         // Compute azimuth/elevation
         final Gradient baseAzimuth = staSat.dotProduct(east).atan2(staSat.dotProduct(north));
         final double   twoPiWrap   = MathUtils.normalizeAngle(baseAzimuth.getReal(), getObservedValue()[0]) -
-                                                baseAzimuth.getReal();
+                baseAzimuth.getReal();
         final Gradient azimuth     = baseAzimuth.add(twoPiWrap);
         final Gradient elevation   = staSat.dotProduct(zenith).divide(staSat.getNorm()).asin();
 
         // Prepare the estimation
         final EstimatedMeasurement<AngularAzEl> estimated =
-                        new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   new SpacecraftState[] {
-                                                       transitState
-                                                   }, new TimeStampedPVCoordinates[] {
-                                                       transitStateDS.toTimeStampedPVCoordinates(),
-                                                       stationDownlink.toTimeStampedPVCoordinates()
-                                                   });
+                new EstimatedMeasurement<>(this, iteration, evaluation,
+                        new SpacecraftState[] {
+                                transitState
+                        }, new TimeStampedPVCoordinates[] {
+                        transitStateDS.toTimeStampedPVCoordinates(),
+                        stationDownlink.toTimeStampedPVCoordinates()
+                });
 
         // azimuth - elevation values
         estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());
@@ -170,7 +218,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         final double[] azDerivatives = azimuth.getGradient();
         final double[] elDerivatives = elevation.getGradient();
         estimated.setStateDerivatives(0,
-                                      Arrays.copyOfRange(azDerivatives, 0, 6), Arrays.copyOfRange(elDerivatives, 0, 6));
+                Arrays.copyOfRange(azDerivatives, 0, 6), Arrays.copyOfRange(elDerivatives, 0, 6));
 
         // Set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
