@@ -214,7 +214,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         final DerivativeStructure x;
         final DerivativeStructure y;
         final DerivativeStructure z;
-        switch(order) {
+        switch (order) {
             case 0 :
                 factory = new DSFactory(1, order);
                 x = factory.build(position.getX());
@@ -310,7 +310,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         final DerivativeStructure x2;
         final DerivativeStructure y2;
         final DerivativeStructure z2;
-        switch(order) {
+        switch (order) {
             case 0 :
                 factory = new DSFactory(1, order);
                 x0 = factory.build(position.getX());
