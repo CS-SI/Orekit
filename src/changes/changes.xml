@@ -20,7 +20,17 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.1" date="TBD" description="TBD">
+    <release version="11.1" date="2022-02-14"
+             description="Version 11.1 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 11.1 are: the estimation of maneuver start/stop time, the Brouwer-Lyddane
+             orbit propagation model with Warren Phipps’ correction for the critical
+             inclination of 63.4° and the perturbative acceleration due to atmospheric
+             drag, the Extended Semi-analytical Kalman Filter, a new API for
+             State Transition Matrix and Jacobian matrices computation, orbit
+             determination  using analytical propagation models, parsing of ICGEM V2.0 format.
+             This release includes important fixes in CCSDS files, TimeSpanMap, and
+             display of dates. See the list below for a full description of the changes.">
       <action dev="luc" type="fix" issue="722">
         Prefer values from Bulletin B rather than Bulletin A if both are present
         in rapid data column format. This handling of priority was already in
