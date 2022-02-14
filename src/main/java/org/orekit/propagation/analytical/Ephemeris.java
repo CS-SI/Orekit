@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -34,6 +33,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -140,8 +140,11 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         maxDate = states.get(states.size() - 1).getDate();
         frame = s0.getFrame();
 
-        final Set<String> names0 = s0.getAdditionalStates().keySet();
-        additional = names0.toArray(new String[names0.size()]);
+        final List<DoubleArrayDictionary.Entry> as = s0.getAdditionalStatesValues().getData();
+        additional = new String[as.size()];
+        for (int i = 0; i < additional.length; ++i) {
+            additional[i] = as.get(i).getKey();
+        }
 
         // check all states handle the same additional states
         for (final SpacecraftState state : states) {
@@ -215,11 +218,11 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
             // Verify if orbit is defined
             if (evaluatedState.isOrbitDefined()) {
-                return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude,
-                                           evaluatedState.getMass(), evaluatedState.getAdditionalStates());
+                return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude, evaluatedState.getMass(),
+                                           evaluatedState.getAdditionalStatesValues(), evaluatedState.getAdditionalStatesDerivatives());
             } else {
-                return new SpacecraftState(evaluatedState.getAbsPVA(), calculatedAttitude,
-                                           evaluatedState.getMass(),  evaluatedState.getAdditionalStates());
+                return new SpacecraftState(evaluatedState.getAbsPVA(), calculatedAttitude, evaluatedState.getMass(),
+                                           evaluatedState.getAdditionalStatesValues(), evaluatedState.getAdditionalStatesDerivatives());
             }
 
         }

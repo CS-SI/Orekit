@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,11 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
-import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
@@ -37,7 +35,9 @@ import org.orekit.utils.ParameterDriversList;
  * @author Maxime Journot
  * @author Bryan Cazabonne
  * @since 10.0
+ * @deprecated as of 11.1, replaced by {@link SemiAnalyticalKalmanModel}
  */
+@Deprecated
 public class DSSTKalmanModel extends AbstractKalmanModel {
 
     /** Kalman process model constructor.
@@ -70,29 +70,17 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
         setReferenceTrajectories(propagators);
 
         // Jacobian mappers
-        final AbstractJacobiansMapper[] mappers = getMappers();
+        final MatricesHarvester[] harvesters = new MatricesHarvester[propagators.length];
 
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
             final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
-            final DSSTPartialDerivativesEquations pde = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) getReferenceTrajectories()[k], pType);
-
-            // Reset the Jacobians
-            final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();
-            final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-            ((DSSTPropagator) getReferenceTrajectories()[k]).setInitialState(stateWithDerivatives, sType);
-            mappers[k] = pde.getMapper();
+            harvesters[k] = ((DSSTPropagator) getReferenceTrajectories()[k]).setupMatricesComputation(equationName, null, null);
         }
 
-        // Update Jacobian mappers
-        setMappers(mappers);
+        // Update Jacobian harvesters
+        setHarvesters(harvesters);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
-        ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(state);
     }
 
 }

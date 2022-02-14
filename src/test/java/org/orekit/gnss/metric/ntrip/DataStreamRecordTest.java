@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,8 +82,8 @@ public class DataStreamRecordTest {
         Assert.assertEquals(NavigationSystem.GPS, str.getNavigationSystems().get(0));
         Assert.assertEquals("MISC",               str.getNetwork());
         Assert.assertEquals("DEU",                str.getCountry());
-        Assert.assertEquals(49.87,                Math.toDegrees(str.getLatitude()),  1.0e-15);
-        Assert.assertEquals( 8.62,                Math.toDegrees(str.getLongitude()), 1.0e-15);
+        Assert.assertEquals(49.87,                FastMath.toDegrees(str.getLatitude()),  1.0e-15);
+        Assert.assertEquals( 8.62,                FastMath.toDegrees(str.getLongitude()), 1.0e-15);
         Assert.assertEquals(false,                str.isNMEARequired());
         Assert.assertEquals(true,                 str.isNetworked());
         Assert.assertEquals("RETINA",             str.getGenerator());
@@ -132,8 +132,8 @@ public class DataStreamRecordTest {
         Assert.assertEquals("SBAS",                                str.getNavigationSystems().get(5).toString());
         Assert.assertEquals("MISC",                                str.getNetwork());
         Assert.assertEquals("DEU",                                 str.getCountry());
-        Assert.assertEquals(48.09,                                 Math.toDegrees(str.getLatitude()),  1.0e-15);
-        Assert.assertEquals(11.28,                                 Math.toDegrees(str.getLongitude()), 1.0e-15);
+        Assert.assertEquals(48.09,                                 FastMath.toDegrees(str.getLatitude()),  1.0e-15);
+        Assert.assertEquals(11.28,                                 FastMath.toDegrees(str.getLongitude()), 1.0e-15);
         Assert.assertEquals(false,                                 str.isNMEARequired());
         Assert.assertEquals(true,                                  str.isNetworked());
         Assert.assertEquals("RETICLE",                             str.getGenerator());

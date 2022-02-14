@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -37,6 +36,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap;
@@ -383,7 +383,7 @@ public class AttitudesSequence implements AttitudeProvider {
             // reset the transition parameters (this will be done once for each switch,
             //  despite doing it only once would have sufficient; its not really a problem)
             forward = t.durationFrom(s0.getDate()) >= 0.0;
-            if (activated.getTransitions().size() > 1) {
+            if (activated.getSpansNumber() > 1) {
                 // remove transitions that will be overridden during upcoming propagation
                 if (forward) {
                     activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate().shiftedBy(transitionTime));
@@ -413,10 +413,10 @@ public class AttitudesSequence implements AttitudeProvider {
 
                     // prepare transition
                     final AbsoluteDate transitionEnd = date.shiftedBy(transitionTime);
-                    activated.addValidAfter(new TransitionProvider(s.getAttitude(), transitionEnd), date);
+                    activated.addValidAfter(new TransitionProvider(s.getAttitude(), transitionEnd), date, false);
 
                     // prepare future law after transition
-                    activated.addValidAfter(future, transitionEnd);
+                    activated.addValidAfter(future, transitionEnd, false);
 
                     // notify about the switch
                     if (switchHandler != null) {
@@ -431,15 +431,15 @@ public class AttitudesSequence implements AttitudeProvider {
                     final Orbit     sOrbit    = s.getOrbit().shiftedBy(-transitionTime);
                     final Attitude  sAttitude = past.getAttitude(sOrbit, sOrbit.getDate(), sOrbit.getFrame());
                     SpacecraftState sState    = new SpacecraftState(sOrbit, sAttitude, s.getMass());
-                    for (final Map.Entry<String, double[]> entry : s.getAdditionalStates().entrySet()) {
+                    for (final DoubleArrayDictionary.Entry entry : s.getAdditionalStatesValues().getData()) {
                         sState = sState.addAdditionalState(entry.getKey(), entry.getValue());
                     }
 
                     // prepare transition
-                    activated.addValidBefore(new TransitionProvider(sAttitude, date), date);
+                    activated.addValidBefore(new TransitionProvider(sAttitude, date), date, false);
 
                     // prepare past law before transition
-                    activated.addValidBefore(past, sOrbit.getDate());
+                    activated.addValidBefore(past, sOrbit.getDate(), false);
 
                     // notify about the switch
                     if (switchHandler != null) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1025,10 +1025,10 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             maxDeltaN = FastMath.max(maxDeltaN, FastMath.abs(Vector3D.dotProduct(delta, n)));
             maxDeltaW = FastMath.max(maxDeltaW, FastMath.abs(Vector3D.dotProduct(delta, w)));
         }
-        Assert.assertTrue(maxDeltaT > 0.15);
-        Assert.assertTrue(maxDeltaT < 0.25);
-        Assert.assertTrue(maxDeltaN > 0.01);
-        Assert.assertTrue(maxDeltaN < 0.02);
+        Assert.assertTrue(maxDeltaT > 0.65);
+        Assert.assertTrue(maxDeltaT < 0.85);
+        Assert.assertTrue(maxDeltaN > 0.02);
+        Assert.assertTrue(maxDeltaN < 0.03);
         Assert.assertTrue(maxDeltaW > 0.05);
         Assert.assertTrue(maxDeltaW < 0.10);
 

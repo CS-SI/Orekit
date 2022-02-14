@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,8 @@ package org.orekit.forces;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
@@ -31,6 +31,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** This interface represents a force modifying spacecraft motion.
@@ -76,6 +77,22 @@ public interface ForceModel {
      * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
      */
     default void init(SpacecraftState initialState, AbsoluteDate target) {
+    }
+
+    /**
+     * Initialize the force model at the start of propagation. This method will be called
+     * before any calls to {@link #addContribution(SpacecraftState, TimeDerivativesEquations)},
+     * {@link #addContribution(FieldSpacecraftState, FieldTimeDerivativesEquations)},
+     * {@link #acceleration(SpacecraftState, double[])} or {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[])}
+     *
+     * <p> The default implementation of this method does nothing.</p>
+     *
+     * @param initialState spacecraft state at the start of propagation.
+     * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
+     * @param <T> type of the elements
+     */
+    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+        init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
     /** Compute the contribution of the force model to the perturbing

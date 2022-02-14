@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -344,7 +344,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public String toString(final TimeScale utc) {
         final String comma = ", ";
-        return new StringBuffer().append('{').
+        return new StringBuilder().append('{').
                                   append(date.toString(utc)).append(", P(").
                                   append(getPosition().getX()).append(comma).
                                   append(getPosition().getY()).append(comma).

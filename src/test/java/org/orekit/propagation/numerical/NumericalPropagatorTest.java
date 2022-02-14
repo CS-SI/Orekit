@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,13 +23,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -90,7 +91,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -113,12 +114,38 @@ public class NumericalPropagatorTest {
     private NumericalPropagator  propagator;
 
     @Test
+    public void testEventsWithTimeRangePropagation() {
+        final AtomicInteger counter = new AtomicInteger(0);
+        final double dt = 60.0;
+        final EventDetector singleDetector = new DateDetector(initDate.shiftedBy(dt / 2)).
+                                             withHandler((state, detector, increasing) -> {
+                                                 counter.incrementAndGet();
+                                                 return Action.CONTINUE;
+                                             });
+        ForceModel force = new ForceModelAdapter() {
+            @Override
+            public Stream<EventDetector> getEventsDetectors() {
+                return Stream.of(singleDetector);
+            }
+        };
+
+        // action
+        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.addForceModel(force);
+        AbsoluteDate target = initDate.shiftedBy(dt);
+        propagator.propagate(initDate.shiftedBy(1.0), target);
+
+        Assert.assertEquals(1, counter.intValue());
+
+    }
+
+    @Test
     public void testForceModelInitialized() {
         // setup
         // mutable holders
         SpacecraftState[] actualState = new SpacecraftState[1];
         AbsoluteDate[] actualDate = new AbsoluteDate[1];
-        ForceModel force = new ForceModelAdapter(){
+        ForceModel force = new ForceModelAdapter() {
             @Override
             public void init(SpacecraftState initialState, AbsoluteDate target) {
                 actualState[0] = initialState;
@@ -652,42 +679,54 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testAdditionalStateEvent() {
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
             public String getName() {
                 return "linear";
             }
 
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = 1.0;
-                return new double[7];
+            public int getDimension() {
+                return 1;
             }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
         });
         try {
-            propagator.addAdditionalEquations(new AdditionalEquations() {
+            propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
                 public String getName() {
                     return "linear";
                 }
 
-                public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                    pDot[0] = 1.0;
-                    return new double[7];
+                public int getDimension() {
+                    return 1;
                 }
+
+                public double[] derivatives(SpacecraftState s) {
+                    return new double[] { 1.0 };
+                }
+
             });
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         try {
-            propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
                public String getName() {
                     return "linear";
                 }
 
-                public double[] getAdditionalState(SpacecraftState state) {
+               public int getDimension() {
+                   return 1;
+               }
+
+               public double[] derivatives(SpacecraftState state) {
                     return null;
-                }
+               }
             });
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -747,15 +786,18 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testResetAdditionalStateEvent() {
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
             public String getName() {
                 return "linear";
             }
 
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = 1.0;
-                return null;
+            public int getDimension() {
+                return 1;
+            }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
@@ -885,13 +927,15 @@ public class NumericalPropagatorTest {
                 return new double[] { state.getA() * state.getA() };
             }
         });
-        propagator.addAdditionalEquations(new AdditionalEquations() {
+        propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() {
                 return "extra";
             }
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = rate;
-                return null;
+            public int getDimension() {
+                return 1;
+            }
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { rate };
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", 1.5));
@@ -917,7 +961,7 @@ public class NumericalPropagatorTest {
 
         double shift = -60;
         SpacecraftState s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assert.assertEquals(2, s.getAdditionalStates().size());
+        Assert.assertEquals(2, s.getAdditionalStatesValues().size());
         Assert.assertTrue(s.hasAdditionalState("squaredA"));
         Assert.assertTrue(s.hasAdditionalState("extra"));
         Assert.assertEquals(s.getA() * s.getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);

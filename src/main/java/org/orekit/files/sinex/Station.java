@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /**
  * Station model.
+ * <p>
+ * Since Orekit 11.1, this class handles multiple site antenna
+ * eccentricity. The {@link #getEccentricities()} method
+ * provides the last known eccentricity values.
+ * The {@link #getEccentricities(AbsoluteDate)} method can be
+ * used to access the site antenna eccentricity values for a
+ * given epoch.
+ * </p>
  * @author Bryan Cazabonne
  * @since 10.3
  */
@@ -44,8 +55,11 @@ public class Station {
     /** Eccentricity reference system. */
     private ReferenceSystem eccRefSystem;
 
-    /** Site antenna eccentricity (m). */
+    /** Latest site antenna eccentricities (m). */
     private Vector3D eccentricities;
+
+    /** TimeSpanMap of site antenna eccentricities. */
+    private TimeSpanMap<Vector3D> eccentricitiesTimeSpanMap;
 
     /** Station position. */
     private Vector3D position;
@@ -60,9 +74,10 @@ public class Station {
      * Constructor.
      */
     public Station() {
-        this.eccentricities = Vector3D.ZERO;
-        this.position       = Vector3D.ZERO;
-        this.velocity       = Vector3D.ZERO;
+        this.eccentricities            = Vector3D.ZERO;
+        this.eccentricitiesTimeSpanMap = new TimeSpanMap<>(null);
+        this.position                  = Vector3D.ZERO;
+        this.velocity                  = Vector3D.ZERO;
     }
 
     /**
@@ -102,6 +117,9 @@ public class Station {
      * @return start of validity
      */
     public AbsoluteDate getValidFrom() {
+        if (validFrom == null) {
+            validFrom = eccentricitiesTimeSpanMap.getFirstTransition().getDate();
+        }
         return validFrom;
     }
 
@@ -118,6 +136,9 @@ public class Station {
      * @return end of validity
      */
     public AbsoluteDate getValidUntil() {
+        if (validUntil == null) {
+            validUntil = eccentricitiesTimeSpanMap.getLastTransition().getDate();
+        }
         return validUntil;
     }
 
@@ -146,9 +167,10 @@ public class Station {
     }
 
     /**
-     * Get the station antenna eccentricities.
+     * Get the last known station antenna eccentricities.
      * <p>
-     * Vector convention: X-Y-Z or UP-NORTH-EAST
+     * Vector convention: X-Y-Z or UP-NORTH-EAST.
+     * See {@link #getEccRefSystem()} method.
      * </p>
      * @return station antenna eccentricities (m)
      */
@@ -157,11 +179,67 @@ public class Station {
     }
 
     /**
-     * Set the station antenna eccentricities.
+     * Set the last known station antenna eccentricities.
      * @param eccentricities the eccenticities to set (m)
      */
     public void setEccentricities(final Vector3D eccentricities) {
         this.eccentricities = eccentricities;
+    }
+
+    /**
+     * Get the station antenna eccentricities for the given epoch.
+     * <p>
+     * Vector convention: X-Y-Z or UP-NORTH-EAST.
+     * See {@link #getEccRefSystem()} method.
+     * <p>
+     * If there is no eccentricity values for the given epoch, an
+     * exception is thrown. It is possible to access the last known
+     * values using the {@link #getEccentricities()} method.
+     * @param date epoch
+     * @return station antenna eccentricities (m)
+     * @since 11.1
+     */
+    public Vector3D getEccentricities(final AbsoluteDate date) {
+        final Vector3D eccAtEpoch = eccentricitiesTimeSpanMap.get(date);
+        // If the entry is null, there is no valid eccentricity values for the input epoch
+        if (eccAtEpoch == null) {
+            // Throw an exception
+            throw new OrekitException(OrekitMessages.NO_STATION_ECCENTRICITY_FOR_EPOCH, date, getValidFrom(), getValidUntil());
+        }
+        return eccAtEpoch;
+    }
+
+    /**
+     * Get the TimeSpanMap of site antenna eccentricities.
+     * @return the TimeSpanMap of site antenna eccentricities
+     * @since 11.1
+     */
+    public TimeSpanMap<Vector3D> getEccentricitiesTimeSpanMap() {
+        return eccentricitiesTimeSpanMap;
+    }
+
+    /** Add a station eccentricity vector entry valid before a limit date.<br>
+     * Using <code>addStationEccentricitiesValidBefore(entry, t)</code> will make <code>entry</code>
+     * valid in ]-∞, t[ (note the open bracket).
+     * @param entry station eccentricity vector entry
+     * @param latestValidityDate date before which the entry is valid
+     * (must be different from <b>all</b> dates already used for transitions)
+     * @since 11.1
+     */
+    public void addStationEccentricitiesValidBefore(final Vector3D entry, final AbsoluteDate latestValidityDate) {
+        eccentricitiesTimeSpanMap.addValidBefore(entry, latestValidityDate, false);
+    }
+
+    /** Add a station eccentricity vector entry valid after a limit date.<br>
+     * Using <code>addStationEccentricitiesValidAfter(entry, t)</code> will make <code>entry</code>
+     * valid in [t, +∞[ (note the closed bracket).
+     * @param entry station eccentricity vector entry
+     * @param earliestValidityDate date after which the entry is valid
+     * (must be different from <b>all</b> dates already used for transitions)
+     * @since 11.1
+     */
+    public void addStationEccentricitiesValidAfter(final Vector3D entry, final AbsoluteDate earliestValidityDate) {
+        eccentricitiesTimeSpanMap.addValidAfter(entry, earliestValidityDate, false);
     }
 
     /**

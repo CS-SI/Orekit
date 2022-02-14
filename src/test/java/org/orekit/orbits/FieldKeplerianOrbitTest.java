@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -260,6 +260,11 @@ public class FieldKeplerianOrbitTest {
     @Test
     public void testIssue674() {
         doTestIssue674(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testNormalize() {
+        doTestNormalize(Decimal64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestKeplerianToKeplerian(final Field<T> field) {
@@ -1916,6 +1921,64 @@ public class FieldKeplerianOrbitTest {
             Assert.assertEquals(0.0, ((Double) oe.getParts()[2]).doubleValue(), Double.MIN_VALUE);
             Assert.assertEquals(Double.POSITIVE_INFINITY, ((Double) oe.getParts()[3]).doubleValue(), Double.MIN_VALUE);
         }
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestNormalize(Field<T> field) {
+        final T zero = field.getZero();
+        FieldKeplerianOrbit<T> withoutDerivatives =
+                        new FieldKeplerianOrbit<>(zero.newInstance(42166712.0), zero.newInstance(0.005),
+                                                  zero.newInstance(1.6), zero.newInstance(-0.3),
+                                                  zero.newInstance(1.25), zero.newInstance(0.4), PositionAngle.MEAN,
+                                                  FramesFactory.getEME2000(), FieldAbsoluteDate.getJ2000Epoch(field),
+                                                  zero.newInstance(mu));
+        FieldKeplerianOrbit<T> ref =
+                        new FieldKeplerianOrbit<>(zero.newInstance(24000000.0), zero.newInstance(0.012),
+                                                  zero.newInstance(1.9), zero.newInstance(-6.28),
+                                                  zero.newInstance(6.28), zero.newInstance(12.56), PositionAngle.MEAN,
+                                                  FramesFactory.getEME2000(), FieldAbsoluteDate.getJ2000Epoch(field),
+                                                  zero.newInstance(mu));
+
+        FieldKeplerianOrbit<T> normalized1 = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.normalize(withoutDerivatives, ref);
+        Assert.assertFalse(normalized1.hasDerivatives());
+        Assert.assertEquals(0.0, normalized1.getA().subtract(withoutDerivatives.getA()).getReal(), 1.0e-6);
+        Assert.assertEquals(0.0, normalized1.getE().subtract(withoutDerivatives.getE()).getReal(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized1.getI().subtract(withoutDerivatives.getI()).getReal(), 1.0e-10);
+        Assert.assertEquals(-MathUtils.TWO_PI, normalized1.getPerigeeArgument().subtract(withoutDerivatives.getPerigeeArgument()).getReal(),          1.0e-10);
+        Assert.assertEquals(+MathUtils.TWO_PI, normalized1.getRightAscensionOfAscendingNode().subtract(withoutDerivatives.getRightAscensionOfAscendingNode()).getReal(), 1.0e-10);
+        Assert.assertEquals(2 * MathUtils.TWO_PI, normalized1.getTrueAnomaly().subtract(withoutDerivatives.getTrueAnomaly()).getReal(), 1.0e-10);
+        Assert.assertNull(normalized1.getADot());
+        Assert.assertNull(normalized1.getEDot());
+        Assert.assertNull(normalized1.getIDot());
+        Assert.assertNull(normalized1.getPerigeeArgumentDot());
+        Assert.assertNull(normalized1.getRightAscensionOfAscendingNodeDot());
+        Assert.assertNull(normalized1.getTrueAnomalyDot());
+
+        T[] p    = MathArrays.buildArray(field, 6);
+        T[] pDot = MathArrays.buildArray(field, 6);
+        for (int i = 0; i < pDot.length; ++i) {
+            pDot[i] = zero.newInstance(i);
+        }
+        OrbitType.KEPLERIAN.mapOrbitToArray(withoutDerivatives, PositionAngle.TRUE, p, null);
+        FieldKeplerianOrbit<T> withDerivatives = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.mapArrayToOrbit(p, pDot,
+                                                                                                              PositionAngle.TRUE,
+                                                                                                              withoutDerivatives.getDate(),
+                                                                                                              withoutDerivatives.getMu(),
+                                                                                                              withoutDerivatives.getFrame());
+        FieldKeplerianOrbit<T> normalized2 = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.normalize(withDerivatives, ref);
+        Assert.assertTrue(normalized2.hasDerivatives());
+        Assert.assertEquals(0.0, normalized2.getA().subtract(withDerivatives.getA()).getReal(),          1.0e-6);
+        Assert.assertEquals(0.0, normalized2.getE().subtract(withDerivatives.getE()).getReal(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getI().subtract(withDerivatives.getI()).getReal(), 1.0e-10);
+        Assert.assertEquals(-MathUtils.TWO_PI, normalized2.getPerigeeArgument().subtract(withDerivatives.getPerigeeArgument()).getReal(), 1.0e-10);
+        Assert.assertEquals(+MathUtils.TWO_PI, normalized2.getRightAscensionOfAscendingNode().subtract(withDerivatives.getRightAscensionOfAscendingNode()).getReal(), 1.0e-10);
+        Assert.assertEquals(2 * MathUtils.TWO_PI, normalized2.getTrueAnomaly().subtract(withDerivatives.getTrueAnomaly()).getReal(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getADot().subtract(withDerivatives.getADot()).getReal(),          1.0e-6);
+        Assert.assertEquals(0.0, normalized2.getEDot().subtract(withDerivatives.getEDot()).getReal(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getIDot().subtract(withDerivatives.getIDot()).getReal(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getPerigeeArgumentDot().subtract(withDerivatives.getPerigeeArgumentDot()).getReal(),          1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getRightAscensionOfAscendingNodeDot().subtract(withDerivatives.getRightAscensionOfAscendingNodeDot()).getReal(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getTrueAnomalyDot().subtract(withDerivatives.getTrueAnomalyDot()).getReal(), 1.0e-10);
+
     }
 
 }

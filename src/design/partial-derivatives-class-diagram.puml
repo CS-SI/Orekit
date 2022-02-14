@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -27,78 +27,60 @@
   skinparam PackageFontSize       12
   skinparam linetype              ortho
 
-  package org.orekit #ECEBD8 {
+  package org.orekit.propagation #ECEBD8 {
 
-    package forces #DDEBD8 {
-
-      interface ForceModel {
-        +void addContribution()
-        +FieldVector3D<Gradient> acceleration()
-        +EventDetector[] getEventsDetectors()
-      }
-
-      package radiation #CBDBC8 {
-        class SolarRadiationPressure
-        ForceModel <|.. SolarRadiationPressure
-      }
-
+    interface Propagator {
+      + SpacecraftState propagate(AbsoluteDate target)
+      +MatrixHarvester setupMatricesComputation(name, initialSTM, initialJacobian)
     }
- 
-    package propagation #DDEBD8 {
 
-      interface Propagator {
-        + SpacecraftState propagate(AbsoluteDate target)
+    interface MatricesHarvester {
+      +void setReferenceState(SpacecraftState state)
+      +RealMatrix getStateTransitionMatrix(SpacecraftState state)
+      +RealMatrix getParametersJacobian(SpacecraftState state)
+      +List<String> getJacobiansColumnsNames()
+    }
+
+    Propagator -right-> MatricesHarvester
+
+    package integration #DDEBD8 {
+      class  AbstractIntegratedPropagator {
+       +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
       }
-
-      Propagator <|.. AbstractPropagator
-
-      package integration #CBDBC8 {
-        interface AdditionalEquations {
-          +String getName()
-          +void computeDerivatives()
-        }
-        class  AbstractIntegratedPropagator {
-         +void addAdditionalEquations(AdditionalEquations addEqu)
-        }
-        AbstractPropagator <|-- AbstractIntegratedPropagator
-        AdditionalEquations <---o AbstractIntegratedPropagator : additional
+      interface AdditionalDerivativesProvider {
+        +String getName()
+        +yield()
+        +void derivatives()
       }
+      AbstractIntegratedPropagator o--> AdditionalDerivativesProvider : providers
+      Propagator <|.. AbstractIntegratedPropagator
+    }
 
-      package numerical #CBDBC8 {
+    package numerical #DDEBD8 {
 
-        interface TimeDerivativesEquations {
-          +void addKeplerContribution()
-          +void addNonKeplerianAcceleration()
-          +void addMassDerivative()
-        }
+       class NumericalPropagationHarvester
 
-       class NumericalPropagator {
-         +void addForceModel(ForceModel model)
+       class StateTransitionMatrixGenerator {
+         -List<ForceModel> forceModels
        }
 
-        class PartialDerivativesEquations {
-          +void freezeParametersSelection()
-          +void setInitialJacobians(SpacecraftState s0)
-          +JacobiansMapper getMapper()
+       class IntegrableJacobianColumnGenerator {
+         -String columnName
        }
-      class Jacobianizer
 
-       TimeDerivativesEquations    <--      ForceModel : contributes
-       AdditionalEquations         <|..     PartialDerivativesEquations
-       PartialDerivativesEquations *-->     ForceModel
-       AbstractIntegratedPropagator  <|--     NumericalPropagator
-       NumericalPropagator         "1..*" *--> ForceModel
-       NumericalPropagator         "1" *--> TimeDerivativesEquations : main
+       class NumericalPropagator
 
-      }
+       MatricesHarvester <|.. NumericalPropagationHarvester
+       AbstractIntegratedPropagator <|-- NumericalPropagator
+       StateTransitionMatrixGenerator <--o NumericalPropagator
+       IntegrableJacobianColumnGenerator <--o NumericalPropagator
+       NumericalPropagationHarvester <--o NumericalPropagator
+
+       AdditionalDerivativesProvider <|.. StateTransitionMatrixGenerator
+       AdditionalDerivativesProvider <|.. IntegrableJacobianColumnGenerator
+
     }
 
   }
 
-  package user.application #F3EDF7 {
-        class ComplexForceModel #EAE6F7/B9B3D2
-        ComplexForceModel ..|> ForceModel
-       Jacobianizer                  "1" <-->  "1" ComplexForceModel
-
-  }
 @enduml

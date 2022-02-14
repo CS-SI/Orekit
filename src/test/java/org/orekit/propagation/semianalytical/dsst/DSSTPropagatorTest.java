@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -260,6 +260,10 @@ public class DSSTPropagatorTest {
     public void testKepler() {
         SpacecraftState state = getLEOState();
         setDSSTProp(state);
+
+        Assert.assertEquals(2, dsstProp.getSatelliteRevolution());
+        dsstProp.setSatelliteRevolution(17);
+        Assert.assertEquals(17, dsstProp.getSatelliteRevolution());
 
         // Propagation of the initial state at t + dt
         final double dt = 3200.;
@@ -818,25 +822,29 @@ public class DSSTPropagatorTest {
         final AbsoluteDate finalDate = orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateNoConfig = propagator.propagate(finalDate);
-        Assert.assertEquals(0, stateNoConfig.getAdditionalStates().size());
+        Assert.assertEquals(0, stateNoConfig.getAdditionalStatesValues().size());
 
+        Assert.assertNull(propagator.getSelectedCoefficients());
         propagator.setSelectedCoefficients(new HashSet<String>());
+        Assert.assertNotNull(propagator.getSelectedCoefficients());
+        Assert.assertTrue(propagator.getSelectedCoefficients().isEmpty());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigEmpty = propagator.propagate(finalDate);
-        Assert.assertEquals(234, stateConfigEmpty.getAdditionalStates().size());
+        Assert.assertEquals(234, stateConfigEmpty.getAdditionalStatesValues().size());
 
         final Set<String> selected = new HashSet<String>();
         selected.add("DSST-3rd-body-Moon-s[7]");
         selected.add("DSST-central-body-tesseral-c[-2][3]");
         propagator.setSelectedCoefficients(selected);
+        Assert.assertEquals(2, propagator.getSelectedCoefficients().size());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigeSelected = propagator.propagate(finalDate);
-        Assert.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStates().size());
+        Assert.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStatesValues().size());
 
         propagator.setSelectedCoefficients(null);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigNull = propagator.propagate(finalDate);
-        Assert.assertEquals(0, stateConfigNull.getAdditionalStates().size());
+        Assert.assertEquals(0, stateConfigNull.getAdditionalStatesValues().size());
 
     }
 

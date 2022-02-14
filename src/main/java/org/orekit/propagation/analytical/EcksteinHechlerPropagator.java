@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
@@ -35,9 +36,11 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -467,9 +470,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         final EHModel newModel = computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                        state.getMass());
         if (forward) {
-            models.addValidAfter(newModel, state.getDate());
+            models.addValidAfter(newModel, state.getDate(), false);
         } else {
-            models.addValidBefore(newModel, state.getDate());
+            models.addValidBefore(newModel, state.getDate(), false);
         }
         stateChanged(state);
     }
@@ -547,6 +550,40 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         final EHModel current = models.get(date);
         return new CartesianOrbit(toCartesian(date, current.propagateParameters(date)),
                                   current.mean.getFrame(), mu);
+    }
+
+    /**
+     * Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
+     * @since 11.1
+     */
+    public double getMu() {
+        return mu;
+    }
+
+    /**
+     * Get the un-normalized zonal coefficients.
+     * @return the un-normalized zonal coefficients
+     * @since 11.1
+     */
+    public double[] getCk0() {
+        return ck0.clone();
+    }
+
+    /**
+     * Get the reference radius of the central body attraction model.
+     * @return the reference radius in meters
+     * @since 11.1
+     */
+    public double getReferenceRadius() {
+        return referenceRadius;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        return new EcksteinHechlerHarvester(this, stmName, initialStm, initialJacobianColumns);
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */

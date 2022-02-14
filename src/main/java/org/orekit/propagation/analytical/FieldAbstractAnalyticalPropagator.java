@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -535,8 +535,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
          * @param currentState end of the step
          */
         FieldBasicStepInterpolator(final boolean isForward,
-                              final FieldSpacecraftState<T> previousState,
-                              final FieldSpacecraftState<T> currentState) {
+                                   final FieldSpacecraftState<T> previousState,
+                                   final FieldSpacecraftState<T> currentState) {
             this.forward             = isForward;
             this.previousState   = previousState;
             this.currentState    = currentState;

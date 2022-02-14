@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -739,6 +739,15 @@ public class CartesianOrbitTest {
                                               shiftedOrbitCopy.getPVCoordinates().getVelocity()),
                             1.0e-10);
 
+    }
+
+    @Test
+    public void testNormalize() {
+        final Vector3D position = new Vector3D(42164140, 0, 0);
+        final PVCoordinates pv  = new PVCoordinates(position,
+                                       new Vector3D(0, FastMath.sqrt(mu / position.getNorm()), 0));
+        final Orbit orbit = new CartesianOrbit(pv, FramesFactory.getEME2000(), date, mu);
+        Assert.assertSame(orbit, orbit.getType().normalize(orbit, null));
     }
 
     @Before

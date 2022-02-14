@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeSpanMap.Transition;
 
 /**
@@ -89,23 +90,15 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
 
         // Get all transitions from the TimeSpanMap
         final List<ParameterDriver> listTroposphericParameterDrivers = new ArrayList<>();
-        final NavigableSet<Transition<EstimatedTroposphericModel>> troposphericModelTransitions =  getTransitions();
 
-        // Loop on the transitions
-        for (Transition<EstimatedTroposphericModel> transition : troposphericModelTransitions) {
-            // Add all the "before" parameter drivers of each transition
-            for (ParameterDriver tropoDriver : transition.getBefore().getParametersDrivers()) {
+        // Loop on the spans
+        for (Span<EstimatedTroposphericModel> span = getFirstSpan(); span != null; span = span.next()) {
+            // Add all the parameter drivers of each span
+            for (ParameterDriver tropoDriver : span.getData().getParametersDrivers()) {
                 // Add the driver only if the name does not exist already
                 if (!findByName(listTroposphericParameterDrivers, tropoDriver.getName())) {
                     listTroposphericParameterDrivers.add(tropoDriver);
                 }
-            }
-        }
-        // Finally, add the "after" parameter drivers of the last transition
-        for (ParameterDriver tropoDriver : troposphericModelTransitions.last().getAfter().getParametersDrivers()) {
-            // Adds only if the name does not exist already
-            if (!findByName(listTroposphericParameterDrivers, tropoDriver.getName())) {
-                listTroposphericParameterDrivers.add(tropoDriver);
             }
         }
 
@@ -125,7 +118,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
         troposphericModelMap.addValidBefore(changeTroposphericParameterDriversNames(model,
                                                                                     latestValidityDate,
                                                                                     DATE_BEFORE),
-                                            latestValidityDate);
+                                            latestValidityDate, false);
     }
 
     /** Add a EstimatedTroposphericModel entry valid after a limit date.<br>
@@ -139,7 +132,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
         troposphericModelMap.addValidAfter(changeTroposphericParameterDriversNames(model,
                                                                                    earliestValidityDate,
                                                                                    DATE_AFTER),
-                                           earliestValidityDate);
+                                           earliestValidityDate, false);
     }
 
     /** Get the {@link EstimatedTroposphericModel} model valid at a date.
@@ -152,9 +145,19 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
 
     /** Get the {@link Transition}s of the tropospheric model time span map.
      * @return the {@link Transition}s for the tropospheric model time span map
+     * @deprecated as of 11.1, replaced by {@link #getFirstSpan()}
      */
+    @Deprecated
     public NavigableSet<Transition<EstimatedTroposphericModel>> getTransitions() {
         return troposphericModelMap.getTransitions();
+    }
+
+    /** Get the first {@link Span time span} of the tropospheric model time span map.
+     * @return the first {@link Span time span} of the tropospheric model time span map
+     * @since 11.1
+     */
+    public Span<EstimatedTroposphericModel> getFirstSpan() {
+        return troposphericModelMap.getFirstSpan();
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the

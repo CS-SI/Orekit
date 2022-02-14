@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -136,9 +136,6 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Hansen objects for field elements. */
     private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
-    /** Flag for force model initialization with field elements. */
-    private boolean pendingInitialization;
-
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @param mu central attraction coefficient
@@ -155,8 +152,6 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         this.body = body;
         this.Vns  = CoefficientsFactory.computeVns(MAX_POWER);
-
-        pendingInitialization = true;
 
         fieldShortPeriods = new HashMap<>();
         fieldHansen       = new HashMap<>();
@@ -212,16 +207,12 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        if (pendingInitialization == true) {
-            // Initializes specific parameters.
-            final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
+        // Initializes specific parameters.
+        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-            maxFieldFreqF = context.getMaxFreqF();
+        maxFieldFreqF = context.getMaxFreqF();
 
-            fieldHansen.put(field, new FieldHansenObjects<>(field));
-
-            pendingInitialization = false;
-        }
+        fieldHansen.put(field, new FieldHansenObjects<>(field));
 
         final int jMax = maxFieldFreqF;
         final FieldThirdBodyShortPeriodicCoefficients<T> ftbspc =
@@ -3089,12 +3080,12 @@ public class DSSTThirdBody implements DSSTForceModel {
             final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
             final int compare = first.compareTo(last);
             if (compare < 0) {
-                slots.addValidAfter(slot, first);
+                slots.addValidAfter(slot, first, false);
             } else if (compare > 0) {
-                slots.addValidBefore(slot, first);
+                slots.addValidBefore(slot, first, false);
             } else {
                 // single date, valid for all time
-                slots.addValidAfter(slot, AbsoluteDate.PAST_INFINITY);
+                slots.addValidAfter(slot, AbsoluteDate.PAST_INFINITY, false);
             }
             return slot;
         }

@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = banen er nær kritisk hældning (i = {0} grad
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = umuligt at udregne Eckstein-Hechler middelparametrene efter {0} iterationer
 
+# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = umuligt at udregne Brouwer-Lyddane middelparametrene efter {0} iterationer
+
 # unable to compute TLE after {0} iterations
 UNABLE_TO_COMPUTE_TLE = umuligt at udregne TLE efter {0} iterationer
 
@@ -151,8 +154,10 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = for høj grad (n = {0}, maksimal potentiel 
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = for høj kontrol (m = {0}, maksimal potentiel kontrol er {1})
 
+# no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
+WRONG_DEGREE_OR_ORDER = <MISSING TRANSLATION>
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
-# SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = flere referencedatoer ({0} og {1}) fundet i tyngdefeltsfilen {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
 
 # no TLE data available for object {0}
@@ -237,7 +242,6 @@ FRAMES_MISMATCH = ramme ({0}) passer ikke med ramme ({1})
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = initialstatus er ikke præciseret for banepropagation
 
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
-# EVENT_DATE_TOO_CLOSE = hændelsesdatoen {0}, større end {1} minus {3} sekunder og mindre end {2} plus {3} sekunder, kan ikke lægges til
 EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION>
 
 # unable to read header record from JPL ephemerides binary file {0}
@@ -406,7 +410,6 @@ NOT_ENOUGH_CACHED_NEIGHBORS = for få mellemlagrede naboer: {0} (skal mindst væ
 NO_CACHED_ENTRIES = ingen mellemlagrede poster
 
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
-# NON_CHRONOLOGICALLY_SORTED_ENTRIES = genererede poster er ikke sorterede: {0} > {1}
 NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
 
 # no data generated around date: {0}
@@ -743,3 +746,12 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = <MISSING TRANSLATION>
+
+# backward propagation not allowed here
+BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
+
+# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
+
+# inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
+INCONSISTENT_SELECTION = <MISSING TRANSLATION>

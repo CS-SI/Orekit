@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -124,6 +124,15 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
                                                      final int newMaxIter,
                                                      final EventHandler<? super EventEnablingPredicateFilter<T>> newHandler) {
         return new EventEnablingPredicateFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);
+    }
+
+    /**
+     * Get the wrapped raw detector.
+     * @return the wrapped raw detector
+     * @since 11.1
+     */
+    public EventDetector getDetector() {
+        return rawDetector;
     }
 
     /**  {@inheritDoc} */

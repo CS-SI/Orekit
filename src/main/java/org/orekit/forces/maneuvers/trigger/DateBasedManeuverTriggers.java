@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,67 +16,85 @@
  */
 package org.orekit.forces.maneuvers.trigger;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.ode.events.Action;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldDateDetector;
+import org.hipparchus.Field;
+import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
+import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Maneuver triggers based on a start and end date, with no parameter drivers.
  * @author Maxime Journot
  * @since 10.2
  */
-public class DateBasedManeuverTriggers implements ManeuverTriggers {
+public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDrivenDateIntervalDetector> {
 
-    /** Start of the maneuver. */
-    private final AbsoluteDate startDate;
+    /** Default name for trigger. */
+    public static final String DEFAULT_NAME = "";
 
-    /** End of the maneuver. */
-    private final AbsoluteDate endDate;
+    /** Name of the trigger (used as prefix for start and stop parameters drivers). */
+    private final String name;
 
-    /** Triggered date of engine start. */
-    private AbsoluteDate triggeredStart;
+    /** Simple constructor.
+     * @param date start (or end) data of the maneuver
+     * @param duration maneuver duration (if positive, maneuver is from date to date + duration,
+     * if negative, maneuver will be from date - duration to date)
+     */
+    public DateBasedManeuverTriggers(final AbsoluteDate date, final double duration) {
+        this(DEFAULT_NAME, date, duration);
+    }
 
-    /** Triggered date of engine stop. */
-    private AbsoluteDate triggeredEnd;
+    /** Simple constructor.
+     * @param name name of the trigger (used as prefix for start and stop parameters drivers)
+     * @param date start (or end) data of the maneuver
+     * @param duration maneuver duration (if positive, maneuver is from date to date + duration,
+     * if negative, maneuver will be from date - duration to date)
+     * @since 11.1
+     */
+    public DateBasedManeuverTriggers(final String name, final AbsoluteDate date, final double duration) {
+        super(createDetector(name, date, duration));
+        this.name = name;
+    }
 
-    /** Propagation direction. */
-    private boolean forward;
-
-    public DateBasedManeuverTriggers(final AbsoluteDate date,
-                                     final double duration) {
+    /** Create a date detector from one boundary and signed duration.
+     * @param prefix for start and stop parameters drivers
+     * @param date start (or end) data of the maneuver
+     * @param duration maneuver duration (if positive, maneuver is from date to date + duration,
+     * if negative, maneuver will be from date - duration to date)
+     * @return date detector
+     * @since 11.1
+     */
+    private static ParameterDrivenDateIntervalDetector createDetector(final String prefix, final AbsoluteDate date, final double duration) {
         if (duration >= 0) {
-            this.startDate = date;
-            this.endDate   = date.shiftedBy(duration);
+            return new ParameterDrivenDateIntervalDetector(prefix, date, date.shiftedBy(duration));
         } else {
-            this.endDate   = date;
-            this.startDate = endDate.shiftedBy(duration);
+            return new ParameterDrivenDateIntervalDetector(prefix, date.shiftedBy(duration), date);
         }
-        this.triggeredStart    = null;
-        this.triggeredEnd      = null;
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return name;
     }
 
     /** Get the start date.
      * @return the start date
      */
     public AbsoluteDate getStartDate() {
-        return startDate;
+        return getFiringIntervalDetector().getStartDriver().getDate();
     }
 
     /** Get the end date.
      * @return the end date
      */
     public AbsoluteDate getEndDate() {
-        return endDate;
+        return getFiringIntervalDetector().getStopDriver().getDate();
     }
 
     /** Get the duration of the maneuver (s).
@@ -84,131 +102,36 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
      * @return the duration of the maneuver (s)
      */
     public double getDuration() {
-        return endDate.durationFrom(startDate);
+        return getEndDate().durationFrom(getStartDate());
     }
 
     /** {@inheritDoc} */
     @Override
-    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-        // set the initial value of firing
-        final AbsoluteDate sDate = initialState.getDate();
-        this.forward             = sDate.compareTo(target) < 0;
-        final boolean isBetween  = sDate.isBetween(startDate, endDate);
-        final boolean isOnStart  = startDate.compareTo(sDate) == 0;
-        final boolean isOnEnd    = endDate.compareTo(sDate) == 0;
+    protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+        FieldAbstractDetector<D, S> convertIntervalDetector(final Field<S> field, final ParameterDrivenDateIntervalDetector detector) {
 
-        triggeredStart = null;
-        triggeredEnd   = null;
-        if (forward) {
-            if (isBetween || isOnStart) {
-                triggeredStart = startDate;
-            }
-        } else {
-            if (isBetween || isOnEnd) {
-                triggeredEnd = endDate;
-            }
-        }
+        final FieldParameterDrivenDateIntervalDetector<S> fd =
+                        new FieldParameterDrivenDateIntervalDetector<S>(field, "",
+                                                                        detector.getStartDriver().getBaseDate(),
+                                                                        detector.getStopDriver().getBaseDate());
+        fd.getStartDriver().setName(detector.getStartDriver().getName());
+        fd.getStopDriver().setName(detector.getStopDriver().getName());
+        fd.getMedianDriver().setName(detector.getMedianDriver().getName());
+        fd.getDurationDriver().setName(detector.getDurationDriver().getName());
+
+        @SuppressWarnings("unchecked")
+        final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) fd;
+        return converted;
+
     }
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        // In forward propagation direction, firing must be enabled
-        // at start time and disabled at end time; in backward
-        // propagation direction, firing must be enabled
-        // at end time and disabled at start time
-        final DateDetector startDetector = new DateDetector(startDate).
-            withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
-                triggeredStart = state.getDate();
-                return Action.RESET_DERIVATIVES;
-            }
-            );
-        final DateDetector endDetector = new DateDetector(endDate).
-            withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
-                triggeredEnd = state.getDate();
-                return Action.RESET_DERIVATIVES;
-            });
-        return Stream.of(startDetector, endDetector);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        // In forward propagation direction, firing must be enabled
-        // at start time and disabled at end time; in backward
-        // propagation direction, firing must be enabled
-        // at end time and disabled at start time
-        final FieldDateDetector<T> startDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, startDate)).
-            withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
-                triggeredStart = state.getDate().toAbsoluteDate();
-                return Action.RESET_DERIVATIVES;
-            });
-        final FieldDateDetector<T> endDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, endDate)).
-            withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
-                triggeredEnd = state.getDate().toAbsoluteDate();
-                return Action.RESET_DERIVATIVES;
-            });
-        return Stream.of(startDetector, endDetector);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean isFiring(final AbsoluteDate date, final double[] parameters) {
-        // Firing state does not depend on a parameter driver here
-        return isFiring(date);
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date,
-                                                            final T[] parameters) {
-        // Firing state does not depend on a parameter driver here
-        return isFiring(date.toAbsoluteDate());
-    }
-
-    /** Check if maneuvering is on.
-     * @param date current date
-     * @return true if maneuver is on at this date
-     */
-    public boolean isFiring(final AbsoluteDate date) {
-        if (forward) {
-            if (triggeredStart == null) {
-                // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
-                return false;
-            } else if (date.durationFrom(triggeredStart) < 0.0) {
-                // we are unambiguously before maneuver start
-                return false;
-            } else {
-                if (triggeredEnd == null) {
-                    // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
-                    return true;
-                } else if (date.durationFrom(triggeredEnd) < 0.0) {
-                    // we are unambiguously before maneuver end
-                    return true;
-                } else {
-                    // we are at or after maneuver end
-                    return false;
-                }
-            }
-        } else {
-            if (triggeredEnd == null) {
-                // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
-                return false;
-            } else if (date.durationFrom(triggeredEnd) > 0.0) {
-                // we are unambiguously after maneuver end
-                return false;
-            } else {
-                if (triggeredStart == null) {
-                    // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
-                    return true;
-                } else if (date.durationFrom(triggeredStart) > 0.0) {
-                    // we are unambiguously after maneuver start
-                    return true;
-                } else {
-                    // we are at or before maneuver start
-                    return false;
-                }
-            }
-        }
+    public List<ParameterDriver> getParametersDrivers() {
+        return Arrays.asList(getFiringIntervalDetector().getStartDriver(),
+                             getFiringIntervalDetector().getStopDriver(),
+                             getFiringIntervalDetector().getMedianDriver(),
+                             getFiringIntervalDetector().getDurationDriver());
     }
 
 }

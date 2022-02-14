@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -34,12 +34,11 @@
   }
 
   package utils #DDEBD8 {
-    interface PVCoordinatesProvider
+    interface ExtendedPVCoordinatesProvider
   }
 
   package bodies #DDEBD8 {
     interface CelestialBody {
-      +Frame getFrame()
       +Frame getInertiallyOrientedFrame()
       +Frame getBodyOrientedFrame()
       +String getName()
@@ -71,30 +70,28 @@
 
     interface IAUPole {
       +Vector3D getPole(AbsoluteDate date)
+      +Vector3D getNode(AbsoluteDate date)
       +double getPrimeMeridianAngle(AbsoluteDate date)
     }
 
-    class IAUPoleFactory {
+    abstract class PredefinedIAUPoles {
       +IAUPole getIAUPole(EphemerisType body)
     }
 
-    abstract class AbstractCelestialBody
-
-    CelestialBodyLoader  <|-- JPLEphemeridesLoader
+    CelestialBodyLoader     <|..         JPLEphemeridesLoader
     CelestialBody "*"       <-left-o "1" CelestialBodyFactory
-    CelestialBodyFactory "1" o--> "*" CelestialBodyLoader
-    PVCoordinatesProvider <|.. CelestialBody
-    CelestialBody         -up-> Frame
-    CelestialBody         <|-- AbstractCelestialBody
-    IAUPole "*" <-left-* "1" IAUPoleFactory  : creates
-    AbstractCelestialBody "1" *--> IAUPole
-    AbstractCelestialBody <-left- JPLEphemeridesLoader : creates
+    CelestialBodyFactory "1" o--> "*"    CelestialBodyLoader
+    ExtendedPVCoordinatesProvider <|--   CelestialBody
+    CelestialBody         -up->          Frame
+    IAUPole "*" <-left-* "1"             PredefinedIAUPoles  : creates
+    CelestialBody "1" *-->               IAUPole
+    CelestialBody <-left-                JPLEphemeridesLoader : creates
 
   }
 
   package data #DDEBD8 {
-    interface DataLoader
-    CelestialBodyLoader ..|> DataLoader
+    abstract class AbstractSelfFeedingLoader
+    JPLEphemeridesLoader --|> AbstractSelfFeedingLoader
   }
 
 }

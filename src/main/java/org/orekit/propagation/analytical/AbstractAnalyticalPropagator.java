@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,7 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventState;
@@ -378,6 +379,15 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
     }
 
+    /**
+     * Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
+     * @return names of the parameters (i.e. columns) of the Jacobian matrix
+     * @since 11.1
+     */
+    protected List<String> getJacobiansColumnsNames() {
+        return Collections.emptyList();
+    }
+
     /** Internal PVCoordinatesProvider for attitude computation. */
     private class LocalPVProvider implements PVCoordinatesProvider {
 
@@ -418,7 +428,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                     addAdditionalStateProvider(provider);
                 }
             } catch (OrekitException oe) {
-                // as the providers are already compatible with each other,
+                // as the generators are already compatible with each other,
                 // this should never happen
                 throw new OrekitInternalError(null);
             }

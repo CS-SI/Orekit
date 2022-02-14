@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,6 +110,15 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
                                      final int newMaxIter, final EventHandler<? super EventShifter<T>> newHandler) {
         return new EventShifter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                    detector, useShiftedStates, -increasingOffset, -decreasingOffset);
+    }
+
+    /**
+     * Get the detector for the raw unshifted event.
+     * @return the detector for the raw unshifted event
+     * @since 11.1
+     */
+    public EventDetector getDetector() {
+        return detector;
     }
 
     /** Get the increasing events time shift.

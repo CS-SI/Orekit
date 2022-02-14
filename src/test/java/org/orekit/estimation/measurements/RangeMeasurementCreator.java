@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.estimation.Context;
+import org.orekit.estimation.StationDataProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -33,22 +33,22 @@ import org.orekit.utils.ParameterDriver;
 
 public class RangeMeasurementCreator extends MeasurementCreator {
 
-    private final Context             context;
+    private final StationDataProvider provider;
     private final Vector3D            antennaPhaseCenter;
     private final ObservableSatellite satellite;
 
-    public RangeMeasurementCreator(final Context context) {
+    public RangeMeasurementCreator(final StationDataProvider context) {
         this(context, Vector3D.ZERO);
     }
 
-    public RangeMeasurementCreator(final Context context, final Vector3D antennaPhaseCenter) {
-        this.context            = context;
+    public RangeMeasurementCreator(final StationDataProvider provider, final Vector3D antennaPhaseCenter) {
+        this.provider            = provider;
         this.antennaPhaseCenter = antennaPhaseCenter;
         this.satellite          = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
-        for (final GroundStation station : context.stations) {
+        for (final GroundStation station : provider.getStations()) {
             for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
                                                         station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
@@ -67,7 +67,7 @@ public class RangeMeasurementCreator extends MeasurementCreator {
     }
 
     public void handleStep(final SpacecraftState currentState) {
-        for (final GroundStation station : context.stations) {
+        for (final GroundStation station : provider.getStations()) {
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
             final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);

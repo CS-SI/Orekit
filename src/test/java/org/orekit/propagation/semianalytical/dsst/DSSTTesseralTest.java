@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -155,9 +155,9 @@ public class DSSTTesseralTest {
         Assert.assertEquals(5.192409957353236,      y[0], 1.e-15);
         Assert.assertEquals(9.660364749662076E-7,   y[1], 1.e-22);
         Assert.assertEquals(1.542008987162059E-6,   y[2], 1.e-21);
-        Assert.assertEquals(-4.9944146013126755E-8, y[3], 1.e-23);
-        Assert.assertEquals(-4.500974242661177E-8,  y[4], 1.e-23);
-        Assert.assertEquals(-2.785213556107612E-7,  y[5], 1.e-22);
+        Assert.assertEquals(-4.9944146013126755E-8, y[3], 1.e-22);
+        Assert.assertEquals(-4.500974242661177E-8,  y[4], 1.e-22);
+        Assert.assertEquals(-2.785213556107612E-7,  y[5], 1.e-21);
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,14 +18,11 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.numerical.JacobiansMapper;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.utils.ParameterDriversList;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
@@ -59,31 +56,18 @@ public class KalmanModel extends AbstractKalmanModel {
         // Update the reference trajectory propagator
         setReferenceTrajectories(propagators);
 
-        // Jacobian mappers
-        final AbstractJacobiansMapper[] mappers = getMappers();
+        // Jacobian harvesters
+        final MatricesHarvester[] harvesters = new MatricesHarvester[propagators.length];
 
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
             final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
-            final PartialDerivativesEquations pde = new PartialDerivativesEquations(equationName, (NumericalPropagator) getReferenceTrajectories()[k]);
-
-            // Reset the Jacobians
-            final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();
-            final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-            getReferenceTrajectories()[k].resetInitialState(stateWithDerivatives);
-            mappers[k] = pde.getMapper();
+            harvesters[k] = getReferenceTrajectories()[k].setupMatricesComputation(equationName, null, null);
         }
 
-        // Update Jacobian mappers
-        setMappers(mappers);
+        // Update Jacobian harvesters
+        setHarvesters(harvesters);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
-        // does nothing
-        // numerical method does not require analytical terms calculations
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,7 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -107,10 +106,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        final List<ParameterDriver> drivers = new ArrayList<>(2);
-        drivers.add(thrustDriver);
-        drivers.add(flowRateDriver);
-        return Collections.unmodifiableList(drivers);
+        return Arrays.asList(thrustDriver, flowRateDriver);
     }
 
     /** {@inheritDoc} */

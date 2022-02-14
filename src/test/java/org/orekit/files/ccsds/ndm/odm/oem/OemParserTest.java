@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -823,12 +823,12 @@ public class OemParserTest {
 
         // frames to check
         List<Pair<String, Frame>> frames = new ArrayList<>();
-        frames.add(new Pair<>("ITRF-1993", FramesFactory.getITRF(ITRFVersion.ITRF_1993, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF-1997", FramesFactory.getITRF(ITRFVersion.ITRF_1997, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF2000",  FramesFactory.getITRF(ITRFVersion.ITRF_2000, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF2005",  FramesFactory.getITRF(ITRFVersion.ITRF_2005, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF2008",  FramesFactory.getITRF(ITRFVersion.ITRF_2008, conventions, simpleEop)));
-        frames.add(new Pair<>("ITRF2014",  FramesFactory.getITRF(ITRFVersion.ITRF_2014, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF-93",  FramesFactory.getITRF(ITRFVersion.ITRF_1993, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF-97",  FramesFactory.getITRF(ITRFVersion.ITRF_1997, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2000", FramesFactory.getITRF(ITRFVersion.ITRF_2000, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2005", FramesFactory.getITRF(ITRFVersion.ITRF_2005, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2008", FramesFactory.getITRF(ITRFVersion.ITRF_2008, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2014", FramesFactory.getITRF(ITRFVersion.ITRF_2014, conventions, simpleEop)));
 
         for (Pair<String, Frame> frame : frames) {
             final String frameName = frame.getFirst();
@@ -843,7 +843,7 @@ public class OemParserTest {
 
             // verify
             OemSegment segment = actual.getSegments().get(0);
-            Assert.assertEquals(frameName.replace("-", ""),
+            Assert.assertEquals(frameName,
                                 segment.getMetadata().getReferenceFrame().getName());
             // check expected frame
             Frame actualFrame = segment.getFrame();
@@ -852,6 +852,19 @@ public class OemParserTest {
             Assert.assertEquals(expectedFrame.getTransformProvider(),
                                 actualFrame.getTransformProvider());
         }
+    }
+
+    @Test
+    public void testEmptyComments() {
+        final String name = "/ccsds/odm/oem/ISS.resampled.truncated.txt";
+        final ParserBuilder builder = new ParserBuilder();
+        final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final Oem iss = builder.buildOemParser().parseMessage(source);
+        Assert.assertEquals("1998-067-A", iss.getSegments().get(0).getMetadata().getObjectID());
+        Assert.assertEquals(23, iss.getSegments().get(0).getData().getComments().size());
+        Assert.assertEquals("", iss.getSegments().get(0).getData().getComments().get(13));
+        Assert.assertEquals("", iss.getSegments().get(0).getData().getComments().get(20));
+        Assert.assertEquals(25, iss.getSegments().get(0).getData().getCoordinates().size());
     }
 
 }

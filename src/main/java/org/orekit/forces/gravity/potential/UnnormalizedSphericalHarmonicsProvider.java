@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,7 +60,7 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
     /**
      * Get the un-normalized spherical harmonic coefficients at a specific instance in time.
      *
-     * @param date of evaluation
+     * @param date of evaluation (may be null if model is not time-dependent)
      * @return un-normalized coefficients on {@code date}.
      * @since 6.1
      */

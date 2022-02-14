@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2002-2021 CS GROUP
+  Copyright 2002-2022 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -53,6 +53,7 @@
       <item name="Frames"        href="/architecture/frames.html"        />
       <item name="GNSS"          href="/architecture/gnss.html"          />
       <item name="Orbits"        href="/architecture/orbits.html"        />
+      <item name="Maneuvers"     href="/architecture/maneuvers.html"     />
       <item name="Propagation"   href="/architecture/propagation.html"   />
       <item name="Time"          href="/architecture/time.html"          />
       <item name="Tessellation"  href="/architecture/tessellation.html"  />

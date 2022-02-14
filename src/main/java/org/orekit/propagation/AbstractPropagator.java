@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,15 +19,19 @@ package org.orekit.propagation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -50,21 +54,25 @@ public abstract class AbstractPropagator implements Propagator {
     /** Attitude provider. */
     private AttitudeProvider attitudeProvider;
 
-    /** Additional state providers. */
+    /** Providers for additional states. */
     private final List<AdditionalStateProvider> additionalStateProviders;
 
-    /** States managed by neither additional equations nor state providers. */
+    /** States managed by no generators. */
     private final Map<String, TimeSpanMap<double[]>> unmanagedStates;
 
     /** Initial state. */
     private SpacecraftState initialState;
 
+    /** Harvester for State Transition Matrix and Jacobian matrix. */
+    private AbstractMatricesHarvester harvester;
+
     /** Build a new instance.
      */
     protected AbstractPropagator() {
         multiplexer              = new StepHandlerMultiplexer();
-        additionalStateProviders = new ArrayList<AdditionalStateProvider>();
+        additionalStateProviders = new ArrayList<>();
         unmanagedStates          = new HashMap<>();
+        harvester                = null;
     }
 
     /** Set a start date.
@@ -113,31 +121,68 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider) {
+    @Override
+    public void addAdditionalStateProvider(final AdditionalStateProvider provider) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(additionalStateProvider.getName())) {
+        if (isAdditionalStateManaged(provider.getName())) {
             // this additional state is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      additionalStateProvider.getName());
+                                      provider.getName());
         }
 
         // this is really a new name, add it
-        additionalStateProviders.add(additionalStateProvider);
+        additionalStateProviders.add(provider);
 
     }
 
     /** {@inheritDoc} */
+    @Override
     public List<AdditionalStateProvider> getAdditionalStateProviders() {
         return Collections.unmodifiableList(additionalStateProviders);
     }
 
-    /** Update state by adding all additional states.
-     * @param original original state
-     * @return updated state, with all additional states included
-     * @see #addAdditionalStateProvider(AdditionalStateProvider)
+    /** {@inheritDoc} */
+    @Override
+    public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
+                                                      final DoubleArrayDictionary initialJacobianColumns) {
+        if (stmName == null) {
+            throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
+        }
+        harvester = createHarvester(stmName, initialStm, initialJacobianColumns);
+        return harvester;
+    }
+
+    /** Create the harvester suitable for propagator.
+     * @param stmName State Transition Matrix state name
+     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
+     * if null (which is the most frequent case), assumed to be 6x6 identity
+     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
+     * if null or if some selected parameters are missing from the dictionary, the corresponding
+     * initial column is assumed to be 0
+     * @return harvester to retrieve computed matrices during and after propagation
+     * @since 11.1
      */
-    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        // FIXME: not implemented as of 11.1
+        throw new UnsupportedOperationException();
+    }
+
+    /** Get the harvester.
+     * @return harvester, or null if it was not created
+     * @since 11.1
+     */
+    protected AbstractMatricesHarvester getHarvester() {
+        return harvester;
+    }
+
+    /** Update state by adding unmanaged states.
+     * @param original original state
+     * @return updated state, with unmanaged states included
+     * @see #updateAdditionalStates(SpacecraftState)
+     */
+    protected SpacecraftState updateUnmanagedStates(final SpacecraftState original) {
 
         // start with original state,
         // which may already contain additional states, for example in interpolated ephemerides
@@ -149,10 +194,44 @@ public abstract class AbstractPropagator implements Propagator {
                                                  entry.getValue().get(original.getDate()));
         }
 
-        // update the additional states managed by providers
-        for (final AdditionalStateProvider provider : additionalStateProviders) {
-            updated = updated.addAdditionalState(provider.getName(),
-                                                 provider.getAdditionalState(updated));
+        return updated;
+
+    }
+
+    /** Update state by adding all additional states.
+     * @param original original state
+     * @return updated state, with all additional states included
+     * (including {@link #updateUnmanagedStates(SpacecraftState) unmanaged} states)
+     * @see #addAdditionalStateProvider(AdditionalStateProvider)
+     * @see #updateUnmanagedStates(SpacecraftState)
+     */
+    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+
+        // start with original state and unmanaged states
+        SpacecraftState updated = updateUnmanagedStates(original);
+
+        // set up queue for providers
+        final Queue<AdditionalStateProvider> pending = new LinkedList<>(getAdditionalStateProviders());
+
+        // update the additional states managed by providers, taking care of dependencies
+        int yieldCount = 0;
+        while (!pending.isEmpty()) {
+            final AdditionalStateProvider provider = pending.remove();
+            if (provider.yield(updated)) {
+                // this generator has to wait for another one,
+                // we put it again in the pending queue
+                pending.add(provider);
+                if (++yieldCount >= pending.size()) {
+                    // all pending providers yielded!, they probably need data not yet initialized
+                    // we let the propagation proceed, if these data are really needed right now
+                    // an appropriate exception will be triggered when caller tries to access them
+                    break;
+                }
+            } else {
+                // we can use this provider right now
+                updated    = updated.addAdditionalState(provider.getName(), provider.getAdditionalState(updated));
+                yieldCount = 0;
+            }
         }
 
         return updated;
@@ -202,7 +281,7 @@ public abstract class AbstractPropagator implements Propagator {
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
             // copy the additional states present in initialState but otherwise not managed
-            for (final Map.Entry<String, double[]> initial : initialState.getAdditionalStates().entrySet()) {
+            for (final DoubleArrayDictionary.Entry initial : initialState.getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
@@ -218,14 +297,14 @@ public abstract class AbstractPropagator implements Propagator {
     protected void stateChanged(final SpacecraftState state) {
         final AbsoluteDate date    = state.getDate();
         final boolean      forward = date.durationFrom(getStartDate()) >= 0.0;
-        for (final Map.Entry<String, double[]> changed : state.getAdditionalStates().entrySet()) {
+        for (final DoubleArrayDictionary.Entry changed : state.getAdditionalStatesValues().getData()) {
             final TimeSpanMap<double[]> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state
                 if (forward) {
-                    tsm.addValidAfter(changed.getValue(), date);
+                    tsm.addValidAfter(changed.getValue(), date, false);
                 } else {
-                    tsm.addValidBefore(changed.getValue(), date);
+                    tsm.addValidBefore(changed.getValue(), date, false);
                 }
             }
         }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -87,41 +87,70 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
     /** Pattern to match the date part of the line (always present). */
     private static final Pattern DATE_PATTERN = Pattern.compile(INTEGER2_FIELD + INTEGER2_FIELD + INTEGER2_FIELD + MJD_FIELD);
 
-    /** Start index of the pole part of the line. */
-    private static int POLE_START = 16;
+    /** Start index of the pole part of the line (from bulletin A). */
+    private static int POLE_START_A = 16;
 
-    /** end index of the pole part of the line. */
-    private static int POLE_END   = 55;
+    /** end index of the pole part of the line (from bulletin A). */
+    private static int POLE_END_A   = 55;
 
-    /** Pattern to match the pole part of the line. */
-    private static final Pattern POLE_PATTERN = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD + REAL_FIELD + REAL_FIELD);
+    /** Pattern to match the pole part of the line (from bulletin A). */
+    private static final Pattern POLE_PATTERN_A = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD + REAL_FIELD + REAL_FIELD);
 
-    /** Start index of the UT1-UTC part of the line. */
-    private static int UT1_UTC_START = 57;
+    /** Start index of the pole part of the line (from bulletin B). */
+    private static int POLE_START_B = 134;
 
-    /** end index of the UT1-UTC part of the line. */
-    private static int UT1_UTC_END   = 78;
+    /** end index of the pole part of the line (from bulletin B). */
+    private static int POLE_END_B   = 154;
 
-    /** Pattern to match the UT1-UTC part of the line. */
-    private static final Pattern UT1_UTC_PATTERN = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD);
+    /** Pattern to match the pole part of the line (from bulletin B). */
+    private static final Pattern POLE_PATTERN_B = Pattern.compile(REAL_FIELD + REAL_FIELD);
 
-    /** Start index of the LOD part of the line. */
-    private static int LOD_START = 79;
+    /** Start index of the UT1-UTC part of the line (from bulletin A). */
+    private static int UT1_UTC_START_A = 57;
 
-    /** end index of the LOD part of the line. */
-    private static int LOD_END   = 93;
+    /** end index of the UT1-UTC part of the line (from bulletin A). */
+    private static int UT1_UTC_END_A   = 78;
 
-    /** Pattern to match the LOD part of the line. */
-    private static final Pattern LOD_PATTERN = Pattern.compile(REAL_FIELD + REAL_FIELD);
+    /** Pattern to match the UT1-UTC part of the line (from bulletin A). */
+    private static final Pattern UT1_UTC_PATTERN_A = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD);
 
-    /** Start index of the nutation part of the line. */
-    private static int NUTATION_START = 95;
+    /** Start index of the UT1-UTC part of the line (from bulletin B). */
+    private static int UT1_UTC_START_B = 154;
 
-    /** end index of the nutation part of the line. */
-    private static int NUTATION_END   = 134;
+    /** end index of the UT1-UTC part of the line (from bulletin B). */
+    private static int UT1_UTC_END_B   = 165;
 
-    /** Pattern to match the nutation part of the line. */
-    private static final Pattern NUTATION_PATTERN = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD + REAL_FIELD + REAL_FIELD);
+    /** Pattern to match the UT1-UTC part of the line (from bulletin B). */
+    private static final Pattern UT1_UTC_PATTERN_B = Pattern.compile(REAL_FIELD);
+
+    /** Start index of the LOD part of the line (from bulletin A). */
+    private static int LOD_START_A = 79;
+
+    /** end index of the LOD part of the line (from bulletin A). */
+    private static int LOD_END_A   = 93;
+
+    /** Pattern to match the LOD part of the line (from bulletin A). */
+    private static final Pattern LOD_PATTERN_A = Pattern.compile(REAL_FIELD + REAL_FIELD);
+
+    // there are no LOD part from bulletin B
+
+    /** Start index of the nutation part of the line (from bulletin A). */
+    private static int NUTATION_START_A = 95;
+
+    /** end index of the nutation part of the line (from bulletin A). */
+    private static int NUTATION_END_A   = 134;
+
+    /** Pattern to match the nutation part of the line (from bulletin A). */
+    private static final Pattern NUTATION_PATTERN_A = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD + REAL_FIELD + REAL_FIELD);
+
+    /** Start index of the nutation part of the line (from bulletin B). */
+    private static int NUTATION_START_B = 165;
+
+    /** end index of the nutation part of the line (from bulletin B). */
+    private static int NUTATION_END_B   = 185;
+
+    /** Pattern to match the nutation part of the line (from bulletin B). */
+    private static final Pattern NUTATION_PATTERN_B = Pattern.compile(REAL_FIELD + REAL_FIELD);
 
     /** Type of nutation corrections. */
     private final boolean isNonRotatingOrigin;
@@ -195,11 +224,14 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     lineNumber++;
 
                     // split the lines in its various columns (some of them can be blank)
-                    final String datePart      = (line.length() >= DATE_END)     ? line.substring(DATE_START,       DATE_END)     : "";
-                    final String polePart      = (line.length() >= POLE_END)     ? line.substring(POLE_START,       POLE_END)     : "";
-                    final String ut1utcPart    = (line.length() >= UT1_UTC_END ) ? line.substring(UT1_UTC_START,    UT1_UTC_END)  : "";
-                    final String lodPart       = (line.length() >= LOD_END)      ? line.substring(LOD_START,        LOD_END)      : "";
-                    final String nutationPart  = (line.length() >= NUTATION_END) ? line.substring(NUTATION_START,   NUTATION_END) : "";
+                    final String datePart       = getPart(line, DATE_START,       DATE_END);
+                    final String polePartA      = getPart(line, POLE_START_A,     POLE_END_A);
+                    final String ut1utcPartA    = getPart(line, UT1_UTC_START_A,  UT1_UTC_END_A);
+                    final String lodPartA       = getPart(line, LOD_START_A,      LOD_END_A);
+                    final String nutationPartA  = getPart(line, NUTATION_START_A, NUTATION_END_A);
+                    final String polePartB      = getPart(line, POLE_START_B,     POLE_END_B);
+                    final String ut1utcPartB    = getPart(line, UT1_UTC_START_B,  UT1_UTC_END_B);
+                    final String nutationPartB  = getPart(line, NUTATION_START_B, NUTATION_END_B);
 
                     // parse the date part
                     final Matcher dateMatcher = DATE_PATTERN.matcher(datePart);
@@ -224,15 +256,27 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     // parse the pole part
                     final double x;
                     final double y;
-                    if (polePart.trim().length() == 0) {
-                        // pole part is blank
-                        x = 0;
-                        y = 0;
+                    if (polePartB.trim().length() == 0) {
+                        // pole part from bulletin B is blank
+                        if (polePartA.trim().length() == 0) {
+                            // pole part from bulletin A is blank
+                            x = 0;
+                            y = 0;
+                        } else {
+                            final Matcher poleAMatcher = POLE_PATTERN_A.matcher(polePartA);
+                            if (poleAMatcher.matches()) {
+                                x = UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(poleAMatcher.group(1)));
+                                y = UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(poleAMatcher.group(3)));
+                            } else {
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, name, line);
+                            }
+                        }
                     } else {
-                        final Matcher poleMatcher = POLE_PATTERN.matcher(polePart);
-                        if (poleMatcher.matches()) {
-                            x = UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(poleMatcher.group(1)));
-                            y = UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(poleMatcher.group(3)));
+                        final Matcher poleBMatcher = POLE_PATTERN_B.matcher(polePartB);
+                        if (poleBMatcher.matches()) {
+                            x = UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(poleBMatcher.group(1)));
+                            y = UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(poleBMatcher.group(2)));
                         } else {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, name, line);
@@ -241,13 +285,24 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
 
                     // parse the UT1-UTC part
                     final double dtu1;
-                    if (ut1utcPart.trim().length() == 0) {
-                        // UT1-UTC part is blank
-                        dtu1 = 0;
+                    if (ut1utcPartB.trim().length() == 0) {
+                        // UT1-UTC part from bulletin B is blank
+                        if (ut1utcPartA.trim().length() == 0) {
+                            // UT1-UTC part from bulletin A is blank
+                            dtu1 = 0;
+                        } else {
+                            final Matcher ut1utcAMatcher = UT1_UTC_PATTERN_A.matcher(ut1utcPartA);
+                            if (ut1utcAMatcher.matches()) {
+                                dtu1 = Double.parseDouble(ut1utcAMatcher.group(1));
+                            } else {
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, name, line);
+                            }
+                        }
                     } else {
-                        final Matcher ut1utcMatcher = UT1_UTC_PATTERN.matcher(ut1utcPart);
-                        if (ut1utcMatcher.matches()) {
-                            dtu1 = Double.parseDouble(ut1utcMatcher.group(1));
+                        final Matcher ut1utcBMatcher = UT1_UTC_PATTERN_B.matcher(ut1utcPartB);
+                        if (ut1utcBMatcher.matches()) {
+                            dtu1 = Double.parseDouble(ut1utcBMatcher.group(1));
                         } else {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, name, line);
@@ -256,13 +311,13 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
 
                     // parse the lod part
                     final double lod;
-                    if (lodPart.trim().length() == 0) {
-                        // lod part is blank
+                    if (lodPartA.trim().length() == 0) {
+                        // lod part from bulletin A is blank
                         lod = 0;
                     } else {
-                        final Matcher lodMatcher = LOD_PATTERN.matcher(lodPart);
-                        if (lodMatcher.matches()) {
-                            lod = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(lodMatcher.group(1)));
+                        final Matcher lodAMatcher = LOD_PATTERN_A.matcher(lodPartA);
+                        if (lodAMatcher.matches()) {
+                            lod = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(lodAMatcher.group(1)));
                         } else {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, name, line);
@@ -275,23 +330,46 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     final AbsoluteDate mjdDate =
                             new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                     getUtc());
-                    if (nutationPart.trim().length() == 0) {
-                        // nutation part is blank
-                        nro     = new double[2];
-                        equinox = new double[2];
+                    if (nutationPartB.trim().length() == 0) {
+                        // nutation part from bulletin B is blank
+                        if (nutationPartA.trim().length() == 0) {
+                            // nutation part from bulletin A is blank
+                            nro     = new double[2];
+                            equinox = new double[2];
+                        } else {
+                            final Matcher nutationAMatcher = NUTATION_PATTERN_A.matcher(nutationPartA);
+                            if (nutationAMatcher.matches()) {
+                                if (isNonRotatingOrigin) {
+                                    nro = new double[] {
+                                        UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationAMatcher.group(1))),
+                                        UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationAMatcher.group(3)))
+                                    };
+                                    equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
+                                } else {
+                                    equinox = new double[] {
+                                        UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationAMatcher.group(1))),
+                                        UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationAMatcher.group(3)))
+                                    };
+                                    nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
+                                }
+                            } else {
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, name, line);
+                            }
+                        }
                     } else {
-                        final Matcher nutationMatcher = NUTATION_PATTERN.matcher(nutationPart);
-                        if (nutationMatcher.matches()) {
+                        final Matcher nutationBMatcher = NUTATION_PATTERN_B.matcher(nutationPartB);
+                        if (nutationBMatcher.matches()) {
                             if (isNonRotatingOrigin) {
                                 nro = new double[] {
-                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationMatcher.group(1))),
-                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationMatcher.group(3)))
+                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationBMatcher.group(1))),
+                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationBMatcher.group(2)))
                                 };
                                 equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                             } else {
                                 equinox = new double[] {
-                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationMatcher.group(1))),
-                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationMatcher.group(3)))
+                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationBMatcher.group(1))),
+                                    UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationBMatcher.group(2)))
                                 };
                                 nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                             }
@@ -315,6 +393,17 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
             return history;
         }
 
+    }
+
+    /** Get a part of a line.
+     * @param line line to analyze
+     * @param start start index of the part
+     * @param end end index of the part
+     * @return either the line part if present or an empty string if line is too short
+     * @since 11.1
+     */
+    private static String getPart(final String line, final int start, final int end) {
+        return (line.length() >= end) ? line.substring(start, end) : "";
     }
 
 }

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2021 CS GROUP
+<!--- Copyright 2002-2022 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -43,7 +43,7 @@ it can provide only the final state.
   step handlers at each finalized step. Users often use this mode with only a single
   call to propagation with the target propagation time representing the end final date.
   The core business of the application is in the step handlers, and the application
-  does not really handle time by itself, it let the propagator do it.
+  does not really handle time by itself, it lets the propagator do it.
 
 * final state only: This method is used when the user wants to completely control the
   evolution of time. The application gives a target time and no step handlers at all.
@@ -98,7 +98,7 @@ The next sequence diagram shows a case where users want to control the time loop
 from within their application. In this case, the step handlers multiplexer is cleared,
 the propagator is called multiple time, and returns states at requested target times.
 
-[without step handlers sequence diagram](../images/design/without-step-handlers-sequence-diagram.png)
+![without step handlers sequence diagram](../images/design/without-step-handlers-sequence-diagram.png)
 
 Controlling the time loop at application level by ignoring step handlers and just getting
 states at specified times may seem appealing and more natural to most first time Orekit
@@ -161,8 +161,6 @@ There are also several predefined events detectors already available, amongst wh
   and can be used to compute easily operational forecasts, 
 * a `FieldOfViewDetector` which is triggered when some target enters or exits a satellite
   sensor Field Of View (any shape), 
-* a `CircularFieldOfViewDetector` which is triggered when some target enters or exits a satellite
-  sensor Field Of View (circular shape), 
 * a `FootprintOverlapDetector` which is triggered when a sensor Field Of View (any shape,
   even split in non-connected parts or containing holes) overlaps a geographic zone, which
   can be non-convex, split in different sub-zones, have holes, contain the pole,
@@ -186,6 +184,19 @@ There are also several predefined events detectors already available, amongst wh
 * an `AngularSeparationDetector`, which is triggered when angular separation between satellite and
   some beacon as seen by an observer goes below a threshold. The beacon is typically the Sun, the
   observer is typically a ground station
+* an `AngularSeparationFromSatelliteDetector`, which is triggered when two moving objects come
+  close to each other, as seen from spacecraft
+* a `FunctionalDetector`, which is triggered according to a user-supplied function, which can
+  be a simple lambda-expression
+* a `GroundAtNightDetector`, which is triggered when at civil, nautical or astronomical
+  down/dusk times (this is mainly useful for scheduling optical measurements from ground telescopes)
+* a `HaloXZPlaneCrossingDetector`, which is triggered when a spacecraft on a halo orbit
+  crosses the XZ plane
+* an `IntersatDirectViewDetector`, which is triggered when two spacecraft are in direct view,
+  i.e. when the central body limb does not obstruct view
+* a `MagneticFieldDetector`, which is triggered when South-Atlantic anomaly frontier is crossed
+* a `ParameterDrivenDateIntervalDetector`, which is triggered at time interval boundaries, with
+  the additional feature that these boundaries can be offset thanks to parameter drivers
 
 An `EventShifter` is also provided in order to slightly shift the events occurrences times.
 A typical use case is for handling operational delays before or after some physical event
@@ -211,6 +222,8 @@ A `BooleanDetector` is provided to combine several other detectors with boolean
 operators `and`, `or` and `not`. This allows for example to detect when a satellite
 is both visible from a ground station and out of eclipse.
 
+A `NegateDetector` is provided to negate the sign of the switching function `g` of another detector.
+
 Event occurring can be automatically logged using the `EventsLogger` class.
 
 ## Additional states
@@ -226,7 +239,7 @@ There are three main cases:
   `AdditionalStateProvider` interface and register it to the propagator, which will
   call it each time it builds a `SpacecraftState`.
 * if a differential equation drives the additional state evolution, then the user
-  can put this equation in an implementation of the `AdditionalEquations` interface
+  can put this equation in an implementation of the `AdditionalDerivativesProvider` interface
   and register it to an integrator-based propagator, which will integrated it and
   provide the integrated state.
 * if no evolution laws are provided to the propagator, but the additional state is
@@ -280,6 +293,25 @@ If users need a more definitive initialization of an Eckstein-Hechler propagator
 should consider using a propagator converter to initialize their Eckstein-Hechler
 propagator using a complete sample instead of just a single initial orbit.
 
+### Brouwer-Lyddane propagation
+
+At the opposite of the Eckstein-Hechler model, the Brouwer-Lyddane model is
+suited for elliptical orbits. In other words, there is no problem having a small
+(or big) eccentricity or inclination. Lyddane helped to solve this issue with
+the Brouwer model by summing the long and short periodic variations of the mean anomaly
+with the ones of the argument of perigee. One needs still to be careful with
+eccentricities lower than 5e-4. Singularity for the critical inclination i = 63.4° is
+avoided using the method developed in Warren Phipps' 1992 thesis.
+
+The Brouwer-Lyddane model considers J2 to J5 potential zonal coefficients, and uses the
+mean and short periodic variation of the keplerian elements to compute the position.
+However, for low Earth orbits, the magnitude of the perturbative acceleration due to
+atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
+drag by time derivatives of the mean mean anomaly using the catch-all coefficient M2.
+Usually, M2 is adjusted during an orbit determination process and it represents the
+combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
+The behavior of M2 is close to the B* parameter for the TLE.
+
 ### GNSS propagation
 
 There are several dedicated models used for GNSS constellations propagation. These
@@ -314,13 +346,13 @@ The mathematical problem to integrate is a dimension-seven time-derivative equat
 system. The six first elements of the state vector are the orbital parameters, which
 may be any orbit type (`KeplerianOrbit`, `CircularOrbit`, `EquinoctialOrbit` or
 `CartesianOrbit`) in meters and radians, and the last element is the mass in
-kilograms. It is possible to have more elements in the state vector if `AdditionalEquations`
-have been added (typically `PartialDerivativesEquations` which is an implementation of
-`AdditionalEquations` devoted to integration of Jacobian matrices). The time derivatives are
-computed automatically by the Orekit using the Gauss equations for the first parameters
-corresponding to the selected orbit type and the flow rate for mass evolution
-during maneuvers. The user only needs to register the various force models needed for
-the simulation. Various force models are already available in the library and specialized
+kilograms. It is possible to have more elements in the state vector if `AdditionalDerivativesProvider`
+have been added (this is used for example by internal classes that implement `AdditionalDerivativesProvider`
+in order to compute State Transition Matrix and Jacobians matrices with respect to propagation
+parameters). The time derivatives are computed automatically by the Orekit using the Gauss
+equations for the first parameters corresponding to the selected orbit type and the flow rate
+for mass evolution during maneuvers. The user only needs to register the various force models needed
+for the simulation. Various force models are already available in the library and specialized
 ones can be added by users easily for specific needs.
  
 The integrators (_first order integrators_) provided by Hipparchus need 
@@ -364,30 +396,26 @@ called state-transition matrices). This second case especially useful for comput
 of a trajectory with respect to initial state changes or with respect to force models parameters
 changes.
 
-Orekit provides a common way to handle both cases: additional equations. Users can register sets
-of additional equations alongside with additional initial states. These equations will be propagated
-by the numerical integrator. They will not be used for step control, though, so integrating with
-or without these equations should not change the trajectory and no tolerance setting is needed for
-them.
-
-One specific implementation of additional equations is the partial derivatives equations which
-propagate Jacobian matrices, both with respect to initial state and with respect to force model
-parameters.
+Orekit handle both cases using additional state, which can be either integrated if modeled as additional
+derivatives providers (for `NumericalPropagator` and `DSSTPropagator`) or computed analytically
+(for analytical propagators). When modelization requires integrating derivatives, the corresponding
+equations and states are not be used for step control, though, so integrating with or without these
+equations should not change the trajectory and no tolerance setting is needed for them.
 
 ![partial derivatives class diagram](../images/design/partial-derivatives-class-diagram.png)
 
-The above class diagram shows the design of the partial derivatives equations. As can be seen,
-the PartialDerivativesEquations class implements the AdditionalEquations interface and as such
-can be registered by user in a numerical propagator. the propagator will propagate both the
-main set of equations corresponding to the equations of motion and the additional set corresponding
-to the Jacobians of the main set. This additional set is therefore tightly linked to the main set
-and in particular depends on the selected force models. The various force models add their
-direct contribution directly to the main set, just as in simple propagation. They also add a
-contribution to the Jacobians thanks to the AccelerationJacobiansProvider interface, each force
-model being associated with an acceleration Jacobians provider. Some force models like solar
-radiation pressure implement this interface by themselves. Some more complex force model do not
-implement the interface and will be automatically wrapped inside a Jacobianizer class which will
-use finite differences to compute the local Jacobians.
+The above class diagram shows how partial derivatives are computed in the case of `NumericalPropagator`.
+As can be seen, all propagators provide a way to trigger computation of partial derivatives
+matrices (State Transition Matrix and Jacobians with respect to parameters) by providing an providing an
+opaque `MatrixHarvester` interface users can call to retrieve these matrices from the propagated states.
+Internally, `NumericalPropagator` references a package private implementation of this interface and uses
+as well several other package private classes (`StateTransitionMatrixGenerator` and
+`IntegrableJacobianColumnGenerator` to populate the matrices. The helper classes implement
+`AdditionalDerivativesProvider` to model the matrices elements evolution and propagate both the main set
+of equations corresponding to the equations of motion and the additional set corresponding to the Jacobians
+of the main set. This additional set is therefore tightly linked to the main set and in particular depends
+on the selected force models. The various force models add their direct contribution directly to the main
+set, just as in simple propagation.
 
 ## Semianalytical propagation
 
@@ -408,7 +436,7 @@ propagation. As can be seen, the process is very close the one for the numerical
 
 ## Field propagation
 
-Since 9.0, most of the Orekit propagators (in fact all of them except DSST) have both a regular
+Since 10.0, all of the Orekit propagators have both a regular
 version the propagates states based on classical real numbers (i.e. double precision numbers)
 and a more general version that propagates states based on any class that implements the
 `CalculusFieldElement` interface from Hipparchus. Such classes mimic real numbers in the way they
@@ -439,11 +467,8 @@ main uses in space flight dynamics are
   * very fast Monte-Carlo analyses
 
 Orekit implementations of field propagators support all features from classical propagators:
-propagation modes, events (all events detectors), frames transforms, geodetic points. The
-propagators available are Keplerian propagator, Eckstein-Heschler propagator, SGP4/SDP4
-propagator, and numerical propagator with all Hipparchus integrators (fixed steps or adaptive
-stepsizes) and all force models (including all atmosphere models). All attitude modes are
-supported.
+propagation modes, events (all events detectors), frames transforms, geodetic points. All
+propagators and all attitude modes are supported.
 
 One must be aware however of the combinatorial explosion of computation size. For p derivation
 parameters and o order, the number of components computed for each value is given by the
@@ -459,7 +484,7 @@ hundred of times slower than regular propagation, depending on the number of der
 payoff is still very important as soon as we evaluate a few hundreds of points. As Monte-Carlo
 analyses more often use several thousands of evaluations, the payoff is really interesting.
 
-### Parallel computation
+### Tuple computation
 
 Another important implementation of the `CalculusFieldElement` interface is the `Tuple`
 class, which computes the same operation on a number of components of a tuple, hence

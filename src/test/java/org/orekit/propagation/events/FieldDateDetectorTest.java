@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,14 @@ package org.orekit.propagation.events;
 
 import java.lang.reflect.Array;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,9 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
+import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
@@ -73,7 +76,7 @@ public class FieldDateDetectorTest {
         doTestGenericHandler(Decimal64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestSimpleTimer(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSimpleTimer(final Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -91,8 +94,25 @@ public class FieldDateDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
+            public String getName()                              { return "dummy"; }
+            public int    getDimension()                         { return 1; }
+            public T[]    derivatives(FieldSpacecraftState<T> s) { return MathArrays.buildArray(field, 1); }
+        });
+        propagator.getMultiplexer().add(interpolator -> {
+            FieldSpacecraftState<T> prev = interpolator.getPreviousState();
+            FieldSpacecraftState<T> curr = interpolator.getCurrentState();
+            T dt = curr.getDate().durationFrom(prev.getDate());
+            FieldOrekitStepInterpolator<T> restricted =
+                            interpolator.restrictStep(prev.shiftedBy(dt.multiply(+0.25)),
+                                                      curr.shiftedBy(dt.multiply(-0.25)));
+            FieldSpacecraftState<T> restrictedPrev = restricted.getPreviousState();
+            FieldSpacecraftState<T> restrictedCurr = restricted.getCurrentState();
+            T restrictedDt = restrictedCurr.getDate().durationFrom(restrictedPrev.getDate());
+            Assert.assertEquals(dt.multiply(0.5).getReal(), restrictedDt.getReal(), 1.0e-10);
+        });
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
-        propagator.setInitialState(initialState);
+        propagator.setInitialState(initialState.addAdditionalState("dummy", MathArrays.buildArray(field, 1)));
 
         FieldDateDetector<T>  dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
                                                                      toArray(iniDate.shiftedBy(2.0*dt)));

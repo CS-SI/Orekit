@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 
@@ -45,20 +45,23 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Patch points along the trajectory. */
     private List<SpacecraftState> patchedSpacecraftStates;
 
-    /** Derivatives linked to the Propagators. */
-    private final List<AdditionalEquations> additionalEquations;
+    /** Derivatives linked to the Propagators.
+     * @deprecated as of 11.1 not used anymore
+     */
+    @Deprecated
+    private List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations;
 
     /** List of Propagators. */
     private final List<NumericalPropagator> propagatorList;
 
     /** Duration of propagation along each arcs. */
-    private double[] propagationTime;
+    private final double[] propagationTime;
 
     /** Free components of patch points. */
-    private boolean[] freePatchPointMap;
+    private final boolean[] freePatchPointMap;
 
     /** Free epoch of patch points. */
-    private boolean[] freeEpochMap;
+    private final boolean[] freeEpochMap;
 
     /** Number of free variables. */
     private int nFree;
@@ -70,13 +73,16 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     private int nConstraints;
 
     /** Patch points components which are constrained. */
-    private Map<Integer, Double> mapConstraints;
+    private final Map<Integer, Double> mapConstraints;
 
     /** True if orbit is closed. */
     private boolean isClosedOrbit;
 
     /** Tolerance on the constraint vector. */
-    private double tolerance;
+    private final double tolerance;
+
+    /** Maximum number of iterations. */
+    private final int maxIter;
 
     /** Expected name of the additional equations. */
     private final String additionalName;
@@ -89,42 +95,63 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector.
      * @param additionalName name of the additional equations
+     * @deprecated as of 11.1, replaced by {@link #AbstractMultipleShooting(List, List, double, double, int, String)}
+     */
+    @Deprecated
+    protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
+                                       final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
+                                       final double arcDuration, final double tolerance, final String additionalName) {
+        this(initialGuessList, propagatorList, arcDuration, tolerance, 1, additionalName);
+        this.additionalEquations = additionalEquations;
+    }
+
+    /** Simple Constructor.
+     * <p> Standard constructor for multiple shooting </p>
+     * @param initialGuessList initial patch points to be corrected.
+     * @param propagatorList list of propagators associated to each patch point.
+     * @param arcDuration initial guess of the duration of each arc.
+     * @param tolerance convergence tolerance on the constraint vector.
+     * @param maxIter maximum number of iterations
+     * @param additionalName name of the additional equations
+     * @since 11.1
      */
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                       final List<AdditionalEquations> additionalEquations, final double arcDuration,
-                                       final double tolerance, final String additionalName) {
+                                       final double arcDuration, final double tolerance, final int maxIter, final String additionalName) {
         this.patchedSpacecraftStates = initialGuessList;
         this.propagatorList = propagatorList;
-        this.additionalEquations = additionalEquations;
         this.additionalName = additionalName;
         // Should check if propagatorList.size() = initialGuessList.size() - 1
         final int propagationNumber = initialGuessList.size() - 1;
-        this.propagationTime = new double[propagationNumber];
-        for (int i = 0; i < propagationNumber; i++ ) {
-            this.propagationTime[i] = arcDuration;
-        }
+        propagationTime = new double[propagationNumber];
+        Arrays.fill(propagationTime, arcDuration);
 
         // All the patch points are set initially as free variables
         this.freePatchPointMap = new boolean[6 * initialGuessList.size()]; // epoch
-        for (int i = 0; i < freePatchPointMap.length; i++) {
-            freePatchPointMap[i] = true;
-        }
+        Arrays.fill(freePatchPointMap, true);
 
         //Except the first one, the epochs of the patch points are set free.
         this.freeEpochMap = new boolean[initialGuessList.size()];
+        Arrays.fill(freeEpochMap, true);
         freeEpochMap[0] = false;
-        for (int i = 1; i < freeEpochMap.length; i++) {
-            freeEpochMap[i] = true;
-        }
         this.nEpoch = initialGuessList.size() - 1;
 
         this.nConstraints = 6 * propagationNumber;
         this.nFree = 6 * initialGuessList.size() + 1;
 
         this.tolerance = tolerance;
+        this.maxIter   = maxIter;
 
         // All the additional constraints must be set afterward
         this.mapConstraints = new HashMap<>();
+    }
+
+    /** Get a patch point.
+     * @param i index of the patch point
+     * @return state of the patch point
+     * @since 11.1
+     */
+    protected SpacecraftState getPatchPoint(final int i) {
+        return patchedSpacecraftStates.get(i);
     }
 
     /** Set a component of a patch point to free or not.
@@ -133,9 +160,8 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param isFree constraint value
      */
     public void setPatchPointComponentFreedom(final int patchNumber, final int componentIndex, final boolean isFree) {
-        if (freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] != isFree ) {
-            final int eps = isFree ? 1 : -1;
-            nFree = nFree + eps;
+        if (freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] != isFree) {
+            nFree += isFree ? 1 : -1;
             freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] = isFree;
         }
     }
@@ -183,9 +209,12 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             final RealMatrix M = computeJacobianMatrix(propagatedSP);
             final RealVector fx = MatrixUtils.createRealVector(computeConstraint(propagatedSP));
 
-            // Solve linear system
-            final RealMatrix MMt = M.multiply(M.transpose());
-            final RealVector dx  = M.transpose().multiply(MatrixUtils.inverse(MMt)).operate(fx);
+            // Solve linear system using minimum norm approach
+            // (i.e. minimize difference between solutions from successive iterations,
+            //  in other word try to stay close to initial guess; this is *not* a least squares solution)
+            // see equation 3.12 in Pavlak's thesis
+            final RealMatrix MMt = M.multiplyTransposed(M);
+            final RealVector dx  = M.transposeMultiply(MatrixUtils.inverse(MMt)).operate(fx);
 
             // Apply correction from the free variable vector to all the variables (propagation time, pacthSpaceraftState)
             updateTrajectory(dx);
@@ -194,7 +223,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             iter++;
 
-        } while (fxNorm > tolerance && iter < 1); // Converge within tolerance and under 10 iterations
+        } while (fxNorm > tolerance && iter < maxIter); // Converge within tolerance and under max iterations
 
         return patchedSpacecraftStates;
     }
@@ -474,9 +503,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         for (int i = 0; i < n; i++) {
 
             // SpacecraftState initialization
-            final SpacecraftState initialState = patchedSpacecraftStates.get(i);
-
-            final SpacecraftState augmentedInitialState = getAugmentedInitialState(initialState, additionalEquations.get(i));
+            final SpacecraftState augmentedInitialState = getAugmentedInitialState(i);
 
             // Propagator initialization
             propagatorList.get(i).setInitialState(augmentedInitialState);
@@ -484,7 +511,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             final double integrationTime = propagationTime[i];
 
             // Propagate trajectory
-            final SpacecraftState finalState = propagatorList.get(i).propagate(initialState.getDate().shiftedBy(integrationTime));
+            final SpacecraftState finalState = propagatorList.get(i).propagate(augmentedInitialState.getDate().shiftedBy(integrationTime));
 
             propagatedSP.add(finalState);
         }
@@ -498,13 +525,13 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      */
     private double[][] getStateTransitionMatrix(final SpacecraftState s) {
         // Additional states
-        final Map<String, double[]> map = s.getAdditionalStates();
+        final DoubleArrayDictionary dictionary = s.getAdditionalStatesValues();
         // Initialize state transition matrix
         final int        dim  = 6;
         final double[][] phiM = new double[dim][dim];
 
         // Loop on entry set
-        for (final Map.Entry<String, double[]> entry : map.entrySet()) {
+        for (final DoubleArrayDictionary.Entry entry : dictionary.getData()) {
             // Extract entry name
             final String name = entry.getKey();
             if (additionalName.equals(name)) {
@@ -598,11 +625,26 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      *  @param initialState SpacecraftState without the additional state
      *  @param additionalEquations2 Additional Equations.
      *  @return augmentedSP SpacecraftState with the additional state within.
+     *  @deprecated as of 11.1, replaced by {@link #getAugmentedInitialState(int)}
      */
-    protected abstract SpacecraftState getAugmentedInitialState(SpacecraftState initialState,
-                                                                AdditionalEquations additionalEquations2);
+    @Deprecated
+    protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
+                                                       final org.orekit.propagation.integration.AdditionalEquations additionalEquations2) {
+        // should never be called, only implementations by derived classes should be called
+        throw new UnsupportedOperationException();
+    }
 
-
+    /** Compute the additional state from the additionalEquations.
+     *  @param i index of the state
+     *  @return augmentedSP SpacecraftState with the additional state within.
+     *  @since 11.1
+     */
+    protected SpacecraftState getAugmentedInitialState(final int i) {
+        // FIXME: this base implementation is only intended for version 11.1 to delegate to a deprecated method
+        // it should be removed in 12.0 when getAugmentedInitialState(SpacecraftState, AdditionalDerivativesProvider) is removed
+        // and the method should remain abstract in this class and be implemented by derived classes only
+        return getAugmentedInitialState(patchedSpacecraftStates.get(i), additionalEquations.get(i));
+    }
 
     /** Set the constraint of a closed orbit or not.
      *  @param isClosed true if orbit should be closed

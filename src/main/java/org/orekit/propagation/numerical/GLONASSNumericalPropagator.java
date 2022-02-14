@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -209,8 +209,10 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                 stateInInertial.getDate(), pvInPZ90);
         final TimeStampedPVCoordinates pvInInertial = absPV.getPVCoordinates(eci);
         final SpacecraftState transformedState = new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GNSSConstants.GLONASS_MU),
-                                                                stateInInertial.getAttitude(),
-                                                                stateInInertial.getMass(), stateInInertial.getAdditionalStates());
+                                                                     stateInInertial.getAttitude(),
+                                                                     stateInInertial.getMass(),
+                                                                     stateInInertial.getAdditionalStatesValues(),
+                                                                     stateInInertial.getAdditionalStatesDerivatives());
 
         return transformedState;
     }

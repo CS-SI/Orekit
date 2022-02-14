@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1290,6 +1290,57 @@ public class AbsoluteDateTest {
     private void checkToString(final AbsoluteDate d, final String s) {
         MatcherAssert.assertThat(d.toString(), CoreMatchers.is(s + "Z"));
         MatcherAssert.assertThat(d.getComponents(utc).toString(), CoreMatchers.is(s + "+00:00"));
+    }
+
+    @Test
+    public void testToStringWithoutUtcOffset() {
+        // setup
+        AbsoluteDate date = new AbsoluteDate(2009, 1, 1, utc);
+        double one = FastMath.nextDown(1.0);
+        double zeroUlp = FastMath.nextUp(0.0);
+        double oneUlp = FastMath.ulp(1.0);
+        //double sixty = FastMath.nextDown(60.0);
+        double sixtyUlp = FastMath.ulp(60.0);
+
+        // action
+        // test midnight
+        checkToStringNoOffset(date, "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(1), "2009-01-01T00:00:01.000");
+        // test digits and rounding
+        checkToStringNoOffset(date.shiftedBy(12.3456789123456789), "2009-01-01T00:00:12.346");
+        checkToStringNoOffset(date.shiftedBy(0.0123456789123456789), "2009-01-01T00:00:00.012");
+        // test min and max values
+        checkToStringNoOffset(date.shiftedBy(zeroUlp), "2009-01-01T00:00:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(59.0).shiftedBy(one), "2009-01-01T00:01:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(86399).shiftedBy(one), "2009-01-02T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(oneUlp), "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(one), "2009-01-01T00:00:01.000");
+        checkToStringNoOffset(date.shiftedBy(-zeroUlp), "2009-01-01T00:00:00.000");
+        // test leap
+        // Orekit 10.1 throw OIAE, 10.2 rounds up
+        checkToStringNoOffset(date.shiftedBy(-oneUlp), "2009-01-01T00:00:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(one), "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(-0.5), "2008-12-31T23:59:60.500");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(zeroUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-zeroUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-oneUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-2), "2008-12-31T23:59:59.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-sixtyUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-61).shiftedBy(zeroUlp), "2008-12-31T23:59:00.000");
+        checkToStringNoOffset(date.shiftedBy(-61).shiftedBy(oneUlp), "2008-12-31T23:59:00.000");
+    }
+
+
+    private void checkToStringNoOffset(final AbsoluteDate d, final String s) {
+        MatcherAssert.assertThat(d.toStringWithoutUtcOffset(utc, 3), CoreMatchers.is(s));
+        MatcherAssert.assertThat(
+                d.getComponents(utc).toStringWithoutUtcOffset(utc.minuteDuration(d), 3),
+                CoreMatchers.is(s));
     }
 
     /**

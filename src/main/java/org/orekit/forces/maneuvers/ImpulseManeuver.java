@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.forces.maneuvers;
 
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -30,6 +28,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 
 /** Impulse maneuver model.
@@ -235,10 +234,13 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
             final double newMass = oldState.getMass() * FastMath.exp(-sign * deltaV.getNorm() / im.vExhaust);
 
             // pack everything in a new state
-            SpacecraftState newState = new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
+            SpacecraftState newState = new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
                                                            attitude, newMass);
-            for (final Map.Entry<String, double[]> entry : oldState.getAdditionalStates().entrySet()) {
+            for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesValues().getData()) {
                 newState = newState.addAdditionalState(entry.getKey(), entry.getValue());
+            }
+            for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesDerivatives().getData()) {
+                newState = newState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
             }
             return newState;
 

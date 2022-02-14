@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.hipparchus.util.FastMath;
 
 /** Data stream record in source table.
  * @author Luc Maisonobe
@@ -94,8 +96,8 @@ public class DataStreamRecord extends Record {
                               of(getField(6).split("\\+")).
                               map(k -> NavigationSystem.getNavigationSystem(k)).
                               collect(Collectors.toList());
-        this.latitude       = Math.toRadians(Double.parseDouble(getField(9)));
-        this.longitude      = Math.toRadians(Double.parseDouble(getField(10)));
+        this.latitude       = FastMath.toRadians(Double.parseDouble(getField(9)));
+        this.longitude      = FastMath.toRadians(Double.parseDouble(getField(10)));
         this.nmeaRequired   = Integer.parseInt(getField(11)) != 0;
         this.networked      = Integer.parseInt(getField(12)) != 0;
         this.authentication = Authentication.getAuthentication(getField(15));

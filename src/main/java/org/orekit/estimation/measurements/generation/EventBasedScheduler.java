@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -158,10 +158,10 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
             // store either status or its opposite according to propagation direction
             if (forward) {
                 // forward propagation
-                feasibility.addValidAfter(statusAfter, s.getDate());
+                feasibility.addValidAfter(statusAfter, s.getDate(), false);
             } else {
                 // backward propagation
-                feasibility.addValidBefore(!statusAfter, s.getDate());
+                feasibility.addValidBefore(!statusAfter, s.getDate(), false);
             }
 
             // delegate to wrapped detector

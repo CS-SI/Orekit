@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1609,6 +1609,57 @@ public class KeplerianOrbitTest {
             Assert.assertEquals(0.0, ((Double) oe.getParts()[2]).doubleValue(), Double.MIN_VALUE);
             Assert.assertEquals(Double.POSITIVE_INFINITY, ((Double) oe.getParts()[3]).doubleValue(), Double.MIN_VALUE);
         }
+    }
+
+    @Test
+    public void testNormalize() {
+        KeplerianOrbit withoutDerivatives =
+                        new KeplerianOrbit(42166712.0, 0.005, 1.6,
+                                           -0.3, 1.25, 0.4, PositionAngle.MEAN,
+                                           FramesFactory.getEME2000(), date, mu);
+        KeplerianOrbit ref =
+                        new KeplerianOrbit(24000000.0, 0.012, 1.9,
+                                          -6.28, 6.28, 12.56, PositionAngle.MEAN,
+                                          FramesFactory.getEME2000(), date, mu);
+
+        KeplerianOrbit normalized1 = (KeplerianOrbit) OrbitType.KEPLERIAN.normalize(withoutDerivatives, ref);
+        Assert.assertFalse(normalized1.hasDerivatives());
+        Assert.assertEquals(0.0, normalized1.getA() - withoutDerivatives.getA(), 1.0e-6);
+        Assert.assertEquals(0.0, normalized1.getE() - withoutDerivatives.getE(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized1.getI() - withoutDerivatives.getI(), 1.0e-10);
+        Assert.assertEquals(-MathUtils.TWO_PI, normalized1.getPerigeeArgument()               - withoutDerivatives.getPerigeeArgument(),               1.0e-10);
+        Assert.assertEquals(+MathUtils.TWO_PI, normalized1.getRightAscensionOfAscendingNode() - withoutDerivatives.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assert.assertEquals(2 * MathUtils.TWO_PI, normalized1.getTrueAnomaly()                - withoutDerivatives.getTrueAnomaly(),                   1.0e-10);
+        Assert.assertTrue(Double.isNaN(normalized1.getADot()));
+        Assert.assertTrue(Double.isNaN(normalized1.getEDot()));
+        Assert.assertTrue(Double.isNaN(normalized1.getIDot()));
+        Assert.assertTrue(Double.isNaN(normalized1.getPerigeeArgumentDot()));
+        Assert.assertTrue(Double.isNaN(normalized1.getRightAscensionOfAscendingNodeDot()));
+        Assert.assertTrue(Double.isNaN(normalized1.getTrueAnomalyDot()));
+
+        double[] p = new double[6];
+        OrbitType.KEPLERIAN.mapOrbitToArray(withoutDerivatives, PositionAngle.TRUE, p, null);
+        KeplerianOrbit withDerivatives = (KeplerianOrbit) OrbitType.KEPLERIAN.mapArrayToOrbit(p,
+                                                                                              new double[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 },
+                                                                                              PositionAngle.TRUE,
+                                                                                              withoutDerivatives.getDate(),
+                                                                                              withoutDerivatives.getMu(),
+                                                                                              withoutDerivatives.getFrame());
+        KeplerianOrbit normalized2 = (KeplerianOrbit) OrbitType.KEPLERIAN.normalize(withDerivatives, ref);
+        Assert.assertTrue(normalized2.hasDerivatives());
+        Assert.assertEquals(0.0, normalized2.getA() - withoutDerivatives.getA(), 1.0e-6);
+        Assert.assertEquals(0.0, normalized2.getE() - withoutDerivatives.getE(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getI() - withoutDerivatives.getI(), 1.0e-10);
+        Assert.assertEquals(-MathUtils.TWO_PI, normalized2.getPerigeeArgument()               - withoutDerivatives.getPerigeeArgument(),               1.0e-10);
+        Assert.assertEquals(+MathUtils.TWO_PI, normalized2.getRightAscensionOfAscendingNode() - withoutDerivatives.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assert.assertEquals(2 * MathUtils.TWO_PI, normalized2.getTrueAnomaly()                - withoutDerivatives.getTrueAnomaly(),                   1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getADot() - withDerivatives.getADot(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getEDot() - withDerivatives.getEDot(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getIDot() - withDerivatives.getIDot(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getPerigeeArgumentDot()               - withDerivatives.getPerigeeArgumentDot(),               1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getRightAscensionOfAscendingNodeDot() - withDerivatives.getRightAscensionOfAscendingNodeDot(), 1.0e-10);
+        Assert.assertEquals(0.0, normalized2.getTrueAnomalyDot()                   - withDerivatives.getTrueAnomalyDot(),                   1.0e-10);
+
     }
 
     @Before

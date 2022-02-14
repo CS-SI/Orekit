@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,8 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.ThirdBodyAttractionEpoch;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -35,7 +36,7 @@ import org.orekit.utils.ParameterDriversList;
  *  The computation of the derivatives of the acceleration due to a ThirdBodyAttraction
  *  has been added.
  *
- *  Set of {@link AdditionalEquations additional equations} computing the partial derivatives
+ * {@link AdditionalDerivativesProvider Provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
  * <p>
  * This set of equations are automatically added to a {@link NumericalPropagator numerical propagator}
@@ -67,7 +68,10 @@ import org.orekit.utils.ParameterDriversList;
  * @author Luc Maisonobe
  * @since 10.2
  */
-public class EpochDerivativesEquations implements AdditionalEquations {
+@SuppressWarnings("deprecation")
+public class EpochDerivativesEquations
+    implements AdditionalDerivativesProvider,
+    org.orekit.propagation.integration.AdditionalEquations  {
 
     /** Propagator computing state evolution. */
     private final NumericalPropagator propagator;
@@ -100,12 +104,19 @@ public class EpochDerivativesEquations implements AdditionalEquations {
         this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
-        propagator.addAdditionalEquations(this);
+        propagator.addAdditionalDerivativesProvider(this);
     }
 
     /** {@inheritDoc} */
     public String getName() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        freezeParametersSelection();
+        return 6 * (6 + selected.getNbParams() + 1);
     }
 
     /** Freeze the selected parameters from the force models.
@@ -246,7 +257,20 @@ public class EpochDerivativesEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        AdditionalDerivativesProvider.super.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        System.arraycopy(derivatives(s), 0, pDot, 0, pDot.length);
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    public double[] derivatives(final SpacecraftState s) {
 
         // initialize acceleration Jacobians to zero
         final int paramDimEpoch = selected.getNbParams() + 1; // added epoch
@@ -323,6 +347,7 @@ public class EpochDerivativesEquations implements AdditionalEquations {
         // copy C and E into Adot and Bdot
         final int stateDim = 6;
         final double[] p = s.getAdditionalState(getName());
+        final double[] pDot = new double[p.length];
         System.arraycopy(p, dimEpoch * stateDim, pDot, 0, dimEpoch * stateDim);
 
         // compute Cdot and Ddot
@@ -377,8 +402,7 @@ public class EpochDerivativesEquations implements AdditionalEquations {
 
         }
 
-        // these equations have no effect on the main state itself
-        return null;
+        return pDot;
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,9 @@ package org.orekit.utils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
@@ -33,6 +33,14 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  */
 public class MultipleShooter extends AbstractMultipleShooting {
 
+    /** Name of the additional derivatives. */
+    private static final String DERIVATIVES = "derivatives";
+
+    /** Derivatives linked to the Propagators.
+     * @since 11.1
+     */
+    private final List<EpochDerivativesEquations> epochEquations;
+
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
      * @param initialGuessList initial patch points to be corrected.
@@ -40,16 +48,35 @@ public class MultipleShooter extends AbstractMultipleShooting {
      * @param additionalEquations list of additional equations linked to propagatorList.
      * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector
+     * @deprecated as of 11.1, replaced by {@link #MultipleShooter(List, List, List, double, double, int)}
+     */
+    @Deprecated
+    public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
+                           final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
+                           final double arcDuration, final double tolerance) {
+        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, DERIVATIVES);
+        epochEquations = additionalEquations.stream().map(ae -> (EpochDerivativesEquations) ae).collect(Collectors.toList());
+    }
+
+    /** Simple Constructor.
+     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
+     * @param initialGuessList initial patch points to be corrected.
+     * @param propagatorList list of propagators associated to each patch point.
+     * @param epochEquations list of additional derivatives providers linked to propagatorList.
+     * @param arcDuration initial guess of the duration of each arc.
+     * @param tolerance convergence tolerance on the constraint vector
+     * @param maxIter maximum number of iterations
      */
     public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                           final List<AdditionalEquations> additionalEquations, final double arcDuration, final double tolerance) {
-        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, "derivatives");
+                           final List<EpochDerivativesEquations> epochEquations, final double arcDuration,
+                           final double tolerance, final int maxIter) {
+        super(initialGuessList, propagatorList, arcDuration, tolerance, maxIter, DERIVATIVES);
+        this.epochEquations = epochEquations;
     }
 
     /** {@inheritDoc} */
-    protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
-                                                       final AdditionalEquations additionalEquation) {
-        return ((EpochDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
+    protected SpacecraftState getAugmentedInitialState(final int i) {
+        return epochEquations.get(i).setInitialJacobians(getPatchPoint(i));
     }
 
     /** {@inheritDoc} */
@@ -74,7 +101,7 @@ public class MultipleShooter extends AbstractMultipleShooting {
         // The additional constraint vector has the following form :
 
         //           [ y1i - y1d ]---- other constraints (component of
-        // Fadd(X) = [    ...    ]    | a patch point eaquals to a
+        // Fadd(X) = [    ...    ]    | a patch point equals to a
         //           [vz2i - vz2d]----  desired value)
 
         // Number of additional constraints

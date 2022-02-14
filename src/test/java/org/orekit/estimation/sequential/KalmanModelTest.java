@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,10 +42,10 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -233,10 +233,7 @@ public class KalmanModelTest {
         
         // Set derivatives computation for the propagator
         final String equationName = KalmanEstimator.class.getName() + "-derivatives-";
-        final PartialDerivativesEquations pde = new PartialDerivativesEquations(equationName, propagator);
-        final SpacecraftState rawState = propagator.getInitialState();
-        final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-        propagator.resetInitialState(stateWithDerivatives);
+        final MatricesHarvester harvester = propagator.setupMatricesComputation(equationName, null, null);
         
         // Propagate to range date and get predicted orbit
         final SpacecraftState scPred = propagator.propagate(range.getDate());
@@ -246,13 +243,11 @@ public class KalmanModelTest {
         expPhi = MatrixUtils.createRealIdentityMatrix(M);
         
         // Derivatives of the state vector with respect to initial state vector
-        final double[][] dYdY0 = new double[6][6];
-        pde.getMapper().getStateJacobian(scPred, dYdY0 );
+        final double[][] dYdY0 =  harvester.getStateTransitionMatrix(scPred).getData();
         expPhi.setSubMatrix(dYdY0, 0, 0);
 
         // Derivatives of SRP coef with respect to state
-        final double[][] dYdPp  = new double[6][1];
-        pde.getMapper().getParametersJacobian(scPred, dYdPp);
+        final double[][] dYdPp  = harvester.getParametersJacobian(scPred).getData();
         expPhi.setSubMatrix(dYdPp, 0, 6);
         
         // Estimated cov matrix from last measurement

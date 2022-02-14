@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1053,7 +1053,7 @@ public class APMParserTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.INCOMPATIBLE_FRAMES, oe.getSpecifier());
-            Assert.assertEquals("SC_BODY_1 → ITRF1997", oe.getParts()[0]);
+            Assert.assertEquals("SC_BODY_1 → ITRF-97", oe.getParts()[0]);
             Assert.assertEquals("SC_BODY_1 ← GCRF",    oe.getParts()[1]);
         }
     }

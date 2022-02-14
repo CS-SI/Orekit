@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,6 +53,9 @@ public class StreamingCpfWriter {
     private static final String NEW_LINE = "\n";
 
     /** String A2 Format. */
+    private static final String A1 = "%1s";
+
+    /** String A2 Format. */
     private static final String A2 = "%2s";
 
     /** String A3 Format. */
@@ -90,6 +93,9 @@ public class StreamingCpfWriter {
 
     /** Space. */
     private static final String SPACE = " ";
+
+    /** Empty string. */
+    private static final String EMPTY_STRING = "";
 
     /** File format. */
     private static final String FORMAT = "CPF";
@@ -170,11 +176,13 @@ public class StreamingCpfWriter {
      * @param cpfWriter writer
      * @param format format
      * @param value value
+     * @param withSpace true if a space must be added
      * @throws IOException if value cannot be written
      */
-    private static void writeValue(final Appendable cpfWriter, final String format, final String value)
+    private static void writeValue(final Appendable cpfWriter, final String format,
+                                   final String value, final boolean withSpace)
         throws IOException {
-        cpfWriter.append(String.format(STANDARDIZED_LOCALE, format, value)).append(SPACE);
+        cpfWriter.append(String.format(STANDARDIZED_LOCALE, format, value)).append(withSpace ? SPACE : EMPTY_STRING);
     }
 
     /**
@@ -182,11 +190,13 @@ public class StreamingCpfWriter {
      * @param cpfWriter writer
      * @param format format
      * @param value value
+     * @param withSpace true if a space must be added
      * @throws IOException if value cannot be written
      */
-    private static void writeValue(final Appendable cpfWriter, final String format, final int value)
+    private static void writeValue(final Appendable cpfWriter, final String format,
+                                   final int value, final boolean withSpace)
         throws IOException {
-        cpfWriter.append(String.format(STANDARDIZED_LOCALE, format, value)).append(SPACE);
+        cpfWriter.append(String.format(STANDARDIZED_LOCALE, format, value)).append(withSpace ? SPACE : EMPTY_STRING);
     }
 
     /**
@@ -194,11 +204,13 @@ public class StreamingCpfWriter {
      * @param cpfWriter writer
      * @param format format
      * @param value value
+     * @param withSpace true if a space must be added
      * @throws IOException if value cannot be written
      */
-    private static void writeValue(final Appendable cpfWriter, final String format, final double value)
+    private static void writeValue(final Appendable cpfWriter, final String format,
+                                   final double value, final boolean withSpace)
         throws IOException {
-        cpfWriter.append(String.format(STANDARDIZED_LOCALE, format, value)).append(SPACE);
+        cpfWriter.append(String.format(STANDARDIZED_LOCALE, format, value)).append(withSpace ? SPACE : EMPTY_STRING);
     }
 
     /**
@@ -206,13 +218,15 @@ public class StreamingCpfWriter {
      * @param cpfWriter writer
      * @param format format
      * @param value value
-     * @throws IOException if value cannot be writtent
+     * @param withSpace true if a space must be added
+     * @throws IOException if value cannot be written
      */
-    private static void writeValue(final Appendable cpfWriter, final String format, final boolean value)
+    private static void writeValue(final Appendable cpfWriter, final String format,
+                                   final boolean value, final boolean withSpace)
         throws IOException {
         // Change to an integer value
         final int intValue = value ? 1 : 0;
-        writeValue(cpfWriter, format, intValue);
+        writeValue(cpfWriter, format, intValue, withSpace);
     }
 
     /** A writer for a segment of a CPF. */
@@ -274,23 +288,23 @@ public class StreamingCpfWriter {
             throws IOException {
 
             // Record type and direction flag
-            writeValue(writer, A2, "10");
-            writeValue(writer, I1, DEFAULT_DIRECTION_FLAG);
+            writeValue(writer, A2, "10",                                    true);
+            writeValue(writer, I1, DEFAULT_DIRECTION_FLAG,                  true);
 
             // Epoch
             final AbsoluteDate epoch = pv.getDate();
             final DateTimeComponents dtc = epoch.getComponents(timeScale);
-            writeValue(writer, I5, dtc.getDate().getMJD());
-            writeValue(writer, F13_6, dtc.getTime().getSecondsInLocalDay());
+            writeValue(writer, I5, dtc.getDate().getMJD(),                  true);
+            writeValue(writer, F13_6, dtc.getTime().getSecondsInLocalDay(), true);
 
             // Leap second flag (default 0)
-            writeValue(writer, I2, 0);
+            writeValue(writer, I2, 0, true);
 
             // Position
             final Vector3D position = pv.getPosition();
-            writeValue(writer, F17_3, position.getX());
-            writeValue(writer, F17_3, position.getY());
-            writeValue(writer, F17_3, position.getZ());
+            writeValue(writer, F17_3, position.getX(), true);
+            writeValue(writer, F17_3, position.getY(), true);
+            writeValue(writer, F17_3, position.getZ(), false);
 
             // New line
             writer.append(NEW_LINE);
@@ -311,24 +325,28 @@ public class StreamingCpfWriter {
                 throws IOException {
 
                 // write first keys
-                writeValue(cpfWriter, A2, getIdentifier());
-                writeValue(cpfWriter, A3, FORMAT);
-                writeValue(cpfWriter, I2, cpfHeader.getVersion());
-                writeValue(cpfWriter, A3, cpfHeader.getSource());
-                writeValue(cpfWriter, I4, cpfHeader.getProductionEpoch().getYear());
-                writeValue(cpfWriter, I2, cpfHeader.getProductionEpoch().getMonth());
-                writeValue(cpfWriter, I2, cpfHeader.getProductionEpoch().getDay());
-                writeValue(cpfWriter, I2, cpfHeader.getProductionHour());
-                writeValue(cpfWriter, I3, cpfHeader.getSequenceNumber());
+                writeValue(cpfWriter, A2, getIdentifier(),                           true);
+                writeValue(cpfWriter, A3, FORMAT,                                    true);
+                writeValue(cpfWriter, I2, cpfHeader.getVersion(),                    true);
+                writeValue(cpfWriter, A1, SPACE, false); // One additional column, see CPF v1 format
+                writeValue(cpfWriter, A3, cpfHeader.getSource(),                     true);
+                writeValue(cpfWriter, I4, cpfHeader.getProductionEpoch().getYear(),  true);
+                writeValue(cpfWriter, I2, cpfHeader.getProductionEpoch().getMonth(), true);
+                writeValue(cpfWriter, I2, cpfHeader.getProductionEpoch().getDay(),   true);
+                writeValue(cpfWriter, I2, cpfHeader.getProductionHour(),             true);
+                writeValue(cpfWriter, A1, SPACE, false); // One additional column, see CPF v1 format
+                writeValue(cpfWriter, I3, cpfHeader.getSequenceNumber(),             true);
 
                 // check file version
                 if (cpfHeader.getVersion() == 2) {
-                    writeValue(cpfWriter, I2, cpfHeader.getSubDailySequenceNumber());
+                    writeValue(cpfWriter, I2, cpfHeader.getSubDailySequenceNumber(), true);
                 }
 
-                // write last key
-                writeValue(cpfWriter, A10, cpfHeader.getName());
+                // write target name from official list
+                writeValue(cpfWriter, A10, cpfHeader.getName(),                      true);
 
+                // write notes (not supported yet)
+                writeValue(cpfWriter, A10, SPACE,                                    false);
             }
 
         },
@@ -342,40 +360,42 @@ public class StreamingCpfWriter {
                 throws IOException {
 
                 // write identifiers
-                writeValue(cpfWriter, A2, getIdentifier());
-                writeValue(cpfWriter, A8, cpfHeader.getIlrsSatelliteId());
-                writeValue(cpfWriter, A4, cpfHeader.getSic());
-                writeValue(cpfWriter, A8, cpfHeader.getNoradId());
+                writeValue(cpfWriter, A2, getIdentifier(),                                 true);
+                writeValue(cpfWriter, A8, cpfHeader.getIlrsSatelliteId(),                  true);
+                writeValue(cpfWriter, A4, cpfHeader.getSic(),                              true);
+                writeValue(cpfWriter, A8, cpfHeader.getNoradId(),                          true);
 
                 // write starting epoch
                 final AbsoluteDate starting = cpfHeader.getStartEpoch();
                 final DateTimeComponents dtcStart = starting.getComponents(timescale);
-                writeValue(cpfWriter, I4, dtcStart.getDate().getYear());
-                writeValue(cpfWriter, I2, dtcStart.getDate().getMonth());
-                writeValue(cpfWriter, I2, dtcStart.getDate().getDay());
-                writeValue(cpfWriter, I2, dtcStart.getTime().getHour());
-                writeValue(cpfWriter, I2, dtcStart.getTime().getMinute());
-                writeValue(cpfWriter, I2, (int) dtcStart.getTime().getSecond());
+                writeValue(cpfWriter, I4, dtcStart.getDate().getYear(),                    true);
+                writeValue(cpfWriter, I2, dtcStart.getDate().getMonth(),                   true);
+                writeValue(cpfWriter, I2, dtcStart.getDate().getDay(),                     true);
+                writeValue(cpfWriter, I2, dtcStart.getTime().getHour(),                    true);
+                writeValue(cpfWriter, I2, dtcStart.getTime().getMinute(),                  true);
+                writeValue(cpfWriter, I2, (int) dtcStart.getTime().getSecond(),            true);
 
                 // write ending epoch
                 final AbsoluteDate ending = cpfHeader.getEndEpoch();
                 final DateTimeComponents dtcEnd = ending.getComponents(timescale);
-                writeValue(cpfWriter, I4, dtcEnd.getDate().getYear());
-                writeValue(cpfWriter, I2, dtcEnd.getDate().getMonth());
-                writeValue(cpfWriter, I2, dtcEnd.getDate().getDay());
-                writeValue(cpfWriter, I2, dtcEnd.getTime().getHour());
-                writeValue(cpfWriter, I2, dtcEnd.getTime().getMinute());
-                writeValue(cpfWriter, I2, (int)  dtcEnd.getTime().getSecond());
+                writeValue(cpfWriter, I4, dtcEnd.getDate().getYear(),                      true);
+                writeValue(cpfWriter, I2, dtcEnd.getDate().getMonth(),                     true);
+                writeValue(cpfWriter, I2, dtcEnd.getDate().getDay(),                       true);
+                writeValue(cpfWriter, I2, dtcEnd.getTime().getHour(),                      true);
+                writeValue(cpfWriter, I2, dtcEnd.getTime().getMinute(),                    true);
+                writeValue(cpfWriter, I2, (int)  dtcEnd.getTime().getSecond(),             true);
 
                 // write last keys
-                writeValue(cpfWriter, I5, cpfHeader.getStep());
-                writeValue(cpfWriter, I1, cpfHeader.isCompatibleWithTIVs());
-                writeValue(cpfWriter, I1, cpfHeader.getTargetClass());
-                writeValue(cpfWriter, I2, cpfHeader.getRefFrameId());
-                writeValue(cpfWriter, I1, cpfHeader.getRotationalAngleType());
-                writeValue(cpfWriter, I1, cpfHeader.isCenterOfMassCorrectionApplied());
-                if (cpfHeader.getVersion() == 2) {
-                    writeValue(cpfWriter, I1, cpfHeader.getTargetLocation());
+                writeValue(cpfWriter, I5, cpfHeader.getStep(),                             true);
+                writeValue(cpfWriter, I1, cpfHeader.isCompatibleWithTIVs(),                true);
+                writeValue(cpfWriter, I1, cpfHeader.getTargetClass(),                      true);
+                writeValue(cpfWriter, I2, cpfHeader.getRefFrameId(),                       true);
+                writeValue(cpfWriter, I1, cpfHeader.getRotationalAngleType(),              true);
+                if (cpfHeader.getVersion() == 1) {
+                    writeValue(cpfWriter, I1, cpfHeader.isCenterOfMassCorrectionApplied(), false);
+                } else {
+                    writeValue(cpfWriter, I1, cpfHeader.isCenterOfMassCorrectionApplied(), true);
+                    writeValue(cpfWriter, I2, cpfHeader.getTargetLocation(),               false);
                 }
 
             }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -193,6 +193,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("deprecation")
     public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
@@ -218,9 +219,14 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
 
         propagator.resetInitialState(state);
 
-        // Add additional equations to the propagator
-        for (AdditionalEquations equation: getAdditionalEquations()) {
-            propagator.addAdditionalEquations(equation);
+        // Add additional derivatives providers to the propagator
+        for (AdditionalDerivativesProvider provider: getAdditionalDerivativesProviders()) {
+            propagator.addAdditionalDerivativesProvider(provider);
+        }
+
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        for (org.orekit.propagation.integration.AdditionalEquations equations : getAdditionalEquations()) {
+            propagator.addAdditionalDerivativesProvider(new org.orekit.propagation.integration.AdditionalEquationsAdapter(equations, propagator::getInitialState));
         }
 
         return propagator;

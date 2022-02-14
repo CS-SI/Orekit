@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -102,9 +103,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                    final PositionAngle type,
-                                                                    final T[] stateVector,
-                                                                    final T[] stateVectorDot) {
+                                                                        final PositionAngle type,
+                                                                        final T[] stateVector,
+                                                                        final T[] stateVectorDot) {
 
             final TimeStampedFieldPVCoordinates<T> pv = orbit.getPVCoordinates();
             final FieldVector3D<T>                 p  = pv.getPosition();
@@ -132,10 +133,10 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldCartesianOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                                      final T[] stateVectorDot,
-                                                                                      final PositionAngle type,
-                                                                                      final FieldAbsoluteDate<T> date,
-                                                                                      final T mu, final Frame frame) {
+                                                                                          final T[] stateVectorDot,
+                                                                                          final PositionAngle type,
+                                                                                          final FieldAbsoluteDate<T> date,
+                                                                                          final T mu, final Frame frame) {
             final FieldVector3D<T> p = new FieldVector3D<>(stateVector[0], stateVector[1], stateVector[2]);
             final FieldVector3D<T> v = new FieldVector3D<>(stateVector[3], stateVector[4], stateVector[5]);
             final FieldVector3D<T> a;
@@ -164,6 +165,20 @@ public enum OrbitType {
             drivers.add(new ParameterDriver(VEL_Y, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
             drivers.add(new ParameterDriver(VEL_Z, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
             return drivers;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public CartesianOrbit normalize(final Orbit orbit, final Orbit reference) {
+            // no angular parameters need normalization
+            return convertType(orbit);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldCartesianOrbit<T> normalize(final FieldOrbit<T> orbit, final FieldOrbit<T> reference) {
+            // no angular parameters need normalization
+            return convertType(orbit);
         }
 
     },
@@ -234,9 +249,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                    final PositionAngle type,
-                                                                    final T[] stateVector,
-                                                                    final T[] stateVectorDot) {
+                                                                        final PositionAngle type,
+                                                                        final T[] stateVector,
+                                                                        final T[] stateVectorDot) {
 
             final FieldCircularOrbit<T> circularOrbit = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(orbit);
 
@@ -265,9 +280,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                                     final T[] stateVectorDot, final PositionAngle type,
-                                                                                     final FieldAbsoluteDate<T> date,
-                                                                                     final T mu, final Frame frame) {
+                                                                                         final T[] stateVectorDot, final PositionAngle type,
+                                                                                         final FieldAbsoluteDate<T> date,
+                                                                                         final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldCircularOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -300,6 +315,88 @@ public enum OrbitType {
             drivers.add(new ParameterDriver(RAAN, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
             drivers.add(new ParameterDriver(name, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
             return drivers;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public CircularOrbit normalize(final Orbit orbit, final Orbit reference) {
+
+            // convert input to proper type
+            final CircularOrbit cO = convertType(orbit);
+            final CircularOrbit cR = convertType(reference);
+
+            // perform normalization
+            if (cO.hasDerivatives()) {
+                return new CircularOrbit(cO.getA(),
+                                         cO.getCircularEx(),
+                                         cO.getCircularEy(),
+                                         cO.getI(),
+                                         MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(), cR.getRightAscensionOfAscendingNode()),
+                                         MathUtils.normalizeAngle(cO.getAlphaV(), cR.getAlphaV()),
+                                         cO.getADot(),
+                                         cO.getCircularExDot(),
+                                         cO.getCircularEyDot(),
+                                         cO.getIDot(),
+                                         cO.getRightAscensionOfAscendingNodeDot(),
+                                         cO.getAlphaVDot(),
+                                         PositionAngle.TRUE,
+                                         cO.getFrame(),
+                                         cO.getDate(),
+                                         cO.getMu());
+            } else {
+                return new CircularOrbit(cO.getA(),
+                                         cO.getCircularEx(),
+                                         cO.getCircularEy(),
+                                         cO.getI(),
+                                         MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(), cR.getRightAscensionOfAscendingNode()),
+                                         MathUtils.normalizeAngle(cO.getAlphaV(), cR.getAlphaV()),
+                                         PositionAngle.TRUE,
+                                         cO.getFrame(),
+                                         cO.getDate(),
+                                         cO.getMu());
+            }
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> normalize(final FieldOrbit<T> orbit, final FieldOrbit<T> reference) {
+
+            // convert input to proper type
+            final FieldCircularOrbit<T> cO = convertType(orbit);
+            final FieldCircularOrbit<T> cR = convertType(reference);
+
+            // perform normalization
+            if (cO.hasDerivatives()) {
+                return new FieldCircularOrbit<>(cO.getA(),
+                                                cO.getCircularEx(),
+                                                cO.getCircularEy(),
+                                                cO.getI(),
+                                                MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(), cR.getRightAscensionOfAscendingNode()),
+                                                MathUtils.normalizeAngle(cO.getAlphaV(), cR.getAlphaV()),
+                                                cO.getADot(),
+                                                cO.getCircularExDot(),
+                                                cO.getCircularEyDot(),
+                                                cO.getIDot(),
+                                                cO.getRightAscensionOfAscendingNodeDot(),
+                                                cO.getAlphaVDot(),
+                                                PositionAngle.TRUE,
+                                                cO.getFrame(),
+                                                cO.getDate(),
+                                                cO.getMu());
+            } else {
+                return new FieldCircularOrbit<>(cO.getA(),
+                                                cO.getCircularEx(),
+                                                cO.getCircularEy(),
+                                                cO.getI(),
+                                                MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(), cR.getRightAscensionOfAscendingNode()),
+                                                MathUtils.normalizeAngle(cO.getAlphaV(), cR.getAlphaV()),
+                                                PositionAngle.TRUE,
+                                                cO.getFrame(),
+                                                cO.getDate(),
+                                                cO.getMu());
+            }
+
         }
 
     },
@@ -371,9 +468,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                    final PositionAngle type,
-                                                                    final T[] stateVector,
-                                                                    final T[] stateVectorDot) {
+                                                                        final PositionAngle type,
+                                                                        final T[] stateVector,
+                                                                        final T[] stateVectorDot) {
 
             final FieldEquinoctialOrbit<T> equinoctialOrbit =
                 (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
@@ -403,10 +500,10 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                                        final T[] stateVectorDot,
-                                                                                        final PositionAngle type,
-                                                                                        final FieldAbsoluteDate<T> date,
-                                                                                        final T mu, final Frame frame) {
+                                                                                            final T[] stateVectorDot,
+                                                                                            final PositionAngle type,
+                                                                                            final FieldAbsoluteDate<T> date,
+                                                                                            final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldEquinoctialOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -441,6 +538,87 @@ public enum OrbitType {
             return drivers;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public EquinoctialOrbit normalize(final Orbit orbit, final Orbit reference) {
+
+            // convert input to proper type
+            final EquinoctialOrbit eO = convertType(orbit);
+            final EquinoctialOrbit eR = convertType(reference);
+
+            // perform normalization
+            if (eO.hasDerivatives()) {
+                return new EquinoctialOrbit(eO.getA(),
+                                            eO.getEquinoctialEx(),
+                                            eO.getEquinoctialEy(),
+                                            eO.getHx(),
+                                            eO.getHy(),
+                                            MathUtils.normalizeAngle(eO.getLv(), eR.getLv()),
+                                            eO.getADot(),
+                                            eO.getEquinoctialExDot(),
+                                            eO.getEquinoctialEyDot(),
+                                            eO.getHxDot(),
+                                            eO.getHyDot(),
+                                            eO.getLvDot(),
+                                            PositionAngle.TRUE,
+                                            eO.getFrame(),
+                                            eO.getDate(),
+                                            eO.getMu());
+            } else {
+                return new EquinoctialOrbit(eO.getA(),
+                                            eO.getEquinoctialEx(),
+                                            eO.getEquinoctialEy(),
+                                            eO.getHx(),
+                                            eO.getHy(),
+                                            MathUtils.normalizeAngle(eO.getLv(), eR.getLv()),
+                                            PositionAngle.TRUE,
+                                            eO.getFrame(),
+                                            eO.getDate(),
+                                            eO.getMu());
+            }
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> normalize(final FieldOrbit<T> orbit, final FieldOrbit<T> reference) {
+
+            // convert input to proper type
+            final FieldEquinoctialOrbit<T> eO = convertType(orbit);
+            final FieldEquinoctialOrbit<T> eR = convertType(reference);
+
+            // perform normalization
+            if (eO.hasDerivatives()) {
+                return new FieldEquinoctialOrbit<>(eO.getA(),
+                                                   eO.getEquinoctialEx(),
+                                                   eO.getEquinoctialEy(),
+                                                   eO.getHx(),
+                                                   eO.getHy(),
+                                                   MathUtils.normalizeAngle(eO.getLv(), eR.getLv()),
+                                                   eO.getADot(),
+                                                   eO.getEquinoctialExDot(),
+                                                   eO.getEquinoctialEyDot(),
+                                                   eO.getHxDot(),
+                                                   eO.getHyDot(),
+                                                   eO.getLvDot(),
+                                                   PositionAngle.TRUE,
+                                                   eO.getFrame(),
+                                                   eO.getDate(),
+                                                   eO.getMu());
+            } else {
+                return new FieldEquinoctialOrbit<>(eO.getA(),
+                                                   eO.getEquinoctialEx(),
+                                                   eO.getEquinoctialEy(),
+                                                   eO.getHx(),
+                                                   eO.getHy(),
+                                                   MathUtils.normalizeAngle(eO.getLv(), eR.getLv()),
+                                                   PositionAngle.TRUE,
+                                                   eO.getFrame(),
+                                                   eO.getDate(),
+                                                   eO.getMu());
+            }
+
+        }
 
     },
 
@@ -511,9 +689,9 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                    final PositionAngle type,
-                                                                    final T[] stateVector,
-                                                                    final T[] stateVectorDot) {
+                                                                        final PositionAngle type,
+                                                                        final T[] stateVector,
+                                                                        final T[] stateVectorDot) {
             final FieldKeplerianOrbit<T> keplerianOrbit =
                             (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
 
@@ -542,10 +720,10 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                                      final T[] stateVectorDot,
-                                                                                      final PositionAngle type,
-                                                                                      final FieldAbsoluteDate<T> date,
-                                                                                      final T mu, final Frame frame) {
+                                                                                          final T[] stateVectorDot,
+                                                                                          final PositionAngle type,
+                                                                                          final FieldAbsoluteDate<T> date,
+                                                                                          final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldKeplerianOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -578,6 +756,88 @@ public enum OrbitType {
             drivers.add(new ParameterDriver(RAAN, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
             drivers.add(new ParameterDriver(name, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
             return drivers;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public KeplerianOrbit normalize(final Orbit orbit, final Orbit reference) {
+
+            // convert input to proper type
+            final KeplerianOrbit kO = convertType(orbit);
+            final KeplerianOrbit kR = convertType(reference);
+
+            // perform normalization
+            if (kO.hasDerivatives()) {
+                return new KeplerianOrbit(kO.getA(),
+                                          kO.getE(),
+                                          kO.getI(),
+                                          MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
+                                          MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
+                                          MathUtils.normalizeAngle(kO.getTrueAnomaly(), kR.getTrueAnomaly()),
+                                          kO.getADot(),
+                                          kO.getEDot(),
+                                          kO.getIDot(),
+                                          kO.getPerigeeArgumentDot(),
+                                          kO.getRightAscensionOfAscendingNodeDot(),
+                                          kO.getTrueAnomalyDot(),
+                                          PositionAngle.TRUE,
+                                          kO.getFrame(),
+                                          kO.getDate(),
+                                          kO.getMu());
+            } else {
+                return new KeplerianOrbit(kO.getA(),
+                                          kO.getE(),
+                                          kO.getI(),
+                                          MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
+                                          MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
+                                          MathUtils.normalizeAngle(kO.getTrueAnomaly(), kR.getTrueAnomaly()),
+                                          PositionAngle.TRUE,
+                                          kO.getFrame(),
+                                          kO.getDate(),
+                                          kO.getMu());
+            }
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> normalize(final FieldOrbit<T> orbit, final FieldOrbit<T> reference) {
+
+            // convert input to proper type
+            final FieldKeplerianOrbit<T> kO = convertType(orbit);
+            final FieldKeplerianOrbit<T> kR = convertType(reference);
+
+            // perform normalization
+            if (kO.hasDerivatives()) {
+                return new FieldKeplerianOrbit<>(kO.getA(),
+                                                 kO.getE(),
+                                                 kO.getI(),
+                                                 MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
+                                                 MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
+                                                 MathUtils.normalizeAngle(kO.getTrueAnomaly(), kR.getTrueAnomaly()),
+                                                 kO.getADot(),
+                                                 kO.getEDot(),
+                                                 kO.getIDot(),
+                                                 kO.getPerigeeArgumentDot(),
+                                                 kO.getRightAscensionOfAscendingNodeDot(),
+                                                 kO.getTrueAnomalyDot(),
+                                                 PositionAngle.TRUE,
+                                                 kO.getFrame(),
+                                                 kO.getDate(),
+                                                 kO.getMu());
+            } else {
+                return new FieldKeplerianOrbit<>(kO.getA(),
+                                                 kO.getE(),
+                                                 kO.getI(),
+                                                 MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
+                                                 MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
+                                                 MathUtils.normalizeAngle(kO.getTrueAnomaly(), kR.getTrueAnomaly()),
+                                                 PositionAngle.TRUE,
+                                                 kO.getFrame(),
+                                                 kO.getDate(),
+                                                 kO.getMu());
+            }
+
         }
 
     };
@@ -750,10 +1010,10 @@ public enum OrbitType {
      * @return orbit corresponding to the flat array as a space dynamics object
      */
     public abstract <T extends CalculusFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(T[] array,
-                                                                                  T[] arrayDot,
-                                                                                  PositionAngle type,
-                                                                                  FieldAbsoluteDate<T> date,
-                                                                                  T mu, Frame frame);
+                                                                                      T[] arrayDot,
+                                                                                      PositionAngle type,
+                                                                                      FieldAbsoluteDate<T> date,
+                                                                                      T mu, Frame frame);
 
     /** Get parameters drivers initialized from a reference orbit.
      * @param dP user specified position error
@@ -764,6 +1024,41 @@ public enum OrbitType {
     public abstract ParameterDriversList getDrivers(double dP, Orbit orbit,
                                                     PositionAngle type);
 
+    /** Normalize one orbit with respect to a reference one.
+     * <p>
+     * Given a, angular component ζ of an orbit and the corresponding
+     * angular component ζᵣ in the reference orbit, the angular component
+     * ζₙ of the normalized orbit will be ζₙ = ζ + 2kπ
+     * where k is chosen such that ζᵣ - π ≤ ζₙ ≤ ζᵣ + π. This is intended
+     * to avoid too large discontinuities and is particularly useful
+     * for normalizing the orbit after an impulsive maneuver with respect
+     * to the reference picked up before the maneuver.
+     * </p>
+     * @param <T> CalculusFieldElement used
+     * @param orbit orbit to normalize
+     * @param reference reference orbit
+     * @return normalized orbit (the type is guaranteed to match {@link OrbitType})
+     * @since 11.1
+     */
+    public abstract <T extends CalculusFieldElement<T>> FieldOrbit<T> normalize(FieldOrbit<T> orbit, FieldOrbit<T> reference);
+
+    /** Normalize one orbit with respect to a reference one.
+     * <p>
+     * Given a, angular component ζ of an orbit and the corresponding
+     * angular component ζᵣ in the reference orbit, the angular component
+     * ζₙ of the normalized orbit will be ζₙ = ζ + 2kπ
+     * where k is chosen such that ζᵣ - π ≤ ζₙ ≤ ζᵣ + π. This is intended
+     * to avoid too large discontinuities and is particularly useful
+     * for normalizing the orbit after an impulsive maneuver with respect
+     * to the reference picked up before the maneuver.
+     * </p>
+     * @param orbit orbit to normalize
+     * @param reference reference orbit
+     * @return normalized orbit (the type is guaranteed to match {@link OrbitType})
+     * @since 11.1
+     */
+    public abstract Orbit normalize(Orbit orbit, Orbit reference);
+
     /** Compute scaling factor for parameters drivers.
      * <p>
      * The scales are estimated from partial derivatives properties of orbits,
@@ -771,7 +1066,7 @@ public enum OrbitType {
      * Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
      * we get at constant energy (i.e. on a Keplerian trajectory):
      * <pre>
-     * V² r |dV| = mu |dr|
+     * V r² |dV| = mu |dr|
      * </pre>
      * <p> So we deduce a scalar velocity error consistent with the position error.
      * From here, we apply orbits Jacobians matrices to get consistent scales

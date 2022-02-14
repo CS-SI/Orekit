@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -42,7 +42,6 @@
     package attitude #DDEBD8 {
 
       class Attitude {
-	    +Vector3D estimateSpin
     	+Attitude withReferenceFrame
     	+Frame getReferenceFrame
         +Rotation getRotation
@@ -67,18 +66,9 @@
         +AttitudeProvider getUnderlyingAttitudeProvider()
       }
 
-      class SpinStabilized {
-        +AttitudeProvider getNonRotatingLaw()
-      }
-
       abstract class GroundPointing {
         #Vector3D getTargetPoint
         #PVCoordinates getTargetPV
-      }
-
-      abstract class GroundPointingWrapper {
-        +Attitude getBaseState
-        +Rotation getCompensation
       }
 
       Frame            <-up- "1" Attitude 
@@ -92,7 +82,6 @@
       AttitudesSequence "*" o--> AttitudeProvider
       AttitudeProvider <--* "1" LofOffsetPointing 
       AttitudeProvider <|.. GroundPointing
-      GroundPointing   <|-- GroundPointingWrapper
       LofOffsetPointing            --|> GroundPointing
 
       AttitudeProviderModifier     <|-- SpinStabilized
@@ -100,9 +89,10 @@
       GroundPointing               <|-- BodyCenterPointing
       GroundPointing               <|-- NadirPointing
       GroundPointing               <|-- TargetPointing
-      GroundPointingWrapper    "1" *--> GroundPointing
-      GroundPointingWrapper        <|-- YawCompensation
-      GroundPointingWrapper        <|-- YawSteering
+      GroundPointing               <|-- YawCompensation
+      AttitudeProviderModifier     <|-- YawCompensation
+      GroundPointing               <|-- YawSteering
+      AttitudeProviderModifier     <|-- YawSteering
       AttitudeProvider             <|-- CelestialBodyPointed
       AttitudeProvider             <|-- InertialProvider
       AttitudeProvider             <|-- LofOffset

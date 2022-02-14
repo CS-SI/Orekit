@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,12 +22,12 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
-import org.orekit.estimation.leastsquares.TLEBatchLSModel;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.AbstractKalmanModel;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.TLEKalmanModel;
+import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -220,7 +220,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer) {
-        return new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     @Override
@@ -229,7 +229,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
                          final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                          final ParameterDriversList estimatedMeasurementsParameters,
                          final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new TLEKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

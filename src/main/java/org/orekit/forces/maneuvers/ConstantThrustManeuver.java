@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -163,7 +163,9 @@ public class ConstantThrustManeuver extends Maneuver {
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final AttitudeProvider attitudeOverride,
                                   final AbstractConstantThrustPropulsionModel constantThrustPropulsionModel) {
-        this(attitudeOverride, new DateBasedManeuverTriggers(date, duration), constantThrustPropulsionModel);
+        this(attitudeOverride,
+             new DateBasedManeuverTriggers(constantThrustPropulsionModel.getName(), date, duration),
+             constantThrustPropulsionModel);
     }
 
     /** Simple constructor for a constant direction and constant thrust.

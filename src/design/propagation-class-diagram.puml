@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -48,11 +48,15 @@
         +SpacecraftState addAdditionalState(final String name, final double ... value)
         +boolean hasAdditionalState(final String name)
         +double[] getAdditionalState(final String name)
-        +Map<String, double[]> getAdditionalStates()
+        +DoubleArrayDictionary getAdditionalStates()
+        +SpacecraftState addAdditionalStateDerivative(final String name, final double ... value)
+        +boolean hasAdditionalStateDerivative(final String name)
+        +double[] getAdditionalStateDerivative(final String name)
+        +DoubleArrayDictionary getAdditionalStatesDerivatives()
       }
       note bottom
-        always immutable
-        addAdditionalState creates new instances
+        always immutable addAdditionalState and
+        addAdditionalStateDerivative create new instances
       end note
 
       interface BoundedPropagator {
@@ -73,6 +77,7 @@
         +AttitudeProvider getAttitudeProvider()
         +void setAttitudeProvider(AttitudeProvider attitudeProvider)
         +Frame getFrame()
+        +MatricesHarvester setupMatricesComputation(String stmName, RealMatrix initialStm, DoubleArrayDictionary initialJacobianColumns)
         +SpacecraftState propagate(AbsoluteDate target)
         +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
       }

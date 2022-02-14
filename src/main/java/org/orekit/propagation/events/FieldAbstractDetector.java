@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,10 +69,11 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
-        getHandler().init(s0, t);
+        getHandler().init(s0, t, (D) this);
     }
 
     /** {@inheritDoc} */

@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = orbită cu înclinație aproape critică (i =
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = imposibil de calculat parametrii medii Eckstein-Hechler după {0} iterații
 
+# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = imposibil de calculat parametrii medii Brouwer-Lyddane după {0} iterații
+
 # unable to compute TLE after {0} iterations
 UNABLE_TO_COMPUTE_TLE = imposibil de calculat TLE după {0} iterații
 
@@ -150,6 +153,9 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grad prea mare (n = {0}, gradul maxim al po
 
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordin prea mare (n = {0}, ordinul maxim al potențialului este {1})
+
+# no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
+WRONG_DEGREE_OR_ORDER = <MISSING TRANSLATION>
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = mai multe date de referință ({0} and {1} separate de {3,number,0.0##############E0} s) descoperite în fișierul de câmp gravitațional {2}
@@ -740,3 +746,12 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = încercare de generare a fișierului {0} ce
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = {0} nu a găsit rădăcina între {1} (g={2,number,0.0##############E0}) și {3} (g={4,number,0.0##############E0})\nUltima iterație la {5} (g={6,number,0.0##############E0})
+
+# backward propagation not allowed here
+BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
+
+# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
+
+# inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
+INCONSISTENT_SELECTION = <MISSING TRANSLATION>

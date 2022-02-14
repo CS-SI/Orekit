@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,8 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.AbstractKalmanModel;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.DSSTKalmanModel;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -35,7 +35,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -123,6 +123,20 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         this.stateType         = stateType;
     }
 
+    /** Get the type of the orbit used for the propagation (mean or osculating).
+     * @return the type of the orbit used for the propagation
+     */
+    public PropagationType getPropagationType() {
+        return propagationType;
+    }
+
+    /** Get the type of the elements used to define the orbital state (mean or osculating).
+     * @return the type of the elements used to define the orbital state
+     */
+    public PropagationType getStateType() {
+        return stateType;
+    }
+
     /** Create a copy of a DSSTPropagatorBuilder object.
      * @return Copied version of the DSSTPropagatorBuilder
      */
@@ -204,7 +218,17 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         }
     }
 
+    /** Reset the orbit in the propagator builder.
+     * @param newOrbit newOrbit New orbit to set in the propagator builder
+     * @param orbitType orbit type (MEAN or OSCULATING)
+     */
+    public void resetOrbit(final Orbit newOrbit, final PropagationType orbitType) {
+        this.stateType = orbitType;
+        super.resetOrbit(newOrbit);
+    }
+
     /** {@inheritDoc} */
+    @SuppressWarnings("deprecation")
     public DSSTPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
@@ -228,12 +252,18 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
         propagator.setInitialState(state, stateType);
 
-        // Add additional equations to the propagator
-        for (AdditionalEquations equation: getAdditionalEquations()) {
-            propagator.addAdditionalEquations(equation);
+        // Add additional derivatives providers to the propagator
+        for (AdditionalDerivativesProvider provider: getAdditionalDerivativesProviders()) {
+            propagator.addAdditionalDerivativesProvider(provider);
+        }
+
+        // FIXME: remove in 12.0 when AdditionalEquations is removed
+        for (org.orekit.propagation.integration.AdditionalEquations equations : getAdditionalEquations()) {
+            propagator.addAdditionalDerivativesProvider(new org.orekit.propagation.integration.AdditionalEquationsAdapter(equations, propagator::getInitialState));
         }
 
         return propagator;
+
     }
 
     /** {@inheritDoc} */
@@ -251,13 +281,17 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** {@inheritDoc} */
     @Override
-    public DSSTKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                            final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                            final ParameterDriversList estimatedMeasurementsParameters,
-                                            final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new DSSTKalmanModel(propagatorBuilders, covarianceMatricesProviders,
-                                   estimatedMeasurementsParameters, measurementProcessNoiseMatrix,
-                                   propagationType, stateType);
+    @SuppressWarnings("deprecation")
+    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                                final ParameterDriversList estimatedMeasurementsParameters,
+                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        // FIXME: remove in 12.0 when DSSTKalmanModel is removed
+        return new org.orekit.estimation.sequential.DSSTKalmanModel(propagatorBuilders,
+                                                                    covarianceMatricesProviders,
+                                                                    estimatedMeasurementsParameters,
+                                                                    measurementProcessNoiseMatrix,
+                                                                    propagationType, stateType);
     }
 
     /** Check if Newtonian attraction force model is available.

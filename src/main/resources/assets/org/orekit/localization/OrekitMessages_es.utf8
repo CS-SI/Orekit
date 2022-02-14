@@ -1,5 +1,5 @@
 # internal error, please notify development team by creating a new topic at {0}
-INTERNAL_ERROR = error interno, por favor, informe de este problema abriento un nuevo debate en {0}
+INTERNAL_ERROR = error interno, por favor, informe de este problema abriendo un nuevo debate en {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitud ({0} m) inferior al umbral permitido {1} m
@@ -19,14 +19,17 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = órbita con inclinación casi crítica (i = {
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = después de {0} iteraciones no se han conseguido calcular los parámetros medios de Eckstein-Hechler
 
+# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = después de {0} iteraciones no se han conseguido calcular los parámetros medios de Brouwer-Lyddane
+
 # unable to compute TLE after {0} iterations
-UNABLE_TO_COMPUTE_TLE = después de {0} iteraciones no se han conseguido calcular el TLE
+UNABLE_TO_COMPUTE_TLE = después de {0} iteraciones no se ha conseguido calcular el TLE
 
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = sistema de referencia {0} huérfano en el árbol de sistemas de referencia
 
 # frame {0} is already attached to frame {1}
-FRAME_ALREADY_ATTACHED = el sistema de referencia {0} está ya ligado al sistema de referencia {1}
+FRAME_ALREADY_ATTACHED = el sistema de referencia {0} ya está ligado al sistema de referencia {1}
 
 # frame {0} is not attached to the main frames tree
 FRAME_NOT_ATTACHED = el sistema de referencia {0} todavía no está ligado al árbol principal de sistemas de referencia
@@ -62,7 +65,7 @@ NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} no es ni un repertorio ni un fichero de a
 UNABLE_TO_FIND_RESOURCE = {0} no existe en el "classpath"
 
 # no Earth Orientation Parameters loaded
-NO_EARTH_ORIENTATION_PARAMETERS_LOADED = los parámetros de orientación de la Tierra no están cargados
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED = no se han cargado los parámetros de orientación de la Tierra
 
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = faltan parámetros de orientación de la Tierra entre {0} y {1}
@@ -113,16 +116,16 @@ UNABLE_TO_PARSE_ELEMENT_IN_FILE = imposible de analizar el elemento {0} de la l�
 UNABLE_TO_FIND_FILE = imposible de encontrar el fichero {0}
 
 # spacecraft mass becomes negative: {0} kg
-SPACECRAFT_MASS_BECOMES_NEGATIVE = masa del vehículo adquiere un valor negativo : {0} kg
+SPACECRAFT_MASS_BECOMES_NEGATIVE = la masa del vehículo adquiere un valor negativo : {0} kg
 
 # positive flow rate (q: {0})
 POSITIVE_FLOW_RATE = flujo de masa positiva (q : {0})
 
 # no gravity field data loaded
-NO_GRAVITY_FIELD_DATA_LOADED = los datos del campo de gravedad no están cargados
+NO_GRAVITY_FIELD_DATA_LOADED = los datos del campo gravitacional no están cargados
 
 # gravity field normalization underflow for degree {0} and order {1}
-GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = underflow aritmético en la normalización de un campo de gravedad para grado {0} y orden {1}
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = underflow aritmético en la normalización de un campo gravitacional para grado {0} y orden {1}
 
 # no ocean tide data loaded
 NO_OCEAN_TIDE_DATA_LOADED = los datos de las mareas oceánicas no están cargados
@@ -140,16 +143,19 @@ POLAR_TRAJECTORY = trayectoria polar (distancia al eje de los polos : {0})
 UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = error de formato imprevisto para el fichero {0} al cargarlo con {1}
 
 # duplicated gravity field coefficient {0}({1}, {2}) in file {3}
-DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coeficiente {0}({1}, {2}) de campo de gravedad duplicado en el fichero {3}
+DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coeficiente {0}({1}, {2}) de campo gravitacional duplicado en el fichero {3}
 
 # missing gravity field coefficient {0}({1}, {2}) in file {3}
-MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = falta el coeficiente {0}({1}, {2}) de campo de gravedad en el fichero {3}
+MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = falta el coeficiente {0}({1}, {2}) del campo gravitacional en el fichero {3}
 
 # too large degree (n = {0}, potential maximal degree is {1})
 TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grado demasiado alto (n = {0}, el grado de potencial máximo es {1})
 
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = orden demasiado alto (n = {0}, el orden de potencial máximo es {1})
+
+# no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
+WRONG_DEGREE_OR_ORDER = ningún término ({0}, {1}) en una descomposición armónica esférica de {2}x{3}
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = se han encontrado varias fechas de referencia ({0} y {1} difieren de {3,number,0.0##############E0} s) en el fichero de campo gravitacional {2}
@@ -200,7 +206,7 @@ NON_EXISTENT_WEEK_DATE = fecha de la semana inexistente {0}-W{1}-{2}
 NON_EXISTENT_DATE = fecha inexistente {0}
 
 # no day number {0} in year {1}
-NON_EXISTENT_DAY_NUMBER_IN_YEAR = no hay día número {0} en el año {1}
+NON_EXISTENT_DAY_NUMBER_IN_YEAR = no hay número de día {0} en el año {1}
 
 # non-existent time {0}:{1}:{2}
 NON_EXISTENT_HMS_TIME = hora inexistente {0}:{1}:{2}
@@ -218,7 +224,7 @@ OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = número de segundos fuera de rango : {0} no
 ANGLE_TYPE_NOT_SUPPORTED = tipo de ángulo no reconocido, ángulos reconocidos : {0}, {1} y {2}
 
 # satellite collided with target
-SATELLITE_COLLIDED_WITH_TARGET = el satélite se estrella contra su objetivo
+SATELLITE_COLLIDED_WITH_TARGET = el satélite colisiona contra su objetivo
 
 # attitude pointing law misses ground
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = la ley de actitud no apunta hacia el suelo
@@ -293,13 +299,13 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matriz jacobiana asociada al tipo {0} es s
 STATE_JACOBIAN_NOT_INITIALIZED = la matriz jacobiana del estado no ha sido todavía inicializada
 
 # state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
-STATE_JACOBIAN_NOT_6X6 = la matriz jacobiana del estado es una matriz {0}x{1}, y debería ser una matriz 6x6
+STATE_JACOBIAN_NOT_6X6 = la matriz jacobiana de estado es una matriz {0}x{1}, y debería ser una matriz 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
-STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = la matriz jacobiana del estado tiene {0} líneas mientras que la matriz jacobiana de parámetros tiene {1}
+STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = la matriz jacobiana de estado tiene {0} líneas mientras que la matriz jacobiana de parámetros tiene {1}
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
-INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = la matriz jacobiana inicial tiene {0} columnas mientras que {1} parámetros fueron seleccionados
+INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = la matriz jacobiana inicial tiene {0} columnas, mientras que {1} parámetros fueron seleccionados
 
 # orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
 ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = la órbita debería ser elíptica con a > 0 y e < 1 o bien hiperbólica con a < 0 y e > 1, a = {0}, e = {1}
@@ -353,7 +359,7 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = no se ha encontrado ningún convertido
 CCSDS_TIME_SYSTEM_NOT_READ_YET = el sistema temporal tendría que haber sido inicializado antes de la línea {0} del fichero {1}
 
 # name "{0}" is already used for an additional state
-ADDITIONAL_STATE_NAME_ALREADY_IN_USE =  el nombre "{0}" ya está utilizado para un estado adicional
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE =  el nombre "{0}" ya se está utilizando para un estado adicional
 
 # reset state not allowed
 NON_RESETABLE_STATE = reinicialización del estado no autorizada
@@ -601,10 +607,10 @@ NO_EPOCH_IN_IONEX_HEADER = el fichero {0} no contiene épocas del primer o últi
 ITRF_VERSIONS_PREFIX_ONLY = la primera columna del fichero itrf-versions.conf es un prefijo simple que se compara a los nombres de cada uno de los ficheros cargados. No debería contener ninguna expresión racional ni ningún separador de directorio, por ejemplo: \"/\" o \"\\\". El valor real es: \"{0}\".
 
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
-CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = no puede calcular la dirección objetivo en el punto singular latitud = {0}, longitud = {1}
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = no se puede calcular la dirección objetivo en el punto singular latitud = {0}, longitud = {1}
 
 # STEC integration did not converge
-STEC_INTEGRATION_DID_NOT_CONVERGE = la intefración STEC no ha llegado a convergencia
+STEC_INTEGRATION_DID_NOT_CONVERGE = la integración STEC no ha llegado a convergencia
 
 # MODIP grid not be loaded from {0}
 MODIP_GRID_NOT_LOADED = no se ha podido cargar la cuadrícula MODIP desde {0}
@@ -740,3 +746,12 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentativa de generar el fichero {0} con un 
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = {0} ha fallado buscando una solución entre {1} (g={2,number,0.0##############E0}) y {3} (g={4,number,0.0##############E0})\nÚltima iteración en {5} (g={6,number,0.0##############E0})
+
+# backward propagation not allowed here
+BACKWARD_PROPAGATION_NOT_ALLOWED = aquí no se permite la propagación hacia atrás
+
+# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+NO_STATION_ECCENTRICITY_FOR_EPOCH = ningún valor de excentricidad de la estación para la época dada {0}, el intervalo de validez está entre {1} y {2}
+
+# inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
+INCONSISTENT_SELECTION = selección de parámetros inconsistente entre los pares {0}/{1} y {2}/{3}

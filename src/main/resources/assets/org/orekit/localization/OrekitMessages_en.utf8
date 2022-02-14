@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = almost critically inclined orbit (i = {0} deg
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = unable to compute Eckstein-Hechler mean parameters after {0} iterations
 
+# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+
 # unable to compute TLE after {0} iterations
 UNABLE_TO_COMPUTE_TLE = unable to compute TLE after {0} iterations
 
@@ -107,7 +110,7 @@ UNEXPECTED_END_OF_FILE_AFTER_LINE = unexpected end of file {0} (after line {1})
 UNABLE_TO_PARSE_LINE_IN_FILE = unable to parse line {0} of file {1}:\n{2}
 
 # unable to parse element {0} at line {1}, file {2}
-UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
+UNABLE_TO_PARSE_ELEMENT_IN_FILE = unable to parse element {0} at line {1}, file {2}
 
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = unable to find file {0}
@@ -150,6 +153,9 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = too large degree (n = {0}, potential maxima
 
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = too large order (m = {0}, potential maximal order is {1})
+
+# no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
+WRONG_DEGREE_OR_ORDER = no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
@@ -470,7 +476,7 @@ CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = inconsistent time systems in the attitude 
 CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = attitude type {0} in CCSDS AEM files is not implemented in Orekit
 
 # invalid rotation sequence {0} at line {1} of file {2}
-CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+CCSDS_INVALID_ROTATION_SEQUENCE = invalid rotation sequence {0} at line {1} of file {2}
 
 # element set type {0} ({1}) is not supported yet
 CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = element set type {0} ({1}) is not supported yet
@@ -740,3 +746,12 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = attempt to generate file {0} with a formatt
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
+
+# backward propagation not allowed here
+BACKWARD_PROPAGATION_NOT_ALLOWED = backward propagation not allowed here
+
+# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+NO_STATION_ECCENTRICITY_FOR_EPOCH = no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+
+# inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
+INCONSISTENT_SELECTION = inconsistent parameters selection between pairs {0}/{1} and {2}/{3}

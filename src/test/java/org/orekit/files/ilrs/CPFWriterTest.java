@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -106,6 +107,58 @@ public class CPFWriterTest {
         final CPF generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
+    }
+
+    @Test
+    public void testIssue868v1() throws IOException, URISyntaxException {
+
+        // Load
+        final String ex = "/ilrs/galileo212_cpf_180613_6641.esa";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final CPF file = new CPFParser().parse(source);
+
+        // Write
+        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
+        writer.write(tempCPFFilePath, file);
+
+        // Verify
+        final DataSource tempSource = new DataSource(tempCPFFilePath);
+        try (Reader reader = tempSource.getOpener().openReaderOnce();
+                        BufferedReader br = (reader == null) ? null : new BufferedReader(reader)) {
+            // The testWriteGalileoVersion1() already verify the content of the file
+            // The objective here is just the verify the fix of issue #868
+            final String line1 = br.readLine();
+            Assert.assertEquals(56, line1.length());
+            final String line2 = br.readLine();
+            Assert.assertEquals(82, line2.length());
+        }
+    }
+
+    @Test
+    public void testIssue868v2() throws IOException, URISyntaxException {
+
+        // Load
+        final String ex = "/ilrs/lageos1_cpf_180613_16401.hts";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final CPF file = new CPFParser().parse(source);
+
+        // Write
+        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
+        writer.write(tempCPFFilePath, file);
+
+        // Verify
+        final DataSource tempSource = new DataSource(tempCPFFilePath);
+        try (Reader reader = tempSource.getOpener().openReaderOnce();
+                        BufferedReader br = (reader == null) ? null : new BufferedReader(reader)) {
+            // The testWriteLageos1Version2() already verify the content of the file
+            // The objective here is just the verify the fix of issue #868
+            final String line1 = br.readLine();
+            Assert.assertEquals(58, line1.length());
+            final String line2 = br.readLine();
+            Assert.assertEquals(85, line2.length());
+        }
     }
 
     @Test

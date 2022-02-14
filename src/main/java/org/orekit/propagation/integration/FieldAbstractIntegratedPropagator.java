@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,18 +17,20 @@
 package org.orekit.propagation.integration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.ode.FieldDenseOutputModel;
-import org.hipparchus.ode.FieldEquationsMapper;
 import org.hipparchus.ode.FieldExpandableODE;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.FieldODEState;
@@ -59,35 +61,45 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldArrayDictionary;
 
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator FieldPropagator}
  *  methods for both numerical and semi-analytical propagators.
- * @param <T> the type of the field elements
+ *  @param <T> the type of the field elements
  *  @author Luc Maisonobe
  */
 public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T> {
+
+    /** Internal name used for complete secondary state dimension.
+     * @since 11.1
+     */
+    private static final String SECONDARY_DIMENSION = "Orekit-secondary-dimension";
 
     /** Event detectors not related to force models. */
     private final List<FieldEventDetector<T>> detectors;
 
     /** Step handlers dedicated to ephemeris generation. */
-    private final List<FieldStoringStepHandler> generators;
+    private final List<FieldStoringStepHandler> ephemerisGenerators;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
     private final FieldODEIntegrator<T> integrator;
 
-    /** Additional equations. */
-    private List<FieldAdditionalEquations<T>> additionalEquations;
+    /** Offsets of secondary states managed by {@link AdditionalEquations}.
+     * @since 11.1
+     */
+    private final Map<String, Integer> secondaryOffsets;
+
+    /** Additional derivatives providers.
+     * @since 11.1
+     */
+    private List<FieldAdditionalDerivativesProvider<T>> additionalDerivativesProviders;
 
     /** Counter for differential equations calls. */
     private int calls;
 
     /** Mapper between raw double components and space flight dynamics objects. */
     private FieldStateMapper<T> stateMapper;
-
-    /** Equations mapper. */
-    private FieldEquationsMapper<T> equationsMapper;
 
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
@@ -107,12 +119,13 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      */
     protected FieldAbstractIntegratedPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator, final PropagationType propagationType) {
         super(field);
-        detectors            = new ArrayList<>();
-        generators           = new ArrayList<>();
-        additionalEquations  = new ArrayList<>();
-        this.integrator      = integrator;
-        this.propagationType = propagationType;
-        this.resetAtEnd      = true;
+        detectors                      = new ArrayList<>();
+        ephemerisGenerators            = new ArrayList<>();
+        additionalDerivativesProviders = new ArrayList<>();
+        this.secondaryOffsets          = new HashMap<>();
+        this.integrator                = integrator;
+        this.propagationType           = propagationType;
+        this.resetAtEnd                = true;
     }
 
     /** Allow/disallow resetting the initial state at end of propagation.
@@ -229,8 +242,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         }
 
         // then look at states we integrate ourselves
-        for (final FieldAdditionalEquations<T> equation : additionalEquations) {
-            if (equation.getName().equals(name)) {
+        for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
+            if (provider.getName().equals(name)) {
                 return true;
             }
         }
@@ -242,29 +255,49 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     @Override
     public String[] getManagedAdditionalStates() {
         final String[] alreadyIntegrated = super.getManagedAdditionalStates();
-        final String[] managed = new String[alreadyIntegrated.length + additionalEquations.size()];
+        final String[] managed = new String[alreadyIntegrated.length + additionalDerivativesProviders.size()];
         System.arraycopy(alreadyIntegrated, 0, managed, 0, alreadyIntegrated.length);
-        for (int i = 0; i < additionalEquations.size(); ++i) {
-            managed[i + alreadyIntegrated.length] = additionalEquations.get(i).getName();
+        for (int i = 0; i < additionalDerivativesProviders.size(); ++i) {
+            managed[i + alreadyIntegrated.length] = additionalDerivativesProviders.get(i).getName();
         }
         return managed;
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
+     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(FieldAdditionalDerivativesProvider)}
      */
+    @Deprecated
     public void addAdditionalEquations(final FieldAdditionalEquations<T> additional) {
+        addAdditionalDerivativesProvider(new FieldAdditionalEquationsAdapter<>(additional, this::getInitialState));
+    }
 
+    /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
+     * @param provider provider for additional derivatives
+     * @see #addAdditionalStateProvider(org.orekit.propagation.FieldAdditionalStateProvider)
+     * @since 11.1
+     */
+    public void addAdditionalDerivativesProvider(final FieldAdditionalDerivativesProvider<T> provider) {
         // check if the name is already used
-        if (isAdditionalStateManaged(additional.getName())) {
-            // this set of equations is already registered, complain
+        if (isAdditionalStateManaged(provider.getName())) {
+            // these derivatives are already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      additional.getName());
+                                      provider.getName());
         }
 
-        // this is really a new set of equations, add it
-        additionalEquations.add(additional);
+        // this is really a new set of derivatives, add it
+        additionalDerivativesProviders.add(provider);
 
+        secondaryOffsets.clear();
+
+    }
+
+    /** Get an unmodifiable list of providers for additional derivatives.
+     * @return providers for additional derivatives
+     * @since 11.1
+     */
+    public List<FieldAdditionalDerivativesProvider<T>> getAdditionalDerivativesProviders() {
+        return Collections.unmodifiableList(additionalDerivativesProviders);
     }
 
     /** {@inheritDoc} */
@@ -305,7 +338,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     @Override
     public FieldEphemerisGenerator<T> getEphemerisGenerator() {
         final FieldStoringStepHandler storingHandler = new FieldStoringStepHandler();
-        generators.add(storingHandler);
+        ephemerisGenerators.add(storingHandler);
         return storingHandler;
     }
 
@@ -359,7 +392,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection
-                integrateDynamics(tStart);
+                try (IntegratorResetter<T> startResetter = new IntegratorResetter<>(integrator)) {
+                    integrateDynamics(tStart);
+                }
             }
 
             // set up events added by user
@@ -369,7 +404,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             for (final FieldOrekitStepHandler<T> handler : getMultiplexer().getHandlers()) {
                 integrator.addStepHandler(new FieldAdaptedStepHandler(handler));
             }
-            for (final FieldStoringStepHandler generator : generators) {
+            for (final FieldStoringStepHandler generator : ephemerisGenerators) {
                 generator.setEndDate(tEnd);
                 integrator.addStepHandler(generator);
             }
@@ -414,7 +449,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             final FieldSpacecraftState<T> initialIntegrationState = getInitialIntegrationState();
             final FieldODEState<T> mathInitialState = createInitialState(initialIntegrationState);
             final FieldExpandableODE<T> mathODE = createODE(integrator, mathInitialState);
-            equationsMapper = mathODE.getMapper();
 
             // mathematical integration
             final FieldODEStateAndDerivative<T> mathFinalState;
@@ -430,12 +464,20 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                                                         mathFinalState.getPrimaryState(),
                                                         mathFinalState.getPrimaryDerivative(),
                                                         propagationType);
-            finalState = updateAdditionalStates(finalState);
-            for (int i = 0; i < additionalEquations.size(); ++i) {
-                final T[] secondary = mathFinalState.getSecondaryState(i + 1);
-                finalState = finalState.addAdditionalState(additionalEquations.get(i).getName(),
-                                                           secondary);
+            if (!additionalDerivativesProviders.isEmpty()) {
+                final T[] secondary            = mathFinalState.getSecondaryState(1);
+                final T[] secondaryDerivatives = mathFinalState.getSecondaryDerivative(1);
+                for (FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
+                    final String   name        = provider.getName();
+                    final int      offset      = secondaryOffsets.get(name);
+                    final int      dimension   = provider.getDimension();
+                    finalState = finalState.
+                                 addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension)).
+                                 addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivatives, offset, offset + dimension));
+                }
             }
+            finalState = updateAdditionalStates(finalState);
+
             if (resetAtEnd) {
                 resetInitialState(finalState);
                 setStartDate(finalState.getDate());
@@ -445,10 +487,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         } catch (OrekitException pe) {
             throw pe;
-        } catch (MathIllegalArgumentException miae) {
-            throw OrekitException.unwrap(miae);
-        } catch (MathIllegalStateException mise) {
-            throw OrekitException.unwrap(mise);
+        } catch (MathIllegalArgumentException | MathIllegalStateException me) {
+            throw OrekitException.unwrap(me);
         }
     }
 
@@ -469,18 +509,63 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         final T[] primary  = MathArrays.buildArray(initialState.getA().getField(), getBasicDimension());
         stateMapper.mapStateToArray(initialState, primary, null);
 
-        // secondary part of the ODE
-        final T[][] secondary = MathArrays.buildArray(initialState.getA().getField(), additionalEquations.size(), -1);
-        for (int i = 0; i < additionalEquations.size(); ++i) {
-            final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
-            final T[] addState = getInitialState().getAdditionalState(additional.getName());
-            secondary[i] = MathArrays.buildArray(initialState.getA().getField(), addState.length);
-            for (int j = 0; j < addState.length; j++) {
-                secondary[i][j] = addState[j];
+        if (secondaryOffsets.isEmpty()) {
+            // compute dimension of the secondary state
+            int offset = 0;
+            for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
+                secondaryOffsets.put(provider.getName(), offset);
+                offset += provider.getDimension();
             }
+            secondaryOffsets.put(SECONDARY_DIMENSION, offset);
         }
 
-        return new FieldODEState<>(initialState.getA().getField().getZero(), primary, secondary);
+        return new FieldODEState<>(initialState.getA().getField().getZero(), primary, secondary(initialState));
+
+    }
+
+    /** Create secondary state.
+     * @param state spacecraft state
+     * @return secondary state
+     * @since 11.1
+     */
+    private T[][] secondary(final FieldSpacecraftState<T> state) {
+
+        if (secondaryOffsets.isEmpty()) {
+            return null;
+        }
+
+        final T[][] secondary = MathArrays.buildArray(state.getDate().getField(), 1, secondaryOffsets.get(SECONDARY_DIMENSION));
+        for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
+            final String name       = provider.getName();
+            final int    offset     = secondaryOffsets.get(name);
+            final T[]    additional = state.getAdditionalState(name);
+            System.arraycopy(additional, 0, secondary[0], offset, additional.length);
+        }
+
+        return secondary;
+
+    }
+
+    /** Create secondary state derivative.
+     * @param state spacecraft state
+     * @return secondary state derivative
+     * @since 11.1
+     */
+    private T[][] secondaryDerivative(final FieldSpacecraftState<T> state) {
+
+        if (secondaryOffsets.isEmpty()) {
+            return null;
+        }
+
+        final T[][] secondaryDerivative = MathArrays.buildArray(state.getDate().getField(), 1, secondaryOffsets.get(SECONDARY_DIMENSION));
+        for (final FieldAdditionalDerivativesProvider<T> providcer : additionalDerivativesProviders) {
+            final String name       = providcer.getName();
+            final int    offset     = secondaryOffsets.get(name);
+            final T[]    additionalDerivative = state.getAdditionalStateDerivative(name);
+            System.arraycopy(additionalDerivative, 0, secondaryDerivative[0], offset, additionalDerivative.length);
+        }
+
+        return secondaryDerivative;
 
     }
 
@@ -496,12 +581,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 new FieldExpandableODE<>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
 
         // secondary part of the ODE
-        for (int i = 0; i < additionalEquations.size(); ++i) {
-            final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
-            final FieldSecondaryODE<T> secondary =
-                    new ConvertedSecondaryStateEquations(additional,
-                                                         mathInitialState.getSecondaryStateDimension(i + 1));
-            ode.addSecondaryEquations(secondary);
+        if (!additionalDerivativesProviders.isEmpty()) {
+            ode.addSecondaryEquations(new ConvertedSecondaryStateEquations());
         }
 
         return ode;
@@ -544,59 +625,32 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return integrator;
     }
 
-    /** Get a complete state with all additional equations.
-     * @param t current value of the independent <I>time</I> variable
-     * @param ts array containing the current value of the state vector
-     * @param tsDot array containing the current value of the state vector derivative
-     * @return complete state
-     */
-    private FieldSpacecraftState<T> getCompleteState(final T t, final T[] ts, final T[] tsDot) {
-
-        // main state
-        FieldSpacecraftState<T> state = stateMapper.mapArrayToState(t, ts, tsDot, PropagationType.MEAN);  //not sure of the mean orbit, should be true
-        // pre-integrated additional states
-        state = updateAdditionalStates(state);
-
-        // additional states integrated here
-        if (!additionalEquations.isEmpty()) {
-
-            for (int i = 0; i < additionalEquations.size(); ++i) {
-                state = state.addAdditionalState(additionalEquations.get(i).getName(),
-                                                 equationsMapper.extractEquationData(i + 1, ts));
-            }
-
-        }
-
-        return state;
-
-    }
-
-    /** Get the interpolated state.
+    /** Convert a state from mathematical world to space flight dynamics world.
      * @param os mathematical state
-     * @return interpolated state at the current interpolation date
-                       * the date
-     * @see #getInterpolatedDate()
-     * @see #setInterpolatedDate(FieldAbsoluteDate<T>)
+     * @return space flight dynamics state
      */
     private FieldSpacecraftState<T> convert(final FieldODEStateAndDerivative<T> os) {
-        try {
 
-            FieldSpacecraftState<T> s =
-                    stateMapper.mapArrayToState(os.getTime(),
-                                                os.getPrimaryState(),
-                                                os.getPrimaryDerivative(),
-                                                propagationType);
-            s = updateAdditionalStates(s);
-            for (int i = 0; i < additionalEquations.size(); ++i) {
-                final T[] secondary = os.getSecondaryState(i + 1);
-                s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
+        FieldSpacecraftState<T> s =
+                        stateMapper.mapArrayToState(os.getTime(),
+                                                    os.getPrimaryState(),
+                                                    os.getPrimaryDerivative(),
+                                                    propagationType);
+        if (os.getNumberOfSecondaryStates() > 0) {
+            final T[] secondary           = os.getSecondaryState(1);
+            final T[] secondaryDerivative = os.getSecondaryDerivative(1);
+            for (final FieldAdditionalDerivativesProvider<T> equations : additionalDerivativesProviders) {
+                final String name      = equations.getName();
+                final int    offset    = secondaryOffsets.get(name);
+                final int    dimension = equations.getDimension();
+                s = s.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                s = s.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
             }
-
-            return s;
-
-        } catch (OrekitException oe) {
-            throw new OrekitException(oe);
         }
+        s = updateAdditionalStates(s);
+
+        return s;
+
     }
 
     /** Convert a state from space flight dynamics world to mathematical world.
@@ -611,15 +665,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         stateMapper.mapStateToArray(state, primary, primaryDot);
 
         // secondary part of the ODE
-        final T[][] secondary    = MathArrays.buildArray(getField(), additionalEquations.size(), -1);
-        for (int i = 0; i < additionalEquations.size(); ++i) {
-            final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
-            secondary[i] = state.getAdditionalState(additional.getName());
-        }
+        final T[][] secondary           = secondary(state);
+        final T[][] secondaryDerivative = secondaryDerivative(state);
 
         return new FieldODEStateAndDerivative<>(stateMapper.mapDateToDouble(state.getDate()),
                                                 primary, primaryDot,
-                                                secondary, null);
+                                                secondary, secondaryDerivative);
 
     }
 
@@ -693,26 +744,19 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** Differential equations for the secondary state (Jacobians, user variables ...), with converted API. */
     private class ConvertedSecondaryStateEquations implements FieldSecondaryODE<T> {
 
-        /** Additional equations. */
-        private final FieldAdditionalEquations<T> equations;
-
-        /** Dimension of the additional state. */
-        private final int dimension;
+        /** Dimension of the combined additional states. */
+        private final int combinedDimension;
 
         /** Simple constructor.
-         * @param equations additional equations
-         * @param dimension dimension of the additional state
          */
-        ConvertedSecondaryStateEquations(final FieldAdditionalEquations<T> equations,
-                                         final int dimension) {
-            this.equations = equations;
-            this.dimension = dimension;
+        ConvertedSecondaryStateEquations() {
+            this.combinedDimension = secondaryOffsets.get(SECONDARY_DIMENSION);
         }
 
         /** {@inheritDoc} */
         @Override
         public int getDimension() {
-            return dimension;
+            return combinedDimension;
         }
 
         /** {@inheritDoc} */
@@ -720,11 +764,13 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         public void init(final T t0, final T[] primary0,
                          final T[] secondary0, final T finalTime) {
             // update space dynamics view
-            FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, primary0, null, PropagationType.MEAN);
-            initialState = updateAdditionalStates(initialState);
-            initialState = initialState.addAdditionalState(equations.getName(), secondary0);
+            final FieldSpacecraftState<T> initialState = convert(t0, primary0, null, secondary0);
+
             final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
-            equations.init(initialState, target);
+            for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
+                provider.init(initialState, target);
+            }
+
         }
 
         /** {@inheritDoc} */
@@ -733,22 +779,64 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                                       final T[] primaryDot, final T[] secondary) {
 
             // update space dynamics view
-            FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
-            currentState = updateAdditionalStates(currentState);
-            currentState = currentState.addAdditionalState(equations.getName(), secondary);
+            // the integrable generators generate method will be called here,
+            // according to the generators yield order
+            FieldSpacecraftState<T> updated = convert(t, primary, primaryDot, secondary);
 
-            // compute additional derivatives
-            final T[] secondaryDot = MathArrays.buildArray(getField(), secondary.length);
-            final T[] additionalMainDot =
-                            equations.computeDerivatives(currentState, secondaryDot);
-            if (additionalMainDot != null) {
-                // the additional equations have an effect on main equations
-                for (int i = 0; i < additionalMainDot.length; ++i) {
-                    primaryDot[i] = primaryDot[i].add(additionalMainDot[i]);
+            // set up queue for equations
+            final Queue<FieldAdditionalDerivativesProvider<T>> pending = new LinkedList<>(additionalDerivativesProviders);
+
+            // gather the derivatives from all additional equations, taking care of dependencies
+            final T[] secondaryDot = MathArrays.buildArray(t.getField(), combinedDimension);
+            int yieldCount = 0;
+            while (!pending.isEmpty()) {
+                final FieldAdditionalDerivativesProvider<T> equations = pending.remove();
+                if (equations.yield(updated)) {
+                    // these equations have to wait for another set,
+                    // we put them again in the pending queue
+                    pending.add(equations);
+                    if (++yieldCount >= pending.size()) {
+                        // all pending equations yielded!, they probably need data not yet initialized
+                        // we let the propagation proceed, if these data are really needed right now
+                        // an appropriate exception will be triggered when caller tries to access them
+                        break;
+                    }
+                } else {
+                    // we can use these equations right now
+                    final String name        = equations.getName();
+                    final int    offset      = secondaryOffsets.get(name);
+                    final int    dimension   = equations.getDimension();
+                    final T[]    derivatives = equations.derivatives(updated);
+                    System.arraycopy(derivatives, 0, secondaryDot, offset, dimension);
+                    updated = updated.addAdditionalStateDerivative(name, derivatives);
+                    yieldCount = 0;
                 }
             }
 
             return secondaryDot;
+
+        }
+
+        /** Convert mathematical view to space view.
+         * @param t current value of the independent <I>time</I> variable
+         * @param primary array containing the current value of the primary state vector
+         * @param primaryDot array containing the derivative of the primary state vector
+         * @param secondary array containing the current value of the secondary state vector
+         * @return space view of the state
+         */
+        private FieldSpacecraftState<T> convert(final T t, final T[] primary,
+                                                final T[] primaryDot, final T[] secondary) {
+
+            FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
+
+            for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
+                final String name      = provider.getName();
+                final int    offset    = secondaryOffsets.get(name);
+                final int    dimension = provider.getDimension();
+                initialState = initialState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+            }
+
+            return updateAdditionalStates(initialState);
 
         }
 
@@ -781,8 +869,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         /** {@inheritDoc} */
         public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
-            detector.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                          stateMapper.mapDoubleToDate(t));
+            detector.init(convert(s0), stateMapper.mapDoubleToDate(t));
             this.lastT = getField().getZero().add(Double.NaN);
             this.lastG = getField().getZero().add(Double.NaN);
         }
@@ -791,25 +878,20 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         public T g(final FieldODEStateAndDerivative<T> s) {
             if (!Precision.equals(lastT.getReal(), s.getTime().getReal(), 0)) {
                 lastT = s.getTime();
-                lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative()));
+                lastG = detector.g(convert(s));
             }
             return lastG;
         }
 
         /** {@inheritDoc} */
         public Action eventOccurred(final FieldODEStateAndDerivative<T> s, final boolean increasing) {
-            return detector.eventOccurred(
-                    getCompleteState(
-                            s.getTime(),
-                            s.getCompleteState(),
-                            s.getCompleteDerivative()),
-                    increasing);
+            return detector.eventOccurred(convert(s), increasing);
         }
 
         /** {@inheritDoc} */
         public FieldODEState<T> resetState(final FieldODEStateAndDerivative<T> s) {
 
-            final FieldSpacecraftState<T> oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
+            final FieldSpacecraftState<T> oldState = convert(s);
             final FieldSpacecraftState<T> newState = detector.resetState(oldState);
             stateChanged(newState);
 
@@ -818,15 +900,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             stateMapper.mapStateToArray(newState, primary, null);
 
             // secondary part
-            final T[][] secondary    = MathArrays.buildArray(getField(), additionalEquations.size(), -1);
-
-            for (int i = 0; i < additionalEquations.size(); ++i) {
-                final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
-                final T[] NState = newState.getAdditionalState(additional.getName());
-                secondary[i] = MathArrays.buildArray(getField(), NState.length);
-                for (int j = 0; j < NState.length; j++) {
-                    secondary[i][j] = NState[j];
-                }
+            final T[][] secondary = MathArrays.buildArray(getField(), 1, additionalDerivativesProviders.size());
+            for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
+                final String name      = provider.getName();
+                final int    offset    = secondaryOffsets.get(name);
+                final int    dimension = provider.getDimension();
+                System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
             }
 
             return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
@@ -853,8 +932,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         /** {@inheritDoc} */
         public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
-            handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                         stateMapper.mapDoubleToDate(t));
+            handler.init(convert(s0), stateMapper.mapDoubleToDate(t));
         }
 
         /** {@inheritDoc} */
@@ -994,8 +1072,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             }
 
             // get the initial additional states that are not managed
-            final Map<String, T[]> unmanaged = new HashMap<String, T[]>();
-            for (final Map.Entry<String, T[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+            final FieldArrayDictionary<T> unmanaged = new FieldArrayDictionary<>(startDate.getField());
+            for (final FieldArrayDictionary<T>.Entry initial : getInitialState().getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state was in the initial state, but is unknown to the propagator
                     // we simply copy its initial value as is
@@ -1004,15 +1082,15 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             }
 
             // get the names of additional states managed by differential equations
-            final String[] names = new String[additionalEquations.size()];
+            final String[] names = new String[additionalDerivativesProviders.size()];
             for (int i = 0; i < names.length; ++i) {
-                names[i] = additionalEquations.get(i).getName();
+                names[i] = additionalDerivativesProviders.get(i).getName();
             }
 
             // create the ephemeris
             ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
-                                                       stateMapper, propagationType, model, unmanaged,
-                                                       getAdditionalStateProviders(), names);
+                                                       stateMapper, propagationType, model,
+                                                       unmanaged, getAdditionalStateProviders(), names);
 
         }
 
@@ -1026,7 +1104,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * when leaving the block, so the integrator only keep its own handlers
      * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate).
      * </p>
- * @param <T> the type of the field elements
+     * @param <T> the type of the field elements
      * @since 11.0
      */
     private static class IntegratorResetter<T extends CalculusFieldElement<T>> implements AutoCloseable {

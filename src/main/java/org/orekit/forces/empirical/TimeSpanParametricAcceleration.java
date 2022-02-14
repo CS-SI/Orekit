@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -168,7 +168,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
      * (must be different from <b>all</b> dates already used for transitions)
      */
     public void addAccelerationModelValidBefore(final AccelerationModel accelerationModel, final AbsoluteDate latestValidityDate) {
-        accelerationModelTimeSpanMap.addValidBefore(accelerationModel, latestValidityDate);
+        accelerationModelTimeSpanMap.addValidBefore(accelerationModel, latestValidityDate, false);
     }
 
     /** Add a AccelerationModel entry valid after a limit date.<br>
@@ -184,7 +184,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
      * (must be different from <b>all</b> dates already used for transitions)
      */
     public void addAccelerationModelValidAfter(final AccelerationModel accelerationModel, final AbsoluteDate earliestValidityDate) {
-        accelerationModelTimeSpanMap.addValidAfter(accelerationModel, earliestValidityDate);
+        accelerationModelTimeSpanMap.addValidAfter(accelerationModel, earliestValidityDate, false);
     }
 
     /** Get the {@link AccelerationModel} model valid at a date.
@@ -221,9 +221,19 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
 
     /** Get the {@link Transition}s of the acceleration model time span map.
      * @return the {@link Transition}s for the acceleration model time span map
+     * @deprecated as of 11.1, replace by {@link #getFirstSpan()}
      */
+    @Deprecated
     public NavigableSet<Transition<AccelerationModel>> getTransitions() {
         return accelerationModelTimeSpanMap.getTransitions();
+    }
+
+    /** Get the first {@link Span time span} of the acceleration model time span map.
+     * @return the first {@link Span time span} of the acceleration model time span map
+     * @since 11.1
+     */
+    public Span<AccelerationModel> getFirstSpan() {
+        return accelerationModelTimeSpanMap.getFirstSpan();
     }
 
     /** {@inheritDoc} */
@@ -321,24 +331,15 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
 
         // Get all transitions from the TimeSpanMap
         final List<ParameterDriver> listParameterDrivers = new ArrayList<>();
-        final NavigableSet<Transition<AccelerationModel>> accelerationModelTransitions =  getTransitions();
 
-        // Loop on the transitions
-        for (Transition<AccelerationModel> transition : accelerationModelTransitions) {
-            // Add all the "before" parameter drivers of each transition
-            for (ParameterDriver driver : transition.getBefore().getParametersDrivers()) {
+        // Loop on the spans
+        for (Span<AccelerationModel> span = getFirstSpan(); span != null; span = span.next()) {
+            // Add all the parameter drivers of the time span
+            for (ParameterDriver driver : span.getData().getParametersDrivers()) {
                 // Add the driver only if the name does not exist already
                 if (!findByName(listParameterDrivers, driver.getName())) {
                     listParameterDrivers.add(driver);
                 }
-            }
-        }
-
-        // Finally, add the "after" parameter drivers of the last transition
-        for (ParameterDriver driver : accelerationModelTransitions.last().getAfter().getParametersDrivers()) {
-            // Adds only if the name does not exist already
-            if (!findByName(listParameterDrivers, driver.getName())) {
-                listParameterDrivers.add(driver);
             }
         }
 

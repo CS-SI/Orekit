@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -666,14 +666,14 @@ public class ClockFileParserTest {
         // Theorical time scale
         final TimeScale gps = TimeScalesFactory.getGPS();
         
-        // First reference clock theorical values
+        // First reference clock theoretical values
         final String referenceName1 = "USNO";
         final String clockId1 = "40451S003";
         final double clockConstraint1 = -.123456789012E+00;
         final AbsoluteDate startDate1 = new AbsoluteDate(1994, 7, 14, 0, 0, 0.0, gps);
         final AbsoluteDate endDate1 = new AbsoluteDate(1994, 7, 14, 20, 59, 0.0, gps);
         
-        // Second reference clock theorical values
+        // Second reference clock theoretical values
         final String referenceName2 = "TIDB";
         final String clockId2 = "50103M108";
         final double clockConstraint2 = -0.123456789012E+00;
@@ -681,7 +681,7 @@ public class ClockFileParserTest {
         final AbsoluteDate endDate2 = new AbsoluteDate(1994, 7, 14, 21, 59, 0.0, gps);
         
         // Check number of time spans
-        Assert.assertEquals(1, referenceClocksMap.getTransitions().size());
+        Assert.assertEquals(3, referenceClocksMap.getSpansNumber());
         
         // Get the two lists of reference clocks
         final List<ReferenceClock> referenceClocks1 = referenceClocksMap.get(new AbsoluteDate(1994, 7, 14, 15, 0, 0.0, gps));

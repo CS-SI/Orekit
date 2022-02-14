@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = orbite quasiment à inclinaison critique (i =
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = impossible de calculer les paramètres moyens au sens de Eckstein-Hechler après {0} itérations
 
+# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = impossible de calculer les paramètres moyens au sens de Brouwer-Lyddane après {0} itérations
+
 # unable to compute TLE after {0} iterations
 UNABLE_TO_COMPUTE_TLE = impossible de calculer le TLE après {0} itérations
 
@@ -150,6 +153,9 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = degré trop important (n = {0}, le degré d
 
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordre trop important (n = {0}, l''ordre de potentiel maximal est {1})
+
+# no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
+WRONG_DEGREE_OR_ORDER = pas de terme ({0}, {1}) dans une décomposition en harmoniques sphériques {2}x{3}
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = plusieurs dates de références ({0} et {1} diffèrent de {3,number,0.0##############E0} s) trouvées dans le fichier de champ de gravité {2}
@@ -320,7 +326,7 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = longueur invalide pour le champ date dans
 CCSDS_DATE_MISSING_AGENCY_EPOCH = époque de référence spécifique agence manquante dans une date CCSDS
 
 # missing mandatory key {0} in CCSDS file {1}
-CCSDS_MISSING_KEYWORD = mot-clef {0} manquant dans le fichier CCDSD {1}
+CCSDS_MISSING_KEYWORD = mot-clef {0} manquant dans le fichier CCSDS {1}
 
 # key {0} is not allowed in format version {1}
 CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = le mot-clef {0} n''est pas autorisé dans la version {1} du format
@@ -740,3 +746,12 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentative de génération du fichier {0} av
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = {0} n''a pas réussi à trouver une solution entre {1} (g={2,number,0.0##############E0}) et {3} (g={4,number,0.0##############E0})\nLa dernière itération était à {5} (g={6,number,0.0##############E0})
+
+# backward propagation not allowed here
+BACKWARD_PROPAGATION_NOT_ALLOWED = la propagation à rebours n''a pas été autorisée ici
+
+# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+NO_STATION_ECCENTRICITY_FOR_EPOCH = pas d''excentricité station pour la date {0}, l''intervalle de validité est entre {1} et {2}
+
+# inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
+INCONSISTENT_SELECTION = sélection de paramètres incohérents entre les paires {0}/{1} et {2}/{3}

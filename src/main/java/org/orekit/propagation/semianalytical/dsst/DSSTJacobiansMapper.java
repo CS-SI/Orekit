@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -172,12 +172,20 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** Compute the derivatives of the short period terms related to the additional state parameters.
-    * @param s Current state information: date, kinematics, attitude, and additional state
-    */
-    @SuppressWarnings("unchecked")
+     * @param s Current state information: date, kinematics, attitude, and additional state
+     * @deprecated as of 11.1, replaced by {@link #setReferenceState(SpacecraftState)}
+     */
+    @Deprecated
     public void setShortPeriodJacobians(final SpacecraftState s) {
+        setReferenceState(s);
+    }
 
-        final double[] p = s.getAdditionalState(name);
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setReferenceState(final SpacecraftState reference) {
+
+        final double[] p = reference.getAdditionalState(name);
         if (shortPeriodDerivatives == null) {
             shortPeriodDerivatives = new double[p.length];
         }
@@ -191,7 +199,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                 final int dim = 6;
                 final double[][] dShortPerioddState = new double[dim][dim];
                 final double[][] dShortPerioddParam = new double[dim][paramDim];
-                final DSSTGradientConverter converter = new DSSTGradientConverter(s, propagator.getAttitudeProvider());
+                final DSSTGradientConverter converter = new DSSTGradientConverter(reference, propagator.getAttitudeProvider());
 
                 // Compute Jacobian
                 for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {

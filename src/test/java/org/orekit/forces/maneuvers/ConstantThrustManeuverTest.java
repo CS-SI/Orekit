@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -228,19 +228,19 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assert.assertEquals(0.0, date.shiftedBy(10.0).durationFrom(maneuver.getEndDate()), 1.0e-15);
         Assert.assertEquals("", maneuver.getName());
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
-        Assert.assertEquals(2, drivers.size());
+        Assert.assertEquals(6, drivers.size());
         Assert.assertEquals("thrust", drivers.get(0).getName());
         Assert.assertEquals("flow rate", drivers.get(1).getName());
-        EventDetector[] switches = maneuver.getEventsDetectors().toArray(EventDetector[]::new);
+        EventDetector detector = maneuver.getEventsDetectors().findFirst().get();
 
         Orbit o1 = dummyOrbit(date.shiftedBy(- 1.0));
-        Assert.assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
+        Assert.assertTrue(detector.g(new SpacecraftState(o1)) < 0);
         Orbit o2 = dummyOrbit(date.shiftedBy(  1.0));
-        Assert.assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
+        Assert.assertTrue(detector.g(new SpacecraftState(o2)) > 0);
         Orbit o3 = dummyOrbit(date.shiftedBy(  9.0));
-        Assert.assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
+        Assert.assertTrue(detector.g(new SpacecraftState(o3)) > 0);
         Orbit o4 = dummyOrbit(date.shiftedBy( 11.0));
-        Assert.assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
+        Assert.assertTrue(detector.g(new SpacecraftState(o4)) < 0);
     }
 
     @Test
@@ -252,19 +252,19 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K,
                                        "1A-");
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
-        Assert.assertEquals(2, drivers.size());
+        Assert.assertEquals(6, drivers.size());
         Assert.assertEquals("1A-thrust", drivers.get(0).getName());
         Assert.assertEquals("1A-flow rate", drivers.get(1).getName());
-        EventDetector[] switches = maneuver.getEventsDetectors().toArray(EventDetector[]::new);
+        EventDetector detector = maneuver.getEventsDetectors().findFirst().get();
 
         Orbit o1 = dummyOrbit(date.shiftedBy(-11.0));
-        Assert.assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
+        Assert.assertTrue(detector.g(new SpacecraftState(o1)) < 0);
         Orbit o2 = dummyOrbit(date.shiftedBy( -9.0));
-        Assert.assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
+        Assert.assertTrue(detector.g(new SpacecraftState(o2)) > 0);
         Orbit o3 = dummyOrbit(date.shiftedBy( -1.0));
-        Assert.assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
+        Assert.assertTrue(detector.g(new SpacecraftState(o3)) > 0);
         Orbit o4 = dummyOrbit(date.shiftedBy(  1.0));
-        Assert.assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
+        Assert.assertTrue(detector.g(new SpacecraftState(o4)) < 0);
     }
 
     @Test
@@ -547,11 +547,13 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assert.assertEquals(f,   maneuver.getThrust(), 1.0e-10);
         Assert.assertEquals(isp, maneuver.getISP(),    1.0e-10);
 
-        double[][] tol = NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        double[][] tol = NumericalPropagator.tolerances(1.0e-5, orbit, orbitType);
         AdaptiveStepsizeIntegrator integrator1 =
-            new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
+            new DormandPrince853Integrator(1.0e-5, 1000, tol[0], tol[1]);
         integrator1.setInitialStepSize(60);
         final NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
+        propagator1.setOrbitType(orbitType);
         propagator1.setInitialState(initialState);
         propagator1.setAttitudeProvider(law);
         propagator1.addForceModel(maneuver);
@@ -563,17 +565,18 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assert.assertFalse(maneuver.isFiring(fireDate.shiftedBy(duration + 1.0e-6)));
 
         AdaptiveStepsizeIntegrator integrator2 =
-                        new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
+                        new DormandPrince853Integrator(1.0e-5, 1000, tol[0], tol[1]);
         integrator2.setInitialStepSize(60);
         final NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
+        propagator2.setOrbitType(orbitType);
         propagator2.setInitialState(finalState);
         propagator2.setAttitudeProvider(law);
         propagator2.addForceModel(maneuver);
         final SpacecraftState recoveredState = propagator2.propagate(orbit.getDate());
         final Vector3D refPosition = initialState.getPVCoordinates().getPosition();
         final Vector3D recoveredPosition = recoveredState.getPVCoordinates().getPosition();
-        Assert.assertEquals(0.0, Vector3D.distance(refPosition, recoveredPosition), 30.0);
-        Assert.assertEquals(initialState.getMass(), recoveredState.getMass(), 1.5e-10);
+        Assert.assertEquals(0.0, Vector3D.distance(refPosition, recoveredPosition), 1.1e-3);
+        Assert.assertEquals(initialState.getMass(), recoveredState.getMass(), 1.4e-8);
         Assert.assertFalse(maneuver.isFiring(fireDate.shiftedBy(-1.0e-6)));
         Assert.assertTrue(maneuver.isFiring(fireDate.shiftedBy(+1.0e-6)));
         Assert.assertTrue(maneuver.isFiring(fireDate.shiftedBy(0.5 * duration)));

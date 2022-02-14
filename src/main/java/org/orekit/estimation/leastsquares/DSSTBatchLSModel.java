@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,13 @@ import java.util.List;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
+import org.orekit.propagation.semianalytical.dsst.DSSTHarvester;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
-import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
@@ -43,6 +43,9 @@ import org.orekit.utils.ParameterDriversList;
  *
  */
 public class DSSTBatchLSModel extends AbstractBatchLSModel {
+
+    /** Name of the State Transition Matrix state. */
+    private static final String STM_NAME = DSSTBatchLSModel.class.getName() + "-derivatives";
 
     /** Type of the orbit used for the propagation.*/
     private PropagationType propagationType;
@@ -65,19 +68,24 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
                             final PropagationType propagationType,
                             final PropagationType stateType) {
         // call super constructor
-        super(propagatorBuilders, measurements, estimatedMeasurementsParameters,
-              new DSSTJacobiansMapper[propagatorBuilders.length], observer);
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
         this.propagationType = propagationType;
         this.stateType       = stateType;
     }
 
     /** {@inheritDoc} */
     @Override
+    protected MatricesHarvester configureHarvester(final Propagator propagator) {
+        return propagator.setupMatricesComputation(STM_NAME, null, null);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Deprecated
     protected DSSTJacobiansMapper configureDerivatives(final Propagator propagator) {
 
-        final String equationName = DSSTBatchLSModel.class.getName() + "-derivatives";
-
-        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) propagator, propagationType);
+        final org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations partials =
+                        new org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations(STM_NAME, (DSSTPropagator) propagator, propagationType);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
@@ -90,16 +98,22 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected Orbit configureOrbits(final AbstractJacobiansMapper mapper,
-                                    final Propagator propagator) {
+    protected Orbit configureOrbits(final MatricesHarvester harvester, final Propagator propagator) {
         // Cast
         final DSSTPropagator dsstPropagator = (DSSTPropagator) propagator;
+        final DSSTHarvester  dsstHarvester  = (DSSTHarvester) harvester;
         // Mean orbit
         final SpacecraftState initial = dsstPropagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(dsstPropagator.getInitialState(), dsstPropagator.getAttitudeProvider(), dsstPropagator.getAllForceModels()) :
                        dsstPropagator.getInitialState();
+        dsstHarvester.initializeFieldShortPeriodTerms(initial);
         // Compute short period derivatives at the beginning of the iteration
-        ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(initial);
+        if (propagationType == PropagationType.OSCULATING) {
+            dsstHarvester.updateFieldShortPeriodTerms(initial);
+            dsstHarvester.setReferenceState(initial);
+        }
+        // Compute short period derivatives at the beginning of the iteration
+        harvester.setReferenceState(initial);
         return initial.getOrbit();
     }
 

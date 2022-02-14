@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
@@ -196,8 +196,13 @@ public class FieldCartesianOrbitTest {
         doTestCopyNonKeplerianAcceleration(Decimal64Field.getInstance());
     }
 
+    @Test
+    public void testNormalize() {
+        doTestNormalize(Decimal64Field.getInstance());
+    }
+
     private <T extends CalculusFieldElement<T>> void doTestCartesianToCartesian(Field<T> field)
-        throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -875,6 +880,20 @@ public class FieldCartesianOrbitTest {
                                                    shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-10);
 
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestNormalize(Field<T> field) {
+        final T zero = field.getZero();
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.newInstance(42164140.0), zero, zero);
+        final FieldPVCoordinates<T> pv  = new FieldPVCoordinates<>(position,
+                                                                   new FieldVector3D<>(zero,
+                                                                                       FastMath.sqrt(position.getNorm().reciprocal().multiply(mu)),
+                                                                                       zero));
+        final FieldOrbit<T> orbit = new FieldCartesianOrbit<>(pv,
+                                                              FramesFactory.getEME2000(),
+                                                              FieldAbsoluteDate.getJ2000Epoch(field),
+                                                              field.getZero().newInstance(mu));
+        Assert.assertSame(orbit, orbit.getType().normalize(orbit, null));
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,6 +55,8 @@ public enum OrekitMessages implements Localizable {
     ALMOST_CRITICALLY_INCLINED_ORBIT("almost critically inclined orbit (i = {0} degrees)"),
     UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS(
             "unable to compute Eckstein-Hechler mean parameters after {0} iterations"),
+    UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS(
+            "unable to compute Brouwer-Lyddane mean parameters after {0} iterations"),
     UNABLE_TO_COMPUTE_TLE(
                     "unable to compute TLE after {0} iterations"),
     NULL_PARENT_FOR_FRAME("null parent for frame {0}"),
@@ -101,6 +103,7 @@ public enum OrekitMessages implements Localizable {
     MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE("missing gravity field coefficient {0}({1}, {2}) in file {3}"),
     TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD("too large degree (n = {0}, potential maximal degree is {1})"),
     TOO_LARGE_ORDER_FOR_GRAVITY_FIELD("too large order (m = {0}, potential maximal order is {1})"),
+    WRONG_DEGREE_OR_ORDER("no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition"),
     SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD("several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}"),
     NO_TLE_FOR_OBJECT("no TLE data available for object {0}"),
     NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE(
@@ -327,7 +330,10 @@ public enum OrekitMessages implements Localizable {
     INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
     MISSING_VELOCITY("missing velocity data"),
     ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error"),
-    FIND_ROOT("{0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})");
+    FIND_ROOT("{0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})"),
+    BACKWARD_PROPAGATION_NOT_ALLOWED("backward propagation not allowed here"),
+    NO_STATION_ECCENTRICITY_FOR_EPOCH("no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}"),
+    INCONSISTENT_SELECTION("inconsistent parameters selection between pairs {0}/{1} and {2}/{3}");
 
     // CHECKSTYLE: resume JavadocVariable check
 

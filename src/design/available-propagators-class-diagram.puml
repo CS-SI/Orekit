@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -48,6 +48,7 @@
         +void clearEventsDetectors()
         +AttitudeProvider getAttitudeProvider()
         +void setAttitudeProvider(AttitudeProvider attitudeProvider)
+        +MatricesHarvester setupMatricesComputation(String stmName, RealMatrix initialStm, DoubleArrayDictionary initialJacobianColumns)
         +Frame getFrame()
         +SpacecraftState propagate(AbsoluteDate target)
         +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
@@ -74,7 +75,9 @@
 
         AbstractPropagator           <|-- AbstractAnalyticalPropagator
         AbstractAnalyticalPropagator <|-- AdapterPropagator
+        AbstractAnalyticalPropagator <|-- BrouwerLyddanePropagator
         AbstractAnalyticalPropagator <|-- EcksteinHechlerPropagator
+        AbstractAnalyticalPropagator <|-- GLONASSAnalyticalPropagator
         AbstractAnalyticalPropagator <|-- KeplerianPropagator
 
         AbstractAnalyticalPropagator <|-- Ephemeris
@@ -85,7 +88,7 @@
         }
 
         package gnss #CCCCC7 {
-          AbstractAnalyticalPropagator <|-- GPSPropagator
+          AbstractAnalyticalPropagator <|-- GNSSPropagator
         }
 
      }
@@ -94,7 +97,7 @@
 
        abstract class AbstractIntegratedPropagator {
          +void setIntegrator(FirstOrderIntegrator integrator)
-         +void addAdditionalEquations(AdditionalEquations addEqu)
+         +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
          +void setInitialAdditionalState(String name, double[] addState)
        }
 
@@ -115,6 +118,7 @@
 
      package numerical #CBDBC8 {
        NumericalPropagator --|> AbstractIntegratedPropagator
+       GLONASSNumericalPropagator  --|> AbstractIntegratedPropagator
      }
 
    }

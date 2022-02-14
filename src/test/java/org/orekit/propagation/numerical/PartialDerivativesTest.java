@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,6 +67,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+@Deprecated
 public class PartialDerivativesTest {
 
     @Test
@@ -607,8 +608,8 @@ public class PartialDerivativesTest {
         }
 
         private void checkState(final SpacecraftState state) {
-            Assert.assertEquals(1, state.getAdditionalStates().size());
-            Assert.assertTrue(state.getAdditionalStates().containsKey(mapper.getName()));
+            Assert.assertEquals(1, state.getAdditionalStatesValues().size());
+            Assert.assertEquals(mapper.getName(), state.getAdditionalStatesValues().getData().get(0).getKey());
             mapper.getStateJacobian(state, dYdY0);
             mapper.getParametersJacobian(state, dYdP);
         }

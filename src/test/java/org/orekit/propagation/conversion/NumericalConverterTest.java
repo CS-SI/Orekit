@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,7 +48,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -223,33 +223,41 @@ public class NumericalConverterTest {
         builder.addForceModel(gravity);
 
         // Add additional equations
-        builder.addAdditionalEquations(new AdditionalEquations() {
+        builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
             public String getName() {
                 return "linear";
             }
 
-            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-                pDot[0] = 1.0;
-                return new double[7];
+            public int getDimension() {
+                return 1;
             }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
         });
 
-        builder.addAdditionalEquations(new AdditionalEquations() {
+        builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
     	    public String getName() {
     	        return "linear";
     	    }
 
-    	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-    	        pDot[0] = 1.0;
-    		    return new double[7];
-    	    }
+            public int getDimension() {
+                return 1;
+            }
+
+            public double[] derivatives(SpacecraftState s) {
+                return new double[] { 1.0 };
+            }
+
         });
 
         try {
-	    // Build the numerical propagator
-	    builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            // Build the numerical propagator
+            builder.buildPropagator(builder.getSelectedNormalizedParameters());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);

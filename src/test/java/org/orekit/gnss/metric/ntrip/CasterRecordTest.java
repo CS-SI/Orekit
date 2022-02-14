@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,8 +35,8 @@ public class CasterRecordTest {
         Assert.assertEquals("BKG",                             cas.getOperator());
         Assert.assertEquals(false,                             cas.canReceiveNMEA());
         Assert.assertEquals("DEU",                             cas.getCountry());
-        Assert.assertEquals(50.12,                             Math.toDegrees(cas.getLatitude()),  1.0e-15);
-        Assert.assertEquals( 8.69,                             Math.toDegrees(cas.getLongitude()), 1.0e-15);
+        Assert.assertEquals(50.12,                             FastMath.toDegrees(cas.getLatitude()),  1.0e-15);
+        Assert.assertEquals( 8.69,                             FastMath.toDegrees(cas.getLongitude()), 1.0e-15);
         Assert.assertEquals("0.0.0.0",                         cas.getFallbackHostOrIPAddress());
         Assert.assertEquals(0,                                 cas.getFallbackPort());
         Assert.assertEquals("http://products.igs-ip.net/home", cas.getMisc());
@@ -51,8 +52,8 @@ public class CasterRecordTest {
         Assert.assertEquals("BKG",                             cas.getOperator());
         Assert.assertEquals(false,                             cas.canReceiveNMEA());
         Assert.assertEquals("DEU",                             cas.getCountry());
-        Assert.assertEquals(50.12,                             Math.toDegrees(cas.getLatitude()),  1.0e-15);
-        Assert.assertEquals( 8.69,                             Math.toDegrees(cas.getLongitude()), 1.0e-15);
+        Assert.assertEquals(50.12,                             FastMath.toDegrees(cas.getLatitude()),  1.0e-15);
+        Assert.assertEquals( 8.69,                             FastMath.toDegrees(cas.getLongitude()), 1.0e-15);
         Assert.assertEquals("0.0.0.0",                         cas.getFallbackHostOrIPAddress());
         Assert.assertEquals(0,                                 cas.getFallbackPort());
         Assert.assertEquals("http://www.rtcm-ntrip.org/home",  cas.getMisc());

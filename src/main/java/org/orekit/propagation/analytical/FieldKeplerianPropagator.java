@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.propagation.analytical;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
@@ -32,6 +31,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 
@@ -112,7 +112,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
                                                          getAttitudeProvider().getAttitude(initialOrbit,
                                                                                            initialOrbit.getDate(),
                                                                                            initialOrbit.getFrame()),
-                                                         mass, mu, Collections.emptyMap());
+                                                         mass, mu, null, null);
         states = new FieldTimeSpanMap<>(initial, initialOrbit.getA().getField());
         super.resetInitialState(initial);
     }
@@ -126,19 +126,28 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      * @param attitude current attitude
      * @param mass current mass
      * @param mu gravity coefficient to use
-     * @param additionalStates additional states
+     * @param additionalStates additional states (may be null)
+     * @param additionalStatesderivatives additional states derivatives (may be null)
      * @return fixed orbit
      */
-    private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass,
-                                             final T mu, final Map<String, T[]> additionalStates) {
+    private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass, final T mu,
+                                             final FieldArrayDictionary<T> additionalStates,
+                                             final FieldArrayDictionary<T> additionalStatesderivatives) {
         final OrbitType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
         type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
         final FieldOrbit<T> fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
                                                               orbit.getDate(), mu, orbit.getFrame());
         FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
-        for (final Map.Entry<String, T[]> entry : additionalStates.entrySet()) {
-            fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+        if (additionalStates != null) {
+            for (final FieldArrayDictionary<T>.Entry entry : additionalStates.getData()) {
+                fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+            }
+        }
+        if (additionalStatesderivatives != null) {
+            for (final FieldArrayDictionary<T>.Entry entry : additionalStatesderivatives.getData()) {
+                fixedState = fixedState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
+            }
         }
         return fixedState;
     }
@@ -153,7 +162,8 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
                                                             state.getAttitude(),
                                                             state.getMass(),
                                                             mu,
-                                                            state.getAdditionalStates());
+                                                            state.getAdditionalStatesValues(),
+                                                            state.getAdditionalStatesDerivatives());
 
         states = new FieldTimeSpanMap<>(fixedState, state.getDate().getField());
         super.resetInitialState(fixedState);

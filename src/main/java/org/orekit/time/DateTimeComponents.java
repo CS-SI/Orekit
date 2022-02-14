@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -243,6 +243,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * format used is ISO6801, except without the offset from UTC.
      *
      * @return a string representation of the date-time.
+     * @see #toStringWithoutUtcOffset(int, int)
      * @see #toString(int, int)
      * @see #toStringRfc3339()
      */
@@ -282,9 +283,34 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @return string representation of this date, time, and UTC offset
      * @see #toStringRfc3339()
      * @see #toStringWithoutUtcOffset()
+     * @see #toStringWithoutUtcOffset(int, int)
      * @since 11.0
      */
     public String toString(final int minuteDuration, final int fractionDigits) {
+        return toStringWithoutUtcOffset(minuteDuration, fractionDigits) +
+                time.formatUtcOffset();
+    }
+
+    /**
+     * Return a string representation of this date-time, rounded to the given precision.
+     *
+     * <p>The format used is ISO8601 without the UTC offset.</p>
+     *
+     * @param minuteDuration 59, 60, 61, or 62 seconds depending on the date being close
+     *                       to a leap second introduction and the magnitude of the leap
+     *                       second.
+     * @param fractionDigits the number of digits to include after the decimal point in
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must
+     *                       be greater than or equal to {@code 0}.
+     * @return string representation of this date, time, and UTC offset
+     * @see #toStringRfc3339()
+     * @see #toStringWithoutUtcOffset()
+     * @see #toString(int, int)
+     * @since 11.1
+     */
+    public String toStringWithoutUtcOffset(final int minuteDuration,
+                                           final int fractionDigits) {
         final DecimalFormat secondsFormat =
                 new DecimalFormat("00", new DecimalFormatSymbols(Locale.US));
         secondsFormat.setMaximumFractionDigits(fractionDigits);
@@ -312,8 +338,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
             roundedTime = new TimeComponents(hour, minute, second);
         }
         return roundedDate.toString() + 'T' +
-                roundedTime.toStringWithoutUtcOffset(secondsFormat) +
-                roundedTime.formatUtcOffset();
+                roundedTime.toStringWithoutUtcOffset(secondsFormat);
     }
 
     /**

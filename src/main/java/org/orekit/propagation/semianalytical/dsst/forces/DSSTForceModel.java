@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
@@ -69,6 +70,19 @@ public interface DSSTForceModel {
      * @since 11.0
      */
     default void init(SpacecraftState initialState, AbsoluteDate target) {
+    }
+
+    /**
+     * Initialize the force model at the start of propagation.
+     * <p> The default implementation of this method does nothing.</p>
+     *
+     * @param initialState spacecraft state at the start of propagation.
+     * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
+     * @param <T> type of the elements
+     * @since 11.1
+     */
+    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+        init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
     /** Performs initialization prior to propagation for the current force model.

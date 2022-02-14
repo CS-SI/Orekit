@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,10 @@ package org.orekit.propagation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -29,9 +31,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Common handling of {@link Propagator} methods for analytical propagators.
@@ -58,7 +60,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     private final List<FieldAdditionalStateProvider<T>> additionalStateProviders;
 
     /** States managed by neither additional equations nor state providers. */
-    private final Map<String, TimeSpanMap<T[]>> unmanagedStates;
+    private final Map<String, FieldTimeSpanMap<T[], T>> unmanagedStates;
 
     /** Field used.*/
     private final Field<T> field;
@@ -147,6 +149,27 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
         return Collections.unmodifiableList(additionalStateProviders);
     }
 
+    /** Update state by adding unmanaged states.
+     * @param original original state
+     * @return updated state, with unmanaged states included
+     * @see #updateAdditionalStates(FieldSpacecraftState)
+     */
+    protected FieldSpacecraftState<T> updateUnmanagedStates(final FieldSpacecraftState<T> original) {
+
+        // start with original state,
+        // which may already contain additional states, for example in interpolated ephemerides
+        FieldSpacecraftState<T> updated = original;
+
+        // update the states not managed by providers
+        for (final Map.Entry<String, FieldTimeSpanMap<T[], T>> entry : unmanagedStates.entrySet()) {
+            updated = updated.addAdditionalState(entry.getKey(),
+                                                 entry.getValue().get(original.getDate()));
+        }
+
+        return updated;
+
+    }
+
     /** Update state by adding all additional states.
      * @param original original state
      * @return updated state, with all additional states included
@@ -154,21 +177,31 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
      */
     protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
 
-        // start with original state,
-        // which may already contain additional states, for example in interpolated ephemerides
-        FieldSpacecraftState<T> updated = original;
+        // start with original state and unmanaged states
+        FieldSpacecraftState<T> updated = updateUnmanagedStates(original);
 
-        // update the states not managed by providers
-        for (final Map.Entry<String, TimeSpanMap<T[]>> entry : unmanagedStates.entrySet()) {
-            updated = updated.addAdditionalState(entry.getKey(),
-                                                 entry.getValue().get(original.getDate().toAbsoluteDate()));
-        }
+        // set up queue for providers
+        final Queue<FieldAdditionalStateProvider<T>> pending = new LinkedList<>(getAdditionalStateProviders());
 
-        // update the additional states managed by providers
-        for (final FieldAdditionalStateProvider<T> provider : additionalStateProviders) {
-
-            updated = updated.addAdditionalState(provider.getName(),
-                                                 provider.getAdditionalState(updated));
+        // update the additional states managed by providers, taking care of dependencies
+        int yieldCount = 0;
+        while (!pending.isEmpty()) {
+            final FieldAdditionalStateProvider<T> provider = pending.remove();
+            if (provider.yield(updated)) {
+                // this generator has to wait for another one,
+                // we put it again in the pending queue
+                pending.add(provider);
+                if (++yieldCount >= pending.size()) {
+                    // all pending providers yielded!, they probably need data not yet initialized
+                    // we let the propagation proceed, if these data are really needed right now
+                    // an appropriate exception will be triggered when caller tries to access them
+                    break;
+                }
+            } else {
+                // we can use this provider right now
+                updated    = updated.addAdditionalState(provider.getName(), provider.getAdditionalState(updated));
+                yieldCount = 0;
+            }
         }
 
         return updated;
@@ -218,11 +251,13 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
             // copy the additional states present in initialState but otherwise not managed
-            for (final Map.Entry<String, T[]> initial : initialState.getAdditionalStates().entrySet()) {
+            for (final FieldArrayDictionary<T>.Entry initial : initialState.getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
-                    unmanagedStates.put(initial.getKey(), new TimeSpanMap<>(initial.getValue()));
+                    unmanagedStates.put(initial.getKey(),
+                                        new FieldTimeSpanMap<>(initial.getValue(),
+                                                               initialState.getDate().getField()));
                 }
             }
         }
@@ -232,10 +267,10 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
      * @param state new state
      */
     protected void stateChanged(final FieldSpacecraftState<T> state) {
-        final AbsoluteDate date    = state.getDate().toAbsoluteDate();
-        final boolean      forward = date.durationFrom(getStartDate().toAbsoluteDate()) >= 0.0;
-        for (final Map.Entry<String, T[]> changed : state.getAdditionalStates().entrySet()) {
-            final TimeSpanMap<T[]> tsm = unmanagedStates.get(changed.getKey());
+        final FieldAbsoluteDate<T> date    = state.getDate();
+        final boolean              forward = date.durationFrom(getStartDate()).getReal() >= 0.0;
+        for (final  FieldArrayDictionary<T>.Entry changed : state.getAdditionalStatesValues().getData()) {
+            final FieldTimeSpanMap<T[], T> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state
                 if (forward) {

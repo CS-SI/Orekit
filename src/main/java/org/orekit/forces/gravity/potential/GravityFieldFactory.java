@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -335,8 +335,11 @@ public class GravityFieldFactory {
                                                                              final TideSystem tideSystem,
                                                                              final double[][] normalizedC,
                                                                              final double[][] normalizedS) {
-        return new WrappingNormalizedProvider(new ConstantSphericalHarmonics(ae, mu, tideSystem,
-                normalizedC, normalizedS));
+        final Flattener flattener = new Flattener(normalizedC.length - 1, normalizedC[normalizedC.length - 1].length - 1);
+        final RawSphericalHarmonicsProvider constant =
+                        new ConstantSphericalHarmonics(ae, mu, tideSystem, flattener,
+                                                       flattener.flatten(normalizedC), flattener.flatten(normalizedS));
+        return new WrappingNormalizedProvider(constant);
     }
 
     /** Create a {@link NormalizedSphericalHarmonicsProvider} from an {@link UnnormalizedSphericalHarmonicsProvider}.
@@ -369,8 +372,11 @@ public class GravityFieldFactory {
                                                                                  final TideSystem tideSystem,
                                                                                  final double[][] unnormalizedC,
                                                                                  final double[][] unnormalizedS) {
-        return new WrappingUnnormalizedProvider(new ConstantSphericalHarmonics(ae, mu, tideSystem,
-                unnormalizedC, unnormalizedS));
+        final Flattener flattener = new Flattener(unnormalizedC.length - 1, unnormalizedC[unnormalizedC.length - 1].length - 1);
+        final RawSphericalHarmonicsProvider constant =
+                        new ConstantSphericalHarmonics(ae, mu, tideSystem, flattener,
+                                                       flattener.flatten(unnormalizedC), flattener.flatten(unnormalizedS));
+        return new WrappingUnnormalizedProvider(constant);
     }
 
     /** Create an {@link UnnormalizedSphericalHarmonicsProvider} from a {@link NormalizedSphericalHarmonicsProvider}.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1453,6 +1453,33 @@ public class AbsoluteDate
      */
     public String toStringRfc3339(final TimeScale utc) {
         return this.getComponents(utc).toStringRfc3339();
+    }
+
+    /**
+     * Return a string representation of this date-time, rounded to the given precision.
+     *
+     * <p>The format used is ISO8601 without the UTC offset.</p>
+     *
+     * <p>Calling {@code toStringWithoutUtcOffset(DataContext.getDefault().getTimeScales().getUTC(),
+     * 3)} will emulate the behavior of {@link #toString()} in Orekit 10 and earlier. Note
+     * this method is more accurate as it correctly handles rounding during leap seconds.
+     *
+     * @param timeScale      to use to compute components.
+     * @param fractionDigits the number of digits to include after the decimal point in
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must be
+     *                       greater than or equal to {@code 0}.
+     * @return string representation of this date, time, and UTC offset
+     * @see #toString(TimeScale)
+     * @see #toStringRfc3339(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
+     * @see DateTimeComponents#toStringWithoutUtcOffset(int, int)
+     * @since 11.1
+     */
+    public String toStringWithoutUtcOffset(final TimeScale timeScale,
+                                           final int fractionDigits) {
+        return this.getComponents(timeScale)
+                .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
     }
 
 }

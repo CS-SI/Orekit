@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = orbita con inclinazione quasi critica (i = {0
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = impossibile calcolare i parametri medi secondo Eckstein-Hechler dopo {0} iterazioni
 
+# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = impossibile calcolare i parametri medi secondo Brouwer-Lyddane dopo {0} iterazioni
+
 # unable to compute TLE after {0} iterations
 UNABLE_TO_COMPUTE_TLE = impossibile calcolare il TLE dopo {0} iterazioni
 
@@ -151,8 +154,10 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grado troppo elevato (n = {0}, il grado mas
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordine troppo elevato (m = {0}, l''ordine massimo per il potenziale è {1})
 
+# no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
+WRONG_DEGREE_OR_ORDER = <MISSING TRANSLATION>
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
-# SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = diverse date di riferimento ({0} e {1}) trovate nel file di campo gravitazionale {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
 
 # no TLE data available for object {0}
@@ -237,7 +242,6 @@ FRAMES_MISMATCH = il sistema di riferimento ({0}) non corrisponde al sistema di 
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = stato iniziale non specificato per la propagazione dell''orbita
 
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
-# EVENT_DATE_TOO_CLOSE = la data dell''evento {0}, superiore a {1} meno {3} secondi e inferiore a {2} più {3} secondi, non può esses aggiunta
 EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION>
 
 # unable to read header record from JPL ephemerides binary file {0}
@@ -406,18 +410,15 @@ NOT_ENOUGH_CACHED_NEIGHBORS = numero di vicini in cache troppo piccolo: {0} (dev
 NO_CACHED_ENTRIES = nessun dato nella cache
 
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
-# NON_CHRONOLOGICALLY_SORTED_ENTRIES = dati generati non in ordine cronologico: {0} > {1}
 NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = nessun dato generato intorno alla data: {0}
 
 # unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before
-# UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossibile generare dati prima del {0}, dati richiesti per {1}
 UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
 
 # unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
-# UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossibile generare dati dopo il {0}, dati richiesti per {1}
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
@@ -636,14 +637,12 @@ INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = impossibile realizza
 INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = impossibile combinare le frequenze {0} e {1} per ottenere {2}
 
 # observations are not in chronological order: {0} is {2,number,0.0##############E0} s after {1}
-# NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = le osservazioni {0} e {1} non sono in ordine cronologico
 NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = rilevato utilizzo di ExceptionalDataContext. Si utilizza solitamente per rilevare errori di programmazione
 
 # Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
-# NON_DIFFERENT_DATES_FOR_OBSERVATIONS = le osservazioni {0}, {1} e {2} non possono avere la stessa data
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
 # observations are not in the same plane
@@ -672,6 +671,9 @@ UNEXPECTED_FORMAT_FOR_ILRS_FILE = Inaspettato formato del file. Dovrebbe essere 
 
 # Invalid range indicator {0} in CRD file header
 INVALID_RANGE_INDICATOR_IN_CRD_FILE = L'' intestazione del file CDR contiene un indicatore di intervallo {0} non valido
+
+# Unexpected end of CRD file (after line {0})
+CRD_UNEXPECTED_END_OF_FILE = Inattesa fine del file CRD alla linea {0}
 
 # end of encoded message reached
 END_OF_ENCODED_MESSAGE = è stata raggiunta la fine del messaggio 
@@ -724,9 +726,6 @@ MOUNPOINT_ALREADY_CONNECTED = il mount point {0} è già connesso
 # missing header from {0}: {1}
 MISSING_HEADER = header mancante in {0}: {1}
 
-# Unexpected end of CRD file (after line {0})
-CRD_UNEXPECTED_END_OF_FILE = Inattesa fine del file CRD alla linea {0}
-
 # {0} is not a valid international designator
 NOT_VALID_INTERNATIONAL_DESIGNATOR = {0} non è una designazione internazionale valida
 
@@ -747,3 +746,12 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = <MISSING TRANSLATION>
+
+# backward propagation not allowed here
+BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
+
+# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
+NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
+
+# inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
+INCONSISTENT_SELECTION = <MISSING TRANSLATION>

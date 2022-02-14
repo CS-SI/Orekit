@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,10 +31,11 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.TLEContext;
 import org.orekit.estimation.TLEEstimationTestUtils;
 import org.orekit.estimation.measurements.EstimationsProvider;
+import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.TLERangeMeasurementCreator;
-import org.orekit.estimation.measurements.TLERangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -77,11 +78,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                     0.0, 9.44e-08,
-                                     0.0, 3.57e-07,
-                                     0.0, 7.81e-09,
-                                     0.0, 2.74e-12);
+        TLEEstimationTestUtils.checkFit(context, estimator, 1, 1,
+                                        0.0, 1.0e-15,
+                                        0.0, 1.0e-15,
+                                        0.0, 4.97e-6,
+                                        0.0, 2.32e-9);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -121,11 +122,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                     0.0, 4.35e-09,
-                                     0.0, 3.08e-08,
-                                     0.0, 6.99e-10,
-                                     0.0, 1.46e-12);
+        TLEEstimationTestUtils.checkFit(context, estimator, 1, 1,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 4.97e-6,
+                                     0.0, 2.32e-9);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -156,7 +157,7 @@ public class TLEBatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -214,10 +215,10 @@ public class TLEBatchLSEstimatorTest {
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         TLEEstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                        0.0, 2.29e-6,
-                                        0.0, 4.90e-6,
-                                        0.0, 2.75e-6,
-                                        0.0, 2.84e-10);
+                                        0.0, 1.67e-5,
+                                        0.0, 5.11e-5,
+                                        0.0, 1.77e-5,
+                                        0.0, 2.96e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -246,7 +247,7 @@ public class TLEBatchLSEstimatorTest {
                                                                                propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -309,11 +310,16 @@ public class TLEBatchLSEstimatorTest {
 
         final List<ObservedMeasurement<?>> measurementsRange =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new TLERangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
         // concat measurements
@@ -332,11 +338,11 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        TLEEstimationTestUtils.checkFit(context, estimator, 3, 6,
-                                     0.0, 0.26,
-                                     0.0, 0.52,
-                                     0.0, 4.42e-4,
-                                     0.0, 1.46e-7);
+        TLEEstimationTestUtils.checkFit(context, estimator, 4, 5,
+                                     0.0, 5.2e-6,
+                                     0.0, 3.3e-5,
+                                     0.0, 6.1e-6,
+                                     0.0, 2.5e-9);
     }
 
 }

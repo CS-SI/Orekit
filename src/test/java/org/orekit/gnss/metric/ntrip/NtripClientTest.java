@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -146,7 +147,7 @@ public class NtripClientTest {
 
     @Test
     public void testLocalSourceTable() {
-        DummyServer server = prepareServer("/gnss/ntrip//sourcetable-products.igs-ip.net.txt");
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt");
         server.run();
         NtripClient client = new NtripClient("localhost", server.getServerPort());
         client.setTimeout(500);
@@ -210,7 +211,7 @@ public class NtripClientTest {
         server.run();
         NtripClient client = new NtripClient("localhost", server.getServerPort());
         client.setTimeout(100);
-        client.setFix(2, 42, 13.456, Math.toRadians(43.5), Math.toRadians(-1.25), 317.5, 12.2);
+        client.setFix(2, 42, 13.456, FastMath.toRadians(43.5), FastMath.toRadians(-1.25), 317.5, 12.2);
         client.startStreaming("", Type.IGS_SSR, true, true);
         try {
             Thread.sleep(400);
@@ -229,7 +230,7 @@ public class NtripClientTest {
         server.run();
         NtripClient client = new NtripClient("localhost", server.getServerPort());
         client.setTimeout(100);
-        client.setFix(2, 42, 13.456, Math.toRadians(-43.5), Math.toRadians(1.25), 317.5, 12.2);
+        client.setFix(2, 42, 13.456, FastMath.toRadians(-43.5), FastMath.toRadians(1.25), 317.5, 12.2);
         client.startStreaming("", Type.IGS_SSR, true, true);
         try {
             Thread.sleep(400);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CR3BPSystem;
-import org.orekit.data.DataContext;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.TimeScale;
@@ -88,10 +85,10 @@ public abstract class LibrationOrbit {
      * {@link #orbitalPeriod} parameters.
      * </p>
      */
-    @DefaultDataContext
     public void applyDifferentialCorrection() {
-        applyDifferentialCorrection(InertialProvider.of(syst.getRotatingFrame()),
-                                    DataContext.getDefault().getTimeScales().getUTC());
+        final CR3BPDifferentialCorrection diff = new CR3BPDifferentialCorrection(initialPV, syst, orbitalPeriod);
+        initialPV = applyCorrectionOnPV(diff);
+        orbitalPeriod = diff.getOrbitalPeriod();
     }
 
     /** Apply differential correction.
@@ -101,12 +98,11 @@ public abstract class LibrationOrbit {
      * </p>
      * @param attitudeProvider the attitude law for the numerocal propagator
      * @param utc UTC time scale
+     * @deprecated as of 11.1, replaced by {@link #applyDifferentialCorrection()}
      */
-    public void applyDifferentialCorrection(final AttitudeProvider attitudeProvider,
-                                            final TimeScale utc) {
-        final CR3BPDifferentialCorrection diff = new CR3BPDifferentialCorrection(initialPV, syst, orbitalPeriod, attitudeProvider, utc);
-        initialPV = applyCorrectionOnPV(diff);
-        orbitalPeriod = diff.getOrbitalPeriod();
+    @Deprecated
+    public void applyDifferentialCorrection(final AttitudeProvider attitudeProvider, final TimeScale utc) {
+        applyDifferentialCorrection();
     }
 
     /** Return a manifold direction from one position on a libration Orbit.

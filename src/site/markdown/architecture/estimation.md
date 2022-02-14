@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2021 CS GROUP
+<!--- Copyright 2002-2022 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -126,7 +126,8 @@ want to use the estimated covariance and state vector of an orbit determination 
 the results of the daily orbit determination.
 
 The two batch least squares estimator implementations in Orekit are compatible to work with a `NumericalPropagator`, a
-`DSSTPropagator`, or a `TLEPropagator`.
+`DSSTPropagator`, a `TLEPropagator`, an `EcksteinHechlerPropagator`, a `BrouwerLyddanePropagator`,
+or a `KeplerianPropagator`.
 
 ### Kalman filter
 
@@ -158,6 +159,15 @@ will be more realistic than a basic constant matrix.
 For even more accurate representations, users are free to set up their own models, which could go up to
 evaluating the effect of each force models. This is done by providing a custom implementation of
 `CovarianceMatrixProvider`.
+
+Because the DSST orbit propagator uses large step size to perform the numerical integration
+of the equations of motion for the mean equinoctial elements (e.g., half-day for GEO satellites), it
+is not suitable for a classical Extended Kalman Filter orbit determination. The classical Kalman filter
+algorithm needs to re-initialize the orbital state at each observation epoch. However, the time difference
+between two observations is usually much smaller than the DSST step size. In order to take advantage of the
+DSST theory within a recursive filter orbit determination, Orekit implements the Extended Semi-analytical Kalman Filter.
+
+![semi-analytical kalman filter overview class diagram](../images/design/extended-semi-analytical-kalman-filter-diagram.png)
 
 ### Estimated parameters
 

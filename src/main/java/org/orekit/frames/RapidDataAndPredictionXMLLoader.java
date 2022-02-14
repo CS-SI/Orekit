@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -189,7 +189,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
             private final String name;
 
             /** Buffer for read characters. */
-            private final StringBuffer buffer;
+            private final StringBuilder buffer;
 
             /** Indicator for daily data XML format or final data XML format. */
             private DataFileContent content;
@@ -202,7 +202,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
              */
             EOPContentHandler(final String name) {
                 this.name   = name;
-                this.buffer = new StringBuffer();
+                this.buffer = new StringBuilder();
             }
 
             /** {@inheritDoc} */

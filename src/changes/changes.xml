@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2021 CS GROUP
+<!-- Copyright 2002-2022 CS GROUP
   Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -20,6 +20,157 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.1" date="2022-02-14"
+             description="Version 11.1 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 11.1 are: the estimation of maneuver start/stop time, the Brouwer-Lyddane
+             orbit propagation model with Warren Phipps’ correction for the critical
+             inclination of 63.4° and the perturbative acceleration due to atmospheric
+             drag, the Extended Semi-analytical Kalman Filter, a new API for
+             State Transition Matrix and Jacobian matrices computation, orbit
+             determination  using analytical propagation models, parsing of ICGEM V2.0 format.
+             This release includes important fixes in CCSDS files, TimeSpanMap, and
+             display of dates. See the list below for a full description of the changes.">
+      <action dev="luc" type="fix" issue="722">
+        Prefer values from Bulletin B rather than Bulletin A if both are present
+        in rapid data column format. This handling of priority was already in
+        place for XML file, but not for column format.
+      </action>
+      <action dev="luc" type="fix" issue="448">
+        Added support for ICGEM V2.0 format for piecewise gravity fields
+        that contain discontinuities around major earthquakes, like
+        Eigen 6S4 V2.
+      </action>
+      <action dev="andrewsgoetz" type="add">
+        Added Automatic-Module-Name "org.orekit" to JAR manifest to improve usability
+        of Orekit by modular Java projects.
+      </action>
+      <action dev="julie,bryan,maxime" type="add" issue="823">
+        Added the Extended Semi-analytical Kalman Filter.
+      </action>
+      <action dev="luc" type="fix" issue="875">
+        Allow empty comments in CCSDS messages
+      </action>
+      <action dev="luc" type="fix" issue="884">
+        Deprecated TimeSpanMap.getTransitions()
+      </action>
+      <action dev="luc" type="fix" issue="832,885">
+        Allow to enter the same transition date in TimeSpanMap several times
+      </action>
+      <action dev="luc" type="fix" issue="833">
+        Added a way to erase all earlier/later transitions when adding an entry
+        and added addValidBetween to TimeSpanMap.
+      </action>
+      <action dev="bryan" type="add">
+        Added a new and simpler API for State Transition Matrix and Jacobian
+        matrix computation for analytical orbit propagators.
+      </action>
+      <action dev="bryan" type="fix" issue="878">
+        Fixed writing of ITRF frames before 2000 when generating CCSDS files.
+      </action>
+      <action dev="luc" type="fix" issue="836">
+        Use the orbit normalization feature to reduce discontinuities across impulsive maneuvers.
+      </action>
+      <action dev="luc" type="add">
+        Added an orbit normalization feature.
+      </action>
+      <action dev="evan" type="add" issue="881">
+        Add AbsoluteDate.toStringWithoutUtcOffset(TimeScale, int) and
+        DateTimeComponents.toStringWithoutUtcOffset(int, int) to emulate
+        AbsoluteDate.toString() from Orekit 10.
+      </action>
+      <action dev="evan" type="fix" issue="880">
+        Fix UTC offset in DateTimeComponents.toString(int, int)
+      </action>
+      <action dev="luc" type="fix" issue="849">
+        Added detector to FieldEventHandler.init arguments list.
+      </action>
+      <action dev="luc" type="fix" issue="837">
+        Added getters for raw detectors in event shifter, slope filter and predicate filter.
+      </action>
+      <action dev="bryan" type="fix" issue="874">
+        Fixed initialization of maneuver trigger events when using EventBasedManeuverTriggers.
+      </action>
+      <action dev="luc" type="fix" issue="872">
+        Fixed multiple detection of events when using propagate(start, target) with
+        integration-based propagators.
+      </action>
+      <action dev="bryan" type="add" issue="871">
+        Added atmospheric drag effect for Brouwer-Lyddane model.
+      </action>
+      <action dev="bryan" type="add" issue="869">
+        Allowed Brouwer-Lyddane model to work for the critical inclination.
+      </action>
+      <action dev="bryan" type="fix" issue="867">
+        Fixed handling of multiple historical eccentricities for a same station.
+      </action>
+      <action dev="bryan" type="fix" issue="868">
+        Fixed writing of whitespace characters in CPF writer.
+      </action>
+      <action dev="bryan" type="fix" issue="864">
+        Fixed BStar estimation in TLE-based orbit determination.
+      </action>
+      <action dev="mvanel" type="add" issue="653">
+        Added Brouwer-Lyddane orbit propagator.
+      </action>
+      <action dev="luc" type="add" issue="865">
+        Added derivatives with respect to maneuvers start/stop dates
+        or median date/duration.
+      </action>
+      <action dev="luc" type="add" >
+        Added observers for maneuvers triggers.
+      </action>
+      <action dev="luc" type="fix" issue="853">
+        Added field-based init method in ForceModel and DSSTForceModel.
+      </action>
+      <action dev="luc" type="fix" >
+        Added ParameterDrivenDateIntervalDetector and FieldParameterDrivenDateIntervalDetector.
+      </action>
+      <action dev="luc" type="add" >
+        Added DateDriver to drive dates using a ParameterDriver.
+      </action>
+      <action dev="luc" type="fix" issue="848">
+        Allow backward propagation in EventBasedManeuverTriggers.
+      </action>
+      <action dev="luc" type="add" >
+        Added IntervalEventTrigger and StartStopEventsTrigger to streamline
+        several ways to trigger maneuvers.
+      </action>
+      <action dev="luc" type="add" >
+        When propagating with integrated additional equations, the generated
+        spacecraft states now also contain both state and derivatives
+        managed by the equations.
+      </action>
+      <action dev="luc" type="add" >
+        Replaced AdditionalEquations by AdditionalDerivativesProvider with
+        support for dimension retrieval and yield feature between providers.
+      </action>
+      <action dev="luc" type="add" issue="856">
+        Added a new and simpler API for State Transition Matrix and Jacobian
+        matrix computation. This new API is for now only used with NumericalPropagator
+        and DSSTPropagator (both in batch least squares and in Kalman filter), but it
+        is expected to be generalized to analytical propagators as well when it is
+        stabilized.
+      </action>
+      <action dev="luc" type="add" >
+        Added DoubleArrayDictionary and FieldArrayDictionary as replacements
+        for HashMap when the number of keys is very small (such as in spacecraft
+        states).
+      </action>
+      <action dev="luc" type="add">
+        Manage dependencies between additional states in propagators using a yield
+        feature between providers.
+      </action>
+      <action dev="luc" type="add" >
+        SpacecraftState now handle derivatives of additional states.
+      </action>
+      <action dev="luc" type="add" issue="862">
+        PropagatorParallelizer now preserves existing step handlers in the propagators it runs.
+      </action>
+      <action dev="ShippingEnjoyer" type="add">
+        Get rid of StringBuffer for logging without unnecessary synchronization (bias-locking disabled at jdk18)
+      </action>
+    </release>
     <release version="11.0.2" date="2021-11-24"
              description="Version 11.0.2 is a patch release of Orekit.
              It fixes an important issue related to the handling of indexes

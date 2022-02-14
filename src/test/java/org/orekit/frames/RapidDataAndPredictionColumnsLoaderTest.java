@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -77,8 +77,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_1996, data, true);
 
-        // after 2011-06-01, the example daily file has no columns for Bulletin B data
-        // we don't see anything since we ignore the columns from Bulletin B
+        // after 2011-05-31, the example daily file has no columns for Bulletin B data
+        // we don't see anything since we fall back to bulletin A
         AbsoluteDate t1Inf = new AbsoluteDate(2011, 6, 1, TimeScalesFactory.getUTC());
         Assert.assertEquals(-67.724,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Inf)[0]), 1.0e-10);
         Assert.assertEquals(-11.807,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Inf)[1]), 1.0e-10);
@@ -125,8 +125,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc).fillHistory(converter, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2003, data, true);
 
-        // after 2011-06-01, the example daily file has no columns for Bulletin B data
-        // we don't see anything since we ignore the columns from Bulletin B
+        // after 2011-05-31, the example daily file has no columns for Bulletin B data
+        // we don't see anything since we fall back to bulletin A
         AbsoluteDate t1Inf = new AbsoluteDate(2011, 6, 1, TimeScalesFactory.getUTC());
         Assert.assertEquals(-0.015313,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Inf).getXp()), 1.0e-10);
         Assert.assertEquals( 0.403214,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Inf).getYp()), 1.0e-10);
@@ -219,23 +219,38 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testWrongPoleFormat() {
-        doTestWrongFile("^finals2000A-wrong-pole-format\\.daily$", 7);
+    public void testWrongPoleAFormat() {
+        doTestWrongFile("^finals2000A-wrong-pole-A-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongUT1UTCFormat() {
-        doTestWrongFile("^finals2000A-wrong-ut1-utc-format\\.daily$", 7);
+    public void testWrongPoleBFormat() {
+        doTestWrongFile("^finals2000A-wrong-pole-B-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongLODFormat() {
-        doTestWrongFile("^finals2000A-wrong-lod-format\\.daily$", 7);
+    public void testWrongUT1UTCAFormat() {
+        doTestWrongFile("^finals2000A-wrong-ut1-utc-A-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongNutationFormat() {
-        doTestWrongFile("^finals2000A-wrong-nutation-format\\.daily$", 7);
+    public void testWrongUT1UTCBFormat() {
+        doTestWrongFile("^finals2000A-wrong-ut1-utc-B-format\\.daily$", 7);
+    }
+
+    @Test
+    public void testWrongLODAFormat() {
+        doTestWrongFile("^finals2000A-wrong-lod-A-format\\.daily$", 7);
+    }
+
+    @Test
+    public void testWrongNutationAFormat() {
+        doTestWrongFile("^finals2000A-wrong-nutation-A-format\\.daily$", 7);
+    }
+
+    @Test
+    public void testWrongNutationBFormat() {
+        doTestWrongFile("^finals2000A-wrong-nutation-B-format\\.daily$", 7);
     }
 
     private void doTestWrongFile(String fileName, int lineNumber) {

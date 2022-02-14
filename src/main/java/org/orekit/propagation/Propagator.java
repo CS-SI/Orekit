@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.frames.Frame;
@@ -29,6 +30,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** This interface provides a way to propagate an orbit at any time.
@@ -173,17 +175,9 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Check if an additional state is managed.
      * <p>
      * Managed states are states for which the propagators know how to compute
-     * its evolution. They correspond to additional states for which an
-     * {@link AdditionalStateProvider additional state provider} has been registered
-     * by calling the {@link #addAdditionalStateProvider(AdditionalStateProvider)
-     * addAdditionalStateProvider} method. If the propagator is an {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator integrator-based
-     * propagator}, the states for which a set of {@link
-     * org.orekit.propagation.integration.AdditionalEquations additional equations} has
-     * been registered by calling the {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator#addAdditionalEquations(
-     * org.orekit.propagation.integration.AdditionalEquations) addAdditionalEquations}
-     * method are also counted as managed additional states.
+     * its evolution. They correspond to additional states for which a
+     * {@link AdditionalStateProvider provider} has been registered by calling the
+     * {@link #addAdditionalStateProvider(AdditionalStateProvider) addAdditionalStateProvider} method.
      * </p>
      * <p>
      * Additional states that are present in the {@link #getInitialState() initial state}
@@ -246,6 +240,33 @@ public interface Propagator extends PVCoordinatesProvider {
      * @see #resetInitialState(SpacecraftState)
      */
     Frame getFrame();
+
+    /** Set up computation of State Transition Matrix and Jacobians matrix with respect to parameters.
+     * <p>
+     * If this method is called, both State Transition Matrix and Jacobians with respect to the
+     * force models parameters that will be selected when propagation starts will be automatically
+     * computed, and the harvester will allow to retrieve them.
+     * </p>
+     * <p>
+     * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType
+     * orbit type} and {@link org.orekit.orbits.PositionAngle position angle} that will be used by the propagator.
+     * </p>
+     * <p>
+     * The default implementation throws an exception as the method is not supported by all propagators.
+     * </p>
+     * @param stmName State Transition Matrix state name
+     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
+     * if null (which is the most frequent case), assumed to be 6x6 identity
+     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
+     * if null or if some selected parameters are missing from the dictionary, the corresponding
+     * initial column is assumed to be 0
+     * @return harvester to retrieve computed matrices during and after propagation
+     * @since 11.1
+     */
+    default MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
+                                                       final DoubleArrayDictionary initialJacobianColumns) {
+        throw new UnsupportedOperationException();
+    }
 
     /** Propagate towards a target date.
      * <p>Simple propagators use only the target date as the specification for

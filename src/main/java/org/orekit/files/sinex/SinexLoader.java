@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,6 +54,9 @@ import org.orekit.utils.Constants;
  * @since 10.3
  */
 public class SinexLoader {
+
+    /** 00:000:00000 epoch. */
+    private static final String DEFAULT_EPOCH = "00:000:00000";
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile(":");
@@ -173,6 +176,7 @@ public class SinexLoader {
             boolean inEcc      = false;
             boolean inEpoch    = false;
             boolean inEstimate = false;
+            boolean firstEcc   = true;
             Vector3D position  = Vector3D.ZERO;
             Vector3D velocity  = Vector3D.ZERO;
 
@@ -230,17 +234,42 @@ public class SinexLoader {
                                     // add the station to the map
                                     addStation(station);
                                 } else if (inEcc) {
+
                                     // read antenna eccentricities data
                                     final Station station = getStation(parseString(line, 1, 4));
-                                    // check if start and end dates have been set
-                                    if (station.getValidFrom() == null) {
-                                        station.setValidFrom(stringEpochToAbsoluteDate(parseString(line, 16, 12)));
-                                        station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12)));
+
+                                    // check if it is the first eccentricity entry for this station
+                                    if (station.getEccentricitiesTimeSpanMap().getSpansNumber() == 1) {
+                                        // we are parsing eccentricity data for a new station
+                                        firstEcc = true;
                                     }
+
+                                    // start and end of validity for the current entry
+                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12));
+                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12));
+
+                                    // reference system UNE or XYZ
                                     station.setEccRefSystem(ReferenceSystem.getEccRefSystem(parseString(line, 42, 3)));
-                                    station.setEccentricities(new Vector3D(parseDouble(line, 46, 8),
-                                                                           parseDouble(line, 55, 8),
-                                                                           parseDouble(line, 64, 8)));
+
+                                    // eccentricity vector
+                                    final Vector3D eccStation = new Vector3D(parseDouble(line, 46, 8),
+                                                                             parseDouble(line, 55, 8),
+                                                                             parseDouble(line, 64, 8));
+
+                                    // special implementation for the first entry
+                                    if (firstEcc) {
+                                        // we want null values outside validity limits of the station
+                                        station.addStationEccentricitiesValidBefore(eccStation, end);
+                                        station.addStationEccentricitiesValidBefore(null,       start);
+                                        // we parsed the first entry, set the flag to false
+                                        firstEcc = false;
+                                    } else {
+                                        station.addStationEccentricitiesValidBefore(eccStation, end);
+                                    }
+
+                                    // update the last known eccentricities entry
+                                    station.setEccentricities(eccStation);
+
                                 } else if (inEpoch) {
                                     // read epoch data
                                     final Station station = getStation(parseString(line, 1, 4));
@@ -343,6 +372,13 @@ public class SinexLoader {
      * @return the corresponding AbsoluteDate
      */
     private AbsoluteDate stringEpochToAbsoluteDate(final String stringDate) {
+
+        // Deal with 00:000:00000 epochs
+        if (DEFAULT_EPOCH.equals(stringDate)) {
+            // Data is still available, return a dummy date at infinity in the future direction
+            return AbsoluteDate.FUTURE_INFINITY;
+        }
+
         // Date components
         final String[] fields = SEPARATOR.split(stringDate);
 
@@ -365,6 +401,7 @@ public class SinexLoader {
         return new AbsoluteDate(new DateComponents(year, 1, 1), utc).
                         shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                         shiftedBy(secInDay);
+
     }
 
 }

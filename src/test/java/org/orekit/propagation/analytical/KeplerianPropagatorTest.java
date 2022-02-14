@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,6 +53,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
@@ -821,6 +822,73 @@ public class KeplerianPropagatorTest {
         }
     }
 
+    @Test
+    public void testStackableGenerators() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbit, new LofOffset(eme2000, LOFType.LVLH));
+
+        // we have A → B → C → D → E → F but register them in a different order
+        propagator.addAdditionalStateProvider(new DependentGenerator("F", "E"));
+        propagator.addAdditionalStateProvider(new DependentGenerator("B", "A"));
+        propagator.addAdditionalStateProvider(new DependentGenerator("E", "D"));
+        propagator.addAdditionalStateProvider(new DependentGenerator("C", "B"));
+        propagator.addAdditionalStateProvider(new DependentGenerator("A", null));
+        propagator.addAdditionalStateProvider(new DependentGenerator("D", "C"));
+
+        final SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(3600.0));
+        Assert.assertEquals(1,   finalState.getAdditionalState("A").length);
+        Assert.assertEquals(1.0, finalState.getAdditionalState("A")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("B").length);
+        Assert.assertEquals(2.0, finalState.getAdditionalState("B")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("C").length);
+        Assert.assertEquals(3.0, finalState.getAdditionalState("C")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("D").length);
+        Assert.assertEquals(4.0, finalState.getAdditionalState("D")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("E").length);
+        Assert.assertEquals(5.0, finalState.getAdditionalState("E")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("F").length);
+        Assert.assertEquals(6.0, finalState.getAdditionalState("F")[0], 1.0e-15);
+
+    }
+
+    @Test
+    public void testCircularDependency() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbit, new LofOffset(eme2000, LOFType.LVLH));
+
+        // here, the dependency creates a loop, which is detected and its adders ignored
+        propagator.addAdditionalStateProvider(new DependentGenerator("F", "E"));
+        propagator.addAdditionalStateProvider(new DependentGenerator("B", "A"));
+        propagator.addAdditionalStateProvider(new DependentGenerator("E", "D"));
+        propagator.addAdditionalStateProvider(new DependentGenerator("C", "B"));
+        propagator.addAdditionalStateProvider(new DependentGenerator("A", null));
+        propagator.addAdditionalStateProvider(new DependentGenerator("D", "F"));
+
+        final SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(3600.0));
+        Assert.assertEquals(1,   finalState.getAdditionalState("A").length);
+        Assert.assertEquals(1.0, finalState.getAdditionalState("A")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("B").length);
+        Assert.assertEquals(2.0, finalState.getAdditionalState("B")[0], 1.0e-15);
+        Assert.assertEquals(1,   finalState.getAdditionalState("C").length);
+        Assert.assertEquals(3.0, finalState.getAdditionalState("C")[0], 1.0e-15);
+        Assert.assertFalse(finalState.hasAdditionalState("D"));
+        Assert.assertFalse(finalState.hasAdditionalState("E"));
+        Assert.assertFalse(finalState.hasAdditionalState("F"));
+
+    }
+
     private void checkDerivatives(final Orbit orbit, final boolean expectedDerivatives) {
         Assert.assertEquals(expectedDerivatives, orbit.hasDerivatives());
         Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getADot()));
@@ -850,6 +918,32 @@ public class KeplerianPropagatorTest {
     @After
     public void tearDown() {
         mu   = Double.NaN;
+    }
+
+    private static class DependentGenerator implements AdditionalStateProvider {
+
+        private final String name;
+        private final String dependency;
+
+        DependentGenerator(final String name, final String dependency) {
+            this.name       = name;
+            this.dependency = dependency;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean yield(final SpacecraftState state) {
+            return dependency != null && state.getAdditionalStatesValues().getEntry(dependency) == null;
+        }
+
+        public double[] getAdditionalState(final SpacecraftState state) {
+            return new double[] {
+                dependency == null ? 1.0 : state.getAdditionalState(dependency)[0] + 1.0
+            };
+        }
+
     }
 
 }

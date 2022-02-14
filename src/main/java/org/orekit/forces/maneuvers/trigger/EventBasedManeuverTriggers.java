@@ -52,6 +52,9 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
      */
     private final AbstractDetector<? extends EventDetector> stopFiringDetector;
 
+    /** Flag for allowing backward propagation. */
+    private final boolean allowBackwardPropagation;
+
     /**
      * Flag for init method, called several times : force models + each detector.
      */
@@ -63,8 +66,14 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     /** Triggered date of engine stop. */
     private AbsoluteDate triggeredEnd;
 
+    /** Propagation direction. */
+    private boolean forward;
+
     /**
      * Constructor.
+     * <p>
+     * This legacy constructor forbids backward propagation.
+     * </p>
      * @param startFiringDetector Detector to start firing, only detect increasing
      *                            sign change
      * @param stopFiringDetector  Detector to stop firing, only detect increasing
@@ -72,7 +81,23 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
      *                            the start detector.
      */
     public EventBasedManeuverTriggers(final AbstractDetector<? extends EventDetector> startFiringDetector,
-            final AbstractDetector<? extends EventDetector> stopFiringDetector) {
+                                      final AbstractDetector<? extends EventDetector> stopFiringDetector) {
+        this(startFiringDetector, stopFiringDetector, false);
+    }
+
+    /**
+     * Constructor.
+     * @param startFiringDetector Detector to start firing, only detect increasing
+     *                            sign change
+     * @param stopFiringDetector  Detector to stop firing, only detect increasing
+     *                            sign change. e.g. it can be a negate detector of
+     *                            the start detector.
+     * @param allowBackwardPropagation if true, backward propagation is allowed
+     * @since 11.1
+     */
+    public EventBasedManeuverTriggers(final AbstractDetector<? extends EventDetector> startFiringDetector,
+                                      final AbstractDetector<? extends EventDetector> stopFiringDetector,
+                                      final boolean allowBackwardPropagation) {
         if (startFiringDetector == null) {
             throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "stopFiringDetector",
                     EventBasedManeuverTriggers.class.getSimpleName());
@@ -81,11 +106,14 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
             throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "startFiringDetector",
                     EventBasedManeuverTriggers.class.getSimpleName());
         }
-        this.startFiringDetector = startFiringDetector.withHandler(this);
-        this.stopFiringDetector = stopFiringDetector.withHandler(this);
-        this.triggeredStart = null;
-        this.triggeredEnd = null;
-        initialized = false;
+        this.startFiringDetector      = startFiringDetector.withHandler(this);
+        this.stopFiringDetector       = stopFiringDetector.withHandler(this);
+        this.allowBackwardPropagation = allowBackwardPropagation;
+        this.triggeredStart           = null;
+        this.triggeredEnd             = null;
+        this.initialized              = false;
+        this.forward                  = true;
+
     }
 
     /**
@@ -111,17 +139,13 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         if (!initialized) {
 
             initialized = true;
-            final AbsoluteDate sDate = initialState.getDate();
-            if (sDate.compareTo(target) > 0) {
-                // backward propagation not managed because events on detectors can not be
-                // reversed :
-                // the stop event of the maneuver in forward direction won't be the start in the
-                // backward.
-                // e.g. if a stop detector is combination of orbit position and system
-                // constraint
-                throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED,
-                        "EventBasedManeuverTriggers in backward propagation");
+            forward     = target.isAfterOrEqualTo(initialState);
+            if (!forward && !allowBackwardPropagation) {
+                // backward propagation was forbidden
+                throw new OrekitException(OrekitMessages.BACKWARD_PROPAGATION_NOT_ALLOWED);
             }
+            startFiringDetector.init(initialState, target);
+            stopFiringDetector.init(initialState, target);
 
             checkInitialFiringState(initialState);
 
@@ -155,8 +179,8 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         if (insideThrustArcG == 0) {
             // bound of arc
             // check state for the next second (which can be forward or backward)
-            final double nextSecond = 1;
-            final double nextValue = getStartFiringDetector().g(initialState.shiftedBy(nextSecond));
+            final double nextSecond = forward ? 1 : -1;
+            final double nextValue  = getStartFiringDetector().g(initialState.shiftedBy(nextSecond));
             isInsideThrustArc = nextValue > 0;
         } else {
             isInsideThrustArc = insideThrustArcG > 0;
@@ -185,13 +209,23 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
      * @param date   date of event
      */
     public void setFiring(final boolean firing, final AbsoluteDate date) {
-        if (firing != isFiring(date)) {
+        if (forward) {
             if (firing) {
                 if (!date.equals(triggeredEnd)) {
                     triggeredStart = date;
+                    triggeredEnd   = null;
                 } // else no gap between stop and start, can not handle correctly : skip it
             } else {
                 triggeredEnd = date;
+            }
+        } else { // backward propagation
+            if (firing) { // start firing by end date
+                if (!date.equals(triggeredStart)) {
+                    triggeredEnd   = date;
+                    triggeredStart = null;
+                } // else no gap between stop and start, can not handle correctly : skip it
+            } else {
+                triggeredStart = date;
             }
         }
     }
@@ -214,17 +248,27 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     @Override
     public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
         Action action = Action.CONTINUE; // default not taken into account
-        final boolean detectorManaged = getEventsDetectors()
-                .anyMatch(managedDetector -> managedDetector.equals(detector));
+        final boolean detectorManaged = getEventsDetectors().anyMatch(managedDetector -> managedDetector.equals(detector));
         if (detectorManaged) {
-            action = Action.RESET_EVENTS;
             if (increasing) {
-                if (detector.equals(getStartFiringDetector())) { // start of firing arc
-                    setFiring(true, s.getDate());
-                    action = Action.RESET_DERIVATIVES;
-                } else if (detector.equals(getStopFiringDetector())) { // end of firing arc
-                    setFiring(false, s.getDate());
-                    action = Action.RESET_DERIVATIVES;
+                action = Action.RESET_EVENTS;
+                if (forward) {
+                    if (detector.equals(startFiringDetector)) { // start of firing arc
+                        setFiring(true, s.getDate());
+                        action = Action.RESET_DERIVATIVES;
+                    } else if (detector.equals(stopFiringDetector)) { // end of firing arc
+                        setFiring(false, s.getDate());
+                        action = Action.RESET_DERIVATIVES;
+                    }
+                } else { // backward propagation. We could write a code on 3 lines but that would be
+                    // harder to understand and debug. So we do prefer explicit code
+                    if (detector.equals(startFiringDetector)) { // end of firing arc
+                        setFiring(false, s.getDate());
+                        action = Action.RESET_DERIVATIVES;
+                    } else if (detector.equals(stopFiringDetector)) { // start of firing arc
+                        setFiring(true, s.getDate());
+                        action = Action.RESET_DERIVATIVES;
+                    }
                 }
             }
         }
@@ -238,31 +282,50 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
      * @return true if maneuver is on at this date
      */
     public boolean isFiring(final AbsoluteDate date) {
-        if (triggeredStart == null) {
-            // explicitly ignores state date, as propagator did not allow us to introduce
-            // discontinuity
-            return false;
-        } else if (date.isBefore(triggeredStart)) {
-            // we are unambiguously before maneuver start
-            // robustness, we should not pass here
-            return false;
-        } else {
-            // after start date
-            if (getTriggeredEnd() == null) {
+        if (forward) {
+            if (triggeredStart == null) {
                 // explicitly ignores state date, as propagator did not allow us to introduce
                 // discontinuity
-                return true;
-            } else if (getTriggeredStart().isAfter(getTriggeredEnd())) {
-                // last event is a start of maneuver, end not set yet
-                // we are unambiguously before maneuver end
-                return true;
-            } else if (date.isBefore(getTriggeredEnd())) {
-                // we are unambiguously before maneuver end
-                // robustness, we should not pass here
-                return true;
-            } else {
-                // we are at or after maneuver end
                 return false;
+            } else if (date.isBefore(triggeredStart)) {
+                // we are unambiguously before maneuver start
+                // robustness, we should not pass here
+                return false;
+            } else {
+                // after start date
+                if (triggeredEnd == null) {
+                    // explicitly ignores state date, as propagator did not allow us to introduce
+                    // discontinuity
+                    return true;
+                } else if (date.isBefore(triggeredEnd)) {
+                    // we are unambiguously before maneuver end
+                    // robustness, we should not pass here
+                    return true;
+                } else {
+                    // we are at or after maneuver end
+                    return false;
+                }
+            }
+        } else { // backward propagation, start firing by triggeredEnd
+            if (triggeredEnd == null) {
+                // explicitly ignores state date, as propagator did not allow us to introduce
+                // discontinuity
+                return false;
+            } else if (date.isAfter(triggeredEnd)) {
+                // we are unambiguously after maneuver end
+                return false;
+            } else {
+                if (triggeredStart == null) {
+                    // explicitly ignores state date, as propagator did not allow us to introduce
+                    // discontinuity
+                    return true;
+                } else if (date.isAfter(triggeredStart)) {
+                    // we are unambiguously after maneuver start
+                    return true;
+                } else {
+                    // we are at or before maneuver start
+                    return false;
+                }
             }
         }
     }

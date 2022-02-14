@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,8 +70,7 @@ public class FieldEventDetectorTest {
         doTestEventHandlerInit(Decimal64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field)
-            {
+    private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field) {
 
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -101,8 +100,9 @@ public class FieldEventDetectorTest {
             }
 
             @Override
-            public void init(FieldSpacecraftState<T> initialState,
-                             FieldAbsoluteDate<T> target) {
+            public void init(final FieldSpacecraftState<T> initialState,
+                             final FieldAbsoluteDate<T> target,
+                             final FieldDateDetector<T> detector) {
                 initCalled = true;
             }
         };

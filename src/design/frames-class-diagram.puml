@@ -1,4 +1,4 @@
-' Copyright 2002-2021 CS GROUP
+' Copyright 2002-2022 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -62,7 +62,7 @@
       +Vector3D transformVector(Vector3D vector)
       +Line transformLine(Line line)
       +PVCoordinates transformPVCoordinates(PVCoordinates pv)
-      +void getJacobian(double[][] jacobian)
+      +void getJacobian(CartesianDerivativesFilter selector, double[][] jacobian)
       +Vector3D getTranslation()
       +Vector3D getVelocity()
       +Rotation getRotation()
@@ -70,8 +70,7 @@
     }
 
     class UpdatableFrame {
-      +void setTransform(Transform)
-      +void updateFrame(...)
+      +void updateTransform(...)
     }
 
     class TopocentricFrame

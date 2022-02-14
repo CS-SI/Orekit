@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,11 +73,14 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     /** Central body attraction coefficient. */
     private double mu;
 
-    /** Raw tesseral-sectorial coefficients matrix. */
-    private double[][] rawC;
+    /** Converter from triangular to flat form. */
+    private Flattener flattener;
 
     /** Raw tesseral-sectorial coefficients matrix. */
-    private double[][] rawS;
+    private double[] rawC;
+
+    /** Raw tesseral-sectorial coefficients matrix. */
+    private double[] rawS;
 
     /** Indicator for normalized raw coefficients. */
     private boolean normalized;
@@ -118,11 +121,12 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         this.readComplete               = false;
         this.ae                         = Double.NaN;
         this.mu                         = Double.NaN;
+        this.flattener                  = null;
         this.rawC                       = null;
         this.rawS                       = null;
         this.normalized                 = false;
         this.tideSystem                 = TideSystem.UNKNOWN;
-        this.timeScale = timeScale;
+        this.timeScale                  = timeScale;
     }
 
     /** Get the regular expression for supported files names.
@@ -232,14 +236,33 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     /** Set the tesseral-sectorial coefficients matrix.
      * @param rawNormalized if true, raw coefficients are normalized
      * @param c raw tesseral-sectorial coefficients matrix
-     * (a reference to the array will be stored)
      * @param s raw tesseral-sectorial coefficients matrix
-     * (a reference to the array will be stored)
      * @param name name of the file (or zip entry)
+     * @deprecated as of 11.1, replaced by {@link #setRawCoefficients(boolean,
+     * Flattener, double[], double[], String)}
      */
+    @Deprecated
     protected void setRawCoefficients(final boolean rawNormalized,
                                       final double[][] c, final double[][] s,
                                       final String name) {
+        setRawCoefficients(rawNormalized, buildFlattener(c),
+                           buildFlattener(c).flatten(c), buildFlattener(s).flatten(s),
+                           name);
+    }
+
+    /** Set the tesseral-sectorial coefficients matrix.
+     * @param rawNormalized if true, raw coefficients are normalized
+     * @param f converter from triangular to flat form
+     * @param c raw tesseral-sectorial coefficients matrix
+     * @param s raw tesseral-sectorial coefficients matrix
+     * @param name name of the file (or zip entry)
+     * @since 11.1
+     */
+    protected void setRawCoefficients(final boolean rawNormalized, final Flattener f,
+                                      final double[] c, final double[] s,
+                                      final String name) {
+
+        this.flattener = f;
 
         // normalization indicator
         normalized = rawNormalized;
@@ -249,64 +272,64 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         // section 2.6 Harmonics of Lower Degree.
         // All S_i,0 are irrelevant because they are multiplied by zero.
         // C0,0 is 1, the central part, since all coefficients are normalized by GM.
-        setIfUnset(c, 0, 0, 1);
-        setIfUnset(s, 0, 0, 0);
-        // C1,0, C1,1, and S1,1 are the x,y,z coordinates of the center of mass,
-        // which are 0 since all coefficients are given in an Earth centered frame
-        setIfUnset(c, 1, 0, 0);
-        setIfUnset(s, 1, 0, 0);
-        setIfUnset(c, 1, 1, 0);
-        setIfUnset(s, 1, 1, 0);
+        setIfUnset(c, flattener.index(0, 0), 1);
+        setIfUnset(s, flattener.index(0, 0), 0);
+
+        if (flattener.getDegree() >= 1) {
+            // C1,0, C1,1, and S1,1 are the x,y,z coordinates of the center of mass,
+            // which are 0 since all coefficients are given in an Earth centered frame
+            setIfUnset(c, flattener.index(1, 0), 0);
+            setIfUnset(s, flattener.index(1, 0), 0);
+            if (flattener.getOrder() >= 1) {
+                setIfUnset(c, flattener.index(1, 1), 0);
+                setIfUnset(s, flattener.index(1, 1), 0);
+            }
+        }
 
         // cosine part
-        for (int i = 0; i < c.length; ++i) {
-            for (int j = 0; j < c[i].length; ++j) {
-                if (Double.isNaN(c[i][j])) {
+        for (int i = 0; i <= flattener.getDegree(); ++i) {
+            for (int j = 0; j <= FastMath.min(i, flattener.getOrder()); ++j) {
+                if (Double.isNaN(c[flattener.index(i, j)])) {
                     throw new OrekitException(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
                                               'C', i, j, name);
                 }
             }
         }
-        rawC = c;
+        rawC = c.clone();
 
         // sine part
-        for (int i = 0; i < s.length; ++i) {
-            for (int j = 0; j < s[i].length; ++j) {
-                if (Double.isNaN(s[i][j])) {
+        for (int i = 0; i <= flattener.getDegree(); ++i) {
+            for (int j = 0; j <= FastMath.min(i, flattener.getOrder()); ++j) {
+                if (Double.isNaN(s[flattener.index(i, j)])) {
                     throw new OrekitException(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
                                               'S', i, j, name);
                 }
             }
         }
-        rawS = s;
+        rawS = s.clone();
 
     }
 
     /**
      * Set a coefficient if it has not been set already.
      * <p>
-     * If {@code array[i][j]} is 0 or NaN this method sets it to {@code value} and returns
-     * {@code true}. Otherwise the original value of {@code array[i][j]} is preserved and
+     * If {@code array[i]} is 0 or NaN this method sets it to {@code value} and returns
+     * {@code true}. Otherwise the original value of {@code array[i]} is preserved and
      * this method return {@code false}.
      * <p>
-     * If {@code array[i][j]} does not exist then this method returns {@code false}.
+     * If {@code array[i]} does not exist then this method returns {@code false}.
      *
      * @param array the coefficient array.
-     * @param i     degree, the first index to {@code array}.
-     * @param j     order, the second index to {@code array}.
+     * @param i     index in array.
      * @param value the new value to set.
      * @return {@code true} if the coefficient was set to {@code value}, {@code false} if
      * the coefficient was not set to {@code value}. A {@code false} return indicates the
      * coefficient has previously been set to a non-NaN, non-zero value.
      */
-    private boolean setIfUnset(final double[][] array,
-                               final int i,
-                               final int j,
-                               final double value) {
-        if (array.length > i && array[i].length > j &&
-                (Double.isNaN(array[i][j]) || Precision.equals(array[i][j], 0.0, 0))) {
+    private boolean setIfUnset(final double[] array, final int i, final double value) {
+        if (array.length > i && (Double.isNaN(array[i]) || Precision.equals(array[i], 0.0, 0))) {
             // the coefficient was not already initialized
-            array[i][j] = value;
+            array[i] = value;
             return true;
         } else {
             return false;
@@ -318,7 +341,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @since 6.0
      */
     public int getMaxAvailableDegree() {
-        return rawC.length - 1;
+        return flattener.getDegree();
     }
 
     /** Get the maximal order available in the last file parsed.
@@ -326,7 +349,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @since 6.0
      */
     public int getMaxAvailableOrder() {
-        return rawC[rawC.length - 1].length - 1;
+        return flattener.getOrder();
     }
 
     /** {@inheritDoc} */
@@ -344,6 +367,33 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      */
     public abstract RawSphericalHarmonicsProvider getProvider(boolean wantNormalized, int degree, int order);
 
+    /** Get a time-independent provider containing base harmonics coefficients.
+     * <p>
+     * Beware that some coeefficients may be missing here, if they are managed as time-dependent
+     * piecewise models (as in ICGEM V2.0).
+     * </p>
+     * @param wantNormalized if true, the raw provider must provide normalized coefficients,
+     * otherwise it will provide un-normalized coefficients
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return a new provider, with no time-dependent parts
+     * @see #getProvider(boolean, int, int)
+     * @since 11.1
+     */
+    protected ConstantSphericalHarmonics getBaseProvider(final boolean wantNormalized,
+                                                         final int degree, final int order) {
+
+        if (!readComplete) {
+            throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
+        }
+
+        final Flattener truncatedFlattener = new Flattener(degree, order);
+        return new ConstantSphericalHarmonics(ae, mu, tideSystem, truncatedFlattener,
+                                              rescale(1.0, wantNormalized, truncatedFlattener, flattener, rawC),
+                                              rescale(1.0, wantNormalized, truncatedFlattener, flattener, rawS));
+
+    }
+
     /** Get a time-independent provider for read spherical harmonics coefficients.
      * @param wantNormalized if true, the raw provider must provide normalized coefficients,
      * otherwise it will provide un-normalized coefficients
@@ -352,31 +402,21 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @return a new provider, with no time-dependent parts
      * @see #getProvider(boolean, int, int)
      * @since 6.0
+     * @deprecated as of 11.1, not used anymore
      */
+    @Deprecated
     protected ConstantSphericalHarmonics getConstantProvider(final boolean wantNormalized,
                                                              final int degree, final int order) {
+        return getBaseProvider(wantNormalized, degree, order);
+    }
 
-        if (!readComplete) {
-            throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
-        }
-
-        if (degree >= rawC.length) {
-            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,
-                                      degree, rawC.length - 1);
-        }
-
-        if (order >= rawC[rawC.length - 1].length) {
-            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD,
-                                      order, rawC[rawC.length - 1].length);
-        }
-
-        // fix normalization
-        final double[][] truncatedC = buildTriangularArray(degree, order, 0.0);
-        final double[][] truncatedS = buildTriangularArray(degree, order, 0.0);
-        rescale(1.0, normalized, rawC, rawS, wantNormalized, truncatedC, truncatedS);
-
-        return new ConstantSphericalHarmonics(ae, mu, tideSystem, truncatedC, truncatedS);
-
+    /** Get a flattener for a triangular array.
+     * @param triangular triangular array to flatten
+     * @return flattener suited for triangular array dimensions
+     * @since 11.1
+     */
+    private static Flattener buildFlattener(final double[][] triangular) {
+        return new Flattener(triangular.length - 1, triangular[triangular.length - 1].length - 1);
     }
 
     /** Build a coefficients triangular array.
@@ -384,13 +424,27 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param order array order
      * @param value initial value to put in array elements
      * @return built array
+     * @deprecated as of 11.1, replaced by {@link #buildFlatArray(Flattener, double)}
      */
+    @Deprecated
     protected static double[][] buildTriangularArray(final int degree, final int order, final double value) {
         final int rows = degree + 1;
         final double[][] array = new double[rows][];
         for (int k = 0; k < array.length; ++k) {
             array[k] = buildRow(k, order, value);
         }
+        return array;
+    }
+
+    /** Build a coefficients array in flat form.
+     * @param flattener converter from triangular to flat form
+     * @param value initial value to put in array elements
+     * @return built array
+     * @since 11.1
+     */
+    protected static double[] buildFlatArray(final Flattener flattener, final double value) {
+        final double[] array = new double[flattener.arraySize()];
+        Arrays.fill(array, value);
         return array;
     }
 
@@ -422,7 +476,9 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param degree degree required to be present
      * @param order order required to be present
      * @param value initial value to put in list elements
+     * @deprecated as of 11.1, not used anymore
      */
+    @Deprecated
     protected void extendListOfLists(final List<List<Double>> list, final int degree, final int order,
                                      final double value) {
         for (int i = list.size(); i <= degree; ++i) {
@@ -438,7 +494,9 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     /** Convert a list of list into an array.
      * @param list list of lists of coefficients
      * @return a new array
+     * @deprecated as of 11.1, not used anymore
      */
+    @Deprecated
     protected double[][] toArray(final List<List<Double>> list) {
         final double[][] array = new double[list.size()][];
         for (int i = 0; i < array.length; ++i) {
@@ -457,7 +515,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param j second index in the list
      * @param cName name of the coefficient
      * @param name name of the file
+     * @deprecated as of 11.1, replaced by {@link #parseCoefficient(String,
+     * Flattener, double[], int, int, String, String)}
      */
+    @Deprecated
     protected void parseCoefficient(final String field, final List<List<Double>> list,
                                     final int i, final int j,
                                     final String cName, final String name) {
@@ -479,7 +540,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param j second index in the list
      * @param cName name of the coefficient
      * @param name name of the file
+     * @deprecated as of 11.1, replaced by {@link #parseCoefficient(String,
+     * Flattener, double[], int, int, String, String)}
      */
+    @Deprecated
     protected void parseCoefficient(final String field, final double[][] array,
                                     final int i, final int j,
                                     final String cName, final String name) {
@@ -494,15 +558,42 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         }
     }
 
+    /** Parse a coefficient.
+     * @param field text field to parse
+     * @param f converter from triangular to flat form
+     * @param array array where to put the coefficient
+     * @param i first index in the list
+     * @param j second index in the list
+     * @param cName name of the coefficient
+     * @param name name of the file
+     * @since 11.1
+     */
+    protected void parseCoefficient(final String field, final Flattener f,
+                                    final double[] array, final int i, final int j,
+                                    final String cName, final String name) {
+        final int    index    = f.index(i, j);
+        final double value    = parseDouble(field);
+        final double oldValue = array[index];
+        if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 0)) {
+            // the coefficient was not already initialized
+            array[index] = value;
+        } else {
+            throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
+                                      name, i, j, name);
+        }
+    }
+
     /** Rescale coefficients arrays.
      * @param scale general scaling factor to apply to all elements
      * @param normalizedOrigin if true, the origin coefficients are normalized
-     * @param originC cosine part of the origina coefficients
+     * @param originC cosine part of the original coefficients
      * @param originS sine part of the origin coefficients
      * @param wantNormalized if true, the rescaled coefficients must be normalized
      * @param rescaledC cosine part of the rescaled coefficients to fill in (may be the originC array)
      * @param rescaledS sine part of the rescaled coefficients to fill in (may be the originS array)
+     * @deprecated as of 11.1, replaced by {@link #rescale(double, boolean, Flattener, Flattener, double[])}
      */
+    @Deprecated
     protected static void rescale(final double scale,
                                   final boolean normalizedOrigin, final double[][] originC,
                                   final double[][] originS, final boolean wantNormalized,
@@ -562,6 +653,118 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         }
     }
 
+    /** Rescale coefficients arrays.
+     * <p>
+     * The normalized/unnormalized nature of original coefficients is inherited from previous parsing.
+     * </p>
+     * @param scale general scaling factor to apply to all elements
+     * @param wantNormalized if true, the rescaled coefficients must be normalized,
+     * otherwise they must be un-normalized
+     * @param rescaledFlattener converter from triangular to flat form
+     * @param originalFlattener converter from triangular to flat form
+     * @param original original coefficients
+     * @return rescaled coefficients
+     * @since 11.1
+     */
+    protected double[] rescale(final double scale, final boolean wantNormalized, final Flattener rescaledFlattener,
+                               final Flattener originalFlattener, final double[] original) {
+
+        if (rescaledFlattener.getDegree() > originalFlattener.getDegree()) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,
+                                      rescaledFlattener.getDegree(), flattener.getDegree());
+        }
+
+        if (rescaledFlattener.getOrder() > originalFlattener.getOrder()) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD,
+                                      rescaledFlattener.getOrder(), flattener.getOrder());
+        }
+
+        // scaling and normalization factors
+        final FactorsGenerator generator;
+        if (wantNormalized == normalized) {
+            // the parsed coefficients already match the specified normalization
+            generator = (n, m) -> scale;
+        } else {
+            // we need to normalize/unnormalize parsed coefficients
+            final double[][] unnormalizationFactors =
+                            GravityFieldFactory.getUnnormalizationFactors(rescaledFlattener.getDegree(),
+                                                                          rescaledFlattener.getOrder());
+            generator = wantNormalized ?
+                (n, m) -> scale / unnormalizationFactors[n][m] :
+                (n, m) -> scale * unnormalizationFactors[n][m];
+        }
+
+        // perform rescaling
+        final double[] rescaled = buildFlatArray(rescaledFlattener, 0.0);
+        for (int n = 0; n <= rescaledFlattener.getDegree(); ++n) {
+            for (int m = 0; m <= FastMath.min(n, rescaledFlattener.getOrder()); ++m) {
+                final int    rescaledndex  = rescaledFlattener.index(n, m);
+                final int    originalndex  = originalFlattener.index(n, m);
+                rescaled[rescaledndex] = original[originalndex] * generator.factor(n, m);
+            }
+        }
+
+        return rescaled;
+
+    }
+
+    /** Rescale coefficients arrays.
+     * <p>
+     * The normalized/unnormalized nature of original coefficients is inherited from previous parsing.
+     * </p>
+     * @param wantNormalized if true, the rescaled coefficients must be normalized,
+     * otherwise they must be un-normalized
+     * @param rescaledFlattener converter from triangular to flat form
+     * @param originalFlattener converter from triangular to flat form
+     * @param original original coefficients
+     * @return rescaled coefficients
+     * @since 11.1
+     */
+    protected TimeDependentHarmonic[] rescale(final boolean wantNormalized, final Flattener rescaledFlattener,
+                                              final Flattener originalFlattener, final TimeDependentHarmonic[] original) {
+
+        if (rescaledFlattener.getDegree() > originalFlattener.getDegree()) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,
+                                      rescaledFlattener.getDegree(), flattener.getDegree());
+        }
+
+        if (rescaledFlattener.getOrder() > originalFlattener.getOrder()) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD,
+                                      rescaledFlattener.getOrder(), flattener.getOrder());
+        }
+
+        // scaling and normalization factors
+        final FactorsGenerator generator;
+        if (wantNormalized == normalized) {
+            // the parsed coefficients already match the specified normalization
+            generator = (n, m) -> 1.0;
+        } else {
+            // we need to normalize/unnormalize parsed coefficients
+            final double[][] unnormalizationFactors =
+                            GravityFieldFactory.getUnnormalizationFactors(rescaledFlattener.getDegree(),
+                                                                          rescaledFlattener.getOrder());
+            generator = wantNormalized ?
+                (n, m) -> 1.0 / unnormalizationFactors[n][m] :
+                (n, m) -> unnormalizationFactors[n][m];
+        }
+
+        // perform rescaling
+        final TimeDependentHarmonic[] rescaled = new TimeDependentHarmonic[rescaledFlattener.arraySize()];
+        for (int n = 0; n <= rescaledFlattener.getDegree(); ++n) {
+            for (int m = 0; m <= FastMath.min(n, rescaledFlattener.getOrder()); ++m) {
+                final int originalndex = originalFlattener.index(n, m);
+                if (original[originalndex] != null) {
+                    final int    rescaledndex = rescaledFlattener.index(n, m);
+                    final double factor       = generator.factor(n, m);
+                    rescaled[rescaledndex]    = new TimeDependentHarmonic(factor, original[originalndex]);
+                }
+            }
+        }
+
+        return rescaled;
+
+    }
+
     /**
      * Create a date from components. Assumes the time part is noon.
      *
@@ -569,7 +772,31 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @return date.
      */
     protected AbsoluteDate toDate(final DateComponents components) {
-        return new AbsoluteDate(components, TimeComponents.H12, timeScale);
+        return toDate(components, TimeComponents.H12);
+    }
+
+    /**
+     * Create a date from components.
+     *
+     * @param dc dates components.
+     * @param tc time components
+     * @return date.
+     * @since 11.1
+     */
+    protected AbsoluteDate toDate(final DateComponents dc, final TimeComponents tc) {
+        return new AbsoluteDate(dc, tc, timeScale);
+    }
+
+    /** Generator for normalization/unnormalization factors.
+     * @since 11.1
+     */
+    private interface FactorsGenerator {
+        /** Generator the normalization/unnormalization factors.
+         * @param n degree of the gravity field component
+         * @param m order of the gravity field component
+         * @return factor to apply to term
+         */
+        double factor(int n, int m);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.propagation;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -49,6 +50,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -284,6 +286,67 @@ public class PropagatorsParallelizerTest {
         Assert.assertEquals(2, results.size());
         Assert.assertEquals(0.0, results.get(0).getDate().durationFrom(stopDate), 1.0e-15);
         Assert.assertEquals(0.0, results.get(1).getDate().durationFrom(stopDate), 1.0e-15);
+    }
+
+    @Test
+    public void testInternalStepHandler() {
+        final AbsoluteDate startDate =  orbit.getDate();
+        final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
+        List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
+                                                     buildNumerical());
+        final AtomicInteger called0 = new AtomicInteger();
+        propagators.get(0).getMultiplexer().add(interpolator -> called0.set(11));
+        final AtomicInteger called1 = new AtomicInteger();
+        propagators.get(1).getMultiplexer().add(interpolator -> called1.set(22));
+        List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
+                                                                    propagate(startDate, endDate);
+        Assert.assertEquals(2, results.size());
+        Assert.assertEquals(0.0, results.get(0).getDate().durationFrom(endDate), 1.0e-15);
+        Assert.assertEquals(0.0, results.get(1).getDate().durationFrom(endDate), 1.0e-15);
+        Assert.assertEquals(11, called0.get());
+        Assert.assertEquals(22, called1.get());
+    }
+
+    @Test
+    public void testIntegrableGenerator() {
+        final AbsoluteDate startDate =  orbit.getDate();
+        final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
+        final NumericalPropagator p0 = buildNumerical();
+        final NumericalPropagator p1 = buildNumerical();
+        final String name = "generator";
+        final double base0 = 2.0e-3;
+        final double base1 = 2.5e-3;
+        p0.addAdditionalDerivativesProvider(new Exponential(name, base0));
+        p0.setInitialState(p0.getInitialState().addAdditionalState(name, 1.0));
+        p1.addAdditionalDerivativesProvider(new Exponential(name, base1));
+        p1.setInitialState(p1.getInitialState().addAdditionalState(name, 1.0));
+        List<SpacecraftState> results = new PropagatorsParallelizer(Arrays.asList(p0, p1), interpolators -> {}).
+                                        propagate(startDate, endDate);
+        double expected0 = FastMath.exp(base0 * endDate.durationFrom(startDate));
+        double expected1 = FastMath.exp(base1 * endDate.durationFrom(startDate));
+        Assert.assertEquals(expected0, results.get(0).getAdditionalState(name)[0], 6.0e-9 * expected0);
+        Assert.assertEquals(expected1, results.get(1).getAdditionalState(name)[0], 5.0e-8 * expected1);
+    }
+
+    private static class Exponential implements AdditionalDerivativesProvider {
+        final String name;
+        final double base;
+        Exponential(final String name, final double base) {
+            this.name = name;
+            this.base = base;
+        }
+        public String getName() {
+            return name;
+        }
+        public boolean yield(final SpacecraftState state) {
+            return !state.hasAdditionalState(name);
+        }
+        public double[] derivatives(final SpacecraftState state) {
+            return new double[] { base * state.getAdditionalState(name)[0] };
+        }
+        public int getDimension() {
+            return 1;
+        }
     }
 
     private EcksteinHechlerPropagator buildEcksteinHechler() {

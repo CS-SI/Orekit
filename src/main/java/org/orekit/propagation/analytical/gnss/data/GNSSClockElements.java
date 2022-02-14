@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-import org.orekit.propagation.analytical.gnss.ClockCorrectionsProvider;
 import org.orekit.time.TimeStamped;
 
-/**This interface provides the minimal set of orbital elements needed by the {@link ClockCorrectionsProvider}.
+/**This interface provides the minimal set of orbital elements needed by the
+ * {@link org.orekit.propagation.analytical.gnss.ClockCorrectionsProvider}.
 *
 * @author Pascal Parraud
 * @since 11.0

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,8 @@ package org.orekit.propagation.numerical;
 import java.lang.reflect.Array;
 
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
@@ -74,7 +74,7 @@ import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
-import org.orekit.propagation.integration.FieldAdditionalEquations;
+import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -154,8 +154,7 @@ public class FieldNumericalPropagatorTest {
         doTestEventAtBeginningOfEphemeris(Decimal64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>, D extends FieldEventDetector<T>> void doTestEventAtBeginningOfEphemeris(Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>, D extends FieldEventDetector<T>> void doTestEventAtBeginningOfEphemeris(Field<T> field) {
 
         T zero = field.getZero();
         FieldNumericalPropagator<T>  propagator = createPropagator(field);
@@ -283,6 +282,9 @@ public class FieldNumericalPropagatorTest {
         FieldAbsoluteDate<T> date = endDate.shiftedBy(-0.11);
         Assert.assertEquals(
                 ephemeris.propagate(date).getDate().durationFrom(date).getReal(), 0, 0);
+
+        Assert.assertTrue(prop.getAdditionalDerivativesProviders().isEmpty());
+
     }
 
     @Test
@@ -872,27 +874,37 @@ public class FieldNumericalPropagatorTest {
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
-        propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
 
             public String getName() {
                 return "linear";
             }
 
-            public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot) {
-                pDot[0] = zero.add(1.0);
-                return MathArrays.buildArray(field, 7);
+            public int getDimension() {
+                return 1;
+            }
+
+            public T[] derivatives(FieldSpacecraftState<T> s) {
+                T[] pDot = MathArrays.buildArray(field, 1);
+                pDot[0] = field.getOne();
+                return pDot;
             }
         });
         try {
-            propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+            propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
 
                 public String getName() {
                     return "linear";
                 }
 
-                public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot) {
-                    pDot[0] = zero.add(1.0);
-                    return MathArrays.buildArray(field, 7);
+                public int getDimension() {
+                    return 1;
+                }
+
+                public T[] derivatives(FieldSpacecraftState<T> s) {
+                    T[] pDot = MathArrays.buildArray(field, 1);
+                    pDot[0] = field.getOne();
+                    return pDot;
                 }
             });
             Assert.fail("an exception should have been thrown");
@@ -978,15 +990,20 @@ public class FieldNumericalPropagatorTest {
         FieldNumericalPropagator<T> propagator = createPropagator(field);
 
 
-        propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
 
             public String getName() {
                 return "linear";
             }
 
-            public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot) {
+            public int getDimension() {
+                return 1;
+            }
+
+            public T[] derivatives(FieldSpacecraftState<T> s) {
+                T[] pDot = MathArrays.buildArray(field, 1);
                 pDot[0] = field.getOne();
-                return null;
+                return pDot;
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear",
@@ -1122,8 +1139,7 @@ public class FieldNumericalPropagatorTest {
         doTestEphemerisAdditionalState(Decimal64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>>  void doTestEphemerisAdditionalState(final Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>>  void doTestEphemerisAdditionalState(final Field<T> field) {
 
         // Propagation of the initial at t + dt
         final double dt = -3200;
@@ -1141,13 +1157,17 @@ public class FieldNumericalPropagatorTest {
                 return a;
             }
         });
-        propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
             public String getName() {
                 return "extra";
             }
-            public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot) {
-                pDot[0] = field.getZero().add(rate);
-                return null;
+            public int getDimension() {
+                return 1;
+            }
+            public T[] derivatives(FieldSpacecraftState<T> s) {
+                T[] pDot = MathArrays.buildArray(field, 1);
+                pDot[0] = field.getZero().newInstance(rate);
+                return pDot;
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", field.getZero().add(1.5)));
@@ -1173,7 +1193,7 @@ public class FieldNumericalPropagatorTest {
 
         double shift = -60;
         FieldSpacecraftState<T> s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assert.assertEquals(2, s.getAdditionalStates().size());
+        Assert.assertEquals(2, s.getAdditionalStatesValues().size());
         Assert.assertTrue(s.hasAdditionalState("squaredA"));
         Assert.assertTrue(s.hasAdditionalState("extra"));
         Assert.assertEquals(s.getA().multiply(s.getA()).getReal(), s.getAdditionalState("squaredA")[0].getReal(), 1.0e-10);

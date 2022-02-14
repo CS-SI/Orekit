@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -66,14 +64,26 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     /** Drift coefficients labels. */
     private static final String GRDOTA = "GRDOTA";
 
+    /** Flag for Earth data. */
+    private static final int EARTH = 0x1;
+
+    /** Flag for degree/order. */
+    private static final int LIMITS = 0x2;
+
+    /** Flag for coefficients. */
+    private static final int COEFFS = 0x4;
+
     /** Reference date. */
     private AbsoluteDate referenceDate;
 
+    /** Converter from triangular to flat form. */
+    private Flattener dotFlattener;
+
     /** Secular drift of the cosine coefficients. */
-    private final List<List<Double>> cDot;
+    private double[] cDot;
 
     /** Secular drift of the sine coefficients. */
-    private final List<List<Double>> sDot;
+    private double[] sDot;
 
     /** Simple constructor.
      *
@@ -99,9 +109,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                            final boolean missingCoefficientsAllowed,
                            final TimeScale timeScale) {
         super(supportedNames, missingCoefficientsAllowed, timeScale);
-        referenceDate = null;
-        cDot = new ArrayList<>();
-        sDot = new ArrayList<>();
+        reset();
     }
 
     /** {@inheritDoc} */
@@ -109,21 +117,21 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         throws IOException, ParseException, OrekitException {
 
         // reset the indicator before loading any data
-        setReadComplete(false);
-        referenceDate = null;
-        cDot.clear();
-        sDot.clear();
+        reset();
 
         boolean    normalized = false;
         TideSystem tideSystem = TideSystem.UNKNOWN;
 
-        boolean okEarth  = false;
-        boolean okSHM    = false;
-        boolean okCoeffs = false;
-        double[][] c     = null;
-        double[][] s     = null;
-        String line      = null;
-        int lineNumber   = 1;
+        Flattener flattener  = null;
+        int       dotDegree  = -1;
+        int       dotOrder   = -1;
+        int       flags      = 0;
+        double[]  c0         = null;
+        double[]  s0         = null;
+        double[]  c1         = null;
+        double[]  s1         = null;
+        String    line       = null;
+        int       lineNumber = 1;
         try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             line = r.readLine();
             if (line != null &&
@@ -138,7 +146,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                         if ("EARTH".equals(tab[0])) {
                             setMu(parseDouble(tab[1]));
                             setAe(parseDouble(tab[2]));
-                            okEarth = true;
+                            flags |= EARTH;
                         }
 
                         // initialize the arrays
@@ -146,8 +154,11 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
 
                             final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(tab[1]));
                             final int order  = FastMath.min(getMaxParseOrder(), degree);
-                            c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
-                            s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                            flattener = new Flattener(degree, order);
+                            c0 = buildFlatArray(flattener, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                            s0 = buildFlatArray(flattener, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                            c1 = buildFlatArray(flattener, 0.0);
+                            s1 = buildFlatArray(flattener, 0.0);
                             final String lowerCaseLine = line.toLowerCase(Locale.US);
                             normalized = lowerCaseLine.contains("fully normalized");
                             if (lowerCaseLine.contains("exclusive permanent tide")) {
@@ -155,21 +166,21 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                             } else {
                                 tideSystem = TideSystem.UNKNOWN;
                             }
-                            okSHM = true;
+                            flags |= LIMITS;
                         }
 
                         // fill the arrays
                         if (GRCOEF.equals(line.substring(0, 6)) || GRCOF2.equals(tab[0]) || GRDOTA.equals(tab[0])) {
                             final int i = Integer.parseInt(tab[1]);
                             final int j = Integer.parseInt(tab[2]);
-                            if (i < c.length && j < c[i].length) {
+                            if (flattener.withinRange(i, j)) {
                                 if (GRDOTA.equals(tab[0])) {
 
                                     // store the secular drift coefficients
-                                    extendListOfLists(cDot, i, j, 0.0);
-                                    extendListOfLists(sDot, i, j, 0.0);
-                                    parseCoefficient(tab[3], cDot, i, j, "Cdot", name);
-                                    parseCoefficient(tab[4], sDot, i, j, "Sdot", name);
+                                    parseCoefficient(tab[3], flattener, c1, i, j, "Cdot", name);
+                                    parseCoefficient(tab[4], flattener, s1, i, j, "Sdot", name);
+                                    dotDegree = FastMath.max(dotDegree, i);
+                                    dotOrder  = FastMath.max(dotOrder,  j);
 
                                     // check the reference date (format yyyymmdd)
                                     final DateComponents localRef = new DateComponents(Integer.parseInt(tab[7].substring(0, 4)),
@@ -188,12 +199,12 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                 } else {
 
                                     // store the constant coefficients
-                                    parseCoefficient(tab[3], c, i, j, "C", name);
-                                    parseCoefficient(tab[4], s, i, j, "S", name);
-                                    okCoeffs = true;
+                                    parseCoefficient(tab[3], flattener, c0, i, j, "C", name);
+                                    parseCoefficient(tab[4], flattener, s0, i, j, "S", name);
 
                                 }
                             }
+                            flags |= COEFFS;
                         }
 
                     }
@@ -204,24 +215,48 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                       lineNumber, name, line);
         }
 
-        if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {
-            // ensure at least the (0, 0) element is properly set
-            if (Precision.equals(c[0][0], 0.0, 0)) {
-                c[0][0] = 1.0;
-            }
-        }
-
-        if (!(okEarth && okSHM && okCoeffs)) {
+        if (flags != (EARTH | LIMITS | COEFFS)) {
             String loaderName = getClass().getName();
             loaderName = loaderName.substring(loaderName.lastIndexOf('.') + 1);
             throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
                                       name, loaderName);
         }
 
-        setRawCoefficients(normalized, c, s, name);
+        if (missingCoefficientsAllowed()) {
+            // ensure at least the (0, 0) element is properly set
+            if (Precision.equals(c0[flattener.index(0, 0)], 0.0, 0)) {
+                c0[flattener.index(0, 0)] = 1.0;
+            }
+        }
+
+        // resize secular drift arrays
+        if (dotDegree >= 0) {
+            dotFlattener = new Flattener(dotDegree, dotOrder);
+            cDot         = new double[dotFlattener.arraySize()];
+            sDot         = new double[dotFlattener.arraySize()];
+            for (int n = 0; n <= dotDegree; ++n) {
+                for (int m = 0; m <= FastMath.min(n, dotOrder); ++m) {
+                    cDot[dotFlattener.index(n, m)] = c1[flattener.index(n, m)];
+                    sDot[dotFlattener.index(n, m)] = s1[flattener.index(n, m)];
+                }
+            }
+        }
+
+        setRawCoefficients(normalized, flattener, c0, s0, name);
         setTideSystem(tideSystem);
         setReadComplete(true);
 
+    }
+
+    /** Reset instance before read.
+     * @since 11.1
+     */
+    private void reset() {
+        setReadComplete(false);
+        referenceDate = null;
+        dotFlattener  = null;
+        cDot          = null;
+        sDot          = null;
     }
 
     /** Get a provider for read spherical harmonics coefficients.
@@ -240,15 +275,17 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                                      final int degree, final int order) {
 
         // get the constant part
-        RawSphericalHarmonicsProvider provider = getConstantProvider(wantNormalized, degree, order);
+        RawSphericalHarmonicsProvider provider = getBaseProvider(wantNormalized, degree, order);
 
-        if (!cDot.isEmpty()) {
+        if (dotFlattener != null) {
 
             // add the secular trend layer
-            final double[][] cArray = toArray(cDot);
-            final double[][] sArray = toArray(sDot);
-            rescale(1.0 / Constants.JULIAN_YEAR, true, cArray, sArray, wantNormalized, cArray, sArray);
-            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, cArray, sArray);
+            final double scale = 1.0 / Constants.JULIAN_YEAR;
+            final Flattener rescaledFlattener = new Flattener(FastMath.min(degree, dotFlattener.getDegree()),
+                                                              FastMath.min(order, dotFlattener.getOrder()));
+            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, rescaledFlattener,
+                                                          rescale(scale, wantNormalized, rescaledFlattener, dotFlattener, cDot),
+                                                          rescale(scale, wantNormalized, rescaledFlattener, dotFlattener, sDot));
 
         }
 

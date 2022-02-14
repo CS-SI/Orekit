@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,6 +41,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+@Deprecated
 public class TLEPartialDerivativesTest {
     
     
@@ -142,10 +144,10 @@ public class TLEPartialDerivativesTest {
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
-        double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
         propagator.resetInitialState(initState);
-        mapper.analyticalDerivatives(propagator.propagate(target));
-        mapper.getStateJacobian(initState, dYdY0);
+        final SpacecraftState endState = propagator.propagate(target);
+        mapper.setReferenceState(endState);
+        RealMatrix dYdY0 = mapper.getStateTransitionMatrix(endState);
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -175,7 +177,7 @@ public class TLEPartialDerivativesTest {
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
-                    double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
+                    double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
                     Assert.assertEquals(0, error, tolerance);
                 }
             }
@@ -203,9 +205,8 @@ public class TLEPartialDerivativesTest {
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
-        double[][] dYdP =  new double[TLEJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
-        mapper.analyticalDerivatives(endState);
-        mapper.getParametersJacobian(initialState, dYdP);
+        mapper.setReferenceState(endState);
+        RealMatrix dYdP = mapper.getParametersJacobian(endState);
 
         // compute reference Jacobian using finite differences
         
@@ -244,7 +245,7 @@ public class TLEPartialDerivativesTest {
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
        
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(dYdPRef[i][0], dYdP[i][0], FastMath.abs(tolerance));
+            Assert.assertEquals(dYdPRef[i][0], dYdP.getEntry(i, 0), FastMath.abs(tolerance));
         }
 
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -237,12 +237,12 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 76.46;
+        final double distanceAccuracy = 76.40;
         final double velocityAccuracy = 1.58e-1;
 
         //test on the convergence
-        final int numberOfIte  = 6;
-        final int numberOfEval = 6;
+        final int numberOfIte  = 7;
+        final int numberOfEval = 7;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -259,7 +259,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test on statistic for the range residuals
         final long nbRange = 95;
-        final double[] RefStatRange = { -29.016, 59.104, 0.0, 14.968 };
+        final double[] RefStatRange = { -29.030, 59.098, 0.0, 14.968 };
         Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);

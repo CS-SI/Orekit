@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class stores sequentially generated orbital parameters for
@@ -94,7 +95,7 @@ public class IntegratedEphemeris
     private DenseOutputModel model;
 
     /** Unmanaged additional states that must be simply copied. */
-    private final Map<String, double[]> unmanaged;
+    private final DoubleArrayDictionary unmanaged;
 
     /** Creates a new instance of IntegratedEphemeris.
      * @param startDate Start date of the integration (can be minDate or maxDate)
@@ -106,12 +107,39 @@ public class IntegratedEphemeris
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
+     * @deprecated as of 11.1, replaced by {@link #IntegratedEphemeris(AbsoluteDate,
+     * AbsoluteDate, AbsoluteDate, StateMapper, PropagationType, DenseOutputModel,
+     * DoubleArrayDictionary, List, String[])}
      */
+    @Deprecated
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                final StateMapper mapper, final PropagationType type,
                                final DenseOutputModel model,
                                final Map<String, double[]> unmanaged,
+                               final List<AdditionalStateProvider> providers,
+                               final String[] equations) {
+        this(startDate, minDate, maxDate, mapper, type, model,
+             new DoubleArrayDictionary(unmanaged), providers, equations);
+    }
+
+    /** Creates a new instance of IntegratedEphemeris.
+     * @param startDate Start date of the integration (can be minDate or maxDate)
+     * @param minDate first date of the range
+     * @param maxDate last date of the range
+     * @param mapper mapper between raw double components and spacecraft state
+     * @param type type of orbit to output (mean or osculating)
+     * @param model underlying raw mathematical model
+     * @param unmanaged unmanaged additional states that must be simply copied
+     * @param providers providers for pre-integrated states
+     * @param equations names of additional equations
+     * @since 11.1
+     */
+    public IntegratedEphemeris(final AbsoluteDate startDate,
+                               final AbsoluteDate minDate, final AbsoluteDate maxDate,
+                               final StateMapper mapper, final PropagationType type,
+                               final DenseOutputModel model,
+                               final DoubleArrayDictionary unmanaged,
                                final List<AdditionalStateProvider> providers,
                                final String[] equations) {
 
@@ -132,7 +160,7 @@ public class IntegratedEphemeris
 
         // set up providers to map the final elements of the model array to additional states
         for (int i = 0; i < equations.length; ++i) {
-            addAdditionalStateProvider(new LocalProvider(equations[i], i));
+            addAdditionalStateProvider(new LocalGenerator(equations[i], i));
         }
 
     }
@@ -167,7 +195,7 @@ public class IntegratedEphemeris
         SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                        os.getPrimaryState(), os.getPrimaryDerivative(),
                                                        type);
-        for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
+        for (DoubleArrayDictionary.Entry initial : unmanaged.getData()) {
             state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }
         return state;
@@ -233,8 +261,8 @@ public class IntegratedEphemeris
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
-    /** Local provider for additional state data. */
-    private class LocalProvider implements AdditionalStateProvider {
+    /** Local generator for additional state data. */
+    private class LocalGenerator implements AdditionalStateProvider {
 
         /** Name of the additional state. */
         private final String name;
@@ -246,7 +274,7 @@ public class IntegratedEphemeris
          * @param name name of the additional state
          * @param index index of the additional state
          */
-        LocalProvider(final String name, final int index) {
+        LocalGenerator(final String name, final int index) {
             this.name  = name;
             this.index = index;
         }

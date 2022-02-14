@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,8 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-/** Unit tests for {@link PartialDerivativesEquations}. */
+/** Unit tests for {@link AbsolutePartialDerivativesEquations}. */
+@Deprecated
 public class AbsolutePartialDerivativesEquationsTest {
 
     /** arbitrary date */
@@ -84,16 +85,12 @@ public class AbsolutePartialDerivativesEquationsTest {
     }
 
     /**
-     * check {@link PartialDerivativesEquations#computeDerivatives(SpacecraftState,
-     * double[])} correctly sets the satellite velocity.
+     * check {@link PartialDerivativesEquations#derivatives(SpacecraftState)} correctly sets the satellite velocity.
      */
     @Test
     public void testComputeDerivativesStateVelocity() {
-        //setup
-        double[] pdot = new double[36];
-
         //action
-        pde.computeDerivatives(state, pdot);
+        pde.derivatives(state);
 
         //verify
         MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));

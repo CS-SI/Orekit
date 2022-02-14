@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -140,13 +140,20 @@ public class EventShifterTest {
 
     @Test
     public void testIncreasingError() {
-        propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 2.0e-9));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-10s increasing", "-10s decreasing", 2.0e-3),
-                                                                      true, -10, -10));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-100s increasing", "-100s decreasing", 3.0e-2),
-                                                                      true, -100, -100));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-1000s increasing", "-1000s decreasing", 5.0),
-                                                                      true, -1000, -1000));
+        final EclipseDetector raw0000 = createRawDetector("raw increasing",    "raw decreasing", 2.0e-9);
+        final EclipseDetector raw0010 = createRawDetector("-10s increasing",   "-10s decreasing", 2.0e-3);
+        final EclipseDetector raw0100 = createRawDetector("-100s increasing",  "-100s decreasing", 3.0e-2);
+        final EclipseDetector raw1000 = createRawDetector("-1000s increasing", "-1000s decreasing", 5.0);
+        final EventShifter<EclipseDetector> shift0010 = new EventShifter<>(raw0010, true,   -10,   -10);
+        final EventShifter<EclipseDetector> shift0100 = new EventShifter<>(raw0100, true,  -100,  -100);
+        final EventShifter<EclipseDetector> shift1000 = new EventShifter<>(raw1000, true, -1000, -1000);
+        Assert.assertSame(raw0010, shift0010.getDetector());
+        Assert.assertSame(raw0100, shift0100.getDetector());
+        Assert.assertSame(raw1000, shift1000.getDetector());
+        propagator.addEventDetector(raw0000);
+        propagator.addEventDetector(shift0010);
+        propagator.addEventDetector(shift0100);
+        propagator.addEventDetector(shift1000);
         propagator.propagate(iniDate.shiftedBy(20100));
 
         // the raw eclipses (not all within the propagation range) are at times:

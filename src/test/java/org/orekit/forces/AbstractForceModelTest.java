@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.forces;
 
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -27,6 +28,7 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
@@ -42,11 +44,10 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
-import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -64,8 +65,7 @@ public abstract class AbstractForceModelTest {
 
     protected void checkParameterDerivative(SpacecraftState state,
                                             ForceModel forceModel, String name,
-                                            double hFactor, double tol)
-        {
+                                            double hFactor, double tol) {
 
         final DSFactory factory11 = new DSFactory(1, 1);
         final Field<DerivativeStructure> field = factory11.getDerivativeField();
@@ -112,8 +112,7 @@ public abstract class AbstractForceModelTest {
 
     protected void checkParameterDerivativeGradient(SpacecraftState state,
                                                     ForceModel forceModel, String name,
-                                                    double hFactor, double tol)
-        {
+                                                    double hFactor, double tol) {
 
         final int freeParameters = 1;
         final Field<Gradient> field = GradientField.getField(freeParameters);
@@ -159,8 +158,7 @@ public abstract class AbstractForceModelTest {
     }
 
     protected FieldSpacecraftState<DerivativeStructure> toDS(final SpacecraftState state,
-                                                             final AttitudeProvider attitudeProvider)
-        {
+                                                             final AttitudeProvider attitudeProvider) {
 
         final Vector3D p = state.getPVCoordinates().getPosition();
         final Vector3D v = state.getPVCoordinates().getVelocity();
@@ -189,8 +187,7 @@ public abstract class AbstractForceModelTest {
     }
 
     protected FieldSpacecraftState<Gradient> toGradient(final SpacecraftState state,
-                                                        final AttitudeProvider attitudeProvider)
-        {
+                                                        final AttitudeProvider attitudeProvider) {
 
         final Vector3D p = state.getPVCoordinates().getPosition();
         final Vector3D v = state.getPVCoordinates().getVelocity();
@@ -220,8 +217,7 @@ public abstract class AbstractForceModelTest {
 
     protected void checkStateJacobianVsFiniteDifferences(final  SpacecraftState state0, final ForceModel forceModel,
                                                          final AttitudeProvider provider, final double dP,
-                                                         final double checkTolerance, final boolean print)
-        {
+                                                         final double checkTolerance, final boolean print) {
 
         double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters()).toArray(),
@@ -318,8 +314,7 @@ public abstract class AbstractForceModelTest {
 
     protected void checkStateJacobianVsFiniteDifferencesGradient(final  SpacecraftState state0, final ForceModel forceModel,
                                                                  final AttitudeProvider provider, final double dP,
-                                                                 final double checkTolerance, final boolean print)
-        {
+                                                                 final double checkTolerance, final boolean print) {
 
         double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters()).toArray(),
@@ -426,8 +421,7 @@ public abstract class AbstractForceModelTest {
 
     protected void checkStateJacobian(NumericalPropagator propagator, SpacecraftState state0,
                                       AbsoluteDate targetDate, double hFactor,
-                                      double[] integratorAbsoluteTolerances, double checkTolerance)
-        {
+                                      double[] integratorAbsoluteTolerances, double checkTolerance) {
 
         propagator.setInitialState(state0);
         double[][] reference = new double[][] {
@@ -446,17 +440,15 @@ public abstract class AbstractForceModelTest {
             }
         }
 
-        final String name = "pde";
-        PartialDerivativesEquations pde = new PartialDerivativesEquations(name, propagator);
-        propagator.setInitialState(pde.setInitialJacobians(state0));
-        final JacobiansMapper mapper = pde.getMapper();
-        final double[][] dYdY0 = new double[6][6];
+        propagator.setInitialState(state0);
+        MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
+        final AtomicReference<RealMatrix> dYdY0 = new AtomicReference<>();
         propagator.setStepHandler(new OrekitStepHandler() {
             public void handleStep(OrekitStepInterpolator interpolator) {
             }
             public void finish(SpacecraftState finalState) {
                 // pick up final Jacobian
-                mapper.getStateJacobian(finalState, dYdY0);
+                dYdY0.set(harvester.getStateTransitionMatrix(finalState));
             }
 
         });
@@ -465,7 +457,7 @@ public abstract class AbstractForceModelTest {
         for (int j = 0; j < 6; ++j) {
             for (int k = 0; k < 6; ++k) {
                 double scale = integratorAbsoluteTolerances[j] / integratorAbsoluteTolerances[k];
-                Assert.assertEquals(reference[j][k], dYdY0[j][k], checkTolerance * scale);
+                Assert.assertEquals(reference[j][k], dYdY0.get().getEntry(j, k), checkTolerance * scale);
             }
         }
 
@@ -840,8 +832,7 @@ public abstract class AbstractForceModelTest {
     private double[] integrateShiftedState(final NumericalPropagator propagator,
                                            final SpacecraftState state0,
                                            final AbsoluteDate targetDate,
-                                           final int index, final double h)
-        {
+                                           final int index, final double h) {
         OrbitType orbitType = propagator.getOrbitType();
         PositionAngle angleType = propagator.getPositionAngleType();
         double[] a = new double[6];

@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -337,6 +337,23 @@ public class GPSPropagatorTest {
         final Vector3D expectedPos = new Vector3D(-4920705.292, 24248099.200, 9236130.101);
 
         Assert.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 3.2);
+    }
+
+    @Test
+    public void testStmAndJacobian() {
+        // Builds the GPSPropagator from the almanac
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).
+                        attitudeProvider(Utils.defaultLaw()).
+                        mass(1521.0).
+                        eci(FramesFactory.getEME2000()).
+                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                        build();
+        try {
+            propagator.setupMatricesComputation("stm", null, null);
+            Assert.fail("an exception should have been thrown");
+        } catch (UnsupportedOperationException uoe) {
+            // expected
+        }
     }
 
     @Test

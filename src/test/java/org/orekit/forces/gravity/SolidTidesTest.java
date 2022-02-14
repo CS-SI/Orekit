@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -456,8 +456,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     }
 
-    private void doTestTideEffect(Orbit orbit, IERSConventions conventions, double delta1, double delta2)
-        {
+    private void doTestTideEffect(Orbit orbit, IERSConventions conventions, double delta1, double delta2) {
 
         Frame itrf    = FramesFactory.getITRF(conventions, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);

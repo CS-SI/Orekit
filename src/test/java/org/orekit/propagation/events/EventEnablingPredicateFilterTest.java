@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -119,6 +119,7 @@ public class EventEnablingPredicateFilterTest {
                                     }
                 }).withMaxCheck(60.0);
 
+        Assert.assertSame(raw, aboveGroundElevationDetector.getDetector());
         Assert.assertEquals(0.001, raw.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(1.0e-6, aboveGroundElevationDetector.getThreshold(), 1.0e-15);

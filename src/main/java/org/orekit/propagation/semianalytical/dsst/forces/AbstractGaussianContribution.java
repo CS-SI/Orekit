@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -188,6 +188,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // Initialize the numerical force model
+        contribution.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
         // Initialize the numerical force model
         contribution.init(initialState, target);
     }
@@ -1822,12 +1829,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final AbsoluteDate last = meanStates[meanStates.length - 1].getDate();
             final int compare = first.compareTo(last);
             if (compare < 0) {
-                slots.addValidAfter(slot, first);
+                slots.addValidAfter(slot, first, false);
             } else if (compare > 0) {
-                slots.addValidBefore(slot, first);
+                slots.addValidBefore(slot, first, false);
             } else {
                 // single date, valid for all time
-                slots.addValidAfter(slot, AbsoluteDate.PAST_INFINITY);
+                slots.addValidAfter(slot, AbsoluteDate.PAST_INFINITY, false);
             }
             return slot;
         }

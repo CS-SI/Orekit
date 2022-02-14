@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
@@ -48,10 +47,10 @@ import org.orekit.time.AbsoluteDate;
  * variables, so separate instances for each propagator must be set up.
  * </p>
  * <p>
- * This class <em>will</em> create new threads for running the propagators
- * and it <em>will</em> override the underlying propagators step handlers.
- * The intent is anyway to manage the steps all at once using the global
- * {@link MultiSatStepHandler handler} set up at construction.
+ * This class <em>will</em> create new threads for running the propagators.
+ * It adds a new {@link MultiSatStepHandler global step handler} to manage
+ * the steps all at once, in addition to the existing individual step
+ * handlers that are preserved.
  * </p>
  * <p>
  * All propagators remain independent of each other (they don't even know
@@ -137,7 +136,7 @@ public class PropagatorsParallelizer {
 
         if (propagators.size() == 1) {
             // special handling when only one propagator is used
-            propagators.get(0).setStepHandler(new SinglePropagatorHandler(globalHandler));
+            propagators.get(0).getMultiplexer().add(new SinglePropagatorHandler(globalHandler));
             return Collections.singletonList(propagators.get(0).propagate(start, target));
         }
 
@@ -154,7 +153,11 @@ public class PropagatorsParallelizer {
 
         // main loop
         AbsoluteDate previousDate = start;
-        globalHandler.init(monitors.stream().map(m -> m.parameters.initialState).collect(Collectors.toList()), target);
+        final List<SpacecraftState> initialStates = new ArrayList<>(monitors.size());
+        for (final PropagatorMonitoring monitor : monitors) {
+            initialStates.add(monitor.parameters.initialState);
+        }
+        globalHandler.init(initialStates, target);
         for (boolean isLast = false; !isLast;) {
 
             // select the earliest ending propagator, according to propagation direction
@@ -177,7 +180,11 @@ public class PropagatorsParallelizer {
             }
 
             // handle all states at once
-            globalHandler.handleStep(monitors.stream().map(m -> m.restricted).collect(Collectors.toList()));
+            final List<OrekitStepInterpolator> interpolators = new ArrayList<>(monitors.size());
+            for (final PropagatorMonitoring monitor : monitors) {
+                interpolators.add(monitor.restricted);
+            }
+            globalHandler.handleStep(interpolators);
 
             if (selected.parameters.finalState == null) {
                 // step handler can still provide new results
@@ -372,7 +379,7 @@ public class PropagatorsParallelizer {
             // the main thread will let underlying propagators go forward
             // by consuming the step handling parameters they will put at each step
             queue = new SynchronousQueue<>();
-            propagator.setStepHandler(new MultiplePropagatorsHandler(queue));
+            propagator.getMultiplexer().add(new MultiplePropagatorsHandler(queue));
 
             // start the propagator
             future = executorService.submit(() -> propagator.propagate(start, target));

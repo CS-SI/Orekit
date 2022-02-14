@@ -1,4 +1,4 @@
-/* Copyright 2002-2021 CS GROUP
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -570,9 +570,9 @@ public class RinexClock {
     public void addReferenceClockList(final List<ReferenceClock> referenceClockList,
                                       final AbsoluteDate startDate) {
         if (referenceClocks == null) {
-            referenceClocks = new TimeSpanMap<List<ReferenceClock>>(referenceClockList);
+            referenceClocks = new TimeSpanMap<>(null);
         }
-        referenceClocks.addValidAfter(referenceClockList, startDate);
+        referenceClocks.addValidAfter(referenceClockList, startDate, false);
     }
 
     /** Getter for the frame name.

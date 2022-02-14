@@ -140,7 +140,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     /**
-     * Create a new event detector that is the logical OR or the given event detectors.
+     * Create a new event detector that is the logical OR of the given event detectors.
      *
      * <p> The created event detector's g function is positive if and only if at least
      * one of g functions of the event detectors in {@code detectors} is positive.
@@ -163,7 +163,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     /**
-     * Create a new event detector that is the logical OR or the given event detectors.
+     * Create a new event detector that is the logical OR of the given event detectors.
      *
      * <p> The created event detector's g function is positive if and only if at least
      * one of g functions of the event detectors in {@code detectors} is positive.
