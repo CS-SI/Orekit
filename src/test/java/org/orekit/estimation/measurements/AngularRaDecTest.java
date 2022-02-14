@@ -22,20 +22,21 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Differentiation;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
+import org.orekit.utils.*;
 
 public class AngularRaDecTest {
 
@@ -265,5 +266,75 @@ public class AngularRaDecTest {
             }
         }
     }
-}
 
+    @Test
+    public void testTimeTagSpecifications(){
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        SpacecraftState state = new SpacecraftState(context.initialOrbit);
+        ObservableSatellite obsSat = new ObservableSatellite(0);
+
+        for (GroundStation gs : context.getStations()) {
+
+            gs.getPrimeMeridianOffsetDriver().setReferenceDate(state.getDate());
+            gs.getPrimeMeridianDriftDriver().setReferenceDate(state.getDate());
+
+            gs.getPolarOffsetXDriver().setReferenceDate(state.getDate());
+            gs.getPolarDriftXDriver().setReferenceDate(state.getDate());
+
+            gs.getPolarOffsetYDriver().setReferenceDate(state.getDate());
+            gs.getPolarDriftYDriver().setReferenceDate(state.getDate());
+
+            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate());
+            TimeStampedPVCoordinates stationPosition = gsToInertialTransform.transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+            double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
+            double staticTimeOfFlight = staticDistance / Constants.SPEED_OF_LIGHT;
+
+            AngularRaDec raDecTx = new AngularRaDec(gs, state.getFrame(), state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat,TimeTagSpecificationType.TX);
+            AngularRaDec raDecRx = new AngularRaDec(gs, state.getFrame(), state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat,TimeTagSpecificationType.RX);
+            AngularRaDec raDecT = new AngularRaDec(gs, state.getFrame(), state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat,TimeTagSpecificationType.TRANSIT);
+
+            EstimatedMeasurement<AngularRaDec> estRaDecTx = raDecTx.estimate(0, 0, new SpacecraftState[]{state});
+            EstimatedMeasurement<AngularRaDec> estRaDecRx = raDecRx.estimate(0, 0, new SpacecraftState[]{state});
+            EstimatedMeasurement<AngularRaDec> estRaDecTransit = raDecT.estimate(0, 0, new SpacecraftState[]{state});
+
+            //Calculate Range calculated at transit and receive by shifting the state forward/backwards assuming time of flight = r/c
+            SpacecraftState tx = state.shiftedBy(staticTimeOfFlight);
+            SpacecraftState rx = state.shiftedBy(-staticTimeOfFlight);
+
+            double[] transitRaDecTx = calcRaDec(tx, stationPosition.shiftedBy(2*staticTimeOfFlight).getPosition(), tx.getFrame(), tx.getDate());
+            double[] transitRaDecRx = calcRaDec(rx, stationPosition.getPosition(), tx.getFrame(), rx.getDate());
+            double[] transitRaDecT = calcRaDec(state, stationPosition.shiftedBy(staticTimeOfFlight).getPosition(), tx.getFrame(), state.getDate());
+
+            //Static time of flight does not take into account motion during tof. Very small differences expected however
+            //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
+
+            Assert.assertEquals("TX", transitRaDecTx[0], estRaDecTx.getEstimatedValue()[0], 1e-9);
+            Assert.assertEquals("TX", transitRaDecTx[1], estRaDecTx.getEstimatedValue()[1], 1e-9);
+
+            Assert.assertEquals("RX", transitRaDecRx[0], estRaDecRx.getEstimatedValue()[0], 1e-9);
+            Assert.assertEquals("RX", transitRaDecRx[1], estRaDecRx.getEstimatedValue()[1], 1e-9);
+
+            Assert.assertEquals("Transit", transitRaDecT[0], estRaDecTransit.getEstimatedValue()[0], 1e-9);
+            Assert.assertEquals("Transit", transitRaDecT[1], estRaDecTransit.getEstimatedValue()[1], 1e-9);
+
+            //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
+            //of a static time of flight correction.
+            Assert.assertTrue("Proof of difference - RA", (Math.abs(transitRaDecRx[0] - transitRaDecTx[0]) > 1e-5));
+            Assert.assertTrue("Proof of difference - DEC", (Math.abs(transitRaDecRx[1] - transitRaDecTx[1]) > 1e-5));
+        }
+    }
+
+    private static double[] calcRaDec(SpacecraftState state, Vector3D station, Frame referenceFrame, AbsoluteDate date){
+        Vector3D statePos = state.getPVCoordinates().getPosition();
+        Vector3D staSatInertial = statePos.subtract(station);
+
+        // Field transform from inertial to reference frame at station's reception date
+        Transform inertialToReferenceDownlink =
+                state.getFrame().getTransformTo(referenceFrame, date);
+
+        // Station-satellite vector in reference frame
+        Vector3D raDec = inertialToReferenceDownlink.transformPosition(staSatInertial);
+        return new double[]{raDec.getAlpha(), raDec.getDelta()};
+    }
+}

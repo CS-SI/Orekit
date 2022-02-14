@@ -796,6 +796,10 @@ public class RangeTest {
             Assert.assertEquals("TX", transitRangeTX, estRangeTX.getEstimatedValue()[0], 1e-3);
             Assert.assertEquals("RX", transitRangeRX, estRangeRX.getEstimatedValue()[0], 1e-3);
             Assert.assertEquals("Transit", transitRangeT, estRangeTransit.getEstimatedValue()[0], 1e-6);
+
+            //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
+            //of a static time of flight correction.
+            Assert.assertTrue(Math.abs(transitRangeTX - transitRangeRX)>100.0);
         }
 
     }

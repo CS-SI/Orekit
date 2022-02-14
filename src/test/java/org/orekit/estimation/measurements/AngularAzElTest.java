@@ -22,20 +22,19 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Differentiation;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
+import org.orekit.utils.*;
 
 public class AngularAzElTest {
 
@@ -263,6 +262,69 @@ public class AngularAzElTest {
                     }
                 }
             }
+        }
+    }
+
+    @Test
+    public void testTimeTagSpecifications(){
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        SpacecraftState state = new SpacecraftState(context.initialOrbit);
+        ObservableSatellite obsSat = new ObservableSatellite(0);
+
+        for (GroundStation gs : context.getStations()) {
+
+            gs.getPrimeMeridianOffsetDriver().setReferenceDate(state.getDate());
+            gs.getPrimeMeridianDriftDriver().setReferenceDate(state.getDate());
+
+            gs.getPolarOffsetXDriver().setReferenceDate(state.getDate());
+            gs.getPolarDriftXDriver().setReferenceDate(state.getDate());
+
+            gs.getPolarOffsetYDriver().setReferenceDate(state.getDate());
+            gs.getPolarDriftYDriver().setReferenceDate(state.getDate());
+
+            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate());
+            TimeStampedPVCoordinates stationPosition = gsToInertialTransform.transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+            double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
+            double staticTimeOfFlight = staticDistance / Constants.SPEED_OF_LIGHT;
+
+            AngularAzEl azElTx = new AngularAzEl(gs, state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat, TimeTagSpecificationType.TX);
+            AngularAzEl azElRx = new AngularAzEl(gs, state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat, TimeTagSpecificationType.RX);
+            AngularAzEl azElT = new AngularAzEl(gs, state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat, TimeTagSpecificationType.TRANSIT);
+
+            EstimatedMeasurement<AngularAzEl> estAzElTx = azElTx.estimate(0, 0, new SpacecraftState[]{state});
+            EstimatedMeasurement<AngularAzEl> estAzElRx = azElRx.estimate(0, 0, new SpacecraftState[]{state});
+            EstimatedMeasurement<AngularAzEl> estAzElTransit = azElT.estimate(0, 0, new SpacecraftState[]{state});
+
+            //Calculate Range calculated at transit and receive by shifting the state forward/backwards assuming time of flight = r/c
+            SpacecraftState tx = state.shiftedBy(staticTimeOfFlight);
+            SpacecraftState rx = state.shiftedBy(-staticTimeOfFlight);
+
+            double transitAzTx = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(tx.getPVCoordinates().getPosition(), tx.getFrame(), tx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
+            double transitElTx = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(tx.getPVCoordinates().getPosition(), tx.getFrame(), tx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
+
+            double transitAzRx = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(rx.getPVCoordinates().getPosition(), rx.getFrame(), rx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
+            double transitElRx = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(rx.getPVCoordinates().getPosition(), rx.getFrame(), rx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
+
+            double transitAzT = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(state.getPVCoordinates().getPosition(), state.getFrame(), state.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
+            double transitElT = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(state.getPVCoordinates().getPosition(), state.getFrame(), state.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
+
+
+            //Static time of flight does not take into account motion during tof. Very small differences expected however
+            //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
+            Assert.assertEquals("TX", transitAzTx, estAzElTx.getEstimatedValue()[0], 2e-8);
+            Assert.assertEquals("TX", transitElTx, estAzElTx.getEstimatedValue()[1], 2e-8);
+
+            Assert.assertEquals("RX", transitAzRx, estAzElRx.getEstimatedValue()[0], 2e-8);
+            Assert.assertEquals("RX", transitElRx, estAzElRx.getEstimatedValue()[1], 2e-8);
+
+            Assert.assertEquals("Transit", transitAzT, estAzElTransit.getEstimatedValue()[0], 2e-8);
+            Assert.assertEquals("Transit", transitElT, estAzElTransit.getEstimatedValue()[1], 2e-8);
+
+            //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
+            //of a static time of flight correction.
+            Assert.assertTrue("Proof of difference - Azimuth", (Math.abs(transitAzRx - transitAzTx) > 1e-5));
+            Assert.assertTrue("Proof of difference - Elevation", (Math.abs(transitAzRx - transitAzTx) > 1e-5));
         }
     }
 }
