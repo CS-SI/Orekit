@@ -159,6 +159,8 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
                 offsetToInertialObsEpoch.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(obsEpochFieldDate,
                         zero, zero, zero));
 
+        final Gradient delta = obsEpochFieldDate.durationFrom(state.getDate());
+
         final TimeStampedFieldPVCoordinates<Gradient> transitStateDS;
         final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
 
@@ -173,10 +175,12 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
             //Date = epoch of transmission.
             //Vary position of receiver -> in case of uplink leg, receiver is satellite
             final Gradient tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
-            //Get state at transit
-            transitStateDS = pvaDS.shiftedBy(tauU);
+            final Gradient deltaMTauU = tauU.add(delta);
 
-            transitState = state.shiftedBy(tauU.getValue());
+            //Get state at transit
+            transitStateDS = pvaDS.shiftedBy(deltaMTauU);
+
+            transitState = state.shiftedBy(deltaMTauU.getValue());
 
             //Get station at transit - although this is effectively an initial seed for fitting the downlink delay
             final TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
@@ -189,10 +193,11 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
         }
 
         else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
-            transitStateDS = pvaDS;
-            transitState = state;
 
-            tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
+            transitStateDS = pvaDS.shiftedBy(delta);
+            transitState = state.shiftedBy(delta.getValue());
+
+            tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, transitStateDS.getPosition(), transitStateDS.getDate());
 
             stationDownlink = stationObsEpoch.shiftedBy(tauD);
             stationPositionEstimated = stationObsEpoch;
@@ -207,7 +212,6 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
             tauD = signalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), obsEpochFieldDate);
 
             // Transit state
-            final Gradient delta = obsEpochFieldDate.durationFrom(state.getDate());
             final Gradient deltaMTauD = tauD.negate().add(delta);
             transitState = state.shiftedBy(deltaMTauD.getValue());
 

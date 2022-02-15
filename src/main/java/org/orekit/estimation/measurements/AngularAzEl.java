@@ -59,7 +59,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      * @param timeTagSpecificationType specify the timetag configuration of the provided angular AzEl observation
-     * @since 9.3
+     * @since xx.xx
      */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
@@ -79,6 +79,16 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
         this.timeTagSpecificationType = timeTagSpecificationType;
     }
 
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param angular observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
                        final ObservableSatellite satellite) {
@@ -135,6 +145,9 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
                 offsetToInertialObsEpoch.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(obsEpochFieldDate,
                         zero, zero, zero));
 
+
+        final Gradient delta = obsEpochFieldDate.durationFrom(state.getDate());
+
         final TimeStampedFieldPVCoordinates<Gradient> transitStateDS;
         final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
 
@@ -149,9 +162,10 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
             //Date = epoch of transmission.
             //Vary position of receiver -> in case of uplink leg, receiver is satellite
             final Gradient tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
+            final Gradient deltaMTauU = tauU.add(delta);
             //Get state at transit
-            transitStateDS = pvaDS.shiftedBy(tauU);
-            transitState = state.shiftedBy(tauU.getValue());
+            transitStateDS = pvaDS.shiftedBy(deltaMTauU);
+            transitState = state.shiftedBy(deltaMTauU.getValue());
 
             //Get station at transit - although this is effectively an initial seed for fitting the downlink delay
             final TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
@@ -164,10 +178,10 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
         }
 
         else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
-            transitStateDS = pvaDS;
-            transitState = state;
+            transitStateDS = pvaDS.shiftedBy(delta);
+            transitState = state.shiftedBy(delta.getValue());
 
-            tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
+            tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, transitStateDS.getPosition(), transitStateDS.getDate());
 
             stationDownlink = stationObsEpoch.shiftedBy(tauD);
             stationPositionEstimated = stationObsEpoch;
@@ -182,7 +196,6 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
             tauD = signalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), obsEpochFieldDate);
 
             // Transit state
-            final Gradient delta = obsEpochFieldDate.durationFrom(state.getDate());
             final Gradient deltaMTauD = tauD.negate().add(delta);
             transitState = state.shiftedBy(deltaMTauD.getValue());
 
