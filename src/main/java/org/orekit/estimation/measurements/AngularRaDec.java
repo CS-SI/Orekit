@@ -65,7 +65,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      * @param timeTagSpecificationType specify the timetag configuration of the provided angular RaDec observation
-     * @since 9.3
+     * @since xx.xx
      */
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
@@ -161,6 +161,11 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
 
         final TimeStampedFieldPVCoordinates<Gradient> transitStateDS;
         final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
+
+        /* The station position for relative position vector calculation - set to downlink for transmit and
+         * receive. For transit/bounce time tag specification we use the station at bounce time */
+        final TimeStampedFieldPVCoordinates<Gradient> stationPositionEstimated;
+
         final SpacecraftState transitState;
         final Gradient tauD;
 
@@ -180,6 +185,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
             tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
 
             stationDownlink = stationObsEpoch.shiftedBy(tauU.add(tauD));
+            stationPositionEstimated = stationDownlink;
         }
 
         else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
@@ -189,6 +195,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
             tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
 
             stationDownlink = stationObsEpoch.shiftedBy(tauD);
+            stationPositionEstimated = stationObsEpoch;
         }
 
         else {
@@ -207,16 +214,17 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
             // Transit state (re)computed with gradients
             transitStateDS = pvaDS.shiftedBy(deltaMTauD);
             stationDownlink = stationObsEpoch;
+            stationPositionEstimated = stationObsEpoch;
         }
         // Station-satellite vector expressed in inertial frame
-        final FieldVector3D<Gradient> staSatInertial = transitStateDS.getPosition().subtract(stationDownlink.getPosition());
+        final FieldVector3D<Gradient> staSatInertial = transitStateDS.getPosition().subtract(stationPositionEstimated.getPosition());
 
         // Field transform from inertial to reference frame at station's reception date
-        final FieldTransform<Gradient> inertialToReferenceDownlink =
-                state.getFrame().getTransformTo(referenceFrame, stationDownlink.getDate());
+        final FieldTransform<Gradient> inertialToReferenceEstimationTime =
+                state.getFrame().getTransformTo(referenceFrame, stationPositionEstimated.getDate());
 
         // Station-satellite vector in reference frame
-        final FieldVector3D<Gradient> staSatReference = inertialToReferenceDownlink.transformPosition(staSatInertial);
+        final FieldVector3D<Gradient> staSatReference = inertialToReferenceEstimationTime.transformPosition(staSatInertial);
 
         // Compute right ascension and declination
         final Gradient baseRightAscension = staSatReference.getAlpha();
@@ -231,7 +239,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
                         new SpacecraftState[] { transitState },
                         new TimeStampedPVCoordinates[] {
                         transitStateDS.toTimeStampedPVCoordinates(),
-                        stationObsEpoch.toTimeStampedPVCoordinates()
+                        stationDownlink.toTimeStampedPVCoordinates()
                         });
         // azimuth - elevation values
         estimated.setEstimatedValue(rightAscension.getValue(), declination.getValue());

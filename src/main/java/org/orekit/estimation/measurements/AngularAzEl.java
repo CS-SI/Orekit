@@ -137,6 +137,11 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
 
         final TimeStampedFieldPVCoordinates<Gradient> transitStateDS;
         final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
+
+        /* The station position for relative position vector calculation - set to downlink for transmit and
+         * receive. For transit/bounce time tag specification we use the station at bounce time */
+        final TimeStampedFieldPVCoordinates<Gradient> stationPositionEstimated;
+
         final SpacecraftState transitState;
         final Gradient tauD;
 
@@ -155,6 +160,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
             tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
 
             stationDownlink = stationObsEpoch.shiftedBy(tauU.add(tauD));
+            stationPositionEstimated = stationDownlink;
         }
 
         else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
@@ -164,6 +170,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
             tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, pvaDS.getPosition(), pvaDS.getDate());
 
             stationDownlink = stationObsEpoch.shiftedBy(tauD);
+            stationPositionEstimated = stationObsEpoch;
         }
 
         else {
@@ -182,17 +189,18 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
             // Transit state (re)computed with gradients
             transitStateDS = pvaDS.shiftedBy(deltaMTauD);
             stationDownlink = stationObsEpoch;
+            stationPositionEstimated = stationDownlink;
         }
 
-        final FieldTransform<Gradient> offsetToInertialDownlink = station.getOffsetToInertial(state.getFrame(), stationDownlink.getDate(), nbParams, indices);
+        final FieldTransform<Gradient> offsetToInertialEstimationTime = station.getOffsetToInertial(state.getFrame(), stationPositionEstimated.getDate(), nbParams, indices);
 
         // Station topocentric frame (east-north-zenith) in inertial frame expressed as Gradient
-        final FieldVector3D<Gradient> east   = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusI(field));
-        final FieldVector3D<Gradient> north  = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusJ(field));
-        final FieldVector3D<Gradient> zenith = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusK(field));
+        final FieldVector3D<Gradient> east   = offsetToInertialEstimationTime.transformVector(FieldVector3D.getPlusI(field));
+        final FieldVector3D<Gradient> north  = offsetToInertialEstimationTime.transformVector(FieldVector3D.getPlusJ(field));
+        final FieldVector3D<Gradient> zenith = offsetToInertialEstimationTime.transformVector(FieldVector3D.getPlusK(field));
 
         // Station-satellite vector expressed in inertial frame
-        final FieldVector3D<Gradient> staSat = transitStateDS.getPosition().subtract(stationDownlink.getPosition());
+        final FieldVector3D<Gradient> staSat = transitStateDS.getPosition().subtract(stationPositionEstimated.getPosition());
 
         // Compute azimuth/elevation
         final Gradient baseAzimuth = staSat.dotProduct(east).atan2(staSat.dotProduct(north));
