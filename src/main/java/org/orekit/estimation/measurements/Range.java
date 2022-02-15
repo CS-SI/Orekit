@@ -99,7 +99,7 @@ public class Range extends AbstractMeasurement<Range>
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      * @param timeTagSpecificationType specify the timetag configuration of the provided range observation
-     * @since 11.1
+     * @since xx.xx
      */
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                          final double range, final double sigma, final double baseWeight,
@@ -124,7 +124,8 @@ public class Range extends AbstractMeasurement<Range>
         this.timeTagSpecificationType = timeTagSpecificationType;
     }
 
-    /** Simple constructor.
+    /** Range measurement constructor for one or two way measurements with timetag of observed value
+     * set to reception time.
      * @param station ground station from which measurement is performed
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param date date of the measurement
@@ -138,6 +139,22 @@ public class Range extends AbstractMeasurement<Range>
                          final double range, final double sigma, final double baseWeight,
                          final ObservableSatellite satellite) {
         this(station, twoWay, date, range, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
+    }
+
+    /** Range constructor for two-way measurements with a user specified observed value timetag specification
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided range observation
+     * @since xx.xx
+     */
+    public Range(final GroundStation station, final AbsoluteDate date,
+                 final double range, final double sigma, final double baseWeight,
+                 final ObservableSatellite satellite, TimeTagSpecificationType timeTagSpecificationType) {
+        this(station, true, date, range, sigma, baseWeight, satellite, timeTagSpecificationType);
     }
 
 

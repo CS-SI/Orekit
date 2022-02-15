@@ -70,7 +70,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
      * @param timeTagSpecificationType specify the timetag configuration of the provided range rate observation
      * @since 9.3
      */
-    public RangeRate(final GroundStation station, final AbsoluteDate date,
+    private RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
                      final boolean twoway, final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
         super(date, rangeRate, sigma, baseWeight, Collections.singletonList(satellite));
@@ -91,10 +91,39 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
         this.timeTagSpecificationType = timeTagSpecificationType;
     }
 
+    /**
+     * Range rate constructor for one or two-way measurements with timetag of
+     * observed value set to reception time.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param rangeRate observed value, m/s
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param twoway if true, this is a two-way measurement
+     * @param satellite satellite related to this measurement
+     * @since xx.xx
+     */
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
                      final boolean twoway, final ObservableSatellite satellite) {
         this(station, date, rangeRate, sigma, baseWeight, twoway, satellite, TimeTagSpecificationType.RX);
+    }
+
+    /**
+     * Range rate constructor for two-way measurements with a user specified observed value timetag specification
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param rangeRate observed value, m/s
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided range rate observation
+     * @since xx.xx
+     **/
+    public RangeRate(final GroundStation station, final AbsoluteDate date,
+                     final double rangeRate, final double sigma, final double baseWeight,
+                     final ObservableSatellite satellite, TimeTagSpecificationType timeTagSpecificationType) {
+        this(station, date, rangeRate, sigma, baseWeight, true, satellite, timeTagSpecificationType);
     }
 
     /** Check if the instance represents a two-way measurement.
