@@ -58,6 +58,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided angular AzEl observation
      * @since 9.3
      */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
@@ -148,7 +149,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
             transitState = state.shiftedBy(tauU.getValue());
 
             //Get station at transit - although this is effectively an initial seed for fitting the downlink delay
-            TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
+            final TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
 
             //project time of flight forwards with 0 offset.
             tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
@@ -203,12 +204,11 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
         // Prepare the estimation
         final EstimatedMeasurement<AngularAzEl> estimated =
                 new EstimatedMeasurement<>(this, iteration, evaluation,
-                        new SpacecraftState[] {
-                                transitState
-                        }, new TimeStampedPVCoordinates[] {
+                        new SpacecraftState[] { transitState },
+                        new TimeStampedPVCoordinates[] {
                         transitStateDS.toTimeStampedPVCoordinates(),
                         stationDownlink.toTimeStampedPVCoordinates()
-                });
+                        });
 
         // azimuth - elevation values
         estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());

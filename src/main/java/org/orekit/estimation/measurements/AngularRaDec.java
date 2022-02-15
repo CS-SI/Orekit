@@ -64,6 +64,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided angular RaDec observation
      * @since 9.3
      */
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
@@ -99,7 +100,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final ObservableSatellite satellite) {
-        this(station,referenceFrame,date,angular,sigma,baseWeight,satellite,TimeTagSpecificationType.RX);
+        this(station, referenceFrame, date, angular, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
     }
 
     /** Get the ground station from which measurement is performed.
@@ -173,7 +174,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
             transitState = state.shiftedBy(tauU.getValue());
 
             //Get station at transit - although this is effectively an initial seed for fitting the downlink delay
-            TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
+            final TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
 
             //project time of flight forwards with 0 offset.
             tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
@@ -227,13 +228,11 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
         // Prepare the estimation
         final EstimatedMeasurement<AngularRaDec> estimated =
                 new EstimatedMeasurement<>(this, iteration, evaluation,
-                        new SpacecraftState[] {
-                                transitState
-                        }, new TimeStampedPVCoordinates[] {
+                        new SpacecraftState[] { transitState },
+                        new TimeStampedPVCoordinates[] {
                         transitStateDS.toTimeStampedPVCoordinates(),
                         stationObsEpoch.toTimeStampedPVCoordinates()
-                });
-
+                        });
         // azimuth - elevation values
         estimated.setEstimatedValue(rightAscension.getValue(), declination.getValue());
 
