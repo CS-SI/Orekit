@@ -110,7 +110,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
     }
 
     /**
-     * Range rate constructor for two-way measurements with a user specified observed value timetag specification
+     * Range rate constructor for two-way measurements with a user specified observed value timetag specification.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param rangeRate observed value, m/s
@@ -122,7 +122,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
      **/
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
-                     final ObservableSatellite satellite, TimeTagSpecificationType timeTagSpecificationType) {
+                     final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
         this(station, date, rangeRate, sigma, baseWeight, true, satellite, timeTagSpecificationType);
     }
 

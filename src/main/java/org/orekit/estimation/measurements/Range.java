@@ -141,7 +141,7 @@ public class Range extends AbstractMeasurement<Range>
         this(station, twoWay, date, range, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
     }
 
-    /** Range constructor for two-way measurements with a user specified observed value timetag specification
+    /** Range constructor for two-way measurements with a user specified observed value timetag specification.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param range observed value
@@ -153,7 +153,7 @@ public class Range extends AbstractMeasurement<Range>
      */
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
-                 final ObservableSatellite satellite, TimeTagSpecificationType timeTagSpecificationType) {
+                 final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
         this(station, true, date, range, sigma, baseWeight, satellite, timeTagSpecificationType);
     }
 

@@ -165,7 +165,9 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
         final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
 
         /* The station position for relative position vector calculation - set to downlink for transmit and
-         * receive. For transit/bounce time tag specification we use the station at bounce time */
+         * receive. For transit/bounce time tag specification we use the station at bounce time.
+         * The alternative for the transmit case would be to calculate the estimated value entirely at transmit time.
+         */
         final TimeStampedFieldPVCoordinates<Gradient> stationPositionEstimated;
 
         final SpacecraftState transitState;
