@@ -773,12 +773,9 @@ public class RangeRateTest {
             //Test for case in which the state has been precorrected for propagation delay / an arbitary shift
             EstimatedMeasurement<RangeRate> estRangeRateTXPrecorr = rangeRateTX.estimate(0,0,new SpacecraftState[]{state.shiftedBy(staticTimeOfFlight)});
             EstimatedMeasurement<RangeRate> estRangeRateRXPrecorr = rangeRateRX.estimate(0,0,new SpacecraftState[]{state.shiftedBy(-staticTimeOfFlight)});
-            EstimatedMeasurement<RangeRate> estRangeRateTransitShift = rangeRateTransit.estimate(0,0,new SpacecraftState[]{state.shiftedBy(0.1)});
+            EstimatedMeasurement<RangeRate> estRangeRateTransitShift = rangeRateTransit.estimate(0,0,new SpacecraftState[]{state.shiftedBy(0.05)});
 
-            System.out.println(estRangeRateTXPrecorr.getEstimatedValue()[0] - estRangeRateTX.getEstimatedValue()[0]);
-            System.out.println(estRangeRateRXPrecorr.getEstimatedValue()[0] - estRangeRateRX.getEstimatedValue()[0]);
-            System.out.println(estRangeRateTransit.getEstimatedValue()[0] - estRangeRateTransit.getEstimatedValue()[0]);
-
+            //tolerances are required since shifting the state forwards and backwards produces slight estimated value changes
             Assert.assertEquals("TX shifted", estRangeRateTXPrecorr.getEstimatedValue()[0], estRangeRateTX.getEstimatedValue()[0],1e-6);
             Assert.assertEquals("RX shifted", estRangeRateRXPrecorr.getEstimatedValue()[0], estRangeRateRX.getEstimatedValue()[0],1e-6);
             Assert.assertEquals("Transit shifted", estRangeRateTransitShift.getEstimatedValue()[0], estRangeRateTransit.getEstimatedValue()[0], 1e-6);

@@ -327,7 +327,7 @@ public class AngularRaDecTest {
             EstimatedMeasurement<AngularRaDec> estRaDecRxShifted = raDecRx.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(-staticTimeOfFlight)});
             EstimatedMeasurement<AngularRaDec> estRaDecTransitShifted = raDecT.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(0.1)});
 
-            //tolerances are required since the initial downlink time calculate will fit numerically differently depending on start point.
+            //tolerances are required since shifting the state forwards and backwards produces slight estimated value changes
             Assert.assertEquals("TX shifted", estRaDecTxShifted.getEstimatedValue()[0], estRaDecTx.getEstimatedValue()[0], 1e-11);
             Assert.assertEquals("TX shifted", estRaDecTxShifted.getEstimatedValue()[1], estRaDecTx.getEstimatedValue()[1], 1e-11);
 

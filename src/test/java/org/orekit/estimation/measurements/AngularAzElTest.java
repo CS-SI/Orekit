@@ -330,7 +330,7 @@ public class AngularAzElTest {
             EstimatedMeasurement<AngularAzEl> estAzElRxShifted = azElRx.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(-staticTimeOfFlight)});
             EstimatedMeasurement<AngularAzEl> estAzElTransitShifted = azElT.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(0.1)});
 
-            //tolerances are required since the initial downlink time calculate will fit numerically differently depending on start point.
+            //tolerances are required since shifting the state forwards and backwards produces slight estimated value changes
             Assert.assertEquals("TX shifted", estAzElTxShifted.getEstimatedValue()[0], estAzElTx.getEstimatedValue()[0], 1e-11);
             Assert.assertEquals("TX shifted", estAzElTxShifted.getEstimatedValue()[1], estAzElTx.getEstimatedValue()[1], 1e-11);
 

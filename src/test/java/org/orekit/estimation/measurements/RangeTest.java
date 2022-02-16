@@ -802,7 +802,7 @@ public class RangeTest {
             EstimatedMeasurement<Range> estRangeRXPreCorr = rangeRX.estimate(0,0,new SpacecraftState[]{state.shiftedBy(-staticTimeOfFlight)});
             EstimatedMeasurement<Range> estRangeTransitPreCorr = rangeTransit.estimate(0,0,new SpacecraftState[]{state.shiftedBy(0.1)});
 
-            //tolerances are required since the initial downlink time calculate will fit numerically differently depending on start point.
+            //tolerances are required since shifting the state forwards and backwards produces slight estimated value changes
             Assert.assertEquals("TX shifted", estRangeTXPreCorr.getEstimatedValue()[0], estRangeTX.getEstimatedValue()[0],1e-7);
             Assert.assertEquals("RX shifted", estRangeRXPreCorr.getEstimatedValue()[0], estRangeRX.getEstimatedValue()[0],1e-7);
             Assert.assertEquals("Transit shifted", estRangeTransitPreCorr.getEstimatedValue()[0], estRangeTransit.getEstimatedValue()[0], 1e-7);
