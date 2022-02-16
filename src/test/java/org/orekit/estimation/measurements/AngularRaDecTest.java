@@ -295,10 +295,12 @@ public class AngularRaDecTest {
             double staticTimeOfFlight = staticDistance / Constants.SPEED_OF_LIGHT;
 
             AngularRaDec raDecTx = new AngularRaDec(gs, state.getFrame(), state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat,TimeTagSpecificationType.TX);
+            AngularRaDec raDecTxRx = new AngularRaDec(gs, state.getFrame(), state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat,TimeTagSpecificationType.TXRX);
             AngularRaDec raDecRx = new AngularRaDec(gs, state.getFrame(), state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat,TimeTagSpecificationType.RX);
             AngularRaDec raDecT = new AngularRaDec(gs, state.getFrame(), state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat,TimeTagSpecificationType.TRANSIT);
 
             EstimatedMeasurement<AngularRaDec> estRaDecTx = raDecTx.estimate(0, 0, new SpacecraftState[]{state});
+            EstimatedMeasurement<AngularRaDec> estRaDecTxRx = raDecTxRx.estimate(0, 0, new SpacecraftState[]{state});
             EstimatedMeasurement<AngularRaDec> estRaDecRx = raDecRx.estimate(0, 0, new SpacecraftState[]{state});
             EstimatedMeasurement<AngularRaDec> estRaDecTransit = raDecT.estimate(0, 0, new SpacecraftState[]{state});
 
@@ -306,8 +308,15 @@ public class AngularRaDecTest {
             SpacecraftState tx = state.shiftedBy(staticTimeOfFlight);
             SpacecraftState rx = state.shiftedBy(-staticTimeOfFlight);
 
-            double[] transitRaDecTx = calcRaDec(tx, stationPosition.shiftedBy(2*staticTimeOfFlight).getPosition(), tx.getFrame(), tx.getDate());
-            double[] transitRaDecRx = calcRaDec(rx, stationPosition.getPosition(), tx.getFrame(), rx.getDate());
+            //evaluate station position at different times for different obs time tags
+            //state.getDate()==transmit (TX)
+            double[] transitRaDecTx = calcRaDec(tx, stationPosition.getPosition(), tx.getFrame(), state.getDate());
+            //state.getDate()==transmit (TX). state.getDate().shiftedBy(2*staticTimeOfFlight) == receive.
+            double[] transitRaDecTxRx = calcRaDec(tx, stationPosition.shiftedBy(2*staticTimeOfFlight).getPosition(),
+                    tx.getFrame(), state.getDate().shiftedBy(2*staticTimeOfFlight));
+            //state.getDate()==receive
+            double[] transitRaDecRx = calcRaDec(rx, stationPosition.getPosition(), tx.getFrame(), state.getDate());
+            //state.getDate()==transit
             double[] transitRaDecT = calcRaDec(state, stationPosition.getPosition(), tx.getFrame(), state.getDate());
 
             //Static time of flight does not take into account motion during tof. Very small differences expected however
@@ -315,6 +324,9 @@ public class AngularRaDecTest {
 
             Assert.assertEquals("TX", transitRaDecTx[0], estRaDecTx.getEstimatedValue()[0], 1e-9);
             Assert.assertEquals("TX", transitRaDecTx[1], estRaDecTx.getEstimatedValue()[1], 1e-9);
+
+            Assert.assertEquals("TXRX", transitRaDecTxRx[0], estRaDecTxRx.getEstimatedValue()[0], 1e-9);
+            Assert.assertEquals("TXRX", transitRaDecTxRx[1], estRaDecTxRx.getEstimatedValue()[1], 1e-9);
 
             Assert.assertEquals("RX", transitRaDecRx[0], estRaDecRx.getEstimatedValue()[0], 1e-9);
             Assert.assertEquals("RX", transitRaDecRx[1], estRaDecRx.getEstimatedValue()[1], 1e-9);

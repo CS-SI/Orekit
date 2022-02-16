@@ -292,11 +292,17 @@ public class AngularAzElTest {
             double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
             double staticTimeOfFlight = staticDistance / Constants.SPEED_OF_LIGHT;
 
+            //Transmit (TX)
             AngularAzEl azElTx = new AngularAzEl(gs, state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat, TimeTagSpecificationType.TX);
+            //Transmit Receive Apparent (TXRX)
+            AngularAzEl azElTxRx = new AngularAzEl(gs, state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat, TimeTagSpecificationType.TXRX);
+            //Receive (RX)
             AngularAzEl azElRx = new AngularAzEl(gs, state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat, TimeTagSpecificationType.RX);
+            //Transit (Bounce)
             AngularAzEl azElT = new AngularAzEl(gs, state.getDate(), new double[]{0.0,0.0}, new double[]{0.0,0.0},new double[]{0.0,0.0},obsSat, TimeTagSpecificationType.TRANSIT);
 
             EstimatedMeasurement<AngularAzEl> estAzElTx = azElTx.estimate(0, 0, new SpacecraftState[]{state});
+            EstimatedMeasurement<AngularAzEl> estAzElTxRx = azElTxRx.estimate(0, 0, new SpacecraftState[]{state});
             EstimatedMeasurement<AngularAzEl> estAzElRx = azElRx.estimate(0, 0, new SpacecraftState[]{state});
             EstimatedMeasurement<AngularAzEl> estAzElTransit = azElT.estimate(0, 0, new SpacecraftState[]{state});
 
@@ -304,12 +310,21 @@ public class AngularAzElTest {
             SpacecraftState tx = state.shiftedBy(staticTimeOfFlight);
             SpacecraftState rx = state.shiftedBy(-staticTimeOfFlight);
 
-            double transitAzTx = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(tx.getPVCoordinates().getPosition(), tx.getFrame(), tx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
-            double transitElTx = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(tx.getPVCoordinates().getPosition(), tx.getFrame(), tx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
+            //Calculate the expected values, varying the estimated state + the time the ground station position is evaluated at.
 
-            double transitAzRx = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(rx.getPVCoordinates().getPosition(), rx.getFrame(), rx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
-            double transitElRx = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(rx.getPVCoordinates().getPosition(), rx.getFrame(), rx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
+            //state.getDate() == transmit (TX) time, state.getDate().shiftedBy(2*staticTimeOfFlight) == reception time
+            double transitAzTxRx = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(tx.getPVCoordinates().getPosition(), tx.getFrame(), state.getDate().shiftedBy(2*staticTimeOfFlight)), 0.0);
+            double transitElTxRx = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(tx.getPVCoordinates().getPosition(), tx.getFrame(), state.getDate().shiftedBy(2*staticTimeOfFlight)), 0.0);
 
+            //state.getDate() == transmit (TX) time
+            double transitAzTx = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(tx.getPVCoordinates().getPosition(), tx.getFrame(), state.getDate()), 0.0);
+            double transitElTx = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(tx.getPVCoordinates().getPosition(), tx.getFrame(), state.getDate()), 0.0);
+
+            //state.getDate() == reception time
+            double transitAzRx = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(rx.getPVCoordinates().getPosition(), rx.getFrame(), state.getDate()), 0.0);
+            double transitElRx = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(rx.getPVCoordinates().getPosition(), rx.getFrame(), state.getDate()), 0.0);
+
+            //state.getDate() == transit time
             double transitAzT = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(state.getPVCoordinates().getPosition(), state.getFrame(), state.getDate()), 0.0);
             double transitElT = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(state.getPVCoordinates().getPosition(), state.getFrame(), state.getDate()), 0.0);
 
@@ -318,6 +333,9 @@ public class AngularAzElTest {
             //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
             Assert.assertEquals("TX", transitAzTx, estAzElTx.getEstimatedValue()[0], 2e-8);
             Assert.assertEquals("TX", transitElTx, estAzElTx.getEstimatedValue()[1], 2e-8);
+
+            Assert.assertEquals("TXRX", transitAzTxRx, estAzElTxRx.getEstimatedValue()[0], 2e-8);
+            Assert.assertEquals("TXRX", transitElTxRx, estAzElTxRx.getEstimatedValue()[1], 2e-8);
 
             Assert.assertEquals("RX", transitAzRx, estAzElRx.getEstimatedValue()[0], 2e-8);
             Assert.assertEquals("RX", transitElRx, estAzElRx.getEstimatedValue()[1], 2e-8);

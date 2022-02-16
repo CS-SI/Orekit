@@ -151,16 +151,16 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
         final TimeStampedFieldPVCoordinates<Gradient> transitStateDS;
         final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
 
-        /* The station position for relative position vector calculation - set to downlink for transmit and
-         * receive. For transit/bounce time tag specification we use the station at bounce time.
-         * The alternative for the transmit case would be to calculate the estimated value entirely at transmit time.
+        /* The station position for relative position vector calculation - set to downlink for transmit and transmit
+         * receive apparent (TXRX). For transit/bounce time tag specification we use the station at bounce time. For transmit
+         * apparent the station at time of transmission is used.
          */
         final TimeStampedFieldPVCoordinates<Gradient> stationPositionEstimated;
 
         final SpacecraftState transitState;
         final Gradient tauD;
 
-        if (timeTagSpecificationType == TimeTagSpecificationType.TX) {
+        if (timeTagSpecificationType == TimeTagSpecificationType.TX || timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
             //Date = epoch of transmission.
             //Vary position of receiver -> in case of uplink leg, receiver is satellite
             final Gradient tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
@@ -176,7 +176,13 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
             tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
 
             stationDownlink = stationObsEpoch.shiftedBy(tauU.add(tauD));
-            stationPositionEstimated = stationDownlink;
+
+            //Decide whether observation is transmit or receive apparent.
+            if (timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
+                stationPositionEstimated = stationDownlink;
+            } else {
+                stationPositionEstimated = stationObsEpoch;
+            }
         }
 
         else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {

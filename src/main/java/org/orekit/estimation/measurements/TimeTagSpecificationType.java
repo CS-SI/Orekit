@@ -33,7 +33,10 @@ public enum TimeTagSpecificationType {
     RX("Receive"),
 
     /** Time tag is at time of signal transmission. */
-    TX("Transmit");
+    TX("Transmit"),
+
+    /** For Angles measurements where the time tag is at time of signal transmission but the observation is receive apparent. */
+    TXRX("Transmit (Receive Apparent)");
 
     /** Name of time tag specification. */
     private final String name;

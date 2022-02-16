@@ -173,7 +173,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
         final SpacecraftState transitState;
         final Gradient tauD;
 
-        if (timeTagSpecificationType == TimeTagSpecificationType.TX) {
+        if (timeTagSpecificationType == TimeTagSpecificationType.TX || timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
             //Date = epoch of transmission.
             //Vary position of receiver -> in case of uplink leg, receiver is satellite
             final Gradient tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
@@ -189,7 +189,12 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
             tauD = signalTimeOfFlightFixedEmission(stationTransit, transitStateDS.getPosition(), transitStateDS.getDate());
 
             stationDownlink = stationObsEpoch.shiftedBy(tauU.add(tauD));
-            stationPositionEstimated = stationDownlink;
+            //Decide whether observation is transmit or receive apparent.
+            if (timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
+                stationPositionEstimated = stationDownlink;
+            } else {
+                stationPositionEstimated = stationObsEpoch;
+            }
         }
 
         else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
