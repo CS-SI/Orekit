@@ -119,14 +119,17 @@ public enum ObservationType {
     /** Signal Strength Galileo E5a+b for Rinex2. */
     S8(MeasurementType.SIGNAL_STRENGTH, SignalCode.P, Frequency.E08),
 
-    /** Pseudorange Galileo E1 A for Rinex3. */
-    C1A(MeasurementType.PSEUDO_RANGE, SignalCode.A, Frequency.E01),
+    /** Pseudorange Galileo E1 A / Beidou B1A for Rinex3. */
+    C1A(MeasurementType.PSEUDO_RANGE, SignalCode.A, Frequency.E01, Frequency.B04),
 
     /** Pseudorange Galileo E1 I/NAV OS/CS/SoL for Rinex3. */
     C1B(MeasurementType.PSEUDO_RANGE, SignalCode.B, Frequency.E01),
 
     /** Pseudorange GPS L1 C/A / GLONASS G1 C/A / Galileo E1 C / SBAS L1 C/A / QZSS L1 C/A for Rinex3. */
     C1C(MeasurementType.PSEUDO_RANGE, SignalCode.C, Frequency.G01, Frequency.R01, Frequency.E01, Frequency.S01, Frequency.J01),
+
+    /** Pseudorange Beidou B1 Data for Rinex3. */
+    C1D(MeasurementType.PSEUDO_RANGE, SignalCode.D, Frequency.B04),
 
     /** Pseudorange Beidou B1 I for Rinex3.02. */
     C1I(MeasurementType.PSEUDO_RANGE, SignalCode.I, Frequency.B01),
@@ -137,8 +140,8 @@ public enum ObservationType {
     /** Pseudorange GPS L1 M for Rinex3. */
     C1M(MeasurementType.PSEUDO_RANGE, SignalCode.M, Frequency.G01),
 
-    /** Pseudorange GPS L1 P(AS off) / GLONASS G1 P for Rinex3. */
-    C1P(MeasurementType.PSEUDO_RANGE, SignalCode.P, Frequency.G01, Frequency.R01),
+    /** Pseudorange GPS L1 P(AS off) / GLONASS G1 P / Beidou C1 Pilot for Rinex3. */
+    C1P(MeasurementType.PSEUDO_RANGE, SignalCode.P, Frequency.G01, Frequency.R01, Frequency.B04),
 
     /** Pseudorange Beidou B1 Q for Rinex3.02. */
     C1Q(MeasurementType.PSEUDO_RANGE, SignalCode.Q, Frequency.B01),
@@ -149,8 +152,8 @@ public enum ObservationType {
     /** Pseudorange GPS L1 Z-tracking and similar (AS on) for Rinex3. */
     C1W(MeasurementType.PSEUDO_RANGE, SignalCode.W, Frequency.G01),
 
-    /** Pseudorange GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) for Rinex3. */
-    C1X(MeasurementType.PSEUDO_RANGE, SignalCode.X, Frequency.G01, Frequency.E01, Frequency.J01),
+    /** Pseudorange GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot for Rinex3. */
+    C1X(MeasurementType.PSEUDO_RANGE, SignalCode.X, Frequency.G01, Frequency.E01, Frequency.J01, Frequency.B04),
 
     /** Pseudorange GPS L1 Y for Rinex3. */
     C1Y(MeasurementType.PSEUDO_RANGE, SignalCode.Y, Frequency.G01),
@@ -326,14 +329,17 @@ public enum ObservationType {
     /** Pseudorange GLONASS G2 for Rinex2. */
     CD(MeasurementType.PSEUDO_RANGE, SignalCode.C, Frequency.R02),
 
-    /** Doppler Galileo E1 A for Rinex3. */
-    D1A(MeasurementType.DOPPLER, SignalCode.A, Frequency.E01),
+    /** Doppler Galileo E1 A / Beidou B1 B1A for Rinex3. */
+    D1A(MeasurementType.DOPPLER, SignalCode.A, Frequency.E01, Frequency.B04),
 
     /** Doppler Galileo E1 I/NAV OS/CS/SoL for Rinex3. */
     D1B(MeasurementType.DOPPLER, SignalCode.B, Frequency.E01),
 
     /** Doppler GPS L1 C/A / GLONASS G1 C/A / Galileo E1 C / SBAS L1 C/A / QZSS L1 C/A for Rinex3. */
     D1C(MeasurementType.DOPPLER, SignalCode.C, Frequency.G01, Frequency.R01, Frequency.E01, Frequency.S01, Frequency.J01),
+
+    /** Doppler Beidou B1 Data for Rinex3. */
+    D1D(MeasurementType.DOPPLER, SignalCode.D, Frequency.B04),
 
     /** Doppler Beidou B1 I for Rinex3. */
     D1I(MeasurementType.DOPPLER, SignalCode.I, Frequency.B01),
@@ -344,11 +350,11 @@ public enum ObservationType {
     /** Doppler GPS L2 M for Rinex3. */
     D1M(MeasurementType.DOPPLER, SignalCode.M, Frequency.G02),
 
-    /** Doppler GPS L1 codeless for Rinex3. */
-    D1N(MeasurementType.DOPPLER, SignalCode.CODELESS, Frequency.G01),
+    /** Doppler GPS L1 codeless / Beidou B1 codeless for Rinex3. */
+    D1N(MeasurementType.DOPPLER, SignalCode.CODELESS, Frequency.G01, Frequency.B04),
 
-    /** Doppler GPS L2 P(AS off) / GLONASS G2 P for Rinex3. */
-    D1P(MeasurementType.DOPPLER, SignalCode.P, Frequency.G02, Frequency.R02),
+    /** Doppler GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot for Rinex3. */
+    D1P(MeasurementType.DOPPLER, SignalCode.P, Frequency.G02, Frequency.R02, Frequency.B04),
 
     /** Doppler GPS L1 L1C(D) / QZSS L1 L1C(D) for Rinex3. */
     D1S(MeasurementType.DOPPLER, SignalCode.S, Frequency.G01, Frequency.J01),
@@ -356,8 +362,8 @@ public enum ObservationType {
     /** Doppler GPS L1 Z-tracking and similar (AS on) for Rinex3. */
     D1W(MeasurementType.DOPPLER, SignalCode.W, Frequency.G01),
 
-    /** Doppler GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) for Rinex3. */
-    D1X(MeasurementType.DOPPLER, SignalCode.X, Frequency.G01, Frequency.E01, Frequency.J01),
+    /** Doppler GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot for Rinex3. */
+    D1X(MeasurementType.DOPPLER, SignalCode.X, Frequency.G01, Frequency.E01, Frequency.J01, Frequency.B04),
 
     /** Doppler GPS L1 Y for Rinex3. */
     D1Y(MeasurementType.DOPPLER, SignalCode.Y, Frequency.G01),
@@ -536,14 +542,17 @@ public enum ObservationType {
     /** Doppler GLONASS G2 for Rinex2. */
     DD(MeasurementType.DOPPLER, SignalCode.C, Frequency.R02),
 
-    /** Carrier-phase Galileo E1 A for Rinex3. */
-    L1A(MeasurementType.CARRIER_PHASE, SignalCode.A, Frequency.E01),
+    /** Carrier-phase Galileo E1 A / Beidou B1 B1A for Rinex3. */
+    L1A(MeasurementType.CARRIER_PHASE, SignalCode.A, Frequency.E01, Frequency.B04),
 
     /** Carrier-phase Galileo E1 I/NAV OS/CS/SoL for Rinex3. */
     L1B(MeasurementType.CARRIER_PHASE, SignalCode.B, Frequency.E01),
 
     /** Carrier-phase GPS L1 C/A / GLONASS G1 C/A / Galileo E1 C / SBAS L1 C/A / QZSS L1 C/A for Rinex3. */
     L1C(MeasurementType.CARRIER_PHASE, SignalCode.C, Frequency.G01, Frequency.R01, Frequency.E01, Frequency.S01, Frequency.J01),
+
+    /** Carrier-phase Beidou B1 Data for Rinex3. */
+    L1D(MeasurementType.CARRIER_PHASE, SignalCode.D, Frequency.B04),
 
     /** Carrier-phase Beidou B1 I for Rinex3. */
     L1I(MeasurementType.CARRIER_PHASE, SignalCode.I, Frequency.B01),
@@ -557,8 +566,8 @@ public enum ObservationType {
     /** Carrier-phase GPS L1 codeless for Rinex3. */
     L1N(MeasurementType.CARRIER_PHASE, SignalCode.CODELESS, Frequency.G01),
 
-    /** Carrier-phase GPS L2 P(AS off) / GLONASS G2 P for Rinex3. */
-    L1P(MeasurementType.CARRIER_PHASE, SignalCode.P, Frequency.G02, Frequency.R02),
+    /** Carrier-phase GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot for Rinex3. */
+    L1P(MeasurementType.CARRIER_PHASE, SignalCode.P, Frequency.G02, Frequency.R02, Frequency.B04),
 
     /** Carrier-phase GPS L1 L1C(D) / QZSS L1 L1C(D) for Rinex3. */
     L1S(MeasurementType.CARRIER_PHASE, SignalCode.S, Frequency.G01, Frequency.J01),
@@ -566,8 +575,8 @@ public enum ObservationType {
     /** Carrier-phase GPS L1 Z-tracking and similar (AS on) for Rinex3. */
     L1W(MeasurementType.CARRIER_PHASE, SignalCode.W, Frequency.G01),
 
-    /** Carrier-phase GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) for Rinex3. */
-    L1X(MeasurementType.CARRIER_PHASE, SignalCode.X, Frequency.G01, Frequency.E01, Frequency.J01),
+    /** Carrier-phase GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot for Rinex3. */
+    L1X(MeasurementType.CARRIER_PHASE, SignalCode.X, Frequency.G01, Frequency.E01, Frequency.J01, Frequency.B04),
 
     /** Carrier-phase GPS L1 Y for Rinex3. */
     L1Y(MeasurementType.CARRIER_PHASE, SignalCode.Y, Frequency.G01),
@@ -590,8 +599,8 @@ public enum ObservationType {
     /** Carrier-phase GPS L2 M for Rinex3. */
     L2M(MeasurementType.CARRIER_PHASE, SignalCode.M, Frequency.G02),
 
-    /** Carrier-phase GPS L2 codeless for Rinex3. */
-    L2N(MeasurementType.CARRIER_PHASE, SignalCode.CODELESS, Frequency.G02),
+    /** Carrier-phase GPS L2 codeless / Beidou B1 codeless for Rinex3. */
+    L2N(MeasurementType.CARRIER_PHASE, SignalCode.CODELESS, Frequency.G02, Frequency.B04),
 
     /** Carrier-phase GPS L2 P(AS off) / GLONASS G2 P for Rinex3. */
     L2P(MeasurementType.CARRIER_PHASE, SignalCode.P, Frequency.G02, Frequency.R02),
@@ -734,14 +743,17 @@ public enum ObservationType {
     /** Carrier-phase for Rinex3. */
     L0(MeasurementType.CARRIER_PHASE, SignalCode.CODELESS),
 
-    /** Signal-strength Galileo E1 A for Rinex3. */
-    S1A(MeasurementType.SIGNAL_STRENGTH, SignalCode.A, Frequency.E01),
+    /** Signal-strength Galileo E1 A / Beidou B1 B1A for Rinex3. */
+    S1A(MeasurementType.SIGNAL_STRENGTH, SignalCode.A, Frequency.E01, Frequency.B04),
 
     /** Signal-strength Galileo E1 I/NAV OS/CS/SoL for Rinex3. */
     S1B(MeasurementType.SIGNAL_STRENGTH, SignalCode.B, Frequency.E01),
 
     /** Signal-strength GPS L1 C/A / GLONASS G1 C/A / Galileo E1 C / SBAS L1 C/A / QZSS L1 C/A for Rinex3. */
     S1C(MeasurementType.SIGNAL_STRENGTH, SignalCode.C, Frequency.G01, Frequency.R01, Frequency.E01, Frequency.S01, Frequency.J01),
+
+    /** Signal-strength Beidou B1 Data for Rinex3. */
+    S1D(MeasurementType.SIGNAL_STRENGTH, SignalCode.D, Frequency.B04),
 
     /** Signal-strength Beidou B1 I for Rinex3. */
     S1I(MeasurementType.SIGNAL_STRENGTH, SignalCode.I, Frequency.B01),
@@ -752,11 +764,11 @@ public enum ObservationType {
     /** Signal-strength GPS L2 M for Rinex3. */
     S1M(MeasurementType.SIGNAL_STRENGTH, SignalCode.M, Frequency.G02),
 
-    /** Signal-strength GPS L1 codeless for Rinex3. */
-    S1N(MeasurementType.SIGNAL_STRENGTH, SignalCode.CODELESS, Frequency.G01),
+    /** Signal-strength GPS L1 codeless / Beidou B1 codeless for Rinex3. */
+    S1N(MeasurementType.SIGNAL_STRENGTH, SignalCode.CODELESS, Frequency.G01, Frequency.B04),
 
-    /** Signal-strength GPS L2 P(AS off) / GLONASS G2 P for Rinex3. */
-    S1P(MeasurementType.SIGNAL_STRENGTH, SignalCode.P, Frequency.G02, Frequency.R02),
+    /** Signal-strength GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot for Rinex3. */
+    S1P(MeasurementType.SIGNAL_STRENGTH, SignalCode.P, Frequency.G02, Frequency.R02, Frequency.B04),
 
     /** Signal-strength GPS L1 L1C(D) / QZSS L1 L1C(D) for Rinex3. */
     S1S(MeasurementType.SIGNAL_STRENGTH, SignalCode.S, Frequency.G01, Frequency.J01),
@@ -764,8 +776,8 @@ public enum ObservationType {
     /** Signal-strength GPS L1 Z-tracking and similar (AS on) for Rinex3. */
     S1W(MeasurementType.SIGNAL_STRENGTH, SignalCode.W, Frequency.G01),
 
-    /** Signal-strength GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) for Rinex3. */
-    S1X(MeasurementType.SIGNAL_STRENGTH, SignalCode.X, Frequency.G01, Frequency.E01, Frequency.J01),
+    /** Signal-strength GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot for Rinex3. */
+    S1X(MeasurementType.SIGNAL_STRENGTH, SignalCode.X, Frequency.G01, Frequency.E01, Frequency.J01, Frequency.B04),
 
     /** Signal-strength GPS L1 Y for Rinex3. */
     S1Y(MeasurementType.SIGNAL_STRENGTH, SignalCode.Y, Frequency.G01),
