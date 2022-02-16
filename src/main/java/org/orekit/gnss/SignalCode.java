@@ -24,7 +24,7 @@ package org.orekit.gnss;
  */
 public enum SignalCode {
 
-    /** Galileo A PRS / IRNSS A SPS / GLONASS L1OCd and L2CSI codes. */
+    /** Galileo A PRS / IRNSS A SPS / GLONASS L1OCd and L2CSI / Beidou B1A and B3A codes. */
     A,
 
     /** Galileo B I/NAV and B C/NAV / IRNSS B RS / GLONASS L1OCp and LO2Cp codes. */
@@ -33,7 +33,7 @@ public enum SignalCode {
     /** GPS C/A / GLONASS C/A / Galileo C / SBAS C/A / QZSS C/A / IRNSS C RS(P) codes. */
     C,
 
-    /** GPS L1(C/A) + (P2-P1) / QZSS L5D codes. */
+    /** GPS L1(C/A) + (P2-P1) / QZSS L5D / Beidou Data codes. */
     D,
 
     /** QZSS L6E and L6 (D+E) codes. */
@@ -48,7 +48,10 @@ public enum SignalCode {
     /** GPS M code. */
     M,
 
-    /** GPS P (AS off) / GLONASS P / QZSS L5P codes. */
+    /** Beidou B1 Codeless. */
+    N,
+
+    /** GPS P (AS off) / GLONASS P / QZSS L5P / Beidou Pilot codes. */
     P,
 
     /** GPS Q / GLONASS Q / Galileo Q / SBAS Q / QZSS Q / Beidou Q codes. */
@@ -60,13 +63,13 @@ public enum SignalCode {
     /** GPS Z - tracking and similar (AS off) /  code. */
     W,
 
-    /** GPS L1C (D+P), L2C (M+L) and I+Q / GLONASS I+Q, L1OCd+L1OCp and L2CSI+LO2Cp / Galileo B+C and I+Q / SBAS I+Q / QZSS L1C (D+P), L2C (M+L), I+Q and S+L / Beidou I+Q / IRNSS B+C codes. */
+    /** GPS L1C (D+P), L2C (M+L) and I+Q / GLONASS I+Q, L1OCd+L1OCp and L2CSI+LO2Cp / Galileo B+C and I+Q / SBAS I+Q / QZSS L1C (D+P), L2C (M+L), I+Q and S+L / Beidou B1 (I+Q), B2b I+Q, B2a Data+Pilot, B3 (I+Q) / IRNSS B+C codes. */
     X,
 
     /** GPS Y code. */
     Y,
 
-    /** Galileo A+B+C / QZSS L1-SAIF, L5(D+P) and L6(D+E) codes. */
+    /** Galileo A+B+C / QZSS L1-SAIF, L5(D+P) and L6(D+E) / Beidou B2b Data+Pilot codes. */
     Z,
 
     /** Codeless. */

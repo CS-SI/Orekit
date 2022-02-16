@@ -87,6 +87,12 @@ public enum Frequency {
     /** Beidou B3 (1268.52 MHz). */
     B03(SatelliteSystem.BEIDOU,  "B3", 124),
 
+    /** Beidou B2a (1176.45 MHz). */
+    B05(SatelliteSystem.BEIDOU, "B2a", 115),
+
+    /** Beidou B2 (B2a + B2b) (1191.795MHz). */
+    B08(SatelliteSystem.BEIDOU, "B2 (B2a+B2b)", 116.5),
+
     /** QZSS L1 (1575.42 MHz). */
     J01(SatelliteSystem.QZSS,    "L1", 154),
 
