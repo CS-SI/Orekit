@@ -748,9 +748,9 @@ public class RangeRateTest {
             double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
             double staticTimeOfFlight = staticDistance / Constants.SPEED_OF_LIGHT;
 
-            RangeRate rangeRateTX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, true, obsSat, TimeTagSpecificationType.TX);
-            RangeRate rangeRateRX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, true, obsSat, TimeTagSpecificationType.RX);
-            RangeRate rangeRateTransit = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, true, obsSat, TimeTagSpecificationType.TRANSIT);
+            RangeRate rangeRateTX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TX);
+            RangeRate rangeRateRX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.RX);
+            RangeRate rangeRateTransit = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TRANSIT);
 
             EstimatedMeasurement<RangeRate> estRangeRateTX = rangeRateTX.estimate(0,0,new SpacecraftState[]{state});
             EstimatedMeasurement<RangeRate> estRangeRateRX = rangeRateRX.estimate(0,0,new SpacecraftState[]{state});
@@ -769,6 +769,23 @@ public class RangeRateTest {
             Assert.assertEquals("TX", transitRangeRateTX, estRangeRateTX.getEstimatedValue()[0],1e-6);
             Assert.assertEquals("RX", transitRangeRateRX, estRangeRateRX.getEstimatedValue()[0],1e-6);
             Assert.assertEquals("Transit", transitRangeRateT, estRangeRateTransit.getEstimatedValue()[0], 1e-11);
+
+            //Test for case in which the state has been precorrected for propagation delay / an arbitary shift
+            EstimatedMeasurement<RangeRate> estRangeRateTXPrecorr = rangeRateTX.estimate(0,0,new SpacecraftState[]{state.shiftedBy(staticTimeOfFlight)});
+            EstimatedMeasurement<RangeRate> estRangeRateRXPrecorr = rangeRateRX.estimate(0,0,new SpacecraftState[]{state.shiftedBy(-staticTimeOfFlight)});
+            EstimatedMeasurement<RangeRate> estRangeRateTransitShift = rangeRateTransit.estimate(0,0,new SpacecraftState[]{state.shiftedBy(0.1)});
+
+            System.out.println(estRangeRateTXPrecorr.getEstimatedValue()[0] - estRangeRateTX.getEstimatedValue()[0]);
+            System.out.println(estRangeRateRXPrecorr.getEstimatedValue()[0] - estRangeRateRX.getEstimatedValue()[0]);
+            System.out.println(estRangeRateTransit.getEstimatedValue()[0] - estRangeRateTransit.getEstimatedValue()[0]);
+
+            Assert.assertEquals("TX shifted", estRangeRateTXPrecorr.getEstimatedValue()[0], estRangeRateTX.getEstimatedValue()[0],1e-6);
+            Assert.assertEquals("RX shifted", estRangeRateRXPrecorr.getEstimatedValue()[0], estRangeRateRX.getEstimatedValue()[0],1e-6);
+            Assert.assertEquals("Transit shifted", estRangeRateTransitShift.getEstimatedValue()[0], estRangeRateTransit.getEstimatedValue()[0], 1e-6);
+
+            //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
+            //of a static time of flight correction.
+            Assert.assertTrue(Math.abs(transitRangeRateRX - transitRangeRateTX) > 5e-3);
         }
 
     }

@@ -267,6 +267,10 @@ public class AngularRaDecTest {
         }
     }
 
+    /**
+     * Test the estimated values when the observed angular ra dec value is provided at TX (Transmit),
+     * RX (Receive (default)), transit (bounce)
+     */
     @Test
     public void testTimeTagSpecifications(){
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -304,7 +308,7 @@ public class AngularRaDecTest {
 
             double[] transitRaDecTx = calcRaDec(tx, stationPosition.shiftedBy(2*staticTimeOfFlight).getPosition(), tx.getFrame(), tx.getDate());
             double[] transitRaDecRx = calcRaDec(rx, stationPosition.getPosition(), tx.getFrame(), rx.getDate());
-            double[] transitRaDecT = calcRaDec(state, stationPosition.shiftedBy(staticTimeOfFlight).getPosition(), tx.getFrame(), state.getDate());
+            double[] transitRaDecT = calcRaDec(state, stationPosition.getPosition(), tx.getFrame(), state.getDate());
 
             //Static time of flight does not take into account motion during tof. Very small differences expected however
             //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
@@ -317,6 +321,22 @@ public class AngularRaDecTest {
 
             Assert.assertEquals("Transit", transitRaDecT[0], estRaDecTransit.getEstimatedValue()[0], 1e-9);
             Assert.assertEquals("Transit", transitRaDecT[1], estRaDecTransit.getEstimatedValue()[1], 1e-9);
+
+            //Test providing pre corrected states + an arbitarily shifted case - since this should have no significant effect on the value.
+            EstimatedMeasurement<AngularRaDec> estRaDecTxShifted = raDecTx.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(staticTimeOfFlight)});
+            EstimatedMeasurement<AngularRaDec> estRaDecRxShifted = raDecRx.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(-staticTimeOfFlight)});
+            EstimatedMeasurement<AngularRaDec> estRaDecTransitShifted = raDecT.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(0.1)});
+
+            //tolerances are required since the initial downlink time calculate will fit numerically differently depending on start point.
+            Assert.assertEquals("TX shifted", estRaDecTxShifted.getEstimatedValue()[0], estRaDecTx.getEstimatedValue()[0], 1e-11);
+            Assert.assertEquals("TX shifted", estRaDecTxShifted.getEstimatedValue()[1], estRaDecTx.getEstimatedValue()[1], 1e-11);
+
+            Assert.assertEquals("RX shifted", estRaDecRxShifted.getEstimatedValue()[0], estRaDecRx.getEstimatedValue()[0], 1e-11);
+            Assert.assertEquals("RX shifted", estRaDecRxShifted.getEstimatedValue()[1], estRaDecRx.getEstimatedValue()[1], 1e-11);
+
+            Assert.assertEquals("Transit shifted", estRaDecTransitShifted.getEstimatedValue()[0], estRaDecTransit.getEstimatedValue()[0], 1e-11);
+            Assert.assertEquals("Transit shifted", estRaDecTransitShifted.getEstimatedValue()[1], estRaDecTransit.getEstimatedValue()[1], 1e-11);
+
 
             //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
             //of a static time of flight correction.

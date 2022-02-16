@@ -195,19 +195,15 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
                 //Vary position of receiver -> in case of uplink leg, receiver is satellite
                 tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
                 //Get state at transit
-
                 final Gradient deltaMTauU = tauU.add(delta);
                 final TimeStampedFieldPVCoordinates<Gradient> transitPV = pvaDS.shiftedBy(deltaMTauU);
                 final SpacecraftState transitState = state.shiftedBy(deltaMTauU.getValue());
-
                 evalOneWay2 = oneWayTheoreticalEvaluation(iteration, evaluation, false, stationObsEpoch, transitPV, transitState, indices, nbParams);
-
                 //Get station at transit - although this is effectively an initial seed for fitting the downlink delay
-                final TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(deltaMTauU);
+                final TimeStampedFieldPVCoordinates<Gradient> stationTransit = stationObsEpoch.shiftedBy(tauU);
 
                 //project time of flight forwards with 0 offset.
                 tauD = signalTimeOfFlightFixedEmission(stationTransit, transitPV.getPosition(), transitPV.getDate());
-
                 evalOneWay1 = oneWayTheoreticalEvaluation(iteration, evaluation, true, stationTransit.shiftedBy(tauD), transitPV, transitState, indices, nbParams);
 
             } else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {

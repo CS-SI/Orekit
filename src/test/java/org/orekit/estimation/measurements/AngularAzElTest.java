@@ -265,6 +265,10 @@ public class AngularAzElTest {
         }
     }
 
+    /**
+     * Test the estimated values when the observed angular AzEl value is provided at TX (Transmit),
+     * RX (Receive (default)), transit (bounce)
+     */
     @Test
     public void testTimeTagSpecifications(){
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -306,8 +310,8 @@ public class AngularAzElTest {
             double transitAzRx = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(rx.getPVCoordinates().getPosition(), rx.getFrame(), rx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
             double transitElRx = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(rx.getPVCoordinates().getPosition(), rx.getFrame(), rx.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
 
-            double transitAzT = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(state.getPVCoordinates().getPosition(), state.getFrame(), state.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
-            double transitElT = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(state.getPVCoordinates().getPosition(), state.getFrame(), state.getDate().shiftedBy(staticTimeOfFlight)), 0.0);
+            double transitAzT = MathUtils.normalizeAngle(gs.getBaseFrame().getAzimuth(state.getPVCoordinates().getPosition(), state.getFrame(), state.getDate()), 0.0);
+            double transitElT = MathUtils.normalizeAngle(gs.getBaseFrame().getElevation(state.getPVCoordinates().getPosition(), state.getFrame(), state.getDate()), 0.0);
 
 
             //Static time of flight does not take into account motion during tof. Very small differences expected however
@@ -320,6 +324,21 @@ public class AngularAzElTest {
 
             Assert.assertEquals("Transit", transitAzT, estAzElTransit.getEstimatedValue()[0], 2e-8);
             Assert.assertEquals("Transit", transitElT, estAzElTransit.getEstimatedValue()[1], 2e-8);
+
+            //Test providing pre corrected states + an arbitarily shifted case - since this should have no significant effect on the value.
+            EstimatedMeasurement<AngularAzEl> estAzElTxShifted = azElTx.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(staticTimeOfFlight)});
+            EstimatedMeasurement<AngularAzEl> estAzElRxShifted = azElRx.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(-staticTimeOfFlight)});
+            EstimatedMeasurement<AngularAzEl> estAzElTransitShifted = azElT.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(0.1)});
+
+            //tolerances are required since the initial downlink time calculate will fit numerically differently depending on start point.
+            Assert.assertEquals("TX shifted", estAzElTxShifted.getEstimatedValue()[0], estAzElTx.getEstimatedValue()[0], 1e-11);
+            Assert.assertEquals("TX shifted", estAzElTxShifted.getEstimatedValue()[1], estAzElTx.getEstimatedValue()[1], 1e-11);
+
+            Assert.assertEquals("RX shifted", estAzElRxShifted.getEstimatedValue()[0], estAzElRx.getEstimatedValue()[0], 1e-11);
+            Assert.assertEquals("RX shifted", estAzElRxShifted.getEstimatedValue()[1], estAzElRx.getEstimatedValue()[1], 1e-11);
+
+            Assert.assertEquals("Transit shifted", estAzElTransitShifted.getEstimatedValue()[0], estAzElTransit.getEstimatedValue()[0], 1e-11);
+            Assert.assertEquals("Transit shifted", estAzElTransitShifted.getEstimatedValue()[1], estAzElTransit.getEstimatedValue()[1], 1e-11);
 
             //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
             //of a static time of flight correction.

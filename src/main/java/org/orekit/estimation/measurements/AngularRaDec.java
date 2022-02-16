@@ -176,10 +176,8 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec>
             //Vary position of receiver -> in case of uplink leg, receiver is satellite
             final Gradient tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
             final Gradient deltaMTauU = tauU.add(delta);
-
             //Get state at transit
             transitStateDS = pvaDS.shiftedBy(deltaMTauU);
-
             transitState = state.shiftedBy(deltaMTauU.getValue());
 
             //Get station at transit - although this is effectively an initial seed for fitting the downlink delay

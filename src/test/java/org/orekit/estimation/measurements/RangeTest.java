@@ -775,9 +775,9 @@ public class RangeTest {
             double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
             double staticTimeOfFlight = staticDistance / Constants.SPEED_OF_LIGHT;
 
-            Range rangeTX = new Range(gs, true, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TX);
-            Range rangeRX = new Range(gs, true, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.RX);
-            Range rangeTransit = new Range(gs, true, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TRANSIT);
+            Range rangeTX = new Range(gs,  state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TX);
+            Range rangeRX = new Range(gs,  state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.RX);
+            Range rangeTransit = new Range(gs,  state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TRANSIT);
 
             EstimatedMeasurement<Range> estRangeTX = rangeTX.estimate(0, 0, new SpacecraftState[]{state});
             EstimatedMeasurement<Range> estRangeRX = rangeRX.estimate(0, 0, new SpacecraftState[]{state});
@@ -796,6 +796,16 @@ public class RangeTest {
             Assert.assertEquals("TX", transitRangeTX, estRangeTX.getEstimatedValue()[0], 1e-3);
             Assert.assertEquals("RX", transitRangeRX, estRangeRX.getEstimatedValue()[0], 1e-3);
             Assert.assertEquals("Transit", transitRangeT, estRangeTransit.getEstimatedValue()[0], 1e-6);
+
+            //Test providing pre corrected states + an arbitarily shifted case - since this should have no significant effect on the value.
+            EstimatedMeasurement<Range> estRangeTXPreCorr = rangeTX.estimate(0,0,new SpacecraftState[]{state.shiftedBy(staticTimeOfFlight)});
+            EstimatedMeasurement<Range> estRangeRXPreCorr = rangeRX.estimate(0,0,new SpacecraftState[]{state.shiftedBy(-staticTimeOfFlight)});
+            EstimatedMeasurement<Range> estRangeTransitPreCorr = rangeTransit.estimate(0,0,new SpacecraftState[]{state.shiftedBy(0.1)});
+
+            //tolerances are required since the initial downlink time calculate will fit numerically differently depending on start point.
+            Assert.assertEquals("TX shifted", estRangeTXPreCorr.getEstimatedValue()[0], estRangeTX.getEstimatedValue()[0],1e-7);
+            Assert.assertEquals("RX shifted", estRangeRXPreCorr.getEstimatedValue()[0], estRangeRX.getEstimatedValue()[0],1e-7);
+            Assert.assertEquals("Transit shifted", estRangeTransitPreCorr.getEstimatedValue()[0], estRangeTransit.getEstimatedValue()[0], 1e-7);
 
             //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
             //of a static time of flight correction.
