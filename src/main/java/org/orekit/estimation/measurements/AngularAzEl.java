@@ -193,7 +193,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl>
             //  we will have delta == tauD and transitState will be the same as state)
 
             // Downlink delay
-            tauD = signalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), obsEpochFieldDate);
+            tauD = signalTimeOfFlightFixedReception(pvaDS, stationObsEpoch.getPosition(), obsEpochFieldDate);
 
             // Transit state
             final Gradient deltaMTauD = tauD.negate().add(delta);

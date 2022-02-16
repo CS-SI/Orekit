@@ -255,7 +255,7 @@ public class Range extends AbstractMeasurement<Range>
 
                 //Calculate time of flight for return measurement participants
                 tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, transitStateDS.getPosition(), transitStateDS.getDate());
-                tauU = signalTimeOfFlight(stationObsEpoch, transitStateDS.getPosition(), transitStateDS.getDate());
+                tauU = signalTimeOfFlightFixedReception(stationObsEpoch, transitStateDS.getPosition(), transitStateDS.getDate());
                 estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[] {transitState},
                         new TimeStampedPVCoordinates[] {
                                 stationObsEpoch.shiftedBy(tauU.negate()).toTimeStampedPVCoordinates(),
@@ -267,7 +267,7 @@ public class Range extends AbstractMeasurement<Range>
             }
             else {
                 // Downlink delay
-                tauD = signalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), obsEpochDateDS);
+                tauD = signalTimeOfFlightFixedReception(pvaDS, stationObsEpoch.getPosition(), obsEpochDateDS);
 
                 // Transit state & Transit state (re)computed with gradients
                 final Gradient        deltaMTauD   = tauD.negate().add(delta);
@@ -277,7 +277,7 @@ public class Range extends AbstractMeasurement<Range>
                 // Station at transit state date (derivatives of tauD taken into account)
                 final TimeStampedFieldPVCoordinates<Gradient> stationAtTransitDate = stationObsEpoch.shiftedBy(tauD.negate());
                 // Uplink delay
-                tauU = signalTimeOfFlight(stationAtTransitDate, transitStateDS.getPosition(),
+                tauU = signalTimeOfFlightFixedReception(stationAtTransitDate, transitStateDS.getPosition(),
                         transitStateDS.getDate());
                 final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
                         stationObsEpoch.shiftedBy(-tauD.getValue() - tauU.getValue());
@@ -299,7 +299,7 @@ public class Range extends AbstractMeasurement<Range>
             //  we will have delta == tauD and transitState will be the same as state)
 
             // Downlink delay
-            tauD = signalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), obsEpochDateDS);
+            tauD = signalTimeOfFlightFixedReception(pvaDS, stationObsEpoch.getPosition(), obsEpochDateDS);
 
             // Transit state & Transit state (re)computed with gradients
             final Gradient        deltaMTauD   = tauD.negate().add(delta);

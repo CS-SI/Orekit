@@ -215,7 +215,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
 
                 //Calculate time of flight for return measurement participants
                 tauD = signalTimeOfFlightFixedEmission(stationObsEpoch, transitPV.getPosition(), transitPV.getDate());
-                tauU = signalTimeOfFlight(stationObsEpoch, transitPV.getPosition(), transitPV.getDate());
+                tauU = signalTimeOfFlightFixedReception(stationObsEpoch, transitPV.getPosition(), transitPV.getDate());
 
                 //shift station forwards to get downlink
                 evalOneWay1 = oneWayTheoreticalEvaluation(iteration, evaluation, true, stationObsEpoch.shiftedBy(tauD), transitPV, transitState, indices, nbParams);
@@ -255,7 +255,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
                                         zero));
 
                 tauU =
-                        signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate());
+                        signalTimeOfFlightFixedReception(stationApproxUplink, transitPV.getPosition(), transitPV.getDate());
 
                 final TimeStampedFieldPVCoordinates<Gradient> stationUplink = stationApproxUplink
                         .shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));
@@ -307,7 +307,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate>
             //  we will have delta == tauD and transitState will be the same as state)
 
             // Downlink delay
-            tauD = signalTimeOfFlight(pvaDS, stationObsEpoch.getPosition(), obsEpochFieldDate);
+            tauD = signalTimeOfFlightFixedReception(pvaDS, stationObsEpoch.getPosition(), obsEpochFieldDate);
 
             // Transit state
             final Gradient        deltaMTauD   = tauD.negate().add(delta);
