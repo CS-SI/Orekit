@@ -337,7 +337,7 @@ interoperability in space systems.
 
 ## Maintained library
 
-Orekit has been in development since 2002 inside [CS GROUP](http://www.c-s.fr/)
+Orekit has been in development since 2002 inside [CS GROUP](https://www.csgroup.eu/)
 and is still used and maintained by its
 experts and an open community. It is ruled by a meritocratic governance
 model and the Project Management Committee involves actors from
