@@ -82,78 +82,78 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
     @Test
     public void testMinDate() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate startDate = new AbsoluteDate(1997, 1, 1, 12, 0, 0.0, utc);
+        final AbsoluteDate startDate = new AbsoluteDate(2004, 1, 1, 12, 0, 0.0, utc);
         Assert.assertEquals(startDate, JBData.getMinDate());
     }
     
     @Test
     public void testMaxDate() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate lastDate = new AbsoluteDate(2022, 1, 7, 12, 0, 0.0, utc);
+        final AbsoluteDate lastDate = new AbsoluteDate(2007, 1, 1, 12, 0, 0.0, utc);
         Assert.assertEquals(lastDate, JBData.getMaxDate());
     }
     
     @Test
     public void testF10Interp() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2450450, 12 * 3600, utc);
-        assertThat((72.4 + 72.1)/2, closeTo(JBData.getF10(julianDate), 1e-10));
+        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 12*3600, utc);
+        assertThat((116.0 + 116.5)/2, closeTo(JBData.getF10(julianDate), 1e-10));
     }
     
     @Test
     public void testF10() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2450450, 0, utc);
-        assertThat(72.4, closeTo(JBData.getF10(julianDate), 1e-10));
+        final AbsoluteDate julianDate = JBData.getMinDate();
+        assertThat(116.0, closeTo(JBData.getF10(julianDate), 1e-10));
     }
     
     @Test
     public void testF10B() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2450450, 0, utc);
-        assertThat(78.0, closeTo(JBData.getF10B(julianDate), 1e-10));
+        final AbsoluteDate julianDate = JBData.getMinDate();
+        assertThat(119.9, closeTo(JBData.getF10B(julianDate), 1e-10));
     }
     
     @Test
     public void testS10() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2450450, 0, utc);
-        assertThat(74.0, closeTo(JBData.getS10(julianDate), 1e-10));
+        final AbsoluteDate julianDate = JBData.getMinDate();
+        assertThat(109.1, closeTo(JBData.getS10(julianDate), 1e-10));
     }
     
     @Test
     public void testS10B() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2450450, 0, utc);
-        assertThat(79.2, closeTo(JBData.getS10B(julianDate), 1e-10));
+        final AbsoluteDate julianDate = JBData.getMinDate();
+        assertThat(116.5, closeTo(JBData.getS10B(julianDate), 1e-10));
     }
     
     @Test
     public void testM10() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2450450, 0, utc);
-        assertThat(65.4, closeTo(JBData.getXM10(julianDate), 1e-10));
+        final AbsoluteDate julianDate = JBData.getMinDate();
+        assertThat(103.8, closeTo(JBData.getXM10(julianDate), 1e-10));
     }
     
     @Test
     public void testM10B() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2450450, 0, utc);
-        assertThat(73.8, closeTo(JBData.getXM10B(julianDate), 1e-10));
+        final AbsoluteDate julianDate = JBData.getMinDate();
+        assertThat(120.3, closeTo(JBData.getXM10B(julianDate), 1e-10));
     }
     
     @Test
     public void testY10() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2450450, 0, utc);
-        assertThat(61.9, closeTo(JBData.getY10(julianDate), 1e-10));
+        final AbsoluteDate julianDate = JBData.getMinDate();
+        assertThat(125.2, closeTo(JBData.getY10(julianDate), 1e-10));
     }
     
     @Test
     public void testY10B() {
         SOLFSMYSpaceWeatherData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2450450, 0, utc);
-        assertThat(70.7, closeTo(JBData.getY10B(julianDate), 1e-10));
+        final AbsoluteDate julianDate = JBData.getMinDate();
+        assertThat(127.8, closeTo(JBData.getY10B(julianDate), 1e-10));
     }
     
     
@@ -166,7 +166,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Frame eci = FramesFactory.getGCRF();
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        AbsoluteDate date = new AbsoluteDate(2004, 1, 1, utc);
+        AbsoluteDate date = new AbsoluteDate(2004, 1, 2, utc);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                 Constants.WGS84_EARTH_FLATTENING, ecef);
         Orbit orbit = new KeplerianOrbit(6378137 + 400e3, 1e-3, FastMath.toRadians(50), 0, 0, 0, PositionAngle.TRUE,

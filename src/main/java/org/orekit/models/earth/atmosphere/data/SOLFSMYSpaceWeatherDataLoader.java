@@ -364,21 +364,22 @@ public class SOLFSMYSpaceWeatherDataLoader implements DataLoader {
                         final AbsoluteDate date = AbsoluteDate.createJDDate(julianDayInt, julianSeconds, utc);
 
                         if (parsedEpochs.add(date)) {
-                            final double f10 = Double.parseDouble(line.substring(24, 28));
 
-                            final double f10b = Double.parseDouble(line.substring(30, 34));
+                            final double f10 = Double.parseDouble(line.substring(23, 28));
 
-                            final double s10 = Double.parseDouble(line.substring(36, 40));
+                            final double f10b = Double.parseDouble(line.substring(29, 34));
 
-                            final double s10b = Double.parseDouble(line.substring(42, 46));
+                            final double s10 = Double.parseDouble(line.substring(35, 40));
 
-                            final double xm10 = Double.parseDouble(line.substring(48, 52));
+                            final double s10b = Double.parseDouble(line.substring(41, 46));
 
-                            final double xm10b = Double.parseDouble(line.substring(54, 58));
+                            final double xm10 = Double.parseDouble(line.substring(47, 52));
 
-                            final double y10 = Double.parseDouble(line.substring(60, 64));
+                            final double xm10b = Double.parseDouble(line.substring(53, 58));
 
-                            final double y10b = Double.parseDouble(line.substring(66, 70));
+                            final double y10 = Double.parseDouble(line.substring(59, 64));
+
+                            final double y10b = Double.parseDouble(line.substring(65, 70));
 
                             set.add(new LineParameters(date, f10, f10b, s10, s10b, xm10,
                                     xm10b, y10, y10b));
