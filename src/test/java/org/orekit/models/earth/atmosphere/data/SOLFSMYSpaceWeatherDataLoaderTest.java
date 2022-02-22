@@ -32,7 +32,8 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -224,5 +225,20 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
         return propagator;
+    }
+    
+    @Test
+    /**
+     * Testing for non-present day in the data
+     */
+    public void testF10EphemerisException() {
+        SOLFSMYSpaceWeatherData JBData = loadJB();
+        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
+        try {
+            JBData.getF10(date);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+        }
     }
 }
