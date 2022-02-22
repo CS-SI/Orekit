@@ -358,28 +358,30 @@ public class SOLFSMYSpaceWeatherDataLoader implements DataLoader {
                          * The Julian Date is expressed as float in the text file,
                          * and supposed to be taken at 12UT.
                          */
-                        final double julianDay = Double.parseDouble(line.substring(13, 22));
+
+                        final String[] splitLine = line.split("\\s+");
+                        final double julianDay = Double.parseDouble(splitLine[3]);
                         final int julianDayInt = (int) julianDay;
                         final double julianSeconds = (julianDay - julianDayInt) * 24 * 3600;
                         final AbsoluteDate date = AbsoluteDate.createJDDate(julianDayInt, julianSeconds, utc);
 
                         if (parsedEpochs.add(date)) {
 
-                            final double f10 = Double.parseDouble(line.substring(23, 28));
+                            final double f10 = Double.parseDouble(splitLine[4]);
 
-                            final double f10b = Double.parseDouble(line.substring(29, 34));
+                            final double f10b = Double.parseDouble(splitLine[5]);
 
-                            final double s10 = Double.parseDouble(line.substring(35, 40));
+                            final double s10 = Double.parseDouble(splitLine[6]);
 
-                            final double s10b = Double.parseDouble(line.substring(41, 46));
+                            final double s10b = Double.parseDouble(splitLine[7]);
 
-                            final double xm10 = Double.parseDouble(line.substring(47, 52));
+                            final double xm10 = Double.parseDouble(splitLine[8]);
 
-                            final double xm10b = Double.parseDouble(line.substring(53, 58));
+                            final double xm10b = Double.parseDouble(splitLine[9]);
 
-                            final double y10 = Double.parseDouble(line.substring(59, 64));
+                            final double y10 = Double.parseDouble(splitLine[10]);
 
-                            final double y10b = Double.parseDouble(line.substring(65, 70));
+                            final double y10b = Double.parseDouble(splitLine[11]);
 
                             set.add(new LineParameters(date, f10, f10b, s10, s10b, xm10,
                                     xm10b, y10, y10b));
