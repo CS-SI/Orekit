@@ -27,7 +27,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.atmosphere.JB2008InputParameters;
-import org.orekit.models.earth.atmosphere.data.SOLFSMYSpaceWeatherDataLoader.LineParameters;
+import org.orekit.models.earth.atmosphere.data.SOLFSMYDataLoader.LineParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ImmutableTimeStampedCache;
@@ -38,7 +38,7 @@ import org.orekit.utils.ImmutableTimeStampedCache;
  * provided by Space Environment Technologies, therefore providing neither the temperature correction
  * available in the DST and DTC files, nor the geomagnetic storm indices available in the SOLRESAP file.
  * The {@link org.orekit.data.DataLoader} implementation and the parsing is handled by
- * the class {@link SOLFSMYSpaceWeatherDataLoader}.
+ * the class {@link SOLFSMYDataLoader}.
  * <p>
  * The data is available on Space Environment Technologies' website at
  * <a href="http://sol.spacenvironment.net/jb2008"></a>.
@@ -50,7 +50,7 @@ import org.orekit.utils.ImmutableTimeStampedCache;
  * @author Louis Aucouturier
  * @since 11.2
  */
-public class SOLFSMYSpaceWeatherData extends AbstractSelfFeedingLoader
+public class JB2008SpaceWeatherData extends AbstractSelfFeedingLoader
     implements JB2008InputParameters {
 
     /** Default regular expression for supported names that works with all officially published files. */
@@ -89,7 +89,7 @@ public class SOLFSMYSpaceWeatherData extends AbstractSelfFeedingLoader
      * with variations allowed between SOLFSMY and the file extension.
      */
     @DefaultDataContext
-    public SOLFSMYSpaceWeatherData(final String supportedNames) {
+    public JB2008SpaceWeatherData(final String supportedNames) {
         this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
                 DataContext.getDefault().getTimeScales().getUTC());
     }
@@ -103,13 +103,13 @@ public class SOLFSMYSpaceWeatherData extends AbstractSelfFeedingLoader
      * @param dataProvidersManager provides access to auxiliary data files.
      * @param utc                  UTC time scale.
      */
-    public SOLFSMYSpaceWeatherData(final String supportedNames,
+    public JB2008SpaceWeatherData(final String supportedNames,
             final DataProvidersManager dataProvidersManager,
             final TimeScale utc) {
         super(supportedNames, dataProvidersManager);
 
-        final SOLFSMYSpaceWeatherDataLoader loader =
-                new SOLFSMYSpaceWeatherDataLoader(utc);
+        final SOLFSMYDataLoader loader =
+                new SOLFSMYDataLoader(utc);
         this.feed(loader);
         data =
                 new ImmutableTimeStampedCache<>(N_NEIGHBORS, loader.getDataSet());

@@ -64,7 +64,7 @@ import org.orekit.propagation.sampling.OrekitStepHandler;
  * @since 11.2
  */
 
-public class SOLFSMYSpaceWeatherDataLoaderTest {
+public class SOLFSMYDataLoaderTest {
     
     private TimeScale utc;
     
@@ -75,15 +75,15 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
     }
     
     // DataLoader
-    private SOLFSMYSpaceWeatherData loadJB() {
-        SOLFSMYSpaceWeatherData JBData = new SOLFSMYSpaceWeatherData(SOLFSMYSpaceWeatherData.DEFAULT_SUPPORTED_NAMES);
+    private JB2008SpaceWeatherData loadJB() {
+        JB2008SpaceWeatherData JBData = new JB2008SpaceWeatherData(JB2008SpaceWeatherData.DEFAULT_SUPPORTED_NAMES);
         return JBData;
     }
     
     @Test
     public void testNoDataException() {
         try {
-            new SOLFSMYSpaceWeatherData("SOLFSMY_nodata.txt");
+            new JB2008SpaceWeatherData("SOLFSMY_nodata.txt");
             Assert.fail("No Data In File exception should have been raised");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_DATA_IN_FILE, oe.getSpecifier());
@@ -93,7 +93,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
     @Test
     public void testUnableParse() {
         try {
-            new SOLFSMYSpaceWeatherData("SOLFSMY_badparse.txt");
+            new JB2008SpaceWeatherData("SOLFSMY_badparse.txt");
             Assert.fail("UNABLE_TO_PARSE_LINE_IN_FILE exception should have been raised");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -103,77 +103,77 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
     
     @Test
     public void testMinDate() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate startDate = new AbsoluteDate(2004, 1, 1, 12, 0, 0.0, utc);
         Assert.assertEquals(startDate, JBData.getMinDate());
     }
     
     @Test
     public void testMaxDate() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate lastDate = new AbsoluteDate(2007, 1, 1, 12, 0, 0.0, utc);
         Assert.assertEquals(lastDate, JBData.getMaxDate());
     }
     
     @Test
     public void testF10Interp() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 12*3600, utc);
         assertThat((116.0 + 116.5)/2, closeTo(JBData.getF10(julianDate), 1e-10));
     }
     
     @Test
     public void testF10() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate julianDate = JBData.getMinDate();
         assertThat(116.0, closeTo(JBData.getF10(julianDate), 1e-10));
     }
     
     @Test
     public void testF10B() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate julianDate = JBData.getMinDate();
         assertThat(119.9, closeTo(JBData.getF10B(julianDate), 1e-10));
     }
     
     @Test
     public void testS10() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate julianDate = JBData.getMinDate();
         assertThat(109.1, closeTo(JBData.getS10(julianDate), 1e-10));
     }
     
     @Test
     public void testS10B() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate julianDate = JBData.getMinDate();
         assertThat(116.5, closeTo(JBData.getS10B(julianDate), 1e-10));
     }
     
     @Test
     public void testM10() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate julianDate = JBData.getMinDate();
         assertThat(103.8, closeTo(JBData.getXM10(julianDate), 1e-10));
     }
     
     @Test
     public void testM10B() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate julianDate = JBData.getMinDate();
         assertThat(120.3, closeTo(JBData.getXM10B(julianDate), 1e-10));
     }
     
     @Test
     public void testY10() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate julianDate = JBData.getMinDate();
         assertThat(125.2, closeTo(JBData.getY10(julianDate), 1e-10));
     }
     
     @Test
     public void testY10B() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         final AbsoluteDate julianDate = JBData.getMinDate();
         assertThat(127.8, closeTo(JBData.getY10B(julianDate), 1e-10));
     }
@@ -254,7 +254,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
      * Testing getF10
      */
     public void testF10EphemerisException() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getF10(date);
@@ -270,7 +270,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
      * Testing getF10B
      */
     public void testF10BEphemerisException() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getF10B(date);
@@ -286,7 +286,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
      * Testing getS10
      */
     public void testS10EphemerisException() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getS10(date);
@@ -302,7 +302,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
      * Testing getS10B
      */
     public void testS10BEphemerisException() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getS10(date);
@@ -318,7 +318,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
      * Testing getXM10
      */
     public void testXM10EphemerisException() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getXM10(date);
@@ -334,7 +334,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
      * Testing getXM10B
      */
     public void testXM10BEphemerisException() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getXM10B(date);
@@ -350,7 +350,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
      * Testing getY10
      */
     public void testY10EphemerisException() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getY10(date);
@@ -366,7 +366,7 @@ public class SOLFSMYSpaceWeatherDataLoaderTest {
      * Testing getY10B
      */
     public void testY10BEphemerisException() {
-        SOLFSMYSpaceWeatherData JBData = loadJB();
+        JB2008SpaceWeatherData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getY10B(date);

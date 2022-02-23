@@ -57,7 +57,7 @@ import org.orekit.time.TimeStamped;
  */
 
 
-public class SOLFSMYSpaceWeatherDataLoader implements DataLoader {
+public class SOLFSMYDataLoader implements DataLoader {
 
     /** Helper class to parse line data and to raise exceptions if needed. */
     public static class LineReader {
@@ -301,7 +301,7 @@ public class SOLFSMYSpaceWeatherDataLoader implements DataLoader {
      * Constructor.
      * @param utc UTC time scale
      */
-    public SOLFSMYSpaceWeatherDataLoader(final TimeScale utc) {
+    public SOLFSMYDataLoader(final TimeScale utc) {
         this.utc = utc;
         firstDate = null;
         lastDate = null;
