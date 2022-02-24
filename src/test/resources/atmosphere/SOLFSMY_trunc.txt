@@ -2,6 +2,12 @@
 # Number of records = 9319 with daily and 81-days centered-smoothed data 
 # F10, S10, M10, and Y10 (81c) have different observation and report times; to standardize reporting, all values are reported in sfu units at 12UT; observations are 3-times daily for F10 (20 UT used), every 5 minutes for S10 (daily average used), twice daily for M10 (7 and 16 UT), and every 1 minute for Y10 (Xrays are each minute while Lya is daily); for model inputs the values should be used as a daily value between 0-24 UT for a given calendar date; F10 and S10 are 1-day lagged, M10 is 2-day, and Y10 is 5-day lagged in JB2008; the 81-day centered values are used with the same respective lag times. Ssrc has 4 fields (1 for each index): 0 = (F10, S10, M10, Y10) spline-filled if value or missing if no value; 1 = (F10, M10, Y10) derived or measured index, (S10) SOHO/SEM; 2 = (S10) TIMED/SEE v11; 3 = (S10) SOHO gap (daily); 4 = (S10) SOHO gap (average); 5 = (F10) F10 mean (2 surrounding values), (S10) SDO/EVE; 6 = (S10) GOES/EUVS fill-in, (M10) M10 mean (2 surrounding values); 7 = (S10) S10 scaled to match M10 change from previous day; 8 = (S10) SDO/EVE corrections and all S10 tweaked from sat 12388 delta B%, (Y10) UARS/SOLSTICE V18; 9 = (S10) replace original v4.0h data for versions 4.0 and higher, (Y10) UARS/SOLSTICE v19; A = (S10) TIMED/SEE solar minimum correction; B = (S10) replace with original v4.0h S10 data for versions 4.0 and higher, (M10) SORCE/SOLSTICE/SIM v9; C = (S10) SDO/EVE correction, (Y10) GOES XRS; D = (S10) validated TIMED/SEE, (Y10) GOES XRS and SET composite LYA; E = (S10) S10 composite, (Y10) SET composite LYA; F = (F10, S10, M10, Y10) mean of bordering values
 # YYYY DDD   JulianDay  F10   F81c  S10   S81c  M10   M81c  Y10   Y81c  Ssrc
+  2003 360   2453000.0 137.2 122.4 135.5 117.4 156.4 121.7 143.9 129.8  1B11
+  2003 361   2453001.0 126.6 122.4 130.7 117.3 150.1 121.7 139.9 129.5  1B11
+  2003 362   2453002.0 119.0 122.2 126.1 117.3 139.1 121.6 136.6 129.2  1B11
+  2003 363   2453003.0 114.5 121.8 120.4 117.1 127.3 121.5 133.0 128.9  1B11
+  2003 364   2453004.0 107.7 121.3 115.0 117.0 117.9 121.2 131.9 128.6  1B11
+  2003 365   2453005.0 105.6 120.6 111.0 116.8 108.5 120.9 132.8 128.2  1B11
   2004   1   2453006.0 116.0 119.9 109.1 116.5 103.8 120.3 125.2 127.8  1B11
   2004   2   2453007.0 116.5 119.1 106.2 116.3  99.1 119.8 120.6 127.3  1B11
   2004   3   2453008.0 116.1 118.3 103.1 116.0  98.3 119.2 121.2 126.9  1B11

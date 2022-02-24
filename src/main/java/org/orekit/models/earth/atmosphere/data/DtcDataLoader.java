@@ -39,17 +39,22 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
 
 
 /**
- * This class reads solar activity data from SOLFSMY files for the class
+ * This class reads solar activity data from DTCFILE files for the class
  * {@link JB2008SpaceEnvironmentData}. The code in this class is based of the
- * CssiSpaceWeatherDataLoader.
+ * CssiSpaceWeatherDataLoader class.
+ * The DTCFILE file contain pre-computed data from Space Environment using the Dst indices
+ * as well as Ap indices. This computation can be realised using the Fortran code provided
+ * by Space Environment Technologies. See <a href="https://sol.spacenvironment.net/JB2008/indices/DTCFILE.TXT">
+ * this link</a> for more information.
  * <p>
  * The data is provided by Space Environment Technologies through their website
- * <a href="https://sol.spacenvironment.net/JB2008/indices/SOLFSMY.TXT">Link</a>.
+ * <a href="https://sol.spacenvironment.net/JB2008/indices/DTCFILE.TXT">Link</a>.
  * </p>
- * The work done for this class is based on the CssiWpaceWeatherDataLoader class
+ * The work done for this class is based on the CssiSpaceWeatherDataLoader class
  * by Clément Jonglez, the JB2008 interface by Pascal Parraud, and corrections for
  * DataLoader implementation by Bryan Cazabonne and Evan Ward .
  *
@@ -58,7 +63,7 @@ import org.orekit.time.TimeStamped;
  */
 
 
-public class SOLFSMYDataLoader implements DataLoader {
+public class DtcDataLoader implements DataLoader {
 
     /** Helper class to parse line data and to raise exceptions if needed. */
     public static class LineReader {
@@ -159,59 +164,22 @@ public class SOLFSMYDataLoader implements DataLoader {
     public static class LineParameters implements TimeStamped, Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -9008818050532123587L;
+        private static final long serialVersionUID = 8239275953453087629L;
 
         /** Entry date. */
         private final AbsoluteDate date;
 
-        /** 10.7-cm Solar flux (1e<sup>-22</sup>*Watt/(m²*Hertz))<br>
-         * (Tabular time 1.0 day earlier). */
-        private final double f10;
-
-        /** 10.7-cm Solar Flux, averaged 81-day centered on the input time.  */
-        private final double f10b;
-
-        /** EUV index (26-34 nm) scaled to F10. */
-        private final double s10;
-
-        /** UV 81-day averaged centered index. */
-        private final double s10b;
-
-        /** MG2 index scaled to F10. */
-        private final double xm10;
-
-        /** MG2 81-day average centered index. */
-        private final double xm10b;
-
-        /** Solar X-Ray &amp; Lya index scaled to F10. */
-        private final double y10;
-
-        /** Solar X-Ray &amp; Lya 81-day average centered index. */
-        private final double y10b;
+        /** dTc temperature correction data. */
+        private final double dtc;
 
         /**
          * Constructor.
          * @param date  entry date
-         * @param f10   10.7-cm Solar Radio Flux (F10.7)
-         * @param f10b  10.7-cm Solar Flux, averaged 81-day centered on the input time
-         * @param s10   EUV index (26-34 nm) scaled to F10
-         * @param s10b  UV 81-day averaged centered index
-         * @param xm10  MG2 index scaled to F10
-         * @param xm10b MG2 81-day average centered index
-         * @param y10   Solar X-Ray &amp; Lya index scaled to F10
-         * @param y10b  Solar X-Ray &amp; Lya 81-day average centered index
+         * @param dtc   Temperature correction for geomagnetic storms
          */
-        public LineParameters(final AbsoluteDate date, final double f10, final double f10b, final double s10,
-                final double s10b, final double xm10, final double xm10b, final double y10, final double y10b) {
+        public LineParameters(final AbsoluteDate date, final double dtc) {
             this.date = date;
-            this.f10 = f10;
-            this.f10b = f10b;
-            this.s10 = s10;
-            this.s10b = s10b;
-            this.xm10 = xm10;
-            this.xm10b = xm10b;
-            this.y10 = y10;
-            this.y10b = y10b;
+            this.dtc = dtc;
         }
 
         @Override
@@ -219,76 +187,15 @@ public class SOLFSMYDataLoader implements DataLoader {
             return date;
         }
 
-        /** The getters does not take into account the lag
-         *
+        /**
+         * @return dtc  Temperature correction for geomagnetic storms
          */
-
-        /** Get the value of the instantaneous solar flux index
-         *  (1e<sup>-22</sup>*Watt/(m²*Hertz)).
-         * <p>Tabular time 1.0 day earlier.</p>
-         * @return the instantaneous F10.7 index
-         */
-        public double getF10() {
-            return f10;
+        public double getDSTDTC() {
+            return dtc;
         }
 
-        /** Get the value of the mean solar flux.
-         * Averaged 81-day centered F10.7 B index on the input time.
-         * <p>Tabular time 1.0 day earlier.</p>
-         * @return the mean solar flux F10.7B index
-         */
-        public double getF10B() {
-            return f10b;
-        }
-
-        /** Get the EUV index (26-34 nm) scaled to F10.
-         * <p>Tabular time 1.0 day earlier.</p>
-         * @return the the EUV S10 index
-         */
-        public double getS10() {
-            return s10;
-        }
-
-        /** Get the EUV 81-day averaged centered index.
-         * <p>Tabular time 1.0 day earlier.</p>
-         * @return the the mean EUV S10B index
-         */
-        public double getS10B() {
-            return s10b;
-        }
-
-        /** Get the MG2 index scaled to F10.
-         * <p>Tabular time 2.0 days earlier.</p>
-         * @return the the MG2 index
-         */
-        public double getXM10() {
-            return xm10;
-        }
-
-        /** Get the MG2 81-day average centered index.
-         * <p>Tabular time 2.0 days earlier.</p>
-         * @return the the mean MG2 index
-         */
-        public double getXM10B() {
-            return xm10b;
-        }
-
-        /** Get the Solar X-Ray &amp; Lya index scaled to F10.
-         * <p>Tabular time 5.0 days earlier.</p>
-         * @return the Solar X-Ray &amp; Lya index scaled to F10
-         */
-        public double getY10() {
-            return y10;
-        }
-
-        /** Get the Solar X-Ray &amp; Lya 81-day ave. centered index.
-         * <p>Tabular time 5.0 days earlier.</p>
-         * @return the Solar X-Ray &amp; Lya 81-day ave. centered index
-         */
-        public double getY10B() {
-            return y10b;
-        }
     }
+
     /** Pattern for regular data. */
     private static final Pattern PATTERN_SPACE = Pattern.compile("\\s+");
 
@@ -308,7 +215,7 @@ public class SOLFSMYDataLoader implements DataLoader {
      * Constructor.
      * @param utc UTC time scale
      */
-    public SOLFSMYDataLoader(final TimeScale utc) {
+    public DtcDataLoader(final TimeScale utc) {
         this.utc = utc;
         firstDate = null;
         lastDate = null;
@@ -347,6 +254,7 @@ public class SOLFSMYDataLoader implements DataLoader {
 
         int lineNumber = 0;
         String line = null;
+        final int nHours = 24;
         final Set<AbsoluteDate> parsedEpochs = new HashSet<>();
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
@@ -357,44 +265,34 @@ public class SOLFSMYDataLoader implements DataLoader {
                 lineNumber++;
                 if (line.length() > 0) {
                     /** extract the data from the line
-                     * The data is extracted using split on a compiled regex pattern.
-                     * The column data are separated by spaces.
-                     * The format of the data is given in the SOLFSMY.txt document provided by Space Environment.
+                     * The data is extracted from substrings as the spacing between
+                     * columns is constant.
                      */
                     if (!(line.charAt(0) == '#') && !line.isEmpty()) {
                         /**
-                         * The Julian Date is expressed as float in the text file,
-                         * and supposed to be taken at 12UT.
+                         * The date is expressed as a year and the day-number in this year.
+                         * Then the dTc is expressed in each column at a different hour, with
+                         * column 4 being the first hour of  the day and column 28 the last hour
+                         * of the day.
+                         * Each column is converted to a single LineParameters object.
                          */
 
-                        // Each column is separated by spaces. The compiled regex is PATTERN_SPACE.
                         final String[] splitLine = PATTERN_SPACE.split(line);
-                        final double julianDay = Double.parseDouble(splitLine[3]);
-                        final int julianDayInt = (int) julianDay;
-                        final double julianSeconds = (julianDay - julianDayInt) * 24 * 3600;
-                        final AbsoluteDate date = AbsoluteDate.createJDDate(julianDayInt, julianSeconds, utc);
+                        final int year = Integer.parseInt(splitLine[1]);
+                        final int dayYear = Integer.parseInt(splitLine[2]);
+                        final AbsoluteDate initDate = new AbsoluteDate(year, 1, 1, utc);
+                        final AbsoluteDate currDate = initDate.shiftedBy((dayYear - 1) * Constants.JULIAN_DAY);
 
-                        if (parsedEpochs.add(date)) {
+                        for (int i = 0; i < nHours; i++) {
 
-                            final double f10 = Double.parseDouble(splitLine[4]);
+                            final AbsoluteDate date = currDate.shiftedBy(3600 * i);
+                            if (parsedEpochs.add(date)) {
 
-                            final double f10b = Double.parseDouble(splitLine[5]);
-
-                            final double s10 = Double.parseDouble(splitLine[6]);
-
-                            final double s10b = Double.parseDouble(splitLine[7]);
-
-                            final double xm10 = Double.parseDouble(splitLine[8]);
-
-                            final double xm10b = Double.parseDouble(splitLine[9]);
-
-                            final double y10 = Double.parseDouble(splitLine[10]);
-
-                            final double y10b = Double.parseDouble(splitLine[11]);
-
-                            set.add(new LineParameters(date, f10, f10b, s10, s10b, xm10,
-                                    xm10b, y10, y10b));
+                                final double dtc = Integer.parseInt(splitLine[3 + i]);
+                                set.add(new LineParameters(date, dtc));
+                            }
                         }
+
                     }
                 }
             }

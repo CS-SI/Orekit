@@ -32,6 +32,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -44,6 +45,7 @@ import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.TimeScale;
+import org.orekit.data.DataProvidersManager;
 
 import org.orekit.models.earth.atmosphere.Atmosphere;
 
@@ -56,16 +58,16 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
+
  
 /*
  * Test code based on the CssiSpaceWeatherDataTest class
  * by Clément Jonglez.
- * 
  * @author Louis Aucouturier
  * @since 11.2
  */
 
-public class SOLFSMYDataLoaderTest {
+public class DtcDataLoaderTest {
     
     private TimeScale utc;
     
@@ -75,17 +77,28 @@ public class SOLFSMYDataLoaderTest {
         utc = TimeScalesFactory.getUTC();
     }
     
+
+    
     // DataLoader
     private JB2008SpaceEnvironmentData loadJB() {
-        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData(JB2008SpaceEnvironmentData.DEFAULT_SUPPORTED_NAMES);
+        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData(JB2008SpaceEnvironmentData.DEFAULT_SUPPORTED_NAMES,
+                "DTCFILE_trunc.TXT");
         return JBData;
     }
     
+    // DataLoader with DTCFILE filename to be defined
+    private JB2008SpaceEnvironmentData loadJB(final String filename) {
+        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData(JB2008SpaceEnvironmentData.DEFAULT_SUPPORTED_NAMES,
+                filename);
+        return JBData;
+    }
+    
+
     
     @Test
     public void testNoDataException() {
         try {
-            new JB2008SpaceEnvironmentData("SOLFSMY_nodata.txt");
+            loadJB("DTCFILE_empty.TXT");
             Assert.fail("No Data In File exception should have been raised");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_DATA_IN_FILE, oe.getSpecifier());
@@ -95,21 +108,20 @@ public class SOLFSMYDataLoaderTest {
     @Test
     public void testUnableParse() {
         try {
-            new JB2008SpaceEnvironmentData("SOLFSMY_badparse.txt");
+            loadJB("DTCFILE_badparse.TXT");
             Assert.fail("UNABLE_TO_PARSE_LINE_IN_FILE exception should have been raised");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
     }
-    
-    
+
     @Test
     public void testMinDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 31, 12, 0, 0.0, utc);
         Assert.assertEquals(startDate, JBData.getMinDate());
     }
-    
+
     @Test
     public void testMaxDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
@@ -118,66 +130,17 @@ public class SOLFSMYDataLoaderTest {
     }
     
     @Test
-    public void testF10Interp() {
+    public void testDTC() {
         JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 12*3600, utc);
-        assertThat((116.0 + 105.6)/2, closeTo(JBData.getF10(julianDate), 1e-10));
+        final AbsoluteDate date = new AbsoluteDate(2004, 1, 1, 0, 0, 0.0, utc);
+        assertThat(135.0, closeTo(JBData.getDSTDTC(date), 1e-10));
     }
     
     @Test
-    public void testF10() {
+    public void testDTCInterp() {
         JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
-        assertThat(105.6, closeTo(JBData.getF10(julianDate), 1e-10));
-    }
-    
-    @Test
-    public void testF10B() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
-        assertThat(120.6, closeTo(JBData.getF10B(julianDate), 1e-10));
-    }
-    
-    @Test
-    public void testS10() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
-        assertThat(111.0, closeTo(JBData.getS10(julianDate), 1e-10));
-    }
-    
-    @Test
-    public void testS10B() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
-        assertThat(116.8, closeTo(JBData.getS10B(julianDate), 1e-10));
-    }
-    
-    @Test
-    public void testM10() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
-        assertThat(117.9, closeTo(JBData.getXM10(julianDate), 1e-10));
-    }
-    
-    @Test
-    public void testM10B() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
-        assertThat(121.2, closeTo(JBData.getXM10B(julianDate), 1e-10));
-    }
-    
-    @Test
-    public void testY10() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
-        assertThat(139.9, closeTo(JBData.getY10(julianDate), 1e-10));
-    }
-    
-    @Test
-    public void testY10B() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
-        assertThat(129.5, closeTo(JBData.getY10B(julianDate), 1e-10));
+        final AbsoluteDate date = new AbsoluteDate(2004, 1, 3, 0, 30, 0.0, utc);
+        assertThat((85.0 + 94.0)/2, closeTo(JBData.getDSTDTC(date), 1e-10));
     }
     
     
@@ -249,133 +212,5 @@ public class SOLFSMYDataLoaderTest {
 
         return propagator;
     }
-    
-    @Test
-    /**
-     * Testing for non-present day in the data
-     * Testing getF10
-     */
-    public void testF10EphemerisException() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
-        try {
-            JBData.getF10(date);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
-        }
-    }
-    
-    @Test
-    /**
-     * Testing for non-present day in the data
-     * Testing getF10B
-     */
-    public void testF10BEphemerisException() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
-        try {
-            JBData.getF10B(date);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
-        }
-    }
-    
-    @Test
-    /**
-     * Testing for non-present day in the data
-     * Testing getS10
-     */
-    public void testS10EphemerisException() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
-        try {
-            JBData.getS10(date);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
-        }
-    }
-    
-    @Test
-    /**
-     * Testing for non-present day in the data
-     * Testing getS10B
-     */
-    public void testS10BEphemerisException() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
-        try {
-            JBData.getS10(date);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
-        }
-    }
-    
-    @Test
-    /**
-     * Testing for non-present day in the data
-     * Testing getXM10
-     */
-    public void testXM10EphemerisException() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
-        try {
-            JBData.getXM10(date);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
-        }
-    }
-    
-    @Test
-    /**
-     * Testing for non-present day in the data
-     * Testing getXM10B
-     */
-    public void testXM10BEphemerisException() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
-        try {
-            JBData.getXM10B(date);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
-        }
-    }
-    
-    @Test
-    /**
-     * Testing for non-present day in the data
-     * Testing getY10
-     */
-    public void testY10EphemerisException() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
-        try {
-            JBData.getY10(date);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
-        }
-    }
-    
-    @Test
-    /**
-     * Testing for non-present day in the data
-     * Testing getY10B
-     */
-    public void testY10BEphemerisException() {
-        JB2008SpaceEnvironmentData JBData = loadJB();
-        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
-        try {
-            JBData.getY10B(date);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
-        }
-    }
-    
 }
+    
