@@ -191,6 +191,7 @@ public class DtcDataLoader implements DataLoader {
                     for (int i = 0; i < nHours; i++) {
 
                         final AbsoluteDate date = currDate.shiftedBy(3600 * i);
+
                         if (parsedEpochs.add(date)) {
 
                             final double dtc = Integer.parseInt(splitLine[3 + i]);

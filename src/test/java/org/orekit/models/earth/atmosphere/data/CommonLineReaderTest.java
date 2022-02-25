@@ -18,11 +18,9 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,23 +28,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.text.ParseException;
-import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataContext;
-import org.orekit.data.DataFilter;
-import org.orekit.data.DataLoader;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
-import org.orekit.data.GzipFilter;
-import org.orekit.data.UnixCompressFilter;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.HatanakaCompressFilter;
+
 
 public class CommonLineReaderTest {
 
