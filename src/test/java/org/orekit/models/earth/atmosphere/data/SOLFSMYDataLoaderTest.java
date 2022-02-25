@@ -77,7 +77,7 @@ public class SOLFSMYDataLoaderTest {
     
     // DataLoader
     private JB2008SpaceEnvironmentData loadJB() {
-        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData(JB2008SpaceEnvironmentData.DEFAULT_SUPPORTED_NAMES);
+        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_trunc.txt");
         return JBData;
     }
     
@@ -93,6 +93,16 @@ public class SOLFSMYDataLoaderTest {
     }
     
     @Test
+    public void testParseDouble() {
+        try {
+            new JB2008SpaceEnvironmentData("SOLFSMY_double.txt");
+            Assert.fail("No Data In File exception should have been raised");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+        }
+    }
+    
+    @Test
     public void testUnableParse() {
         try {
             new JB2008SpaceEnvironmentData("SOLFSMY_badparse.txt");
@@ -101,6 +111,7 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
     }
+    
     
     
     @Test
@@ -375,6 +386,18 @@ public class SOLFSMYDataLoaderTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+        }
+    }
+    
+    @Test
+    public void testBracketDateSOL_lastDate() {
+        JB2008SpaceEnvironmentData JBData = loadJB();
+        AbsoluteDate date = new AbsoluteDate(2050, 10, 1, 5, 17, 0.0, utc);
+        try {
+            JBData.getY10B(date);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, oe.getSpecifier());
         }
     }
     

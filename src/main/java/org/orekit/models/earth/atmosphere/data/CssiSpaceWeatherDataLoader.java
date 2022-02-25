@@ -55,6 +55,7 @@ import org.orekit.time.TimeStamped;
 public class CssiSpaceWeatherDataLoader implements DataLoader {
 
     /** Helper class to parse line data and to raise exceptions if needed. */
+    @Deprecated
     public static class LineReader {
 
         /** Name of the file. Used in error messages. */

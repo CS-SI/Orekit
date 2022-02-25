@@ -115,13 +115,16 @@ public class DtcDataLoaderTest {
         }
     }
 
+    
     @Test
     public void testMinDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 31, 12, 0, 0.0, utc);
         Assert.assertEquals(startDate, JBData.getMinDate());
     }
+    
 
+    
     @Test
     public void testMaxDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
@@ -143,6 +146,30 @@ public class DtcDataLoaderTest {
         assertThat((85.0 + 94.0)/2, closeTo(JBData.getDSTDTC(date), 1e-10));
     }
     
+    
+    @Test
+    public void testBracketDateDTC_lastDate() {
+        JB2008SpaceEnvironmentData JBData = loadJB();
+        AbsoluteDate date = new AbsoluteDate(2050, 10, 1, 5, 17, 0.0, utc);
+        try {
+            JBData.getDSTDTC(date);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, oe.getSpecifier());
+        }
+    }
+    
+    @Test
+    public void testBracketDateDTC_firstDate() {
+        JB2008SpaceEnvironmentData JBData = loadJB();
+        AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
+        try {
+            JBData.getDSTDTC(date);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+        }
+    }
     
     /**
      * Check integration error is small when integrating the same equations over the same
