@@ -17,6 +17,7 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -184,17 +185,11 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
         final AbsoluteDate firstDateDTC = loaderDTC.getMinDate();
         final AbsoluteDate lastDateDTC = loaderDTC.getMaxDate();
 
-        if (firstDateDTC.isAfter(firstDateSOL)) {
-            firstDate = firstDateDTC;
-        } else {
-            firstDate = firstDateSOL;
-        }
+        final List<AbsoluteDate> firstDateList = Arrays.asList(firstDateDTC, firstDateSOL);
+        final List<AbsoluteDate> lastDateList = Arrays.asList(lastDateDTC, lastDateSOL);
+        firstDate = firstDateList.stream().max(AbsoluteDate::compareTo).get();
+        lastDate = lastDateList.stream().min(AbsoluteDate::compareTo).get();
 
-        if (lastDateDTC.isBefore(lastDateSOL)) {
-            lastDate = lastDateDTC;
-        } else {
-            lastDate = lastDateSOL;
-        }
     }
 
     /** {@inheritDoc} */
@@ -213,14 +208,19 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
      * @param date date to bracket
      */
     private void bracketDateSOL(final AbsoluteDate date) {
-
-        if (date.durationFrom(firstDate.shiftedBy(-5 * Constants.JULIAN_DAY)) < 0) {
+        /**
+         * The presence of the shift in dates for checks on the validity of dates
+         * is here to enforce the lag on the parameters (5-day lag max for Y10 parameters).
+         * This lag is already present in the date parameter.
+         */
+        final AbsoluteDate firstDateUseful = firstDate.shiftedBy(-5 * Constants.JULIAN_DAY);
+        if (date.durationFrom(firstDateUseful) < 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
-                    date, firstDate, lastDate, firstDate.durationFrom(date));
+                    date, firstDateUseful, lastDate, firstDateUseful.durationFrom(date));
         }
         if (date.durationFrom(lastDate) > 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
-                    date, firstDate, lastDate, date.durationFrom(lastDate));
+                    date, firstDateUseful, lastDate, date.durationFrom(lastDate));
         }
 
         // don't search if the cached selection is fine
@@ -232,13 +232,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
         final List<SOLFSMYDataLoader.LineParameters> neigbors = dataSOL.getNeighbors(date).collect(Collectors.toList());
         previousParamSOL = neigbors.get(0);
         nextParamSOL = neigbors.get(1);
-        if (previousParamSOL.getDate().compareTo(date) > 0) {
-            /**
-             * Throwing exception if neighbors are unbalanced because we are at the
-             * beginning of the data set
-             */
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
-        }
+
     }
 
     /**
@@ -247,13 +241,15 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
      * @param date date to bracket
      */
     private void bracketDateDTC(final AbsoluteDate date) {
-        if (date.durationFrom(firstDate) < 0) {
+        // No data lag
+        final AbsoluteDate firstDateUseful = firstDate;
+        if (date.durationFrom(firstDateUseful) < 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
-                    date, firstDate, lastDate, firstDate.durationFrom(date));
+                    date, firstDateUseful, lastDate, firstDateUseful.durationFrom(date));
         }
         if (date.durationFrom(lastDate) > 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
-                    date, firstDate, lastDate, date.durationFrom(lastDate));
+                    date, firstDateUseful, lastDate, date.durationFrom(lastDate));
         }
 
         // don't search if the cached selection is fine
@@ -265,13 +261,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
         final List<DtcDataLoader.LineParameters> neigbors = dataDTC.getNeighbors(date).collect(Collectors.toList());
         previousParamDTC = neigbors.get(0);
         nextParamDTC = neigbors.get(1);
-        if (previousParamDTC.getDate().compareTo(date) > 0) {
-            /**
-             * Throwing exception if neighbors are unbalanced because we are at the
-             * beginning of the data set
-             */
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
-        }
+
     }
 
     /**

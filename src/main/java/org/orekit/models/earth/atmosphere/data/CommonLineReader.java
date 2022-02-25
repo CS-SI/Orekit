@@ -74,10 +74,6 @@ class CommonLineReader {
     }
 
 
-    public boolean emptyLine(final String testLine) {
-        return testLine.length() == 0;
-    }
-
     /**
      * Get the last line read from the stream.
      *

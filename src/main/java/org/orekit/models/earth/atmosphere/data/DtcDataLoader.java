@@ -173,34 +173,32 @@ public class DtcDataLoader implements DataLoader {
                      * The data is extracted from substrings as the spacing between
                      * columns is constant.
                      */
-                    if (!(line.charAt(0) == '#')) {
-                        /**
-                         * The date is expressed as a year and the day-number in this year.
-                         * Then the dTc is expressed in each column at a different hour, with
-                         * column 4 being the first hour of  the day and column 28 the last hour
-                         * of the day.
-                         * Each column is converted to a single LineParameters object.
-                         */
 
-                        final String[] splitLine = PATTERN_SPACE.split(line);
-                        final int year = Integer.parseInt(splitLine[1]);
-                        final int dayYear = Integer.parseInt(splitLine[2]);
-                        final AbsoluteDate initDate = new AbsoluteDate(year, 1, 1, utc);
-                        final AbsoluteDate currDate = initDate.shiftedBy((dayYear - 1) * Constants.JULIAN_DAY);
+                    /**
+                     * The date is expressed as a year and the day-number in this year.
+                     * Then the dTc is expressed in each column at a different hour, with
+                     * column 4 being the first hour of  the day and column 28 the last hour
+                     * of the day.
+                     * Each column is converted to a single LineParameters object.
+                     */
 
-                        for (int i = 0; i < nHours; i++) {
+                    final String[] splitLine = PATTERN_SPACE.split(line);
+                    final int year = Integer.parseInt(splitLine[1]);
+                    final int dayYear = Integer.parseInt(splitLine[2]);
+                    final AbsoluteDate initDate = new AbsoluteDate(year, 1, 1, utc);
+                    final AbsoluteDate currDate = initDate.shiftedBy((dayYear - 1) * Constants.JULIAN_DAY);
 
-                            final AbsoluteDate date = currDate.shiftedBy(3600 * i);
-                            if (parsedEpochs.add(date)) {
+                    for (int i = 0; i < nHours; i++) {
 
-                                final double dtc = Integer.parseInt(splitLine[3 + i]);
-                                set.add(new LineParameters(date, dtc));
-                            } else {
-                                final ParseException pe = new ParseException("Line appearing twice in the data", 0);
-                                throw new OrekitException(pe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
-                            }
+                        final AbsoluteDate date = currDate.shiftedBy(3600 * i);
+                        if (parsedEpochs.add(date)) {
+
+                            final double dtc = Integer.parseInt(splitLine[3 + i]);
+                            set.add(new LineParameters(date, dtc));
+                        } else {
+                            final ParseException pe = new ParseException("Line appearing twice in the data", 0);
+                            throw new OrekitException(pe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
                         }
-
                     }
                 }
             }

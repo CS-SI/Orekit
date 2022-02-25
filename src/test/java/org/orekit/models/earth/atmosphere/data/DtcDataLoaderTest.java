@@ -115,6 +115,16 @@ public class DtcDataLoaderTest {
         }
     }
 
+    @Test
+    public void testParseDouble() {
+        try {
+            new JB2008SpaceEnvironmentData("DTCFILE_double.txt");
+            Assert.fail("No Data In File exception should have been raised");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+        }
+    }
+    
     
     @Test
     public void testMinDate() {
