@@ -53,4 +53,13 @@ public class BodyFacade {
         return body;
     }
 
+    /**
+     * Create a body facade from an input center name.
+     * @param centerName input center name
+     * @return a body facade corresponding to the input center name
+     */
+    public static BodyFacade create(final CenterName centerName) {
+        return new BodyFacade(centerName.name(), centerName.getCelestialBody());
+    }
+
 }

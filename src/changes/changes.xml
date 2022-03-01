@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="898">
+        Added static method to create a BodyFacade from a CenterName.
+      </action>
     </release>
     <release version="11.1" date="2022-02-14"
              description="Version 11.1 is a minor release of Orekit.
