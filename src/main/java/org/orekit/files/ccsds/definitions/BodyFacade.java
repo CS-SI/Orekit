@@ -57,6 +57,7 @@ public class BodyFacade {
      * Create a body facade from an input center name.
      * @param centerName input center name
      * @return a body facade corresponding to the input center name
+     * @since 11.2
      */
     public static BodyFacade create(final CenterName centerName) {
         return new BodyFacade(centerName.name(), centerName.getCelestialBody());
