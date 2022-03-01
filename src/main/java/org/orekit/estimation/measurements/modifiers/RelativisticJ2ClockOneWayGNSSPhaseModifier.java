@@ -26,6 +26,24 @@ import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
+/**
+ * Class modifying theoretical one-way phase measurements with relativistic J2 clock correction.
+ * <p>
+ * Relativistic clock correction of the effects caused by the oblateness of Earth on
+ * the gravity potential.
+ * </p>
+ * <p>
+ * The time delay caused by this effect is computed based on the orbital parameters of the
+ * emitter's orbit.
+ * </p>
+ *
+ * @author Louis Aucouturier
+ * @since 11.2
+ *
+ * @see "Teunissen, Peter, and Oliver Montenbruck, eds. Springer handbook of global navigation
+ * satellite systems. Chapter 19.2. Equation 19.18 Springer, 2017."
+ */
+
 public class RelativisticJ2ClockOneWayGNSSPhaseModifier extends AbstractRelativisticJ2ClockModifier implements EstimationModifier<OneWayGNSSPhase> {
 
     /** Simple constructor. */

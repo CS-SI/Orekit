@@ -114,6 +114,68 @@ public class RelativisticJ2ClockRangeModifierTest {
 
     }
 
+    @Test
+    /**
+     * Testing if the 2 way case is taken into account in the computation of the delay.
+     * This has the effect of shifting the index from 0 to 1 for the selected PV coordinates
+     * to get the emitter's parameters and not the station's.
+     */
+    public void testRelativisticJ2ClockCorrectionTwoWay() {
+
+        // Station
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final GeodeticPoint point    = new GeodeticPoint(FastMath.toRadians(42.0), FastMath.toRadians(1.0), 100.0);
+        final TopocentricFrame topo  = new TopocentricFrame(earth, point, "");
+        final GroundStation station  = new GroundStation(topo);
+
+        // Satellite (GPS orbit from TLE)
+        final TLE tle = new TLE("1 28474U 04045A   20252.59334296 -.00000043  00000-0  00000-0 0  9998",
+                                "2 28474  55.0265  49.5108 0200271 267.9106 149.0797  2.00552216116165");
+        final TimeStampedPVCoordinates satPV = TLEPropagator.selectExtrapolator(tle).getPVCoordinates(tle.getDate(), FramesFactory.getEME2000());
+        final SpacecraftState state = new SpacecraftState(new CartesianOrbit(satPV, FramesFactory.getEME2000(), Constants.WGS84_EARTH_MU));
+
+        // Set reference date to station drivers
+        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                    station.getEastOffsetDriver(),
+                                                    station.getNorthOffsetDriver(),
+                                                    station.getZenithOffsetDriver(),
+                                                    station.getPrimeMeridianOffsetDriver(),
+                                                    station.getPrimeMeridianDriftDriver(),
+                                                    station.getPolarOffsetXDriver(),
+                                                    station.getPolarDriftXDriver(),
+                                                    station.getPolarOffsetYDriver(),
+                                                    station.getPolarDriftYDriver())) {
+            if (driver.getReferenceDate() == null) {
+                driver.setReferenceDate(state.getDate());
+            }
+        }
+
+        // Station PV
+        final Vector3D zero = Vector3D.ZERO;
+        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate()).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
+
+        // Range measurement : The two way boolean is set to true.
+        final Range range = new Range(station, true, state.getDate(), 26584264.45, 1.0, 1.0, new ObservableSatellite(0));
+        // The EstimatedMeasurement variable has now 3 TimeStampedPVCoordinates, as expected for the 2 way case.
+        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<Range>(range, 0, 0,
+                        new SpacecraftState[] {state},
+                        new TimeStampedPVCoordinates[] {stationPV, state.getPVCoordinates(), stationPV});
+        estimated.setEstimatedValue(range.getObservedValue()[0]);
+        Assert.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
+
+        // Measurement modifier
+        final RelativisticJ2ClockRangeModifier modifier = new RelativisticJ2ClockRangeModifier();
+        modifier.modify(estimated);
+        Assert.assertEquals(0, modifier.getParametersDrivers().size());
+
+        // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 60ps for Galileo.
+        //          The computed value is equal to 63.3 ps, therefore lying in the supposed range.
+        Assert.assertEquals(-0.019414, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-6);
+
+    }
+    
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
