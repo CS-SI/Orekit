@@ -48,9 +48,9 @@ public class RelativisticJ2ClockInterSatellitesRangeModifier extends AbstractRel
 
     /**
      * Modifier constructor.
-     * @param gm
-     * @param c20
-     * @param equatorialRadius
+     * @param gm Earth gravitational constant (mu) in m³/s².
+     * @param c20 Earth un-normalized second zonal coefficient (Signed J2 constant, is negative) (Typical value -1.0826).
+     * @param equatorialRadius Earth equatorial radius in m.
      */
     public RelativisticJ2ClockInterSatellitesRangeModifier(final double gm,
                                                            final double c20,

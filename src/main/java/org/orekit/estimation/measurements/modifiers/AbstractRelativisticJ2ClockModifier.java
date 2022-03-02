@@ -55,10 +55,9 @@ public class AbstractRelativisticJ2ClockModifier {
 
     /**
      * Constructor for the Relativistic J2 Clock modifier.
-     *
-     * @param gm Central attraction coefficient.
-     * @param c20  Signed J2 constant, is negative (Typical value -1.0826)
-     * @param equatorialRadius
+     * @param gm Earth gravitational constant (mu) in m³/s².
+     * @param c20 Earth un-normalized second zonal coefficient (Signed J2 constant, is negative) (Typical value -1.0826).
+     * @param equatorialRadius Earth equatorial radius in m.
      */
     public AbstractRelativisticJ2ClockModifier(final double gm,
                                                final double c20,

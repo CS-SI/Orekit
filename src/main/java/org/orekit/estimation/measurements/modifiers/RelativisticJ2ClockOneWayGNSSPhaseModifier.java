@@ -47,11 +47,11 @@ import org.orekit.utils.ParameterDriver;
 public class RelativisticJ2ClockOneWayGNSSPhaseModifier extends AbstractRelativisticJ2ClockModifier implements EstimationModifier<OneWayGNSSPhase> {
 
     /**
-    * Modifier constructor.
-    * @param gm
-    * @param c20
-    * @param equatorialRadius
-    */
+     * Modifier constructor.
+     * @param gm Earth gravitational constant (mu) in m³/s².
+     * @param c20 Earth un-normalized second zonal coefficient (Signed J2 constant, is negative) (Typical value -1.0826).
+     * @param equatorialRadius Earth equatorial radius in m.
+     */
     public RelativisticJ2ClockOneWayGNSSPhaseModifier(final double gm,
                                                       final double c20,
                                                       final double equatorialRadius) {
