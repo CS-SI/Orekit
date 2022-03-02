@@ -31,6 +31,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 /**
  * Check against prediction in
@@ -67,7 +68,8 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
         final EstimatedMeasurement<OneWayGNSSPhase> estimatedBefore = phase.estimate(0, 0, states);
 
         // One-way GNSS phase before applying the modifier
-        final EstimationModifier<OneWayGNSSPhase> modifier = new RelativisticJ2ClockOneWayGNSSPhaseModifier();
+        final EstimationModifier<OneWayGNSSPhase> modifier = new RelativisticJ2ClockOneWayGNSSPhaseModifier(Constants.WGS84_EARTH_MU, 
+                Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
         phase.addModifier(modifier);
         final EstimatedMeasurement<OneWayGNSSPhase> estimatedAfter = phase.estimate(0, 0, states);
 

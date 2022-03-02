@@ -46,11 +46,17 @@ import org.orekit.utils.ParameterDriver;
 public class RelativisticJ2ClockInterSatellitesPhaseModifier extends AbstractRelativisticJ2ClockModifier implements EstimationModifier<InterSatellitesPhase> {
 
     /**
-     * Simple Constructor.
-     */
-    public RelativisticJ2ClockInterSatellitesPhaseModifier() {
-        super();
+    * Modifier constructor.
+    * @param gm
+    * @param c20
+    * @param equatorialRadius
+    */
+    public RelativisticJ2ClockInterSatellitesPhaseModifier(final double gm,
+                                                           final double c20,
+                                                           final double equatorialRadius) {
+        super(gm, c20, equatorialRadius);
     }
+
 
     /** {@inheritDoc} */
     @Override

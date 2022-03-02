@@ -104,7 +104,8 @@ public class RelativisticJ2ClockPhaseModifierTest {
         Assert.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 
         // Measurement modifier
-        final RelativisticJ2ClockPhaseModifier modifier = new RelativisticJ2ClockPhaseModifier();
+        final RelativisticJ2ClockPhaseModifier modifier = new RelativisticJ2ClockPhaseModifier(Constants.WGS84_EARTH_MU, 
+                Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
         modifier.modify(estimated);
         Assert.assertEquals(0, modifier.getParametersDrivers().size());
 

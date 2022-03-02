@@ -31,6 +31,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 
 /**
@@ -69,7 +70,8 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
         final EstimatedMeasurement<InterSatellitesPhase> estimatedBefore = phase.estimate(0, 0, states);
 
         // Inter-satellites phase after applying the modifier
-        final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticJ2ClockInterSatellitesPhaseModifier();
+        final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticJ2ClockInterSatellitesPhaseModifier(Constants.WGS84_EARTH_MU, 
+                Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
         phase.addModifier(modifier);
         final EstimatedMeasurement<InterSatellitesPhase> estimatedAfter = phase.estimate(0, 0, states);
 

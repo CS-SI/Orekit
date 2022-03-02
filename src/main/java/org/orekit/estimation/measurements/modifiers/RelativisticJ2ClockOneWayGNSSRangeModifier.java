@@ -46,9 +46,16 @@ import org.orekit.utils.ParameterDriver;
 
 public class RelativisticJ2ClockOneWayGNSSRangeModifier extends AbstractRelativisticJ2ClockModifier implements EstimationModifier<OneWayGNSSRange> {
 
-    /** Simple constructor. */
-    public RelativisticJ2ClockOneWayGNSSRangeModifier() {
-        super();
+    /**
+     * Modifier constructor.
+     * @param gm
+     * @param c20
+     * @param equatorialRadius
+     */
+    public RelativisticJ2ClockOneWayGNSSRangeModifier(final double gm,
+                                                      final double c20,
+                                                      final double equatorialRadius) {
+        super(gm, c20, equatorialRadius);
     }
 
     /** {@inheritDoc} */
