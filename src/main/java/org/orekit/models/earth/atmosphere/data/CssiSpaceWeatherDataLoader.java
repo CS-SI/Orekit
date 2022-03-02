@@ -54,7 +54,10 @@ import org.orekit.time.TimeStamped;
  */
 public class CssiSpaceWeatherDataLoader implements DataLoader {
 
-    /** Helper class to parse line data and to raise exceptions if needed. */
+    /** Helper class to parse line data and to raise exceptions if needed.
+     * @deprecated as of 11.2, replaced by {@link CommonLineReader} to remove duplicated code.
+     */
+    @Deprecated
     public static class LineReader {
 
         /** Name of the file. Used in error messages. */
@@ -438,7 +441,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            final LineReader reader = new LineReader(name, br);
+            final CommonLineReader reader = new CommonLineReader(br);
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 lineNumber++;
