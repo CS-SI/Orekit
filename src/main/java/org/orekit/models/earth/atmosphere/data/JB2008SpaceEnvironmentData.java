@@ -17,7 +17,6 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,20 +28,20 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.atmosphere.JB2008InputParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ImmutableTimeStampedCache;
 
 
 /**
  * This class provides a container for the solar indices data required by the JB2008
- * atmospheric model. This container only stores information provided in the SOLFSMY text file
- * provided by Space Environment Technologies, therefore providing neither the temperature correction
- * available in the DST and DTC files, nor the geomagnetic storm indices available in the SOLRESAP file.
- * The {@link org.orekit.data.DataLoader} implementation and the parsing is handled by
- * the class {@link SOLFSMYDataLoader}.
+ * atmospheric model. This container only stores information provided in the SOLFSMY and DTCFILE text file
+ * provided by Space Environment Technologies. Therefore it doesn't provide  the geomagnetic storm
+ * indices available in the SOLRESAP file.
+ * The {@link org.orekit.data.DataLoader} implementations and the parsing are handled by
+ * the {@link SOLFSMYDataLoader} {@link DtcDataLoader} classes.
  * <p>
- * The data is available on Space Environment Technologies' website at
- * <a href="http://sol.spacenvironment.net/jb2008"></a>.
+ * Data are available on Space Environment Technologies'
+ * <a href="http://sol.spacenvironment.net/jb2008">website</a>.
  *
  * The work done for this class is based on the CssiSpaceWeatherData class
  * by Clément Jonglez, the JB2008 interface by Pascal Parraud, and corrections for
@@ -54,7 +53,7 @@ import org.orekit.utils.Constants;
 public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
 
     /** Default regular expression for supported names that works with test and published files for the SOLFSMY file. */
-    public static final String DEFAULT_SUPPORTED_NAMES = "(SOLFSMY)(.*)((\\.txt)|(\\.TXT))";
+    public static final String DEFAULT_SUPPORTED_NAMES_SOLFSMY = "(SOLFSMY)(.*)((\\.txt)|(\\.TXT))";
 
     /** Default regular expression for supported names that works with test and published files for the DTCFILE file. */
     public static final String DEFAULT_SUPPORTED_NAMES_DTC = "DTCFILE.TXT";
@@ -91,28 +90,6 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
 
     /**
      * Simple constructor. This constructor uses the default data context.
-     * <p>
-     * The original file names is SOLFSMY.TXT
-     * A regular expression is to be computed in order to take into account
-     * various filenames derived from the original one.
-     * </p>
-     *
-     * @param supportedNames regular expression for SOLFSMY space weather files names
-     * with variations allowed between SOLFSMY and the file extension.
-     */
-    @DefaultDataContext
-    public JB2008SpaceEnvironmentData(final String supportedNames) {
-        this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
-                DataContext.getDefault().getTimeScales().getUTC());
-    }
-
-    /**
-     * Simple constructor. This constructor uses the default data context.
-     * <p>
-     * The original file names is SOLFSMY.TXT
-     * A regular expression is to be computed in order to take into account
-     * various filenames derived from the original one.
-     * </p>
      *
      * @param supportedNamesSOL regular expression for SOLFSMY space weather files names
      * with variations allowed between SOLFSMY and the file extension.
@@ -123,32 +100,6 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
         this(supportedNamesSOL, supportedNamesDTC, DataContext.getDefault().getDataProvidersManager(),
                 DataContext.getDefault().getTimeScales().getUTC());
     }
-
-    /**
-     * Constructor that allows specifying the source of the SOLFSMY space weather
-     * file.
-     * In this constructor the DTCFILE loader is set to null, in the absence of supported names
-     * supplied to the constructor. It provides a way to setup the container without DTCFILE data.
-     *
-     * @param supportedNames regular expression for SOLFSMY space weather files names
-     * with variations allowed between SOLFSMY and the file extension.
-     * @param dataProvidersManager provides access to auxiliary data files.
-     * @param utc                  UTC time scale.
-     */
-    public JB2008SpaceEnvironmentData(final String supportedNames,
-            final DataProvidersManager dataProvidersManager,
-            final TimeScale utc) {
-
-        final SOLFSMYDataLoader loader =
-                new SOLFSMYDataLoader(utc);
-        dataProvidersManager.feed(supportedNames, loader);
-        dataSOL =
-                new ImmutableTimeStampedCache<>(N_NEIGHBORS, loader.getDataSet());
-        dataDTC = null;
-        firstDate = loader.getMinDate().shiftedBy(5 * Constants.JULIAN_DAY);
-        lastDate = loader.getMaxDate();
-    }
-
 
     /**
      * Constructor that allows specifying the source of the SOLFSMY space weather
@@ -164,31 +115,24 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
      * @param utc                  UTC time scale.
      */
     public JB2008SpaceEnvironmentData(final String supportedNamesSOL,
-            final String supportedNamesDTC,
-            final DataProvidersManager dataProvidersManager,
-            final TimeScale utc) {
+                                      final String supportedNamesDTC,
+                                      final DataProvidersManager dataProvidersManager,
+                                      final TimeScale utc) {
 
-        final SOLFSMYDataLoader loaderSOL =
-                new SOLFSMYDataLoader(utc);
+        // Load SOLFSMY data
+        final SOLFSMYDataLoader loaderSOL = new SOLFSMYDataLoader(utc);
         dataProvidersManager.feed(supportedNamesSOL, loaderSOL);
-        dataSOL =
-                new ImmutableTimeStampedCache<>(N_NEIGHBORS, loaderSOL.getDataSet());
-        // Taking the maximum data lag into account. (See SOLFSMYDataLoader)
-        final AbsoluteDate firstDateSOL = loaderSOL.getMinDate().shiftedBy(5 * Constants.JULIAN_DAY);
-        final AbsoluteDate lastDateSOL = loaderSOL.getMaxDate();
+        dataSOL = new ImmutableTimeStampedCache<>(N_NEIGHBORS, loaderSOL.getDataSet());
 
-        final DtcDataLoader loaderDTC =
-                new DtcDataLoader(utc);
+        // Load DTC data
+        final DtcDataLoader loaderDTC = new DtcDataLoader(utc);
         dataProvidersManager.feed(supportedNamesDTC, loaderDTC);
-        dataDTC =
-                new ImmutableTimeStampedCache<>(N_NEIGHBORS, loaderDTC.getDataSet());
-        final AbsoluteDate firstDateDTC = loaderDTC.getMinDate();
-        final AbsoluteDate lastDateDTC = loaderDTC.getMaxDate();
+        dataDTC = new ImmutableTimeStampedCache<>(N_NEIGHBORS, loaderDTC.getDataSet());
 
-        final List<AbsoluteDate> firstDateList = Arrays.asList(firstDateDTC, firstDateSOL);
-        final List<AbsoluteDate> lastDateList = Arrays.asList(lastDateDTC, lastDateSOL);
-        firstDate = firstDateList.stream().max(AbsoluteDate::compareTo).get();
-        lastDate = lastDateList.stream().min(AbsoluteDate::compareTo).get();
+        // Because the two files are generated by the same organism,
+        // the first and last epochs are identical between the two files
+        firstDate = loaderSOL.getMinDate();
+        lastDate  = loaderSOL.getMaxDate();
 
     }
 
@@ -213,14 +157,14 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
          * is here to enforce the lag on the parameters (5-day lag max for Y10 parameters).
          * This lag is already present in the date parameter.
          */
-        final AbsoluteDate firstDateUseful = firstDate.shiftedBy(-5 * Constants.JULIAN_DAY);
-        if (date.durationFrom(firstDateUseful) < 0) {
+        final AbsoluteDate firstDateUsefulSOL = firstDate.shiftedBy(-5 * Constants.JULIAN_DAY);
+        if (date.durationFrom(firstDateUsefulSOL) < 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
-                    date, firstDateUseful, lastDate, firstDateUseful.durationFrom(date));
+                    date, firstDateUsefulSOL, lastDate, firstDateUsefulSOL.durationFrom(date));
         }
         if (date.durationFrom(lastDate) > 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
-                    date, firstDateUseful, lastDate, date.durationFrom(lastDate));
+                    date, firstDateUsefulSOL, lastDate, date.durationFrom(lastDate));
         }
 
         // don't search if the cached selection is fine
@@ -242,14 +186,14 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
      */
     private void bracketDateDTC(final AbsoluteDate date) {
         // No data lag
-        final AbsoluteDate firstDateUseful = firstDate;
-        if (date.durationFrom(firstDateUseful) < 0) {
+        final AbsoluteDate firstDateUsefulDTC = firstDate;
+        if (date.durationFrom(firstDateUsefulDTC) < 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
-                    date, firstDateUseful, lastDate, firstDateUseful.durationFrom(date));
+                    date, firstDateUsefulDTC, lastDate, firstDateUsefulDTC.durationFrom(date));
         }
         if (date.durationFrom(lastDate) > 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
-                    date, firstDateUseful, lastDate, date.durationFrom(lastDate));
+                    date, firstDateUsefulDTC, lastDate, date.durationFrom(lastDate));
         }
 
         // don't search if the cached selection is fine
@@ -275,15 +219,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
      */
     private double getLinearInterpolationSOL(final AbsoluteDate date, final double previousValue, final double nextValue) {
         // perform a linear interpolation
-
-        final AbsoluteDate previousDate = previousParamSOL.getDate();
-        final AbsoluteDate currentDate = nextParamSOL.getDate();
-        final double dt = currentDate.durationFrom(previousDate);
-        final double previousWeight = currentDate.durationFrom(date) / dt;
-        final double nextWeight = date.durationFrom(previousDate) / dt;
-
-        // returns the data interpolated at the date
-        return previousValue * previousWeight + nextValue * nextWeight;
+        return linearInterpolation(date, previousValue, previousParamSOL.getDate(), nextValue, nextParamSOL.getDate());
     }
 
     /**
@@ -297,11 +233,24 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
      */
     private double getLinearInterpolationDTC(final AbsoluteDate date, final double previousValue, final double nextValue) {
         // perform a linear interpolation
+        return linearInterpolation(date, previousValue, previousParamDTC.getDate(), nextValue, nextParamDTC.getDate());
+    }
 
-        final AbsoluteDate previousDate = previousParamDTC.getDate();
-        final AbsoluteDate currentDate = nextParamDTC.getDate();
-        final double dt = currentDate.durationFrom(previousDate);
-        final double previousWeight = currentDate.durationFrom(date) / dt;
+    /**
+     * Linear interpolation.
+     * @param date the current date
+     * @param previousValue the value at previous date
+     * @param previousDate the previous date
+     * @param nextValue the value at next date
+     * @param nextDate the next date
+     * @return the inteprolated value
+     */
+    private double linearInterpolation(final AbsoluteDate date,
+                                       final double previousValue, final AbsoluteDate previousDate,
+                                       final double nextValue, final AbsoluteDate nextDate) {
+        // perform a linear interpolation
+        final double dt = nextDate.durationFrom(previousDate);
+        final double previousWeight = nextDate.durationFrom(date) / dt;
         final double nextWeight = date.durationFrom(previousDate) / dt;
 
         // returns the data interpolated at the date
@@ -311,7 +260,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     /** {@inheritDoc} */
     public double getF10(final AbsoluteDate date) {
         // The date is shifted by 1 day as described in the JB2008 Model with a 1-day lag.
-        final AbsoluteDate workDate = date.shiftedBy(-1 * Constants.JULIAN_DAY);
+        final AbsoluteDate workDate = date.shiftedBy(-Constants.JULIAN_DAY);
         bracketDateSOL(workDate);
         return getLinearInterpolationSOL(workDate, previousParamSOL.getF10(), nextParamSOL.getF10());
     }
@@ -319,7 +268,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     /** {@inheritDoc} */
     public double getF10B(final AbsoluteDate date) {
         // The date is shifted by 1 day as described in the JB2008 Model with a 1-day lag.
-        final AbsoluteDate workDate = date.shiftedBy(-1 * Constants.JULIAN_DAY);
+        final AbsoluteDate workDate = date.shiftedBy(-Constants.JULIAN_DAY);
         bracketDateSOL(workDate);
         return getLinearInterpolationSOL(workDate, previousParamSOL.getF10B(), nextParamSOL.getF10B());
     }
@@ -327,7 +276,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     /** {@inheritDoc} */
     public double getS10(final AbsoluteDate date) {
         // The date is shifted by 1 day as described in the JB2008 Model with a 1-day lag.
-        final AbsoluteDate workDate = date.shiftedBy(-1 * Constants.JULIAN_DAY);
+        final AbsoluteDate workDate = date.shiftedBy(-Constants.JULIAN_DAY);
         bracketDateSOL(workDate);
         return getLinearInterpolationSOL(workDate, previousParamSOL.getS10(), nextParamSOL.getS10());
     }
@@ -335,7 +284,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     /** {@inheritDoc} */
     public double getS10B(final AbsoluteDate date) {
         // The date is shifted by 1 day as described in the JB2008 Model with a 1-day lag.
-        final AbsoluteDate workDate = date.shiftedBy(-1 * Constants.JULIAN_DAY);
+        final AbsoluteDate workDate = date.shiftedBy(-Constants.JULIAN_DAY);
         bracketDateSOL(workDate);
         return getLinearInterpolationSOL(workDate, previousParamSOL.getS10B(), nextParamSOL.getS10B());
     }
@@ -343,7 +292,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     /** {@inheritDoc} */
     public double getXM10(final AbsoluteDate date) {
         // The date is shifted by 2 day as described in the JB2008 Model with a 2-day lag.
-        final AbsoluteDate workDate = date.shiftedBy(-2 * Constants.JULIAN_DAY);
+        final AbsoluteDate workDate = date.shiftedBy(-2.0 * Constants.JULIAN_DAY);
         bracketDateSOL(workDate);
         return getLinearInterpolationSOL(workDate, previousParamSOL.getXM10(), nextParamSOL.getXM10());
     }
@@ -351,7 +300,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     /** {@inheritDoc} */
     public double getXM10B(final AbsoluteDate date) {
         // The date is shifted by 2 day as described in the JB2008 Model with a 2-day lag.
-        final AbsoluteDate workDate = date.shiftedBy(-2 * Constants.JULIAN_DAY);
+        final AbsoluteDate workDate = date.shiftedBy(-2.0 * Constants.JULIAN_DAY);
         bracketDateSOL(workDate);;
         return getLinearInterpolationSOL(workDate, previousParamSOL.getXM10B(), nextParamSOL.getXM10B());
     }
@@ -359,7 +308,7 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     /** {@inheritDoc} */
     public double getY10(final AbsoluteDate date) {
         // The date is shifted by 5 day as described in the JB2008 Model with a 5-day lag.
-        final AbsoluteDate workDate = date.shiftedBy(-5 * Constants.JULIAN_DAY);
+        final AbsoluteDate workDate = date.shiftedBy(-5.0 * Constants.JULIAN_DAY);
         bracketDateSOL(workDate);
         return getLinearInterpolationSOL(workDate, previousParamSOL.getY10(), nextParamSOL.getY10());
     }
@@ -367,20 +316,15 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
     /** {@inheritDoc} */
     public double getY10B(final AbsoluteDate date) {
         // The date is shifted by 5 day as described in the JB2008 Model with a 5-day lag.
-        final AbsoluteDate workDate = date.shiftedBy(-5 * Constants.JULIAN_DAY);
+        final AbsoluteDate workDate = date.shiftedBy(-5.0 * Constants.JULIAN_DAY);
         bracketDateSOL(workDate);
         return getLinearInterpolationSOL(workDate, previousParamSOL.getY10B(), nextParamSOL.getY10B());
     }
 
     /** {@inheritDoc} */
     public double getDSTDTC(final AbsoluteDate date) {
-        if (dataDTC != null) {
-            bracketDateDTC(date);
-            return getLinearInterpolationDTC(date, previousParamDTC.getDSTDTC(), nextParamDTC.getDSTDTC());
-        } else {
-            return 0;
-        }
-
+        bracketDateDTC(date);
+        return getLinearInterpolationDTC(date, previousParamDTC.getDSTDTC(), nextParamDTC.getDSTDTC());
     }
 
 }

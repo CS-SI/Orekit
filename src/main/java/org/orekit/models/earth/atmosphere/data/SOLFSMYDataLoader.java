@@ -38,6 +38,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
 
 
 /**
@@ -55,8 +56,6 @@ import org.orekit.time.TimeStamped;
  * @author Louis Aucouturier
  * @since 11.2
  */
-
-
 public class SOLFSMYDataLoader implements DataLoader {
 
     /** Container class for Solar activity indexes. */
@@ -123,9 +122,7 @@ public class SOLFSMYDataLoader implements DataLoader {
             return date;
         }
 
-        /** The getters does not take into account the lag
-         *
-         */
+        // The getters does not take into account the lag
 
         /** Get the value of the instantaneous solar flux index
          *  (1e<sup>-22</sup>*Watt/(m²*Hertz)).
@@ -192,7 +189,9 @@ public class SOLFSMYDataLoader implements DataLoader {
         public double getY10B() {
             return y10b;
         }
+
     }
+
     /** Pattern for regular data. */
     private static final Pattern PATTERN_SPACE = Pattern.compile("\\s+");
 
@@ -220,7 +219,7 @@ public class SOLFSMYDataLoader implements DataLoader {
     }
 
     /**
-     * Getter for the data set.
+     * Gets the data set.
      * @return the data set
      */
     public SortedSet<LineParameters> getDataSet() {
@@ -243,8 +242,6 @@ public class SOLFSMYDataLoader implements DataLoader {
         return lastDate;
     }
 
-
-
     /** {@inheritDoc} */
     public void loadData(final InputStream input, final String name)
             throws IOException, ParseException, OrekitException {
@@ -255,7 +252,7 @@ public class SOLFSMYDataLoader implements DataLoader {
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            final CommonLineReader reader = new CommonLineReader(name, br);
+            final CommonLineReader reader = new CommonLineReader(br);
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 lineNumber++;
@@ -275,36 +272,29 @@ public class SOLFSMYDataLoader implements DataLoader {
                         final String[] splitLine = PATTERN_SPACE.split(line);
                         final double julianDay = Double.parseDouble(splitLine[3]);
                         final int julianDayInt = (int) julianDay;
-                        final double julianSeconds = (julianDay - julianDayInt) * 24 * 3600;
+                        final double julianSeconds = (julianDay - julianDayInt) * Constants.JULIAN_DAY;
                         final AbsoluteDate date = AbsoluteDate.createJDDate(julianDayInt, julianSeconds, utc);
 
-                        if (parsedEpochs.add(date)) {
+                        if (parsedEpochs.add(date)) { // Checking if entry doesn't exist yet
 
-                            final double f10 = Double.parseDouble(splitLine[4]);
-
-                            final double f10b = Double.parseDouble(splitLine[5]);
-
-                            final double s10 = Double.parseDouble(splitLine[6]);
-
-                            final double s10b = Double.parseDouble(splitLine[7]);
-
-                            final double xm10 = Double.parseDouble(splitLine[8]);
-
+                            final double f10   = Double.parseDouble(splitLine[4]);
+                            final double f10b  = Double.parseDouble(splitLine[5]);
+                            final double s10   = Double.parseDouble(splitLine[6]);
+                            final double s10b  = Double.parseDouble(splitLine[7]);
+                            final double xm10  = Double.parseDouble(splitLine[8]);
                             final double xm10b = Double.parseDouble(splitLine[9]);
-
-                            final double y10 = Double.parseDouble(splitLine[10]);
-
-                            final double y10b = Double.parseDouble(splitLine[11]);
+                            final double y10   = Double.parseDouble(splitLine[10]);
+                            final double y10b  = Double.parseDouble(splitLine[11]);
 
                             set.add(new LineParameters(date, f10, f10b, s10, s10b, xm10,
                                     xm10b, y10, y10b));
-                        } else {
-                            final ParseException pe = new ParseException("Line appearing twice in the data", 0);
-                            throw new OrekitException(pe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
+
                         }
+
                     }
                 }
             }
+
         } catch (NumberFormatException nfe) {
             throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
         }

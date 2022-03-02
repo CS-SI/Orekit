@@ -60,10 +60,7 @@ import org.orekit.utils.Constants;
  * @author Louis Aucouturier
  * @since 11.2
  */
-
-
 public class DtcDataLoader implements DataLoader {
-
 
     /** Container class for Solar activity indexes. */
     public static class LineParameters implements TimeStamped, Serializable {
@@ -93,7 +90,11 @@ public class DtcDataLoader implements DataLoader {
         }
 
         /**
-         * @return dtc  Temperature correction for geomagnetic storms
+         * Get the DSTDTC parameter.
+         * <p>
+         * It represents the temperature correction for geomagnetic storms.
+         * </p>
+         * @return dTc  Temperature correction for geomagnetic storms
          */
         public double getDSTDTC() {
             return dtc;
@@ -151,8 +152,6 @@ public class DtcDataLoader implements DataLoader {
         return lastDate;
     }
 
-
-
     /** {@inheritDoc} */
     public void loadData(final InputStream input, final String name)
             throws IOException, ParseException, OrekitException {
@@ -164,7 +163,7 @@ public class DtcDataLoader implements DataLoader {
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            final CommonLineReader reader = new CommonLineReader(name, br);
+            final CommonLineReader reader = new CommonLineReader(br);
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 lineNumber++;
@@ -192,13 +191,9 @@ public class DtcDataLoader implements DataLoader {
 
                         final AbsoluteDate date = currDate.shiftedBy(3600 * i);
 
-                        if (parsedEpochs.add(date)) {
-
+                        if (parsedEpochs.add(date)) { // Checking if entry doesn't exist yet
                             final double dtc = Integer.parseInt(splitLine[3 + i]);
                             set.add(new LineParameters(date, dtc));
-                        } else {
-                            final ParseException pe = new ParseException("Line appearing twice in the data", 0);
-                            throw new OrekitException(pe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
                         }
                     }
                 }

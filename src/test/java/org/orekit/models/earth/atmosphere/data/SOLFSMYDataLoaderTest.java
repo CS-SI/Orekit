@@ -77,7 +77,7 @@ public class SOLFSMYDataLoaderTest {
     
     // DataLoader
     private JB2008SpaceEnvironmentData loadJB() {
-        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_trunc.txt");
+        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_trunc.txt", "DTCFILE_trunc.TXT");
         return JBData;
     }
     
@@ -85,7 +85,7 @@ public class SOLFSMYDataLoaderTest {
     @Test
     public void testNoDataException() {
         try {
-            new JB2008SpaceEnvironmentData("SOLFSMY_nodata.txt");
+            new JB2008SpaceEnvironmentData("SOLFSMY_nodata.txt", "DTCFILE_trunc.TXT");
             Assert.fail("No Data In File exception should have been raised");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_DATA_IN_FILE, oe.getSpecifier());
@@ -93,19 +93,16 @@ public class SOLFSMYDataLoaderTest {
     }
     
     @Test
-    public void testParseDouble() {
-        try {
-            new JB2008SpaceEnvironmentData("SOLFSMY_double.txt");
-            Assert.fail("No Data In File exception should have been raised");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-        }
+    public void tesDuplicatedEntry() {
+        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_double.txt", "DTCFILE_trunc.TXT");
+        final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453000, Constants.JULIAN_DAY, utc);
+        assertThat(137.2, closeTo(JBData.getF10(julianDate), 1e-10));
     }
     
     @Test
     public void testUnableParse() {
         try {
-            new JB2008SpaceEnvironmentData("SOLFSMY_badparse.txt");
+            new JB2008SpaceEnvironmentData("SOLFSMY_badparse.txt", "DTCFILE_trunc.TXT");
             Assert.fail("UNABLE_TO_PARSE_LINE_IN_FILE exception should have been raised");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -117,7 +114,7 @@ public class SOLFSMYDataLoaderTest {
     @Test
     public void testMinDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 31, 12, 0, 0.0, utc);
+        final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 26, 12, 0, 0.0, utc);
         Assert.assertEquals(startDate, JBData.getMinDate());
     }
     

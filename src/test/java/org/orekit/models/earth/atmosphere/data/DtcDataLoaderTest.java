@@ -21,34 +21,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.pvCloseTo;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
-
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.time.TimeScale;
-import org.orekit.data.DataProvidersManager;
-
 import org.orekit.models.earth.atmosphere.Atmosphere;
-
 import org.orekit.models.earth.atmosphere.JB2008;
 import org.orekit.models.earth.atmosphere.JB2008InputParameters;
 import org.orekit.orbits.KeplerianOrbit;
@@ -58,6 +47,11 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
  
 /*
@@ -76,20 +70,15 @@ public class DtcDataLoaderTest {
         Utils.setDataRoot("regular-data:atmosphere");
         utc = TimeScalesFactory.getUTC();
     }
-    
 
-    
     // DataLoader
     private JB2008SpaceEnvironmentData loadJB() {
-        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData(JB2008SpaceEnvironmentData.DEFAULT_SUPPORTED_NAMES,
-                "DTCFILE_trunc.TXT");
-        return JBData;
+        return loadJB("DTCFILE_trunc.TXT");
     }
     
     // DataLoader with DTCFILE filename to be defined
     private JB2008SpaceEnvironmentData loadJB(final String filename) {
-        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData(JB2008SpaceEnvironmentData.DEFAULT_SUPPORTED_NAMES,
-                filename);
+        JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_trunc.txt", filename);
         return JBData;
     }
     
@@ -117,19 +106,16 @@ public class DtcDataLoaderTest {
 
     @Test
     public void testParseDouble() {
-        try {
-            loadJB("DTCFILE_double.txt");
-            Assert.fail("UNABLE_TO_PARSE_LINE_IN_FILE exception should have been raised");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-        }
+        JB2008SpaceEnvironmentData JBData = loadJB("DTCFILE_double.txt");
+        final AbsoluteDate date = new AbsoluteDate(2004, 1, 1, 0, 0, 0.0, utc);
+        assertThat(135.0, closeTo(JBData.getDSTDTC(date), 1e-10));
     }
     
     
     @Test
     public void testMinDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
-        final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 31, 12, 0, 0.0, utc);
+        final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 26, 12, 0, 0.0, utc);
         Assert.assertEquals(startDate, JBData.getMinDate());
     }
     

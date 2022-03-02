@@ -20,7 +20,6 @@ package org.orekit.models.earth.atmosphere.data;
 
 
 import java.io.BufferedReader;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -43,8 +42,6 @@ public class CommonLineReaderTest {
         Utils.setDataRoot("regular-data:atmosphere");
     }
 
-
-    
     @Test
     public void testParsing() throws IOException, URISyntaxException {
         final String name = "DTCFILE_CommonLineReaderTest.txt";
@@ -55,15 +52,13 @@ public class CommonLineReaderTest {
                 InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
                 BufferedReader    br  = new BufferedReader(isr)) {
             
-               CommonLineReader reader = new CommonLineReader(name, br);
-               String testLine = reader.readLine();
-               Assert.assertEquals(reader.isEmptyLine(), true);
-               
-               testLine = reader.readLine();
-               
+               CommonLineReader reader = new CommonLineReader(br);
+               reader.readLine();
+               Assert.assertTrue(reader.isEmptyLine());
+               reader.readLine();
                Assert.assertEquals(reader.getLine(), "DTC 2003 360   50  17  17  17  38  38  38  74  74  74  74  74  74  31  31  31  38  38  38  38  38  38  44  44");
                Assert.assertEquals(reader.getLineNumber(), 2);
-               Assert.assertEquals(reader.isEmptyLine(), false);
+               Assert.assertFalse(reader.isEmptyLine());
                
            }
     }

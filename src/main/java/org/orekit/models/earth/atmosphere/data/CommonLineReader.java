@@ -22,11 +22,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 
-/** Helper class to parse line data and to raise exceptions if needed. */
+/**
+ * Helper class to parse line data.
+ * @since 11.2
+  */
 class CommonLineReader {
-
-    /** Name of the file. */
-    private final String name;
 
     /** The input stream. */
     private final BufferedReader in;
@@ -40,11 +40,9 @@ class CommonLineReader {
     /**
      * Create a line reader.
      *
-     * @param name of the data source for error messages.
      * @param in   the input data stream.
      */
-    CommonLineReader(final String name, final BufferedReader in) {
-        this.name = name;
+    CommonLineReader(final BufferedReader in) {
         this.in = in;
         this.line = null;
         this.lineNo = 0;
