@@ -75,9 +75,21 @@ public class AbstractRelativisticJ2ClockModifier {
      * @return dt_relJ2clk Time delay due to the relativistic J2 clock effect
      */
     protected double relativisticJ2Correction(final EstimatedMeasurement<?> estimated) {
+
         // Extracting the state of the receiver to determine the frame and mu
-        final SpacecraftState localState = estimated.getStates()[0];
-        final Frame localFrame = localState.getFrame();
+        /**
+         * The satellite states are stored at the creation of the estimated measurements
+         * and can contain up to 2 elements. In most cases, only the receiver's state and
+         * therefore frame is stored, with the emitter's frame corresponding to the receiver's.
+         * Still, in the InterSatellites case, the states of the 2 spacecrafts are stored,
+         * and can contain different frames. This case is treated by looking at the length
+         * of SpacecraftState stored in the Estimated Measurements, with the only length 2
+         * case is the InterSatellites case.
+         */
+        final SpacecraftState[] states = estimated.getStates();
+        final SpacecraftState state =  (states.length < 2) ? states[0] : states[1];
+
+        final Frame remoteFrame = state.getFrame();
 
         // Getting Participants to extract the remote PV
         final TimeStampedPVCoordinates[] pvs = estimated.getParticipants();
@@ -87,7 +99,7 @@ public class AbstractRelativisticJ2ClockModifier {
         final TimeStampedPVCoordinates pvRemote = (pvs.length < 3) ? pvs[0] : pvs[1];
 
         // Define a Keplerian orbit to extract the orbital parameters needed to compute the correction
-        final KeplerianOrbit remoteOrbit = new KeplerianOrbit(pvRemote, localFrame, gm);
+        final KeplerianOrbit remoteOrbit = new KeplerianOrbit(pvRemote, remoteFrame, gm);
         final double orbitInclination = remoteOrbit.getI();
 
         // u = perigee argument + true anomaly
