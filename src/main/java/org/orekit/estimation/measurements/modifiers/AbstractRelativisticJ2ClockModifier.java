@@ -56,7 +56,7 @@ public class AbstractRelativisticJ2ClockModifier {
     /**
      * Constructor for the Relativistic J2 Clock modifier.
      * @param gm Earth gravitational constant (mu) in m³/s².
-     * @param c20 Earth un-normalized second zonal coefficient (Signed J2 constant, is negative) (Typical value -1.0826).
+     * @param c20 Earth un-normalized second zonal coefficient (Signed J2 constant, is negative) (Typical value -1.0826e-3).
      * @param equatorialRadius Earth equatorial radius in m.
      */
     public AbstractRelativisticJ2ClockModifier(final double gm,
@@ -70,8 +70,8 @@ public class AbstractRelativisticJ2ClockModifier {
     /**
      * Computes the relativistic J2 clock time delay correction.
      *
-     * @param estimated EstimatedMeasurements onto which to calculate the correction
-     * @return dt_relJ2clk Time delay due to the relativistic J2 clock effect
+     * @param estimated EstimatedMeasurements on which to calculate the correction
+     * @return dt_relJ2clk Time delay due to the relativistic J2 clock effect in seconds
      */
     protected double relativisticJ2Correction(final EstimatedMeasurement<?> estimated) {
 
