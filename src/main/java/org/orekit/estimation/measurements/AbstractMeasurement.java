@@ -243,7 +243,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * in the same frame as {@code adjustableEmitterPV}
      * @param signalArrivalDate date at which the signal arrives to receiver
      * @return <em>positive</em> delay between signal emission and signal reception dates
-     * @deprecated as of xx.xx replaced by {@link #signalTimeOfFlightFixedReception(TimeStampedPVCoordinates, Vector3D, AbsoluteDate)}
      */
     public static double signalTimeOfFlight(final TimeStampedPVCoordinates adjustableEmitterPV,
                                             final Vector3D receiverPosition,
@@ -260,7 +259,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param signalArrivalDate date at which the signal arrives to receiver
      * @return <em>positive</em> delay between signal emission and signal reception dates
      * @param <T> the type of the components
-     * @deprecated as of xx.xx replaced by {@link #signalTimeOfFlightFixedReception(TimeStampedFieldPVCoordinates, FieldVector3D, FieldAbsoluteDate)}
      */
     public static <T extends CalculusFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
                                                                        final FieldVector3D<T> receiverPosition,
@@ -378,40 +376,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
                                             Gradient.constant(freeParameters, a.getZ()));
 
         return new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
-
-    }
-
-
-
-    /** Compute propagation delay on a link leg (typically downlink or uplink).
-     * @param adjustableReceiver position/velocity of receiver that may be adjusted
-     * @param emitterPosition fixed position of emitter at {@code signalArrivalDate},
-     * in the same frame as {@code adjustableReceiver}
-     * @param signalEmissionDate date at which the signal is emitted to receiver
-     * @return <em>positive</em> delay between signal emission and signal reception dates
-     */
-    public static double signalTimeOfFlightFixedEmission(final TimeStampedPVCoordinates adjustableReceiver,
-                                                   final Vector3D emitterPosition,
-                                                   final AbsoluteDate signalEmissionDate) {
-
-        // initialize reception date search loop assuming the state is already correct
-        // this will be true for all but the first orbit determination iteration,
-        // and even for the first iteration the loop will converge very fast
-        final double offset = signalEmissionDate.getDate().durationFrom(adjustableReceiver.getDate());
-        double delay = -offset;
-
-        // search signal transit date, computing the signal travel in inertial frame
-        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
-        double delta;
-        int count = 0;
-        do {
-            final double previous   = delay;
-            final Vector3D transitP = adjustableReceiver.shiftedBy(offset + delay).getPosition();
-            delay                   = emitterPosition.distance(transitP) * cReciprocal;
-            delta                   = FastMath.abs(delay - previous);
-        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
-
-        return delay;
 
     }
 
