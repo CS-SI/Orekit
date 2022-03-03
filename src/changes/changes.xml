@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="louis" type="add" issue="888">
+        Added J2-contribution for relativistic clock correction.
+      </action>
       <action dev="louis" type="add" issue="759">
         Added data loaders for Space Environment's JB2008 data.
       </action>
