@@ -165,7 +165,10 @@ public class SinexLoader {
         }
     }
 
-
+    /**
+     *
+     * @return sinex file creation date as an AbsoluteDate
+     */
     public AbsoluteDate getCreationDate() {
         return creationDate;
     }
@@ -568,7 +571,9 @@ public class SinexLoader {
         // Deal with 00:000:00000 epochs
         if (DEFAULT_EPOCH_TWO_DIGITS.equals(stringDate) || DEFAULT_EPOCH_FOUR_DIGITS.equals(stringDate)) {
             // Data is still available, return a dummy date at infinity in the future direction
-            return creationDate;
+            // FIXME : For Release 12.0 switch to return creationDate in order to follow Sinex
+            // convention.
+            return AbsoluteDate.FUTURE_INFINITY;
         }
 
         // Date components
@@ -598,10 +603,21 @@ public class SinexLoader {
 
     }
 
+    /**
+     *
+     *
+     * @param objectId
+     * @return List of string arrays containing for a given satellite or station, the available satellite system,
+     * satellite PRN or station id, and corresponding id for the DCB map.
+     */
     public List<String[]> getAvailableSystems(final String objectId) {
         return idMap.get(objectId);
     }
 
+    /**
+     *
+     * @return List of all satellite and stations systems
+     */
     public List<List<String[]>> getAvailableSystems() {
         final List< List<String[]> > systemsList = new ArrayList<List<String[]>>();
         for (Entry<String, List<String[]>>  entry : idMap.entrySet()) {
