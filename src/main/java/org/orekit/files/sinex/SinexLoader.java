@@ -23,8 +23,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -39,10 +41,12 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sinex.Station.ReferenceSystem;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
+import org.orekit.utils.units.Unit;
 
 /**
  * Loader for Solution INdependent EXchange (SINEX) files.
@@ -56,18 +60,46 @@ import org.orekit.utils.Constants;
 public class SinexLoader {
 
     /** 00:000:00000 epoch. */
-    private static final String DEFAULT_EPOCH = "00:000:00000";
+    private static final String DEFAULT_EPOCH_TWO_DIGITS = "00:000:00000";
+
+    /** 0000:000:00000 epoch. */
+    private static final String DEFAULT_EPOCH_FOUR_DIGITS = "0000:000:00000";
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile(":");
+
+    /** Pattern for regular data. */
+    private static final Pattern PATTERN_SPACE = Pattern.compile("\\s+");
+
+    /** Pattern to check beginning of SINEX files.*/
+    private static final Pattern PATTERN_BEGIN = Pattern.compile("(%=).*");
+
 
     /** Station data.
      * Key: Site code
      */
     private final Map<String, Station> stations;
 
+    /** DCB data.
+     * The DCB observations are stored by satellites, which stores pair of observation codes,
+     * and the associated biases in a TimeSpanMap.
+     *
+     */
+    private final Map<String, DCB> dcbMap;
+
+    /**
+     *
+     */
+    private final Map<String, List<String[]>> idMap;
+
+    /** */
+    private final DCBDescription dcbDescriptor;
+
     /** UTC time scale. */
     private final TimeScale utc;
+
+    /** SINEX file creation date as extracted for the first line. */
+    private AbsoluteDate creationDate;
 
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
@@ -91,7 +123,12 @@ public class SinexLoader {
                        final DataProvidersManager dataProvidersManager,
                        final TimeScale utc) {
         this.utc = utc;
+        this.creationDate = AbsoluteDate.FUTURE_INFINITY;
+        this.dcbDescriptor = new DCBDescription();
+        dcbMap = new HashMap<>();
         stations = new HashMap<>();
+        idMap = new HashMap<>();
+
         dataProvidersManager.feed(supportedNames, new Parser());
     }
 
@@ -113,7 +150,11 @@ public class SinexLoader {
     public SinexLoader(final DataSource source, final TimeScale utc) {
         try {
             this.utc = utc;
+            this.creationDate = AbsoluteDate.FUTURE_INFINITY;
+            this.dcbDescriptor = null;
+            dcbMap = new HashMap<>();
             stations = new HashMap<>();
+            idMap = new HashMap<>();
             try (InputStream         is  = source.getOpener().openStreamOnce();
                  BufferedInputStream bis = new BufferedInputStream(is)) {
                 new Parser().loadData(bis, source.getName());
@@ -122,6 +163,12 @@ public class SinexLoader {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
     }
+
+
+    public AbsoluteDate getCreationDate() {
+        return creationDate;
+    }
+
 
     /**
      * Get the parsed station data.
@@ -151,6 +198,46 @@ public class SinexLoader {
         }
     }
 
+    /**
+     * Get the parsed dcb data, per satellite.
+     *
+     * @return unmodifiable view of parsed station data
+     */
+    public Map<String, DCB> getDCBMap() {
+        return Collections.unmodifiableMap(dcbMap);
+    }
+
+    /**
+     * Get the DCBSatellite object for a given satellite identified by its PRN.
+     *
+     * @param id
+     * @return DCBSatellite object corresponding to the satPRN value.
+     */
+    public DCB getDCB(final String id) {
+        return dcbMap.get(id);
+    }
+
+    /**
+     *
+     * @return a DCBDescription object containing the description data of the DCB file.
+     */
+    public DCBDescription getDCBDescription() {
+        return dcbDescriptor;
+    }
+
+    /**
+     * Add the DCBSatellite object to the dcbSatellites Map,
+     * containing all dcb data.
+     *
+     * @param dcb
+     * @param id
+     */
+    private void addDCB(final DCB dcb, final String id) {
+        if (dcbMap.get(id) == null) {
+            dcbMap.put(id, dcb);
+        }
+    }
+
     /** Parser for SINEX files. */
     private class Parser implements DataLoader {
 
@@ -172,6 +259,8 @@ public class SinexLoader {
             // Useful parameters
             int lineNumber     = 0;
             String line        = null;
+            boolean inDcbDesc  = false;
+            boolean inDcbSol  = false;
             boolean inId       = false;
             boolean inEcc      = false;
             boolean inEpoch    = false;
@@ -179,6 +268,7 @@ public class SinexLoader {
             boolean firstEcc   = true;
             Vector3D position  = Vector3D.ZERO;
             Vector3D velocity  = Vector3D.ZERO;
+            final TimeScale scale = utc;
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
@@ -188,6 +278,17 @@ public class SinexLoader {
                     // For now, only few keys are supported
                     // They represent the minimum set of parameters that are interesting to consider in a SINEX file
                     // Other keys can be added depending user needs
+
+                    /**
+                     *  The first line is parsed in order to get the creation date of the file, which might be used
+                     *  in the case of an absent date as the final date of the data.
+                     *  Its position is fixed in the file, at the first line, in the 4th column.
+                     */
+                    if (lineNumber == 1 && PATTERN_BEGIN.matcher(line).matches()) {
+                        final String[] splitFirstLine = PATTERN_SPACE.split(line);
+                        creationDate = stringEpochToAbsoluteDate(splitFirstLine[3], scale);
+                    }
+
                     switch (line.trim()) {
                         case "+SITE/ID" :
                             // Start of site id. data
@@ -221,6 +322,22 @@ public class SinexLoader {
                             // Start of coordinates data
                             inEstimate = false;
                             break;
+                        case "+BIAS/DESCRIPTION" :
+                            // Start of coordinates data
+                            inDcbDesc = true;
+                            break;
+                        case "-BIAS/DESCRIPTION" :
+                            // Start of coordinates data
+                            inDcbDesc = false;
+                            break;
+                        case "+BIAS/SOLUTION" :
+                            // Start of coordinates data
+                            inDcbSol = true;
+                            break;
+                        case "-BIAS/SOLUTION" :
+                            // Start of coordinates data
+                            inDcbSol = false;
+                            break;
                         default:
                             if (line.startsWith(COMMENT)) {
                                 // ignore that line
@@ -245,8 +362,8 @@ public class SinexLoader {
                                     }
 
                                     // start and end of validity for the current entry
-                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12));
-                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12));
+                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), scale);
+                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), scale);
 
                                     // reference system UNE or XYZ
                                     station.setEccRefSystem(ReferenceSystem.getEccRefSystem(parseString(line, 42, 3)));
@@ -273,8 +390,8 @@ public class SinexLoader {
                                 } else if (inEpoch) {
                                     // read epoch data
                                     final Station station = getStation(parseString(line, 1, 4));
-                                    station.setValidFrom(stringEpochToAbsoluteDate(parseString(line, 16, 12)));
-                                    station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12)));
+                                    station.setValidFrom(stringEpochToAbsoluteDate(parseString(line, 16, 12), scale));
+                                    station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12), scale));
                                 } else if (inEstimate) {
                                     final Station station = getStation(parseString(line, 14, 4));
                                     // check if this station exists
@@ -299,7 +416,7 @@ public class SinexLoader {
                                                 position = new Vector3D(position.getX(), position.getY(), z);
                                                 station.setPosition(position);
                                                 // set the reference epoch (identical for all coordinates)
-                                                station.setEpoch(stringEpochToAbsoluteDate(parseString(line, 27, 12)));
+                                                station.setEpoch(stringEpochToAbsoluteDate(parseString(line, 27, 12), scale));
                                                 // reset position vector
                                                 position = Vector3D.ZERO;
                                                 break;
@@ -329,8 +446,81 @@ public class SinexLoader {
                                         }
                                     }
 
+                                } else if (inDcbDesc) {
+                                    // Determining the data type for the DCBDescription object
+                                    final String[] splitLine = PATTERN_SPACE.split(line);
+                                    final String dataType = splitLine[1];
+                                    switch (dataType) {
+                                        case "OBSERVATION_SAMPLING":
+                                            dcbDescriptor.setObservationSampling(Integer.parseInt(splitLine[2]));
+                                            break;
+                                        case "PARAMETER_SPACING":
+                                            dcbDescriptor.setParameterSpacing(Integer.parseInt(splitLine[2]));
+                                            break;
+                                        case "DETERMINATION_METHOD":
+                                            dcbDescriptor.setDeterminationMethod(splitLine[2]);
+                                            break;
+                                        case "BIAS_MODE":
+                                            dcbDescriptor.setBiasMode(splitLine[2]);
+                                            break;
+                                        case "TIME_SYSTEM":
+                                            final SatelliteSystem timeSystem =  SatelliteSystem.parseSatelliteSystem(splitLine[2]);
+                                            dcbDescriptor.setTimeSystem(timeSystem);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+
+
+                                } else if (inDcbSol) {
+
+                                    /**
+                                     * Parsing the data present in a DCB file solution line.
+                                     * Most fields are used in the files provided by CDDIS.
+                                     * Station is empty for satellite measurements.
+                                     * The separator between columns is composed of spaces.
+                                     */
+
+                                    final String satPRN = parseString(line, 11, 3);
+                                    final String stationId = parseString(line, 15, 9);
+                                    /**
+                                     * Checking if a DCBSatellite object with the PRN key is present
+                                     * in the HashMap storing the various satellites DCBs. If not, creating
+                                     * such an object before assignment of the characteristics.
+                                     */
+
+                                    // Parsing the line data.
+                                    // final String biasType = parseString(line, 1, 5);
+                                    final String Obs1 = parseString(line, 25, 4);
+                                    final String Obs2 = parseString(line, 30, 4);
+                                    final AbsoluteDate beginDate = stringEpochToAbsoluteDate( parseString(line, 35, 14), scale);
+                                    final AbsoluteDate endDate = stringEpochToAbsoluteDate( parseString(line, 50, 14), scale);
+                                    final Unit unitDcb = Unit.parse(parseString(line, 65, 4));
+                                    final double valueDcb = unitDcb.toSI(Double.parseDouble(parseString(line, 70, 21)));
+
+                                    final String id = (stationId.equals("")) ? satPRN : satPRN.concat(stationId);
+                                    final String objectId = (stationId.equals("")) ? satPRN : stationId;
+                                    DCB dcb = getDCB(id);
+                                    if (dcb == null) {
+                                        dcb = new DCB(satPRN, stationId);
+                                        final String[] listDcb = {satPRN.substring(0, 1), objectId, id};
+                                        final List<String[]> listDcbId = idMap.get(objectId);
+                                        if (listDcbId == null) {
+                                            final ArrayList<String[]> newListDcb =  new ArrayList<String[]>();
+                                            newListDcb.add(listDcb);
+                                            idMap.put( objectId, newListDcb );
+                                        } else {
+                                            listDcbId.add(listDcb);
+                                        }
+
+                                    }
+
+                                    dcb.addDCBLine(Obs1, Obs2, beginDate, endDate, valueDcb);
+                                    // Adding the object to the HashMap if not present.
+                                    addDCB(dcb, id);
+
                                 } else {
-                                    // not supported line, ignore it
+                                 // not supported line, ignore it
                                 }
                             }
                             break;
@@ -366,42 +556,61 @@ public class SinexLoader {
 
     }
 
+    private AbsoluteDate stringEpochToAbsoluteDate(final String stringDate) {
+        return stringEpochToAbsoluteDate(stringDate, utc);
+    }
+
     /**
      * Transform a String epoch to an AbsoluteDate.
      * @param stringDate string epoch
+     * @param scale TimeScale for the computation of the dates
      * @return the corresponding AbsoluteDate
      */
-    private AbsoluteDate stringEpochToAbsoluteDate(final String stringDate) {
+    private AbsoluteDate stringEpochToAbsoluteDate(final String stringDate, final TimeScale scale) {
 
         // Deal with 00:000:00000 epochs
-        if (DEFAULT_EPOCH.equals(stringDate)) {
+        if (DEFAULT_EPOCH_TWO_DIGITS.equals(stringDate) || DEFAULT_EPOCH_FOUR_DIGITS.equals(stringDate)) {
             // Data is still available, return a dummy date at infinity in the future direction
-            return AbsoluteDate.FUTURE_INFINITY;
+            return creationDate;
         }
 
         // Date components
         final String[] fields = SEPARATOR.split(stringDate);
 
         // Read fields
-        final int twoDigitsYear = Integer.parseInt(fields[0]);
+        final int DigitsYear = Integer.parseInt(fields[0]);
         final int day           = Integer.parseInt(fields[1]);
         final int secInDay      = Integer.parseInt(fields[2]);
 
         // Data year
         final int year;
-        if (twoDigitsYear > 50) {
-            year = 1900 + twoDigitsYear;
+        if (DigitsYear > 50 && DigitsYear < 100) {
+            year = 1900 + DigitsYear;
+        } else if (DigitsYear < 100) {
+            year = 2000 + DigitsYear;
         } else {
-            year = 2000 + twoDigitsYear;
+            year = DigitsYear;
         }
 
         // Return an absolute date.
         // Initialize to 1st January of the given year because
         // sometimes day in equal to 0 in the file.
-        return new AbsoluteDate(new DateComponents(year, 1, 1), utc).
+        return new AbsoluteDate(new DateComponents(year, 1, 1), scale).
                         shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                         shiftedBy(secInDay);
 
     }
 
+    public List<String[]> getAvailableSystems(final String objectId) {
+        return idMap.get(objectId);
+    }
+
+    public List<List<String[]>> getAvailableSystems() {
+        final List< List<String[]> > systemsList = new ArrayList<List<String[]>>();
+        for (String key : idMap.keySet()) {
+            final List< String[] > systemList = idMap.get(key);
+            systemsList.add(systemList);
+        }
+        return systemsList;
+    }
 }

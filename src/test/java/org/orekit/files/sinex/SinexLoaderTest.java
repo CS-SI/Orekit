@@ -147,6 +147,7 @@ public class SinexLoaderTest {
 
         // Load file (it corresponds to a small version of the real entier file)
         SinexLoader loader = new SinexLoader("ecc_xyz-small-multiple-ecc.snx");
+        AbsoluteDate creationDate = loader.getCreationDate();
         Assert.assertEquals(4, loader.getStations().size());
 
         // Verify station 7236
@@ -160,10 +161,10 @@ public class SinexLoaderTest {
         final Station station7237 = loader.getStation("7237");
         final Vector3D refStation7237 = Vector3D.ZERO;
         Assert.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("1995-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
-        Assert.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2021-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
-        Assert.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2999-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        //Assert.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2021-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        //Assert.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2999-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assert.assertEquals(0.0, station7237.getValidFrom().durationFrom(new AbsoluteDate("1988-01-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
-        Assert.assertTrue(station7237.getValidUntil() == AbsoluteDate.FUTURE_INFINITY);
+        Assert.assertTrue(station7237.getValidUntil() == creationDate);
 
         // Verify station 7090
         final Station station7090 = loader.getStation("7090");
@@ -192,10 +193,13 @@ public class SinexLoaderTest {
         Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2012-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         refStation7090 = new Vector3D(-1.2073, 2.5034, -1.5509);
         Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2015-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
-        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2021-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
-        Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2999-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        
+        // Tests modified from solving Issue 893 : The validity period is now bounded by the creationDate of the file 
+        // as stated in the definition of SINEX files.
+        //Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2021-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+        //Assert.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2999-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assert.assertEquals(0.0, station7090.getValidFrom().durationFrom(new AbsoluteDate("1979-07-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
-        Assert.assertTrue(station7090.getValidUntil() == AbsoluteDate.FUTURE_INFINITY);
+        Assert.assertTrue(station7090.getValidUntil() == creationDate);
 
         // Verify station 7092
         final Station station7092 = loader.getStation("7092");
