@@ -30,15 +30,19 @@ import org.orekit.files.sinex.Station.ReferenceSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 public class SinexLoaderTest {
 
+    private TimeScale utc;
+    
     @Before
     public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:sinex");
+        utc = TimeScalesFactory.getUTC();
     }
 
     @Test
@@ -67,9 +71,9 @@ public class SinexLoaderTest {
 
         // Test date computation using format description
         try {
-            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class);
+            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class, TimeScale.class);
             method.setAccessible(true);
-            final AbsoluteDate date = (AbsoluteDate) method.invoke(loader, "95:120:86399");
+            final AbsoluteDate date = (AbsoluteDate) method.invoke(loader, "95:120:86399", utc);
             final AbsoluteDate refDate = new AbsoluteDate("1995-04-30T23:59:59.000", TimeScalesFactory.getUTC());
             Assert.assertEquals(0., refDate.durationFrom(date), 0.);
         } catch (NoSuchMethodException | SecurityException e) {

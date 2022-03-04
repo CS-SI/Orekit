@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
@@ -556,10 +557,6 @@ public class SinexLoader {
 
     }
 
-    private AbsoluteDate stringEpochToAbsoluteDate(final String stringDate) {
-        return stringEpochToAbsoluteDate(stringDate, utc);
-    }
-
     /**
      * Transform a String epoch to an AbsoluteDate.
      * @param stringDate string epoch
@@ -607,9 +604,8 @@ public class SinexLoader {
 
     public List<List<String[]>> getAvailableSystems() {
         final List< List<String[]> > systemsList = new ArrayList<List<String[]>>();
-        for (String key : idMap.keySet()) {
-            final List< String[] > systemList = idMap.get(key);
-            systemsList.add(systemList);
+        for (Entry<String, List<String[]>>  entry : idMap.entrySet()) {
+            systemsList.add(entry.getValue());
         }
         return systemsList;
     }

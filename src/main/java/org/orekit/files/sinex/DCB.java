@@ -55,7 +55,7 @@ public class DCB {
     }
 
     // Class to store the TimeSpanMap per DCB Observation Code set
-    private class DCBCode {
+    private static class DCBCode {
 
         /** TimeSpanMap containing the DCB values. */
         private TimeSpanMap<Double> DCBMap;
