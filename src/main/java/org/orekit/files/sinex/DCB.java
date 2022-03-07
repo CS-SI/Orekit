@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.HashMap;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -35,16 +34,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Louis Aucouturier
  * @since 11.2
  */
-public class DCB {
-
-    /** Satellite PRN identifier.
-     * Satellite PRN and station id are present in order to allow stations to be associated with
-     * a satellite system stored in the PRN, as done in the Sinex file.
-     */
-    private String satPRN;
-
-    /** Station ID. */
-    private String stationId;
+class DCB {
 
     /** Ensemble of Observation Code pairs present for the satellite. */
     private HashSet< HashSet<ObservationType> > observationSets;
@@ -55,16 +45,11 @@ public class DCB {
      */
     private HashMap<HashSet<ObservationType>, DCBCode> DCBCodeMap;
 
-
     /**
      * Constructor taking the satellite's PRN identifier as a parameter.
      *
-     * @param satPRN
-     * @param stationId
      */
-    public DCB(final String satPRN, final String stationId) {
-        this.satPRN = satPRN;
-        this.stationId = stationId;
+    DCB() {
         this.observationSets = new HashSet< HashSet<ObservationType> >();
         this.DCBCodeMap = new HashMap<HashSet<ObservationType>, DCBCode>();
     }
@@ -121,6 +106,7 @@ public class DCB {
         DCBCodeMap.get(singleObservationPair).getDCBTimeMap().addValidBetween(biasValue, spanBegin, spanEnd);
     }
 
+
     /**
      * Return the value of the Differential Code Bias for a given Observation Code pair,
      * at a given date, for the satellite this object has been created for.
@@ -159,42 +145,7 @@ public class DCB {
     public HashSet< HashSet<ObservationType> > getAvailableObservationPairs() {
         return observationSets;
     }
-    /**
-     * Return the SatelliteSytem object corresponding to the satellite.
-     *
-     * @return SatelliteSystem object corresponding to the satellite
-     * from which the DCB are extracted.
-     */
-    public SatelliteSystem getSatelliteSytem() {
-        return SatelliteSystem.parseSatelliteSystem(satPRN);
-    }
 
-    /**
-     * Return the satellite PRN, as a String.
-     *
-     * @return String object corresponding to the PRN identifier of the satellite.
-     */
-    public String getPRN() {
-        return satPRN;
-    }
-
-    /**
-     * Return the station id, as a String.
-     *
-     * @return String object corresponding to the identifier of the station.
-     */
-    public String getStationId() {
-        return stationId;
-    }
-
-    /**
-     * Return the object id, as defined in the SinexLoader, as a String.
-     *
-     * @return String object corresponding to the DCBMap key, as defined in SinexLoader.
-     */
-    public String getId() {
-        return (stationId.equals("")) ? satPRN : satPRN.concat(stationId);
-    }
 
     /**
      * Get the minimum valid date for a given observation pair.

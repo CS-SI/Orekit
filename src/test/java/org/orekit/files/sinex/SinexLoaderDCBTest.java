@@ -57,15 +57,34 @@ public class SinexLoaderDCBTest {
     }
     
     @Test
-    public void testDCBDescription() {
+    public void testDCBDescriptionSat() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
-        loader.getAvailableSystems();
         // DCB Description test
-        SatelliteSystem timeSystem = loader.getDCBDescription().getTimeSystem();
-        String biasMode =loader.getDCBDescription().getBiasMode();
-        String determinationMethod =loader.getDCBDescription().getDeterminationMethod();
-        int observationSampling =loader.getDCBDescription().getObservationSampling();
-        int parameterSpacing =loader.getDCBDescription().getParameterSpacing();
+        DCBSatellite dcbSat = loader.getDCBSatellite("G01");
+        DCBDescription dcbDesc = dcbSat.getDcbDescription();
+        SatelliteSystem timeSystem = dcbDesc.getTimeSystem();
+        String biasMode = dcbDesc.getBiasMode();
+        String determinationMethod = dcbDesc.getDeterminationMethod();
+        int observationSampling = dcbDesc.getObservationSampling();
+        int parameterSpacing = dcbDesc.getParameterSpacing();
+        Assert.assertEquals(timeSystem, SatelliteSystem.GPS);
+        Assert.assertEquals(biasMode, "RELATIVE");
+        Assert.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
+        Assert.assertEquals(parameterSpacing, 86400);
+        Assert.assertEquals(observationSampling, 30);
+    }
+    
+    @Test
+    public void testDCBDescriptionStation() {
+        SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
+        // DCB Description test
+        DCBStation dcbStation = loader.getDCBStation("AGGO");
+        DCBDescription dcbDesc = dcbStation.getDcbDescription();
+        SatelliteSystem timeSystem = dcbDesc.getTimeSystem();
+        String biasMode = dcbDesc.getBiasMode();
+        String determinationMethod = dcbDesc.getDeterminationMethod();
+        int observationSampling = dcbDesc.getObservationSampling();
+        int parameterSpacing = dcbDesc.getParameterSpacing();
         Assert.assertEquals(timeSystem, SatelliteSystem.GPS);
         Assert.assertEquals(biasMode, "RELATIVE");
         Assert.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
@@ -76,7 +95,8 @@ public class SinexLoaderDCBTest {
     @Test
     public void testDCBfile() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
-        DCB DCBTest = loader.getDCB("G01");
+        DCBSatellite DCBSat = loader.getDCBSatellite("G01");
+        DCB DCBTest = DCBSat.getDcbObject();
         
 
         // Observation Pair test
@@ -156,7 +176,8 @@ public class SinexLoaderDCBTest {
         Assert.assertEquals(valueDcbReal, valueDcb, 1e-13);
         
         // Value Test for a Station
-        DCB DCBTestStation = loader.getDCB("RALIC");
+        DCBStation DCBStation = loader.getDCBStation("ALIC");
+        DCB DCBTestStation = DCBStation.getDcbObject(SatelliteSystem.parseSatelliteSystem("R"));
         HashSet<ObservationType> OPStation = new HashSet<ObservationType>();
         ObservationType Ob7 = ObservationType.valueOf("C1P");
         OPStation.add(Ob1);
@@ -175,35 +196,23 @@ public class SinexLoaderDCBTest {
         
         Assert.assertEquals(valueDcbRealStation, valueDcbStation, 1e-13);
         
-        // AVailable systems test
-        List<String[]> availableSystemsTest = loader.getAvailableSystems("G11");
-        List<String[]> availableSystemRef = new ArrayList<String[]>();
-        String[] availableList = {"G", "G11", "G11"};
-        availableSystemRef.add(availableList);
-        
-        Assert.assertArrayEquals(availableSystemRef.get(0), availableSystemsTest.get(0));
-        
+                
         // Test getSatelliteSystem
-        Assert.assertEquals(DCBTest.getSatelliteSytem(), SatelliteSystem.GPS);
+        Assert.assertEquals(DCBSat.getSatelliteSytem(), SatelliteSystem.GPS);
         
         // Test getPRN
-        Assert.assertEquals("G01", DCBTest.getPRN());
+        Assert.assertEquals("G01", DCBSat.getPRN());
         
-        // Test getId : Satellite Case
-        Assert.assertEquals("G01", DCBTest.getId());
     }
     
     @Test
     public void testDCBFileStation() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
-        loader.getAvailableSystems();
         String stationIdRef = "AGGO";
         String stationSystemRef = "G";
-        String idRef = stationSystemRef + stationIdRef;
-        DCB DCBTest = loader.getDCB(idRef);
+        DCBStation DCBTest = loader.getDCBStation(stationIdRef);
         
-         // Test getId : Station Case
-         Assert.assertEquals(idRef, DCBTest.getId());
+
          
          // Test getStationId : Station Case
          Assert.assertEquals(stationIdRef, DCBTest.getStationId());

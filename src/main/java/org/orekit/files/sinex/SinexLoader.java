@@ -23,12 +23,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
@@ -86,15 +83,19 @@ public class SinexLoader {
      * and the associated biases in a TimeSpanMap.
      *
      */
-    private final Map<String, DCB> dcbMap;
+    private final Map<String, DCBStation> dcbStationMap;
+
+    /** DCB data.
+     * The DCB observations are stored by satellites, which stores pair of observation codes,
+     * and the associated biases in a TimeSpanMap.
+     *
+     */
+    private final Map<String, DCBSatellite> dcbSatelliteMap;
 
     /**
-     * Map containing all IDs associated with a given object, identified by its objectId.
+     *
      */
-    private final Map<String, List<String[]>> idMap;
-
-    /** DCB description data container. */
-    private final DCBDescription dcbDescriptor;
+    private final DCBDescription dcbDescription;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -125,10 +126,10 @@ public class SinexLoader {
                        final TimeScale utc) {
         this.utc = utc;
         this.creationDate = AbsoluteDate.FUTURE_INFINITY;
-        this.dcbDescriptor = new DCBDescription();
-        dcbMap = new HashMap<>();
+        dcbDescription = new DCBDescription();
+        dcbStationMap = new HashMap<>();
+        dcbSatelliteMap = new HashMap<>();
         stations = new HashMap<>();
-        idMap = new HashMap<>();
 
         dataProvidersManager.feed(supportedNames, new Parser());
     }
@@ -152,10 +153,10 @@ public class SinexLoader {
         try {
             this.utc = utc;
             this.creationDate = AbsoluteDate.FUTURE_INFINITY;
-            this.dcbDescriptor = null;
-            dcbMap = new HashMap<>();
+            dcbStationMap = new HashMap<>();
+            dcbSatelliteMap = new HashMap<>();
             stations = new HashMap<>();
-            idMap = new HashMap<>();
+            dcbDescription = new DCBDescription();
             try (InputStream         is  = source.getOpener().openStreamOnce();
                  BufferedInputStream bis = new BufferedInputStream(is)) {
                 new Parser().loadData(bis, source.getName());
@@ -207,12 +208,13 @@ public class SinexLoader {
     }
 
     /**
-     * Get the parsed DCB data, per satellite.
+     * Get the DCBSatellite object for a given satellite identified by its PRN.
      *
-     * @return unmodifiable view of parsed station data
+     * @param id
+     * @return DCBSatellite object corresponding to the satPRN value.
      */
-    public Map<String, DCB> getDCBMap() {
-        return Collections.unmodifiableMap(dcbMap);
+    public DCBStation getDCBStation(final String id) {
+        return dcbStationMap.get(id);
     }
 
     /**
@@ -221,17 +223,22 @@ public class SinexLoader {
      * @param id
      * @return DCBSatellite object corresponding to the satPRN value.
      */
-    public DCB getDCB(final String id) {
-        return dcbMap.get(id);
+    public DCBSatellite getDCBSatellite(final String id) {
+        return dcbSatelliteMap.get(id);
     }
 
+
     /**
-     * Get the DCB Description parameters.
+     * Add the DCBSatellite object to the dcbSatellites Map,
+     * containing all DCB data.
      *
-     * @return a DCBDescription object containing the description data of the DCB file.
+     * @param dcb
+     * @param id
      */
-    public DCBDescription getDCBDescription() {
-        return dcbDescriptor;
+    private void addDCBStation(final DCBStation dcb, final String id) {
+        if (dcbStationMap.get(id) == null) {
+            dcbStationMap.put(id, dcb);
+        }
     }
 
     /**
@@ -241,9 +248,9 @@ public class SinexLoader {
      * @param dcb
      * @param id
      */
-    private void addDCB(final DCB dcb, final String id) {
-        if (dcbMap.get(id) == null) {
-            dcbMap.put(id, dcb);
+    private void addDCBSatellite(final DCBSatellite dcb, final String id) {
+        if (dcbSatelliteMap.get(id) == null) {
+            dcbSatelliteMap.put(id, dcb);
         }
     }
 
@@ -332,19 +339,19 @@ public class SinexLoader {
                             inEstimate = false;
                             break;
                         case "+BIAS/DESCRIPTION" :
-                            // Start of coordinates data
+                            // Start of Bias description block data
                             inDcbDesc = true;
                             break;
                         case "-BIAS/DESCRIPTION" :
-                            // Start of coordinates data
+                            // End of Bias description block data
                             inDcbDesc = false;
                             break;
                         case "+BIAS/SOLUTION" :
-                            // Start of coordinates data
+                            // Start of Bias solution block data
                             inDcbSol = true;
                             break;
                         case "-BIAS/SOLUTION" :
-                            // Start of coordinates data
+                            // End of Bias solution block data
                             inDcbSol = false;
                             break;
                         default:
@@ -457,24 +464,25 @@ public class SinexLoader {
 
                                 } else if (inDcbDesc) {
                                     // Determining the data type for the DCBDescription object
-                                    final String[] splitLine = PATTERN_SPACE.split(line);
-                                    final String dataType = splitLine[1];
+                                    final String[] splitLine = PATTERN_SPACE.split(line.trim());
+                                    final String dataType = splitLine[0];
+                                    final String data = splitLine[1];
                                     switch (dataType) {
                                         case "OBSERVATION_SAMPLING":
-                                            dcbDescriptor.setObservationSampling(Integer.parseInt(splitLine[2]));
+                                            dcbDescription.setObservationSampling(Integer.parseInt(data));
                                             break;
                                         case "PARAMETER_SPACING":
-                                            dcbDescriptor.setParameterSpacing(Integer.parseInt(splitLine[2]));
+                                            dcbDescription.setParameterSpacing(Integer.parseInt(data));
                                             break;
                                         case "DETERMINATION_METHOD":
-                                            dcbDescriptor.setDeterminationMethod(splitLine[2]);
+                                            dcbDescription.setDeterminationMethod(data);
                                             break;
                                         case "BIAS_MODE":
-                                            dcbDescriptor.setBiasMode(splitLine[2]);
+                                            dcbDescription.setBiasMode(data);
                                             break;
                                         case "TIME_SYSTEM":
-                                            final SatelliteSystem timeSystem =  SatelliteSystem.parseSatelliteSystem(splitLine[2]);
-                                            dcbDescriptor.setTimeSystem(timeSystem);
+                                            final SatelliteSystem timeSystem =  SatelliteSystem.parseSatelliteSystem(data);
+                                            dcbDescription.setTimeSystem(timeSystem);
                                             break;
                                         default:
                                             break;
@@ -508,33 +516,38 @@ public class SinexLoader {
                                     final double valueDcb = unitDcb.toSI(Double.parseDouble(parseString(line, 70, 21)));
 
                                     // Defining the id and objectId of the parsed line
-                                    final String id = (stationId.equals("")) ? satPRN : satPRN.concat(stationId);
-                                    final String objectId = (stationId.equals("")) ? satPRN : stationId;
+                                    //final String id = (stationId.equals("")) ? satPRN : satPRN.concat(stationId);
 
                                     // Verifying if present
-                                    DCB dcb = getDCB(id);
-                                    if (dcb == null) {
-                                        // Create DCB object
-                                        dcb = new DCB(satPRN, stationId);
-                                        // Defining the String array corresponding to the added object.
-                                        final String[] listDcb = {satPRN.substring(0, 1), objectId, id};
-                                        // Check if object has already been treated
-                                        final List<String[]> listDcbId = idMap.get(objectId);
-                                        if (listDcbId == null) {
-                                            // Add object to idMap
-                                            final ArrayList<String[]> newListDcb =  new ArrayList<String[]>();
-                                            newListDcb.add(listDcb);
-                                            idMap.put( objectId, newListDcb );
-                                        } else {
-                                            listDcbId.add(listDcb);
+                                    if (stationId.equals("")) {
+                                        final String id = satPRN;
+                                        DCBSatellite dcbSatellite = getDCBSatellite(id);
+                                        if (dcbSatellite == null) {
+                                            dcbSatellite = new DCBSatellite(id);
+                                            dcbSatellite.setDCBDescription(dcbDescription);
                                         }
-
+                                        final DCB dcb = dcbSatellite.getDcbObject();
+                                        // Add the data to the DCB object.
+                                        dcb.addDCBLine(Obs1, Obs2, beginDate, endDate, valueDcb);
+                                        // Adding the object to the HashMap if not present.
+                                        addDCBSatellite(dcbSatellite, id);
+                                    } else {
+                                        final String id = stationId;
+                                        DCBStation dcbStation = getDCBStation(id);
+                                        if (dcbStation == null) {
+                                            dcbStation = new DCBStation(id);
+                                            dcbStation.setDCBDescription(dcbDescription);
+                                        }
+                                        final SatelliteSystem satSystem = SatelliteSystem.parseSatelliteSystem(satPRN);
+                                        // Add the data to the DCB object.
+                                        final DCB dcb = dcbStation.getDcbObject(satSystem);
+                                        if (dcb == null) {
+                                            dcbStation.addDcbObject(satSystem, new DCB());
+                                        }
+                                        dcbStation.getDcbObject(satSystem).addDCBLine(Obs1, Obs2, beginDate, endDate, valueDcb);
+                                        // Adding the object to the HashMap if not present.
+                                        addDCBStation(dcbStation, id);
                                     }
-
-                                    // Add the data to the DCB object.
-                                    dcb.addDCBLine(Obs1, Obs2, beginDate, endDate, valueDcb);
-                                    // Adding the object to the HashMap if not present.
-                                    addDCB(dcb, id);
 
                                 } else {
                                  // not supported line, ignore it
@@ -616,35 +629,4 @@ public class SinexLoader {
 
     }
 
-    /**
-     * Get the list of available satellite systems for a given object, satellite or station.
-     * Each item in the list is a String array, containing 3 elements : the satellite system,
-     * satellite PRN or station id, and the ID corresponding to the pair satellite system, object
-     * in the DCBMap.
-     *
-     * @param objectId
-     * @return List of string arrays containing for a given satellite or station, the available satellite systems (e.g GPS),
-     * satellite PRN or station id, and corresponding id for the DCB map.
-     */
-    public List<String[]> getAvailableSystems(final String objectId) {
-        return idMap.get(objectId);
-    }
-
-    /**
-     * Get the list of available satellite systems for all objects, satellite or station as a list of list
-     * of String arrays.
-     *
-     * Each item in the list is a String array, containing 3 elements : the satellite system,
-     * satellite PRN or station id, and the ID corresponding to the pair satellite system, object
-     * in the DCBMap.
-     *
-     * @return List of all satellite and stations systems as a List<List<String[]>>
-     */
-    public List<List<String[]>> getAvailableSystems() {
-        final List< List<String[]> > systemsList = new ArrayList<List<String[]>>();
-        for (Entry<String, List<String[]>>  entry : idMap.entrySet()) {
-            systemsList.add(entry.getValue());
-        }
-        return systemsList;
-    }
 }
