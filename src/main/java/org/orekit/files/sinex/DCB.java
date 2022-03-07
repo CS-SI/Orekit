@@ -24,9 +24,23 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 
+/**
+ * Class to store DCB Solution data parsed in the SinexLoader.
+ * This class is made to handle both station and satellite DCB data.
+ * Bias values are stored in TimeSpanMaps associated with a given pair
+ * of observation codes. Those TimeSpanMaps are stored in a Map, which
+ * associate a pair of observation code (as a HashSet of ObservationType)
+ * to a TimeSpanMap,  encapsulated in a DCBCode object.
+ *
+ * @author Louis Aucouturier
+ * @since 11.2
+ */
 public class DCB {
 
-    /** Satellite PRN identifier.*/
+    /** Satellite PRN identifier.
+     * Satellite PRN and station id are present in order to allow stations to be associated with
+     * a satellite system stored in the PRN, as done in the Sinex file.
+     */
     private String satPRN;
 
     /** Station ID. */
@@ -44,6 +58,7 @@ public class DCB {
 
     /**
      * Constructor taking the satellite's PRN identifier as a parameter.
+     *
      * @param satPRN
      * @param stationId
      */
@@ -57,7 +72,7 @@ public class DCB {
     // Class to store the TimeSpanMap per DCB Observation Code set
     private static class DCBCode {
 
-        /** TimeSpanMap containing the DCB values. */
+        /** TimeSpanMap containing the DCB bias values. */
         private TimeSpanMap<Double> DCBMap;
 
         /**
@@ -69,6 +84,7 @@ public class DCB {
 
         /**
          * Getter for the TimeSpanMap.
+         *
          * @return DCBMap, a timespanmap containing DCB values, for the observation code pair
          * corresponding to this DCBCode object.
          */
@@ -82,28 +98,27 @@ public class DCB {
      * Check presence of Code pair in a map, and add values to the corresponding
      * TimeSpanMap.
      *
-     * @param Obs1
-     * @param Obs2
-     * @param spanBegin
-     * @param spanEnd
-     * @param biasValue
+     * @param Obs1 String corresponding to the first code used for the DCB computation.
+     * @param Obs2 String corresponding to the second code used for the DCB computation.
+     * @param spanBegin Absolute Date corresponding to the beginning of the validity span for this bias value
+     * @param spanEnd Absolute Date corresponding to the end of the validity span for this bias value
+     * @param biasValue double DCB bias value expressed in seconds.
      */
     public void addDCBLine(final String Obs1, final String Obs2, final AbsoluteDate spanBegin, final AbsoluteDate spanEnd, final double biasValue) {
 
-        //final ObservationPair singleObservationPair = new ObservationPair(Obs1, Obs2);
-
+        // Setting a HashSet of ObservationType codes to form an Observation Pair, independent of their order.
         final ObservationType Observation1 = ObservationType.valueOf(Obs1);
         final ObservationType Observation2 = ObservationType.valueOf(Obs2);
         final HashSet<ObservationType> singleObservationPair = new HashSet<ObservationType>();
         singleObservationPair.add(Observation1);
         singleObservationPair.add(Observation2);
 
+        //If not present add a new DCBCode to the DCBCodeMap, identified by the Observation Pair.
+        //Then add the bias value and validity period.
         if (observationSets.add(singleObservationPair)) {
             DCBCodeMap.put(singleObservationPair, new DCBCode());
-            DCBCodeMap.get(singleObservationPair).getDCBTimeMap().addValidBetween(biasValue, spanBegin, spanEnd);
-        } else {
-            DCBCodeMap.get(singleObservationPair).getDCBTimeMap().addValidBetween(biasValue, spanBegin, spanEnd);
         }
+        DCBCodeMap.get(singleObservationPair).getDCBTimeMap().addValidBetween(biasValue, spanBegin, spanEnd);
     }
 
     /**
@@ -128,6 +143,7 @@ public class DCB {
      * @return The TimeSpanMap for a given Observation Code pair.
      */
     public TimeSpanMap<Double> getTimeSpanMap(final String Obs1, final String Obs2) {
+        // Setting a HashSet of ObservationType codes to form an Observation Pair, independent of their order.
         final HashSet<ObservationType> ObservationPair = new HashSet<ObservationType>();
         final ObservationType ObsType1 = ObservationType.valueOf(Obs1);
         final ObservationType ObsType2 = ObservationType.valueOf(Obs2);
@@ -180,12 +196,26 @@ public class DCB {
         return (stationId.equals("")) ? satPRN : satPRN.concat(stationId);
     }
 
+    /**
+     * Get the minimum valid date for a given observation pair.
+     *
+     * @param Obs1 String : String corresponding to the first code used for the DCB computation.
+     * @param Obs2 String : String corresponding to the second code used for the DCB computation.
+     * @return Minimum valid date for the observation pair
+     */
     public AbsoluteDate getMinDateObservationPair(final String Obs1, final String Obs2) {
         final TimeSpanMap<Double> timeSpanMap = this.getTimeSpanMap(Obs1, Obs2);
         final AbsoluteDate date =  timeSpanMap.getFirstTransition().getDate();
         return date;
     }
 
+    /**
+     * Get the maximum valid date for a given observation pair.
+     *
+     * @param Obs1 String : String corresponding to the first code used for the DCB computation.
+     * @param Obs2 String : String corresponding to the second code used for the DCB computation.
+     * @return Maximum valid date for the observation pair
+     */
     public AbsoluteDate getMaxDateObservationPair(final String Obs1, final String Obs2) {
         final TimeSpanMap<Double> timeSpanMap = this.getTimeSpanMap(Obs1, Obs2);
         final AbsoluteDate date =  timeSpanMap.getLastTransition().getDate();

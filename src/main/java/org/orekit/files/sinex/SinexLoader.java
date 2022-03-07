@@ -89,11 +89,11 @@ public class SinexLoader {
     private final Map<String, DCB> dcbMap;
 
     /**
-     *
+     * Map containing all IDs associated with a given object, identified by its objectId.
      */
     private final Map<String, List<String[]>> idMap;
 
-    /** */
+    /** DCB description data container. */
     private final DCBDescription dcbDescriptor;
 
     /** UTC time scale. */
@@ -166,8 +166,9 @@ public class SinexLoader {
     }
 
     /**
+     * Get the creation date of the parsed SINEX file.
      *
-     * @return sinex file creation date as an AbsoluteDate
+     * @return SINEX file creation date as an AbsoluteDate
      */
     public AbsoluteDate getCreationDate() {
         return creationDate;
@@ -176,6 +177,7 @@ public class SinexLoader {
 
     /**
      * Get the parsed station data.
+     *
      * @return unmodifiable view of parsed station data
      */
     public Map<String, Station> getStations() {
@@ -184,6 +186,7 @@ public class SinexLoader {
 
     /**
      * Get the station corresponding to the given site code.
+     *
      * @param siteCode site code
      * @return the corresponding station
      */
@@ -193,6 +196,7 @@ public class SinexLoader {
 
     /**
      * Add a new entry to the map of stations.
+     *
      * @param station station entry to add
      */
     private void addStation(final Station station) {
@@ -203,7 +207,7 @@ public class SinexLoader {
     }
 
     /**
-     * Get the parsed dcb data, per satellite.
+     * Get the parsed DCB data, per satellite.
      *
      * @return unmodifiable view of parsed station data
      */
@@ -222,6 +226,7 @@ public class SinexLoader {
     }
 
     /**
+     * Get the DCB Description parameters.
      *
      * @return a DCBDescription object containing the description data of the DCB file.
      */
@@ -231,7 +236,7 @@ public class SinexLoader {
 
     /**
      * Add the DCBSatellite object to the dcbSatellites Map,
-     * containing all dcb data.
+     * containing all DCB data.
      *
      * @param dcb
      * @param id
@@ -502,14 +507,21 @@ public class SinexLoader {
                                     final Unit unitDcb = Unit.parse(parseString(line, 65, 4));
                                     final double valueDcb = unitDcb.toSI(Double.parseDouble(parseString(line, 70, 21)));
 
+                                    // Defining the id and objectId of the parsed line
                                     final String id = (stationId.equals("")) ? satPRN : satPRN.concat(stationId);
                                     final String objectId = (stationId.equals("")) ? satPRN : stationId;
+
+                                    // Verifying if present
                                     DCB dcb = getDCB(id);
                                     if (dcb == null) {
+                                        // Create DCB object
                                         dcb = new DCB(satPRN, stationId);
+                                        // Defining the String array corresponding to the added object.
                                         final String[] listDcb = {satPRN.substring(0, 1), objectId, id};
+                                        // Check if object has already been treated
                                         final List<String[]> listDcbId = idMap.get(objectId);
                                         if (listDcbId == null) {
+                                            // Add object to idMap
                                             final ArrayList<String[]> newListDcb =  new ArrayList<String[]>();
                                             newListDcb.add(listDcb);
                                             idMap.put( objectId, newListDcb );
@@ -519,6 +531,7 @@ public class SinexLoader {
 
                                     }
 
+                                    // Add the data to the DCB object.
                                     dcb.addDCBLine(Obs1, Obs2, beginDate, endDate, valueDcb);
                                     // Adding the object to the HashMap if not present.
                                     addDCB(dcb, id);
@@ -604,10 +617,13 @@ public class SinexLoader {
     }
 
     /**
-     *
+     * Get the list of available satellite systems for a given object, satellite or station.
+     * Each item in the list is a String array, containing 3 elements : the satellite system,
+     * satellite PRN or station id, and the ID corresponding to the pair satellite system, object
+     * in the DCBMap.
      *
      * @param objectId
-     * @return List of string arrays containing for a given satellite or station, the available satellite system,
+     * @return List of string arrays containing for a given satellite or station, the available satellite systems (e.g GPS),
      * satellite PRN or station id, and corresponding id for the DCB map.
      */
     public List<String[]> getAvailableSystems(final String objectId) {
@@ -615,8 +631,14 @@ public class SinexLoader {
     }
 
     /**
+     * Get the list of available satellite systems for all objects, satellite or station as a list of list
+     * of String arrays.
      *
-     * @return List of all satellite and stations systems
+     * Each item in the list is a String array, containing 3 elements : the satellite system,
+     * satellite PRN or station id, and the ID corresponding to the pair satellite system, object
+     * in the DCBMap.
+     *
+     * @return List of all satellite and stations systems as a List<List<String[]>>
      */
     public List<List<String[]>> getAvailableSystems() {
         final List< List<String[]> > systemsList = new ArrayList<List<String[]>>();

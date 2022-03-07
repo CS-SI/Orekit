@@ -20,22 +20,27 @@ package org.orekit.files.sinex;
 import org.orekit.gnss.SatelliteSystem;
 
 /**
- * Class to store the DCB description data.
+ * Class to store the DCB description data parsed in the SinexLoader class.
+ * This class is a container for data, with its methods being only getters and setters.
+ *
+ * @author Louis Aucouturier
+ * @since 11.2
  */
 class DCBDescription {
-    /** .*/
+    /** Determination mode used for the DCB computation.*/
     private String determinationMethod;
 
-    /** .*/
+    /** Bias Mode used for the DCB computation.*/
     private String biasMode;
 
-    /** .*/
+    /** Time System used as for the measurements, expressed as a string corresponding to
+     * the satellite system it is associated to.*/
     private SatelliteSystem timeSystem;
 
-    /** .*/
+    /** Observation Sampling parameter.*/
     private int observationSampling;
 
-    /** .*/
+    /** Parameter spacing between the bias value.*/
     private int parameterSpacing;
 
     /** Simple constructor. */

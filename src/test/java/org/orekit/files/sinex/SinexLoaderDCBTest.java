@@ -20,7 +20,6 @@ package org.orekit.files.sinex;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,6 +47,7 @@ public class SinexLoaderDCBTest {
     
     @Test
     public void testFirstLineDCB() {
+        // Verify the parsing of the first line for the Sinex loader in the DCB file case.
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_default_description.BSX");
         AbsoluteDate creaDate = loader.getCreationDate();
         AbsoluteDate refCreaDate = new AbsoluteDate(new DateComponents(2022, 1, 1), utc).
@@ -82,6 +82,7 @@ public class SinexLoaderDCBTest {
         // Observation Pair test
         HashSet< HashSet<ObservationType> > ObsPairs = DCBTest.getAvailableObservationPairs();
         
+        // Defining the observation pair present in the truncated file.
         HashSet<ObservationType> OP1 = new HashSet<ObservationType>();
         HashSet<ObservationType> OP2 = new HashSet<ObservationType>();
         HashSet<ObservationType> OP3 = new HashSet<ObservationType>();
@@ -109,12 +110,14 @@ public class SinexLoaderDCBTest {
         observationSetsRef.add(OP3);
         observationSetsRef.add(OP4);
         
+        // Check
         Assert.assertEquals(null, ObsPairs, observationSetsRef);
         
+        // Defining observation codes for further checks.
         String Obs1 = "C1C";
         String Obs2 = "C1W";
         
-        // Min Date test
+        // Minimum Date test
         int year = 2021;
         int day = 274;
         int secInDay = 0;
