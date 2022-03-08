@@ -50,6 +50,7 @@ import org.orekit.utils.units.Unit;
  * Loader for Solution INdependent EXchange (SINEX) files.
  * <p>
  * For now only few keys are supported: SITE/ID, SITE/ECCENTRICITY, SOLUTION/EPOCHS and SOLUTION/ESTIMATE.
+ * DCB/DESCRIPTION and DCB/SOLUTION can be parsed in the case of DCB Sinex files.
  * They represent the minimum set of parameters that are interesting to consider in a SINEX file.
  * </p>
  * @author Bryan Cazabonne
@@ -170,6 +171,8 @@ public class SinexLoader {
      * Get the creation date of the parsed SINEX file.
      *
      * @return SINEX file creation date as an AbsoluteDate
+     *
+     * @since 11.2
      */
     public AbsoluteDate getCreationDate() {
         return creationDate;
@@ -212,6 +215,8 @@ public class SinexLoader {
      *
      * @param id
      * @return DCBSatellite object corresponding to the satPRN value.
+     *
+     * @since 11.2
      */
     public DCBStation getDCBStation(final String id) {
         return dcbStationMap.get(id);
@@ -222,6 +227,8 @@ public class SinexLoader {
      *
      * @param id
      * @return DCBSatellite object corresponding to the satPRN value.
+     *
+     * @since 11.2
      */
     public DCBSatellite getDCBSatellite(final String id) {
         return dcbSatelliteMap.get(id);
@@ -234,6 +241,8 @@ public class SinexLoader {
      *
      * @param dcb
      * @param id
+     *
+     * @since 11.2
      */
     private void addDCBStation(final DCBStation dcb, final String id) {
         if (dcbStationMap.get(id) == null) {
@@ -247,6 +256,8 @@ public class SinexLoader {
      *
      * @param dcb
      * @param id
+     *
+     * @since 11.2
      */
     private void addDCBSatellite(final DCBSatellite dcb, final String id) {
         if (dcbSatelliteMap.get(id) == null) {

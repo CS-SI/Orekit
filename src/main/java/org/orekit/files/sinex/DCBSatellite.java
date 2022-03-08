@@ -19,6 +19,16 @@ package org.orekit.files.sinex;
 
 import org.orekit.gnss.SatelliteSystem;
 
+/**
+ * Class based on DCB, used to store the data parsed in SinexLoader,
+ * for Differential Code Biases computed for satellites.
+ * Satellites and stations have differentiated classes as stations
+ * might have multiple satellite systems.
+ * The data is stored in a single DCB object.
+ *
+ * @author Louis Aucouturier
+ * @since 11.2
+ */
 public class DCBSatellite {
 
     /** Satellite PRN identifier.
@@ -27,13 +37,14 @@ public class DCBSatellite {
      */
     private String satPRN;
 
-    /** */
+    /** DCB description container. */
     private DCBDescription dcbDescription;
 
-    /** */
+    /** DCB solution data. */
     private DCB dcbSat;
 
     /**
+     * Constructor for the DCBSatellite class.
      * @param satPRN
      */
     public DCBSatellite(final String satPRN) {

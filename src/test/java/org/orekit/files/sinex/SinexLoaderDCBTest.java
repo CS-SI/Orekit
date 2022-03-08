@@ -20,6 +20,7 @@ package org.orekit.files.sinex;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -211,10 +212,18 @@ public class SinexLoaderDCBTest {
         String stationIdRef = "AGGO";
         String stationSystemRef = "G";
         DCBStation DCBTest = loader.getDCBStation(stationIdRef);
-        
-
          
          // Test getStationId : Station Case
          Assert.assertEquals(stationIdRef, DCBTest.getStationId());
+         
+         //Test getAvailableSystems
+         final SatelliteSystem sat1 = SatelliteSystem.parseSatelliteSystem("G");
+         final SatelliteSystem sat2 = SatelliteSystem.parseSatelliteSystem("E");
+         final Set<SatelliteSystem> setSystemRef = new HashSet<>();
+         setSystemRef.add(sat1);
+         setSystemRef.add(sat2);
+         
+         final Set<SatelliteSystem> setSystem = DCBTest.getAvailableSatelliteSystems();
+         Assert.assertEquals(setSystemRef, setSystem);
     }
 }

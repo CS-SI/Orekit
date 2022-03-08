@@ -22,6 +22,16 @@ import java.util.Set;
 
 import org.orekit.gnss.SatelliteSystem;
 
+/**
+ * Class based on DCB, used to store the data parsed in SinexLoader,
+ * for Differential Code Biases computed for stations.
+ * Satellites and stations have differentiated classes as stations
+ * might have multiple satellite systems.
+ * The data is stored in a Map of DCB, identified by the SatelliteSystem.
+ *
+ * @author Louis Aucouturier
+ * @since 11.2
+ */
 public class DCBStation {
 
     /** Station ID. */
