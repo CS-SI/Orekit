@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="900">
+        Added init method in {Field}AdditionalStateProvider.
+      </action>
       <action dev="louis" type="add" issue="888">
         Added J2-contribution for relativistic clock correction.
       </action>
