@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -31,6 +32,7 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
@@ -517,6 +519,9 @@ public class PVCoordinatesTest {
         Vector3D v  = new Vector3D(-1, -0.1, -10);
         checkPV(new PVCoordinates(p2, v), new PVCoordinates(p1, v).shiftedBy(-1.0), 1.0e-15);
         Assert.assertEquals(0.0, PVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(v).getNorm(), 1.0e-15);
+        MatcherAssert.assertThat(
+                new PVCoordinates(p1, v).positionShiftedBy(-1.0),
+                OrekitMatchers.vectorCloseTo(p2, 1e-15));
     }
 
     @Test

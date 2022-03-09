@@ -344,6 +344,23 @@ public class Transform implements
         return new Transform(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     }
 
+    /**
+     * Shift the transform in time considering all rates, then return only the
+     * translation and rotation portion of the transform.
+     *
+     * @param dt time shift in seconds.
+     * @return shifted transform as a static transform. It is static in the
+     * sense that it can only be used to transform directions and positions, but
+     * not velocities or accelerations.
+     * @see #shiftedBy(double)
+     */
+    public StaticTransform staticShiftedBy(final double dt) {
+        return StaticTransform.of(
+                date.shiftedBy(dt),
+                cartesian.shiftedBy(dt).getPosition(),
+                angular.rotationShiftedBy(dt));
+    }
+
     /** {@inheritDoc}
      * <p>
      * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate,

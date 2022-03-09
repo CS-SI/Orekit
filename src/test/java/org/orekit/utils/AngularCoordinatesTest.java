@@ -252,11 +252,17 @@ public class AngularCoordinatesTest {
                 Assert.assertEquals(expectedCubicError,
                                     Rotation.distance(reference, quadratic.shiftedBy(t).getRotation()),
                                     0.0001 * expectedCubicError);
+                Assert.assertEquals(expectedCubicError,
+                                    Rotation.distance(reference, quadratic.rotationShiftedBy(t)),
+                                    0.0001 * expectedCubicError);
 
                 // the error in shiftedBy not taking acceleration into account is quadratic
                 double expectedQuadraticError = 5.0e-4 * t * t;
                 Assert.assertEquals(expectedQuadraticError,
                                     Rotation.distance(reference, linear.shiftedBy(t).getRotation()),
+                                    0.00001 * expectedQuadraticError);
+                Assert.assertEquals(expectedQuadraticError,
+                                    Rotation.distance(reference, linear.rotationShiftedBy(t)),
                                     0.00001 * expectedQuadraticError);
 
             }
