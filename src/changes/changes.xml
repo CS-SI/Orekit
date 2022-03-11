@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="902">
+        Take additional derivatives into account in {Field}SpacecraftState.shiftedBy.
+      </action>
       <action dev="bryan" type="add" issue="900">
         Added init method in {Field}AdditionalStateProvider.
       </action>
