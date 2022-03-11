@@ -100,6 +100,16 @@ public class DoubleArrayDictionaryTest {
     }
 
     @Test
+    public void testScaledIncrement() {
+        DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
+        dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
+        DoubleArrayDictionary other = new DoubleArrayDictionary();
+        other.put("aDot",       new double[] { 3.0, 2.0, 1.0 });
+        dictionary.getEntry("a").scaledIncrement(2.0, other.getEntry("aDot"));
+        Assert.assertArrayEquals(new double[] { 7.0, 6.0, 5.0 }, dictionary.get("a"), 1.0e-15);
+    }
+
+    @Test
     public void testZero() {
         DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });

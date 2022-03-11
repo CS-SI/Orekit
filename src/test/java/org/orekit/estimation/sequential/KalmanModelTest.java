@@ -379,7 +379,7 @@ public class KalmanModelTest {
         final RealMatrix H = model.getPhysicalMeasurementJacobian();
         final double[][] dH = H.subtract(expH).getData();
         for (int i = 0; i < N; i++) {
-            Assert.assertArrayEquals("Failed on line " + i,new double[M], dH[i], tol);
+            Assert.assertArrayEquals("Failed on line " + i, new double[M], dH[i], tol);
         }
         
         // Measurement covariance matrix 
