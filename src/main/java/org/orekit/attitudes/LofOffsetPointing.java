@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -110,12 +111,14 @@ public class LofOffsetPointing extends GroundPointing {
                                           new Transform(shifted, attitudeLaw.getAttitude(pvProv, shifted, frame).getOrientation()));
 
             // transform from specified reference frame to body frame
-            final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), shifted);
+            final StaticTransform refToBody;
             if (i == 0) {
-                centralRefToBody = refToBody;
+                refToBody = centralRefToBody = frame.getTransformTo(shape.getBodyFrame(), shifted);
+            } else {
+                refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), shifted);
             }
 
-            sample.add(losIntersectionWithBody(new Transform(shifted, refToSc.getInverse(), refToBody)));
+            sample.add(losIntersectionWithBody(StaticTransform.compose(shifted, refToSc.getInverse(), refToBody)));
 
         }
 
@@ -170,7 +173,7 @@ public class LofOffsetPointing extends GroundPointing {
      * @param scToBody transform from spacecraft frame to body frame
      * @return intersection point in body frame (only the position is set!)
      */
-    private TimeStampedPVCoordinates losIntersectionWithBody(final Transform scToBody) {
+    private TimeStampedPVCoordinates losIntersectionWithBody(final StaticTransform scToBody) {
 
         // compute satellite pointing axis and position/velocity in body frame
         final Vector3D pointingBodyFrame = scToBody.transformVector(satPointingVector);

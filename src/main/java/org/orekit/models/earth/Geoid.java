@@ -40,7 +40,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -389,7 +389,8 @@ public class Geoid implements EarthShape {
          */
         // transform to body frame
         final Frame bodyFrame = this.getBodyFrame();
-        final Transform frameToBody = frame.getTransformTo(bodyFrame, date);
+        final StaticTransform frameToBody =
+                frame.getStaticTransformTo(bodyFrame, date);
         final Vector3D close = frameToBody.transformPosition(closeInFrame);
         final Line lineInBodyFrame = frameToBody.transformLine(lineInFrame);
 
@@ -456,7 +457,8 @@ public class Geoid implements EarthShape {
         final GeodeticPoint gp = this.transform(point, frame, date);
         final GeodeticPoint gpZero =
                 new GeodeticPoint(gp.getLatitude(), gp.getLongitude(), 0);
-        final Transform bodyToFrame = this.getBodyFrame().getTransformTo(frame, date);
+        final StaticTransform bodyToFrame =
+                this.getBodyFrame().getStaticTransformTo(frame, date);
         return bodyToFrame.transformPosition(this.transform(gpZero));
     }
 

@@ -225,6 +225,8 @@ public class LofOffsetPointingTest {
 
         final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
         final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
+        // These tolerances may be too tight given that the frames are built
+        // with simpleEop=true which introduces some errors at about this level
         Assert.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     9.0e-9);
         Assert.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     5.0e-9);
         Assert.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 4.0e-5);
