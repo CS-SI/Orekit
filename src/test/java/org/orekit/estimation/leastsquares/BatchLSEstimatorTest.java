@@ -229,10 +229,10 @@ public class BatchLSEstimatorTest {
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 1.1e-6,
+                                     0.0, 1.2e-6,
                                      0.0, 2.8e-6,
-                                     0.0, 4.0e-7,
-                                     0.0, 2.2e-10);
+                                     0.0, 5.0e-7,
+                                     0.0, 2.3e-10);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -491,7 +491,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            2.8e-6);
+                            6.2e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),
