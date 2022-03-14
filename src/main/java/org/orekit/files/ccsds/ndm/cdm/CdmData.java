@@ -41,7 +41,7 @@ public class CdmData implements Data {
     private final StateVector stateVectorBlock;
 
     /** Spacecraft parameters block. */
-    private final CovarianceMatrix covarianceMatrixBlock;
+    private final RTNCovariance covarianceMatrixBlock;
 
     /** Simple constructor.
      * @param commentsBlock general comments block
@@ -54,7 +54,7 @@ public class CdmData implements Data {
                    final ODParameters ODparametersBlock,
                    final AdditionalParameters additionalParametersBlock,
                    final StateVector stateVectorBlock,
-                   final CovarianceMatrix covarianceMatrixBlock) {
+                   final RTNCovariance covarianceMatrixBlock) {
         this.commentsBlock                  = commentsBlock;
         this.ODparametersBlock              = ODparametersBlock;
         this.additionalParametersBlock      = additionalParametersBlock;
@@ -106,7 +106,7 @@ public class CdmData implements Data {
     /** Get the covariance matrix logical block.
      * @return covariance matrix block
      */
-    public CovarianceMatrix getCovarianceMatrixBlock() {
+    public RTNCovariance getCovarianceMatrixBlock() {
         return covarianceMatrixBlock;
     }
 

@@ -52,7 +52,7 @@ public class ODParameters extends CommentsContainer {
     /** The percentage of residuals accepted in the OD of the object (from 0 to 100). */
     private double residualsAccepted;
 
-    /** 2-axis / 3-axis inertia cross product entry. */
+    /** The weighted Root Mean Square (RMS) of the residuals from a batch least squares OD. */
     private double weightedRMS;
 
     /** Simple constructor.
@@ -107,7 +107,7 @@ public class ODParameters extends CommentsContainer {
 
     /**
      * Get the recommended OD time span calculated for the object.
-     * @return the recommended OD time span calculated for the object
+     * @return the recommended OD time span (in days) calculated for the object
      */
     public double getRecommendedODSpan() {
         return recommendedODSpan;
@@ -115,7 +115,7 @@ public class ODParameters extends CommentsContainer {
 
     /**
      * Set the recommended OD time span calculated for the object.
-     * @param recommendedODSpan recommended OD time span calculated for the object
+     * @param recommendedODSpan recommended OD time span (in days) calculated for the object
      */
     public void setRecommendedODSpan(final double recommendedODSpan) {
         refuseFurtherComments();
@@ -124,7 +124,7 @@ public class ODParameters extends CommentsContainer {
 
     /**
      * Get the actual OD time based on the observations available and the RECOMMENDED_OD_SPAN.
-     * @return the actual OD time
+     * @return the actual OD time (in days)
      */
     public double getActualODSpan() {
         return actualODSpan;
@@ -132,7 +132,7 @@ public class ODParameters extends CommentsContainer {
 
     /**
      * Set the actual OD time based on the observations available and the RECOMMENDED_OD_SPAN.
-     * @param actualODSpan the actual OD time
+     * @param actualODSpan the actual OD time (in days)
      */
     public void setActualODSpan(final double actualODSpan) {
         refuseFurtherComments();

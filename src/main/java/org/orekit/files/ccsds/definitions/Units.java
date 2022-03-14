@@ -40,40 +40,40 @@ public class Units {
     /** m⁴ unit. */
     public static final Unit M4 = Unit.parse("m⁴");
 
-    /** Meters par second units. */
+    /** Meters per second units. */
     public static final Unit M_PER_S = Unit.parse("m/s");
 
-    /** Meters par second square units. */
+    /** Meters per square second units. */
     public static final Unit M_PER_S2 = Unit.parse("m/s²");
 
-    /** Meters square par second units. */
+    /** Square meters per second units. */
     public static final Unit M2_PER_S = Unit.parse("m²/s");
 
-    /** Meters square par second units. */
+    /** Square meters per square second units. */
     public static final Unit M2_PER_S2 = Unit.parse("m²/s²");
 
-    /** Meters square par second units. */
+    /** Square meters per cube second units. */
     public static final Unit M2_PER_S3 = Unit.parse("m²/s³");
 
-    /** Meters square par second units. */
+    /** Square meters per s⁴ units. */
     public static final Unit M2_PER_S4 = Unit.parse("m²/s⁴");
 
-    /** Meters par kilograms units. */
+    /** m² per kilograms units. */
     public static final Unit M2_PER_KG = Unit.parse("m²/kg");
 
-    /** Meters cubic par kilograms units. */
+    /** m³ per kilograms units. */
     public static final Unit M3_PER_KG = Unit.parse("m³/kg");
 
-    /** m⁴ par kilograms units. */
+    /** m⁴ per kilograms units. */
     public static final Unit M4_PER_KG = Unit.parse("m⁴/kg");
 
-    /** m⁴ par kilograms square units. */
+    /** m⁴ per square kilograms units. */
     public static final Unit M4_PER_KG2 = Unit.parse("m⁴/kg²");
 
-    /** Meters cubic par kilograms second units. */
+    /** Cubic meters per kilograms second units. */
     public static final Unit M3_PER_KGS = Unit.parse("m³/(kg.s)");
 
-    /** Meters cubic par kilograms (second square) units. */
+    /** Cubic meters per kilograms (square second) units. */
     public static final Unit M3_PER_KGS2 = Unit.parse("m³/(kg.s²)");
 
     /** #/year unit. */
@@ -82,13 +82,13 @@ public class Units {
     /** Square kilometers units. */
     public static final Unit KM2 = Unit.parse("km²");
 
-    /** Kilometers par second units. */
+    /** Kilometers per second units. */
     public static final Unit KM_PER_S = Unit.parse("km/s");
 
-    /** Kilometers par square second units. */
+    /** Kilometers per square second units. */
     public static final Unit KM_PER_S2 = Unit.parse("km/s²");
 
-    /** Square kilometers par second units. */
+    /** Square kilometers per second units. */
     public static final Unit KM2_PER_S = Unit.parse("km²/s");
 
     /** Square kilometers per square second units. */
@@ -118,7 +118,7 @@ public class Units {
     /** Hertz per second unit. */
     public static final Unit HZ_PER_S = Unit.parse("Hz/s");
 
-    /** Watt par kilograms units. */
+    /** Watt per kilograms units. */
     public static final Unit W_PER_KG = Unit.parse("W/kg");
 
     /** Private constructor for a utility class.

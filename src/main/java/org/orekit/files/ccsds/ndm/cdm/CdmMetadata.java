@@ -395,8 +395,8 @@ public class CdmMetadata extends Metadata {
      * @return the reference frame
      */
     public Frame getFrame() {
-        if (orbitCenter.getBody() == null) {
-            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, orbitCenter.getName());
+        if (orbitCenter == null || orbitCenter.getBody() == null) {
+            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, "No Orbit center name");
         }
         if (refFrame.asFrame() == null) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, refFrame.getName());

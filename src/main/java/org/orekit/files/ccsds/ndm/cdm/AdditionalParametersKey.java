@@ -54,7 +54,7 @@ public enum AdditionalParametersKey {
                                                                  container::setThrustAcceleration)),
     /** The amount of energy being removed from the object’s orbit by atmospheric drag. This value is an average calculated during the OD. */
     SEDR((token, context, container) -> token.processAsDouble(Units.W_PER_KG, context.getParsedUnitsBehavior(),
-                                                                 container::setSEDR));
+                                                                 container::setSedr));
 
     /** Processing method. */
     private final TokenProcessor processor;

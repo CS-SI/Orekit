@@ -89,7 +89,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     private StateVector stateVector;
 
     /** CDM covariance matrix logical block being read. */
-    private CovarianceMatrix covMatrix;
+    private RTNCovariance covMatrix;
 
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
@@ -141,7 +141,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
             commentsBlock = new CommentsContainer();
             reset(fileFormat, structureProcessor);
         } else {
-            structureProcessor = new KvnStructureProcessingState(this); // should never be called
+            structureProcessor = new KvnStructureProcessingState(this);
             reset(fileFormat, new CdmHeaderProcessingState(this));
         }
     }
@@ -213,9 +213,9 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean prepareData() {
-        // stateVector and CovarianceMatrix blocks are 2 mandatory data blocks
+        // stateVector and RTNCovariance blocks are 2 mandatory data blocks
         stateVector = new StateVector();
-        covMatrix = new CovarianceMatrix();
+        covMatrix = new RTNCovariance();
         commentsBlock = new CommentsContainer();
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processGeneralCommentToken);
         return true;
@@ -506,7 +506,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         try {
             return token.getName() != null &&
-                   CovarianceMatrixKey.valueOf(token.getName()).process(token, context, covMatrix);
+                   RTNCovarianceKey.valueOf(token.getName()).process(token, context, covMatrix);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;

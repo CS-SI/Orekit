@@ -72,7 +72,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Get the actual area of the object.
-     * @return the object area
+     * @return the object area (in m²)
      */
     public double getAreaPC() {
         return areaPC;
@@ -80,7 +80,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Set the actual area of the object.
-     * @param areaPC area value to be set
+     * @param areaPC area  (in m²) value to be set
      */
     public void setAreaPC(final double areaPC) {
         refuseFurtherComments();
@@ -89,7 +89,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Get the effective area of the object exposed to atmospheric drag.
-     * @return the object area exposed to atmospheric drag
+     * @return the object area (in m²) exposed to atmospheric drag
      */
     public double getAreaDRG() {
         return areaDRG;
@@ -97,7 +97,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Set the effective area of the object exposed to atmospheric drag.
-     * @param areaDRG area value to be set
+     * @param areaDRG area (in m²) value to be set
      */
     public void setAreaDRG(final double areaDRG) {
         refuseFurtherComments();
@@ -106,7 +106,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Get the effective area of the object exposed to solar radiation pressure.
-     * @return the object area exposed to solar radiation pressure
+     * @return the object area (in m²) exposed to solar radiation pressure
      */
     public double getAreaSRP() {
         return areaSRP;
@@ -114,7 +114,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Set the effective area of the object exposed to solar radiation pressure.
-     * @param areaSRP area value to be set
+     * @param areaSRP area (in m²) to be set
      */
     public void setAreaSRP(final double areaSRP) {
         refuseFurtherComments();
@@ -123,7 +123,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Get the mass of the object.
-     * @return the mass of the object
+     * @return the mass (in kg) of the object
      */
     public double getMass() {
         return mass;
@@ -131,7 +131,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Set the mass of the object.
-     * @param mass mass of the object to be set
+     * @param mass mass (in kg) of the object to be set
      */
     public void setMass(final double mass) {
         refuseFurtherComments();
@@ -140,7 +140,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Get the object’s Cd x A/m used to propagate the state vector and covariance to TCA.
-     * @return the object’s Cd x A/m
+     * @return the object’s Cd x A/m (in m²/kg)
      */
     public double getCDAreaOverMass() {
         return cdAreaOverMass;
@@ -148,7 +148,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Set the object’s Cd x A/m used to propagate the state vector and covariance to TCA.
-     * @param CDAreaOverMass object’s Cd x A/m value to be set
+     * @param CDAreaOverMass object’s Cd x A/m (in m²/kg) value to be set
      */
     public void setCDAreaOverMass(final double CDAreaOverMass) {
         refuseFurtherComments();
@@ -157,7 +157,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Get the object’s Cr x A/m used to propagate the state vector and covariance to TCA.
-     * @return the object’s Cr x A/m
+     * @return the object’s Cr x A/m (in m²/kg)
      */
     public double getCRAreaOverMass() {
         return crAreaOverMass;
@@ -165,7 +165,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Set the object’s Cr x A/m used to propagate the state vector and covariance to TCA.
-     * @param CRAreaOverMass object’s Cr x A/m value to be set
+     * @param CRAreaOverMass object’s Cr x A/m (in m²/kg) value to be set
      */
     public void setCRAreaOverMass(final double CRAreaOverMass) {
         refuseFurtherComments();
@@ -174,7 +174,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Get the object’s acceleration due to in-track thrust used to propagate the state vector and covariance to TCA.
-     * @return the object’s acceleration due to in-track thrust
+     * @return the object’s acceleration (in m/s²) due to in-track thrust
      */
     public double getThrustAcceleration() {
         return thrustAcceleration;
@@ -182,7 +182,7 @@ public class AdditionalParameters extends CommentsContainer {
 
     /**
      * Set the object’s acceleration due to in-track thrust used to propagate the state vector and covariance to TCA.
-     * @param thrustAcceleration object’s acceleration due to in-track thrust
+     * @param thrustAcceleration object’s acceleration (in m/s²) due to in-track thrust
      */
     public void setThrustAcceleration(final double thrustAcceleration) {
         refuseFurtherComments();
@@ -190,18 +190,20 @@ public class AdditionalParameters extends CommentsContainer {
     }
 
     /**
-     * Get the amount of energy being removed from the object’s orbit by atmospheric drag. This value is an average calculated during the OD.
-     * @return the amount of energy being removed from the object’s orbit by atmospheric drag
+     * Get the amount of energy being removed from the object’s orbit by atmospheric drag. This value is an average
+     * calculated during the OD. SEDR = Specific Energy Dissipation Rate.
+     * @return the amount of energy (in W/kg) being removed from the object’s orbit by atmospheric drag
      */
-    public double getSEDR() {
+    public double getSedr() {
         return sedr;
     }
 
     /**
-     * Set the amount of energy being removed from the object’s orbit by atmospheric drag. This value is an average calculated during the OD.
-     * @param SEDR amount of energy being removed from the object’s orbit by atmospheric drag
+     * Set the amount of energy being removed from the object’s orbit by atmospheric drag. This value is an average
+     * calculated during the OD. SEDR = Specific Energy Dissipation Rate.
+     * @param SEDR amount of energy (in W/kg) being removed from the object’s orbit by atmospheric drag
      */
-    public void setSEDR(final double SEDR) {
+    public void setSedr(final double SEDR) {
         refuseFurtherComments();
         this.sedr = SEDR;
     }

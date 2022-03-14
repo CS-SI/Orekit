@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.cdm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
@@ -126,7 +127,7 @@ public class CdmRelativeMetadata {
 
     /**
      * Get the norm of relative position vector at TCA.
-     * @return the miss distance
+     * @return the miss distance (in m)
      */
     public double getMissDistance() {
         return missDistance;
@@ -134,7 +135,7 @@ public class CdmRelativeMetadata {
 
     /**
      * Set the norm of relative position vector at TCA.
-     * @param missDistance the miss distance to be set
+     * @param missDistance the miss distance to be set (in m)
      */
     public void setMissDistance(final double missDistance) {
         this.missDistance = missDistance;
@@ -142,7 +143,7 @@ public class CdmRelativeMetadata {
 
     /**
      * Get the norm of relative velocity vector at TCA.
-     * @return the relative speed at TCA
+     * @return the relative speed at TCA (in m/s)
      */
     public double getRelativeSpeed() {
         return relativeSpeed;
@@ -150,103 +151,73 @@ public class CdmRelativeMetadata {
 
     /**
      * Set the norm of relative velocity vector at TCA.
-     * @param relativeSpeed the relative speed at TCA to be set
+     * @param relativeSpeed the relative speed (in m/s) at TCA to be set
      */
     public void setRelativeSpeed(final double relativeSpeed) {
         this.relativeSpeed = relativeSpeed;
     }
 
     /**
-     * Get the R component of Object2’s position relative to Object1’s in RTN frame.
-     * @return the R component of Object2’s position relative to Object1’s
+     * Get the Object2’s velocity vector relative to Object1's at TCA in RTN frame, getX for R component,
+     * getY for T component, getZ for N component.
+     * @return the relative speed vector at TCA (in m/s)
      */
-    public double getRelativePositionR() {
-        return relativePositionR;
+    public Vector3D getRelativeSpeedVector() {
+        return new Vector3D(relativeVelocityR, relativeVelocityT, relativeVelocityN);
+    }
+
+    /**
+     * Get the Object2’s position vector relative to Object1's at TCA in RTN frame, getX for R component,
+     * getY for T component, getZ for N component.
+     * @return the relative position vector at TCA (in m)
+     */
+    public Vector3D getRelativePositionVector() {
+        return new Vector3D(relativePositionR, relativePositionT, relativePositionN);
     }
 
     /**
      * Set the R component of Object2’s position relative to Object1’s in RTN frame.
-     * @param relativePositionR the R component of Object2’s position relative to Object1’s
+     * @param relativePositionR the R component (in m) of Object2’s position relative to Object1’s
      */
     public void setRelativePositionR(final double relativePositionR) {
         this.relativePositionR = relativePositionR;
     }
 
     /**
-     * Get the T component of Object2’s position relative to Object1’s in RTN frame.
-     * @return the T component of Object2’s position relative to Object1’s
-     */
-    public double getRelativePositionT() {
-        return relativePositionT;
-    }
-
-    /**
      * Set the T component of Object2’s position relative to Object1’s in RTN frame.
-     * @param relativePositionT the T component of Object2’s position relative to Object1’s
+     * @param relativePositionT the T component (in m) of Object2’s position relative to Object1’s
      */
     public void setRelativePositionT(final double relativePositionT) {
         this.relativePositionT = relativePositionT;
     }
 
     /**
-     * Get the N component of Object2’s position relative to Object1’s in RTN frame.
-     * @return the N component of Object2’s position relative to Object1’s
-     */
-    public double getRelativePositionN() {
-        return relativePositionN;
-    }
-
-    /**
      * Set the N component of Object2’s position relative to Object1’s in RTN frame.
-     * @param relativePositionN the N component of Object2’s position relative to Object1’s
+     * @param relativePositionN the N component (in m) of Object2’s position relative to Object1’s
      */
     public void setRelativePositionN(final double relativePositionN) {
         this.relativePositionN = relativePositionN;
     }
 
     /**
-     * Get the R component of Object2’s velocity relative to Object1’s in RTN frame.
-     * @return the R component of Object2’s velocity relative to Object1’s
-     */
-    public double getRelativeVelocityR() {
-        return relativeVelocityR;
-    }
-
-    /**
      * Set the R component of Object2’s velocity relative to Object1’s in RTN frame.
-     * @param relativeVelocityR the R component of Object2’s velocity relative to Object1’s
+     * @param relativeVelocityR the R component (in m/s) of Object2’s velocity relative to Object1’s
      */
     public void setRelativeVelocityR(final double relativeVelocityR) {
         this.relativeVelocityR = relativeVelocityR;
     }
 
     /**
-     * Get the T component of Object2’s velocity relative to Object1’s in RTN frame.
-     * @return the T component of Object2’s velocity relative to Object1’s
-     */
-    public double getRelativeVelocityT() {
-        return relativeVelocityT;
-    }
-
-    /**
      * Set the T component of Object2’s velocity relative to Object1’s in RTN frame.
-     * @param relativeVelocityT the T component of Object2’s velocity relative to Object1’s
+     * @param relativeVelocityT the T component (in m/s) of Object2’s velocity relative to Object1’s
      */
     public void setRelativeVelocityT(final double relativeVelocityT) {
         this.relativeVelocityT = relativeVelocityT;
     }
 
     /**
-     * Get the N component of Object2’s velocity relative to Object1’s in RTN frame.
-     * @return the N component of Object2’s velocity relative to Object1’s
-     */
-    public double getRelativeVelocityN() {
-        return relativeVelocityN;
-    }
-
-    /**
      * Set the N component of Object2’s velocity relative to Object1’s in RTN frame.
-     * @param relativeVelocityN the N component of Object2’s velocity relative to Object1’s
+     * @param relativeVelocityN the N component (in m/s) of Object2’s velocity relative to Object1’s
      */
     public void setRelativeVelocityN(final double relativeVelocityN) {
         this.relativeVelocityN = relativeVelocityN;
@@ -318,7 +289,7 @@ public class CdmRelativeMetadata {
 
     /**
      * Get the R or T (depending on if RTN or TVN is selected) component size of the screening volume in the corresponding frame.
-     * @return first component size of the screening volume
+     * @return first component size of the screening volume (in m)
      */
     public double getScreenVolumeX() {
         return screenVolumeX;
@@ -326,7 +297,7 @@ public class CdmRelativeMetadata {
 
     /**
      * Set the R or T (depending on if RTN or TVN is selected) component size of the screening volume in the corresponding frame.
-     * @param screenVolumeX first component size of the screening volume
+     * @param screenVolumeX first component size of the screening volume (in m)
      */
     public void setScreenVolumeX(final double screenVolumeX) {
         this.screenVolumeX = screenVolumeX;
@@ -334,7 +305,7 @@ public class CdmRelativeMetadata {
 
     /**
      * Get the T or V (depending on if RTN or TVN is selected) component size of the screening volume in the corresponding frame.
-     * @return second component size of the screening volume
+     * @return second component size of the screening volume (in m)
      */
     public double getScreenVolumeY() {
         return screenVolumeY;
@@ -342,7 +313,7 @@ public class CdmRelativeMetadata {
 
     /**
      * Set the T or V (depending on if RTN or TVN is selected) component size of the screening volume in the corresponding frame.
-     * @param screenVolumeY second component size of the screening volume
+     * @param screenVolumeY second component size of the screening volume (in m)
      */
     public void setScreenVolumeY(final double screenVolumeY) {
         this.screenVolumeY = screenVolumeY;
@@ -350,7 +321,7 @@ public class CdmRelativeMetadata {
 
     /**
      * Get the N component size of the screening volume in the corresponding frame.
-     * @return third component size of the screening volume
+     * @return third component size of the screening volume (in m)
      */
     public double getScreenVolumeZ() {
         return screenVolumeZ;
@@ -358,7 +329,7 @@ public class CdmRelativeMetadata {
 
     /**
      * Set the N component size of the screening volume in the corresponding frame.
-     * @param screenVolumeZ third component size of the screening volume
+     * @param screenVolumeZ third component size of the screening volume (in m)
      */
     public void setScreenVolumeZ(final double screenVolumeZ) {
         this.screenVolumeZ = screenVolumeZ;
@@ -438,20 +409,16 @@ public class CdmRelativeMetadata {
         }
     }
 
-    /** Set the Time System that: for OPM, is used for metadata, state vector,
-     * maneuver and covariance data, for OMM, is used for metadata, orbit state
-     * and covariance data, for OEM, is used for metadata, ephemeris and
-     * covariance data.
+    /** Set the Time System that: for CDM, is used for relative metadata, metadata,
+     * OD parameters, state vector. In CDM all date are given in UTC.
      * @param timeSystem the time system to be set
      */
     public void setTimeSystem(final TimeSystem timeSystem) {
         this.timeSystem = timeSystem;
     }
 
-    /** Get the Time System that: for OPM, is used for metadata, state vector,
-     * maneuver and covariance data, for OMM, is used for metadata, orbit state
-     * and covariance data, for OEM, is used for metadata, ephemeris and
-     * covariance data.
+    /** Get the Time System that: for CDM, is used for relative metadata, metadata,
+     * OD parameters, state vector. In CDM all date are given in UTC.
      * @return the time system
      */
     public TimeSystem getTimeSystem() {

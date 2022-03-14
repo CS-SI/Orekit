@@ -39,6 +39,7 @@ OPERATOR_EMAIL                                 = JOHN.DOE@SOMEWHERE.NET
 EPHEMERIS_NAME                                 = EPHEMERIS SATELLITE A
 COVARIANCE_METHOD                              = CALCULATED
 MANEUVERABLE                                   = YES
+ORBIT_CENTER                                   = EARTH
 REF_FRAME                                      = EME2000
 GRAVITY_MODEL                                  = EGM-96: 36D 36O
 ATMOSPHERIC_MODEL                              = JACCHIA 70 DCA

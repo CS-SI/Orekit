@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
@@ -70,16 +71,8 @@ public class StateVector extends CommentsContainer {
     }
 
     /**
-     * Get object Position Vector X component.
-     * @return object Position Vector X component
-     */
-    public double getX() {
-        return x;
-    }
-
-    /**
      * Set object Position Vector X component.
-     * @param X object Position Vector X component
+     * @param X object Position Vector X component (in km)
      */
     public void setX(final double X) {
         refuseFurtherComments();
@@ -87,16 +80,8 @@ public class StateVector extends CommentsContainer {
     }
 
     /**
-     * Get object Position Vector Y component.
-     * @return object Position Vector Y component
-     */
-    public double getY() {
-        return y;
-    }
-
-    /**
      * Set object Position Vector Y component.
-     * @param Y object Position Vector Y component
+     * @param Y object Position Vector Y component (in km)
      */
     public void setY(final double Y) {
         refuseFurtherComments();
@@ -104,16 +89,8 @@ public class StateVector extends CommentsContainer {
     }
 
     /**
-     * Get object Position Vector Z component.
-     * @return object Position Vector Z component
-     */
-    public double getZ() {
-        return z;
-    }
-
-    /**
      * Set object Position Vector Z component.
-     * @param Z object Position Vector Z component
+     * @param Z object Position Vector Z component (in km)
      */
     public void setZ(final double Z) {
         refuseFurtherComments();
@@ -121,16 +98,8 @@ public class StateVector extends CommentsContainer {
     }
 
     /**
-     * Get object Velocity Vector X component.
-     * @return object Velocity Vector X component
-     */
-    public double getXdot() {
-        return xDot;
-    }
-
-    /**
      * Set object Velocity Vector X component.
-     * @param Xdot object Velocity Vector X component
+     * @param Xdot object Velocity Vector X component (in km/s)
      */
     public void setXdot(final double Xdot) {
         refuseFurtherComments();
@@ -138,16 +107,8 @@ public class StateVector extends CommentsContainer {
     }
 
     /**
-     * Get object Velocity Vector Y component.
-     * @return object Velocity Vector Y component
-     */
-    public double getYdot() {
-        return yDot;
-    }
-
-    /**
      * Set object Velocity Vector Y component.
-     * @param Ydot object Velocity Vector Y component
+     * @param Ydot object Velocity Vector Y component (in km/s)
      */
     public void setYdot(final double Ydot) {
         refuseFurtherComments();
@@ -155,20 +116,28 @@ public class StateVector extends CommentsContainer {
     }
 
     /**
-     * Get object Velocity Vector Z component.
-     * @return object Velocity Vector Z component
-     */
-    public double getZdot() {
-        return zDot;
-    }
-
-    /**
      * Set object Velocity Vector Z component.
-     * @param Zdot object Velocity Vector Z component
+     * @param Zdot object Velocity Vector Z component (in km/s)
      */
     public void setZdot(final double Zdot) {
         refuseFurtherComments();
         this.zDot = Zdot;
+    }
+
+    /**
+     * Get object Position Vector.
+     * @return object Position Vector Z (in km)
+     */
+    public Vector3D getPositionVector() {
+        return new Vector3D(x, y, z);
+    }
+
+    /**
+     * Get object Velocity Vector.
+     * @return object Velocity Vector (in km/s)
+     */
+    public Vector3D getVelocityVector() {
+        return new Vector3D(xDot, yDot, zDot);
     }
 
 
