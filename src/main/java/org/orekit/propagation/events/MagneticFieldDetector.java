@@ -39,7 +39,7 @@ import org.orekit.time.TimeScale;
  */
 public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetector> {
 
-    /** Fixed threshold value of Magnetic field to be crossed. */
+    /** Fixed threshold value of Magnetic field to be crossed, in nano Teslas. */
     private final double limit;
 
     /** Fixed altitude of computed magnetic field value. */
@@ -68,7 +68,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
-     * @param limit the threshold value of magnetic field at see level
+     * @param limit the threshold value of magnetic field at see level, in nano Teslas
      * @param type the magnetic field model
      * @param body the body
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
@@ -87,7 +87,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
-     * @param limit the threshold value of magnetic field at see level
+     * @param limit the threshold value of magnetic field at see level, in nano Teslas
      * @param type the magnetic field model
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
@@ -106,7 +106,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      *
      * @param maxCheck maximal checking interval (s)
      * @param threshold convergence threshold (s)
-     * @param limit the threshold value of magnetic field at see level
+     * @param limit the threshold value of magnetic field at see level, in nano Teslas
      * @param type the magnetic field model
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
@@ -126,7 +126,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      *
      * @param maxCheck    maximal checking interval (s)
      * @param threshold   convergence threshold (s)
-     * @param limit       the threshold value of magnetic field at see level
+     * @param limit       the threshold value of magnetic field at see level, in nano Teslas
      * @param type        the magnetic field model
      * @param body        the body
      * @param seaLevel    true if the magnetic field intensity is computed at the sea
@@ -157,7 +157,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
-     * @param limit the threshold value of magnetic field at see level
+     * @param limit the threshold value of magnetic field at see level, in nano Teslas
      * @param type the magnetic field model
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
