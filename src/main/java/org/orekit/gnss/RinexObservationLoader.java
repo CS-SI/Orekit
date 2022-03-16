@@ -270,7 +270,6 @@ public class RinexObservationLoader {
                 int                              nbSatObs               = -1;
                 int                              nbLinesSat             = -1;
                 double                           rcvrClkOffset          = 0;
-                boolean                          inRunBy                = false;
                 boolean                          inMarkerName           = false;
                 boolean                          inObserver             = false;
                 boolean                          inRecType              = false;
@@ -280,8 +279,6 @@ public class RinexObservationLoader {
                 boolean                          inTypesObs             = false;
                 boolean                          inFirstObs             = false;
                 boolean                          inPhaseShift           = false;
-                boolean                          inGlonassSlot          = false;
-                boolean                          inGlonassCOD           = false;
                 RinexObservationHeader                      rinexHeader            = null;
                 int                               scaleFactor            = 1;
                 int                               nbObsScaleFactor       = 0;
@@ -322,12 +319,12 @@ public class RinexObservationLoader {
                         while (readLine(reader, false)) {
 
                             if (rinexHeader == null) {
-                                switch(line.substring(LABEL_START).trim()) {
+                                switch (line.substring(LABEL_START).trim()) {
                                     case COMMENT :
                                         // nothing to do
                                         break;
                                     case PGM_RUN_BY_DATE :
-                                        inRunBy = true;
+                                        // nothing to do
                                         break;
                                     case MARKER_NAME :
                                         markerName = parseString(0, 60);
@@ -482,7 +479,7 @@ public class RinexObservationLoader {
                                         break;
                                     case END_OF_HEADER :
                                         //We make sure that we have read all the mandatory fields inside the header of the Rinex
-                                        if (!inRinexVersion || !inRunBy || !inMarkerName ||
+                                        if (!inRinexVersion || !inMarkerName ||
                                             !inObserver || !inRecType || !inAntType ||
                                             formatVersion < 2.20 && !inAproxPos ||
                                             formatVersion < 2.20 && !inAntDelta ||
@@ -673,12 +670,12 @@ public class RinexObservationLoader {
 
                         while (readLine(reader, false)) {
                             if (rinexHeader == null) {
-                                switch(line.substring(LABEL_START).trim()) {
+                                switch (line.substring(LABEL_START).trim()) {
                                     case COMMENT :
                                         // nothing to do
                                         break;
                                     case PGM_RUN_BY_DATE :
-                                        inRunBy = true;
+                                        // nothing to do
                                         break;
                                     case MARKER_NAME :
                                         markerName = parseString(0, 60);
@@ -758,7 +755,7 @@ public class RinexObservationLoader {
                                         interval = parseDouble(0, 10);
                                         break;
                                     case TIME_OF_FIRST_OBS :
-                                        switch(satelliteSystem) {
+                                        switch (satelliteSystem) {
                                             case GPS:
                                                 timeScale = timeScales.getGPS();
                                                 break;
@@ -936,20 +933,17 @@ public class RinexObservationLoader {
                                         break;
                                     }
                                     case GLONASS_SLOT_FRQ_NB :
-                                        //Not defined yet
-                                        inGlonassSlot = true;
+                                        // Not defined yet
                                         break;
                                     case GLONASS_COD_PHS_BIS :
-                                        //Not defined yet
-                                        inGlonassCOD = true;
+                                        // Not defined yet
                                         break;
                                     case END_OF_HEADER :
                                         //We make sure that we have read all the mandatory fields inside the header of the Rinex
-                                        if (!inRinexVersion || !inRunBy || !inMarkerName ||
+                                        if (!inRinexVersion || !inMarkerName ||
                                             !inObserver || !inRecType || !inAntType ||
                                             !inAntDelta || !inTypesObs || !inFirstObs ||
-                                            formatVersion >= 3.01 && !inPhaseShift ||
-                                            formatVersion >= 3.03 && (!inGlonassSlot || !inGlonassCOD)) {
+                                            formatVersion >= 3.01 && !inPhaseShift) {
                                             throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);
                                         }
 
