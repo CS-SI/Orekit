@@ -63,7 +63,7 @@ import org.orekit.utils.ParameterDriver;
  * The radiative model of the satellite, and its ability to diffuse, reflect  or absorb radiation is handled
  * by a {@link RadiationSensitive radiation sensitive model}.
  * </p> <p>
- * <b>Caution:</b> The spacecraft state must be defined in an Earth centered frame.
+ * <b>Caution:</b> This model is only suitable for Earth. Using it with another central body is prone to error..
  * </p>
  *
  * @author Thomas Paulet
