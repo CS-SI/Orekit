@@ -203,7 +203,7 @@ Pressing the *Add...* button at the top right of the install wizard will
 display a small popup asking for the name and location of a new software site.
 
 * Name = Checkstyle
-* Location = http://eclipse-cs.sf.net/update/
+* Location = https://checkstyle.org/eclipse-cs-update-site
 
 Press *Add* to close the popup.
 
