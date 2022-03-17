@@ -1,0 +1,28 @@
+     2.11           OBSERVATION DATA    G (GPS)             RINEX VERSION / TYPE
+teqc  2016Nov7      root                20180417 16:16:38UTCPGM / RUN BY / DATE
+Linux 2.4.21-27.ELsmp|Opteron|gcc|Linux x86_64|=+           COMMENT
+     2.11           OBSERVATION DATA    G (GPS)             COMMENT
+teqc  2015Nov6      NOAA/NOS/NGS/CORS   20160214 01:36:16UTCCOMMENT
+Solaris x86 5.10|AMD64|cc SC5.8 -xarch=amd64|=+|=+          COMMENT
+teqc  2015Nov6      NOAA/NOS/NGS/CORS   20160214 01:35:24UTCCOMMENT
+BIT 2 OF LLI FLAGS DATA COLLECTED UNDER A/S CONDITION       COMMENT
+ SNR is mapped to RINEX snr flag value [0-9]                COMMENT
+  L1 & L2: min(max(int(snr_dBHz/6), 0), 9)                  COMMENT
+teqc edited: all SBAS satellites excluded                   COMMENT
+teqc edited: all Compass satellites excluded                COMMENT
+teqc edited: all QZSS satellites excluded                   COMMENT
+Forced Modulo Decimation to 30 seconds                      COMMENT
+SBCH                                                        MARKER NUMBER
+Randy Osborne       LASU                                    OBSERVER / AGENCY
+5051K72720          TRIMBLE NETR9       5.10                REC # / TYPE / VERS
+5000117521          TRM57971.00     NONE                    ANT # / TYPE
+    31569.9070 -5535449.0960  3157696.7490                  APPROX POSITION XYZ
+        0.0000        0.0000        0.0000                  ANTENNA: DELTA H/E/N
+     1     1                                                WAVELENGTH FACT L1/2
+     8    L1    L2    C1    C2    P1    P2    S1    S2      # / TYPES OF OBSERV
+    30.0000                                                 INTERVAL
+teqc.w windowed: start @ 2016 Feb 13 00:00:00.000           COMMENT
+teqc.w windowed:  end  @ 2016 Feb 13 00:50:00.000           COMMENT
+teqc.w edited: all GLONASS satellites excluded              COMMENT
+  2016     2    13     0    50    0.0000000     GPS         TIME OF FIRST OBS
+                                                            END OF HEADER
