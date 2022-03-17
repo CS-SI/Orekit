@@ -729,6 +729,22 @@ public class RinexLoaderTest {
         Assert.assertEquals(37.594,                  ods.get(3).getObservationData().get(4).getValue(), 1.0e-15);
     }
 
+    @Test
+    public void testIssue698() {
+        // Test missing Beidou observation type for Rinex 3.04
+        RinexObservationLoader  loader = load("rinex/abcd083.06o");
+        AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(2, ods.size());
+
+        // Test Beidou
+        Assert.assertEquals(SatelliteSystem.BEIDOU, ods.get(1).getSatelliteSystem());
+        Assert.assertEquals(6,                      ods.get(1).getPrnNumber());
+        Assert.assertEquals(0.0,                    ods.get(1).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(41,                     ods.get(1).getObservationData().size());
+
+    }
+
     private void checkObservation(final ObservationDataSet obser,
                                   final int year, final int month, final int day,
                                   final int hour, final int minute, final double second,
