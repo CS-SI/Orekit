@@ -20,6 +20,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.2" date="TBD" description="TBD">
+      <action dev="pascal" type="fix" issue="906">
+        Fixed unmanaged units in OMM.
+      </action>
+    </release>
     <release version="11.1.1" date="2022-03-17"
              description="Version 11.1.1 is a patch release of Orekit.
              It fixes issues related to the parsing of SP3 and Rinex files. It also takes
