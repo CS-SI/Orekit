@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="pascal" type="fix" issue="906">
+        Fixed unmanaged units in OMM.
+      </action>
       <action dev="bryan" type="add" issue="900">
         Added init method in {Field}AdditionalStateProvider.
       </action>

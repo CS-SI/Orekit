@@ -154,6 +154,15 @@ public class OmmParserTest {
     }
 
     @Test
+    public void testIssue906() throws URISyntaxException {
+        String name = "/ccsds/odm/omm/OMM-with-units.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
+
+        validateOMM2(parser.parseMessage(source));
+    }
+
+    @Test
     public void testWriteOMM3() throws URISyntaxException, IOException {
         final String name = "/ccsds/odm/omm/OMMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));

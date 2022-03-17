@@ -16,7 +16,9 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBody;
+import org.orekit.data.DataContext;
 
 /** Facade in front of several center bodies in CCSDS messages.
  * @author Luc Maisonobe
@@ -55,10 +57,14 @@ public class BodyFacade {
 
     /**
      * Create a body facade from an input center name.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param centerName input center name
      * @return a body facade corresponding to the input center name
      * @since 11.2
      */
+    @DefaultDataContext
     public static BodyFacade create(final CenterName centerName) {
         return new BodyFacade(centerName.name(), centerName.getCelestialBody());
     }

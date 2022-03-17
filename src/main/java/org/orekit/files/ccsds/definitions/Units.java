@@ -79,6 +79,9 @@ public class Units {
     /** Hertz per second unit. */
     public static final Unit HZ_PER_S = Unit.parse("Hz/s");
 
+    /** Earth radii reciprocal unit. */
+    public static final Unit ONE_PER_ER = Unit.parse("1/ER");
+
     /** Private constructor for a utility class.
      */
     private Units() {
