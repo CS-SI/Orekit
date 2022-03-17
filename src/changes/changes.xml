@@ -20,6 +20,33 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.1.1" date="2022-03-17"
+             description="Version 11.1.1 is a patch release of Orekit.
+             It fixes issues related to the parsing of SP3 and Rinex files. It also takes
+             additional derivatives into account in {Field}SpacecraftState.shiftedBy method.
+             Finally it includes some improvements in the class documentation">
+      <action dev="lars" type="add" issue="896">
+        Added Git configuration instructions in contributing guide.
+      </action>
+      <action dev="lars" type="fix" issue="897">
+        Corrected wrong path in release guide.
+      </action>
+      <action dev="bryan" type="fix" issue="894">
+        Fixed dead link in contributing guidelines.
+      </action>
+      <action dev="bryan" type="fix" issue="698">
+        Added missing BDS-3 signal for Rinex 3.04.
+      </action>
+      <action dev="bryan" type="fixed" issue="892">
+        Removed check of not supported keys in RinexLoader.
+      </action>
+      <action dev="lirw1984" type="update" issue="895">
+        Enhanced parsing of SP3 files.
+      </action>
+      <action dev="luc" type="add" issue="902">
+        Take additional derivatives into account in {Field}SpacecraftState.shiftedBy.
+      </action>
+    </release>
     <release version="11.1" date="2022-02-14"
              description="Version 11.1 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced

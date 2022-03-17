@@ -627,11 +627,36 @@ public class SpacecraftState
     public SpacecraftState shiftedBy(final double dt) {
         if (absPva == null) {
             return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional, additionalDot);
+                                       mass, shiftAdditional(dt), additionalDot);
         } else {
             return new SpacecraftState(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional, additionalDot);
+                                       mass, shiftAdditional(dt), additionalDot);
         }
+    }
+
+    /** Shift additional states.
+     * @param dt time shift in seconds
+     * @return shifted additional states
+     * @since 11.1.1
+     */
+    private DoubleArrayDictionary shiftAdditional(final double dt) {
+
+        // fast handling when there are no derivatives at all
+        if (additionalDot.size() == 0) {
+            return additional;
+        }
+
+        // there are derivatives, we need to take them into account in the additional state
+        final DoubleArrayDictionary shifted = new DoubleArrayDictionary(additional);
+        for (final DoubleArrayDictionary.Entry dotEntry : additionalDot.getData()) {
+            final DoubleArrayDictionary.Entry entry = shifted.getEntry(dotEntry.getKey());
+            if (entry != null) {
+                entry.scaledIncrement(dt, dotEntry);
+            }
+        }
+
+        return shifted;
+
     }
 
     /** {@inheritDoc}

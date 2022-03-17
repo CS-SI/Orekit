@@ -128,27 +128,33 @@ Here's how to make your first contribution:
 3. Clone **your** repository on your workstation and checkout the **develop**
    branch.
 
-4. Create a new branch on your fork. The branch must:
-	- have the **develop** branch as the source branch.
-	- have a name related to the future contribution. For instance, if you
+4. Within your checked out repository, configure your username and email address so your contributions can be properly submitted:
+    ```
+    git config user.name "First Last"
+    git config user.email "address@domain.tld"
+    ```  
+   
+5. Create a new branch on your fork. The branch must:
+    - have the **develop** branch as the source branch.
+    - have a name related to the future contribution. For instance, if you
       want to correct an issue, the name must be **issue-XXX** where **XXX**
       represents the issue number.
 
-5. Be sure to activate checkstyle (use the **checkstyle.xml** file at the root
+6. Be sure to activate checkstyle (use the **checkstyle.xml** file at the root
     of the project) to help you follow the coding rules of Orekit (see
     examples below).
 
-6. Perform your development and validation.
+7. Perform your development and validation.
 
-7. Update the **changes.xml** file in *src/changes/* directory (see former
+8. Update the **changes.xml** file in *src/changes/* directory (see former
     entries to help you).
 
-8. Run all Orekit tests to ensure everything works.
+9. Run all Orekit tests to ensure everything works.
 
-9. Commit your code on your branch and push it to Gitlab (you can make several
+10. Commit your code on your branch and push it to Gitlab (you can make several
     local commits and push them at once).
 
-10. Submit a merge request (a "MR" in the Gitlab jargon) on the forge, by
+11. Submit a merge request (a "MR" in the Gitlab jargon) on the forge, by
     clicking on the *New merge request* button:
 
     ![merge requests](./images/merge-requests.png)
@@ -158,7 +164,7 @@ Here's how to make your first contribution:
     official repository an the **develop** branch). Be sure that the target of
     your request is the **develop** branch of the official repository.
 
-11. Gitlab notifies the core team members of your merge request. One of them
+12. Gitlab notifies the core team members of your merge request. One of them
     will review it as soon as he or she can. If your contribution seems to
     meet the project's expectations, he or she will accept it. If not, he or
     she will explain to you how it could be improved. You can then enhance
@@ -203,7 +209,7 @@ Pressing the *Add...* button at the top right of the install wizard will
 display a small popup asking for the name and location of a new software site.
 
 * Name = Checkstyle
-* Location = http://eclipse-cs.sf.net/update/
+* Location = https://checkstyle.org/eclipse-cs-update-site
 
 Press *Add* to close the popup.
 

@@ -19,6 +19,8 @@ package org.orekit.files.sp3;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Scanner;
@@ -28,10 +30,12 @@ import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.files.sp3.SP3.SP3Coordinate;
@@ -39,7 +43,9 @@ import org.orekit.files.sp3.SP3.SP3FileType;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -524,7 +530,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         },
 
         /** Parser for comments. */
-        HEADER_COMMENTS("^/\\*.*") {
+        HEADER_COMMENTS("^[%]?/\\*.*|") {
 
             /** {@inheritDoc} */
             @Override
@@ -551,12 +557,93 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 final int    day    = Integer.parseInt(line.substring(11, 13).trim());
                 final int    hour   = Integer.parseInt(line.substring(14, 16).trim());
                 final int    minute = Integer.parseInt(line.substring(17, 19).trim());
-                final double second = Double.parseDouble(line.substring(20, 31).trim());
+                final double second = Double.parseDouble(line.substring(20).trim());
 
-                pi.latestEpoch = new AbsoluteDate(year, month, day,
-                                                  hour, minute, second,
-                                                  pi.timeScale);
+                // some SP3 files have weird epochs as in the following two examples, where
+                // the middle dates are wrong
+                //
+                // *  2016  7  6 16 58  0.00000000
+                // PL51  11872.234459   3316.551981    101.400098 999999.999999
+                // VL51   8054.606014 -27076.640110 -53372.762255 999999.999999
+                // *  2016  7  6 16 60  0.00000000
+                // PL51  11948.228978   2986.113872   -538.901114 999999.999999
+                // VL51   4605.419303 -27972.588048 -53316.820671 999999.999999
+                // *  2016  7  6 17  2  0.00000000
+                // PL51  11982.652569   2645.786926  -1177.549463 999999.999999
+                // VL51   1128.248622 -28724.293303 -53097.358387 999999.999999
+                //
+                // *  2016  7  6 23 58  0.00000000
+                // PL51   3215.382310  -7958.586164   8812.395707
+                // VL51 -18058.659942 -45834.335707 -34496.540437
+                // *  2016  7  7 24  0  0.00000000
+                // PL51   2989.229334  -8494.421415   8385.068555
+                // VL51 -19617.027447 -43444.824985 -36706.159070
+                // *  2016  7  7  0  2  0.00000000
+                // PL51   2744.983592  -9000.639164   7931.904779
+                // VL51 -21072.925764 -40899.633288 -38801.567078
+                //
+                // In the first case, the date should really be 2016  7  6 17  0  0.00000000,
+                // i.e as the minutes field overflows, the hours field should be incremented
+                // In the second case, the date should really be 2016  7  7  0  0  0.00000000,
+                // i.e. as the hours field overflows, the day field should be kept as is
+                // we cannot be sure how carry was managed when these bogus files were written
+                // so we try different options, incrementing or not previous field, and selecting
+                // the closest one to expected date
+                DateComponents dc = new DateComponents(year, month, day);
+                final List<AbsoluteDate> candidates = new ArrayList<>();
+                int h = hour;
+                int m = minute;
+                double s = second;
+                if (s >= 60.0) {
+                    s -= 60;
+                    addCandidate(candidates, dc, h, m, s, pi.timeScale);
+                    m++;
+                }
+                if (m > 59) {
+                    m = 0;
+                    addCandidate(candidates, dc, h, m, s, pi.timeScale);
+                    h++;
+                }
+                if (h > 23) {
+                    h = 0;
+                    addCandidate(candidates, dc, h, m, s, pi.timeScale);
+                    dc = new DateComponents(dc, 1);
+                }
+                addCandidate(candidates, dc, h, m, s, pi.timeScale);
+                final AbsoluteDate expected = pi.latestEpoch == null ?
+                                              pi.file.getEpoch() :
+                                                  pi.latestEpoch.shiftedBy(pi.file.getEpochInterval());
+                pi.latestEpoch = null;
+                for (final AbsoluteDate candidate : candidates) {
+                    if (FastMath.abs(candidate.durationFrom(expected)) < 0.01 * pi.file.getEpochInterval()) {
+                        pi.latestEpoch = candidate;
+                    }
+                }
+                if (pi.latestEpoch == null) {
+                    // no date recognized, just parse again the initial fields
+                    // in order to generate again an exception
+                    pi.latestEpoch = new AbsoluteDate(year, month, day, hour, minute, second, pi.timeScale);
+                }
                 pi.nbEpochs++;
+            }
+
+            /** Add an epoch candidate to a list.
+             * @param candidates list of candidates
+             * @param dc date components
+             * @param hour hour number from 0 to 23
+             * @param minute minute number from 0 to 59
+             * @param second second number from 0.0 to 60.0 (excluded)
+             * @param timeScale time scale
+             * @since 11.1.1
+             */
+            private void addCandidate(final List<AbsoluteDate> candidates, final DateComponents dc,
+                                      final int hour, final int minute, final double second,
+                                      final TimeScale timeScale) {
+                try {
+                    candidates.add(new AbsoluteDate(dc, new TimeComponents(hour, minute, second), timeScale));
+                } catch (OrekitIllegalArgumentException oiae) {
+                    // ignored
+                }
             }
 
             /** {@inheritDoc} */
@@ -586,7 +673,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
 
                     // clock (microsec)
-                    pi.latestClock = line.length() <= 46 ?
+                    pi.latestClock = line.trim().length() <= 46 ?
                                                           DEFAULT_CLOCK_VALUE :
                                                               Double.parseDouble(line.substring(46, 60).trim()) * 1e-6;
 
@@ -670,7 +757,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
 
                     // clock rate in file is 1e-4 us / s
-                    final double clockRateChange = line.length() <= 46 ?
+                    final double clockRateChange = line.trim().length() <= 46 ?
                                                                         DEFAULT_CLOCK_VALUE :
                                                                             Double.parseDouble(line.substring(46, 60).trim()) * 1e-4;
 

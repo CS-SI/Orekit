@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>11.1</version>
+  <version>11.1.1</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -33,7 +33,7 @@
     <orekit.maven-jxr-plugin.version>3.1.1</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
     <orekit.plantuml.version>1.2021.10</orekit.plantuml.version>
-    <orekit.maven-project-info-reports-plugin.version>3.1.2</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-project-info-reports-plugin.version>3.2.1</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>3.2.0</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.9.1</orekit.maven-site-plugin.version>
     <orekit.maven-wagon-ssh-plugin.version>3.4.1</orekit.maven-wagon-ssh-plugin.version>
@@ -324,7 +324,7 @@
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
 
@@ -582,6 +582,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jxr-plugin</artifactId>
         <version>${orekit.maven-jxr-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>${orekit.maven-project-info-reports-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

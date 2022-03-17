@@ -377,7 +377,7 @@ DSST_SPR_SHADOW_INCONSISTENT = ikke-konsistent skyggeberegning: indgang = {0} og
 DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle bane har en excentricitet ({0} > 0.5). DSST kræver en ikke implementeret tidsafhængig numerisk metode til at beregne de gennemsnitlige hastigheder
 
 # unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = ikke understøttet version {0} af sp3 fil
+SP3_UNSUPPORTED_VERSION = ikke-understøttet version {0} af sp3 fil
 
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = fandt {0} epoker i filen {1}, forventede {2}
@@ -389,7 +389,7 @@ SP3_UNEXPECTED_END_OF_FILE = uventet ende på fil i sp3 fil (efter linje {0})
 CLOCK_FILE_UNSUPPORTED_VERSION = ikke-understøttet urfilversion {0}
 
 # unsupported navigation messages file version {0}
-NAVIGATION_FILE_UNSUPPORTED_VERSION = <MISSING TRANSLATION>
+NAVIGATION_FILE_UNSUPPORTED_VERSION = ikke-understøttet navigationsbeskedfilversion {0}
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ikke-eksisterende geomagnetisk model {0} for år {1}
@@ -655,7 +655,7 @@ INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
 PARAMETER_NOT_SET = <MISSING TRANSLATION>
 
 # {0} is not implemented
-FUNCTION_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+FUNCTION_NOT_IMPLEMENTED = {0} er ikke implementeret
 
 # Impossible to execute {0} with {1} set to {2}
 INVALID_TYPE_FOR_FUNCTION = <MISSING TRANSLATION>
@@ -691,10 +691,10 @@ UNKNOWN_AUTHENTICATION_METHOD = <MISSING TRANSLATION>
 UNKNOWN_CARRIER_PHASE_CODE = <MISSING TRANSLATION>
 
 # unknown data format: {0}
-UNKNOWN_DATA_FORMAT = <MISSING TRANSLATION>
+UNKNOWN_DATA_FORMAT = ukendt dataformat: {0}
 
 # unknown navigation system: {0}
-UNKNOWN_NAVIGATION_SYSTEM = <MISSING TRANSLATION>
+UNKNOWN_NAVIGATION_SYSTEM = ukendt navigationssystem: {0}
 
 # data stream {0} requires a NMEA fix data
 STREAM_REQUIRES_NMEA_FIX = <MISSING TRANSLATION>
@@ -706,7 +706,7 @@ FAILED_AUTHENTICATION = <MISSING TRANSLATION>
 CONNECTION_ERROR = <MISSING TRANSLATION>
 
 # unexpected content type {0}
-UNEXPECTED_CONTENT_TYPE = <MISSING TRANSLATION>
+UNEXPECTED_CONTENT_TYPE = uventet indholdstype {0}
 
 # cannot parse GNSS data from {0}
 CANNOT_PARSE_GNSS_DATA = <MISSING TRANSLATION>
@@ -724,7 +724,7 @@ CANNOT_PARSE_SOURCETABLE = <MISSING TRANSLATION>
 MOUNPOINT_ALREADY_CONNECTED = <MISSING TRANSLATION>
 
 # missing header from {0}: {1}
-MISSING_HEADER = <MISSING TRANSLATION>
+MISSING_HEADER = manglende header fra {0}: {1}
 
 # {0} is not a valid international designator
 NOT_VALID_INTERNATIONAL_DESIGNATOR = <MISSING TRANSLATION>
@@ -733,10 +733,10 @@ NOT_VALID_INTERNATIONAL_DESIGNATOR = <MISSING TRANSLATION>
 UNINITIALIZED_VALUE_FOR_KEY = <MISSING TRANSLATION>
 
 # unknown unit {0}
-UNKNOWN_UNIT = <MISSING TRANSLATION>
+UNKNOWN_UNIT = ukendt enhed {0}
 
 # units {0} and {1} are not compatible
-INCOMPATIBLE_UNITS = <MISSING TRANSLATION>
+INCOMPATIBLE_UNITS = enhederne {0} og {1} er ikke kompatible
 
 # missing velocity data
 MISSING_VELOCITY = <MISSING TRANSLATION>

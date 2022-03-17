@@ -319,7 +319,7 @@ set the artifacts in the release notes.
 - orekit-X.Y-sources.jar
 - orekit-X.Y-javadoc.jar
 
-Navigate to Projects > Orekit > Releases and make sure it looks nice.
+Navigate to Projects > Orekit > Deployments > Releases and make sure it looks nice.
 
 ## Synchronize the Github mirror
 

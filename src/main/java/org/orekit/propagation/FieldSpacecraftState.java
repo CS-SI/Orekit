@@ -699,10 +699,10 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState<T> shiftedBy(final double dt) {
         if (absPva == null) {
             return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional, additionalDot);
+                                              mass, shiftAdditional(dt), additionalDot);
         } else {
             return new FieldSpacecraftState<>(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional, additionalDot);
+                                              mass, shiftAdditional(dt), additionalDot);
         }
     }
 
@@ -740,11 +740,61 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState<T> shiftedBy(final T dt) {
         if (absPva == null) {
             return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional, additionalDot);
+                                              mass, shiftAdditional(dt), additionalDot);
         } else {
             return new FieldSpacecraftState<>(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional, additionalDot);
+                                              mass, shiftAdditional(dt), additionalDot);
         }
+    }
+
+    /** Shift additional states.
+     * @param dt time shift in seconds
+     * @return shifted additional states
+     * @since 11.1.1
+     */
+    private FieldArrayDictionary<T> shiftAdditional(final double dt) {
+
+        // fast handling when there are no derivatives at all
+        if (additionalDot.size() == 0) {
+            return additional;
+        }
+
+        // there are derivatives, we need to take them into account in the additional state
+        final FieldArrayDictionary<T> shifted = new FieldArrayDictionary<T>(additional);
+        for (final FieldArrayDictionary<T>.Entry dotEntry : additionalDot.getData()) {
+            final FieldArrayDictionary<T>.Entry entry = shifted.getEntry(dotEntry.getKey());
+            if (entry != null) {
+                entry.scaledIncrement(dt, dotEntry);
+            }
+        }
+
+        return shifted;
+
+    }
+
+    /** Shift additional states.
+     * @param dt time shift in seconds
+     * @return shifted additional states
+     * @since 11.1.1
+     */
+    private FieldArrayDictionary<T> shiftAdditional(final T dt) {
+
+        // fast handling when there are no derivatives at all
+        if (additionalDot.size() == 0) {
+            return additional;
+        }
+
+        // there are derivatives, we need to take them into account in the additional state
+        final FieldArrayDictionary<T> shifted = new FieldArrayDictionary<T>(additional);
+        for (final FieldArrayDictionary<T>.Entry dotEntry : additionalDot.getData()) {
+            final FieldArrayDictionary<T>.Entry entry = shifted.getEntry(dotEntry.getKey());
+            if (entry != null) {
+                entry.scaledIncrement(dt, dotEntry);
+            }
+        }
+
+        return shifted;
+
     }
 
     /** {@inheritDoc}
