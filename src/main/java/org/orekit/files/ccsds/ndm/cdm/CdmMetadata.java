@@ -114,6 +114,7 @@ public class CdmMetadata extends Metadata {
      */
     public CdmMetadata() {
         super(null);
+
     }
 
     /** {@inheritDoc} */

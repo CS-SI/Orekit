@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
-import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -30,7 +29,7 @@ import org.orekit.utils.IERSConventions;
  * @author Melina Vanel
  * @since 11.2
  */
-public class Cdm extends NdmConstituent<CdmHeader, Segment<CdmMetadata, CdmData>> {
+public class Cdm extends NdmConstituent<CdmHeader, CdmSegment> {
 
     /** Root element for XML files. */
     public static final String ROOT = "cdm";
@@ -44,7 +43,7 @@ public class Cdm extends NdmConstituent<CdmHeader, Segment<CdmMetadata, CdmData>
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public Cdm(final CdmHeader header, final List<Segment<CdmMetadata, CdmData>> segments,
+    public Cdm(final CdmHeader header, final List<CdmSegment> segments,
                    final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }

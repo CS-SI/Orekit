@@ -106,7 +106,7 @@ public class CdmData implements Data {
     /** Get the covariance matrix logical block.
      * @return covariance matrix block
      */
-    public RTNCovariance getCovarianceMatrixBlock() {
+    public RTNCovariance getRTNCovarianceBlock() {
         return covarianceMatrixBlock;
     }
 

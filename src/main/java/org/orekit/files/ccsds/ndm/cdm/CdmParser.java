@@ -25,7 +25,6 @@ import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
-import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureProcessingState;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
@@ -65,7 +64,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     private CdmHeader header;
 
     /** File segments. */
-    private List<Segment<CdmMetadata, CdmData>> segments;
+    private List<CdmSegment> segments;
 
     /** CDM metadata being read. */
     private CdmMetadata metadata;
@@ -76,7 +75,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     /** Context binding valid for current metadata. */
     private ContextBinding context;
 
-    /** CDM general comments block being read. */
+    /** CDM general data comments block being read. */
     private CommentsContainer commentsBlock;
 
     /** CDM OD parameters logical block being read. */
@@ -136,9 +135,9 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         addParameters             = null;
         stateVector               = null;
         covMatrix                 = null;
+        commentsBlock             = null;
         if (fileFormat == FileFormat.XML) {
             structureProcessor = new XmlStructureProcessingState(Cdm.ROOT, this);
-            commentsBlock = new CommentsContainer();
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
@@ -182,6 +181,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         }
         metadata  = new CdmMetadata();
         metadata.setRelativeMetadata(relativeMetadata);
+
         // As no time system is defined in CDM because all dates are given in UTC,
         // time system is set here to UTC, we use relative metadata and not metadata
         // because setting time system on metadata implies refusingfurthercomments
@@ -216,6 +216,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         // stateVector and RTNCovariance blocks are 2 mandatory data blocks
         stateVector = new StateVector();
         covMatrix = new RTNCovariance();
+        // initialize comments block for general data comments
         commentsBlock = new CommentsContainer();
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processGeneralCommentToken);
         return true;
@@ -224,7 +225,6 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean inData() {
-
         return true;
     }
 
@@ -244,9 +244,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         addParameters             = null;
         stateVector               = null;
         covMatrix                 = null;
-        if (getFileFormat() != FileFormat.XML) {
-            commentsBlock         = null;
-        }
+        commentsBlock             = null;
         return true;
     }
 
@@ -266,6 +264,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      */
     boolean addGeneralComment(final String comment) {
         return commentsBlock.addComment(comment);
+
     }
 
     /** Manage relative metadata section.
@@ -294,6 +293,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * @return always return true
      */
     boolean manageODParametersSection(final boolean starting) {
+        commentsBlock.refuseFurtherComments();
         anticipateNext(starting ? this::processODParamToken : structureProcessor);
         return true;
     }
@@ -304,6 +304,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * @return always return true
      */
     boolean manageAdditionalParametersSection(final boolean starting) {
+        commentsBlock.refuseFurtherComments();
         anticipateNext(starting ? this::processAdditionalParametersToken : structureProcessor);
         return true;
     }
@@ -314,6 +315,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * @return always return true
      */
     boolean manageStateVectorSection(final boolean starting) {
+        commentsBlock.refuseFurtherComments();
         anticipateNext(starting ? this::processStateVectorToken : structureProcessor);
         return true;
     }
@@ -324,6 +326,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * @return always return true
      */
     boolean manageCovMatrixSection(final boolean starting) {
+        commentsBlock.refuseFurtherComments();
         anticipateNext(starting ? this::processCovMatrixToken : structureProcessor);
         return true;
     }
@@ -403,11 +406,47 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
                    METADATA.equals(token.getName()) && TokenType.STOP.equals(token.getType())) {
             final ParseToken replaceToken = new ParseToken(token.getType(), METADATA,
                                       null, token.getUnits(), token.getLineNumber(), token.getFileName());
+
             return structureProcessor.processToken(replaceToken);
 
         } else {
+
+            // Relative metadata COMMENT and metadata COMMENT should not be read by XmlSubStructureKey that
+            // is why 2 cases are distinguished here : the COMMENT for relative metadata and the COMMENT
+            // for metadata.
+            if (commentsBlock == null && COMMENT.equals(token.getName())) {
+
+                // COMMENT adding for Relative Metadata in XML
+                if (doRelativeMetadata) {
+                    if (token.getType() == TokenType.ENTRY) {
+                        relativeMetadata.addComment(token.getContentAsNormalizedString());
+                        doRelativeMetadata = false;
+                        return true;
+
+                    } else {
+                        // if the token Type is still not ENTRY we return true as at the next step
+                        // it will be ENTRY ad we will be able to store the comment (similar treatment
+                        // as OD parameter or Additional parameter or State Vector ... COMMENT treatment.)
+                        return true;
+                    }
+                }
+
+                // COMMENT adding for Metadata in XML
+                if (!doRelativeMetadata) {
+                    if (token.getType() == TokenType.ENTRY) {
+                        metadata.addComment(token.getContentAsNormalizedString());
+                        return true;
+
+                    } else {
+                        // same as above
+                        return true;
+                    }
+                }
+            }
+
+            // to treat XmlSubStructureKey keys ( OD parameters, relative Metadata ...)
             try {
-                return token.getName() != null &&
+                return token.getName() != null && !doRelativeMetadata &&
                        XmlSubStructureKey.valueOf(token.getName()).process(token, this);
             } catch (IllegalArgumentException iae) {
                 // token has not been recognized
@@ -430,11 +469,14 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
             prepareData();
         }
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processODParamToken);
-        if (COMMENT.equals(token.getName())) {
+        if (COMMENT.equals(token.getName()) && commentsBlock.acceptComments()) {
             if (token.getType() == TokenType.ENTRY) {
                 commentsBlock.addComment(token.getContentAsNormalizedString());
             }
-            return false;
+            // in order to be able to differentiate general data comments and next block comment (OD parameters if not empty)
+            // only 1 line comment is allowed for general data comment.
+            commentsBlock.refuseFurtherComments();
+            return true;
         } else {
             return false;
         }
@@ -485,7 +527,10 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * @return true if token was processed, false otherwise
      */
     private boolean processStateVectorToken(final ParseToken token) {
-
+        if (moveCommentsIfEmpty(addParameters, stateVector)) {
+            // get rid of the empty logical block
+            addParameters = null;
+        }
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processCovMatrixToken);
         try {
             return token.getName() != null &&

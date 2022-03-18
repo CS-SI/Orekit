@@ -39,6 +39,7 @@ import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
+import org.orekit.files.ccsds.ndm.cdm.CdmRelativeMetadata;
 import org.orekit.files.ccsds.ndm.odm.ocm.Covariance;
 import org.orekit.files.ccsds.ndm.odm.ocm.CovarianceHistory;
 import org.orekit.files.ccsds.ndm.odm.ocm.Maneuver;
@@ -112,7 +113,8 @@ public class NdmTestUtils {
                    original instanceof Observation           ||
                    original instanceof SpacecraftBodyFrame   ||
                    original instanceof PVCoordinates         ||
-                   original instanceof AngularCoordinates) {
+                   original instanceof AngularCoordinates    ||
+                   original instanceof CdmRelativeMetadata) {
             checkContainer(original, rebuilt);
             return true;
         } else if (original instanceof FrameFacade) {

@@ -100,6 +100,20 @@ public class CdmRelativeMetadata {
      */
     public CdmRelativeMetadata() {
         this.comment = new ArrayList<>();
+
+        this.relativeSpeed        = Double.NaN;
+        this.relativePositionR    = Double.NaN;
+        this.relativePositionT    = Double.NaN;
+        this.relativePositionN    = Double.NaN;
+
+        this.relativeVelocityR    = Double.NaN;
+        this.relativeVelocityT    = Double.NaN;
+        this.relativeVelocityN    = Double.NaN;
+
+        this.screenVolumeX        = Double.NaN;
+        this.screenVolumeY        = Double.NaN;
+        this.screenVolumeZ        = Double.NaN;
+        this.collisionProbability = Double.NaN;
     }
 
     /** Check is all mandatory entries have been initialized.
@@ -162,7 +176,7 @@ public class CdmRelativeMetadata {
      * getY for T component, getZ for N component.
      * @return the relative speed vector at TCA (in m/s)
      */
-    public Vector3D getRelativeSpeedVector() {
+    public Vector3D getRelativeVelocity() {
         return new Vector3D(relativeVelocityR, relativeVelocityT, relativeVelocityN);
     }
 
@@ -171,7 +185,7 @@ public class CdmRelativeMetadata {
      * getY for T component, getZ for N component.
      * @return the relative position vector at TCA (in m)
      */
-    public Vector3D getRelativePositionVector() {
+    public Vector3D getRelativePosition() {
         return new Vector3D(relativePositionR, relativePositionT, relativePositionN);
     }
 
