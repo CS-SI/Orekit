@@ -81,9 +81,8 @@ public interface StaticTransform extends TimeStamped {
      */
     default Line transformLine(final Line line) {
         final Vector3D transformedP0 = transformPosition(line.getOrigin());
-        final Vector3D transformedP1 = transformPosition(line.pointAt(1.0e6));
-        //TODO fixme
-        return new Line(transformedP0, transformedP1, 1.0e-10);
+        final Vector3D transformedD  = transformVector(line.getDirection());
+        return Line.fromDirection(transformedP0, transformedD, line.getTolerance());
     }
 
     /**
