@@ -127,7 +127,7 @@ public class CdmWriter extends CdmMessageWriter {
                                              final CdmRelativeMetadata relativeMetadata) throws IOException {
 
         // Is written only once
-    	// start relative metadata block
+        // start relative metadata block
         if (generator.getFormat() == FileFormat.XML) {
             generator.enterSection(XmlSubStructureKey.relativeMetadataData.name());
         }
