@@ -105,10 +105,14 @@ public class LofOffsetPointing extends GroundPointing {
             final AbsoluteDate shifted = date.shiftedBy(i * h);
 
             // transform from specified reference frame to spacecraft frame
-            final Transform refToSc =
-                            new Transform(shifted,
-                                          new Transform(shifted, pvProv.getPVCoordinates(shifted, frame).negate()),
-                                          new Transform(shifted, attitudeLaw.getAttitude(pvProv, shifted, frame).getOrientation()));
+            final StaticTransform refToSc = StaticTransform.compose(
+                    shifted,
+                    StaticTransform.of(
+                            shifted,
+                            pvProv.getPVCoordinates(shifted, frame).getPosition().negate()),
+                    StaticTransform.of(
+                            shifted,
+                            attitudeLaw.getAttitude(pvProv, shifted, frame).getRotation()));
 
             // transform from specified reference frame to body frame
             final StaticTransform refToBody;
