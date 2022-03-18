@@ -104,6 +104,26 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+
+        // get the transform from the current EOP
+        final StaticTransform rawTransform = rawProvider.getStaticTransform(date);
+
+        // add the conversion layer
+        final ITRFVersion.Converter converterForDate = getConverter(date);
+        if (converterForDate == null) {
+            return rawTransform;
+        } else {
+            return StaticTransform.compose(
+                    date,
+                    rawTransform,
+                    converterForDate.getStaticTransform(date));
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // get the transform from the current EOP
