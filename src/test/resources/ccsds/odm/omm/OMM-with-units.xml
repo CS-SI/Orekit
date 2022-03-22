@@ -22,6 +22,7 @@
 
       <data>
         <meanElements>
+          <COMMENT>mean Elements</COMMENT>
           <EPOCH>2007-064T10:34:41.4264</EPOCH>
           <MEAN_MOTION units="rev/day">1.00273272</MEAN_MOTION>
           <ECCENTRICITY>0.0005013</ECCENTRICITY>
@@ -32,6 +33,7 @@
           <GM>398600.8</GM>
         </meanElements>
         <tleParameters>
+          <COMMENT>tle Parameters</COMMENT>
           <NORAD_CAT_ID>23581</NORAD_CAT_ID>
           <ELEMENT_SET_NO>0925</ELEMENT_SET_NO>
           <REV_AT_EPOCH>4316</REV_AT_EPOCH>
@@ -40,6 +42,7 @@
           <MEAN_MOTION_DDOT units="rev/day**3">0.0</MEAN_MOTION_DDOT>
         </tleParameters>
         <covarianceMatrix>
+          <COMMENT>covariance Matrix</COMMENT>
           <COV_REF_FRAME>TEME</COV_REF_FRAME>
           <CX_X>3.331349476038534e-04</CX_X>
           <CY_X>4.618927349220216e-04</CY_X>

@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 
 /** Keys for {@link OmmTle TLE} entries.
@@ -26,6 +27,10 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
  * @since 11.0
  */
 public enum OmmTleKey {
+
+    /** Comment entry. */
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Ephemeris Type, only required if MEAN_ELEMENT_THEORY = SGP/SGP4. */
     EPHEMERIS_TYPE((token, context, container) -> token.processAsInteger(container::setEphemerisType)),
