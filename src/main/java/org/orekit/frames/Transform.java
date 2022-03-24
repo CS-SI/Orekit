@@ -357,7 +357,7 @@ public class Transform implements
     public StaticTransform staticShiftedBy(final double dt) {
         return StaticTransform.of(
                 date.shiftedBy(dt),
-                cartesian.shiftedBy(dt).getPosition(),
+                cartesian.positionShiftedBy(dt),
                 angular.rotationShiftedBy(dt));
     }
 
