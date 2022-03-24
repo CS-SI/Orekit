@@ -36,6 +36,10 @@
       <action dev="bryan" type="add" issue="898">
         Added static method to create a BodyFacade from a CenterName.
       </action>
+      <action dev="evan" type="update" issue="903">
+        Added Frame.getStaticTransformTo(...) and supporting methods to improve
+        performance.
+      </action>
     </release>
     <release version="11.1.1" date="2022-03-17"
              description="Version 11.1.1 is a patch release of Orekit.
