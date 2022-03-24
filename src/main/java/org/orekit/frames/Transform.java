@@ -404,8 +404,8 @@ public class Transform implements
                                         final CartesianDerivativesFilter cFilter,
                                         final AngularDerivativesFilter aFilter,
                                         final Collection<Transform> sample) {
-        final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
-        final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<TimeStampedAngularCoordinates>(sample.size());
+        final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<>(sample.size());
+        final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<>(sample.size());
         for (final Transform t : sample) {
             datedPV.add(new TimeStampedPVCoordinates(t.getDate(), t.getTranslation(), t.getVelocity(), t.getAcceleration()));
             datedAC.add(new TimeStampedAngularCoordinates(t.getDate(), t.getRotation(), t.getRotationRate(), t.getRotationAcceleration()));
@@ -761,13 +761,14 @@ public class Transform implements
 
         @Override
         public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T>
-        transformPVCoordinates(final FieldPVCoordinates<T> pv) {
+            transformPVCoordinates(final FieldPVCoordinates<T> pv) {
             return pv;
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-        transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
+        public <T extends CalculusFieldElement<T>>
+            TimeStampedFieldPVCoordinates<T> transformPVCoordinates(
+                    final TimeStampedFieldPVCoordinates<T> pv) {
             return pv;
         }
 
