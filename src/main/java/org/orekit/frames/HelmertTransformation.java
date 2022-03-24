@@ -529,19 +529,16 @@ public class HelmertTransformation implements TransformProvider {
         final Vector3D dR = new Vector3D(1, rotationVector, dt, rotationRate);
 
         // build translation part
-        final StaticTransform translationTransform =
-                StaticTransform.of(date, cartesian.shiftedBy(dt).getPosition());
+        final Vector3D translation = cartesian.shiftedBy(dt).getPosition();
 
         // build rotation part
         final double angle = dR.getNorm();
-        final StaticTransform rotationTransform = StaticTransform.of(
-                date,
-                (angle < Precision.SAFE_MIN) ?
-                        Rotation.IDENTITY :
-                        new Rotation(dR, angle, RotationConvention.VECTOR_OPERATOR));
+        final Rotation rotation = (angle < Precision.SAFE_MIN) ?
+                Rotation.IDENTITY :
+                new Rotation(dR, angle, RotationConvention.VECTOR_OPERATOR);
 
         // combine both parts
-        return StaticTransform.compose(date, translationTransform, rotationTransform);
+        return StaticTransform.of(date, translation, rotation);
 
     }
 

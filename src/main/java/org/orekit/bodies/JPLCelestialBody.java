@@ -224,8 +224,6 @@ class JPLCelestialBody implements CelestialBody {
                 public StaticTransform getStaticTransform(final AbsoluteDate date) {
                     // compute translation from parent frame to self
                     final PVCoordinates pv = getPVCoordinates(date, definingFrame);
-                    final StaticTransform translation =
-                            StaticTransform.of(date, pv.getPosition().negate());
 
                     // compute rotation from ICRF frame to self,
                     // as per the "Report of the IAU/IAG Working Group on Cartographic
@@ -238,12 +236,11 @@ class JPLCelestialBody implements CelestialBody {
                     // methods
                     final Vector3D pole  = iauPole.getPole(date);
                     final Vector3D qNode = iauPole.getNode(date);
-                    final StaticTransform rotation = StaticTransform.of(
-                            date,
-                            new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
+                    final Rotation rotation =
+                            new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
 
                     // update transform from parent to self
-                    return StaticTransform.compose(date, translation, rotation);
+                    return StaticTransform.of(date, pv.getPosition().negate(), rotation);
                 }
 
                 /** {@inheritDoc} */
