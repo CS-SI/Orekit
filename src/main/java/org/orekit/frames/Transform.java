@@ -137,7 +137,7 @@ public class Transform implements
      */
     public Transform(final AbsoluteDate date, final Vector3D translation) {
         this(date,
-             new PVCoordinates(translation, Vector3D.ZERO, Vector3D.ZERO),
+             new PVCoordinates(translation),
              AngularCoordinates.IDENTITY);
     }
 
@@ -150,7 +150,7 @@ public class Transform implements
     public Transform(final AbsoluteDate date, final Rotation rotation) {
         this(date,
              PVCoordinates.ZERO,
-             new AngularCoordinates(rotation, Vector3D.ZERO));
+             new AngularCoordinates(rotation));
     }
 
     /** Build a translation transform, with its first time derivative.
