@@ -208,6 +208,17 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
 
     }
 
+    /**
+     * Initialize the additional state providers at the start of propagation.
+     * @param target date of propagation. Not equal to {@code initialState.getDate()}.
+     * @since 11.2
+     */
+    protected void initializeAdditionalStates(final FieldAbsoluteDate<T> target) {
+        for (final FieldAdditionalStateProvider<T> provider : additionalStateProviders) {
+            provider.init(initialState, target);
+        }
+    }
+
     /** {@inheritDoc} */
     public boolean isAdditionalStateManaged(final String name) {
         for (final FieldAdditionalStateProvider<T> provider : additionalStateProviders) {

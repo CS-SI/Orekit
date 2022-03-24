@@ -456,8 +456,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     }
 
-    private void doTestTideEffect(Orbit orbit, IERSConventions conventions, double delta1, double delta2)
-        {
+    private void doTestTideEffect(Orbit orbit, IERSConventions conventions, double delta1, double delta2) {
 
         Frame itrf    = FramesFactory.getITRF(conventions, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);

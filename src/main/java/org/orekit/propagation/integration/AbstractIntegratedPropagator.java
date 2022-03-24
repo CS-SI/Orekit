@@ -398,6 +398,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // prepare handling of STM and Jacobian matrices
             setUpStmAndJacobianGenerators();
 
+            // Initialize additional states
+            initializeAdditionalStates(tEnd);
+
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection

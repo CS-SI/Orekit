@@ -175,6 +175,16 @@ public class FieldSpacecraftStateTest {
         doTestIssue775(Decimal64Field.getInstance());
     }
 
+    @Test
+    public void testShiftAdditionalDerivativesDouble() {
+        doTestShiftAdditionalDerivativesDouble(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testShiftAdditionalDerivativesField() {
+        doTestShiftAdditionalDerivativesField(Decimal64Field.getInstance());
+    }
+
     private <T extends CalculusFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
         T zero = field.getZero();
 
@@ -1269,9 +1279,88 @@ public class FieldSpacecraftStateTest {
           Assert.assertEquals(0.0, FieldVector3D.distance(withoutOrbit.getAbsPVA().getPosition(), states.get(10).getAbsPVA().getPosition()).getReal(), 1.0e-10);
     }
 
-    
-    
-    
+    private <T extends CalculusFieldElement<T>> void doTestShiftAdditionalDerivativesDouble(final Field<T> field) {
+
+        T zero = field.getZero();
+
+        // Build orbit
+        FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
+                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         zero.add(Constants.WGS84_EARTH_MU));
+
+        // Build propagator
+        FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
+
+        final String valueAndDerivative = "value-and-derivative";
+        final String valueOnly          = "value-only";
+        final String derivativeOnly     = "derivative-only";
+        final FieldSpacecraftState<T> s0 = propagator.getInitialState().
+                                           addAdditionalState(valueAndDerivative,           convert(field, new double[] { 1.0,  2.0 })).
+                                           addAdditionalStateDerivative(valueAndDerivative, convert(field, new double[] { 3.0,  2.0 })).
+                                           addAdditionalState(valueOnly,                    convert(field, new double[] { 5.0,  4.0 })).
+                                           addAdditionalStateDerivative(derivativeOnly,     convert(field, new double[] { 1.0, -1.0 }));
+        Assert.assertEquals( 1.0, s0.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
+        Assert.assertEquals( 2.0, s0.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
+        Assert.assertEquals( 3.0, s0.getAdditionalStateDerivative(valueAndDerivative)[0].getReal(), 1.0e-15);
+        Assert.assertEquals( 2.0, s0.getAdditionalStateDerivative(valueAndDerivative)[1].getReal(), 1.0e-15);
+        Assert.assertEquals( 5.0, s0.getAdditionalState(valueOnly)[0].getReal(),                    1.0e-15);
+        Assert.assertEquals( 4.0, s0.getAdditionalState(valueOnly)[1].getReal(),                    1.0e-15);
+        Assert.assertEquals( 1.0, s0.getAdditionalStateDerivative(derivativeOnly)[0].getReal(),     1.0e-15);
+        Assert.assertEquals(-1.0, s0.getAdditionalStateDerivative(derivativeOnly)[1].getReal(),     1.0e-15);
+        final FieldSpacecraftState<T> s1 = s0.shiftedBy(-2.0);
+        Assert.assertEquals(-5.0, s1.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
+        Assert.assertEquals(-2.0, s1.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
+        Assert.assertEquals( 3.0, s1.getAdditionalStateDerivative(valueAndDerivative)[0].getReal(), 1.0e-15);
+        Assert.assertEquals( 2.0, s1.getAdditionalStateDerivative(valueAndDerivative)[1].getReal(), 1.0e-15);
+        Assert.assertEquals( 5.0, s1.getAdditionalState(valueOnly)[0].getReal(),                    1.0e-15);
+        Assert.assertEquals( 4.0, s1.getAdditionalState(valueOnly)[1].getReal(),                    1.0e-15);
+        Assert.assertEquals( 1.0, s1.getAdditionalStateDerivative(derivativeOnly)[0].getReal(),     1.0e-15);
+        Assert.assertEquals(-1.0, s1.getAdditionalStateDerivative(derivativeOnly)[1].getReal(),     1.0e-15);
+
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestShiftAdditionalDerivativesField(final Field<T> field) {
+
+        T zero = field.getZero();
+
+        // Build orbit
+        FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
+                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         zero.add(Constants.WGS84_EARTH_MU));
+
+        // Build propagator
+        FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
+
+        final String valueAndDerivative = "value-and-derivative";
+        final String valueOnly          = "value-only";
+        final String derivativeOnly     = "derivative-only";
+        final FieldSpacecraftState<T> s0 = propagator.getInitialState().
+                                           addAdditionalState(valueAndDerivative,           convert(field, new double[] { 1.0,  2.0 })).
+                                           addAdditionalStateDerivative(valueAndDerivative, convert(field, new double[] { 3.0,  2.0 })).
+                                           addAdditionalState(valueOnly,                    convert(field, new double[] { 5.0,  4.0 })).
+                                           addAdditionalStateDerivative(derivativeOnly,     convert(field, new double[] { 1.0, -1.0 }));
+        Assert.assertEquals( 1.0, s0.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
+        Assert.assertEquals( 2.0, s0.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
+        Assert.assertEquals( 3.0, s0.getAdditionalStateDerivative(valueAndDerivative)[0].getReal(), 1.0e-15);
+        Assert.assertEquals( 2.0, s0.getAdditionalStateDerivative(valueAndDerivative)[1].getReal(), 1.0e-15);
+        Assert.assertEquals( 5.0, s0.getAdditionalState(valueOnly)[0].getReal(),                    1.0e-15);
+        Assert.assertEquals( 4.0, s0.getAdditionalState(valueOnly)[1].getReal(),                    1.0e-15);
+        Assert.assertEquals( 1.0, s0.getAdditionalStateDerivative(derivativeOnly)[0].getReal(),     1.0e-15);
+        Assert.assertEquals(-1.0, s0.getAdditionalStateDerivative(derivativeOnly)[1].getReal(),     1.0e-15);
+        final FieldSpacecraftState<T> s1 = s0.shiftedBy(field.getZero().newInstance(-2.0));
+        Assert.assertEquals(-5.0, s1.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
+        Assert.assertEquals(-2.0, s1.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
+        Assert.assertEquals( 3.0, s1.getAdditionalStateDerivative(valueAndDerivative)[0].getReal(), 1.0e-15);
+        Assert.assertEquals( 2.0, s1.getAdditionalStateDerivative(valueAndDerivative)[1].getReal(), 1.0e-15);
+        Assert.assertEquals( 5.0, s1.getAdditionalState(valueOnly)[0].getReal(),                    1.0e-15);
+        Assert.assertEquals( 4.0, s1.getAdditionalState(valueOnly)[1].getReal(),                    1.0e-15);
+        Assert.assertEquals( 1.0, s1.getAdditionalStateDerivative(derivativeOnly)[0].getReal(),     1.0e-15);
+        Assert.assertEquals(-1.0, s1.getAdditionalStateDerivative(derivativeOnly)[1].getReal(),     1.0e-15);
+
+    }
+
     @Before
     public void setUp(){
         try {
@@ -1298,6 +1387,14 @@ public class FieldSpacecraftStateTest {
 
             Assert.fail(oe.getLocalizedMessage());
         }
+    }
+
+    private <T extends CalculusFieldElement<T>> T[] convert(final Field<T> field, final double[] a) {
+        final T[] converted = MathArrays.buildArray(field, a.length);
+        for (int i = 0; i < a.length; ++i) {
+            converted[i] = field.getZero().newInstance(a[i]);
+        }
+        return converted;
     }
 
     private AbsoluteDate rDate;

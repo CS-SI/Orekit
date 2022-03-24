@@ -575,7 +575,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         final double dV = Vector3D.distance(refVel, estimatedVel);
         
         // FIXME: debug - Comparison with batch LS is bad
-        final double debugDistanceAccuracy = 234.73;
+        final double debugDistanceAccuracy = 234.82;
         final double debugVelocityAccuracy = 0.086;
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), debugDistanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), debugVelocityAccuracy);

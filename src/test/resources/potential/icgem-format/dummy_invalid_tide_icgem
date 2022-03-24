@@ -1,4 +1,5 @@
 
+format                        icgem1.0
 product_type                  gravity_field
 modelname                     DUMMY
 earth_gravity_constant        0.3986004415E+15

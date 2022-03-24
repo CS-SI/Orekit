@@ -1,0 +1,49 @@
+     2.11           OBSERVATION DATA    G (GPS)             RINEX VERSION / TYPE
+teqc  2016Nov7      root                20180417 16:16:38UTCPGM / RUN BY / DATE
+Linux 2.4.21-27.ELsmp|Opteron|gcc|Linux x86_64|=+           COMMENT
+     2.11           OBSERVATION DATA    G (GPS)             COMMENT
+teqc  2015Nov6      NOAA/NOS/NGS/CORS   20160214 01:36:16UTCCOMMENT
+Solaris x86 5.10|AMD64|cc SC5.8 -xarch=amd64|=+|=+          COMMENT
+teqc  2015Nov6      NOAA/NOS/NGS/CORS   20160214 01:35:24UTCCOMMENT
+BIT 2 OF LLI FLAGS DATA COLLECTED UNDER A/S CONDITION       COMMENT
+ SNR is mapped to RINEX snr flag value [0-9]                COMMENT
+  L1 & L2: min(max(int(snr_dBHz/6), 0), 9)                  COMMENT
+teqc edited: all SBAS satellites excluded                   COMMENT
+teqc edited: all Compass satellites excluded                COMMENT
+teqc edited: all QZSS satellites excluded                   COMMENT
+Forced Modulo Decimation to 30 seconds                      COMMENT
+SBCH                                                        MARKER NAME
+SBCH                                                        MARKER NUMBER
+Randy Osborne       LASU                                    OBSERVER / AGENCY
+5051K72720          TRIMBLE NETR9       5.10                REC # / TYPE / VERS
+    31569.9070 -5535449.0960  3157696.7490                  APPROX POSITION XYZ
+        0.0000        0.0000        0.0000                  ANTENNA: DELTA H/E/N
+     1     1                                                WAVELENGTH FACT L1/2
+     8    L1    L2    C1    C2    P1    P2    S1    S2      # / TYPES OF OBSERV
+    30.0000                                                 INTERVAL
+teqc.w windowed: start @ 2016 Feb 13 00:00:00.000           COMMENT
+teqc.w windowed:  end  @ 2016 Feb 13 00:50:00.000           COMMENT
+teqc.w edited: all GLONASS satellites excluded              COMMENT
+  2016     2    13     0    50    0.0000000     GPS         TIME OF FIRST OBS
+                                                            END OF HEADER
+ 16  2 13  0 50  0.0000000  0 10G30G07G08G11G16G27G01G28G09G23
+ 124715056.737 6  97180603.218 6  23732478.250    23732485.203
+  23732484.918          39.800          40.300
+ 113442043.618 7  88396448.043 7  21587282.070    21587285.773
+  21587286.277          47.100          44.800
+ 107624706.673 8  83863508.037 8  20480273.211    20480278.496
+  20480278.207          50.400          50.000
+ 123162236.436 6  95970616.75544  23436980.414
+  23436984.277          41.500          24.900
+ 127759857.231 6  99553224.32243  24311862.398
+  24311866.754          38.800          19.600
+ 114048318.681 7  88868937.486 7  21702645.609    21702650.422
+  21702650.082          47.900          46.500
+ 132119795.764 6 102950529.303 5  25141563.023    25141570.738
+  25141572.238          36.400          35.900
+ 128159026.321 6  99864225.29542  24387848.711
+  24387851.332          39.900          16.300
+ 108781845.096 8  84764939.196 8  20700430.070    20700435.336
+  20700435.910          49.100          49.900
+ 112281306.402 7  87492006.74345  21366399.813
+  21366402.195          47.800          35.300

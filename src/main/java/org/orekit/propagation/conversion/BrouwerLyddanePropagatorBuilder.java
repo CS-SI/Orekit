@@ -77,7 +77,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
      * in the multiplications/divisions sequences.
      * </p>
      */
-    private static final double SCALE = FastMath.scalb(1.0, -20);
+    private static final double SCALE = FastMath.scalb(1.0, -32);
 
     /** Provider for un-normalized coefficients. */
     private final UnnormalizedSphericalHarmonicsProvider provider;

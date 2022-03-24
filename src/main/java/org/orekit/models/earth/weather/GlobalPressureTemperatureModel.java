@@ -126,6 +126,7 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
     }
 
     @Override
+    @DefaultDataContext
     public void weatherParameters(final double height, final AbsoluteDate date) {
 
         // Day of year computation

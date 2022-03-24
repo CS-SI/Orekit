@@ -121,6 +121,9 @@ public class Units {
     /** Watt per kilograms units. */
     public static final Unit W_PER_KG = Unit.parse("W/kg");
 
+    /** Earth radii reciprocal unit. */
+    public static final Unit ONE_PER_ER = Unit.parse("1/ER");
+
     /** Private constructor for a utility class.
      */
     private Units() {

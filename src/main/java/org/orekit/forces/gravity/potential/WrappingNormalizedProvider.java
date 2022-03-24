@@ -70,6 +70,7 @@ class WrappingNormalizedProvider implements NormalizedSphericalHarmonicsProvider
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     @Override
     public double getOffset(final AbsoluteDate date) {
         return rawProvider.getOffset(date);

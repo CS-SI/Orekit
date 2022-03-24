@@ -40,6 +40,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.atmosphere.data.JB2008SpaceEnvironmentData;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -280,6 +281,45 @@ public class JB2008Test {
 
     }
 
+    @Test
+    public void testComparisonWithReference() {
+
+        // The objective of this test is to compare Orekit results with
+        // the reference JB2008 Code Files provided by Space Environment
+        // (i.e., JB2008.for and JB08DRVY2K.for)
+
+        // Earth
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+
+        // Input
+        final int    year  = 2004;
+        final int    month = 1;
+        final int    day   = 2;
+        final int    hour  = 12;
+        final int    min   = 0;
+        final double sec   = 0.0;
+        final double lat   = FastMath.toRadians(45.0);
+        final double lon   = FastMath.toRadians(45.0);
+        final double alt   = 250.0e3;
+
+        // Initialize JB2008 model
+        final JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_trunc.txt", "DTCFILE_trunc.TXT");
+        final JB2008 atm = new JB2008(JBData, CelestialBodyFactory.getSun(), earth);
+
+        // Compute density
+        final GeodeticPoint point = new GeodeticPoint(lat, lon, alt);
+        final Vector3D pos = earth.transform(point);
+        final AbsoluteDate date = new AbsoluteDate(year, month, day, hour, min, sec, TimeScalesFactory.getUTC());
+        final double density = atm.getDensity(date, pos, itrf);
+
+        // Verify
+        final double ref = 6.6862e-11;
+        Assert.assertEquals(ref, density, 1.0e-15);
+
+    }
+
     /** Convert duration from fifties epoch to mjd epoch.
      * @param d1950 duration from fifties epoch
      * @return duration from mjd epoch
@@ -355,7 +395,7 @@ public class JB2008Test {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("regular-data:atmosphere");
     }
 
     private static class InputParams implements JB2008InputParameters {

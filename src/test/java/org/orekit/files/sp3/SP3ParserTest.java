@@ -567,6 +567,170 @@ public class SP3ParserTest {
 
     }
 
+    @Test
+    public void testIssue895HeaderComment() {
+
+        // Test issue 895
+        final String    ex     = "/sp3/issue895-header-comment.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+
+    }
+
+    @Test
+    public void testIssue895ClockRecord() {
+
+        // Test issue 895
+        final String    ex     = "/sp3/issue895-clock-record.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assert.assertEquals(1, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
+        Assert.assertEquals(1, coords.size());
+
+        final SP3Coordinate coord = coords.get(0);
+
+        // 2021 12 26  0  0  0.00000000
+        Assert.assertEquals(new AbsoluteDate(2021, 12, 26, 0, 0, 0,
+                TimeScalesFactory.getUTC()), coord.getDate());
+
+        // PL51   5029.867893   1304.362160 -11075.527276 999999.999999
+        // VL51 -17720.521773 -55720.482742 -14441.695083 999999.999999
+        checkPVEntry(new PVCoordinates(new Vector3D(5029867.893, 1304362.160, -11075527.276),
+                                       new Vector3D(-1772.0521773, -5572.0482742, -1444.1695083)),
+                     coord);
+
+    }
+
+    @Test
+    public void testIssue895RolloverMinutes() {
+
+        // Test issue 895
+        final String    ex     = "/sp3/issue895-minutes-increment.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assert.assertEquals(1, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
+        Assert.assertEquals(91, coords.size());
+
+        final SP3Coordinate coord30 = coords.get(30);
+
+        // 2016  7  6 16 60  0.00000000
+        Assert.assertEquals(new AbsoluteDate(2016, 7, 6, 17, 0, 0,
+                TimeScalesFactory.getUTC()), coord30.getDate());
+
+        // PL51  11948.228978   2986.113872   -538.901114 999999.999999
+        // VL51   4605.419303 -27972.588048 -53316.820671 999999.999999
+        checkPVEntry(new PVCoordinates(new Vector3D(11948228.978,   2986113.872,   -538901.114),
+                                       new Vector3D(460.5419303, -2797.2588048, -5331.6820671)),
+                     coord30);
+
+        final SP3Coordinate coord31 = coords.get(31);
+
+        // 2016  7  6 17  2  0.00000000
+        Assert.assertEquals(new AbsoluteDate(2016, 7, 6, 17, 2, 0,
+                TimeScalesFactory.getUTC()), coord31.getDate());
+
+        // PL51  11982.652569   2645.786926  -1177.549463 999999.999999
+        // VL51   1128.248622 -28724.293303 -53097.358387 999999.999999
+        checkPVEntry(new PVCoordinates(new Vector3D(11982652.569,   2645786.926,  -1177549.463),
+                                       new Vector3D(112.8248622, -2872.4293303, -5309.7358387)),
+                     coord31);
+
+        final SP3Coordinate coord60 = coords.get(60);
+
+        // 2016  7  6 17 60  0.00000000
+        Assert.assertEquals(new AbsoluteDate(2016, 7, 6, 18, 0, 0,
+                TimeScalesFactory.getUTC()), coord60.getDate());
+
+        // PL51  -1693.056569  -4123.276630 -11431.599723 999999.999999
+        // VL51 -59412.268951   4066.817074   7604.890337 999999.999999
+        checkPVEntry(new PVCoordinates(new Vector3D(-1693056.569,  -4123276.630, -11431599.723),
+                                       new Vector3D(-5941.2268951,   406.6817074,   760.4890337)),
+                     coord60);
+
+    }
+
+    @Test
+    public void testIssue895RolloverHours() {
+
+        // Test issue 895
+        final String    ex     = "/sp3/issue895-hours-increment.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assert.assertEquals(1, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
+        Assert.assertEquals(61, coords.size());
+
+        final SP3Coordinate coord30 = coords.get(30);
+
+        // 2016  7  7 24  0  0.00000000
+        Assert.assertEquals(new AbsoluteDate(2016, 7, 7, 0, 0, 0,
+                TimeScalesFactory.getUTC()), coord30.getDate());
+
+        //PL51   2989.229334  -8494.421415   8385.068555
+        //VL51 -19617.027447 -43444.824985 -36706.159070
+        checkPVEntry(new PVCoordinates(new Vector3D(2989229.334,  -8494421.415,   8385068.555),
+                                       new Vector3D(-1961.7027447, -4344.4824985, -3670.6159070)),
+                     coord30);
+
+        final SP3Coordinate coord31 = coords.get(31);
+
+        // 2016  7  7  0  2  0.00000000
+        Assert.assertEquals(new AbsoluteDate(2016, 7, 7, 0, 2, 0,
+                TimeScalesFactory.getUTC()), coord31.getDate());
+
+        // PL51   2744.983592  -9000.639164   7931.904779
+        // VL51 -21072.925764 -40899.633288 -38801.567078
+        checkPVEntry(new PVCoordinates(new Vector3D(2744983.592,  -9000639.164,   7931904.779),
+                                       new Vector3D(-2107.2925764, -4089.9633288, -3880.1567078)),
+                     coord31);
+
+    }
+
+    @Test
+    public void testIssue895SecondDigits() {
+
+        // Test issue 895
+        final String    ex     = "/sp3/issue895-second-digits.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assert.assertEquals(1, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
+        Assert.assertEquals(1, coords.size());
+
+        final SP3Coordinate coord = coords.get(0);
+
+        // 2016  7  3  0  0  0.1234
+        Assert.assertEquals(new AbsoluteDate(2016, 7, 3, 0, 0, 0.1234,
+                TimeScalesFactory.getUTC()), coord.getDate());
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

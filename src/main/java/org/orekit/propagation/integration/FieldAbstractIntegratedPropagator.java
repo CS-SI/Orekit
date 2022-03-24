@@ -389,6 +389,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         // make sure the integrator will be reset properly even if we change its events handlers and step handlers
         try (IntegratorResetter<T> resetter = new IntegratorResetter<>(integrator)) {
 
+            // Initialize additional states
+            initializeAdditionalStates(tEnd);
+
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection

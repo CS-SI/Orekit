@@ -42,10 +42,6 @@ public class EGMFormatReaderTest {
         Assert.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
         Assert.assertEquals( 0.308853169333E-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
         Assert.assertEquals(-0.295301647654E-06, harmonics.getNormalizedCnm(5, 4), 1.0e-15);
-
-        Assert.assertNull(provider.getReferenceDate());
-        Assert.assertEquals(0, provider.getOffset(AbsoluteDate.J2000_EPOCH), Precision.SAFE_MIN);
-        Assert.assertEquals(0, provider.getOffset(AbsoluteDate.MODIFIED_JULIAN_EPOCH), Precision.SAFE_MIN);
     }
 
     @Test
@@ -76,6 +72,14 @@ public class EGMFormatReaderTest {
 
         Assert.assertEquals(1.0826266835531513e-3, -harmonics.getUnnormalizedCnm(2, 0), 1.0e-20);
 
+    }
+
+    @Test
+    @Deprecated
+    public void testDeprecated() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         Assert.assertNull(provider.getReferenceDate());
         Assert.assertEquals(0, provider.getOffset(AbsoluteDate.J2000_EPOCH), Precision.SAFE_MIN);
         Assert.assertEquals(0, provider.getOffset(AbsoluteDate.MODIFIED_JULIAN_EPOCH), Precision.SAFE_MIN);
@@ -86,7 +90,7 @@ public class EGMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
-        UnnormalizedSphericalHarmonics harmonics = provider.onDate(provider.getReferenceDate());
+        UnnormalizedSphericalHarmonics harmonics = provider.onDate(null);
         try {
             harmonics.getUnnormalizedCnm(3, 3);
             Assert.fail("an exception should have been thrown");

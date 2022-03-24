@@ -238,6 +238,17 @@ public abstract class AbstractPropagator implements Propagator {
 
     }
 
+    /**
+     * Initialize the additional state providers at the start of propagation.
+     * @param target date of propagation. Not equal to {@code initialState.getDate()}.
+     * @since 11.2
+     */
+    protected void initializeAdditionalStates(final AbsoluteDate target) {
+        for (final AdditionalStateProvider provider : additionalStateProviders) {
+            provider.init(initialState, target);
+        }
+    }
+
     /** {@inheritDoc} */
     public boolean isAdditionalStateManaged(final String name) {
         for (final AdditionalStateProvider provider : additionalStateProviders) {

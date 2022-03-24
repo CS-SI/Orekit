@@ -20,7 +20,74 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.1" date="TBD" description="TBD">
+    <release version="11.2" date="TBD" description="TBD">
+      <action dev="pascal" type="fix" issue="908">
+        Fixed unmanaged comment in OMM.
+      </action>
+      <action dev="pascal" type="fix" issue="906">
+        Fixed unmanaged units in OMM.
+      </action>
+      <action dev="bryan" type="add" issue="900">
+        Added init method in {Field}AdditionalStateProvider.
+      </action>
+      <action dev="louis" type="add" issue="888">
+        Added J2-contribution for relativistic clock correction.
+      </action>
+      <action dev="louis" type="add" issue="759">
+        Added data loaders for Space Environment's JB2008 data.
+      </action>
+      <action dev="bryan" type="add" issue="898">
+        Added static method to create a BodyFacade from a CenterName.
+      </action>
+    </release>
+    <release version="11.1.1" date="2022-03-17"
+             description="Version 11.1.1 is a patch release of Orekit.
+             It fixes issues related to the parsing of SP3 and Rinex files. It also takes
+             additional derivatives into account in {Field}SpacecraftState.shiftedBy method.
+             Finally it includes some improvements in the class documentation">
+      <action dev="lars" type="add" issue="896">
+        Added Git configuration instructions in contributing guide.
+      </action>
+      <action dev="lars" type="fix" issue="897">
+        Corrected wrong path in release guide.
+      </action>
+      <action dev="bryan" type="fix" issue="894">
+        Fixed dead link in contributing guidelines.
+      </action>
+      <action dev="bryan" type="fix" issue="698">
+        Added missing BDS-3 signal for Rinex 3.04.
+      </action>
+      <action dev="bryan" type="fixed" issue="892">
+        Removed check of not supported keys in RinexLoader.
+      </action>
+      <action dev="lirw1984" type="update" issue="895">
+        Enhanced parsing of SP3 files.
+      </action>
+      <action dev="luc" type="add" issue="902">
+        Take additional derivatives into account in {Field}SpacecraftState.shiftedBy.
+      </action>
+    </release>
+    <release version="11.1" date="2022-02-14"
+             description="Version 11.1 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 11.1 are: the estimation of maneuver start/stop time, the Brouwer-Lyddane
+             orbit propagation model with Warren Phipps’ correction for the critical
+             inclination of 63.4° and the perturbative acceleration due to atmospheric
+             drag, the Extended Semi-analytical Kalman Filter, a new API for
+             State Transition Matrix and Jacobian matrices computation, orbit
+             determination  using analytical propagation models, parsing of ICGEM V2.0 format.
+             This release includes important fixes in CCSDS files, TimeSpanMap, and
+             display of dates. See the list below for a full description of the changes.">
+      <action dev="luc" type="fix" issue="722">
+        Prefer values from Bulletin B rather than Bulletin A if both are present
+        in rapid data column format. This handling of priority was already in
+        place for XML file, but not for column format.
+      </action>
+      <action dev="luc" type="fix" issue="448">
+        Added support for ICGEM V2.0 format for piecewise gravity fields
+        that contain discontinuities around major earthquakes, like
+        Eigen 6S4 V2.
+      </action>
       <action dev="andrewsgoetz" type="add">
         Added Automatic-Module-Name "org.orekit" to JAR manifest to improve usability
         of Orekit by modular Java projects.
