@@ -29,8 +29,10 @@ import org.orekit.gnss.SatelliteSystem;
 
 public class PseudoRangeFilteringTest {
 
+    private String baseName;
     @Before
     public void setUp() {
+        baseName = "src/test/resources/gnss/filtering/";
         Utils.setDataRoot("gnss/filtering");
     }
 
@@ -48,7 +50,7 @@ public class PseudoRangeFilteringTest {
         
         
         String fileName = "AGGO00ARG_S_20190250000_15M_01S_MO.crx";
-        File file  = new File("src/test/resources/gnss/filtering/" + fileName);
+        File file  = new File(baseName + fileName);
         DataFilter filter = new HatanakaCompressFilter();
         DataSource nd = new DataSource(file);
         nd = filter.filter(nd);
@@ -127,7 +129,6 @@ public class PseudoRangeFilteringTest {
         String fileName = "UPC33510.08O_trunc";
         String fileName_gLAB_SF = "upc3.C1S_60";
         String fileName_gLAB_DF = "upc3.C1DFreeS_60";
-        String baseName = "src/test/resources/gnss/filtering/";
         File file  = new File(baseName+fileName);
         
         DataSource nd = new DataSource(file);
@@ -211,7 +212,6 @@ public class PseudoRangeFilteringTest {
         
         String fileName = "irkm0440.16o";
 
-        String baseName = "src/test/resources/gnss/filtering/";
         File file  = new File(baseName+fileName);
         
         DataSource nd = new DataSource(file);

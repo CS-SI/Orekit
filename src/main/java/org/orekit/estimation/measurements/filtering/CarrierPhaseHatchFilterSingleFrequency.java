@@ -21,7 +21,17 @@ import org.hipparchus.util.FastMath;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.SatelliteSystem;
 
-/**
+/**Hatch Filter using Carrier-Phase measurements taken at a single frequency.
+ *
+ * <p>
+ * This filter uses a carrier phase taken at a single frequency, in order to smooth the pseudo-range
+ * measurements. This method has the advantage of only requiring a single additional piece of data,
+ * but has the disadvantage of being subject to divergence due to the ionospheric delays.
+ * The results of this filter were checked against those provided by J.Sanz Subirana in
+ * GNSS Data Processing Vol I and II, through provided code included in the tests.
+ * </p>
+ *
+ * Based on GNSS Data Processing Vol I and II by J.Sanz Subirana, J.M. Juan Zornoza and M. Hernández-Pajares, Section 4.2.3
  *
  * @author Louis Aucouturier
  *

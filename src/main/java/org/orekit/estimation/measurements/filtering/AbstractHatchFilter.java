@@ -22,7 +22,12 @@ import java.util.ArrayList;
 import org.hipparchus.util.FastMath;
 import org.orekit.gnss.ObservationData;
 
-/**
+/** Abstract class for Hatch filters
+ *
+ * <p>
+ * Hatch filters are used to smooth the pseudo-range measurements with a set of measurements, that might be combined or not, in order to mitigate the effect of multipath.
+ * The original Hatch filter uses a single carrier-phase measurement as a smoothing value, while a divergence free combination of carrier phases can be used, as well as Doppler measurements.
+ * </p>
  *
  * @author Louis Aucouturier
  *

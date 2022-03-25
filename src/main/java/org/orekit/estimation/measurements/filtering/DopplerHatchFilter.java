@@ -20,15 +20,28 @@ package org.orekit.estimation.measurements.filtering;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.SatelliteSystem;
 
+/** Hatch Filter using Doppler measurements for smoothing.
+ * <p>
+ * This filter takes advantage of the absence of cycle slip in Doppler measurements as opposed to carrier-phase.
+ * This property facilitates the use of such filter, still as described in {Zhou et Li, 2017}, this smoothing can present a bias.
+ * In the orbit determination case, this bias can be estimated during the orbit determination process.
+ * Furthermore, the results of this filter have not been checked against a trusted source.
+ * </p>
+ *
+ * Based on Optimal Doppler-aided smoothing strategy for GNSS navigation, by Zhou et Li
+ * @author Louis Aucouturier
+ *
+ */
 public class DopplerHatchFilter extends AbstractHatchFilter {
 
-    /** */
+    /** Previous Doppler measurement used for the Hatch filter smoothing. */
     private double oldDoppler;
 
-    /** */
+    /** Interval time between two measurements. */
     private double integrationTime;
 
-    /** */
+    /** Wavelength corresponding to the frequency
+     * onto which the Doppler measurement is realised.*/
     private double wavelength;
 
     DopplerHatchFilter(final ObservationData codeData,
@@ -60,10 +73,13 @@ public class DopplerHatchFilter extends AbstractHatchFilter {
         setOldSmoothedCode(codeValue);
     }
 
-    /**
-     * @param codeData
-     * @param dopplerData
-     * @return modified ObservationData*/
+    /** Filters the provided data given the state of the filter.
+     * Uses the Hatch Filter with the Doppler measurement as the smoothing measurement.
+     *
+     * @param codeData : Pseudo Range observation data
+     * @param dopplerData : Doppler ObservationData for the first observationType.
+     * @return modified ObservationData : PseudoRange observationData modified with the smoothed value.
+     * */
     public ObservationData filterData(final ObservationData codeData, final ObservationData dopplerData) {
 
         final double smoothingValue = -0.5 * integrationTime * wavelength * (dopplerData.getValue() + oldDoppler);
@@ -78,7 +94,7 @@ public class DopplerHatchFilter extends AbstractHatchFilter {
         addToCodeHistory(codeData.getValue());
         addToSmoothedCodeHistory(newValue);
         setOldSmoothedCode(newValue);
-        return super.modifyObservationData(codeData, newValue);
+        return modifyObservationData(codeData, newValue);
     }
 
 }

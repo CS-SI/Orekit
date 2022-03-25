@@ -28,7 +28,10 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.ChronologicalComparator;
 
-/**
+/**Handler to perform pseudo-range smoothing using Divergence-Free phase combinations.
+ *
+ * Processes a list of ObservationDataSet, to produce smoothed pseudo-range measurements,
+ * stored in a list of ObservationDataSetUpdate.
  *
  * @author Louis Aucouturier
  *
@@ -38,7 +41,8 @@ public class PseudoRangeDualFrequencySmoother {
     /** Window size for the hatch filter. */
     private int N;
 
-    /** */
+    /**Maximum difference value between original and smoothed code value, above which
+     * the filter is reset. */
     private double threshold;
 
     /** Map storing the filters for each observation type. Observation types should not overlap
@@ -148,7 +152,7 @@ public class PseudoRangeDualFrequencySmoother {
                     final double snr = obsData.getSignalStrength();
                     if (!Double.isNaN(obsData.getValue()) && (snr == 0 || snr >= 4)) {
 
-                        // Check measurement type, and if range check for a phase carrier measurement at the same frequency
+                        // Check measurement type, and if range check for a phase carrier measurement of the chosen observationTypes
                         final ObservationType obsTypeRange = obsData.getObservationType();
                         if (obsTypeRange.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
 

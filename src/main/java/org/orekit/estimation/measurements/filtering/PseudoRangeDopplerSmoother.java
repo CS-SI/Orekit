@@ -28,7 +28,10 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.ChronologicalComparator;
 
-/**
+/**Handler to perform pseudo-range smoothing using Doppler measurements.
+ *
+ * Processes a list of ObservationDataSet, to produce smoothed pseudo-range measurements,
+ * stored in a list of ObservationDataSetUpdate.
  *
  * @author Louis Aucouturier
  *
@@ -138,7 +141,7 @@ public class PseudoRangeDopplerSmoother {
 
         // For each data set, work on those corresponding to the PRN and Satellite system.
         for (ObservationDataSet obsSet : sortedListODS) {
-            if (obsSet.getSatelliteSystem() == satSystem    &&
+            if (obsSet.getSatelliteSystem() == satSystem  &&
                     obsSet.getPrnNumber() == prnNumber) {
                 // Get all observation data
                 final List<ObservationData> listObsData = obsSet.getObservationData();
@@ -147,7 +150,7 @@ public class PseudoRangeDopplerSmoother {
                     final double snr = obsData.getSignalStrength();
                     if (!Double.isNaN(obsData.getValue()) && (snr == 0 || snr >= 4)) {
 
-                        // Check measurement type, and if range check for a phase carrier measurement at the same frequency
+                        // Check measurement type, and if range check for the chosen Doppler measurement
                         final ObservationType obsTypeRange = obsData.getObservationType();
                         if (obsTypeRange.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
 
@@ -155,11 +158,12 @@ public class PseudoRangeDopplerSmoother {
 
                             for (ObservationData obsDataDopplerCurr : listObsData) {
 
-                                // Iterate to find the required carrier phases corresponding to the observation types.
+                                // Iterate to find the required Doppler measurement corresponding to the observationType.
                                 // Then copy the observation data to store them.
-                                final ObservationType obsTypePhase = obsDataDopplerCurr.getObservationType();
+                                final ObservationType obsTypeDopplerCurr = obsDataDopplerCurr.getObservationType();
 
-                                if (!Double.isNaN(obsDataDopplerCurr.getValue()) && obsTypePhase == obsTypeDoppler) {
+                                if (!Double.isNaN(obsDataDopplerCurr.getValue()) &&
+                                        obsTypeDopplerCurr == obsTypeDoppler) {
                                     obsDataDoppler = copyObservationData(obsDataDopplerCurr);
                                 }
 

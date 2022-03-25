@@ -24,7 +24,18 @@ import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 
-/**
+/**Hatch Filter using Carrier-Phase measurements taken at 2 different frequencies,
+ * to form a Divergence-Free phase combination.
+ *
+ * <p>
+ * This filter uses a phase combination to mitigate the effects of the
+ * temporally varying ionospheric delays. Still, the spatial variation of the ionospheric delays
+ * are not compensated by this phase combination.
+ * The results of this filter were checked against those provided by J.Sanz Subirana in
+ * GNSS Data Processing Vol I and II, through provided code included in the tests.
+ * </p>
+ *
+ * Based on GNSS Data Processing Vol I and II by J.Sanz Subirana, J.M. Juan Zornoza and M. Hernández-Pajares, Section 4.2.3.1.1
  *
  * @author Louis Aucouturier
  *
