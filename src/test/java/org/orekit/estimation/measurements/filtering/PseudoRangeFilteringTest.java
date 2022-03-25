@@ -2,22 +2,18 @@ package org.orekit.estimation.measurements.filtering;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+
 import java.util.List;
 
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +21,6 @@ import org.orekit.Utils;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataSource;
 import org.orekit.gnss.HatanakaCompressFilter;
-import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
@@ -60,7 +55,7 @@ public class PseudoRangeFilteringTest {
         final RinexObservationLoader loader = new RinexObservationLoader(nd);
 
         List<ObservationDataSet> listObsDataSet = loader.getObservationDataSets();
-        ObservationDataSet firstObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
+        ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
         
         // Test reset and null condition on doppler
         ObservationData obsDataRange = new ObservationData(rangeType, 10, 0, 7);
@@ -68,20 +63,21 @@ public class PseudoRangeFilteringTest {
         List<ObservationData> listObsData = new ArrayList<ObservationData>();
         listObsData.add(obsDataDopplerNull);
         listObsData.add(obsDataRange);
-        ObservationDataSet obsDataSetNullDoppler = new ObservationDataSet(firstObsDataSet.getHeader(), system, prnNumber,
-                firstObsDataSet.getDate(), prnNumber, listObsData);
+        ObservationDataSet obsDataSetNullDoppler = new ObservationDataSet(lastObsDataSet.getHeader(), system, prnNumber,
+                lastObsDataSet.getDate(), prnNumber, listObsData);
         
         ObservationData obsDataRangeNull = new ObservationData(rangeType, 10, 0, 0);
         ObservationData obsDataDoppler = new ObservationData(dopplerType, Double.NaN, 0, 0);
         List<ObservationData> listObsData2 = new ArrayList<ObservationData>();
         listObsData2.add(obsDataDoppler);
         listObsData2.add(obsDataRangeNull);
-        ObservationDataSet obsDataSetNullRange= new ObservationDataSet(firstObsDataSet.getHeader(), system, prnNumber,
-                firstObsDataSet.getDate(), prnNumber, listObsData2);
+        ObservationDataSet obsDataSetNullRange= new ObservationDataSet(lastObsDataSet.getHeader(), system, prnNumber,
+                lastObsDataSet.getDate(), prnNumber, listObsData2);
         
         List<ObservationDataSet> copiedListObsDataSet = new ArrayList<>(listObsDataSet);
         copiedListObsDataSet.add(obsDataSetNullRange);
         copiedListObsDataSet.add(obsDataSetNullDoppler);
+        
         PseudoRangeDopplerSmoother prs = new PseudoRangeDopplerSmoother(1.0,50);
         prs.filterDataSet(copiedListObsDataSet, system, prnNumber, ObservationType.D1C);
 
@@ -137,10 +133,38 @@ public class PseudoRangeFilteringTest {
         DataSource nd = new DataSource(file);
         final RinexObservationLoader loader = new RinexObservationLoader(nd);
         
+        // Test SatelliteSystem / SNR
+        List<ObservationDataSet> listObsDataSet = loader.getObservationDataSets();
+        ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
+        
+        ObservationData obsDataRange = new ObservationData(rangeType, 0, 0, 0);
+        ObservationData obsDataRangeSNR = new ObservationData(rangeType, 0, 0, 1);
+        ObservationData obsDataF1 = new ObservationData(phaseTypeF1, 0, 0, 0);
+        ObservationData obsDataF2 = new ObservationData(phaseTypeF2, 0, 0, 0);
+
+        List<ObservationData> listObsDataSatSystem = new ArrayList<ObservationData>();
+        listObsDataSatSystem.add(obsDataF1);
+        listObsDataSatSystem.add(obsDataF2);
+        listObsDataSatSystem.add(obsDataRange);
+        List<ObservationData> listObsDataSNR = new ArrayList<ObservationData>();
+        listObsDataSNR.add(obsDataF1);
+        listObsDataSNR.add(obsDataF2);
+        listObsDataSNR.add(obsDataRangeSNR);
+        ObservationDataSet obsDataSetRangeGLONASS = new ObservationDataSet(lastObsDataSet.getHeader(), SatelliteSystem.GLONASS, prnNumber,
+                lastObsDataSet.getDate(), prnNumber, listObsDataSatSystem);
+        
+        ObservationDataSet obsDataSetRangeSNR = new ObservationDataSet(lastObsDataSet.getHeader(), system, prnNumber,
+                lastObsDataSet.getDate(), prnNumber, listObsDataSNR);
+        //
+        List<ObservationDataSet> copiedListObsDataSet = new ArrayList<>(listObsDataSet);
+        copiedListObsDataSet.add(obsDataSetRangeGLONASS);
+        copiedListObsDataSet.add(obsDataSetRangeSNR);
+        
+        //
         PseudoRangeDualFrequencySmoother prs = new PseudoRangeDualFrequencySmoother(60);
-        prs.filterDataSet(loader.getObservationDataSets(), system, prnNumber, phaseTypeF1, phaseTypeF2);
+        prs.filterDataSet(copiedListObsDataSet, system, prnNumber, phaseTypeF1, phaseTypeF2);
         PseudoRangeSingleFrequencySmoother prsSF = new PseudoRangeSingleFrequencySmoother(60);
-        prsSF.filterDataSet(loader.getObservationDataSets(), system, prnNumber, phaseTypeF1);
+        prsSF.filterDataSet(copiedListObsDataSet, system, prnNumber, phaseTypeF1);
         
         CarrierPhaseHatchFilterDualFrequency filter = prs.getMapFilters().get(rangeType);
         CarrierPhaseHatchFilterSingleFrequency filterSF = prsSF.getMapFilters().get(rangeType);

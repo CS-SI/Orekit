@@ -48,12 +48,6 @@ public class AbstractHatchFilter {
     /** History of the smoothed pseudo-range value, appended at each filter iteration.*/
     private ArrayList<Double> smoothedCodeHistory;
 
-    /** Format string to write the history files. */
-    private String fmt = "%s";
-
-    /** Line jump string. */
-    private String lineJump = "\n";
-
     /** Threshold for the difference between smoothed and measured values.*/
     private double threshold;
 
