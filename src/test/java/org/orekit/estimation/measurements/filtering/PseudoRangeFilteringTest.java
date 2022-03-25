@@ -59,8 +59,31 @@ public class PseudoRangeFilteringTest {
         nd = filter.filter(nd);
         final RinexObservationLoader loader = new RinexObservationLoader(nd);
 
+        List<ObservationDataSet> listObsDataSet = loader.getObservationDataSets();
+        ObservationDataSet firstObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
+        
+        // Test reset and null condition on doppler
+        ObservationData obsDataRange = new ObservationData(rangeType, 10, 0, 7);
+        ObservationData obsDataDopplerNull = new ObservationData(dopplerType, Double.NaN, 0, 7);
+        List<ObservationData> listObsData = new ArrayList<ObservationData>();
+        listObsData.add(obsDataDopplerNull);
+        listObsData.add(obsDataRange);
+        ObservationDataSet obsDataSetNullDoppler = new ObservationDataSet(firstObsDataSet.getHeader(), system, prnNumber,
+                firstObsDataSet.getDate(), prnNumber, listObsData);
+        
+        ObservationData obsDataRangeNull = new ObservationData(rangeType, 10, 0, 0);
+        ObservationData obsDataDoppler = new ObservationData(dopplerType, Double.NaN, 0, 0);
+        List<ObservationData> listObsData2 = new ArrayList<ObservationData>();
+        listObsData2.add(obsDataDoppler);
+        listObsData2.add(obsDataRangeNull);
+        ObservationDataSet obsDataSetNullRange= new ObservationDataSet(firstObsDataSet.getHeader(), system, prnNumber,
+                firstObsDataSet.getDate(), prnNumber, listObsData2);
+        
+        List<ObservationDataSet> copiedListObsDataSet = new ArrayList<>(listObsDataSet);
+        copiedListObsDataSet.add(obsDataSetNullRange);
+        copiedListObsDataSet.add(obsDataSetNullDoppler);
         PseudoRangeDopplerSmoother prs = new PseudoRangeDopplerSmoother(1.0,50);
-        prs.filterDataSet(loader.getObservationDataSets(), system, prnNumber, ObservationType.D1C);
+        prs.filterDataSet(copiedListObsDataSet, system, prnNumber, ObservationType.D1C);
 
         List<ObservationDataSetUpdate> listObsDataSetUpdate = prs.getFilteredDataMap().get(rangeType);
         
@@ -220,6 +243,17 @@ public class PseudoRangeFilteringTest {
         
         double lastUpdatedValueSF = listObsDataSetUpdateSF.get(listObsDataSetUpdateSF.size() - 1).getNewObsData().getValue();
         Assert.assertEquals(2.4715820677129257E7, lastUpdatedValueSF, 1E-6);
+        
+        // Test ObservationDataSetUpdate
+        ObservationDataSet obsDataSet = loader.getObservationDataSets().get(0);
+        ObservationData obsData = obsDataSet.getObservationData().get(0);
+        ObservationDataSetUpdate obsDataSetUpdate = new ObservationDataSetUpdate(obsData, obsDataSet);
+        obsDataSet = loader.getObservationDataSets().get(1);
+        obsData = obsDataSet.getObservationData().get(1);
+        obsDataSetUpdate.setNewObsData(obsData);
+        obsDataSetUpdate.setObsDataSet(obsDataSet);
+        Assert.assertEquals(obsData, obsDataSetUpdate.getNewObsData());
+        Assert.assertEquals(obsDataSet, obsDataSetUpdate.getObsDataSet());
     }
     
     public ArrayList<Double> readFile(final String fileName) throws IOException {
@@ -241,6 +275,7 @@ public class PseudoRangeFilteringTest {
         }
         return valueArray;
     }
+    
     
     
     // Garbage 

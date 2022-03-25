@@ -37,10 +37,14 @@ public class CarrierPhaseHatchFilterSingleFrequency extends AbstractHatchFilter 
     /**
      * Constructor for the Single Frequency Hatch Filter.
      *
-     * @param codeData
-     * @param phaseData
-     * @param satSystem
-     * @param N
+     * The threshold parameter corresponds to the maximum difference between
+     * non-smoothed and smoothed pseudo range value, above which the filter
+     * is reset.
+     *
+     * @param codeData : initial Pseudo Range observation data
+     * @param phaseData : CarrierPhase ObservationData for the chosen observationType.
+     * @param satSystem : SatelliteSystem used.
+     * @param N : Maximum window size
      * @param threshold
      */
     public CarrierPhaseHatchFilterSingleFrequency(final ObservationData codeData,
@@ -66,10 +70,13 @@ public class CarrierPhaseHatchFilterSingleFrequency extends AbstractHatchFilter 
         setOldSmoothedCode(codeValue);
     }
 
-    /**
-     * @param codeData
-     * @param phaseData
-     * @return modified ObservationData*/
+    /** Filters the provided data given the state of the filter.
+     * Uses the Hatch Filter using a single frequency carrier-phase.
+     *
+     * @param codeData : Pseudo Range observation data
+     * @param phaseData : CarrierPhase ObservationData for the chosen observationType.
+     * @return modified ObservationData : PseudoRange observationData with smoothed value.
+     */
     public ObservationData filterData(final ObservationData codeData, final ObservationData phaseData) {
 
         final boolean checkLLI = FastMath.floorMod(phaseData.getLossOfLockIndicator(), 2) == 0;

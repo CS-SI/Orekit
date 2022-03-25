@@ -38,10 +38,12 @@ public class PseudoRangeDopplerSmoother {
     /** Window size for the hatch filter. */
     private int N;
 
-    /** */
+    /** Interval time between two measurements.*/
     private double integrationTime;
 
-    /** */
+    /** Maximum difference value between original and smoothed code value, above which
+     * the filter is reset.
+     */
     private double threshold;
 
     /** Map storing the filters for each observation type. Observation types should not overlap
@@ -66,6 +68,7 @@ public class PseudoRangeDopplerSmoother {
 
     /**
      * Simple constructor.
+     *
      * @param integrationTime
      * @param N : Window size for the hatch filter as an integer.
      * @param threshold
@@ -106,9 +109,9 @@ public class PseudoRangeDopplerSmoother {
     }
 
     /**
-     * Method to copy an object, as a shallow copy.
+     * Method to copy an ObservationData object.
      *
-     * @param obsData
+     * @param obsData : ObservationData to copy
      * @return Copy of obsData.
      */
     public ObservationData copyObservationData(final ObservationData obsData) {

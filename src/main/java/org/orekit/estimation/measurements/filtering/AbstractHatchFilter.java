@@ -17,9 +17,6 @@
 
 package org.orekit.estimation.measurements.filtering;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import org.hipparchus.util.FastMath;
@@ -228,42 +225,6 @@ public class AbstractHatchFilter {
                 codeData.getSignalStrength());
     }
 
-    /**
-     * @param name
-     */
-    public void writeCodeHistory( final String name ) throws IOException {
-        final File file = new File(name + "codeHistory.txt");
-        final PrintWriter codeWriter = new PrintWriter(file);
-        for (double value : codeHistory) {
-            codeWriter.printf(fmt, value + lineJump);
-        }
-        codeWriter.close();
-    }
 
-    /**
-     * @param name
-     */
-    public void writeSmoothedCodeHistory(final String name) throws IOException {
-        final PrintWriter codeWriter = new PrintWriter(new File(name + "smoothedCodeHistory.txt"));
-
-        for (double value : smoothedCodeHistory) {
-            codeWriter.printf(fmt, value + lineJump);
-        }
-
-        codeWriter.close();
-
-    }
-
-    /** Tool to obtain the evolution of the pseudorange before and after filtering.
-     * The states are stored in two DescriptiveStatistics objects, inherited from its Abstract class.
-     * Requires a name to write the file.
-     *
-     * @param name
-     * @throws IOException
-     */
-    public void writeHistory(final String name) throws IOException {
-        writeCodeHistory(name);
-        writeSmoothedCodeHistory(name);
-    }
 
 }

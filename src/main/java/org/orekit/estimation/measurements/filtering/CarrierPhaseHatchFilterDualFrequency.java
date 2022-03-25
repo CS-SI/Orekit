@@ -52,23 +52,27 @@ public class CarrierPhaseHatchFilterDualFrequency extends AbstractHatchFilter {
     /** ObservationType for the second phase input.*/
     private ObservationType obsTypePhaseF2;
 
-    /** */
+    /** List used to store the phase value of the first frequency. */
     private ArrayList<Double> phase1History;
 
-    /** */
+    /** List used to store the phase value of the second frequency.*/
     private ArrayList<Double> phase2History;
 
 
     /**
      * Constructor for the class.
-     * Computes constant parameters and set the initial state of the filter.
      *
-     * @param codeData
-     * @param phaseDataFreq1
-     * @param phaseDataFreq2
-     * @param satSystem
-     * @param N
-     * @param threshold
+     * Computes constant parameters and set the initial state of the filter.
+     * The threshold parameter corresponds to the maximum difference between
+     * non-smoothed and smoothed pseudo range value, above which the filter
+     * is reset.
+     *
+     * @param codeData : initial Pseudo Range observation data
+     * @param phaseDataFreq1 : CarrierPhase ObservationData for the first chosen observationType.
+     * @param phaseDataFreq2 : CarrierPhase ObservationData for the first chosen observationType.
+     * @param satSystem :SatelliteSystem used
+     * @param N : Maximum window size
+     * @param threshold : Threshold value
      */
     public CarrierPhaseHatchFilterDualFrequency(final ObservationData codeData,
             final ObservationData phaseDataFreq1,
@@ -77,6 +81,7 @@ public class CarrierPhaseHatchFilterDualFrequency extends AbstractHatchFilter {
             final int N,
             final double threshold) {
 
+        // Initialize Abstract class
         super(codeData.getValue(), threshold);
 
         this.wavelengthF1 = phaseDataFreq1.getObservationType().getFrequency(satSystem).getWavelength();
@@ -103,6 +108,7 @@ public class CarrierPhaseHatchFilterDualFrequency extends AbstractHatchFilter {
 
     /** Reset the filter in the case of a NaN phase value, skipping the smoothing at the present instant
      * and initializing at the next one, keeping the current code value.
+     *
      * @param codeValue : pseudo range value before the reset.
      * */
     public void resetFilterNext(final double codeValue) {
@@ -115,10 +121,11 @@ public class CarrierPhaseHatchFilterDualFrequency extends AbstractHatchFilter {
     /** Filters the provided data given the state of the filter.
      * Uses the Hatch Filter with the Divergence-free phase combination.
      *
-     * @param codeData
-     * @param phaseDataFreq1
-     * @param phaseDataFreq2
-     * @return modified ObservationData*/
+     * @param codeData : Pseudo Range observation data
+     * @param phaseDataFreq1 : CarrierPhase ObservationData for the first chosen observationType.
+     * @param phaseDataFreq2 : CarrierPhase ObservationData for the second chosen observationType.
+     * @return modified ObservationData : PseudoRange observationData with a smoothed value.
+     * */
     public ObservationData filterData(final ObservationData codeData, final ObservationData phaseDataFreq1, final ObservationData phaseDataFreq2) {
 
         final boolean checkLLI = FastMath.floorMod(phaseDataFreq1.getLossOfLockIndicator(), 2) == 0 || FastMath.floorMod(phaseDataFreq2.getLossOfLockIndicator(), 2) == 0;
@@ -146,7 +153,8 @@ public class CarrierPhaseHatchFilterDualFrequency extends AbstractHatchFilter {
     }
 
 
-    /**
+    /** Getter for the first carrier-phase observationType.
+     *
      * @return the obsTypePhaseF1
      */
     public ObservationType getObsTypePhaseF1() {
@@ -154,21 +162,28 @@ public class CarrierPhaseHatchFilterDualFrequency extends AbstractHatchFilter {
     }
 
 
-    /**
+    /** Getter for the second carrier-phase observationType.
+     *
      * @return the obsTypePhaseF2
      */
     public ObservationType getObsTypePhaseF2() {
         return obsTypePhaseF2;
     }
 
-    /**
+    /** Getter for the phase1History list, that stores the phase values corresponding to
+     * the first frequency carrier-phase observationType.
+     * This list stores double values.
+     *
      * @return the phase1History
      */
     public final ArrayList<Double> getPhase1History() {
         return phase1History;
     }
 
-    /**
+    /** Getter for the phase2History list, that stores the phase values corresponding to
+     * the second frequency carrier-phase observationType.
+     * This list stores double values.
+     *
      * @return the phase2History
      */
     public final ArrayList<Double> getPhase2History() {
