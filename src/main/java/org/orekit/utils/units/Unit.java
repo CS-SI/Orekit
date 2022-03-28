@@ -133,6 +133,9 @@ public class Unit implements Serializable {
     /** Total Electron Content Unit. */
     public static final Unit TOTAL_ELECTRON_CONTENT_UNIT = METRE.power(null, new Fraction(-2)).scale("TECU", 1.0e+16);
 
+    /** Earth Radii used as Bstar unit in CCSDS OMM. */
+    public static final Unit EARTH_RADII = new Unit("ER", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20210402L;
 

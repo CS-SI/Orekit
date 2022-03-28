@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.utils.units.Unit;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 
 /** Keys for {@link OmmTle TLE} entries.
@@ -27,6 +27,10 @@ import org.orekit.utils.units.Unit;
  * @since 11.0
  */
 public enum OmmTleKey {
+
+    /** Comment entry. */
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Ephemeris Type, only required if MEAN_ELEMENT_THEORY = SGP/SGP4. */
     EPHEMERIS_TYPE((token, context, container) -> token.processAsInteger(container::setEphemerisType)),
@@ -44,7 +48,7 @@ public enum OmmTleKey {
     REV_AT_EPOCH((token, context, container) -> token.processAsInteger(container::setRevAtEpoch)),
 
     /** SGP/SGP4 drag-like coefficient. */
-    BSTAR((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+    BSTAR((token, context, container) -> token.processAsDouble(Units.ONE_PER_ER, context.getParsedUnitsBehavior(),
                                                                container::setBStar)),
 
     /** First time derivative of mean motion. */

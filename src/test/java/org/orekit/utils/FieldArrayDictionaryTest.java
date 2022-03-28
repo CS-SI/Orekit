@@ -66,6 +66,16 @@ public class FieldArrayDictionaryTest {
     }
 
     @Test
+    public void testScaledIncrementField() {
+        doTestScaledIncrementField(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testScaledIncrementDouble() {
+        doTestScaledIncrementDouble(Decimal64Field.getInstance());
+    }
+
+    @Test
     public void testZero() {
         doTestZero(Decimal64Field.getInstance());
     }
@@ -177,6 +187,24 @@ public class FieldArrayDictionaryTest {
         dictionary.put("a",       convert(field, new double[] { 1.0, 2.0, 3.0 }));
         dictionary.getEntry("a").increment(new double[] { 2.0, 4.0, 8.0 });
         checkArray(new double[] { 3.0, 6.0, 11.0 }, dictionary.get("a"), 1.0e-15);
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestScaledIncrementField(Field<T> field) {
+        FieldArrayDictionary<T> dictionary = new FieldArrayDictionary<>(field);
+        dictionary.put("a",       convert(field, new double[] { 1.0, 2.0, 3.0 }));
+        FieldArrayDictionary<T> other = new FieldArrayDictionary<>(field);
+        other.put("aDot",       convert(field, new double[] { 3.0, 2.0, 1.0 }));
+        dictionary.getEntry("a").scaledIncrement(field.getZero().newInstance(2.0), other.getEntry("aDot"));
+        checkArray(new double[] { 7.0, 6.0, 5.0 }, dictionary.get("a"), 1.0e-15);
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestScaledIncrementDouble(Field<T> field) {
+        FieldArrayDictionary<T> dictionary = new FieldArrayDictionary<>(field);
+        dictionary.put("a",       convert(field, new double[] { 1.0, 2.0, 3.0 }));
+        FieldArrayDictionary<T> other = new FieldArrayDictionary<>(field);
+        other.put("aDot",       convert(field, new double[] { 3.0, 2.0, 1.0 }));
+        dictionary.getEntry("a").scaledIncrement(2.0, other.getEntry("aDot"));
+        checkArray(new double[] { 7.0, 6.0, 5.0 }, dictionary.get("a"), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestZero(Field<T> field) {
