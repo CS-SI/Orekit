@@ -102,6 +102,19 @@ class TIRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        // compute proper rotation
+        final double correctedERA = era.value(date);
+        // set up the transform from parent CIRF
+        final Rotation rotation = new Rotation(
+                Vector3D.PLUS_K,
+                correctedERA,
+                RotationConvention.FRAME_TRANSFORM);
+        return StaticTransform.of(date, rotation);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute proper rotation

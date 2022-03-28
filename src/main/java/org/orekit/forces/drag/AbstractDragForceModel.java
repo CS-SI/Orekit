@@ -24,7 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -192,7 +192,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
 
         // Get atmosphere properties in atmosphere own frame
         final Frame      atmFrame  = atmosphere.getFrame();
-        final Transform  toBody    = frame.getTransformTo(atmFrame, date);
+        final StaticTransform toBody = frame.getStaticTransformTo(atmFrame, date);
         final FieldVector3D<DerivativeStructure> posBodyDS = toBody.transformPosition(position3);
         final Vector3D   posBody   = posBodyDS.toVector3D();
 
@@ -261,7 +261,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
 
         // Get atmosphere properties in atmosphere own frame
         final Frame      atmFrame  = atmosphere.getFrame();
-        final Transform  toBody    = frame.getTransformTo(atmFrame, date);
+        final StaticTransform toBody = frame.getStaticTransformTo(atmFrame, date);
         final FieldVector3D<Gradient> posBodyDS = toBody.transformPosition(position3);
         final Vector3D   posBody   = posBodyDS.toVector3D();
 

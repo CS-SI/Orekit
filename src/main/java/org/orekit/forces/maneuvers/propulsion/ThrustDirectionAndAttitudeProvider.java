@@ -249,7 +249,7 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
 
         final Rotation inertial2ThrusterFrame;
         if (type.equals(ThrustDirectionAndAttitudeProviderType.DIRECTION_IN_FRAME)) {
-            inertial2ThrusterFrame = frame.getTransformTo(thrustDirectionFrame, date).getRotation();
+            inertial2ThrusterFrame = frame.getStaticTransformTo(thrustDirectionFrame, date).getRotation();
         } else { // LOF
             inertial2ThrusterFrame = thrustDirectionLofType.rotationFromInertial(pvProv.getPVCoordinates(date, frame));
         }

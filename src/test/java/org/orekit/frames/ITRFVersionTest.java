@@ -17,11 +17,14 @@
 package org.orekit.frames;
 
 
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -175,6 +178,10 @@ public class ITRFVersionTest {
                            new Transform(date,
                                          converter.getTransform(date),
                                          destinationFrame.getTransformTo(originFrame, date));
+                    StaticTransform sLooped = StaticTransform.compose(
+                                    date,
+                                    converter.getStaticTransform(date),
+                                    destinationFrame.getStaticTransformTo(originFrame, date));
                     if (origin == ITRFVersion.ITRF_2008 || destination == ITRFVersion.ITRF_2008) {
                         // if we use ITRF 2008, as internally the pivot frame is ITRF 2014
                         // on side of the transform is computed as f -> 2008 -> 2014, and on
@@ -197,6 +204,12 @@ public class ITRFVersionTest {
                         Assert.assertEquals(0, looped.getRotation().getAngle(),    1.0e-40);
                         Assert.assertEquals(0, looped.getRotationRate().getNorm(), 2.0e-32);
                     }
+                    MatcherAssert.assertThat(
+                            sLooped.getTranslation(),
+                            OrekitMatchers.vectorCloseTo(looped.getTranslation(), 0));
+                    MatcherAssert.assertThat(
+                            Rotation.distance(sLooped.getRotation(), looped.getRotation()),
+                            OrekitMatchers.closeTo(0, 0));
 
                     FieldAbsoluteDate<Decimal64> date64 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date);
                     FieldTransform<Decimal64> looped64 =

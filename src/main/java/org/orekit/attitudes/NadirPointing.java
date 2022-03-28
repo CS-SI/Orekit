@@ -27,6 +27,7 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -74,11 +75,11 @@ public class NadirPointing extends GroundPointing {
         // sample intersection points in current date neighborhood
         final double h  = 0.01;
         final List<TimeStampedPVCoordinates> sample = new ArrayList<>();
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-2 * h), frame), refToBody.shiftedBy(-2 * h)));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h),     frame), refToBody.shiftedBy(-h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-2 * h), frame), refToBody.staticShiftedBy(-2 * h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h),     frame), refToBody.staticShiftedBy(-h)));
         sample.add(nadirRef(pvProv.getPVCoordinates(date,                   frame), refToBody));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h),     frame), refToBody.shiftedBy(+h)));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+2 * h), frame), refToBody.shiftedBy(+2 * h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h),     frame), refToBody.staticShiftedBy(+h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+2 * h), frame), refToBody.staticShiftedBy(+2 * h)));
 
         // use interpolation to compute properly the time-derivatives
         return TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
@@ -112,7 +113,8 @@ public class NadirPointing extends GroundPointing {
      * @param refToBody transform from reference frame to body frame
      * @return intersection point in body frame (only the position is set!)
      */
-    private TimeStampedPVCoordinates nadirRef(final TimeStampedPVCoordinates scRef, final Transform refToBody) {
+    private TimeStampedPVCoordinates nadirRef(final TimeStampedPVCoordinates scRef,
+                                              final StaticTransform refToBody) {
 
         final Vector3D satInBodyFrame = refToBody.transformPosition(scRef.getPosition());
 

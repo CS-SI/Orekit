@@ -522,6 +522,28 @@ public class HelmertTransformation implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+
+        // compute parameters evolution since reference epoch
+        final double dt = date.durationFrom(epoch);
+        final Vector3D dR = new Vector3D(1, rotationVector, dt, rotationRate);
+
+        // build translation part
+        final Vector3D translation = cartesian.shiftedBy(dt).getPosition();
+
+        // build rotation part
+        final double angle = dR.getNorm();
+        final Rotation rotation = (angle < Precision.SAFE_MIN) ?
+                Rotation.IDENTITY :
+                new Rotation(dR, angle, RotationConvention.VECTOR_OPERATOR);
+
+        // combine both parts
+        return StaticTransform.of(date, translation, rotation);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute parameters evolution since reference epoch

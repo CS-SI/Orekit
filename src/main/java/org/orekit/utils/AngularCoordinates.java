@@ -103,6 +103,16 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         this.rotationAcceleration = rotationAcceleration;
     }
 
+    /**
+     * Builds angular coordinates with the given rotation, zero angular
+     * velocity, and zero angular acceleration.
+     *
+     * @param rotation rotation
+     */
+    public AngularCoordinates(final Rotation rotation) {
+        this(rotation, Vector3D.ZERO);
+    }
+
     /** Build the rotation that transforms a pair of pv coordinates into another one.
 
      * <p><em>WARNING</em>! This method requires much more stringent assumptions on
@@ -522,6 +532,69 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                                       rotation.applyInverseTo(rotationRate).negate(),
                                       rotation.applyInverseTo(rotationAcceleration).negate());
     }
+
+
+    /** Get a time-shifted rotation. Same as {@link #shiftedBy(double)} except
+     * only the shifted rotation is computed.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * an approximate solution of the fixed acceleration motion. It is <em>not</em>
+     * intended as a replacement for proper attitude propagation but should be
+     * sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * @see  #shiftedBy(double)
+     */
+    public Rotation rotationShiftedBy(final double dt) {
+
+        // the shiftedBy method is based on a local approximation.
+        // It considers separately the contribution of the constant
+        // rotation, the linear contribution or the rate and the
+        // quadratic contribution of the acceleration. The rate
+        // and acceleration contributions are small rotations as long
+        // as the time shift is small, which is the crux of the algorithm.
+        // Small rotations are almost commutative, so we append these small
+        // contributions one after the other, as if they really occurred
+        // successively, despite this is not what really happens.
+
+        // compute the linear contribution first, ignoring acceleration
+        // BEWARE: there is really a minus sign here, because if
+        // the target frame rotates in one direction, the vectors in the origin
+        // frame seem to rotate in the opposite direction
+        final double rate = rotationRate.getNorm();
+        final Rotation rateContribution = (rate == 0.0) ?
+                Rotation.IDENTITY :
+                new Rotation(rotationRate, rate * dt, RotationConvention.FRAME_TRANSFORM);
+
+        // append rotation and rate contribution
+        final Rotation linearPart =
+                rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR);
+
+        final double acc  = rotationAcceleration.getNorm();
+        if (acc == 0.0) {
+            // no acceleration, the linear part is sufficient
+            return linearPart;
+        }
+
+        // compute the quadratic contribution, ignoring initial rotation and rotation rate
+        // BEWARE: there is really a minus sign here, because if
+        // the target frame rotates in one direction, the vectors in the origin
+        // frame seem to rotate in the opposite direction
+        final Rotation quadraticContribution =
+                new Rotation(rotationAcceleration,
+                        0.5 * acc * dt * dt,
+                        RotationConvention.FRAME_TRANSFORM);
+
+        // the quadratic contribution is a small rotation:
+        // its initial angle and angular rate are both zero.
+        // small rotations are almost commutative, so we append the small
+        // quadratic part after the linear part as a simple offset
+        return quadraticContribution
+                .compose(linearPart, RotationConvention.VECTOR_OPERATOR);
+
+    }
+
 
     /** Get a time-shifted state.
      * <p>

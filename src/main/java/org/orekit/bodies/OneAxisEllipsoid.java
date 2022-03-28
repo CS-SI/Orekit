@@ -31,6 +31,7 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.SinCos;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -169,7 +170,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                   final Frame frame, final AbsoluteDate date) {
 
         // transform line and close to body frame
-        final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
+        final StaticTransform frameToBodyFrame =
+                frame.getStaticTransformTo(bodyFrame, date);
         final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
 
         // compute some miscellaneous variables
@@ -344,7 +346,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame) {
 
         // transform point to body frame
-        final Transform  toBody    = frame.getTransformTo(bodyFrame, date);
+        final StaticTransform toBody = frame.getStaticTransformTo(bodyFrame, date);
         final Vector3D   p         = toBody.transformPosition(point);
         final double     z         = p.getZ();
         final double     r         = FastMath.hypot(p.getX(), p.getY());
@@ -423,7 +425,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date) {
 
         // transform point to body frame
-        final Vector3D pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
+        final Vector3D pointInBodyFrame = frame.getStaticTransformTo(bodyFrame, date)
+                .transformPosition(point);
         final double   r2               = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
                                           pointInBodyFrame.getY() * pointInBodyFrame.getY();
         final double   r                = FastMath.sqrt(r2);
