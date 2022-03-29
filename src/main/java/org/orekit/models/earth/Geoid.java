@@ -169,7 +169,6 @@ public class Geoid implements EarthShape {
      * @throws NullPointerException if {@code geopotential == null ||
      *                              referenceEllipsoid == null}
      */
-    @DefaultDataContext
     public Geoid(final NormalizedSphericalHarmonicsProvider geopotential,
                  final ReferenceEllipsoid referenceEllipsoid) {
         // parameter check
@@ -185,7 +184,7 @@ public class Geoid implements EarthShape {
         this.referenceEllipsoid = referenceEllipsoid;
         this.harmonics = new HolmesFeatherstoneAttractionModel(
                 referenceEllipsoid.getBodyFrame(), potential);
-        this.defaultDate = AbsoluteDate.J2000_EPOCH;
+        this.defaultDate = AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     @Override
