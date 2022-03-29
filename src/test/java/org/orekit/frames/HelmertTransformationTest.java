@@ -17,11 +17,15 @@
 package org.orekit.frames;
 
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -51,6 +55,9 @@ public class HelmertTransformationTest {
                                                        pos2005, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
         Assert.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
+        MatcherAssert.assertThat(
+                itrf2005.getStaticTransformTo(itrf2008, date).transformPosition(pos2005),
+                OrekitMatchers.vectorCloseTo(pos2008, 0));
 
         date = date.shiftedBy(Constants.JULIAN_YEAR);
         pos2008 = itrf2005.getTransformTo(itrf2008, date).transformPosition(pos2005);
@@ -60,6 +67,9 @@ public class HelmertTransformationTest {
                                               pos2005, 1.0);
         error         = generalOffset.subtract(linearOffset);
         Assert.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
+        MatcherAssert.assertThat(
+                itrf2005.getStaticTransformTo(itrf2008, date).transformPosition(pos2005),
+                OrekitMatchers.vectorCloseTo(pos2008, 0));
 
     }
 
@@ -182,6 +192,13 @@ public class HelmertTransformationTest {
                     Assert.assertEquals(0, t.getVelocity().getNorm(),     2.0e-22);
                     Assert.assertEquals(0, t.getRotation().getAngle(),    2.0e-12);
                     Assert.assertEquals(0, t.getRotationRate().getNorm(), 2.0e-32);
+                    final StaticTransform st = itrfXFrom2014.getStaticTransformTo(itrfXFrom2008, date);
+                    MatcherAssert.assertThat(
+                            st.getTranslation(),
+                            OrekitMatchers.vectorCloseTo(t.getTranslation(), 0));
+                    MatcherAssert.assertThat(
+                            Rotation.distance(st.getRotation(), t.getRotation()),
+                            OrekitMatchers.closeTo(0, 0));
                 }
             }
         }

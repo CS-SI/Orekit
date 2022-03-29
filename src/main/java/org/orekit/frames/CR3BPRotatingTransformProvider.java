@@ -22,6 +22,7 @@ import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -29,6 +30,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Transform provider for the rotating frame of the CR3BP System.
  * @author Vincent Mouraux
@@ -80,6 +82,22 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
         final Transform transform1 = new Transform(date, translation.toVector3D(), velocity, acceleration);
         final Transform transform2 = new Transform(date, rotation.toRotation(), rotationRate, rotationAcc);
         return new Transform(date, transform2, transform1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        final TimeStampedPVCoordinates pv = secondaryBody.getPVCoordinates(date, frame);
+        final Vector3D translation = Vector3D.PLUS_I
+                .scalarMultiply(pv.getPosition().getNorm() * mu).negate();
+
+        final Rotation rotation = new Rotation(
+                pv.getPosition(), pv.getMomentum(),
+                Vector3D.PLUS_I, Vector3D.PLUS_K);
+
+        final StaticTransform transform1 = StaticTransform.of(date, translation);
+        final StaticTransform transform2 = StaticTransform.of(date, rotation);
+        return StaticTransform.compose(date, transform2, transform1);
     }
 
     /** {@inheritDoc} */

@@ -25,16 +25,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -100,8 +96,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @author Fabien Maussion
  */
-public class Transform
-    implements TimeStamped, TimeShiftable<Transform>, TimeInterpolable<Transform>, Serializable {
+public class Transform implements
+        TimeInterpolable<Transform>,
+        TimeShiftable<Transform>,
+        Serializable,
+        StaticTransform {
 
     /** Identity transform. */
     public static final Transform IDENTITY = new IdentityTransform();
@@ -138,7 +137,7 @@ public class Transform
      */
     public Transform(final AbsoluteDate date, final Vector3D translation) {
         this(date,
-             new PVCoordinates(translation, Vector3D.ZERO, Vector3D.ZERO),
+             new PVCoordinates(translation),
              AngularCoordinates.IDENTITY);
     }
 
@@ -151,7 +150,7 @@ public class Transform
     public Transform(final AbsoluteDate date, final Rotation rotation) {
         this(date,
              PVCoordinates.ZERO,
-             new AngularCoordinates(rotation, Vector3D.ZERO));
+             new AngularCoordinates(rotation));
     }
 
     /** Build a translation transform, with its first time derivative.
@@ -251,27 +250,12 @@ public class Transform
      */
     public Transform(final AbsoluteDate date, final Transform first, final Transform second) {
         this(date,
-             new PVCoordinates(compositeTranslation(first, second),
+             new PVCoordinates(StaticTransform.compositeTranslation(first, second),
                                compositeVelocity(first, second),
                                compositeAcceleration(first, second)),
-             new AngularCoordinates(compositeRotation(first, second),
+             new AngularCoordinates(StaticTransform.compositeRotation(first, second),
                                     compositeRotationRate(first, second),
                                     compositeRotationAcceleration(first, second)));
-    }
-
-    /** Compute a composite translation.
-     * @param first first applied transform
-     * @param second second applied transform
-     * @return translation part of the composite transform
-     */
-    private static Vector3D compositeTranslation(final Transform first, final Transform second) {
-
-        final Vector3D p1 = first.cartesian.getPosition();
-        final Rotation r1 = first.angular.getRotation();
-        final Vector3D p2 = second.cartesian.getPosition();
-
-        return p1.add(r1.applyInverseTo(p2));
-
     }
 
     /** Compute a composite velocity.
@@ -313,20 +297,6 @@ public class Transform
         final Vector3D crossDotP   = Vector3D.crossProduct(oDot1, p2);
 
         return a1.add(r1.applyInverseTo(new Vector3D(1, a2, 2, crossV, 1, crossCrossP, 1, crossDotP)));
-
-    }
-
-    /** Compute a composite rotation.
-     * @param first first applied transform
-     * @param second second applied transform
-     * @return rotation part of the composite transform
-     */
-    private static Rotation compositeRotation(final Transform first, final Transform second) {
-
-        final Rotation r1 = first.angular.getRotation();
-        final Rotation r2 = second.angular.getRotation();
-
-        return r1.compose(r2, RotationConvention.FRAME_TRANSFORM);
 
     }
 
@@ -374,6 +344,23 @@ public class Transform
         return new Transform(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     }
 
+    /**
+     * Shift the transform in time considering all rates, then return only the
+     * translation and rotation portion of the transform.
+     *
+     * @param dt time shift in seconds.
+     * @return shifted transform as a static transform. It is static in the
+     * sense that it can only be used to transform directions and positions, but
+     * not velocities or accelerations.
+     * @see #shiftedBy(double)
+     */
+    public StaticTransform staticShiftedBy(final double dt) {
+        return StaticTransform.of(
+                date.shiftedBy(dt),
+                cartesian.positionShiftedBy(dt),
+                angular.rotationShiftedBy(dt));
+    }
+
     /** {@inheritDoc}
      * <p>
      * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate,
@@ -417,8 +404,8 @@ public class Transform
                                         final CartesianDerivativesFilter cFilter,
                                         final AngularDerivativesFilter aFilter,
                                         final Collection<Transform> sample) {
-        final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
-        final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<TimeStampedAngularCoordinates>(sample.size());
+        final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<>(sample.size());
+        final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<>(sample.size());
         for (final Transform t : sample) {
             datedPV.add(new TimeStampedPVCoordinates(t.getDate(), t.getTranslation(), t.getVelocity(), t.getAcceleration()));
             datedAC.add(new TimeStampedAngularCoordinates(t.getDate(), t.getRotation(), t.getRotationRate(), t.getRotationAcceleration()));
@@ -431,6 +418,7 @@ public class Transform
     /** Get the inverse transform of the instance.
      * @return inverse transform of the instance
      */
+    @Override
     public Transform getInverse() {
 
         final Rotation r    = angular.getRotation();
@@ -451,7 +439,7 @@ public class Transform
                                                    1, crossDotP,
                                                   -1, crossCrossP);
 
-        return new Transform(date, new PVCoordinates(pInv, vInv, aInv), angular.revert());
+        return new Transform(getDate(), new PVCoordinates(pInv, vInv, aInv), angular.revert());
 
     }
 
@@ -466,50 +454,6 @@ public class Transform
         return new Transform(date,
                              new PVCoordinates(cartesian.getPosition(), Vector3D.ZERO, Vector3D.ZERO),
                              new AngularCoordinates(angular.getRotation(), Vector3D.ZERO, Vector3D.ZERO));
-    }
-
-    /** Transform a position vector (including translation effects).
-     * @param position vector to transform
-     * @return transformed position
-     */
-    public Vector3D transformPosition(final Vector3D position) {
-        return angular.getRotation().applyTo(cartesian.getPosition().add(position));
-    }
-
-    /** Transform a position vector (including translation effects).
-     * @param position vector to transform
-     * @param <T> the type of the field elements
-     * @return transformed position
-     */
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
-        return FieldRotation.applyTo(angular.getRotation(), position.add(cartesian.getPosition()));
-    }
-
-    /** Transform a vector (ignoring translation effects).
-     * @param vector vector to transform
-     * @return transformed vector
-     */
-    public Vector3D transformVector(final Vector3D vector) {
-        return angular.getRotation().applyTo(vector);
-    }
-
-    /** Transform a vector (ignoring translation effects).
-     * @param vector vector to transform
-     * @param <T> the type of the field elements
-     * @return transformed vector
-     */
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
-        return FieldRotation.applyTo(angular.getRotation(), vector);
-    }
-
-    /** Transform a line.
-     * @param line to transform
-     * @return transformed line
-     */
-    public Line transformLine(final Line line) {
-        final Vector3D transformedP0 = transformPosition(line.getOrigin());
-        final Vector3D transformedP1 = transformPosition(line.pointAt(1.0e6));
-        return new Line(transformedP0, transformedP1, 1.0e-10);
     }
 
     /** Transform {@link PVCoordinates} including kinematic effects.
@@ -801,6 +745,30 @@ public class Transform
         /** {@inheritDoc} */
         @Override
         public PVCoordinates transformPVCoordinates(final PVCoordinates pv) {
+            return pv;
+        }
+
+        @Override
+        public Transform freeze() {
+            return this;
+        }
+
+        @Override
+        public TimeStampedPVCoordinates transformPVCoordinates(
+                final TimeStampedPVCoordinates pv) {
+            return pv;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T>
+            transformPVCoordinates(final FieldPVCoordinates<T> pv) {
+            return pv;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>>
+            TimeStampedFieldPVCoordinates<T> transformPVCoordinates(
+                    final TimeStampedFieldPVCoordinates<T> pv) {
             return pv;
         }
 

@@ -84,6 +84,11 @@ public class TransformProviderUtils {
                 return provider.getTransform(date).getInverse();
             }
 
+            @Override
+            public StaticTransform getStaticTransform(final AbsoluteDate date) {
+                return provider.getStaticTransform(date).getInverse();
+            }
+
             /** {@inheritDoc} */
             @Override
             public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
@@ -110,6 +115,15 @@ public class TransformProviderUtils {
             @Override
             public Transform getTransform(final AbsoluteDate date) {
                 return new Transform(date, first.getTransform(date), second.getTransform(date));
+            }
+
+            @Override
+            public StaticTransform getStaticTransform(final AbsoluteDate date) {
+                return StaticTransform.compose(
+                        date,
+                        first.getStaticTransform(date),
+                        second.getStaticTransform(date)
+                );
             }
 
             /** {@inheritDoc} */
