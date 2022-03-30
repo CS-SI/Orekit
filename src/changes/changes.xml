@@ -27,6 +27,9 @@
       <action dev="pascal" type="fix" issue="906">
         Fixed unmanaged units in OMM.
       </action>
+      <action dev="evan" type="fix" issue="882">
+        Fix StreamingOemWriter in ITRF and without optional fields.
+      </action>
       <action dev="bryan" type="add" issue="900">
         Added init method in {Field}AdditionalStateProvider.
       </action>
