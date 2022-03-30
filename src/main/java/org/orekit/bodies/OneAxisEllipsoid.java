@@ -29,7 +29,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.SinCos;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
@@ -250,8 +250,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                                                           final FieldAbsoluteDate<T> date) {
 
         // transform line and close to body frame
-        final FieldTransform<T> frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
-        final FieldLine<T>      lineInBodyFrame  = frameToBodyFrame.transformLine(line);
+        final FieldStaticTransform<T> frameToBodyFrame = frame.getStaticTransformTo(bodyFrame, date);
+        final FieldLine<T>            lineInBodyFrame  = frameToBodyFrame.transformLine(line);
 
         // compute some miscellaneous variables
         final FieldVector3D<T> point = lineInBodyFrame.getOrigin();
@@ -547,7 +547,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                                            final FieldAbsoluteDate<T> date) {
 
         // transform point to body frame
-        final FieldVector3D<T> pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
+        final FieldVector3D<T> pointInBodyFrame = frame.getStaticTransformTo(bodyFrame, date).transformPosition(point);
         final T   r2                            = pointInBodyFrame.getX().multiply(pointInBodyFrame.getX()).
                                               add(pointInBodyFrame.getY().multiply(pointInBodyFrame.getY()));
         final T   r                             = r2.sqrt();

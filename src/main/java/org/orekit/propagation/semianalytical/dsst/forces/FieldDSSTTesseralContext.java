@@ -16,12 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
@@ -136,7 +136,7 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
         e2 = auxiliaryElements.getEcc().multiply(auxiliaryElements.getEcc());
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
-        final FieldTransform<T> t = centralBodyFrame.getTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
+        final FieldStaticTransform<T> t = centralBodyFrame.getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
         final FieldVector3D<T> xB = t.transformVector(FieldVector3D.getPlusI(field));
         final FieldVector3D<T> yB = t.transformVector(FieldVector3D.getPlusJ(field));
         theta = FastMath.atan2(auxiliaryElements.getVectorF().dotProduct(yB).negate().add((auxiliaryElements.getVectorG().dotProduct(xB)).multiply(I)),

@@ -27,8 +27,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -44,7 +44,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.orbits.FieldOrbit;
@@ -1990,7 +1990,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanOrbit, I);
 
                 // Central body rotation angle from equation 2.7.1-(3)(4).
-                final FieldTransform<T> t = bodyFrame.getTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
+                final FieldStaticTransform<T> t = bodyFrame.getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
                 final FieldVector3D<T> xB = t.transformVector(Vector3D.PLUS_I);
                 final FieldVector3D<T> yB = t.transformVector(Vector3D.PLUS_J);
                 final FieldVector3D<T>  f = auxiliaryElements.getVectorF();

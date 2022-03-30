@@ -204,7 +204,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                                                           final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
-        final FieldTransform<T> t = frame.getTransformTo(this, date);
+        final FieldStaticTransform<T> t = frame.getStaticTransformTo(this, date);
         final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
 
         // Elevation angle is PI/2 - angle between zenith and given point direction
@@ -251,7 +251,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                                                         final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
-        final FieldTransform<T> t = getTransformTo(frame, date).getInverse();
+        final FieldStaticTransform<T> t = frame.getStaticTransformTo(frame, date).getInverse();
         final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
 
         // Compute azimuth
@@ -293,7 +293,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                                                       final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
-        final FieldTransform<T> t = frame.getTransformTo(this, date);
+        final FieldStaticTransform<T> t = frame.getStaticTransformTo(this, date);
         final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
 
         // Compute range

@@ -16,8 +16,8 @@
  */
 package org.orekit.models.earth;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
@@ -38,7 +38,7 @@ import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.time.AbsoluteDate;
@@ -481,7 +481,7 @@ public class Geoid implements EarthShape {
          */
         // transform to body frame
         final Frame bodyFrame = this.getBodyFrame();
-        final FieldTransform<T> frameToBody = frame.getTransformTo(bodyFrame, date);
+        final FieldStaticTransform<T> frameToBody = frame.getStaticTransformTo(bodyFrame, date);
         final FieldVector3D<T> close = frameToBody.transformPosition(closeInFrame);
         final FieldLine<T> lineInBodyFrame = frameToBody.transformLine(lineInFrame);
 

@@ -165,6 +165,33 @@ public class ShiftingTransformProvider implements TransformProvider {
         return closest.shiftedBy(date.durationFrom(closest.getDate()));
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        @SuppressWarnings("unchecked")
+        GenericTimeStampedCache<FieldTransform<T>> fieldCache =
+            (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
+        if (fieldCache == null) {
+            fieldCache =
+                new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                                                               cache.getMaxSlots(),
+                                                               cache.getMaxSpan(),
+                                                               cache.getNewSlotQuantumGap(),
+                                                               new FieldTransformGenerator<>(date.getField(),
+                                                                                             cache.getNeighborsSize(),
+                                                                                             interpolatingProvider,
+                                                                                             interpolatingProvider.getStep()));
+            fieldCaches.put(date.getField(), fieldCache);
+        }
+
+        // retrieve a sample from the thread-safe cache
+        final FieldTransform<T> closest = fieldCache.getNeighbors(date.toAbsoluteDate()).reduce((t0, t1) ->
+            date.durationFrom(t0.getDate()).abs().getReal() < date.durationFrom(t1.getDate()).abs().getReal() ?
+            t0 : t1
+        ).get();
+        return closest.staticShiftedBy(date.durationFrom(closest.getDate()));
+    }
+
     /** Replace the instance with a data transfer object for serialization.
      * <p>
      * This intermediate class serializes only the data needed for generation,

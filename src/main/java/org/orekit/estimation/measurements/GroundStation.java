@@ -33,6 +33,7 @@ import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -530,12 +531,11 @@ public class GroundStation {
                         estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
 
         // take station offsets into account
-        final Gradient  x          = eastOffsetDriver.getValue(freeParameters, indices);
-        final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices);
-        final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices);
-        final BodyShape            baseShape  = baseFrame.getParentShape();
-        final StaticTransform      baseToBody = baseFrame
-                .getStaticTransformTo(baseShape.getBodyFrame(), null);
+        final Gradient                       x          = eastOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices);
+        final BodyShape                      baseShape  = baseFrame.getParentShape();
+        final FieldStaticTransform<Gradient> baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), offsetCompensatedDate);
 
         FieldVector3D<Gradient> origin = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
         origin = origin.add(computeDisplacement(offsetCompensatedDate.toAbsoluteDate(), origin.toVector3D()));

@@ -293,6 +293,32 @@ public class Frame implements Serializable {
     }
 
     /**
+     * Get the static portion of the transform from the instance to another
+     * frame. The returned transform is static in the sense that it includes
+     * translations and rotations, but not rates.
+     *
+     * <p>This method is often more performant than {@link
+     * #getTransformTo(Frame, FieldAbsoluteDate)} when rates are not needed.
+     *
+     * @param <T>         type of the elements
+     * @param destination destination frame to which we want to transform
+     *                    vectors
+     * @param date        the date (can be null if it is sure than no date
+     *                    dependent frame is used)
+     * @return static transform from the instance to the destination frame
+     * @since 11.2
+     */
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransformTo(final Frame destination,
+                                                final FieldAbsoluteDate<T> date) {
+        return getTransformTo(
+                destination,
+                FieldStaticTransform.getIdentity(date.getField()),
+                frame -> frame.getTransformProvider().getStaticTransform(date),
+                (t1, t2) -> FieldStaticTransform.compose(date, t1, t2),
+                FieldStaticTransform::getInverse);
+    }
+
+    /**
      * Generic get transform method that builds the transform from {@code this}
      * to {@code destination}.
      *

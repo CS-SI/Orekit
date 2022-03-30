@@ -116,6 +116,19 @@ public class L1TransformProvider implements TransformProvider {
                                     new FieldTransform<>(date, rotation));
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
+        final FieldVector3D<T>      translation = getL1(pv21.getPosition()).negate();
+        final FieldRotation<T>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getVelocity(),
+                FieldVector3D.getPlusI(date.getField()), FieldVector3D.getPlusJ(date.getField()));
+        return FieldStaticTransform.compose(
+                date,
+                FieldStaticTransform.of(date, translation),
+                FieldStaticTransform.of(date, rotation));
+    }
+
     /** Compute the coordinates of the L1 point.
      * @param primaryToSecondary relative position of secondary body with respect to primary body
      * @return coordinates of the L1 point given in frame: primaryBody.getInertiallyOrientedFrame()

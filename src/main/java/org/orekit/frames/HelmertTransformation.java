@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -567,6 +568,31 @@ public class HelmertTransformation implements TransformProvider {
 
         // combine both parts
         return new FieldTransform<>(date, translationTransform, rotationTransform);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+
+        // field
+        final Field<T> field = date.getField();
+
+        // compute parameters evolution since reference epoch
+        final T dt = date.durationFrom(epoch);
+        final FieldVector3D<T> dR = new FieldVector3D<>(field.getOne(), rotationVector, dt, rotationRate);
+
+        // build translation part
+        final FieldVector3D<T> translation = new FieldPVCoordinates<>(date.getField(), cartesian).shiftedBy(dt).getPosition();
+
+        // build rotation part
+        final T angle = dR.getNorm();
+        final FieldRotation<T> rotation = (angle.getReal() < Precision.SAFE_MIN) ?
+                FieldRotation.getIdentity(field) :
+                new FieldRotation<>(dR, angle, RotationConvention.VECTOR_OPERATOR);
+
+        // combine both parts
+        return FieldStaticTransform.of(date, translation, rotation);
 
     }
 

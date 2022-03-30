@@ -280,6 +280,12 @@ public enum ITRFVersion {
             return provider.getTransform(date);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+            return provider.getStaticTransform(date);
+        }
+
     }
 
 }
