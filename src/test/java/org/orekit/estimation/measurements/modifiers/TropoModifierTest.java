@@ -478,9 +478,9 @@ public class TropoModifierTest {
 
             final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
-            final double epsilon = 5.e-11;
-            Assert.assertTrue(Precision.compareTo(diffSec,  1.1e-9, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffSec, -2.4e-9, epsilon) > 0);
+            final double epsilon = 1.e-11;
+            Assert.assertTrue(Precision.compareTo(diffSec,  2.35e-9, epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(diffSec, -1.05e-9, epsilon) > 0);
         }
     }
 
@@ -536,8 +536,8 @@ public class TropoModifierTest {
             final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 5.e-11;
-            Assert.assertTrue(Precision.compareTo(diffSec,  2.2e-9, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffSec, -4.9e-9, epsilon) > 0);
+            Assert.assertTrue(Precision.compareTo(diffSec,  4.90e-9, epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(diffSec, -2.20e-9, epsilon) > 0);
         }
     }
 

@@ -38,14 +38,16 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *  and two ground stations as receivers.
  * <p>
  * TDOA measures the difference in signal arrival time between the emitter and receivers,
- * corresponding to a difference in ranges from the two receivers to the emitter.<br/>
- * The motion of the stations and the satellite during the signal flight time are taken into account.
+ * corresponding to a difference in ranges from the two receivers to the emitter.
  * </p>
  * <p>
- * The date of the measurement corresponds to the reception of the signal by the prime ground station.<br/>
- * The measurement corresponds to the date of reception of the signal by the second station minus
- * the date of the measurement.<br/>
- * <code>tdoa = tr<sub>2</sub> - tr<sub>1</sub></code>
+ * The date of the measurement corresponds to the reception of the signal by the prime station.<br/>
+ * The measurement corresponds to the date of the measurement minus
+ * the date of reception of the signal by the second station:
+ * <code>tdoa = tr<sub>1</sub> - tr<sub>2</sub></code>
+ * </p>
+ * <p>
+ * The motion of the stations and the satellite during the signal flight time are taken into account.
  * </p>
  * @author Pascal Parraud
  * @since 11.2
@@ -189,10 +191,10 @@ public class TDOA extends AbstractMeasurement<TDOA> {
             delta = FastMath.abs(tau2.getValue() - previous);
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(tau2.getValue()));
 
-        // The measured TDOA is (tau2 + clockOffset2) - (tau1 + clockOffset1)
+        // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
         final Gradient offset1 = primeStation.getClockOffsetDriver().getValue(nbParams, indices);
         final Gradient offset2 = secondStation.getClockOffsetDriver().getValue(nbParams, indices);
-        final Gradient tdoaG   = tau2.add(offset2).subtract(tau1.add(offset1));
+        final Gradient tdoaG   = tau1.add(offset1).subtract(tau2.add(offset2));
         final double tdoa      = tdoaG.getValue();
 
         // Evaluate the TDOA value and derivatives
@@ -206,8 +208,8 @@ public class TDOA extends AbstractMeasurement<TDOA> {
                                                    },
                                                    new TimeStampedPVCoordinates[] {
                                                        emitterPV.toTimeStampedPVCoordinates(),
-                                                       tdoa > 0 ? pv1 : pv2,
-                                                       tdoa > 0 ? pv2 : pv1
+                                                       tdoa > 0 ? pv2 : pv1,
+                                                       tdoa > 0 ? pv1 : pv2
                                                    });
 
         // set TDOA value

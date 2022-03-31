@@ -106,7 +106,7 @@ public class TDOAMeasurementCreator extends MeasurementCreator {
             }, -1.0, 1.0);
 
             // time difference on arrival
-            final double tdoa = relativeDelay - referenceDelay;
+            final double tdoa = referenceDelay - relativeDelay;
 
             addMeasurement(new TDOA(primary, secondary, receptionDate, tdoa, 1.0, 10, satellite));
 

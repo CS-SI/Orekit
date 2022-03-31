@@ -47,10 +47,10 @@ public class TDOABuilder extends AbstractMeasurementBuilder<TDOA> {
      * @param satellite satellite related to this builder
      */
     public TDOABuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                  final GroundStation primeStation,
-                                  final GroundStation secondStation,
-                                  final double sigma, final double baseWeight,
-                                  final ObservableSatellite satellite) {
+                       final GroundStation primeStation,
+                       final GroundStation secondStation,
+                       final double sigma, final double baseWeight,
+                       final ObservableSatellite satellite) {
         super(noiseSource, sigma, baseWeight, satellite);
         this.primeStation  = primeStation;
         this.secondStation = secondStation;

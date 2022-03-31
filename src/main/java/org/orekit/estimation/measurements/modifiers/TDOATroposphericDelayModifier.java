@@ -208,8 +208,8 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         final double[][] stateDerivatives  = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-                stateDerivatives[irow][jcol] -= primeDjac[irow][jcol];
-                stateDerivatives[irow][jcol] += secondDjac[irow][jcol];
+                stateDerivatives[irow][jcol] += primeDjac[irow][jcol];
+                stateDerivatives[irow][jcol] -= secondDjac[irow][jcol];
             }
         }
         estimated.setStateDerivatives(0, stateDerivatives);
@@ -221,10 +221,10 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
                 final double[] dDelayPrime = timeErrorParameterDerivative(primeDerivatives,
                                                                           converter.getFreeStateParameters());
-                parameterDerivative -= dDelayPrime[index];
+                parameterDerivative += dDelayPrime[index];
                 final double[] dDelaySecond = timeErrorParameterDerivative(secondDerivatives,
                                                                            converter.getFreeStateParameters());
-                parameterDerivative += dDelaySecond[index];
+                parameterDerivative -= dDelaySecond[index];
                 estimated.setParameterDerivatives(driver, parameterDerivative);
                 index += 1;
             }
@@ -237,7 +237,7 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
                                                           primeStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative -= timeErrorParameterDerivative(primeStation, driver, state);
+                parameterDerivative += timeErrorParameterDerivative(primeStation, driver, state);
                 estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
@@ -249,7 +249,7 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
                                                           secondStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += timeErrorParameterDerivative(secondStation, driver, state);
+                parameterDerivative -= timeErrorParameterDerivative(secondStation, driver, state);
                 estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
@@ -257,8 +257,8 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         // Update estimated value taking into account the tropospheric delay for each downlink.
         // The tropospheric time delay is directly applied to the TDOA.
         final double[] newValue = oldValue.clone();
-        newValue[0] -= primeGDelay.getReal();
-        newValue[0] += secondGDelay.getReal();
+        newValue[0] += primeGDelay.getReal();
+        newValue[0] -= secondGDelay.getReal();
         estimated.setEstimatedValue(newValue);
 
     }

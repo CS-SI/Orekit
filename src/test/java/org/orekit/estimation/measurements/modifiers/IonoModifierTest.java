@@ -506,8 +506,8 @@ public class IonoModifierTest {
 
             // TODO: check threshold
             final double epsilon = 1.e-11;
-            Assert.assertTrue(Precision.compareTo(diffSec, -8.6e-10, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffSec, -2.90e-9, epsilon) > 0);
+            Assert.assertTrue(Precision.compareTo(diffSec, 2.90e-9, epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(diffSec, 0.85e-9, epsilon) > 0);
         }
     }
 
