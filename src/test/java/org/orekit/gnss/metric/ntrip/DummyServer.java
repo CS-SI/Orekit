@@ -27,13 +27,18 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DummyServer {
 
     private final String[]            fileNames;
     private final ServerSocket        server;
     private final Map<String, String> requestProperties;
+    private final CountDownLatch      done = new CountDownLatch(1);
+    private final AtomicReference<Exception> error = new AtomicReference<>(null);
 
     public DummyServer(final String... fileNames) throws IOException {
         this.fileNames         = fileNames.clone();
@@ -47,6 +52,13 @@ public class DummyServer {
 
     public String getRequestProperty(final String key) {
         return requestProperties.get(key);
+    }
+
+    public void await(long timeout, TimeUnit unit) throws Exception {
+        done.await(timeout, unit);
+        final Exception e = error.get();
+        if (e != null)
+            throw e;
     }
 
     public void run() {
@@ -98,8 +110,11 @@ public class DummyServer {
 
                     socket.close();
                 }
+                done.countDown();
 
             } catch (IOException ioe) {
+                error.set(ioe);
+                done.countDown();
                 throw new RuntimeException(ioe);
             }
         });
