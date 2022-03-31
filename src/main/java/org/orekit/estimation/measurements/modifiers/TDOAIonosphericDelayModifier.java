@@ -165,10 +165,10 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
 
     @Override
     public void modify(final EstimatedMeasurement<TDOA> estimated) {
-        final TDOA measurement               = estimated.getObservedMeasurement();
-        final GroundStation   primeStation   = measurement.getPrimeStation();
-        final GroundStation   secondaStation = measurement.getSecondStation();
-        final SpacecraftState state          = estimated.getStates()[0];
+        final TDOA measurement              = estimated.getObservedMeasurement();
+        final GroundStation   primeStation  = measurement.getPrimeStation();
+        final GroundStation   secondStation = measurement.getSecondStation();
+        final SpacecraftState state         = estimated.getStates()[0];
 
         final double[] oldValue = estimated.getEstimatedValue();
 
@@ -178,7 +178,7 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         final FieldSpacecraftState<Gradient> gState = converter.getState(ionoModel);
         final Gradient[] gParameters       = converter.getParameters(gState, ionoModel);
         final Gradient   primeGDelay       = timeErrorIonosphericModel(primeStation, gState, gParameters);
-        final Gradient   secondGDelay      = timeErrorIonosphericModel(secondaStation, gState, gParameters);
+        final Gradient   secondGDelay      = timeErrorIonosphericModel(secondStation, gState, gParameters);
         final double[]   primeDerivatives  = primeGDelay.getGradient();
         final double[]   secondDerivatives = secondGDelay.getGradient();
 
@@ -223,13 +223,13 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         }
 
         // Update derivatives with respect to secondary station position
-        for (final ParameterDriver driver : Arrays.asList(secondaStation.getClockOffsetDriver(),
-                                                          secondaStation.getEastOffsetDriver(),
-                                                          secondaStation.getNorthOffsetDriver(),
-                                                          secondaStation.getZenithOffsetDriver())) {
+        for (final ParameterDriver driver : Arrays.asList(secondStation.getClockOffsetDriver(),
+                                                          secondStation.getEastOffsetDriver(),
+                                                          secondStation.getNorthOffsetDriver(),
+                                                          secondStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += timeErrorParameterDerivative(secondaStation, driver, state);
+                parameterDerivative += timeErrorParameterDerivative(secondStation, driver, state);
                 estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }

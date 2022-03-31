@@ -138,8 +138,8 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
      * @return derivative of the delay wrt station offset parameter
      */
     private double timeErrorParameterDerivative(final GroundStation station,
-                                                 final ParameterDriver driver,
-                                                 final SpacecraftState state) {
+                                                final ParameterDriver driver,
+                                                final SpacecraftState state) {
 
         final ParameterFunction timeError = new ParameterFunction() {
             /** {@inheritDoc} */
