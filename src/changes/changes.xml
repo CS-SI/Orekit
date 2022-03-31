@@ -21,17 +21,26 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="910">
+        Fixed eD and eY equation in ECOM2 model.
+      </action>
       <action dev="pascal" type="fix" issue="908">
         Fixed unmanaged comment in OMM.
       </action>
       <action dev="pascal" type="fix" issue="906">
         Fixed unmanaged units in OMM.
       </action>
+      <action dev="evan" type="fix" issue="882">
+        Fix StreamingOemWriter in ITRF and without optional fields.
+      </action>
       <action dev="bryan" type="add" issue="900">
         Added init method in {Field}AdditionalStateProvider.
       </action>
       <action dev="louis" type="add" issue="888">
         Added J2-contribution for relativistic clock correction.
+      </action>
+      <action dev="evan" type="update">
+        Allow creating Geoid without default data context.
       </action>
       <action dev="louis" type="add" issue="759">
         Added data loaders for Space Environment's JB2008 data.

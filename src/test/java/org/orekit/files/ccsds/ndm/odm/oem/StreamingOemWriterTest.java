@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -209,6 +210,48 @@ public class StreamingOemWriterTest {
 
     }
 
+    @Test
+    public void testWriteOemEcfNoInterpolation() {
+        // setup
+        String path = "/ccsds/odm/oem/OEMExample5.txt";
+        DataSource source = new DataSource(path, () -> getClass().getResourceAsStream(path));
+        final OemParser oemParser = new ParserBuilder().buildOemParser();
+        final Oem original = oemParser.parse(source);
+        final OemSatelliteEphemeris originalEphem =
+                original.getSatellites().values().iterator().next();
+        final BoundedPropagator propagator = originalEphem.getPropagator();
+        StringBuilder buffer = new StringBuilder();
+        Header header = original.getHeader();
+        OemMetadata metadata = original.getSegments().get(0).getMetadata();
+        metadata.setTimeSystem(TimeSystem.UTC);
+        metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        metadata.setInterpolationMethod(null);
+        metadata.setInterpolationDegree(-1);
+
+        // action
+        StreamingOemWriter writer = new StreamingOemWriter(
+                new KvnGenerator(buffer, OemWriter.KVN_PADDING_WIDTH, "out", 0),
+                new WriterBuilder().buildOemWriter(),
+                header,
+                metadata,
+                false);
+        propagator.setStepHandler(30 * 60, writer.newSegment());
+        propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
+
+        // verify
+        String actualText = buffer.toString();
+        String expectedPath = "/ccsds/odm/oem/OEMExample5ITRF.txt";
+        Oem expected = oemParser.parse(
+                new DataSource(expectedPath, () -> getClass().getResourceAsStream(expectedPath)));
+        Oem actual = oemParser.parse(
+                new DataSource("mem", () -> new StringReader(actualText)));
+
+        compareOems(expected, actual, 1e-6, 1e-9);
+        MatcherAssert.assertThat(
+                actualText,
+                CoreMatchers.not(CoreMatchers.containsString("INTERPOLATION_DEGREE")));
+    }
+
     private static void compareOemEphemerisBlocks(OemSegment block1,
                                                   OemSegment block2,
                                                   double p_tol,
@@ -220,7 +263,7 @@ public class StreamingOemWriterTest {
         for (int i = 0; i < block1.getData().getEphemeridesDataLines().size(); i++) {
             TimeStampedPVCoordinates c1 = block1.getData().getEphemeridesDataLines().get(i);
             TimeStampedPVCoordinates c2 = block2.getData().getEphemeridesDataLines().get(i);
-            assertEquals(c1.getDate(), c2.getDate());
+            assertEquals("" + i, c1.getDate(), c2.getDate());
             assertEquals(c1.getPosition() + " -> " + c2.getPosition(), 0.0,
                     Vector3D.distance(c1.getPosition(), c2.getPosition()), p_tol);
             assertEquals(c1.getVelocity() + " -> " + c2.getVelocity(), 0.0,

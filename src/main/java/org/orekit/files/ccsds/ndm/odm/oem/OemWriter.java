@@ -319,9 +319,12 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, Oem> {
 
         // interpolation
         generator.writeEntry(OemMetadataKey.INTERPOLATION.name(), metadata.getInterpolationMethod(), false);
-        generator.writeEntry(OemMetadataKey.INTERPOLATION_DEGREE.name(),
-                             Integer.toString(metadata.getInterpolationDegree()),
-                             null, false);
+        // treat degree < 0 as equivalent to null
+        if (metadata.getInterpolationDegree() >= 0) {
+            generator.writeEntry(OemMetadataKey.INTERPOLATION_DEGREE.name(),
+                    Integer.toString(metadata.getInterpolationDegree()),
+                    null, false);
+        }
 
         // Stop metadata
         generator.exitSection();

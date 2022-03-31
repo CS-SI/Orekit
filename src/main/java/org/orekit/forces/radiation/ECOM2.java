@@ -148,19 +148,23 @@ public class ECOM2 extends AbstractRadiationForceModel {
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
+
+        // Spacecraft and Sun position vectors (expressed in the spacecraft's frame)
+        final Vector3D satPos = s.getPVCoordinates().getPosition();
+        final Vector3D sunPos = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+
         // Build the coordinate system
-        final Vector3D Z = s.getPVCoordinates().getMomentum().normalize();
-        final Vector3D sunPos = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition().normalize();
-        final Vector3D Y = Z.crossProduct(sunPos);
-        final Vector3D X = Y.crossProduct(Z);
+        final Vector3D Z = s.getPVCoordinates().getMomentum();
+        final Vector3D Y = Z.crossProduct(sunPos).normalize();
+        final Vector3D X = Y.crossProduct(Z).normalize();
+
         // Build eD, eY, eB vectors
-        final Vector3D position = s.getPVCoordinates().getPosition().normalize();
-        final Vector3D eD = sunPos.add(-1.0, position);
-        final Vector3D eY = position.crossProduct(eD);
+        final Vector3D eD = sunPos.subtract(satPos).normalize();
+        final Vector3D eY = eD.crossProduct(satPos).normalize();
         final Vector3D eB = eD.crossProduct(eY);
 
         // Angular argument difference u_s - u
-        final double  delta_u =  FastMath.atan2(position.dotProduct(Y), position.dotProduct(X));
+        final double delta_u = FastMath.atan2(satPos.dotProduct(Y), satPos.dotProduct(X));
 
         // Compute B(u)
         double b_u = parameters[0];
@@ -181,20 +185,23 @@ public class ECOM2 extends AbstractRadiationForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
+
+        // Spacecraft and Sun position vectors (expressed in the spacecraft's frame)
+        final FieldVector3D<T> satPos = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T> sunPos = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+
         // Build the coordinate system
-        final FieldVector3D<T> Z = s.getPVCoordinates().getMomentum().normalize();
-        final FieldVector3D<T> sunPos = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition().normalize();
-        final FieldVector3D<T> Y = Z.crossProduct(sunPos);
-        final FieldVector3D<T> X = Y.crossProduct(Z);
+        final FieldVector3D<T> Z = s.getPVCoordinates().getMomentum();
+        final FieldVector3D<T> Y = Z.crossProduct(sunPos).normalize();
+        final FieldVector3D<T> X = Y.crossProduct(Z).normalize();
 
         // Build eD, eY, eB vectors
-        final FieldVector3D<T> position = s.getPVCoordinates().getPosition().normalize();
-        final FieldVector3D<T> eD = sunPos.add(-1.0, position);
-        final FieldVector3D<T> eY = position.crossProduct(eD);
+        final FieldVector3D<T> eD = sunPos.subtract(satPos).normalize();
+        final FieldVector3D<T> eY = eD.crossProduct(satPos).normalize();
         final FieldVector3D<T> eB = eD.crossProduct(eY);
 
         // Angular argument difference u_s - u
-        final T  delta_u = FastMath.atan2(position.dotProduct(Y), position.dotProduct(X));
+        final T  delta_u = FastMath.atan2(satPos.dotProduct(Y), satPos.dotProduct(X));
 
         // Compute B(u)
         T b_u =  parameters[0];
