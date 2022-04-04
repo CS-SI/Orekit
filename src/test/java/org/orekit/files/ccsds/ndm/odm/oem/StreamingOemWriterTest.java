@@ -234,6 +234,7 @@ public class StreamingOemWriterTest {
                 new WriterBuilder().buildOemWriter(),
                 header,
                 metadata,
+                false,
                 false);
         propagator.setStepHandler(30 * 60, writer.newSegment());
         propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
@@ -250,6 +251,11 @@ public class StreamingOemWriterTest {
         MatcherAssert.assertThat(
                 actualText,
                 CoreMatchers.not(CoreMatchers.containsString("INTERPOLATION_DEGREE")));
+        // check no acceleration
+        MatcherAssert.assertThat(
+                actualText,
+                CoreMatchers.containsString(
+                        "\n2017-04-11T22:31:43.121856 -2757.3016318893897 -4173.479601381253 4566.01849801963 6.625901653953951 -1.011817208875361 3.0698336591568833\n"));
     }
 
     private static void compareOemEphemerisBlocks(OemSegment block1,
