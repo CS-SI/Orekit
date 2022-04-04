@@ -169,13 +169,13 @@ public class ECOM2 extends AbstractRadiationForceModel {
         // Compute B(u)
         double b_u = parameters[0];
         for (int i = 1; i < nB + 1; i++) {
-            final SinCos sc = FastMath.sinCos(2 * i * delta_u);
+            final SinCos sc = FastMath.sinCos((2 * i - 1) * delta_u);
             b_u += parameters[i] * sc.cos() + parameters[i + nB] * sc.sin();
         }
         // Compute D(u)
         double d_u = parameters[2 * nB + 1];
         for (int i = 1; i < nD + 1; i++) {
-            final SinCos sc = FastMath.sinCos((2 * i - 1) * delta_u);
+            final SinCos sc = FastMath.sinCos(2 * i * delta_u);
             d_u += parameters[2 * nB + 1 + i] * sc.cos() + parameters[2 * nB + 1 + i + nD] * sc.sin();
         }
         // Return acceleration
@@ -206,14 +206,14 @@ public class ECOM2 extends AbstractRadiationForceModel {
         // Compute B(u)
         T b_u =  parameters[0];
         for (int i = 1; i < nB + 1; i++) {
-            final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i));
+            final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i - 1));
             b_u = b_u.add(sc.cos().multiply(parameters[i])).add(sc.sin().multiply(parameters[i + nB]));
         }
         // Compute D(u)
         T d_u = parameters[2 * nB + 1];
 
         for (int i = 1; i < nD + 1; i++) {
-            final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i - 1));
+            final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i));
             d_u =  d_u.add(sc.cos().multiply(parameters[2 * nB + 1 + i])).add(sc.sin().multiply(parameters[2 * nB + 1 + i + nD]));
         }
         // Return the acceleration
