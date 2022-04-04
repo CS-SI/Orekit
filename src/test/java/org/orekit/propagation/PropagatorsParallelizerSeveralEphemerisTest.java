@@ -17,14 +17,10 @@
 package org.orekit.propagation;
 
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -37,11 +33,9 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
@@ -51,12 +45,8 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.handlers.StopOnEvent;
-import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -106,16 +96,49 @@ public class PropagatorsParallelizerSeveralEphemerisTest {
         parallelizer.propagate(startDate, endDate);
         generators.stream().forEach(generator -> Assert.assertNotNull(generator.getGeneratedEphemeris()));
         AbsoluteDate lastDate = generators.get(0).getGeneratedEphemeris().getMaxDate();
+        AbsoluteDate firstDate = generators.get(0).getGeneratedEphemeris().getMinDate();
         for ( EphemerisGenerator generator : generators ) {
-            System.out.println(generator.getGeneratedEphemeris().getMaxDate());
+            Assert.assertEquals(lastDate, generator.getGeneratedEphemeris().getMaxDate());
+            Assert.assertEquals(firstDate, generator.getGeneratedEphemeris().getMinDate());
+        }
+    }
+    
+    @Test
+    public void testSeveralEphemerisDateDetector() {
+        /*
+         * On observe un bug pour l'analytical propagator, qui quand il n'est pas en première position
+         * va provoquer un problème en indiquant comme date de fin, non pas la date de l'évènement
+         */
+        final AbsoluteDate startDate = orbit.getDate();
+        final AbsoluteDate endDate = startDate.shiftedBy(3600);
+        List<Propagator> propagators = Arrays.asList(buildNumerical(1,300), buildNumerical(0.1,300), buildNumerical(0.001,300));
+        DateDetector dateDetect = new DateDetector(startDate.shiftedBy(1800));
+        
+        propagators.stream().forEach(propagator -> propagator.addEventDetector(dateDetect));
+
+        List<EphemerisGenerator> generators = propagators.stream().map(Propagator::getEphemerisGenerator).collect(Collectors.toList());
+        PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, interpolators -> {
+            // Do nothing
+        });
+
+        parallelizer.propagate(startDate, endDate);
+        generators.stream().forEach(generator -> Assert.assertNotNull(generator.getGeneratedEphemeris()));
+        AbsoluteDate firstDate = generators.get(0).getGeneratedEphemeris().getMinDate();
+        AbsoluteDate lastDate = generators.get(0).getGeneratedEphemeris().getMaxDate();
+
+        for ( EphemerisGenerator generator : generators ) {
+            Assert.assertEquals(firstDate, generator.getGeneratedEphemeris().getMinDate());
             Assert.assertEquals(lastDate, generator.getGeneratedEphemeris().getMaxDate());
         }
     }
+    
+
     
     private EcksteinHechlerPropagator buildEcksteinHechler() {
         return new EcksteinHechlerPropagator(orbit, attitudeLaw, mass, unnormalizedGravityField);
     }
 
+    
     private NumericalPropagator buildNumerical() {
         return buildNumerical(0.001,300);
     }
