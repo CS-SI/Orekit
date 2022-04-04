@@ -237,11 +237,11 @@ public class ECOM2Test extends AbstractForceModelTest {
         //Compare state derivatives with finite-difference ones.
         for (int i = 0; i < 6; i++) {
             final double errorX = (accX[i + 1] - refDeriv[0][i]) / refDeriv[0][i];
-            Assert.assertEquals(0, errorX, 1e-10);
+            Assert.assertEquals(0, errorX, 1.0e-10);
             final double errorY = (accY[i + 1] - refDeriv[1][i]) / refDeriv[1][i];
-            Assert.assertEquals(0, errorY, 1e-10);
+            Assert.assertEquals(0, errorY, 1.1e-10);
             final double errorZ = (accZ[i + 1] - refDeriv[2][i]) / refDeriv[2][i];
-            Assert.assertEquals(0, errorZ, 1e-10);
+            Assert.assertEquals(0, errorZ, 1.0e-10);
         }
         
     }
@@ -504,7 +504,7 @@ public class ECOM2Test extends AbstractForceModelTest {
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
             Assert.assertTrue(alpha > 100.0);
             Assert.assertTrue(alpha < 112.0);
-            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003482, 0.003525);
+            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003482, 0.003544);
         }
 
     }
