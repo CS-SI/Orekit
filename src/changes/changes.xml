@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="pascal" type="add" issue="911">
+        Added TDOA and bistatic range rate measurements.
+      </action>
       <action dev="bryan" type="fix" issue="910">
         Fixed eD and eY equation in ECOM2 model.
       </action>
