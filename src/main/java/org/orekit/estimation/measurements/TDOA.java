@@ -35,18 +35,16 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a Time Difference of Arrival measurement with a satellite as emitter
- *  and two ground stations as receivers.
+ * and two ground stations as receivers.
  * <p>
  * TDOA measures the difference in signal arrival time between the emitter and receivers,
  * corresponding to a difference in ranges from the two receivers to the emitter.
- * </p>
- * <p>
- * The date of the measurement corresponds to the reception of the signal by the prime station.<br/>
+ * </p><p>
+ * The date of the measurement corresponds to the reception of the signal by the prime station.
  * The measurement corresponds to the date of the measurement minus
  * the date of reception of the signal by the second station:
  * <code>tdoa = tr<sub>1</sub> - tr<sub>2</sub></code>
- * </p>
- * <p>
+ * </p><p>
  * The motion of the stations and the satellite during the signal flight time are taken into account.
  * </p>
  * @author Pascal Parraud

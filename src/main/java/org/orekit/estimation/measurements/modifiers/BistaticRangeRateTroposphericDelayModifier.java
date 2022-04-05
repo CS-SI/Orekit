@@ -39,7 +39,8 @@ import org.orekit.utils.ParameterFunction;
 /** Class modifying theoretical bistatic range-rate measurements with tropospheric delay.
  * <p>
  * The effect of tropospheric correction on the bistatic range-rate is directly computed
- * through the computation of the tropospheric delay difference with respect to time.<br/>
+ * through the computation of the tropospheric delay difference with respect to time.
+ * <p></p>
  * Tropospheric delay is not frequency dependent for signals up to 15 GHz.
  * </p>
  * @author Pascal Parraud

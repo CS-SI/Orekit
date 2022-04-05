@@ -41,10 +41,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <li>Reflected on the spacecraft</li>
  * <li>Received on the receiver ground station</li>
  * </ul>
- * The date of the measurement corresponds to the reception on ground of the reflected signal.<br/>
+ * The date of the measurement corresponds to the reception on ground of the reflected signal.
  * The quantity measured at the receiver is the bistatic radial velocity as the sum of the radial
- * velocities with respect to the two stations.<br/>
- * The motion of the stations and the spacecraft during the signal flight time are taken into account.<br/>
+ * velocities with respect to the two stations.
+ * </p><p>
+ * The motion of the stations and the spacecraft during the signal flight time are taken into account.
+ * </p><p>
  * The Doppler measurement can be obtained by multiplying the velocity by (fe/c), where
  * fe is the emission frequency.
  * </p>

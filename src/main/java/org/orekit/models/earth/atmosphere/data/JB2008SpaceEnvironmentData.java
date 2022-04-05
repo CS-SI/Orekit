@@ -93,7 +93,8 @@ public class JB2008SpaceEnvironmentData implements JB2008InputParameters {
      *
      * @param supportedNamesSOL regular expression for SOLFSMY space weather files names
      * with variations allowed between SOLFSMY and the file extension.
-     * @param supportedNamesDTC
+     * @param supportedNamesDTC regular expression for DTCFILE files names
+     * with variations allowed between DTCFILE and the file extension.
      */
     @DefaultDataContext
     public JB2008SpaceEnvironmentData(final String supportedNamesSOL, final String supportedNamesDTC) {
