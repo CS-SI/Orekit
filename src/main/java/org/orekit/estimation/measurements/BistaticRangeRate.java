@@ -44,7 +44,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * The date of the measurement corresponds to the reception on ground of the reflected signal.
  * The quantity measured at the receiver is the bistatic radial velocity as the sum of the radial
  * velocities with respect to the two stations.
- * </p><p>
+ * <p>
  * The motion of the stations and the spacecraft during the signal flight time are taken into account.
  * </p><p>
  * The Doppler measurement can be obtained by multiplying the velocity by (fe/c), where

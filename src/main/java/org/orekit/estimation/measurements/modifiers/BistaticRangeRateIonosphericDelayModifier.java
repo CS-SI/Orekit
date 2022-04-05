@@ -38,7 +38,7 @@ import org.orekit.utils.ParameterFunction;
  * <p>
  * The effect of ionospheric correction on the bistatic range-rate is directly computed
  * through the computation of the ionospheric delay difference with respect to time.
- * <p></p>
+ * </p><p>
  * The ionospheric delay depends on the frequency of the signal.
  * </p>
  * @author Pascal Parraud

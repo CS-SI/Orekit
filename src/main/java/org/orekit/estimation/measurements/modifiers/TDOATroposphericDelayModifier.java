@@ -41,7 +41,7 @@ import org.orekit.utils.ParameterFunction;
  * <p>
  * The effect of tropospheric correction on the TDOA is a time delay computed
  * directly from the difference in tropospheric delays for each downlink.
- * <p></p>
+ * </p><p>
  * Tropospheric delay is not frequency dependent for signals up to 15 GHz.
  * </p>
  * @author Pascal Parraud

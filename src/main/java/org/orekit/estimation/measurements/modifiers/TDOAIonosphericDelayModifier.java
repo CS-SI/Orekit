@@ -39,7 +39,7 @@ import org.orekit.utils.ParameterFunction;
  * <p>
  * The effect of ionospheric correction on the TDOA is a time delay computed
  * directly from the difference in ionospheric delays for each downlink.
- * <p></p>
+ * </p><p>
  * The ionospheric delay depends on the frequency of the signal.
  * </p>
  * @author Pascal Parraud
