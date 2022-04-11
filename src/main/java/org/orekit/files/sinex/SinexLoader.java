@@ -23,9 +23,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
@@ -39,10 +43,18 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sinex.Station.ReferenceSystem;
+import org.orekit.frames.EOPEntry;
+import org.orekit.frames.EOPHistoryLoader;
+import org.orekit.frames.ITRFVersion;
+
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
+import org.orekit.utils.units.Unit;
 
 /**
  * Loader for Solution INdependent EXchange (SINEX) files.
@@ -53,7 +65,7 @@ import org.orekit.utils.Constants;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class SinexLoader {
+public class SinexLoader implements EOPHistoryLoader {
 
     /** 00:000:00000 epoch. */
     private static final String DEFAULT_EPOCH = "00:000:00000";
@@ -61,10 +73,40 @@ public class SinexLoader {
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile(":");
 
+    /** Pattern for regular data. */
+    private static final Pattern PATTERN_SPACE = Pattern.compile("\\s+");
+
+    /** Pattern to check beginning of SINEX files.*/
+    private static final Pattern PATTERN_BEGIN = Pattern.compile("(%=).*");
+
+    /** Creation date of the Sinex File.*/
+    private AbsoluteDate creationDate;
+
+    /** Start time of the data used in the Sinex solution.*/
+    private AbsoluteDate startDate;
+
+    /** End time of the data used in the Sinex solution.*/
+    private AbsoluteDate endDate;
+
+    /** Source for auxiliary data files. */
+    private final DataProvidersManager manager;
+
     /** Station data.
      * Key: Site code
      */
     private final Map<String, Station> stations;
+
+    /** */
+    private final List<EOPEntry> eopList;
+
+    /** */
+    private final Map<AbsoluteDate, Map<String, Double>> mapEopHistory;
+
+    /** */
+    private final List<String> eopTypes = List.of("LOD", "UT", "XPO", "YPO", "NUT_LN", "NUT_OB", "NUT_X", "NUT_Y");
+
+    /** */
+    private ITRFVersion itrfVersionEop;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -77,8 +119,8 @@ public class SinexLoader {
     @DefaultDataContext
     public SinexLoader(final String supportedNames) {
         this(supportedNames,
-             DataContext.getDefault().getDataProvidersManager(),
-             DataContext.getDefault().getTimeScales().getUTC());
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
@@ -88,10 +130,15 @@ public class SinexLoader {
      * @param utc UTC time scale
      */
     public SinexLoader(final String supportedNames,
-                       final DataProvidersManager dataProvidersManager,
-                       final TimeScale utc) {
+            final DataProvidersManager dataProvidersManager,
+            final TimeScale utc) {
         this.utc = utc;
+        this.creationDate = AbsoluteDate.FUTURE_INFINITY;
         stations = new HashMap<>();
+        manager = dataProvidersManager;
+        mapEopHistory = new HashMap<AbsoluteDate, Map<String, Double>>();
+        this.itrfVersionEop = null;
+        this.eopList = new ArrayList<EOPEntry>();
         dataProvidersManager.feed(supportedNames, new Parser());
     }
 
@@ -112,10 +159,15 @@ public class SinexLoader {
      */
     public SinexLoader(final DataSource source, final TimeScale utc) {
         try {
+            this.manager = DataContext.getDefault().getDataProvidersManager();
             this.utc = utc;
             stations = new HashMap<>();
+            mapEopHistory = new HashMap<AbsoluteDate, Map<String, Double>>();
+            this.eopList = new ArrayList<EOPEntry>();
+            this.itrfVersionEop = null;
+            this.creationDate = AbsoluteDate.FUTURE_INFINITY;
             try (InputStream         is  = source.getOpener().openStreamOnce();
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
+                    BufferedInputStream bis = new BufferedInputStream(is)) {
                 new Parser().loadData(bis, source.getName());
             }
         } catch (IOException | ParseException ioe) {
@@ -157,6 +209,7 @@ public class SinexLoader {
         /** Start character of a comment line. */
         private static final String COMMENT = "*";
 
+
         /** {@inheritDoc} */
         @Override
         public boolean stillAcceptsData() {
@@ -167,7 +220,7 @@ public class SinexLoader {
         /** {@inheritDoc} */
         @Override
         public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException {
+                throws IOException, ParseException {
 
             // Useful parameters
             int lineNumber     = 0;
@@ -188,6 +241,19 @@ public class SinexLoader {
                     // For now, only few keys are supported
                     // They represent the minimum set of parameters that are interesting to consider in a SINEX file
                     // Other keys can be added depending user needs
+
+                    /**
+                     *  The first line is parsed in order to get the creation date of the file, which might be used
+                     *  in the case of an absent date as the final date of the data.
+                     *  Its position is fixed in the file, at the first line, in the 4th column.
+                     */
+                    if (lineNumber == 1 && PATTERN_BEGIN.matcher(line).matches()) {
+                        final String[] splitFirstLine = PATTERN_SPACE.split(line);
+                        creationDate = stringEpochToAbsoluteDate(splitFirstLine[3]);
+                        startDate = stringEpochToAbsoluteDate(splitFirstLine[5]);
+                        endDate = stringEpochToAbsoluteDate(splitFirstLine[6]);
+                    }
+
                     switch (line.trim()) {
                         case "+SITE/ID" :
                             // Start of site id. data
@@ -253,8 +319,8 @@ public class SinexLoader {
 
                                     // eccentricity vector
                                     final Vector3D eccStation = new Vector3D(parseDouble(line, 46, 8),
-                                                                             parseDouble(line, 55, 8),
-                                                                             parseDouble(line, 64, 8));
+                                            parseDouble(line, 55, 8),
+                                            parseDouble(line, 64, 8));
 
                                     // special implementation for the first entry
                                     if (firstEcc) {
@@ -277,10 +343,12 @@ public class SinexLoader {
                                     station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12)));
                                 } else if (inEstimate) {
                                     final Station station = getStation(parseString(line, 14, 4));
+                                    final AbsoluteDate currentDate = stringEpochToAbsoluteDate(parseString(line, 27, 12));
+                                    final String dataType = parseString(line, 7, 6);
                                     // check if this station exists
                                     if (station != null) {
                                         // switch on coordinates data
-                                        switch (parseString(line, 7, 6)) {
+                                        switch (dataType) {
                                             case "STAX":
                                                 // station X coordinate
                                                 final double x = parseDouble(line, 47, 22);
@@ -299,7 +367,7 @@ public class SinexLoader {
                                                 position = new Vector3D(position.getX(), position.getY(), z);
                                                 station.setPosition(position);
                                                 // set the reference epoch (identical for all coordinates)
-                                                station.setEpoch(stringEpochToAbsoluteDate(parseString(line, 27, 12)));
+                                                station.setEpoch(currentDate);
                                                 // reset position vector
                                                 position = Vector3D.ZERO;
                                                 break;
@@ -328,7 +396,18 @@ public class SinexLoader {
                                                 break;
                                         }
                                     }
-
+                                    // Check if map containing the eop data exists and if dataType is in eopType
+                                    // if not build map to store and put it in the eop history map
+                                    // else access it and add key to the eop map
+                                    Map<String, Double> eopMap = mapEopHistory.get(currentDate);
+                                    if ( eopMap == null && eopTypes.indexOf(dataType) != -1) {
+                                        mapEopHistory.put(currentDate, new HashMap<String, Double>());
+                                        eopMap = mapEopHistory.get(currentDate);
+                                    }
+                                    if ( eopMap != null && eopTypes.indexOf(dataType) != -1) {
+                                        final Unit unitEop = Unit.parse(parseString(line, 40, 4));
+                                        eopMap.put( dataType, unitEop.toSI( parseDouble(line, 47, 22) ) );
+                                    }
                                 } else {
                                     // not supported line, ignore it
                                 }
@@ -339,7 +418,7 @@ public class SinexLoader {
 
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
+                        lineNumber, name, line);
             }
 
         }
@@ -399,9 +478,136 @@ public class SinexLoader {
         // Initialize to 1st January of the given year because
         // sometimes day in equal to 0 in the file.
         return new AbsoluteDate(new DateComponents(year, 1, 1), utc).
-                        shiftedBy(Constants.JULIAN_DAY * (day - 1)).
-                        shiftedBy(secInDay);
+                shiftedBy(Constants.JULIAN_DAY * (day - 1)).
+                shiftedBy(secInDay);
 
+    }
+
+    /**
+     * Check if a Double object is null, and returns either the value if not-null or 0.
+     *
+     * @param value Double object to check.
+     * @return Double object value if not null or 0.
+     */
+    private double checkDouble(final Double value) {
+        return (value == null) ? 0 : value.doubleValue();
+    }
+
+    /**
+     * Method used to copy an EOPEntry object, with a shifted date and according Modified Julian Date.
+     *
+     * @param entry EOPEntry to shift in time.
+     * @param newDate AbsoluteDate at which to shift the EOPEntry.
+     * @return Date shifted EOPEntry object.
+     */
+    private EOPEntry shiftEopEntry(final EOPEntry entry, final AbsoluteDate newDate) {
+        // Compute the MJD for the new date.
+        final int mjd = newDate.getComponents(utc).getDate().getMJD();
+        // Returns a new instance of the object with modified dates.
+        return new EOPEntry(mjd, entry.getUT1MinusUTC(), entry.getLOD(),
+                entry.getX(), entry.getY(), entry.getDdPsi(), entry.getDdEps(),
+                entry.getDx(), entry.getDy(),
+                entry.getITRFType(), newDate);
+    }
+
+    /**
+     * Convert EOP lines into a single EOPEntry object for a given AbsoluteDate.
+     * EOPEntry objects can be incomplete, with the absent values being set to zero.
+     *
+     * Takes a converter as a parameter being fed by the fillHistory method.
+     *
+     * @param converter
+     */
+    public void toEopEntries(final IERSConventions.NutationCorrectionConverter converter) {
+        // Go through each item stored in the map, with the key being the date.
+        for (Entry<AbsoluteDate, Map<String, Double>> mapEntry : mapEopHistory.entrySet()) {
+            // Get and prepare date, mjd
+            final AbsoluteDate date = mapEntry.getKey();
+            final int mjd = mapEntry.getKey().getComponents(utc).getDate().getMJD();
+
+            // Get values :  If key absent set to 0 through checkDouble
+            final Map<String, Double> eopMap = mapEntry.getValue();
+
+            final double ut = checkDouble(eopMap.get(eopTypes.get(1)));
+            final double lod = checkDouble(eopMap.get(eopTypes.get(0)));
+            final double xpo = checkDouble(eopMap.get(eopTypes.get(2)));
+            final double ypo = checkDouble(eopMap.get(eopTypes.get(3)));
+            final double nut_ln = checkDouble(eopMap.get(eopTypes.get(4)));
+            final double nut_ob = checkDouble(eopMap.get(eopTypes.get(5)));
+            final double nut_x = checkDouble(eopMap.get(eopTypes.get(6)));
+            final double nut_y = checkDouble(eopMap.get(eopTypes.get(7)));
+
+            // Prepare correction double arrays (equinox and non rotating origin)
+            final double[] nro;
+            final double[] equinox;
+
+            // Obtain the correction values and put them into the arrays.
+            if (nut_x != 0 && nut_y != 0 && nut_ln == 0 && nut_ob == 0) {
+                nro = new double[] {nut_x, nut_y};
+                equinox = converter.toEquinox(date, nut_x, nut_y);
+            } else if (nut_x == 0 && nut_y == 0 && nut_ln != 0 && nut_ob != 0) {
+                nro = converter.toNonRotating(date, nut_ln, nut_ob);
+                equinox = new double[] {nut_ln, nut_ob};
+            } else {
+                nro = new double[] {nut_x, nut_y};
+                equinox = new double[] {nut_ln, nut_ob};
+            }
+
+            // Create a new EOPEntry object storing the extracted data, then add it to the list of EOPEntries.
+            final EOPEntry newEopEntry = new EOPEntry(mjd, ut, lod, xpo, ypo, equinox[0], equinox[1], nro[0], nro[1], itrfVersionEop, date);
+            eopList.add(newEopEntry);
+
+        }
+
+        // Sort the list by date, before further operations.
+        eopList.sort(new ChronologicalComparator());
+
+        // Check for the creation of the EOPHistory object, that requires at least 4 interpolation points.
+        // Handling the cases with less than 4 EOP entries.
+        switch (eopList.size()) {
+            case 1 :
+                // Consider the value constant for the validity of the file.
+                // If only a value, add the same entry 3 times to the end of data date defined in the SINEX file.
+                final EOPEntry entry = eopList.get(0);
+                if (entry.getDate().isBetween(startDate, endDate)) {
+                    final double timeDifference = endDate.durationFrom(entry.getDate());
+                    final double timeStep = timeDifference / 3;
+                    eopList.add(shiftEopEntry(entry, entry.getDate().shiftedBy(timeStep)));
+                    eopList.add(shiftEopEntry(entry, entry.getDate().shiftedBy(timeStep * 2)));
+                    eopList.add(shiftEopEntry(entry, endDate));
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void fillHistory(final NutationCorrectionConverter converter,
+            final SortedSet<EOPEntry> history) {
+        // Call the toEopEntries method to fill the eopList variable.
+        toEopEntries(converter);
+        // Fill the history set with the content of the eopList list of EOPEntry objects.
+        history.addAll(eopList);
+    }
+
+    /**
+     * Setter for the ITRF version used in EOP entries processing.
+     *
+     * @param year Year of the ITRF Version used for the EOPEntry objects.
+     */
+    public void setITRFVersion(final int year) {
+        this.itrfVersionEop = ITRFVersion.getITRFVersion(year);
+    }
+
+    /**
+     *  Getter for the ITRF version used for the EOP entries processing.
+     *
+     * @return Year of the ITRF Version used for the EOPEntry objects.
+     */
+    public ITRFVersion getITRFVersion() {
+        return itrfVersionEop;
     }
 
 }
