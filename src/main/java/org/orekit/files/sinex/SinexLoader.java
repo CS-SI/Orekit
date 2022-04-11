@@ -79,33 +79,27 @@ public class SinexLoader implements EOPHistoryLoader {
     /** Pattern to check beginning of SINEX files.*/
     private static final Pattern PATTERN_BEGIN = Pattern.compile("(%=).*");
 
-    /** Creation date of the Sinex File.*/
-    private AbsoluteDate creationDate;
-
     /** Start time of the data used in the Sinex solution.*/
     private AbsoluteDate startDate;
 
     /** End time of the data used in the Sinex solution.*/
     private AbsoluteDate endDate;
 
-    /** Source for auxiliary data files. */
-    private final DataProvidersManager manager;
-
     /** Station data.
      * Key: Site code
      */
     private final Map<String, Station> stations;
 
-    /** */
+    /** List of EOP Entries. */
     private final List<EOPEntry> eopList;
 
-    /** */
+    /** Map containing the data stored for each parameter, as a Map, which key is an AbsoluteDate. */
     private final Map<AbsoluteDate, Map<String, Double>> mapEopHistory;
 
-    /** */
+    /** List of all EOP parameter types. */
     private final List<String> eopTypes = List.of("LOD", "UT", "XPO", "YPO", "NUT_LN", "NUT_OB", "NUT_X", "NUT_Y");
 
-    /** */
+    /** ITRF Version used for EOP parsing. */
     private ITRFVersion itrfVersionEop;
 
     /** UTC time scale. */
@@ -133,9 +127,7 @@ public class SinexLoader implements EOPHistoryLoader {
             final DataProvidersManager dataProvidersManager,
             final TimeScale utc) {
         this.utc = utc;
-        this.creationDate = AbsoluteDate.FUTURE_INFINITY;
         stations = new HashMap<>();
-        manager = dataProvidersManager;
         mapEopHistory = new HashMap<AbsoluteDate, Map<String, Double>>();
         this.itrfVersionEop = null;
         this.eopList = new ArrayList<EOPEntry>();
@@ -159,13 +151,11 @@ public class SinexLoader implements EOPHistoryLoader {
      */
     public SinexLoader(final DataSource source, final TimeScale utc) {
         try {
-            this.manager = DataContext.getDefault().getDataProvidersManager();
             this.utc = utc;
             stations = new HashMap<>();
             mapEopHistory = new HashMap<AbsoluteDate, Map<String, Double>>();
             this.eopList = new ArrayList<EOPEntry>();
             this.itrfVersionEop = null;
-            this.creationDate = AbsoluteDate.FUTURE_INFINITY;
             try (InputStream         is  = source.getOpener().openStreamOnce();
                     BufferedInputStream bis = new BufferedInputStream(is)) {
                 new Parser().loadData(bis, source.getName());
@@ -249,7 +239,6 @@ public class SinexLoader implements EOPHistoryLoader {
                      */
                     if (lineNumber == 1 && PATTERN_BEGIN.matcher(line).matches()) {
                         final String[] splitFirstLine = PATTERN_SPACE.split(line);
-                        creationDate = stringEpochToAbsoluteDate(splitFirstLine[3]);
                         startDate = stringEpochToAbsoluteDate(splitFirstLine[5]);
                         endDate = stringEpochToAbsoluteDate(splitFirstLine[6]);
                     }
