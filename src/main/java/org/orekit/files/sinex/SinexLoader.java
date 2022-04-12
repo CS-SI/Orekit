@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +98,7 @@ public class SinexLoader implements EOPHistoryLoader {
     private final Map<AbsoluteDate, Map<String, Double>> mapEopHistory;
 
     /** List of all EOP parameter types. */
-    private final List<String> eopTypes = List.of("LOD", "UT", "XPO", "YPO", "NUT_LN", "NUT_OB", "NUT_X", "NUT_Y");
+    private final List<String> eopTypes = Arrays.asList("LOD", "UT", "XPO", "YPO", "NUT_LN", "NUT_OB", "NUT_X", "NUT_Y");
 
     /** ITRF Version used for EOP parsing. */
     private ITRFVersion itrfVersionEop;
@@ -499,6 +500,16 @@ public class SinexLoader implements EOPHistoryLoader {
                 entry.getITRFType(), newDate);
     }
 
+    private AbsoluteDate getClosestDate(final AbsoluteDate date, final AbsoluteDate date1, final AbsoluteDate date2) {
+        final double durationFrom1 = FastMath.abs(date.durationFrom(date1));
+        final double durationFrom2 = FastMath.abs(date.durationFrom(date2));
+        if (durationFrom1 >= durationFrom2) {
+            return date2;
+        } else {
+            return date1;
+        }
+    }
+
     /**
      * Convert EOP lines into a single EOPEntry object for a given AbsoluteDate.
      * EOPEntry objects can be incomplete, with the absent values being set to zero.
@@ -553,22 +564,37 @@ public class SinexLoader implements EOPHistoryLoader {
 
         // Check for the creation of the EOPHistory object, that requires at least 4 interpolation points.
         // Handling the cases with less than 4 EOP entries.
-        switch (eopList.size()) {
-            case 1 :
-                // Consider the value constant for the validity of the file.
-                // If only a value, add the same entry 3 times to the end of data date defined in the SINEX file.
-                final EOPEntry entry = eopList.get(0);
-                if (entry.getDate().isBetween(startDate, endDate)) {
-                    final double timeDifference = endDate.durationFrom(entry.getDate());
-                    final double timeStep = timeDifference / 3;
-                    eopList.add(shiftEopEntry(entry, entry.getDate().shiftedBy(timeStep)));
-                    eopList.add(shiftEopEntry(entry, entry.getDate().shiftedBy(timeStep * 2)));
-                    eopList.add(shiftEopEntry(entry, endDate));
+        final int eopSize = eopList.size();
+        // 1 point case : add the same values at start and end of data dates, and another point by symmetry.
+        if (eopSize == 1) {
+
+            final EOPEntry entry = eopList.get(0);
+            final AbsoluteDate entryDate = entry.getDate();
+
+            if (entryDate.isBetween(startDate, endDate)) {
+                final AbsoluteDate closestDate = getClosestDate(entryDate, startDate, endDate);
+                AbsoluteDate otherDate = null;
+
+                if (closestDate.isEqualTo(startDate)) {
+                    otherDate = endDate;
+                } else {
+                    otherDate = startDate;
                 }
-                break;
-            default:
-                break;
+
+                final double deltaT = entryDate.durationFrom(closestDate);
+                final AbsoluteDate date4 = otherDate.shiftedBy(deltaT);
+
+                eopList.add(shiftEopEntry(entry, closestDate));
+                eopList.add(shiftEopEntry(entry, otherDate));
+                eopList.add(shiftEopEntry(entry, date4));
+            }
+        } else {
+            final EOPEntry firstEntry = eopList.get(0);
+            eopList.add(shiftEopEntry(firstEntry, startDate));
+            final EOPEntry lastEntry = eopList.get(eopSize - 1);
+            eopList.add(shiftEopEntry(lastEntry, endDate));
         }
+
     }
 
     /** {@inheritDoc} */
