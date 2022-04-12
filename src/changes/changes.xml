@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="909">
+        Fixed wrong implementation of NTW LOF frame.
+      </action>
       <action dev="bryan" type="fix" issue="910">
         Fixed eD and eY equation in ECOM2 model.
       </action>
