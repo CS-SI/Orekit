@@ -63,6 +63,14 @@ import org.orekit.utils.units.Unit;
  * For now only few keys are supported: SITE/ID, SITE/ECCENTRICITY, SOLUTION/EPOCHS and SOLUTION/ESTIMATE.
  * They represent the minimum set of parameters that are interesting to consider in a SINEX file.
  * </p>
+ * <p>
+ * The parsing of EOP parameters for multiple files in different SinexLoader object, fed into the default DataContext
+ * might pose a problem in case validity dates are overlapping. As Sinex daily solution files provide a single EOP entry,
+ * the Sinex loader will add points at the limits of data dates (startDate, endDate) of the Sinex file, which in case of
+ * overlap will lead to inconsistencies in the final EOPHistory object. Multiple files can be parsed using a single SinexLoader
+ * with a regex to overcome this issue.
+ * </p>
+ *
  * @author Bryan Cazabonne
  * @since 10.3
  */
@@ -240,8 +248,17 @@ public class SinexLoader implements EOPHistoryLoader {
                      */
                     if (lineNumber == 1 && PATTERN_BEGIN.matcher(line).matches()) {
                         final String[] splitFirstLine = PATTERN_SPACE.split(line);
-                        startDate = stringEpochToAbsoluteDate(splitFirstLine[5]);
-                        endDate = stringEpochToAbsoluteDate(splitFirstLine[6]);
+                        final AbsoluteDate fileStartDate = stringEpochToAbsoluteDate(splitFirstLine[5]);
+                        final AbsoluteDate fileEndDate = stringEpochToAbsoluteDate(splitFirstLine[6]);
+                        if (startDate == null) {
+                            startDate = fileStartDate;
+                            endDate = fileEndDate;
+                        } else if (fileStartDate.isBefore(startDate)) {
+                            startDate = fileStartDate;
+                        }
+                        if (fileEndDate.isAfter(endDate)) {
+                            endDate = fileEndDate;
+                        }
                     }
 
                     switch (line.trim()) {
@@ -500,6 +517,14 @@ public class SinexLoader implements EOPHistoryLoader {
                 entry.getITRFType(), newDate);
     }
 
+    /**
+     * Returns the date closest to the date variable, between date1 and date2.
+     *
+     * @param date
+     * @param date1
+     * @param date2
+     * @return closest AbsoluteDate to the date object.
+     */
     private AbsoluteDate getClosestDate(final AbsoluteDate date, final AbsoluteDate date1, final AbsoluteDate date2) {
         final double durationFrom1 = FastMath.abs(date.durationFrom(date1));
         final double durationFrom2 = FastMath.abs(date.durationFrom(date2));
@@ -516,9 +541,9 @@ public class SinexLoader implements EOPHistoryLoader {
      *
      * Takes a converter as a parameter being fed by the fillHistory method.
      *
-     * @param converter
+     * @param converter : Nutation Correction converter
      */
-    public void toEopEntries(final IERSConventions.NutationCorrectionConverter converter) {
+    private void toEopEntries(final IERSConventions.NutationCorrectionConverter converter) {
         // Go through each item stored in the map, with the key being the date.
         for (Entry<AbsoluteDate, Map<String, Double>> mapEntry : mapEopHistory.entrySet()) {
             // Get and prepare date, mjd
@@ -581,12 +606,14 @@ public class SinexLoader implements EOPHistoryLoader {
                     otherDate = startDate;
                 }
 
-                final double deltaT = entryDate.durationFrom(closestDate);
+                final double deltaT = closestDate.durationFrom(entryDate);
                 final AbsoluteDate date4 = otherDate.shiftedBy(deltaT);
 
                 eopList.add(shiftEopEntry(entry, closestDate));
                 eopList.add(shiftEopEntry(entry, otherDate));
                 eopList.add(shiftEopEntry(entry, date4));
+            } else {
+               //
             }
         } else {
             final EOPEntry firstEntry = eopList.get(0);
@@ -595,6 +622,7 @@ public class SinexLoader implements EOPHistoryLoader {
             eopList.add(shiftEopEntry(lastEntry, endDate));
         }
 
+        eopList.sort(new ChronologicalComparator());
     }
 
     /** {@inheritDoc} */
