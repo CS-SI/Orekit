@@ -93,7 +93,16 @@ public class OrekitEphemerisFileTest {
     }
 
     @Test
-    public void testWritingToOEM() throws IOException {
+    public void testWritingToOEMKvn() throws IOException {
+        doTestWritingToOEM(FileFormat.KVN);
+    }
+
+    @Test
+    public void testWritingToOEMXml() throws IOException {
+        doTestWritingToOEM(FileFormat.XML);
+    }
+
+    private void doTestWritingToOEM(final FileFormat fileFormat) throws IOException {
         final double muTolerance = 1e-12;
         // As the default format for position is 3 digits after decimal point in km the max precision in m is 1
         final double positionTolerance = 1.;
@@ -144,7 +153,7 @@ public class OrekitEphemerisFileTest {
         template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     null, template, FileFormat.KVN, "dummy", 60);
+                                                     null, template, fileFormat, "dummy", 60);
         writer.write(tempOem, ephemerisFile);
 
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();

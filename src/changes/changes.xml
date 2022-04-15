@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="917">
+        Fixed missing tags in XML generation by EphemerisWriter.
+      </action>
       <action dev="louis" type="fix" issue="886">
         Fixed rollover in CRD parser.
       </action>
@@ -39,6 +42,9 @@
       </action>
       <action dev="maxime" type="fix" issue="909">
         Fixed wrong implementation of NTW LOF frame.
+      </action>
+      <action dev="pascal" type="add" issue="911">
+        Added TDOA and bistatic range rate measurements.
       </action>
       <action dev="bryan" type="fix" issue="910">
         Fixed eD and eY equation in ECOM2 model.

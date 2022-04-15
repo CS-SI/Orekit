@@ -38,6 +38,7 @@ import org.orekit.time.TimeScale;
  * Base class for Navigation Data Message (NDM) files.
  * @param <H> type of the header
  * @param <S> type of the segments
+ * @param <F> type of the NDM constituent
  * @author Luc Maisonobe
  * @since 11.0
  */
