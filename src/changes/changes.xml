@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="909">
+        Fixed wrong implementation of NTW LOF frame.
+      </action>
       <action dev="luc" type="fix" issue="917">
         Fixed missing tags in XML generation by EphemerisWriter.
       </action>
