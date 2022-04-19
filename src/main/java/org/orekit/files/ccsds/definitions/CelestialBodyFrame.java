@@ -120,6 +120,22 @@ public enum CelestialBodyFrame {
 
     },
 
+    /** International Terrestrial Reference Frame 2020. */
+    ITRF2020 {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_2020, conventions, simpleEOP);
+        }
+
+    },
+
     /** International Terrestrial Reference Frame 2014. */
     ITRF2014 {
 
