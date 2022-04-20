@@ -1133,15 +1133,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get the names of additional states managed by differential equations
-            final String[] names = new String[additionalDerivativesProviders.size()];
+            final String[] names      = new String[additionalDerivativesProviders.size()];
+            final int[]    dimensions = new int[additionalDerivativesProviders.size()];
             for (int i = 0; i < names.length; ++i) {
                 names[i] = additionalDerivativesProviders.get(i).getName();
+                dimensions[i] = additionalDerivativesProviders.get(i).getDimension();
             }
 
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
                                                 stateMapper, propagationType, model,
-                                                unmanaged, getAdditionalStateProviders(), names);
+                                                unmanaged, getAdditionalStateProviders(),
+                                                names, dimensions);
 
         }
 

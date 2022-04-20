@@ -28,6 +28,9 @@
       <action dev="louis" type="fix" issue="826">
         Fixed ephemeris generation using PropagatorParallelizer
       </action>
+      <action dev="luc" type="fix" issue="919">
+        Fixed ephemeris generation with several derivatives providers.
+      </action>
       <action dev="maxime" type="fix" issue="909">
         Fixed wrong implementation of NTW LOF frame.
       </action>
