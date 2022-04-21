@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -36,6 +37,8 @@ import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRDConfiguration.TransponderConfiguration;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 
 public class CRDParserTest {
@@ -556,6 +559,29 @@ public class CRDParserTest {
         Assert.assertEquals("New experimental detector (transistor) in the START channel", file.getComments().get(5));
     }
 
+    @Test
+    public void testIssue886() throws IOException {
+        final String ex = "/ilrs/glonass125_trunc.frd";
+        final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+        
+        final CRDDataBlock block = file.getDataBlocks().get(0);
+        final List<RangeMeasurement> rangeBlock = block.getRangeData();
+        final RangeMeasurement rangeFirst = rangeBlock.get(0);
+        final RangeMeasurement rangeLast = rangeBlock.get(rangeBlock.size() - 1);
+        
+        DateComponents startEpoch = new DateComponents(2019, 04, 21);
+        DateComponents lastEpoch = new DateComponents(2019, 04, 22);
+        double firstSecOfDay = 77387.019063653420;
+        double lastSecOfDay = 694.119563650340;
+        final AbsoluteDate firstDate = new AbsoluteDate(startEpoch, new TimeComponents(firstSecOfDay), DataContext.getDefault().getTimeScales().getUTC());
+        final AbsoluteDate lastDate = new AbsoluteDate(lastEpoch, new TimeComponents(lastSecOfDay), DataContext.getDefault().getTimeScales().getUTC());
+
+
+        Assert.assertEquals(firstDate, rangeFirst.getDate());
+        Assert.assertEquals(lastDate, rangeLast.getDate());
+    }
+    
+    
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
