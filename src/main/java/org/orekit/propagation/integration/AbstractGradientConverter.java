@@ -161,7 +161,7 @@ public abstract class AbstractGradientConverter {
     }
 
     /** Get the parametric model parameters.
-     * @param state state as returned by {@link #getState() getState(parametricModel)}
+     * @param state state as returned by {@link #getState(ParametersDriversProvider) getState(parametricModel)}
      * @param parametricModel parametric model associated with the parameters
      * @return parametric model parameters
      */
