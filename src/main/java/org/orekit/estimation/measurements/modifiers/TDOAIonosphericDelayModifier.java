@@ -174,8 +174,8 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         final double[] oldValue = estimated.getEstimatedValue();
 
         // Update estimated derivatives with Jacobian of the measure wrt state
-        final IonosphericGradientConverter converter =
-                new IonosphericGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+        final ModifierGradientConverter converter =
+                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(ionoModel);
         final Gradient[] gParameters       = converter.getParameters(gState, ionoModel);
         final Gradient   primeGDelay       = timeErrorIonosphericModel(primeStation, gState, gParameters);

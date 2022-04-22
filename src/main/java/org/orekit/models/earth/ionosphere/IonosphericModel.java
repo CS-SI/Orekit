@@ -26,6 +26,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParametersDriversProvider;
 
 /** Defines a ionospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -38,7 +39,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 7.1
  */
-public interface IonosphericModel extends Serializable {
+public interface IonosphericModel extends ParametersDriversProvider, Serializable {
 
     /**
      * Calculates the ionospheric path delay for the signal path from a ground
@@ -76,11 +77,6 @@ public interface IonosphericModel extends Serializable {
      * @return the path delay due to the ionosphere in m
      */
     <T extends CalculusFieldElement<T>> T pathDelay(FieldSpacecraftState<T> state, TopocentricFrame baseFrame, double frequency, T[] parameters);
-
-    /** Get the drivers for ionospheric model parameters.
-     * @return drivers for ionospheric model parameters
-     */
-    List<ParameterDriver> getParametersDrivers();
 
     /** Get ionospheric model parameters.
      * @return ionospheric model parameters

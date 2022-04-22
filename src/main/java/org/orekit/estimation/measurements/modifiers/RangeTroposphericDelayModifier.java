@@ -193,8 +193,8 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
         final double[] oldValue = estimated.getEstimatedValue();
 
         // update estimated derivatives with Jacobian of the measure wrt state
-        final TroposphericGradientConverter converter =
-                new TroposphericGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+        final ModifierGradientConverter converter =
+                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
         final Gradient[] gParameters = converter.getParameters(gState, tropoModel);
         final Gradient gDelay = rangeErrorTroposphericModel(station, gState, gParameters);

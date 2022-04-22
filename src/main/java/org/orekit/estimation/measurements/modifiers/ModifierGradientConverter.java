@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -30,19 +30,20 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-/** Converter for states and parameters arrays.
- * @author Luc Maisonobe
- * @since 10.2
+/**
+ * Converter for states and parameters arrays.
+ * @author Bryan Cazabonne
+ * @since 11.2
  */
-class NumericalGradientConverter extends AbstractGradientConverter {
+public class ModifierGradientConverter extends AbstractGradientConverter {
 
     /** Simple constructor.
      * @param state regular state
      * @param freeStateParameters number of free parameters, either 3 (position) or 6 (position-velocity)
      * @param provider provider to use if attitude needs to be recomputed
      */
-    NumericalGradientConverter(final SpacecraftState state, final int freeStateParameters,
-                               final AttitudeProvider provider) {
+    public ModifierGradientConverter(final SpacecraftState state, final int freeStateParameters,
+                                     final AttitudeProvider provider) {
 
         super(freeStateParameters);
 
@@ -75,13 +76,12 @@ class NumericalGradientConverter extends AbstractGradientConverter {
                                                                  Gradient.constant(freeStateParameters, acc.getZ()));
 
         // mass never has derivatives
-        final Gradient gM = Gradient.constant(freeStateParameters, state.getMass());
-
-        final Gradient gMu = Gradient.constant(freeStateParameters, state.getMu());
+        final Gradient dsM = Gradient.constant(freeStateParameters, state.getMass());
 
         final FieldOrbit<Gradient> gOrbit =
                         new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posG, velG, accG),
-                                                  state.getFrame(), gMu);
+                                                  state.getFrame(),
+                                                  field.getZero().add(state.getMu()));
 
         final FieldAttitude<Gradient> gAttitude;
         if (freeStateParameters > 3) {
@@ -93,7 +93,7 @@ class NumericalGradientConverter extends AbstractGradientConverter {
         }
 
         // initialize the list with the state having 0 force model parameters
-        initStates(new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
+        initStates(new FieldSpacecraftState<>(gOrbit, gAttitude, dsM));
 
     }
 

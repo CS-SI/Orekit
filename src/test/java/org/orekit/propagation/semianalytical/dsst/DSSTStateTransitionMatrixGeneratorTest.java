@@ -130,7 +130,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
 
         // after completing the two-stage propagation, we get the same matrices
-        Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 5.0e-12 * stm1.getNorm1());
+        Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 2.0e-11 * stm1.getNorm1());
         Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-10 * jacobian1.getNorm1());
 
     }
