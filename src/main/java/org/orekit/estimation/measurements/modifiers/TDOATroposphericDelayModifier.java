@@ -16,12 +16,10 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.InertialProvider;
@@ -33,9 +31,7 @@ import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
-import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
 
 /** Class modifying theoretical TDOA measurements with tropospheric delay.
  * <p>
@@ -117,67 +113,6 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         return zero;
     }
 
-    /** Compute the Jacobian of the delay term wrt state using
-    * automatic differentiation.
-    *
-    * @param derivatives tropospheric delay derivatives
-    *
-    * @return Jacobian of the delay wrt state
-    */
-    private double[][] timeErrorJacobianState(final double[] derivatives) {
-        final double[][] finiteDifferencesJacobian = new double[1][6];
-        System.arraycopy(derivatives, 0, finiteDifferencesJacobian[0], 0, 6);
-        return finiteDifferencesJacobian;
-    }
-
-
-    /** Compute the derivative of the delay term wrt parameters.
-     *
-     * @param station ground station
-     * @param driver driver for the station offset parameter
-     * @param state spacecraft state
-     * @return derivative of the delay wrt station offset parameter
-     */
-    private double timeErrorParameterDerivative(final GroundStation station,
-                                                final ParameterDriver driver,
-                                                final SpacecraftState state) {
-
-        final ParameterFunction timeError = new ParameterFunction() {
-            /** {@inheritDoc} */
-            @Override
-            public double value(final ParameterDriver parameterDriver) {
-                return timeErrorTroposphericModel(station, state);
-            }
-        };
-
-        final ParameterFunction timeErrorDerivative =
-                        Differentiation.differentiate(timeError, 3, 10.0 * driver.getScale());
-
-        return timeErrorDerivative.value(driver);
-
-    }
-
-    /** Compute the derivative of the delay term wrt parameters using
-    * automatic differentiation.
-    *
-    * @param derivatives tropospheric delay derivatives
-    * @param freeStateParameters dimension of the state.
-    * @return derivative of the delay wrt tropospheric model parameters
-    */
-    private double[] timeErrorParameterDerivative(final double[] derivatives,
-                                                  final int freeStateParameters) {
-        // 0 ... freeStateParameters - 1 -> derivatives of the delay wrt state
-        // freeStateParameters ... n     -> derivatives of the delay wrt tropospheric parameters
-        final int dim = derivatives.length - freeStateParameters;
-        final double[] timeError = new double[dim];
-
-        for (int i = 0; i < dim; i++) {
-            timeError[i] = derivatives[freeStateParameters + i];
-        }
-
-        return timeError;
-    }
-
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
@@ -187,80 +122,17 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<TDOA> estimated) {
+
         final TDOA            measurement   = estimated.getObservedMeasurement();
         final GroundStation   primeStation  = measurement.getPrimeStation();
         final GroundStation   secondStation = measurement.getSecondStation();
         final SpacecraftState state         = estimated.getStates()[0];
 
-        final double[] oldValue = estimated.getEstimatedValue();
-
-        // Update estimated derivatives with Jacobian of the measure wrt state
-        final ModifierGradientConverter converter =
-                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
-        final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
-        final Gradient[] gParameters       = converter.getParameters(gState, tropoModel);
-        final Gradient   primeGDelay       = timeErrorTroposphericModel(primeStation, gState, gParameters);
-        final Gradient   secondGDelay      = timeErrorTroposphericModel(secondStation, gState, gParameters);
-        final double[]   primeDerivatives  = primeGDelay.getGradient();
-        final double[]   secondDerivatives = secondGDelay.getGradient();
-
-        final double[][] primeDjac         = timeErrorJacobianState(primeDerivatives);
-        final double[][] secondDjac        = timeErrorJacobianState(secondDerivatives);
-        final double[][] stateDerivatives  = estimated.getStateDerivatives(0);
-        for (int irow = 0; irow < stateDerivatives.length; ++irow) {
-            for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-                stateDerivatives[irow][jcol] += primeDjac[irow][jcol];
-                stateDerivatives[irow][jcol] -= secondDjac[irow][jcol];
-            }
-        }
-        estimated.setStateDerivatives(0, stateDerivatives);
-
-        int index = 0;
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt tropospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] dDelayPrime = timeErrorParameterDerivative(primeDerivatives,
-                                                                          converter.getFreeStateParameters());
-                parameterDerivative += dDelayPrime[index];
-                final double[] dDelaySecond = timeErrorParameterDerivative(secondDerivatives,
-                                                                           converter.getFreeStateParameters());
-                parameterDerivative -= dDelaySecond[index];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                index += 1;
-            }
-        }
-
-        // Update derivatives with respect to prime station position
-        for (final ParameterDriver driver : Arrays.asList(primeStation.getClockOffsetDriver(),
-                                                          primeStation.getEastOffsetDriver(),
-                                                          primeStation.getNorthOffsetDriver(),
-                                                          primeStation.getZenithOffsetDriver())) {
-            if (driver.isSelected()) {
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += timeErrorParameterDerivative(primeStation, driver, state);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-            }
-        }
-
-        // Update derivatives with respect to second station position
-        for (final ParameterDriver driver : Arrays.asList(secondStation.getClockOffsetDriver(),
-                                                          secondStation.getEastOffsetDriver(),
-                                                          secondStation.getNorthOffsetDriver(),
-                                                          secondStation.getZenithOffsetDriver())) {
-            if (driver.isSelected()) {
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative -= timeErrorParameterDerivative(secondStation, driver, state);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-            }
-        }
-
-        // Update estimated value taking into account the tropospheric delay for each downlink.
-        // The tropospheric time delay is directly applied to the TDOA.
-        final double[] newValue = oldValue.clone();
-        newValue[0] += primeGDelay.getReal();
-        newValue[0] -= secondGDelay.getReal();
-        estimated.setEstimatedValue(newValue);
+        TDOAModifierUtil.modify(estimated, tropoModel,
+                                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                primeStation, secondStation,
+                                this::timeErrorTroposphericModel,
+                                this::timeErrorTroposphericModel);
 
     }
 

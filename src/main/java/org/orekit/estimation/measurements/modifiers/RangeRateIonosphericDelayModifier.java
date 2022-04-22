@@ -16,10 +16,7 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
-
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -28,7 +25,6 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical range-rate measurement with ionospheric delay.
  * The effect of ionospheric correction on the range-rate is directly computed
@@ -88,56 +84,12 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
-        final double[] oldValue = estimated.getEstimatedValue();
+        RangeModifierUtil.modify(estimated, getIonoModel(),
+                                 new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                 station,
+                                 this::rangeRateErrorIonosphericModel,
+                                 this::rangeRateErrorIonosphericModel);
 
-        // update estimated derivatives with Jacobian of the measure wrt state
-        final ModifierGradientConverter converter =
-                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
-        final FieldSpacecraftState<Gradient> gState = converter.getState(getIonoModel());
-        final Gradient[] gParameters = converter.getParameters(gState, getIonoModel());
-        final Gradient gDelay = rangeRateErrorIonosphericModel(station, gState, gParameters);
-        final double[] derivatives = gDelay.getGradient();
-
-        // update estimated derivatives with Jacobian of the measure wrt state
-        final double[][] djac = rangeRateErrorJacobianState(derivatives);
-        final double[][] stateDerivatives = estimated.getStateDerivatives(0);
-        for (int irow = 0; irow < stateDerivatives.length; ++irow) {
-            for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-                stateDerivatives[irow][jcol] += djac[irow][jcol];
-            }
-        }
-        estimated.setStateDerivatives(0, stateDerivatives);
-
-        int index = 0;
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt ionospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] dDelaydP    = rangeRateErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
-                parameterDerivative += dDelaydP[index];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                index = index + 1;
-            }
-
-        }
-
-        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                          station.getEastOffsetDriver(),
-                                                          station.getNorthOffsetDriver(),
-                                                          station.getZenithOffsetDriver())) {
-            if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += rangeRateErrorParameterDerivative(station, driver, state);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-            }
-        }
-
-        // update estimated value taking into account the ionospheric delay.
-        // The ionospheric delay is directly added to the range.
-        final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] + gDelay.getValue();
-        estimated.setEstimatedValue(newValue);
 
     }
 

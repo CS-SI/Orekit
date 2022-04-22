@@ -16,10 +16,7 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
-
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -28,7 +25,6 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical range-rate measurements with tropospheric delay.
  * The effect of tropospheric correction on the range-rate is directly computed
@@ -89,59 +85,17 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<RangeRate> estimated) {
+
         final RangeRate       measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
-        final double[] oldValue = estimated.getEstimatedValue();
+        RangeRateModifierUtil.modify(estimated, getTropoModel(),
+                                     new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                     station,
+                                     this::rangeRateErrorTroposphericModel,
+                                     this::rangeRateErrorTroposphericModel);
 
-        // update estimated derivatives with Jacobian of the measure wrt state
-        final ModifierGradientConverter converter =
-                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
-        final FieldSpacecraftState<Gradient> gState = converter.getState(getTropoModel());
-        final Gradient[] gParameters = converter.getParameters(gState, getTropoModel());
-        final Gradient gDelay = rangeRateErrorTroposphericModel(station, gState, gParameters);
-        final double[] derivatives = gDelay.getGradient();
-
-        final double[][] djac = rangeRateErrorJacobianState(derivatives);
-        final double[][] stateDerivatives = estimated.getStateDerivatives(0);
-        for (int irow = 0; irow < stateDerivatives.length; ++irow) {
-            for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-                stateDerivatives[irow][jcol] += djac[irow][jcol];
-            }
-        }
-        estimated.setStateDerivatives(0, stateDerivatives);
-
-        int index = 0;
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt tropospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] dDelaydP    = rangeRateErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
-                parameterDerivative += dDelaydP[index];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                index += 1;
-            }
-
-        }
-
-        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                          station.getEastOffsetDriver(),
-                                                          station.getNorthOffsetDriver(),
-                                                          station.getZenithOffsetDriver())) {
-            if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += rangeRateErrorParameterDerivative(station, driver, state);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-            }
-        }
-
-        // update estimated value taking into account the tropospheric delay.
-        // The tropospheric delay is directly added to the range.
-        final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] + gDelay.getReal();
-        estimated.setEstimatedValue(newValue);
 
     }
 

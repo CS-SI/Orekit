@@ -29,22 +29,22 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParametersDriversProvider;
 
-/** Utility class for bistatic measurements.
- * @author Pascal Parraud
+/** Utility class modifying theoretical range measurement.
+ * @author Maxime Journot
+ * @author Joris Olympio
  * @since 11.2
  */
-class BistaticModifierUtil {
+public class RangeModifierUtil {
 
     /** Private constructor for utility class.*/
-    private BistaticModifierUtil() {
+    private RangeModifierUtil() {
         // not used
     }
 
     /** Apply a modifier to an estimated measurement.
      * @param <T> type of the measurement
      * @param estimated estimated measurement to modify
-     * @param emitter emitter station
-     * @param receiver receiver station
+     * @param station ground station
      * @param converter gradient converter
      * @param parametricModel parametric modifier model
      * @param modelEffect model effect
@@ -53,7 +53,7 @@ class BistaticModifierUtil {
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
                                                                  final ParametersDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
-                                                                 final GroundStation emitter, final GroundStation receiver,
+                                                                 final GroundStation station,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient) {
 
@@ -63,64 +63,44 @@ class BistaticModifierUtil {
         // update estimated derivatives with Jacobian of the measure wrt state
         final FieldSpacecraftState<Gradient> gState = converter.getState(parametricModel);
         final Gradient[] gParameters = converter.getParameters(gState, parametricModel);
+        final Gradient gDelay = modelEffectGradient.evaluate(station, gState, gParameters);
+        final double[] derivatives = gDelay.getGradient();
 
-        final Gradient delayUp = modelEffectGradient.evaluate(emitter, gState, gParameters);
-        final double[] derivativesUp = delayUp.getGradient();
-
-        final Gradient delayDown = modelEffectGradient.evaluate(receiver, gState, gParameters);
-        final double[] derivativesDown = delayDown.getGradient();
-
-        // update estimated derivatives with Jacobian of the measure wrt state
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-            stateDerivatives[0][jcol] += derivativesUp[jcol];
-            stateDerivatives[0][jcol] += derivativesDown[jcol];
+            stateDerivatives[0][jcol] += derivatives[jcol];
         }
         estimated.setStateDerivatives(0, stateDerivatives);
 
         int index = 0;
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt model parameters
-                double parameterDerivative  = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += derivativesUp[index + converter.getFreeStateParameters()];
-                parameterDerivative += derivativesDown[index + converter.getFreeStateParameters()];
+                // update estimated derivatives with derivative of the modification wrt ionospheric parameters
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative += derivatives[index + converter.getFreeStateParameters()];
                 estimated.setParameterDerivatives(driver, parameterDerivative);
-                index++;
+                index = index + 1;
             }
 
         }
 
-        for (final ParameterDriver driver : Arrays.asList(emitter.getEastOffsetDriver(),
-                                                          emitter.getNorthOffsetDriver(),
-                                                          emitter.getZenithOffsetDriver())) {
+        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                          station.getEastOffsetDriver(),
+                                                          station.getNorthOffsetDriver(),
+                                                          station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt station parameters
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += Differentiation.differentiate(d -> modelEffect.evaluate(emitter, state),
+                parameterDerivative += Differentiation.differentiate(d -> modelEffect.evaluate(station, state),
                                                                      3, 10.0 * driver.getScale()).value(driver);
                 estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
 
-        for (final ParameterDriver driver : Arrays.asList(receiver.getClockOffsetDriver(),
-                                                          receiver.getEastOffsetDriver(),
-                                                          receiver.getNorthOffsetDriver(),
-                                                          receiver.getZenithOffsetDriver())) {
-            if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += Differentiation.differentiate(d -> modelEffect.evaluate(receiver, state),
-                                                                     3, 10.0 * driver.getScale()).value(driver);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-            }
-        }
-
-        // update estimated value taking into account the model effect.
-        // The model effect delay is directly added to the measurement.
+        // update estimated value taking into account the ionospheric delay.
+        // The ionospheric delay is directly added to the range.
         final double[] newValue = oldValue.clone();
-        newValue[0] += delayUp.getValue();
-        newValue[0] += delayDown.getValue();
+        newValue[0] = newValue[0] + gDelay.getValue();
         estimated.setEstimatedValue(newValue);
 
     }

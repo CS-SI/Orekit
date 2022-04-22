@@ -26,9 +26,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
 
 /** Baselass modifying theoretical range-rate measurements with tropospheric delay.
  * The effect of tropospheric correction on the range-rate is directly computed
@@ -156,65 +154,6 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
         }
 
         return zero;
-    }
-
-    /** Compute the Jacobian of the delay term wrt state using
-    * automatic differentiation.
-    *
-    * @param derivatives tropospheric delay derivatives
-    *
-    * @return Jacobian of the delay wrt state
-    */
-    protected double[][] rangeRateErrorJacobianState(final double[] derivatives) {
-        final double[][] finiteDifferencesJacobian = new double[1][6];
-        System.arraycopy(derivatives, 0, finiteDifferencesJacobian[0], 0, 6);
-        return finiteDifferencesJacobian;
-    }
-
-    /** Compute the derivative of the delay term wrt parameters.
-    *
-    * @param station ground station
-    * @param driver driver for the station offset parameter
-    * @param state spacecraft state
-    * @return derivative of the delay wrt station offset parameter
-    */
-    protected double rangeRateErrorParameterDerivative(final GroundStation station,
-                                                       final ParameterDriver driver,
-                                                       final SpacecraftState state) {
-
-        final ParameterFunction rangeError = new ParameterFunction() {
-            /** {@inheritDoc} */
-            @Override
-            public double value(final ParameterDriver parameterDriver) {
-                return rangeRateErrorTroposphericModel(station, state);
-            }
-        };
-
-        final ParameterFunction rangeErrorDerivative =
-                        Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
-
-        return rangeErrorDerivative.value(driver);
-
-    }
-
-    /** Compute the derivative of the delay term wrt parameters using
-    * automatic differentiation.
-    *
-    * @param derivatives tropospheric delay derivatives
-    * @param freeStateParameters dimension of the state.
-    * @return derivative of the delay wrt tropospheric model parameters
-    */
-    protected double[] rangeRateErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
-        // 0 ... freeStateParameters - 1 -> derivatives of the delay wrt state
-        // freeStateParameters ... n     -> derivatives of the delay wrt tropospheric parameters
-        final int dim = derivatives.length - freeStateParameters;
-        final double[] rangeError = new double[dim];
-
-        for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[freeStateParameters + i];
-        }
-
-        return rangeError;
     }
 
     /** Get the drivers for this modifier parameters.
