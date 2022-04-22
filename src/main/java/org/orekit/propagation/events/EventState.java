@@ -312,11 +312,25 @@ public class EventState<T extends EventDetector> {
                 // both non-zero, the usual case, use a root finder.
                 // time zero for evaluating the function f. Needs to be final
                 final AbsoluteDate fT0 = loopT;
+                final double tbDouble = tb.durationFrom(fT0);
+                final double middle = 0.5 * tbDouble;
                 final UnivariateFunction f = dt -> {
-                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt)));
+                    // use either fT0 or tb as the base time for shifts
+                    // in order to ensure we reproduce exactly those times
+                    // using only one reference time like fT0 would imply
+                    // to use ft0.shiftedBy(tbDouble), which may be different
+                    // from tb due to numerical noise (see issue 921)
+                    final AbsoluteDate t;
+                    if (forward == dt <= middle) {
+                        // use start of interval as reference
+                        t = fT0.shiftedBy(dt);
+                    } else {
+                        // use end of interval as reference
+                        t = tb.shiftedBy(dt - tbDouble);
+                    }
+                    return g(interpolator.getInterpolatedState(t));
                 };
                 // tb as a double for use in f
-                final double tbDouble = tb.durationFrom(fT0);
                 if (forward) {
                     try {
                         final Interval interval =
