@@ -355,6 +355,27 @@ public class EventDetectorTest {
     }
 
     @Test
+    public void testNumericalNoiseAtIntervalEnd() {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        final AbsoluteDate initialDate   = new AbsoluteDate(2011, 5, 11, utc);
+        final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008462.4706055815, -3155502.5373837613, -5044275.9880020910),
+                                                                   new Vector3D(-5012.9298276860990, 1920.3567095973078, -5172.7403501801580)),
+                                                 eme2000, initialDate, Constants.WGS84_EARTH_MU);
+        Propagator propagator = new KeplerianPropagator(orbit);
+        double base  = 3600.0;
+        double noise = FastMath.scalb(base, -60);
+        // introduce some numerical noise by using two separate shifts
+        AbsoluteDate finalTime = initialDate.shiftedBy(base).shiftedBy(2 * noise);
+        AbsoluteDate eventTime = finalTime.shiftedBy(-noise);
+        propagator.addEventDetector(new DateDetector(eventTime).withMaxCheck(base).withThreshold(noise / 2));
+        SpacecraftState finalState = propagator.propagate(finalTime);
+        Assert.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise);
+
+    }
+
+    @Test
     public void testForwardAnalytical() {
         doTestScheduling(0.0, 1.0, 21, this::buildAnalytical);
     }

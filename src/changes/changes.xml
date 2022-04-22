@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="921">
+        Fixed event bracketing problem induced by numerical noise at end of search interval.
+      </action>
       <action dev="luc" type="fix" issue="919">
         Fixed ephemeris generation with several derivatives providers.
       </action>
