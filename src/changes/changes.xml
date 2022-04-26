@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="louis" type="fix" issue="786">
+        Fixed NaNs when constructing Keplerian orbit from PV
+        computed from KeplerianOrbit.
+      </action>
       <action dev="louis" type="fix" issue="826">
         Fixed ephemeris generation using PropagatorParallelizer
       </action>
