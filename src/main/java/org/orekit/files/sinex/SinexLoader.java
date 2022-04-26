@@ -188,7 +188,7 @@ public class SinexLoader {
                     // For now, only few keys are supported
                     // They represent the minimum set of parameters that are interesting to consider in a SINEX file
                     // Other keys can be added depending user needs
-                    switch(line.trim()) {
+                    switch (line.trim()) {
                         case "+SITE/ID" :
                             // Start of site id. data
                             inId = true;
@@ -280,7 +280,7 @@ public class SinexLoader {
                                     // check if this station exists
                                     if (station != null) {
                                         // switch on coordinates data
-                                        switch(parseString(line, 7, 6)) {
+                                        switch (parseString(line, 7, 6)) {
                                             case "STAX":
                                                 // station X coordinate
                                                 final double x = parseDouble(line, 47, 22);

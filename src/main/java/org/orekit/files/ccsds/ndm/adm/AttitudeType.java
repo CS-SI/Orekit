@@ -80,7 +80,7 @@ public enum AttitudeType {
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
                                                    final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final double... components) {
 
             Rotation rotation = isFirst ?
                                 new Rotation(components[0], components[1], components[2], components[3], true) :
@@ -142,7 +142,7 @@ public enum AttitudeType {
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
                                                    final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final double... components) {
             FieldRotation<UnivariateDerivative1> rotation =
                             isFirst ?
                             new FieldRotation<>(new UnivariateDerivative1(components[0], components[4]),
@@ -207,7 +207,7 @@ public enum AttitudeType {
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
                                                    final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final double... components) {
             // Build the needed objects
             final Rotation rotation = isFirst ?
                                       new Rotation(components[0], components[1], components[2], components[3], true) :
@@ -257,7 +257,7 @@ public enum AttitudeType {
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
                                                    final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final double... components) {
 
             // Build the needed objects
             Rotation rotation = new Rotation(eulerRotSequence, RotationConvention.FRAME_TRANSFORM,
@@ -311,7 +311,7 @@ public enum AttitudeType {
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
                                                    final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final double... components) {
 
             // Build the needed objects
             final Rotation rotation = new Rotation(eulerRotSequence,
@@ -374,7 +374,7 @@ public enum AttitudeType {
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
                                                    final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final double... components) {
 
             // Build the needed objects
             final Rotation rotation = new Rotation(RotationOrder.ZYZ,
@@ -414,7 +414,7 @@ public enum AttitudeType {
                                                    final RotationOrder eulerRotSequence,
                                                    final boolean isSpacecraftBodyRate,
                                                    final AbsoluteDate date,
-                                                   final double...components) {
+                                                   final double... components) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -521,7 +521,7 @@ public enum AttitudeType {
      */
     public abstract TimeStampedAngularCoordinates build(boolean isFirst, boolean isExternal2SpacecraftBody,
                                                         RotationOrder eulerRotSequence, boolean isSpacecraftBodyRate,
-                                                        AbsoluteDate date, double...components);
+                                                        AbsoluteDate date, double... components);
 
     /**
      * Get the angular derivative filter corresponding to the attitude data.
