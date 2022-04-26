@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="louis" type="fix" issue="826">
+        Fixed ephemeris generation using PropagatorParallelizer
+      </action>
       <action dev="maxime" type="fix" issue="909">
         Fixed wrong implementation of NTW LOF frame.
       </action>
