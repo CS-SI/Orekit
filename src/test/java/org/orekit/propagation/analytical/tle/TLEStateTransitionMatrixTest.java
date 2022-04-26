@@ -64,15 +64,7 @@ public class TLEStateTransitionMatrixTest {
         final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(initialState);
-        for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 6; ++j) {
-                if (i == j) {
-                    Assert.assertEquals(1.0, dYdY0.getEntry(i, j), tolerance);
-                } else {
-                    Assert.assertEquals(0.0, dYdY0.getEntry(i, j), tolerance);
-                }
-            }
-        }
+        Assert.assertNull(dYdY0);
         final SpacecraftState finalState = propagator.propagate(target);
         dYdY0 = harvester.getStateTransitionMatrix(finalState);
 
