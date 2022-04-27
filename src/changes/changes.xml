@@ -20,7 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.2" date="TBD" description="TBD">
+    <release version="11.1.2" date="2022-04-27"
+             description="Version 11.1.2 is a patch release of Orekit.
+             It fixes issues related to the parsing and writing of CCSDS and ILRS files.
+             It also fixes issues in ECOM2 solar radiation pressure model, event bracketing,
+             ephemeris generation, and NTW local orbital frame.
+             Finally it includes some improvements in the class documentation">
       <action dev="luc" type="fix" issue="917">
         Fixed missing tags in XML generation by EphemerisWriter.
       </action>
@@ -32,7 +37,7 @@
         computed from KeplerianOrbit.
       </action>
       <action dev="louis" type="fix" issue="826">
-        Fixed ephemeris generation using PropagatorParallelizer
+        Fixed ephemeris generation using PropagatorParallelizer.
       </action>
       <action dev="luc" type="fix" issue="921">
         Fixed event bracketing problem induced by numerical noise at end of search interval.
@@ -42,9 +47,6 @@
       </action>
       <action dev="maxime" type="fix" issue="909">
         Fixed wrong implementation of NTW LOF frame.
-      </action>
-      <action dev="pascal" type="add" issue="911">
-        Added TDOA and bistatic range rate measurements.
       </action>
       <action dev="bryan" type="fix" issue="910">
         Fixed eD and eY equation in ECOM2 model.
