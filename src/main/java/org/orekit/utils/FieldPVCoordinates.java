@@ -356,7 +356,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
         final FieldDerivativeStructure<T> x;
         final FieldDerivativeStructure<T> y;
         final FieldDerivativeStructure<T> z;
-        switch(order) {
+        switch (order) {
             case 0 :
                 factory = new FDSFactory<>(getPosition().getX().getField(), 1, order);
                 x = factory.build(position.getX());
@@ -452,7 +452,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
         final FieldDerivativeStructure<T> x2;
         final FieldDerivativeStructure<T> y2;
         final FieldDerivativeStructure<T> z2;
-        switch(order) {
+        switch (order) {
             case 0 :
                 factory = new FDSFactory<>(getPosition().getX().getField(), 1, order);
                 x0 = factory.build(position.getX());

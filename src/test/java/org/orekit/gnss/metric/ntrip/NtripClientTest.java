@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -162,21 +163,23 @@ public class NtripClientTest {
     }
 
     @Test
-    public void testUnknownMessage() {
+    public void testUnknownMessage() throws Exception {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/RTCM3EPH01.dat");
         server.run();
         NtripClient client = new NtripClient("localhost", server.getServerPort());
         client.setTimeout(100);
         client.setReconnectParameters(0.001, 2.0, 2);
-        client.addObserver(1042, "RTCM3EPH01", new CountingObserver(m -> true));
+        final CountingObserver counter = new CountingObserver(m -> true);
+        client.addObserver(1042, "RTCM3EPH01", counter);
         client.addObserver(1042, "RTCM3EPH01", new LoggingObserver());
         client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ie) {
-            // ignored
-        }
+        server.await(10, TimeUnit.SECONDS);
+        // the 31st message causes the exception
+        counter.awaitCount(30, 30 * 1000);
+        // wait a bit for next message, the 31st
+        // better condition would be to wait for StreamMonitor.exception to not be null
+        Thread.sleep(1000);
         try {
             client.stopStreaming(100);
             Assert.fail("an exception should have been thrown");

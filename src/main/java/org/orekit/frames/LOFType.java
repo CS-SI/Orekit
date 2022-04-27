@@ -285,19 +285,16 @@ public enum LOFType {
 
         /** {@inheritDoc} */
         public Rotation rotationFromInertial(final PVCoordinates pv) {
-            final Vector3D m = pv.getMomentum();
-            return new Rotation(new Vector3D(-m.getY(), m.getX(), 0), m,
-                                Vector3D.PLUS_I, Vector3D.PLUS_J);
+            return new Rotation(pv.getVelocity(), pv.getMomentum(),
+                                Vector3D.PLUS_J, Vector3D.PLUS_K);
         }
 
         @Override
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
-            final FieldVector3D<T> m = pv.getMomentum();
-            return new FieldRotation<>(new FieldVector3D<>(m.getY().negate(), m.getX(), field.getZero()),
-                                       m,
-                                       new FieldVector3D<>(field, Vector3D.PLUS_I),
-                                       new FieldVector3D<>(field, Vector3D.PLUS_J));
+            return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
+                                       new FieldVector3D<>(field, Vector3D.PLUS_J),
+                                       new FieldVector3D<>(field, Vector3D.PLUS_K));
         }
 
     };

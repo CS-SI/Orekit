@@ -49,7 +49,9 @@ import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -76,7 +78,20 @@ public class EphemerisWriterTest {
     }
 
     @Test
-    public void testWriteOEM1() throws IOException {
+    public void testWriteOEM1Kvn() throws IOException {
+        final CharArrayWriter caw = new CharArrayWriter();
+        final Generator generator = new KvnGenerator(caw, 0, "", 60);
+        doTestWriteOEM1(caw, generator);
+    }
+
+    @Test
+    public void testWriteOEM1Xml() throws IOException {
+        final CharArrayWriter caw = new CharArrayWriter();
+        final Generator generator = new XmlGenerator(caw, 2, "", true);
+        doTestWriteOEM1(caw, generator);
+    }
+
+    private void doTestWriteOEM1(final CharArrayWriter caw, Generator generator) throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
@@ -86,8 +101,7 @@ public class EphemerisWriterTest {
                         withConventions(IERSConventions.IERS_2010).
                         withDataContext(DataContext.getDefault()).
                         buildOemWriter();
-        final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oem);
+        writer.writeMessage(generator, oem);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final Oem generatedOem = new ParserBuilder().

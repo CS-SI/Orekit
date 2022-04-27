@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -107,9 +109,9 @@ public class IntegratedEphemeris
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
-     * @deprecated as of 11.1, replaced by {@link #IntegratedEphemeris(AbsoluteDate,
+     * @deprecated as of 11.1.2, replaced by {@link #IntegratedEphemeris(AbsoluteDate,
      * AbsoluteDate, AbsoluteDate, StateMapper, PropagationType, DenseOutputModel,
-     * DoubleArrayDictionary, List, String[])}
+     * DoubleArrayDictionary, List, String[], int[])}
      */
     @Deprecated
     public IntegratedEphemeris(final AbsoluteDate startDate,
@@ -134,7 +136,11 @@ public class IntegratedEphemeris
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
      * @since 11.1
+     * @deprecated as of 11.1.2, replaced by {@link #IntegratedEphemeris(AbsoluteDate,
+     * AbsoluteDate, AbsoluteDate, StateMapper, PropagationType, DenseOutputModel,
+     * DoubleArrayDictionary, List, String[], int[])}
      */
+    @Deprecated
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                final StateMapper mapper, final PropagationType type,
@@ -142,6 +148,31 @@ public class IntegratedEphemeris
                                final DoubleArrayDictionary unmanaged,
                                final List<AdditionalStateProvider> providers,
                                final String[] equations) {
+        this(startDate, minDate, maxDate, mapper, type, model,
+             unmanaged, providers, equations,
+             remainingDimensions(model, unmanaged, providers, equations));
+    }
+
+    /** Creates a new instance of IntegratedEphemeris.
+     * @param startDate Start date of the integration (can be minDate or maxDate)
+     * @param minDate first date of the range
+     * @param maxDate last date of the range
+     * @param mapper mapper between raw double components and spacecraft state
+     * @param type type of orbit to output (mean or osculating)
+     * @param model underlying raw mathematical model
+     * @param unmanaged unmanaged additional states that must be simply copied
+     * @param providers providers for pre-integrated states
+     * @param equations names of additional equations
+     * @param dimensions dimensions of additional equations
+     * @since 11.1.2
+     */
+    public IntegratedEphemeris(final AbsoluteDate startDate,
+                               final AbsoluteDate minDate, final AbsoluteDate maxDate,
+                               final StateMapper mapper, final PropagationType type,
+                               final DenseOutputModel model,
+                               final DoubleArrayDictionary unmanaged,
+                               final List<AdditionalStateProvider> providers,
+                               final String[] equations, final int[] dimensions) {
 
         super(mapper.getAttitudeProvider());
 
@@ -160,9 +191,35 @@ public class IntegratedEphemeris
 
         // set up providers to map the final elements of the model array to additional states
         for (int i = 0; i < equations.length; ++i) {
-            addAdditionalStateProvider(new LocalGenerator(equations[i], i));
+            addAdditionalStateProvider(new LocalGenerator(equations[i], i, dimensions[i]));
         }
 
+    }
+
+    /** Compute remaining dimensions for additional equations.
+     * @param model underlying raw mathematical model
+     * @param unmanaged unmanaged additional states that must be simply copied
+     * @param providers providers for pre-integrated states
+     * @param equations names of additional equations
+     * @return dimensions of additional equations
+     * @deprecated as of 11.1.2 this method is temporary and should be removed
+     * when the calling constructors are removed
+     * @since 11.1.2
+     */
+    @Deprecated
+    private static int[] remainingDimensions(final DenseOutputModel model,
+                                             final DoubleArrayDictionary unmanaged,
+                                             final List<AdditionalStateProvider> providers,
+                                             final String[] equations) {
+        final ODEStateAndDerivative osd = model.getInterpolatedState(model.getInitialTime());
+        if (equations.length != osd.getNumberOfSecondaryStates()) {
+            throw new OrekitInternalError(null);
+        }
+        final int[] dimensions = new int[equations.length];
+        for (int i = 0; i < dimensions.length; ++i) {
+            dimensions[i] = osd.getSecondaryStateDimension(i + 1);
+        }
+        return dimensions;
     }
 
     /** Interpolate the model at some date.
@@ -270,13 +327,18 @@ public class IntegratedEphemeris
         /** Index of the additional state. */
         private final int index;
 
+        /** Dimension of the additional state. */
+        private final int dimension;
+
         /** Simple constructor.
          * @param name name of the additional state
          * @param index index of the additional state
+         * @param dimension dimension of the additional state
          */
-        LocalGenerator(final String name, final int index) {
-            this.name  = name;
-            this.index = index;
+        LocalGenerator(final String name, final int index, final int dimension) {
+            this.name      = name;
+            this.index     = index;
+            this.dimension = dimension;
         }
 
         /** {@inheritDoc} */
@@ -288,7 +350,8 @@ public class IntegratedEphemeris
         public double[] getAdditionalState(final SpacecraftState state) {
 
             // extract the part of the interpolated array corresponding to the additional state
-            return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);
+            final double[] combined = getInterpolatedState(state.getDate()).getSecondaryState(1);
+            return Arrays.copyOfRange(combined, index, index + dimension);
 
         }
 

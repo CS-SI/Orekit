@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -37,6 +37,7 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue.Event;
@@ -2335,7 +2336,20 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         }
     }
 
-
+    @Test
+    public void testResetChangesSign() {
+        FieldPropagator<T> propagator = getPropagator(2.5);
+        FieldAbsoluteDate<T> t0 = propagator.getInitialState().getDate();
+        final double small = 1.25e-11;
+        ResetChangesSignGenerator eventsGenerator = new ResetChangesSignGenerator(t0, 0.75, 1.125, -0.5 * small).
+                                                    withMaxCheck(t0.getField().getZero().newInstance(1)).
+                                                    withThreshold(t0.getField().getZero().newInstance(small)).
+                                                    withMaxIter(1000);
+        propagator.addEventDetector(eventsGenerator);
+        final FieldSpacecraftState<T> end = propagator.propagate(propagator.getInitialState().getDate().shiftedBy(12.5));
+        Assert.assertEquals(2,                   eventsGenerator.getCount());
+        Assert.assertEquals(1.125 + 0.5 * small, end.getDate().durationFrom(t0).getReal(), 1.0e-12);
+    }
 
     /* utility classes and methods */
 
@@ -2607,6 +2621,60 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         public void finish(FieldSpacecraftState<D> finalState) {
             this.finalState = finalState;
         }
+    }
+
+    private class ResetChangesSignGenerator extends FieldAbstractDetector<ResetChangesSignGenerator, T> {
+
+        final FieldAbsoluteDate<T> t0;
+        final double y1;
+        final double y2;
+        final double change;
+        double delta;
+        int count;
+
+        public ResetChangesSignGenerator(final FieldAbsoluteDate<T> t0, final double y1, final double y2, final double change) {
+            this(t0.getField().getZero().newInstance(DEFAULT_MAXCHECK),
+                 t0.getField().getZero().newInstance(DEFAULT_THRESHOLD),
+                 DEFAULT_MAX_ITER,
+                 new FieldContinueOnEvent<>(), t0, y1, y2, change);
+        }
+
+        private ResetChangesSignGenerator(final T newMaxCheck, final T newThreshold, final int newMaxIter,
+                                          final FieldEventHandler<? super ResetChangesSignGenerator, T> newHandler,
+                                          final FieldAbsoluteDate<T> t0, final double y1, final double y2, final double change ) {
+            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            this.t0     = t0;
+            this.y1     = y1;
+            this.y2     = y2;
+            this.change = change;
+            this.delta  = 0;
+            this.count  = 0;
+        }
+
+        protected ResetChangesSignGenerator create(final T newMaxCheck, final T newThreshold, final int newMaxIter,
+                                                   final FieldEventHandler<? super ResetChangesSignGenerator, T> newHandler) {
+            return new ResetChangesSignGenerator(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                                 t0, y1, y2, change);
+        }
+
+        public T g(FieldSpacecraftState<T> s) {
+            T dt = s.getDate().durationFrom(t0).add(delta);
+            return dt.subtract(y1).multiply(dt.subtract(y2));
+        }
+
+        public Action eventOccurred(FieldSpacecraftState<T> s, boolean increasing) {
+            return ++count < 2 ? Action.RESET_STATE : Action.STOP;
+        }
+
+        public FieldSpacecraftState<T> resetState(FieldSpacecraftState<T> s) {
+            delta = change;
+            return s;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
     }
 
 }

@@ -20,6 +20,54 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.1.2" date="2022-04-27"
+             description="Version 11.1.2 is a patch release of Orekit.
+             It fixes issues related to the parsing and writing of CCSDS and ILRS files.
+             It also fixes issues in ECOM2 solar radiation pressure model, event bracketing,
+             ephemeris generation, and NTW local orbital frame.
+             Finally it includes some improvements in the class documentation">
+      <action dev="luc" type="fix" issue="917">
+        Fixed missing tags in XML generation by EphemerisWriter.
+      </action>
+      <action dev="louis" type="fix" issue="886">
+        Fixed rollover in CRD parser.
+      </action>
+      <action dev="louis" type="fix" issue="786">
+        Fixed NaNs when constructing Keplerian orbit from PV
+        computed from KeplerianOrbit.
+      </action>
+      <action dev="louis" type="fix" issue="826">
+        Fixed ephemeris generation using PropagatorParallelizer.
+      </action>
+      <action dev="luc" type="fix" issue="921">
+        Fixed event bracketing problem induced by numerical noise at end of search interval.
+      </action>
+      <action dev="luc" type="fix" issue="919">
+        Fixed ephemeris generation with several derivatives providers.
+      </action>
+      <action dev="maxime" type="fix" issue="909">
+        Fixed wrong implementation of NTW LOF frame.
+      </action>
+      <action dev="bryan" type="fix" issue="910">
+        Fixed eD and eY equation in ECOM2 model.
+      </action>
+      <action dev="pascal" type="fix" issue="908">
+        Fixed unmanaged comment in OMM.
+      </action>
+      <action dev="pascal" type="fix" issue="906">
+        Fixed unmanaged units in OMM.
+      </action>
+      <action dev="evan" type="fix" issue="882">
+        Fix StreamingOemWriter in ITRF and without optional fields.
+      </action>
+      <action dev="evan" type="fix" issue="912">
+        Fix StreamingOemWriter without acceleration.
+      </action>
+      <action dev="luc" type="fix" issue="184">
+        Fixed non-bracketing issue when RESET_STATE slightly moves an event at the start
+        of a step and another regular event happens in the first half of the same step
+      </action>
+    </release>
     <release version="11.1.1" date="2022-03-17"
              description="Version 11.1.1 is a patch release of Orekit.
              It fixes issues related to the parsing of SP3 and Rinex files. It also takes

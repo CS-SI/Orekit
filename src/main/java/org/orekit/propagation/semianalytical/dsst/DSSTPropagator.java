@@ -1183,7 +1183,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  we get at constant energy (i.e. on a Keplerian trajectory):
      *
      *  <pre>
-     *  V² r |dV| = mu |dr|
+     *  V r² |dV| = mu |dr|
      *  </pre>
      *
      *  <p> So we deduce a scalar velocity error consistent with the position error. From here, we apply
