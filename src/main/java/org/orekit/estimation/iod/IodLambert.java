@@ -78,7 +78,7 @@ public class IodLambert {
      * @param nRev      number of revolutions
      * @param p1        first position measurement
      * @param p2        second position measurement
-     * @return an initial orbit estimation
+     * @return an initial Keplerian orbit estimation at the first observation date t1
      * @since 11.0
      */
     public KeplerianOrbit estimate(final Frame frame, final boolean posigrade,
@@ -117,7 +117,7 @@ public class IodLambert {
      * @param t1        date of observation 1
      * @param p2        position vector 2
      * @param t2        date of observation 2
-     * @return  an initial Keplerian orbit estimate
+     * @return  an initial Keplerian orbit estimate at the first observation date t1
      */
     public KeplerianOrbit estimate(final Frame frame, final boolean posigrade,
                                    final int nRev,
