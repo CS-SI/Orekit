@@ -259,6 +259,10 @@ public class EventState<T extends EventDetector> {
         final BracketedUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0, convergence, 0, 5);
 
+        // prepare loop below
+        AbsoluteDate loopT = ta;
+        double loopG = ga;
+
         // event time, just at or before the actual root.
         AbsoluteDate beforeRootT = null;
         double beforeRootG = Double.NaN;
@@ -288,17 +292,26 @@ public class EventState<T extends EventDetector> {
             final double newGa = g(interpolator.getInterpolatedState(ta));
             if (ga > 0 != newGa > 0) {
                 // both non-zero, step sign change at ta, possibly due to reset state
-                beforeRootT = ta;
-                beforeRootG = newGa;
-                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
-                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+                final AbsoluteDate nextT = minTime(shiftedBy(ta, convergence), tb);
+                final double       nextG = g(interpolator.getInterpolatedState(nextT));
+                if (nextG > 0.0 == g0Positive) {
+                    // the sign change between ga and newGa just moved the root less than one convergence
+                    // threshold later, we are still in a regular search for another root before tb,
+                    // we just need to fix the bracketing interval
+                    // (see issue https://github.com/Hipparchus-Math/hipparchus/issues/184)
+                    loopT = nextT;
+                    loopG = nextG;
+                } else {
+                    beforeRootT = ta;
+                    beforeRootG = newGa;
+                    afterRootT  = nextT;
+                    afterRootG  = nextG;
+                }
             }
         }
 
         // loop to skip through "fake" roots, i.e. where g(t) = g'(t) = 0.0
         // executed once if we didn't hit a special case above
-        AbsoluteDate loopT = ta;
-        double loopG = ga;
         while ((afterRootG == 0.0 || afterRootG > 0.0 == g0Positive) &&
                 strictlyAfter(afterRootT, tb)) {
             if (loopG == 0.0) {
