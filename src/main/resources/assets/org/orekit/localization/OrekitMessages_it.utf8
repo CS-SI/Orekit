@@ -272,10 +272,10 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = data fuori dell''intervallo di validità pe
 OUT_OF_RANGE_EPHEMERIDES_DATE = data fuori dell''intervallo di validità per le effemeridi: {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = data fuori dall'intervallo di validità delle effemeridi: {0} è {3,number,0.0##############E0} s prima del [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = data fuori dall''intervallo di validità delle effemeridi: {0} è {3,number,0.0##############E0} s prima del [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = data fuori dall'intervallo di validità delle effemeridi: {0} è {3,number,0.0##############E0} s dopo del [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = data fuori dall''intervallo di validità delle effemeridi: {0} è {3,number,0.0##############E0} s dopo del [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
 UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = due valori di elevazione inattesi: {0} e {1}, per un solo azimut: {2}
