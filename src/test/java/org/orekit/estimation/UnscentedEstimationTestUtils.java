@@ -421,6 +421,7 @@ public class UnscentedEstimationTestUtils {
 //          //debug
 
             // Check the final orbit estimation & PV sigmas
+            PVCoordinates pv = refOrbit.getPVCoordinates();
             final double deltaPosK = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
             Assert.assertEquals(expectedDeltaPos, deltaPosK, posEps);

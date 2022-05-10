@@ -52,7 +52,7 @@ public class UnscentedKalmanEstimatorBuilder {
         this.decomposer                      = new QRDecomposer(1.0e-15);
         this.propagatorBuilder               = null;
         this.estimatedMeasurementsParameters = new ParameterDriversList();
-        this.processNoiseMatrixProvider    = null;
+        this.processNoiseMatrixProvider      = null;
         this.measurementProcessNoiseMatrix   = null;
     }
 
