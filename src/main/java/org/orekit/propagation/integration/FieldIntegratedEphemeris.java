@@ -101,6 +101,16 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     /** Unmanaged additional states that must be simply copied. */
     private final FieldArrayDictionary<T> unmanaged;
 
+    /** Names of additional equations.
+     * @since 11.2
+     */
+    private final String[] equations;
+
+    /** Dimensions of additional equations.
+     * @since 11.2
+     */
+    private final int[] dimensions;
+
     /** Creates a new instance of IntegratedEphemeris.
      * @param startDate Start date of the integration (can be minDate or maxDate)
      * @param minDate first date of the range
@@ -192,12 +202,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
             addAdditionalStateProvider(provider);
         }
 
-        // set up providers to map the final elements of the model array to additional states
-        int index = 0;
-        for (int i = 0; i < equations.length; ++i) {
-            addAdditionalStateProvider(new LocalGenerator(equations[i], index, dimensions[i]));
-            index += dimensions[i];
-        }
+        this.equations  = equations.clone();
+        this.dimensions = dimensions.clone();
 
     }
 
@@ -322,44 +328,28 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
-    /** Local generator for additional state data. */
-    private class LocalGenerator implements FieldAdditionalStateProvider<T> {
+    /** {@inheritDoc} */
+    @Override
+    protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
 
-        /** Name of the additional state. */
-        private final String name;
+        FieldSpacecraftState<T> updated = super.updateAdditionalStates(original);
 
-        /** Index of the additional state. */
-        private final int index;
-
-        /** Dimension of the additional state. */
-        private final int dimension;
-
-        /** Simple constructor.
-         * @param name name of the additional state
-         * @param index index of the additional state
-         * @param dimension dimension of the additional state
-         */
-        LocalGenerator(final String name, final int index, final int dimension) {
-            this.name  = name;
-            this.index = index;
-            this.dimension = dimension;
+        if (equations.length > 0) {
+            final FieldODEStateAndDerivative<T> osd                = getInterpolatedState(updated.getDate());
+            final T[]                           combinedState      = osd.getSecondaryState(1);
+            final T[]                           combinedDerivative = osd.getSecondaryDerivative(1);
+            int index = 0;
+            for (int i = 0; i < equations.length; ++i) {
+                final T[] state      = Arrays.copyOfRange(combinedState,      index, index + dimensions[i]);
+                final T[] derivative = Arrays.copyOfRange(combinedDerivative, index, index + dimensions[i]);
+                updated = updated.
+                          addAdditionalState(equations[i], state).
+                          addAdditionalStateDerivative(equations[i], derivative);
+                index += dimensions[i];
+            }
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public T[] getAdditionalState(final FieldSpacecraftState<T> state) {
-
-            // extract the part of the interpolated array corresponding to the additional state
-            final T[] combined = getInterpolatedState(state.getDate()).getSecondaryState(1);
-            return Arrays.copyOfRange(combined, index, index + dimension);
-
-        }
+        return updated;
 
     }
 
