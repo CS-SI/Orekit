@@ -1541,7 +1541,7 @@ public class NumericalPropagatorTest {
 
         IntStream.
         range(0, 2).
-        mapToObj(i -> new EmptyDerivativeProvider("test_provider_" + i, new double[] { 10 * i })).
+        mapToObj(i -> new EmptyDerivativeProvider("test_provider_" + i, new double[] { 10 * i, 20 * i })).
         forEach(provider -> addDerivativeProvider(propagator, provider));
 
         EphemerisGenerator generator = propagator.getEphemerisGenerator();
@@ -1549,10 +1549,12 @@ public class NumericalPropagatorTest {
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final SpacecraftState finalState = ephemeris.propagate(initialOrbit.getDate().shiftedBy(300));
         Assert.assertEquals(2,    finalState.getAdditionalStatesValues().size());
-        Assert.assertEquals(1,    finalState.getAdditionalState("test_provider_0").length);
+        Assert.assertEquals(2,    finalState.getAdditionalState("test_provider_0").length);
         Assert.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[0], 1.0e-15);
-        Assert.assertEquals(1,    finalState.getAdditionalState("test_provider_1").length);
+        Assert.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[1], 1.0e-15);
+        Assert.assertEquals(2,    finalState.getAdditionalState("test_provider_1").length);
         Assert.assertEquals(10.0, finalState.getAdditionalState("test_provider_1")[0], 1.0e-15);
+        Assert.assertEquals(20.0, finalState.getAdditionalState("test_provider_1")[1], 1.0e-15);
     }
 
     private void addDerivativeProvider(NumericalPropagator propagator, EmptyDerivativeProvider provider) {

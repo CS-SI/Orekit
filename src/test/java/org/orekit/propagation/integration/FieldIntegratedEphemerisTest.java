@@ -18,21 +18,30 @@ package org.orekit.propagation.integration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.ode.FieldDenseOutputModel;
+import org.hipparchus.ode.FieldExpandableODE;
+import org.hipparchus.ode.FieldODEState;
+import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
+import org.hipparchus.ode.FieldSecondaryODE;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.ode.nonstiff.EulerFieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
@@ -40,10 +49,12 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -72,6 +83,12 @@ public class FieldIntegratedEphemerisTest {
     @Test
     public void testNoReset() {
         doTestNoReset(Decimal64Field.getInstance());
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecated() {
+        doTestDeprecated(Decimal64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNormalKeplerIntegration(Field<T> field) {
@@ -212,6 +229,59 @@ public class FieldIntegratedEphemerisTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
+
+    }
+
+    @Deprecated
+    private <T extends CalculusFieldElement<T>> void doTestDeprecated(Field<T> field) {
+
+        EulerFieldIntegrator<T> integ = new EulerFieldIntegrator<>(field, field.getZero().newInstance(1.0));
+        FieldDenseOutputModel<T> dom = new FieldDenseOutputModel<>();
+        integ.addStepHandler(dom);
+        FieldExpandableODE<T> eode = new FieldExpandableODE<T>(new FieldOrdinaryDifferentialEquation<T>() {
+            public int getDimension() { return 1; }
+            public T[] computeDerivatives(T t, T[] y) { return y; }
+        });
+        eode.addSecondaryEquations(new FieldSecondaryODE<T>() {
+            public int getDimension() { return 1; }
+            public T[] computeDerivatives(T t, T[] primary, T[] primaryDot, T[] secondary) { return secondary; }
+        });
+        integ.integrate(eode,
+                        new FieldODEState<>(field.getZero().newInstance(0.0),
+                                            MathArrays.buildArray(field, 1),
+                                            MathArrays.buildArray(field, 1, 1)),
+                        field.getZero().newInstance(1.0));
+
+        FieldStateMapper<T> mapper = new FieldStateMapper<T>(FieldAbsoluteDate.getArbitraryEpoch(field),
+                                                             field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU),
+                                                             OrbitType.CARTESIAN, PositionAngle.TRUE,
+                                                             new InertialProvider(FramesFactory.getEME2000()),
+                                                             FramesFactory.getEME2000()) {
+            public void mapStateToArray(FieldSpacecraftState<T> state, T[] y, T[] yDot) {}
+            public FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, T[] yDot, PropagationType type) {
+                return null;
+            }
+        };
+
+        try {
+            new FieldIntegratedEphemeris<T>(FieldAbsoluteDate.getArbitraryEpoch(field),
+                                            FieldAbsoluteDate.getPastInfinity(field),
+                                            FieldAbsoluteDate.getFutureInfinity(field),
+                                            mapper, PropagationType.OSCULATING,
+                                            dom, Collections.emptyMap(), Collections.emptyList(),
+                                            new String[] { "equation-1", "equation-2" });
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oie) {
+            // expected as only one equation could be handled properly by this deprecated constructor
+        }
+
+        FieldIntegratedEphemeris<T> ie = new FieldIntegratedEphemeris<T>(FieldAbsoluteDate.getArbitraryEpoch(field),
+                                                                         FieldAbsoluteDate.getPastInfinity(field),
+                                                                         FieldAbsoluteDate.getFutureInfinity(field),
+                                                                         mapper, PropagationType.OSCULATING,
+                                                                         dom, Collections.emptyMap(), Collections.emptyList(),
+                                                                         new String[] { "equation-1" });
+        Assert.assertNotNull(ie);
 
     }
 

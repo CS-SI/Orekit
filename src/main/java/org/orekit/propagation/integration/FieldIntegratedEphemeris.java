@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.FieldDenseOutputModel;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
@@ -109,9 +111,9 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
-     * @deprecated as of 11.1, replaced by {@link #FieldIntegratedEphemeris(FieldAbsoluteDate,
+     * @deprecated as of 11.2, replaced by {@link #FieldIntegratedEphemeris(FieldAbsoluteDate,
      * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType,
-     * FieldDenseOutputModel, FieldArrayDictionary, List, String[])}
+     * FieldDenseOutputModel, FieldArrayDictionary, List, String[], int[])}
      */
     @Deprecated
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
@@ -137,7 +139,11 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @param providers generators for pre-integrated states
      * @param equations names of additional equations
      * @since 11.1
+     * @deprecated as of 11.2, replaced by {@link #FieldIntegratedEphemeris(FieldAbsoluteDate,
+     * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType,
+     * FieldDenseOutputModel, FieldArrayDictionary, List, String[], int[])
      */
+    @Deprecated
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
                                     final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
                                     final FieldStateMapper<T> mapper, final PropagationType type,
@@ -145,6 +151,31 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                                     final FieldArrayDictionary<T> unmanaged,
                                     final List<FieldAdditionalStateProvider<T>> providers,
                                     final String[] equations) {
+        this(startDate, minDate, maxDate, mapper, type, model,
+             unmanaged, providers, equations,
+             remainingDimensions(model, unmanaged, providers, equations));
+    }
+
+    /** Creates a new instance of IntegratedEphemeris.
+     * @param startDate Start date of the integration (can be minDate or maxDate)
+     * @param minDate first date of the range
+     * @param maxDate last date of the range
+     * @param mapper mapper between raw double components and spacecraft state
+     * @param type type of orbit to output (mean or osculating)
+     * @param model underlying raw mathematical model
+     * @param unmanaged unmanaged additional states that must be simply copied
+     * @param providers generators for pre-integrated states
+     * @param equations names of additional equations
+     * @param dimensions dimensions of additional equations
+     * @since 11.2
+     */
+    public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
+                                    final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
+                                    final FieldStateMapper<T> mapper, final PropagationType type,
+                                    final FieldDenseOutputModel<T> model,
+                                    final FieldArrayDictionary<T> unmanaged,
+                                    final List<FieldAdditionalStateProvider<T>> providers,
+                                    final String[] equations, final int[] dimensions) {
 
         super(startDate.getField(), mapper.getAttitudeProvider());
 
@@ -162,10 +193,39 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         }
 
         // set up providers to map the final elements of the model array to additional states
+        int index = 0;
         for (int i = 0; i < equations.length; ++i) {
-            addAdditionalStateProvider(new LocalGenerator(equations[i], i));
+            addAdditionalStateProvider(new LocalGenerator(equations[i], index, dimensions[i]));
+            index += dimensions[i];
         }
 
+    }
+
+    /** Compute remaining dimensions for additional equations.
+     * @param <T> tupe of the field elements
+     * @param model underlying raw mathematical model
+     * @param unmanaged unmanaged additional states that must be simply copied
+     * @param providers providers for pre-integrated states
+     * @param equations names of additional equations
+     * @return dimensions of additional equations
+     * @deprecated as of 11.2 this method is temporary and should be removed
+     * when the calling constructors are removed
+     * @since 11.2
+     */
+    @Deprecated
+    private static <T extends CalculusFieldElement<T>> int[] remainingDimensions(final FieldDenseOutputModel<T> model,
+                                                                                 final FieldArrayDictionary<T> unmanaged,
+                                                                                 final List<FieldAdditionalStateProvider<T>> providers,
+                                                                                 final String[] equations) {
+        final FieldODEStateAndDerivative<T> osd = model.getInterpolatedState(model.getInitialTime());
+        if (equations.length != osd.getNumberOfSecondaryStates()) {
+            throw new OrekitInternalError(null);
+        }
+        final int[] dimensions = new int[equations.length];
+        for (int i = 0; i < dimensions.length; ++i) {
+            dimensions[i] = osd.getSecondaryStateDimension(i + 1);
+        }
+        return dimensions;
     }
 
     /** Interpolate the model at some date.
@@ -271,13 +331,18 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         /** Index of the additional state. */
         private final int index;
 
+        /** Dimension of the additional state. */
+        private final int dimension;
+
         /** Simple constructor.
          * @param name name of the additional state
          * @param index index of the additional state
+         * @param dimension dimension of the additional state
          */
-        LocalGenerator(final String name, final int index) {
+        LocalGenerator(final String name, final int index, final int dimension) {
             this.name  = name;
             this.index = index;
+            this.dimension = dimension;
         }
 
         /** {@inheritDoc} */
@@ -291,7 +356,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         public T[] getAdditionalState(final FieldSpacecraftState<T> state) {
 
             // extract the part of the interpolated array corresponding to the additional state
-            return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);
+            final T[] combined = getInterpolatedState(state.getDate()).getSecondaryState(1);
+            return Arrays.copyOfRange(combined, index, index + dimension);
 
         }
 

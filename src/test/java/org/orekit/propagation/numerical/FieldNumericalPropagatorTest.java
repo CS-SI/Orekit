@@ -17,6 +17,7 @@
 package org.orekit.propagation.numerical;
 
 import java.lang.reflect.Array;
+import java.util.stream.IntStream;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -77,8 +78,10 @@ import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
+import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -1631,6 +1634,91 @@ public class FieldNumericalPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialMeanWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
+    }
+
+    @Test
+    public void testAdditionalDerivatives() {
+        doTestAdditionalDerivatives(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalDerivatives(final Field<T> field) {
+
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
+                                                                  new DateComponents(2008, 6, 23),
+                                                                  new TimeComponents(14, 0, 0),
+                                                                  TimeScalesFactory.getUTC());
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(field.getZero().newInstance(8000000.0),
+                                                                     field.getZero().newInstance(0.01),
+                                                                     field.getZero().newInstance(0.87),
+                                                                     field.getZero().newInstance(2.44),
+                                                                     field.getZero().newInstance(0.21),
+                                                                     field.getZero().newInstance(-1.05),
+                                                                     PositionAngle.MEAN,
+                                           eme2000,
+                                           date, field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field,
+                                                                                new DormandPrince853FieldIntegrator<>(field, 0.02, 0.2, 1.0, 1.0e-3));
+        propagator.resetInitialState(new FieldSpacecraftState<>(initialOrbit));
+
+        IntStream.
+        range(0, 2).
+        mapToObj(i -> new EmptyDerivativeProvider<>(field, "test_provider_" + i, new double[] { 10 * i, 20 * i })).
+        forEach(provider -> addDerivativeProvider(propagator, provider));
+
+        FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
+        propagator.propagate(initialOrbit.getDate().shiftedBy(600));
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
+        final FieldSpacecraftState<T> finalState = ephemeris.propagate(initialOrbit.getDate().shiftedBy(300));
+        Assert.assertEquals(2,    finalState.getAdditionalStatesValues().size());
+        Assert.assertEquals(2,    finalState.getAdditionalState("test_provider_0").length);
+        Assert.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[0].getReal(), 1.0e-15);
+        Assert.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[1].getReal(), 1.0e-15);
+        Assert.assertEquals(2,    finalState.getAdditionalState("test_provider_1").length);
+        Assert.assertEquals(10.0, finalState.getAdditionalState("test_provider_1")[0].getReal(), 1.0e-15);
+        Assert.assertEquals(20.0, finalState.getAdditionalState("test_provider_1")[1].getReal(), 1.0e-15);
+    }
+
+    private <T extends CalculusFieldElement<T>> void addDerivativeProvider(FieldNumericalPropagator<T> propagator,
+                                                                           EmptyDerivativeProvider<T> provider) {
+        FieldSpacecraftState<T> initialState = propagator.getInitialState();
+        propagator.setInitialState(initialState.addAdditionalState(provider.getName(), provider.getInitialState()));
+        propagator.addAdditionalDerivativesProvider(provider);
+    }
+
+    private static class EmptyDerivativeProvider<T extends CalculusFieldElement<T>> implements FieldAdditionalDerivativesProvider<T> {
+
+        private final Field<T> field;
+        private final String name;
+        private final T[] state;
+
+        public EmptyDerivativeProvider(Field<T> field, String name, double[] state) {
+            this.field = field;
+            this.name  = name;
+            this.state = MathArrays.buildArray(field, state.length);
+            for (int i = 0; i < state.length; ++i) {
+                this.state[i] = field.getZero().newInstance(state[i]);
+            }
+        }
+
+        @Override
+        public T[] derivatives(FieldSpacecraftState<T> s) {
+            return MathArrays.buildArray(field, getDimension());
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public int getDimension() {
+            return state.length;
+        }
+
+        public T[] getInitialState() {
+            return state;
+        }
     }
 
     private static <T extends CalculusFieldElement<T>> void doTestShift(final FieldCartesianOrbit<T> orbit, final OrbitType orbitType,

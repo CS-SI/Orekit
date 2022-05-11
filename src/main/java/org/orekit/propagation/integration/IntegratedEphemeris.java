@@ -190,8 +190,10 @@ public class IntegratedEphemeris
         }
 
         // set up providers to map the final elements of the model array to additional states
+        int index = 0;
         for (int i = 0; i < equations.length; ++i) {
-            addAdditionalStateProvider(new LocalGenerator(equations[i], i, dimensions[i]));
+            addAdditionalStateProvider(new LocalGenerator(equations[i], index, dimensions[i]));
+            index += dimensions[i];
         }
 
     }

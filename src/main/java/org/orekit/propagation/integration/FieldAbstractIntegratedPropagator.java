@@ -1022,6 +1022,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         /** Generated ephemeris. */
         private FieldBoundedPropagator<T> ephemeris;
 
+        /** Last interpolator handled by the object.*/
+        private  FieldODEStateInterpolator<T> lastInterpolator;
+
         /** Set the end date.
          * @param endDate end date
          */
@@ -1038,11 +1041,15 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             // ephemeris will be generated when last step is processed
             this.ephemeris = null;
 
+            this.lastInterpolator = null;
+
         }
 
         /** {@inheritDoc} */
         @Override
         public FieldBoundedPropagator<T> getGeneratedEphemeris() {
+            // Each time we try to get the ephemeris, rebuild it using the last data.
+            buildEphemeris();
             return ephemeris;
         }
 
@@ -1050,11 +1057,26 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         @Override
         public void handleStep(final FieldODEStateInterpolator<T> interpolator) {
             model.handleStep(interpolator);
+            lastInterpolator = interpolator;
         }
 
         /** {@inheritDoc} */
         @Override
         public void finish(final FieldODEStateAndDerivative<T> finalState) {
+            buildEphemeris();
+        }
+
+        /** Method used to produce ephemeris at a given time.
+         * Can be used at multiple times, updating the ephemeris to
+         * its last state.
+         */
+        private void buildEphemeris() {
+            // buildEphemeris was built in order to allow access to what was previously the finish method.
+            // This now allows to call it through getGeneratedEphemeris, therefore through an external call,
+            // which was not previously the case.
+
+            // Update the model's finalTime with the last interpolator.
+            model.finish(lastInterpolator.getCurrentState());
 
             // set up the boundary dates
             final T tI = model.getInitialTime();
@@ -1085,15 +1107,18 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             }
 
             // get the names of additional states managed by differential equations
-            final String[] names = new String[additionalDerivativesProviders.size()];
+            final String[] names      = new String[additionalDerivativesProviders.size()];
+            final int[]    dimensions = new int[additionalDerivativesProviders.size()];
             for (int i = 0; i < names.length; ++i) {
                 names[i] = additionalDerivativesProviders.get(i).getName();
+                dimensions[i] = additionalDerivativesProviders.get(i).getDimension();
             }
 
             // create the ephemeris
             ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
                                                        stateMapper, propagationType, model,
-                                                       unmanaged, getAdditionalStateProviders(), names);
+                                                       unmanaged, getAdditionalStateProviders(),
+                                                       names, dimensions);
 
         }
 
