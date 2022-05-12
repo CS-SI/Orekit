@@ -91,6 +91,9 @@ public class StreamingCpfWriter {
     /** Real 17.3 Format. */
     private static final String F17_3 = "%17.3f";
 
+    /** Real 19.6 Format. */
+    private static final String F19_6 = "%19.6f";
+
     /** Space. */
     private static final String SPACE = " ";
 
@@ -278,13 +281,25 @@ public class StreamingCpfWriter {
         }
 
         /**
-         * Write a single ephemeris line This method does not
+         * Write a single ephemeris line with position record. This method does not
          * write the velocity terms.
          *
          * @param pv the time, position, and velocity to write.
          * @throws IOException if the output stream throws one while writing.
          */
         public void writeEphemerisLine(final TimeStampedPVCoordinates pv)
+            throws IOException {
+            writeEphemerisLine(pv, false);
+        }
+
+        /**
+         * Write two ephemeris lines with position and velocity records.
+         *
+         * @param pv the time, position, and velocity to write.
+         * @param velocityFlag flag for the optional velocity record.
+         * @throws IOException if the output stream throws one while writing.
+         */
+        public void writeEphemerisLine(final TimeStampedPVCoordinates pv, final boolean velocityFlag)
             throws IOException {
 
             // Record type and direction flag
@@ -308,6 +323,23 @@ public class StreamingCpfWriter {
 
             // New line
             writer.append(NEW_LINE);
+
+            // Write the velocity record
+            if (velocityFlag) {
+
+                // Record type and direction flag
+                writeValue(writer, A2, "20",                                    true);
+                writeValue(writer, I1, DEFAULT_DIRECTION_FLAG,                  true);
+
+                // Velocity
+                final Vector3D velocity = pv.getVelocity();
+                writeValue(writer, F19_6, velocity.getX(), true);
+                writeValue(writer, F19_6, velocity.getY(), true);
+                writeValue(writer, F19_6, velocity.getZ(), false);
+
+                // New line
+                writer.append(NEW_LINE);
+            }
 
         }
 
