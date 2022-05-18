@@ -806,12 +806,20 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                     }
                 } else {
                     // we can use these equations right now
-                    final String name        = equations.getName();
-                    final int    offset      = secondaryOffsets.get(name);
-                    final int    dimension   = equations.getDimension();
-                    final T[]    derivatives = equations.derivatives(updated);
-                    System.arraycopy(derivatives, 0, secondaryDot, offset, dimension);
-                    updated = updated.addAdditionalStateDerivative(name, derivatives);
+                    final String                      name           = equations.getName();
+                    final int                         offset         = secondaryOffsets.get(name);
+                    final int                         dimension      = equations.getDimension();
+                    final FieldCombinedDerivatives<T> derivatives    = equations.combinedDerivatives(updated);
+                    final T[]                         additionalPart = derivatives.getAdditionalDerivatives();
+                    final T[]                         mainPart       = derivatives.getMainStateDerivativesIncrements();
+                    System.arraycopy(additionalPart, 0, secondaryDot, offset, dimension);
+                    updated = updated.addAdditionalStateDerivative(name, additionalPart);
+                    if (mainPart != null) {
+                        // this equation does change the main state derivatives
+                        for (int i = 0; i < mainPart.length; ++i) {
+                            primaryDot[i] = primaryDot[i].add(mainPart[i]);
+                        }
+                    }
                     yieldCount = 0;
                 }
             }

@@ -28,6 +28,8 @@ import org.orekit.forces.gravity.ThirdBodyAttractionEpoch;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -270,7 +272,14 @@ public class EpochDerivativesEquations
     }
 
     /** {@inheritDoc} */
-    public double[] derivatives(final SpacecraftState s) {
+    @Override
+    @Deprecated
+    public double[] derivatives(final SpacecraftState state) {
+        return combinedDerivatives(state).getAdditionalDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
 
         // initialize acceleration Jacobians to zero
         final int paramDimEpoch = selected.getNbParams() + 1; // added epoch
@@ -402,7 +411,7 @@ public class EpochDerivativesEquations
 
         }
 
-        return pDot;
+        return new CombinedDerivatives(pDot, null);
 
     }
 

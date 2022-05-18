@@ -95,6 +95,7 @@ import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -692,8 +693,12 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+            public double[] derivatives(final SpacecraftState state) {
+                return null;
+            }
+
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
 
         });
@@ -708,8 +713,12 @@ public class NumericalPropagatorTest {
                     return 1;
                 }
 
-                public double[] derivatives(SpacecraftState s) {
-                    return new double[] { 1.0 };
+                public double[] derivatives(final SpacecraftState state) {
+                    return null;
+                }
+
+                public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                    return new CombinedDerivatives(new double[] { 1.0 }, null);
                 }
 
             });
@@ -727,8 +736,12 @@ public class NumericalPropagatorTest {
                    return 1;
                }
 
-               public double[] derivatives(SpacecraftState state) {
-                    return null;
+               public double[] derivatives(final SpacecraftState state) {
+                   return null;
+               }
+
+               public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                   return new CombinedDerivatives(new double[1], null);
                }
             });
             Assert.fail("an exception should have been thrown");
@@ -799,8 +812,12 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+            public double[] derivatives(final SpacecraftState state) {
+                return null;
+            }
+
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
@@ -937,8 +954,11 @@ public class NumericalPropagatorTest {
             public int getDimension() {
                 return 1;
             }
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { rate };
+            public double[] derivatives(final SpacecraftState state) {
+                return null;
+            }
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { rate }, null);
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", 1.5));
@@ -1572,8 +1592,14 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public double[] derivatives(SpacecraftState s) {
-            return new double[getDimension()];
+        @Deprecated
+        public double[] derivatives(final SpacecraftState state) {
+            return null;
+        }
+
+        @Override
+        public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+            return new CombinedDerivatives(new double[getDimension()], null);
         }
 
         @Override

@@ -51,6 +51,7 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -341,8 +342,12 @@ public class PropagatorsParallelizerTest {
         public boolean yield(final SpacecraftState state) {
             return !state.hasAdditionalState(name);
         }
-        public double[] derivatives(final SpacecraftState state) {
-            return new double[] { base * state.getAdditionalState(name)[0] };
+        public double[] derivatives(SpacecraftState s) {
+            return null;
+        }
+        public CombinedDerivatives combinedDerivatives(SpacecraftState state) {
+            return new CombinedDerivatives(new double[] { base * state.getAdditionalState(name)[0] },
+                                           null);
         }
         public int getDimension() {
             return 1;
