@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCircularOrbit;
@@ -432,6 +433,23 @@ public class FieldEventDetectorTest {
                                                                                         field.getZero().add(Constants.EIGEN5C_EARTH_MU)));
        Assert.assertSame(s, dummyDetector.resetState(s));
 
+    }
+
+    @Test
+    public void testWrongConfiguration() {
+        doTestWrongConfiguration(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestWrongConfiguration(final Field<T> field) {
+        try {
+            new FieldDateDetector<>(field.getZero().newInstance(-1.0),
+                                    field.getZero().newInstance(1.0e-6),
+                                    FieldAbsoluteDate.getArbitraryEpoch(field));
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NOT_STRICTLY_POSITIVE, oe.getSpecifier());
+            Assert.assertEquals(-1.0, ((Double) oe.getParts()[0]).doubleValue(), 1.0e-15);
+        }
     }
 
     @Test

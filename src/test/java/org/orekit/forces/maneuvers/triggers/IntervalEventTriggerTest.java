@@ -46,11 +46,12 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
         @Override
         protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
             FieldAbstractDetector<D, S> convertIntervalDetector(Field<S> field, DateDetector detector) {
-            final S                    maxCheck = field.getZero().newInstance(detector.getMaxCheckInterval());
+            final S                    maxCheck  = field.getZero().newInstance(detector.getMaxCheckInterval());
+            final S                    threshold = field.getZero().newInstance(detector.getThreshold());
             final FieldAbsoluteDate<S> d0 = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
             final FieldAbsoluteDate<S> d1 = new FieldAbsoluteDate<>(field, detector.getDates().get(1).getDate());
             @SuppressWarnings("unchecked")
-            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldDateDetector<>(maxCheck, null, d0, d1);
+            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldDateDetector<>(maxCheck, threshold, d0, d1);
             return converted;
         }
 
