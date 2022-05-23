@@ -27,7 +27,6 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.estimation.sequential.UnscentedKalmanEstimator;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
@@ -420,8 +419,6 @@ public class UnscentedEstimationTestUtils {
 //                          + sigmas[5]);
 //          //debug
 
-            // Check the final orbit estimation & PV sigmas
-            PVCoordinates pv = refOrbit.getPVCoordinates();
             final double deltaPosK = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
             Assert.assertEquals(expectedDeltaPos, deltaPosK, posEps);

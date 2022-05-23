@@ -20,7 +20,7 @@ import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for an Unscented Kalman filter estimator.
@@ -34,7 +34,7 @@ public class UnscentedKalmanEstimatorBuilder {
     private MatrixDecomposer decomposer;
 
     /** Builders for propagator. */
-    private OrbitDeterminationPropagatorBuilder propagatorBuilder;
+    private NumericalPropagatorBuilder propagatorBuilder;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
@@ -90,7 +90,7 @@ public class UnscentedKalmanEstimatorBuilder {
      * @param provider The process noise matrices provider to use, consistent with the builder.
      * @return this object.
      */
-    public UnscentedKalmanEstimatorBuilder addPropagationConfiguration(final OrbitDeterminationPropagatorBuilder builder,
+    public UnscentedKalmanEstimatorBuilder addPropagationConfiguration(final NumericalPropagatorBuilder builder,
                                                                             final CovarianceMatrixProvider provider) {
         propagatorBuilder      = builder;
         processNoiseMatrixProvider = provider;

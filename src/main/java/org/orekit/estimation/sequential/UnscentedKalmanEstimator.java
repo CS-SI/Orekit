@@ -28,6 +28,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -92,7 +93,7 @@ public class UnscentedKalmanEstimator {
      */
 
     UnscentedKalmanEstimator(final MatrixDecomposer decomposer,
-            final OrbitDeterminationPropagatorBuilder propagatorBuilder,
+            final NumericalPropagatorBuilder propagatorBuilder,
             final CovarianceMatrixProvider processNoiseMatricesProvider,
             final ParameterDriversList estimatedMeasurementParameters,
             final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
@@ -103,7 +104,6 @@ public class UnscentedKalmanEstimator {
         this.processModel      = new UnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
                                                           estimatedMeasurementParameters, measurementProcessNoiseMatrix);
         this.filter = new UnscentedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
-
 
 
     }
@@ -196,7 +196,9 @@ public class UnscentedKalmanEstimator {
             if (observer != null) {
                 observer.evaluationPerformed(processModel);
             }
-            return processModel.getEstimatedPropagator();
+            final double[] stateArray = estimate.getState().toArray();
+            final NumericalPropagatorBuilder builder = processModel.getEstimatedBuilder(stateArray);
+            return builder.buildPropagator(stateArray);
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
         }
