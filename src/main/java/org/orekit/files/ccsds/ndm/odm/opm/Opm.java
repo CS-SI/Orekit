@@ -56,8 +56,8 @@ public class Opm extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      */
     public Opm(final Header header, final List<Segment<CommonMetadata, OpmData>> segments,
-                   final IERSConventions conventions, final DataContext dataContext,
-                   final double mu) {
+               final IERSConventions conventions, final DataContext dataContext,
+               final double mu) {
         super(header, segments, conventions, dataContext);
         this.mu = mu;
     }
