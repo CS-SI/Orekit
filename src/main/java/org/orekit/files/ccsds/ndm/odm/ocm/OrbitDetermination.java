@@ -216,15 +216,15 @@ public class OrbitDetermination extends CommentsContainer {
         this.timeSinceLastObservation = timeSinceLastObservation;
     }
 
-    /** Get sime span of observation recommended for the OD of the object.
-     * @return sime span of observation recommended for the OD of the object
+    /** Get time span of observation recommended for the OD of the object.
+     * @return time span of observation recommended for the OD of the object
      */
     public double getRecommendedOdSpan() {
         return recommendedOdSpan;
     }
 
-    /** Set sime span of observation recommended for the OD of the object.
-     * @param recommendedOdSpan sime span of observation recommended for the OD of the object
+    /** Set time span of observation recommended for the OD of the object.
+     * @param recommendedOdSpan time span of observation recommended for the OD of the object
      */
     public void setRecommendedOdSpan(final double recommendedOdSpan) {
         this.recommendedOdSpan = recommendedOdSpan;
