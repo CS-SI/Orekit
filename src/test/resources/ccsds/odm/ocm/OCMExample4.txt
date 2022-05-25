@@ -18,19 +18,21 @@ ALTERNATE_NAMES           = ALTERNATE, OTHER, RELATED
 ORIGINATOR_POC            = Mr. Rodgers
 ORIGINATOR_POSITION       = Flight Dynamics Mission Design Lead
 ORIGINATOR_PHONE          = +12345678901
-ORIGINATOR_ADDRESS        = JOHN.DOE@EXAMPLE.ORG
+ORIGINATOR_EMAIL          = JOHN.DOE@EXAMPLE.ORG
+ORIGINATOR_ADDRESS        = 5040 Spaceflight Ave., Cocoa Beach, FL, USA, 12345
 TECH_ORG                  = NASA
 TECH_POC                  = Maxwell Smart
 TECH_POSITION             = Flight Dynamics Mission Design Lead
 TECH_PHONE                = +98765432109
-TECH_ADDRESS              = MAX@EXAMPLE.ORG
+TECH_EMAIL                = MAX@EXAMPLE.ORG
+TECH_ADDRESS              = 34 Orekit avenue, Earth
 PREVIOUS_MESSAGE_ID       = ABC-12_33
 NEXT_MESSAGE_ID           = ABC-12_35
-ADM_MESSAGE_LINK          = ADM-MSG-35132.TXT
-CDM_MESSAGE_LINK          = CDM-MSG-35132.TXT
-PRM_MESSAGE_LINK          = PRM-MSG-35132.TXT
-RDM_MESSAGE_LINK          = RDM-MSG-35132.TXT
-TDM_MESSAGE_LINK          = TDM-MSG-35132.TXT
+ADM_MSG_LINK              = ADM-MSG-35132.TXT
+CDM_MSG_LINK              = CDM-MSG-35132.TXT
+PRM_MSG_LINK              = PRM-MSG-35132.TXT
+RDM_MSG_LINK              = RDM-MSG-35132.TXT
+TDM_MSG_LINK              = TDM-MSG-35132.TXT
 OPERATOR                  = INTELSAT
 OWNER                     = SIRIUS
 COUNTRY                   = FRANCE
@@ -49,6 +51,8 @@ START_TIME                = 2019-204T09:30:00Z
 STOP_TIME                 = 2019-204T10:29:50Z
 TIME_SPAN                 = 0.041550925925 [d]
 TAIMUTC_AT_TZERO          = 37 [s]
+NEXT_LEAP_EPOCH           = 2050-12-31T23:59:60
+NEXT_LEAP_TAIMUTC         = 38 [s]
 UT1MUTC_AT_TZERO          = -0.1642060 [s]
 EOP_SOURCE                = IERS
 INTERP_METHOD_EOP         = LAGRANGE_ORDER_5
@@ -64,7 +68,7 @@ TRAJ_BASIS                = DETERMINED_OD
 TRAJ_BASIS_ID             = OD_17
 INTERPOLATION             = HERMITE
 INTERPOLATION_DEGREE      = 3
-ORB_AVERAGING             = ECKSTEIN_HECHLER
+PROPAGATOR                = Orekit
 CENTER_NAME               = EARTH
 TRAJ_REF_FRAME            = TOD
 TRAJ_FRAME_EPOCH          = 2019-07-23T00:00:00.000
@@ -88,7 +92,6 @@ TRAJ_BASIS                = PREDICTED
 TRAJ_BASIS_ID             = SIMULATION
 INTERPOLATION             = LAGRANGE
 INTERPOLATION_DEGREE      = 8
-ORB_AVERAGING             = OSCULATING
 CENTER_NAME               = EARTH
 TRAJ_REF_FRAME            = TOD
 TRAJ_FRAME_EPOCH          = 2019-07-23T00:00:00.000
@@ -99,6 +102,29 @@ TRAJ_UNITS                = [km,km,km]
 1800.0 4000.0 5000.0 6000.0
 2100.0 5000.0 6000.0 7000.0
 2400.0 6000.0 7000.0 8000.0
+TRAJ_STOP
+
+TRAJ_START
+COMMENT                   this is number 3 ORB comment
+TRAJ_ID                   = orbit 3
+TRAJ_PREV_ID              = orbit 2
+TRAJ_NEXT_ID              = orbit 4
+TRAJ_BASIS                = SIMULATED
+TRAJ_BASIS_ID             = ce6898a2-db5f-11ec-8d7c-03ee8546e2d3
+INTERPOLATION             = LAGRANGE
+INTERPOLATION_DEGREE      = 8
+ORB_AVERAGING             = OSCULATING
+CENTER_NAME               = EARTH
+TRAJ_REF_FRAME            = TOD
+TRAJ_FRAME_EPOCH          = 2019-07-23T00:00:00.000
+USEABLE_START_TIME        = 2019-204T10:00:00Z
+USEABLE_STOP_TIME         = 2019-204T10:29:59.999Z
+TRAJ_TYPE                 = KEPLERIAN
+ORB_AVERAGING             = OSCULATING
+TRAJ_UNITS                = [km,n/a,deg,deg,deg,deg]
+2800.0 24464.560 0.7311 0.122138 3.10686 1.00681  0.048363
+3100.0 24464.560 0.7311 0.122138 3.10686 1.00681 10.048363
+3400.0 24464.560 0.7311 0.122138 3.10686 1.00681 20.048363
 TRAJ_STOP
 
 PHYS_START
@@ -137,7 +163,7 @@ VM_ABSOLUTE               = 15.0
 VM_APPARENT_MIN           = 19.0
 VM_APPARENT               = 15.4
 VM_APPARENT_MAX           = 14.0
-REFLECTIVITY              = 0.7
+REFLECTANCE               = 0.7
 ATT_CONTROL_MODE          = THREE_AXIS
 ATT_ACTUATOR_TYPE         = REACTION_WHEELS
 ATT_KNOWLEDGE             = 0.3          [deg]
@@ -325,7 +351,7 @@ TRACKS_AVAILABLE          =  33
 TRACKS_USED               =  30
 MAXIMUM_OBS_GAP           = 1.0                 [d]
 OD_EPOCH_EIGMAJ           = 58.73               [m]
-OD_EPOCH_EIGMED           = 35.7                [m]
+OD_EPOCH_EIGINT           = 35.7                [m]
 OD_EPOCH_EIGMIN           = 21.5                [m]
 OD_MAX_PRED_EIGMAJ        = 32.5                [m]
 OD_MIN_PRED_EIGMIN        = 22.0                [m]

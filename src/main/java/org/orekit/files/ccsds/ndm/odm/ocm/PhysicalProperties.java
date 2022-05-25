@@ -128,8 +128,8 @@ public class PhysicalProperties extends CommentsContainer {
     /** Maximum apparent visual magnitude. */
     private double vmApparentMax;
 
-    /** Typical (50th percentile) coefficient of reflectivity. */
-    private double reflectivity;
+    /** Typical (50th percentile) coefficient of reflectance. */
+    private double reflectance;
 
     /** Attitude control mode. */
     private String attitudeControlMode;
@@ -197,7 +197,7 @@ public class PhysicalProperties extends CommentsContainer {
         vmApparentMin                  = Double.NaN;
         vmApparent                     = Double.NaN;
         vmApparentMax                  = Double.NaN;
-        reflectivity                   = Double.NaN;
+        reflectance                    = Double.NaN;
         attitudeKnowledgeAccuracy      = Double.NaN;
         attitudeControlAccuracy        = Double.NaN;
         attitudePointingAccuracy       = Double.NaN;
@@ -674,19 +674,21 @@ public class PhysicalProperties extends CommentsContainer {
         this.vmApparentMax = vmApparentMax;
     }
 
-    /** Get the typical (50th percentile) coefficient of reflectivity.
-     * @return typical (50th percentile) coefficient of reflectivity
+    /** Get the typical (50th percentile) coefficient of reflectance.
+     * @return typical (50th percentile) coefficient of reflectance
+     * @since 11.2
      */
-    public double getReflectivity() {
-        return reflectivity;
+    public double getReflectance() {
+        return reflectance;
     }
 
-    /** Set the typical (50th percentile) coefficient of reflectivity.
-     * @param reflectivity typical (50th percentile) coefficient of reflectivity
+    /** Set the typical (50th percentile) coefficient of reflectance.
+     * @param reflectance typical (50th percentile) coefficient of reflectance
+     * @since 11.2
      */
-    public void setReflectivity(final double reflectivity) {
+    public void setReflectance(final double reflectance) {
         refuseFurtherComments();
-        this.reflectivity = reflectivity;
+        this.reflectance = reflectance;
     }
 
     /** Get the attitude control mode.

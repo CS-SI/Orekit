@@ -73,7 +73,7 @@ public class OrbitDetermination extends CommentsContainer {
     private double epochEigenMaj;
 
     /** Positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD. */
-    private double epochEigenMed;
+    private double epochEigenInt;
 
     /** Positional error ellipsoid 1σ minor eigenvalue at the epoch of OD. */
     private double epochEigenMin;
@@ -331,15 +331,15 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD.
      * @return positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD
      */
-    public double getEpochEigenMed() {
-        return epochEigenMed;
+    public double getEpochEigenInt() {
+        return epochEigenInt;
     }
 
     /** Set positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD.
-     * @param epochEigenMed positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD
+     * @param epochEigenInt positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD
      */
-    public void setEpochEigenMed(final double epochEigenMed) {
-        this.epochEigenMed = epochEigenMed;
+    public void setEpochEigenInt(final double epochEigenInt) {
+        this.epochEigenInt = epochEigenInt;
     }
 
     /** Get positional error ellipsoid 1σ minor eigenvalue at the epoch of OD.
