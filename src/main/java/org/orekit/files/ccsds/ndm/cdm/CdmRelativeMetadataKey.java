@@ -18,7 +18,9 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.utils.units.Unit;
+import org.orekit.files.ccsds.definitions.PocMethodFacade;
 import org.orekit.files.ccsds.definitions.Units;
 
 /** Keys for {@link CdmRelativeMetadata CDM container} entries.
@@ -97,7 +99,12 @@ public enum CdmRelativeMetadataKey {
                                                                                container::setCollisionProba)),
 
     /** The method that was used to calculate the collision probability. */
-    COLLISION_PROBABILITY_METHOD((token, context, container) -> token.processAsNormalizedString(container::setCollisionProbaMethod));
+    COLLISION_PROBABILITY_METHOD((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            container.setCollisionProbaMethod(PocMethodFacade.parse(token.getContentAsNormalizedString()));
+        }
+        return true;
+    });
 
     /** Processing method. */
     private final TokenProcessor processor;

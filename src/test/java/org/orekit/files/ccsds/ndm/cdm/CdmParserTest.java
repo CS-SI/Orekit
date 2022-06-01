@@ -28,6 +28,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.PocMethodType;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.frames.FramesFactory;
@@ -269,7 +270,8 @@ public class CdmParserTest {
                             TimeScalesFactory.getUTC()),
                             file.getRelativeMetadata().getScreenExitTime());
         Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProba(), 1e-30);
-        Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod());
+        Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
+        Assert.assertEquals(PocMethodType.FOSTER_1992,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
         
         // Check Metadata Block
         Assert.assertEquals("OBJECT1" ,                 file.getMetadataObject1().getObject());
@@ -463,7 +465,8 @@ public class CdmParserTest {
                             TimeScalesFactory.getUTC()),
                             file.getRelativeMetadata().getScreenExitTime());
         Assert.assertEquals(2.355e-03,      file.getRelativeMetadata().getCollisionProba(), 1e-30);
-        Assert.assertEquals("ALFANO-2005",  file.getRelativeMetadata().getCollisionProbaMethod());
+        Assert.assertEquals("ALFANO-2005",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
+        Assert.assertEquals(PocMethodType.ALFANO_2005,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
         
         // Check Metadata Block
         Assert.assertEquals("OBJECT1" ,                        file.getMetadataObject1().getObject());
@@ -626,7 +629,8 @@ public class CdmParserTest {
                             TimeScalesFactory.getUTC()),
                             file.getRelativeMetadata().getScreenExitTime());
         Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProba(), 1e-30);
-        Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod());
+        Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
+        Assert.assertEquals(PocMethodType.FOSTER_1992,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
         
         // Check Metadata Block
         Assert.assertEquals("OBJECT1" ,                 file.getMetadataObject1().getObject());
@@ -789,7 +793,8 @@ public class CdmParserTest {
                              TimeScalesFactory.getUTC()),
                              file.getRelativeMetadata().getScreenExitTime());
          Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProba(), 1e-30);
-         Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod());
+         Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
+         Assert.assertEquals(PocMethodType.FOSTER_1992,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
 
          // Check Metadata Block
          Assert.assertEquals("OBJECT1",                    file.getMetadataObject1().getObject());

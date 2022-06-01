@@ -180,8 +180,10 @@ public class CdmWriter extends CdmMessageWriter {
         generator.writeEntry(CdmRelativeMetadataKey.SCREEN_EXIT_TIME.name(),    getTimeConverter(),
                              relativeMetadata.getScreenExitTime(), false);
         generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY.name(), relativeMetadata.getCollisionProba(), Unit.ONE, false);
-        generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY_METHOD.name(),
-                             relativeMetadata.getCollisionProbaMethod(), null, false);
+        if (relativeMetadata.getCollisionProbaMethod() != null)  {
+            generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY_METHOD.name(),
+                                 relativeMetadata.getCollisionProbaMethod().getName(), null, false);
+        }
 
         // stop relative metadata block
         if (generator.getFormat() == FileFormat.XML) {

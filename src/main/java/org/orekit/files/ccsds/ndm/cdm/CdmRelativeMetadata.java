@@ -22,6 +22,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.PocMethodFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 
@@ -95,7 +96,7 @@ public class CdmRelativeMetadata {
     private double collisionProbability;
 
     /** The method that was used to calculate the collision probability. */
-    private String collisionProbabilityMethod;
+    private PocMethodFacade collisionProbabilityMethod;
 
     /** Simple constructor.
      */
@@ -402,15 +403,15 @@ public class CdmRelativeMetadata {
      * Get the method that was used to calculate the collision probability.
      * @return method to calculate probability of collision
      */
-    public String getCollisionProbaMethod() {
+    public PocMethodFacade getCollisionProbaMethod() {
         return collisionProbabilityMethod;
     }
 
     /**
      * Set the method that was used to calculate the collision probability.
-     * @param collisionProbaMethod first component size of the screening volume
+     * @param collisionProbaMethod method used to calculate probability of collision
      */
-    public void setCollisionProbaMethod(final String collisionProbaMethod) {
+    public void setCollisionProbaMethod(final PocMethodFacade collisionProbaMethod) {
         this.collisionProbabilityMethod = collisionProbaMethod;
     }
 
