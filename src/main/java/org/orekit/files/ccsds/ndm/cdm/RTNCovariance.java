@@ -73,7 +73,6 @@ public class RTNCovariance extends CommentsContainer {
         checkNotNaN(getCndotrdot(),        RTNCovarianceKey.CNDOT_RDOT);
         checkNotNaN(getCndottdot(),        RTNCovarianceKey.CNDOT_TDOT);
         checkNotNaN(getCndotndot(),        RTNCovarianceKey.CNDOT_NDOT);
-
     }
 
     /** Set an entry in the RTN covariance matrix.
@@ -93,7 +92,7 @@ public class RTNCovariance extends CommentsContainer {
      * Get the RTN covariance matrix.
      * @return the RTN covariance matrix
      */
-    public RealMatrix getRTNCovariaxMatrix() {
+    public RealMatrix getRTNCovarianceMatrix() {
         return covarianceMatrix;
     }
 

@@ -26,33 +26,42 @@ import org.orekit.files.ccsds.definitions.Units;
  * @since 11.2
  */
 public enum CdmRelativeMetadataKey {
+
     /** Date and time in UTC of the closest approach. */
     TCA((token, context, container) -> token.processAsDate(container::setTca, context)),
 
     /** Norm of relative position vector at TCA. */
     MISS_DISTANCE((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
                                                                              container::setMissDistance)),
+
     /** Norm of relative velocity vector at TCA. */
     RELATIVE_SPEED((token, context, container) -> token.processAsDouble(Units.M_PER_S, context.getParsedUnitsBehavior(),
                                                                              container::setRelativeSpeed)),
+
     /** The R component of Object2’s position relative to Object1’s position in the Radial/Transverse/Normal coordinate frame. */
     RELATIVE_POSITION_R((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
                                                                              container::setRelativePositionR)),
+
     /** The T component of Object2’s position relative to Object1’s position in the Radial/Transverse/Normal coordinate frame. */
     RELATIVE_POSITION_T((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
                                                                              container::setRelativePositionT)),
+
     /** The N component of Object2’s position relative to Object1’s position in the Radial/Transverse/Normal coordinate frame. */
     RELATIVE_POSITION_N((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
                                                                             container::setRelativePositionN)),
+
     /** The R component of Object2’s velocity relative to Object1’s veloity in the Radial/Transverse/Normal coordinate frame. */
     RELATIVE_VELOCITY_R((token, context, container) -> token.processAsDouble(Units.M_PER_S, context.getParsedUnitsBehavior(),
                                                                              container::setRelativeVelocityR)),
+
     /** The T component of Object2’s velocity relative to Object1’s veloity in the Radial/Transverse/Normal coordinate frame. */
     RELATIVE_VELOCITY_T((token, context, container) -> token.processAsDouble(Units.M_PER_S, context.getParsedUnitsBehavior(),
                                                                              container::setRelativeVelocityT)),
+
     /** The N component of Object2’s velocity relative to Object1’s veloity in the Radial/Transverse/Normal coordinate frame. */
     RELATIVE_VELOCITY_N((token, context, container) -> token.processAsDouble(Units.M_PER_S, context.getParsedUnitsBehavior(),
                                                                              container::setRelativeVelocityN)),
+
     /** The start time in UTC of the screening period for the conjunction assessment. */
     START_SCREEN_PERIOD((token, context, container) -> token.processAsDate(container::setStartScreenPeriod, context)),
 
@@ -68,12 +77,15 @@ public enum CdmRelativeMetadataKey {
     /** The R or T (depending on if RTN or TVN is selected) component size of the screening volume in the SCREEN_VOLUME_FRAME. */
     SCREEN_VOLUME_X((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
                                                                          container::setScreenVolumeX)),
+
     /** The T or V (depending on if RTN or TVN is selected) component size of the screening volume in the SCREEN_VOLUME_FRAME. */
     SCREEN_VOLUME_Y((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
                                                                          container::setScreenVolumeY)),
+
     /** The N component size of the screening volume in the SCREEN_VOLUME_FRAME. */
     SCREEN_VOLUME_Z((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
                                                                          container::setScreenVolumeZ)),
+
     /** The time in UTC when Object2 enters the screening volume. */
     SCREEN_ENTRY_TIME((token, context, container) -> token.processAsDate(container::setScreenEntryTime, context)),
 
@@ -83,6 +95,7 @@ public enum CdmRelativeMetadataKey {
     /** The probability (denoted ‘p’ where 0.0<=p<=1.0), that Object1 and Object2 will collide. */
     COLLISION_PROBABILITY((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
                                                                                container::setCollisionProba)),
+
     /** The method that was used to calculate the collision probability. */
     COLLISION_PROBABILITY_METHOD((token, context, container) -> token.processAsNormalizedString(container::setCollisionProbaMethod));
 

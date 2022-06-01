@@ -30,6 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * @since 11.2
  */
 public class CdmRelativeMetadata {
+
     /** Time System: used for metadata, orbit state and covariance data. */
     private TimeSystem timeSystem;
 

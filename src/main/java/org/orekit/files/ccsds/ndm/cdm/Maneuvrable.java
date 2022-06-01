@@ -29,6 +29,6 @@ public enum Maneuvrable {
     NO,
 
     /** Don't know or not applicable. */
-    NOT_APPLICABLE
+    NOT_APPLICABLE;
 
 }

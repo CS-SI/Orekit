@@ -27,6 +27,7 @@ import org.orekit.utils.units.Unit;
  * @since 11.2
  */
 public enum AdditionalParametersKey {
+
     /** Comment entry. */
     COMMENT((token, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
@@ -34,24 +35,31 @@ public enum AdditionalParametersKey {
     /** The actual area of the object. */
     AREA_PC((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
                                                                  container::setAreaPC)),
+
     /** The effective area of the object exposed to atmospheric drag. */
     AREA_DRG((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
                                                                  container::setAreaDRG)),
+
     /** The effective area of the object exposed to solar radiation pressure. */
     AREA_SRP((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
                                                                  container::setAreaDRG)),
+
     /** The mass of the object. */
     MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, context.getParsedUnitsBehavior(),
                                                                  container::setMass)),
+
     /** The object’s Cd x A/m used to propagate the state vector and covariance to TCA. */
     CD_AREA_OVER_MASS((token, context, container) -> token.processAsDouble(Units.M2_PER_KG, context.getParsedUnitsBehavior(),
                                                                  container::setCDAreaOverMass)),
+
     /** The object’s Cr x A/m used to propagate the state vector and covariance to TCA. */
     CR_AREA_OVER_MASS((token, context, container) -> token.processAsDouble(Units.M2_PER_KG, context.getParsedUnitsBehavior(),
                                                                  container::setCRAreaOverMass)),
+
     /** The object’s acceleration due to in-track thrust used to propagate the state vector and covariance to TCA. */
     THRUST_ACCELERATION((token, context, container) -> token.processAsDouble(Units.M_PER_S2, context.getParsedUnitsBehavior(),
                                                                  container::setThrustAcceleration)),
+
     /** The amount of energy being removed from the object’s orbit by atmospheric drag. This value is an average calculated during the OD. */
     SEDR((token, context, container) -> token.processAsDouble(Units.W_PER_KG, context.getParsedUnitsBehavior(),
                                                                  container::setSedr));

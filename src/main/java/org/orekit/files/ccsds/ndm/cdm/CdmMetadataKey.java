@@ -72,6 +72,7 @@ public enum CdmMetadataKey {
     /** Central body for Object 1 and 2. */
     ORBIT_CENTER((token, context, container) -> token.processAsCenter(container::setOrbitCenter,
                                                                     context.getDataContext().getCelestialBodies())),
+
     /** Name of the reference frame, in which state vector data are given. */
     REF_FRAME((token, context, container) -> token.processAsFrame(container::setRefFrame, context, true, true, true)),
 
@@ -87,8 +88,10 @@ public enum CdmMetadataKey {
 
     /** Is solar radiation pressure used for the OD of the object ? */
     SOLAR_RAD_PRESSURE((token, context, container) -> token.processAsBoolean(container::setSolarRadiationPressure)),
+
     /** Is solid Earth and ocean tides used for the OD of the object ? */
     EARTH_TIDES((token, context, container) -> token.processAsBoolean(container::setEarthTides)),
+
     /** Indication of whether in-track thrust modeling used for the object. */
     INTRACK_THRUST((token, context, container) -> token.processAsBoolean(container::setIntrackThrust));
 

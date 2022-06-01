@@ -39,10 +39,9 @@ public class RTNCovarianceWriter extends AbstractWriter {
      * @param RTNCovariance RTN covariance data to write
      */
     RTNCovarianceWriter(final String xmlTag, final String kvnTag,
-                       final RTNCovariance RTNCovariance) {
+                        final RTNCovariance RTNCovariance) {
         super(xmlTag, kvnTag);
         this.rtnCovariance = RTNCovariance;
-
     }
 
     /** {@inheritDoc} */

@@ -27,6 +27,7 @@ import org.orekit.utils.units.Unit;
  * @since 11.2
  */
 public enum StateVectorKey {
+
     /** Comment entry. */
     COMMENT((token, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),

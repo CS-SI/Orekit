@@ -49,7 +49,6 @@ public class AdditionalParameters extends CommentsContainer {
     /** The amount of energy being removed from the object’s orbit by atmospheric drag. This value is an average calculated during the OD. */
     private double sedr;
 
-
     /** Simple constructor.
      */
     public AdditionalParameters() {
@@ -67,7 +66,6 @@ public class AdditionalParameters extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-
     }
 
     /**

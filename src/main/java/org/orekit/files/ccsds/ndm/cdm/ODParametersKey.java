@@ -26,21 +26,25 @@ import org.orekit.utils.units.Unit;
  * @since 11.2
  */
 public enum ODParametersKey {
+
     /** Comment entry. */
     COMMENT((token, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
-    /** The start of a time interval (UTC) that contains the time of the last accepted observation. */
-    TIME_LASTOB_START((token, context, container) -> token.processAsDate(container::setTimeLastobStart, context)),
 
     /** The start of a time interval (UTC) that contains the time of the last accepted observation. */
-    TIME_LASTOB_END((token, context, container) -> token.processAsDate(container::setTimeLastobEnd, context)),
+    TIME_LASTOB_START((token, context, container) -> token.processAsDate(container::setTimeLastObsStart, context)),
+
+    /** The start of a time interval (UTC) that contains the time of the last accepted observation. */
+    TIME_LASTOB_END((token, context, container) -> token.processAsDate(container::setTimeLastObsEnd, context)),
 
     /** The recommended OD time span calculated for the object. */
     RECOMMENDED_OD_SPAN((token, context, container) -> token.processAsDouble(Unit.DAY, context.getParsedUnitsBehavior(),
-                                                                             container::setRecommendedODSpan)),
+                                                                             container::setRecommendedOdSpan)),
+
     /** Based on the observations available and the RECOMMENDED_OD_SPAN, the actual time span used for the OD of the object. */
     ACTUAL_OD_SPAN((token, context, container) -> token.processAsDouble(Unit.DAY, context.getParsedUnitsBehavior(),
-                                                                             container::setActualODSpan)),
+                                                                             container::setActualOdSpan)),
+
     /** The number of observations available for the OD of the object. */
     OBS_AVAILABLE((token, context, container) -> token.processAsInteger(container::setObsAvailable)),
 
@@ -56,9 +60,10 @@ public enum ODParametersKey {
     /** The percentage of residuals accepted in the OD of the object (from 0 to 100). */
     RESIDUALS_ACCEPTED((token, context, container) -> token.processAsDouble(Unit.PERCENT, context.getParsedUnitsBehavior(),
                                                                              container::setResidualsAccepted)),
+
     /** The weighted Root Mean Square (RMS) of the residuals from a batch least squares OD. */
     WEIGHTED_RMS((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                             container::setWeightedRMSS));
+                                                                             container::setWeightedRMS));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -51,6 +51,7 @@ import org.orekit.utils.IERSConventions;
  * @since 11.2
  */
 public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
+
     /** Comment key. */
     private static String COMMENT = "COMMENT";
 
@@ -574,5 +575,6 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
             return false;
         }
     }
+
 }
 

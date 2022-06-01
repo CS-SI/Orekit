@@ -114,7 +114,6 @@ public class CdmMetadata extends Metadata {
      */
     public CdmMetadata() {
         super(null);
-
     }
 
     /** {@inheritDoc} */
@@ -131,7 +130,6 @@ public class CdmMetadata extends Metadata {
         checkNotNull(covarianceMethod,        CdmMetadataKey.COVARIANCE_METHOD);
         checkNotNull(maneuverable,            CdmMetadataKey.MANEUVERABLE);
         checkNotNull(refFrame,                CdmMetadataKey.REF_FRAME);
-
     }
 
     /**
