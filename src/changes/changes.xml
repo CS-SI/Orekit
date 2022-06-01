@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="mvanel" type="add" issue="777">
+        Added support for parsing and writing CDM files in both KVN and XML formats.
+      </action>
       <action dev="luc" type="add" issue="918">
         Added support for ITRF-2020.
       </action>
