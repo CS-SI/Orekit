@@ -179,7 +179,7 @@ public class CdmWriter extends CdmMessageWriter {
                              relativeMetadata.getScreenEntryTime(), false);
         generator.writeEntry(CdmRelativeMetadataKey.SCREEN_EXIT_TIME.name(),    getTimeConverter(),
                              relativeMetadata.getScreenExitTime(), false);
-        generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY.name(), relativeMetadata.getCollisionProba(), Unit.ONE, false);
+        generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY.name(), relativeMetadata.getCollisionProbability(), Unit.ONE, false);
         if (relativeMetadata.getCollisionProbaMethod() != null)  {
             generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY_METHOD.name(),
                                  relativeMetadata.getCollisionProbaMethod().getName(), null, false);

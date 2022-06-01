@@ -269,7 +269,7 @@ public class CdmParserTest {
         Assert.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.824,
                             TimeScalesFactory.getUTC()),
                             file.getRelativeMetadata().getScreenExitTime());
-        Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProba(), 1e-30);
+        Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
         Assert.assertEquals(PocMethodType.FOSTER_1992,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
         
@@ -353,8 +353,8 @@ public class CdmParserTest {
                             file.getRelativeMetadata().getRelativePosition().getY(), DISTANCE_PRECISION);
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),  
                             file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProba(),  
-                            file.getRelativeMetadata().getCollisionProba(),1e-30);
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),  
+                            file.getRelativeMetadata().getCollisionProbability(),1e-30);
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),  
                             file.getRelativeMetadata().getCollisionProbaMethod());
         
@@ -464,7 +464,7 @@ public class CdmParserTest {
         Assert.assertEquals(new AbsoluteDate(2012, 9, 13, 23, 44, 29.324,
                             TimeScalesFactory.getUTC()),
                             file.getRelativeMetadata().getScreenExitTime());
-        Assert.assertEquals(2.355e-03,      file.getRelativeMetadata().getCollisionProba(), 1e-30);
+        Assert.assertEquals(2.355e-03,      file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assert.assertEquals("ALFANO-2005",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
         Assert.assertEquals(PocMethodType.ALFANO_2005,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
         
@@ -532,8 +532,8 @@ public class CdmParserTest {
                             file.getRelativeMetadata().getRelativePosition().getX(), DISTANCE_PRECISION);
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),  
                             file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProba(),  
-                            file.getRelativeMetadata().getCollisionProba(),1e-30);
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),  
+                            file.getRelativeMetadata().getCollisionProbability(),1e-30);
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),  
                             file.getRelativeMetadata().getCollisionProbaMethod());
         
@@ -628,7 +628,7 @@ public class CdmParserTest {
         Assert.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.824,
                             TimeScalesFactory.getUTC()),
                             file.getRelativeMetadata().getScreenExitTime());
-        Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProba(), 1e-30);
+        Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
         Assert.assertEquals(PocMethodType.FOSTER_1992,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
         
@@ -681,8 +681,8 @@ public class CdmParserTest {
                             file.getRelativeMetadata().getRelativePosition().getY(), DISTANCE_PRECISION);
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),  
                             file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProba(),  
-                            file.getRelativeMetadata().getCollisionProba(),1e-30);
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),  
+                            file.getRelativeMetadata().getCollisionProbability(),1e-30);
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),  
                             file.getRelativeMetadata().getCollisionProbaMethod());
         
@@ -792,7 +792,7 @@ public class CdmParserTest {
          Assert.assertEquals(new AbsoluteDate(2010, 3, 13, 23, 44, 29.324,
                              TimeScalesFactory.getUTC()),
                              file.getRelativeMetadata().getScreenExitTime());
-         Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProba(), 1e-30);
+         Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProbability(), 1e-30);
          Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
          Assert.assertEquals(PocMethodType.FOSTER_1992,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
 
@@ -851,8 +851,8 @@ public class CdmParserTest {
                              file.getRelativeMetadata().getRelativePosition().getZ(), DISTANCE_PRECISION);
          Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),  
                              file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProba(),  
-                             file.getRelativeMetadata().getCollisionProba(),1e-30);
+         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),  
+                             file.getRelativeMetadata().getCollisionProbability(),1e-30);
          Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),  
                              file.getRelativeMetadata().getCollisionProbaMethod());
          

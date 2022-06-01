@@ -94,9 +94,9 @@ public enum CdmRelativeMetadataKey {
     /** The time in UTC when Object2 exits the screening volume. */
     SCREEN_EXIT_TIME((token, context, container) -> token.processAsDate(container::setScreenExitTime, context)),
 
-    /** The probability (denoted ‘p’ where 0.0<=p<=1.0), that Object1 and Object2 will collide. */
+    /** The probability (between 0.0 and 1.0) that Object1 and Object2 will collide. */
     COLLISION_PROBABILITY((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                               container::setCollisionProba)),
+                                                                               container::setCollisionProbability)),
 
     /** The method that was used to calculate the collision probability. */
     COLLISION_PROBABILITY_METHOD((token, context, container) -> {

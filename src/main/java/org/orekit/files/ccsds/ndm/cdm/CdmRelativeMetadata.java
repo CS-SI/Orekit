@@ -384,19 +384,19 @@ public class CdmRelativeMetadata {
     }
 
     /**
-     * Get the probability (denoted ‘p’ where 0.0<=p<=1.0), that Object1 and Object2 will collide.
+     * Get the probability (between 0.0 and 1.0) that Object1 and Object2 will collide.
      * @return probability of collision
      */
-    public double getCollisionProba() {
+    public double getCollisionProbability() {
         return collisionProbability;
     }
 
     /**
-     * Set the probability (denoted ‘p’ where 0.0<=p<=1.0), that Object1 and Object2 will collide.
-     * @param collisionProba first component size of the screening volume
+     * Set the probability (between 0.0 and 1.0) that Object1 and Object2 will collide.
+     * @param collisionProbability first component size of the screening volume
      */
-    public void setCollisionProba(final double collisionProba) {
-        this.collisionProbability = collisionProba;
+    public void setCollisionProbability(final double collisionProbability) {
+        this.collisionProbability = collisionProbability;
     }
 
     /**
