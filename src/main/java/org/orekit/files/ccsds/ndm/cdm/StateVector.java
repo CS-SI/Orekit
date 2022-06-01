@@ -54,7 +54,6 @@ public class StateVector extends CommentsContainer {
         xDot      = Double.NaN;
         yDot      = Double.NaN;
         zDot      = Double.NaN;
-
     }
 
     /** {@inheritDoc} */
@@ -72,7 +71,7 @@ public class StateVector extends CommentsContainer {
 
     /**
      * Set object Position Vector X component.
-     * @param X object Position Vector X component (in km)
+     * @param X object Position Vector X component (in m)
      */
     public void setX(final double X) {
         refuseFurtherComments();
@@ -81,7 +80,7 @@ public class StateVector extends CommentsContainer {
 
     /**
      * Set object Position Vector Y component.
-     * @param Y object Position Vector Y component (in km)
+     * @param Y object Position Vector Y component (in m)
      */
     public void setY(final double Y) {
         refuseFurtherComments();
@@ -90,7 +89,7 @@ public class StateVector extends CommentsContainer {
 
     /**
      * Set object Position Vector Z component.
-     * @param Z object Position Vector Z component (in km)
+     * @param Z object Position Vector Z component (in m)
      */
     public void setZ(final double Z) {
         refuseFurtherComments();
@@ -99,7 +98,7 @@ public class StateVector extends CommentsContainer {
 
     /**
      * Set object Velocity Vector X component.
-     * @param Xdot object Velocity Vector X component (in km/s)
+     * @param Xdot object Velocity Vector X component (in m/s)
      */
     public void setXdot(final double Xdot) {
         refuseFurtherComments();
@@ -108,7 +107,7 @@ public class StateVector extends CommentsContainer {
 
     /**
      * Set object Velocity Vector Y component.
-     * @param Ydot object Velocity Vector Y component (in km/s)
+     * @param Ydot object Velocity Vector Y component (in m/s)
      */
     public void setYdot(final double Ydot) {
         refuseFurtherComments();
@@ -117,7 +116,7 @@ public class StateVector extends CommentsContainer {
 
     /**
      * Set object Velocity Vector Z component.
-     * @param Zdot object Velocity Vector Z component (in km/s)
+     * @param Zdot object Velocity Vector Z component (in m/s)
      */
     public void setZdot(final double Zdot) {
         refuseFurtherComments();
@@ -126,7 +125,7 @@ public class StateVector extends CommentsContainer {
 
     /**
      * Get object Position Vector.
-     * @return object Position Vector Z (in km)
+     * @return object Position Vector (in m)
      */
     public Vector3D getPositionVector() {
         return new Vector3D(x, y, z);
@@ -134,7 +133,7 @@ public class StateVector extends CommentsContainer {
 
     /**
      * Get object Velocity Vector.
-     * @return object Velocity Vector (in km/s)
+     * @return object Velocity Vector (in m/s)
      */
     public Vector3D getVelocityVector() {
         return new Vector3D(xDot, yDot, zDot);
