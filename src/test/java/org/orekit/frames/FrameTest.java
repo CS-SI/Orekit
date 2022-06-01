@@ -18,12 +18,14 @@ package org.orekit.frames;
 
 import java.util.Random;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -205,6 +207,10 @@ public class FrameTest {
         PVCoordinates pvEme2000 = new PVCoordinates(pEme2000, vEme2000);
         PVCoordinates pvH0m9 = eme2000.getTransformTo(frozenLaunchFrame, h0M9).transformPVCoordinates(pvEme2000);
         Assert.assertEquals(vEme2000.getNorm(), pvH0m9.getVelocity().getNorm(), 1.0e-6);
+        Vector3D pH0m9 = eme2000.getStaticTransformTo(frozenLaunchFrame, h0M9)
+                .transformPosition(pvEme2000.getPosition());
+        MatcherAssert.assertThat(pH0m9,
+                OrekitMatchers.vectorCloseTo(pvH0m9.getPosition(), 1e-15));
 
         // this frame is fixed with respect to EME2000 but rotates with respect to the non-frozen one
         // the following loop should have a fixed angle a1 and an evolving angle a2

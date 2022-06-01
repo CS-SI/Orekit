@@ -237,11 +237,11 @@ public class ECOM2Test extends AbstractForceModelTest {
         //Compare state derivatives with finite-difference ones.
         for (int i = 0; i < 6; i++) {
             final double errorX = (accX[i + 1] - refDeriv[0][i]) / refDeriv[0][i];
-            Assert.assertEquals(0, errorX, 1e-10);
+            Assert.assertEquals(0, errorX, 1.0e-10);
             final double errorY = (accY[i + 1] - refDeriv[1][i]) / refDeriv[1][i];
-            Assert.assertEquals(0, errorY, 1e-10);
+            Assert.assertEquals(0, errorY, 1.5e-10);
             final double errorZ = (accZ[i + 1] - refDeriv[2][i]) / refDeriv[2][i];
-            Assert.assertEquals(0, errorZ, 1e-10);
+            Assert.assertEquals(0, errorZ, 1.0e-10);
         }
         
     }
@@ -496,6 +496,45 @@ public class ECOM2Test extends AbstractForceModelTest {
         Assert.assertTrue(calc.getCalls() < 7100);
     }
 
+    @Test
+    public void testRealAndFieldComparison() {
+
+        // Orbital parameters from GNSS almanac
+        final int freeParameters = 6;
+        final Gradient sma  = Gradient.variable(freeParameters, 0, 26559614.1);
+        final Gradient ecc  = Gradient.variable(freeParameters, 1, 0.00522136);
+        final Gradient inc  = Gradient.variable(freeParameters, 2, 0.963785748);
+        final Gradient aop  = Gradient.variable(freeParameters, 3, 0.451712027);
+        final Gradient raan = Gradient.variable(freeParameters, 4, -1.159458779);
+        final Gradient lm   = Gradient.variable(freeParameters, 4, -2.105941778);
+
+        // Field and zero
+        final Field<Gradient> field = sma.getField();
+
+        // Epoch
+        final FieldAbsoluteDate<Gradient> epoch = FieldAbsoluteDate.getJ2000Epoch(field);
+
+        // Create a Keplerian orbit
+        FieldKeplerianOrbit<Gradient> orbit = new FieldKeplerianOrbit<>(sma, ecc, inc, aop, raan, lm,
+                                                                        PositionAngle.MEAN,
+                                                                        FramesFactory.getEME2000(),
+                                                                        epoch,
+                                                                        field.getZero().add(Constants.EIGEN5C_EARTH_MU));
+
+        // Model
+        final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+
+        // Field acceleration
+        final FieldVector3D<Gradient> accField = forceModel.acceleration(new FieldSpacecraftState<>(orbit), forceModel.getParameters(field));
+
+        // Real acceleration
+        final Vector3D accReal = forceModel.acceleration(new SpacecraftState(orbit.toOrbit()), forceModel.getParameters());
+
+        // Verify
+        Assert.assertEquals(0.0, accReal.distance(accField.toVector3D()), 1.0e-20);
+
+    }
+
     private static class SolarStepHandler implements OrekitFixedStepHandler {
 
         public void handleStep(SpacecraftState currentState) {
@@ -504,7 +543,7 @@ public class ECOM2Test extends AbstractForceModelTest {
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
             Assert.assertTrue(alpha > 100.0);
             Assert.assertTrue(alpha < 112.0);
-            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003482, 0.003525);
+            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003469, 0.003525);
         }
 
     }

@@ -16,11 +16,9 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -30,9 +28,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
 
 /** Class modifying theoretical range measurement with ionospheric delay.
  * The effect of ionospheric correction on the range is directly computed
@@ -89,75 +85,13 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @return the measurement error due to ionosphere
      */
     private <T extends CalculusFieldElement<T>> T rangeErrorIonosphericModel(final GroundStation station,
-                                                                         final FieldSpacecraftState<T> state,
-                                                                         final T[] parameters) {
+                                                                             final FieldSpacecraftState<T> state,
+                                                                             final T[] parameters) {
          // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // delay in meters
         final T delay = ionoModel.pathDelay(state, baseFrame, frequency, parameters);
         return delay;
-    }
-
-    /** Compute the Jacobian of the delay term wrt state using
-    * automatic differentiation.
-    *
-    * @param derivatives ionospheric delay derivatives
-    *
-    * @return Jacobian of the delay wrt state
-    */
-    private double[][] rangeErrorJacobianState(final double[] derivatives) {
-        final double[][] finiteDifferencesJacobian = new double[1][6];
-        System.arraycopy(derivatives, 0, finiteDifferencesJacobian[0], 0, 6);
-        return finiteDifferencesJacobian;
-    }
-
-
-    /** Compute the derivative of the delay term wrt parameters.
-    *
-    * @param station ground station
-    * @param driver driver for the station offset parameter
-    * @param state spacecraft state
-    * @param delay current ionospheric delay
-    * @return derivative of the delay wrt station offset parameter
-    */
-    private double rangeErrorParameterDerivative(final GroundStation station,
-                                                 final ParameterDriver driver,
-                                                 final SpacecraftState state,
-                                                 final double delay) {
-
-        final ParameterFunction rangeError = new ParameterFunction() {
-            /** {@inheritDoc} */
-            @Override
-            public double value(final ParameterDriver parameterDriver) {
-                return rangeErrorIonosphericModel(station, state);
-            }
-        };
-
-        final ParameterFunction rangeErrorDerivative =
-                       Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
-
-        return rangeErrorDerivative.value(driver);
-
-    }
-
-    /** Compute the derivative of the delay term wrt parameters using
-    * automatic differentiation.
-    *
-    * @param derivatives ionospheric delay derivatives
-    * @param freeStateParameters dimension of the state.
-    * @return derivative of the delay wrt ionospheric model parameters
-    */
-    private double[] rangeErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
-        // 0 ... freeStateParameters - 1 -> derivatives of the delay wrt state
-        // freeStateParameters ... n     -> derivatives of the delay wrt ionospheric parameters
-        final int dim = derivatives.length - freeStateParameters;
-        final double[] rangeError = new double[dim];
-
-        for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[freeStateParameters + i];
-        }
-
-        return rangeError;
     }
 
     /** {@inheritDoc} */
@@ -168,60 +102,16 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
 
     @Override
     public void modify(final EstimatedMeasurement<Range> estimated) {
+
         final Range           measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
-        final double[] oldValue = estimated.getEstimatedValue();
-
-        // update estimated derivatives with Jacobian of the measure wrt state
-        final IonosphericGradientConverter converter =
-                new IonosphericGradientConverter(state, 6, new InertialProvider(state.getFrame()));
-        final FieldSpacecraftState<Gradient> gState = converter.getState(ionoModel);
-        final Gradient[] gParameters = converter.getParameters(gState, ionoModel);
-        final Gradient gDelay = rangeErrorIonosphericModel(station, gState, gParameters);
-        final double[] derivatives = gDelay.getGradient();
-
-        final double[][] djac = rangeErrorJacobianState(derivatives);
-
-        final double[][] stateDerivatives = estimated.getStateDerivatives(0);
-        for (int irow = 0; irow < stateDerivatives.length; ++irow) {
-            for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-                stateDerivatives[irow][jcol] += djac[irow][jcol];
-            }
-        }
-        estimated.setStateDerivatives(0, stateDerivatives);
-
-        int index = 0;
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt ionospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] dDelaydP    = rangeErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
-                parameterDerivative += dDelaydP[index];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                index = index + 1;
-            }
-
-        }
-
-        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                          station.getEastOffsetDriver(),
-                                                          station.getNorthOffsetDriver(),
-                                                          station.getZenithOffsetDriver())) {
-            if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += rangeErrorParameterDerivative(station, driver, state, gDelay.getValue());
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-            }
-        }
-
-        // update estimated value taking into account the ionospheric delay.
-        // The ionospheric delay is directly added to the range.
-        final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] + gDelay.getValue();
-        estimated.setEstimatedValue(newValue);
+        RangeModifierUtil.modify(estimated, ionoModel,
+                                 new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                 station,
+                                 this::rangeErrorIonosphericModel,
+                                 this::rangeErrorIonosphericModel);
 
     }
 

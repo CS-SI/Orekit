@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -40,7 +39,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -169,7 +168,6 @@ public class Geoid implements EarthShape {
      * @throws NullPointerException if {@code geopotential == null ||
      *                              referenceEllipsoid == null}
      */
-    @DefaultDataContext
     public Geoid(final NormalizedSphericalHarmonicsProvider geopotential,
                  final ReferenceEllipsoid referenceEllipsoid) {
         // parameter check
@@ -185,7 +183,7 @@ public class Geoid implements EarthShape {
         this.referenceEllipsoid = referenceEllipsoid;
         this.harmonics = new HolmesFeatherstoneAttractionModel(
                 referenceEllipsoid.getBodyFrame(), potential);
-        this.defaultDate = AbsoluteDate.J2000_EPOCH;
+        this.defaultDate = AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     @Override
@@ -389,7 +387,8 @@ public class Geoid implements EarthShape {
          */
         // transform to body frame
         final Frame bodyFrame = this.getBodyFrame();
-        final Transform frameToBody = frame.getTransformTo(bodyFrame, date);
+        final StaticTransform frameToBody =
+                frame.getStaticTransformTo(bodyFrame, date);
         final Vector3D close = frameToBody.transformPosition(closeInFrame);
         final Line lineInBodyFrame = frameToBody.transformLine(lineInFrame);
 
@@ -456,7 +455,8 @@ public class Geoid implements EarthShape {
         final GeodeticPoint gp = this.transform(point, frame, date);
         final GeodeticPoint gpZero =
                 new GeodeticPoint(gp.getLatitude(), gp.getLongitude(), 0);
-        final Transform bodyToFrame = this.getBodyFrame().getTransformTo(frame, date);
+        final StaticTransform bodyToFrame =
+                this.getBodyFrame().getStaticTransformTo(frame, date);
         return bodyToFrame.transformPosition(this.transform(gpZero));
     }
 

@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
@@ -26,16 +23,11 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.forces.ForceModel;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
-import org.orekit.utils.FieldAngularCoordinates;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Converter for states and parameters arrays.
@@ -43,12 +35,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @since 10.2
  */
 class NumericalGradientConverter extends AbstractGradientConverter {
-
-    /** Dimension of the state. */
-    private final int freeStateParameters;
-
-    /** States with various number of additional parameters for force models. */
-    private final List<FieldSpacecraftState<Gradient>> gStates;
 
     /** Simple constructor.
      * @param state regular state
@@ -59,7 +45,6 @@ class NumericalGradientConverter extends AbstractGradientConverter {
                                final AttitudeProvider provider) {
 
         super(freeStateParameters);
-        this.freeStateParameters = freeStateParameters;
 
         // Derivative field
         final Field<Gradient> field =  GradientField.getField(freeStateParameters);
@@ -108,84 +93,8 @@ class NumericalGradientConverter extends AbstractGradientConverter {
         }
 
         // initialize the list with the state having 0 force model parameters
-        gStates = new ArrayList<>();
-        gStates.add(new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
+        initStates(new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
 
-    }
-
-    /** Get the state with the number of parameters consistent with force model.
-     * @param forceModel force model
-     * @return state with the number of parameters consistent with force model
-     */
-    public FieldSpacecraftState<Gradient> getState(final ForceModel forceModel) {
-
-        // count the required number of parameters
-        int nbParams = 0;
-        for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-            if (driver.isSelected()) {
-                ++nbParams;
-            }
-        }
-
-        // fill in intermediate slots
-        while (gStates.size() < nbParams + 1) {
-            gStates.add(null);
-        }
-
-        if (gStates.get(nbParams) == null) {
-            // it is the first time we need this number of parameters
-            // we need to create the state
-            final int freeParameters = freeStateParameters + nbParams;
-            final FieldSpacecraftState<Gradient> s0 = gStates.get(0);
-
-            // orbit
-            final FieldPVCoordinates<Gradient> pv0 = s0.getPVCoordinates();
-            final FieldOrbit<Gradient> gOrbit =
-                            new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(s0.getDate().toAbsoluteDate(),
-                                                                                          extend(pv0.getPosition(),     freeParameters),
-                                                                                          extend(pv0.getVelocity(),     freeParameters),
-                                                                                          extend(pv0.getAcceleration(), freeParameters)),
-                                                      s0.getFrame(),
-                                                      extend(s0.getMu(), freeParameters));
-
-            // attitude
-            final FieldAngularCoordinates<Gradient> ac0 = s0.getAttitude().getOrientation();
-            final FieldAttitude<Gradient> gAttitude =
-                            new FieldAttitude<>(s0.getAttitude().getReferenceFrame(),
-                                                new TimeStampedFieldAngularCoordinates<>(gOrbit.getDate(),
-                                                                                         extend(ac0.getRotation(), freeParameters),
-                                                                                         extend(ac0.getRotationRate(), freeParameters),
-                                                                                         extend(ac0.getRotationAcceleration(), freeParameters)));
-
-            // mass
-            final Gradient gM = extend(s0.getMass(), freeParameters);
-
-            gStates.set(nbParams, new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
-
-        }
-
-        return gStates.get(nbParams);
-
-    }
-
-    /** Get the force model parameters.
-     * @param state state as returned by {@link #getState(ForceModel)}
-     * @param forceModel force model associated with the parameters
-     * @return force model parameters
-     */
-    public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state,
-                                    final ForceModel forceModel) {
-        final int freeParameters = state.getMass().getFreeParameters();
-        final List<ParameterDriver> drivers = forceModel.getParametersDrivers();
-        final Gradient[] parameters = new Gradient[drivers.size()];
-        int index = freeStateParameters;
-        int i = 0;
-        for (ParameterDriver driver : drivers) {
-            parameters[i++] = driver.isSelected() ?
-                              Gradient.variable(freeParameters, index++, driver.getValue()) :
-                              Gradient.constant(freeParameters, driver.getValue());
-        }
-        return parameters;
     }
 
 }

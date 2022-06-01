@@ -356,7 +356,7 @@ public class DTM2000 implements Atmosphere {
         final int day = date.getComponents(utc).getDate().getDayOfYear();
         //position in ECEF so we only have to do the transform once
         final Frame ecef = earth.getBodyFrame();
-        final Vector3D pEcef = frame.getTransformTo(ecef, date)
+        final Vector3D pEcef = frame.getStaticTransformTo(ecef, date)
                 .transformPosition(position);
         // compute geodetic position
         final GeodeticPoint inBody = earth.transform(pEcef, ecef, date);

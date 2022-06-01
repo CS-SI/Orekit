@@ -134,7 +134,8 @@ public class SmallManeuverAnalyticalModel
         j0Dot = null;
 
         // compute maneuver effect on Keplerian (or equinoctial) elements
-        inertialDV = frame.getTransformTo(state0.getFrame(), state0.getDate()).transformVector(dV);
+        inertialDV = frame.getStaticTransformTo(state0.getFrame(), state0.getDate())
+                .transformVector(dV);
 
         // compute mean anomaly change: dM(t1) = dM(t0) + ksi * da * (t1 - t0)
         final double mu = state0.getMu();

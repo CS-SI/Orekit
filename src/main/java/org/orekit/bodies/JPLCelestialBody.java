@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
@@ -217,6 +218,29 @@ class JPLCelestialBody implements CelestialBody {
                     // update transform from parent to self
                     return new Transform(date, translation, rotation);
 
+                }
+
+                @Override
+                public StaticTransform getStaticTransform(final AbsoluteDate date) {
+                    // compute translation from parent frame to self
+                    final PVCoordinates pv = getPVCoordinates(date, definingFrame);
+
+                    // compute rotation from ICRF frame to self,
+                    // as per the "Report of the IAU/IAG Working Group on Cartographic
+                    // Coordinates and Rotational Elements of the Planets and Satellites"
+                    // These definitions are common for all recent versions of this report
+                    // published every three years, the precise values of pole direction
+                    // and W angle coefficients may vary from publication year as models are
+                    // adjusted. These coefficients are not in this class, they are in the
+                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
+                    // methods
+                    final Vector3D pole  = iauPole.getPole(date);
+                    final Vector3D qNode = iauPole.getNode(date);
+                    final Rotation rotation =
+                            new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
+
+                    // update transform from parent to self
+                    return StaticTransform.of(date, pv.getPosition().negate(), rotation);
                 }
 
                 /** {@inheritDoc} */

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Pair;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -58,6 +59,14 @@ public class Context implements StationDataProvider {
     // Map entry = primary station
     // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
+    // Stations for bistatic range rate
+    // key/first    = emitter station
+    // value/second = receiver station
+    public Pair<GroundStation, GroundStation>    BRRstations;
+    // Stations for TDOA
+    // key/first    = primary station that dates the measurement
+    // value/second = secondary station associated
+    public Pair<GroundStation, GroundStation>    TDOAstations;
 
     public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
                                                     final boolean perfectStart,

@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -35,6 +36,7 @@ import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
@@ -90,6 +92,9 @@ public class TIRFProviderTest {
         checkPV(pvTIRF,
                 itrfA.getTransformTo(tirf, t0).transformPVCoordinates(pvITRF),
                 6.379e-5, 3.78e-7);
+        checkP(pvTIRF.getPosition(),
+                itrfA.getStaticTransformTo(tirf, t0).transformPosition(pvITRF.getPosition()),
+                6.379e-5);
 
         Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvCIRF =
@@ -98,6 +103,9 @@ public class TIRFProviderTest {
         checkPV(pvCIRF,
                 tirf.getTransformTo(cirf, t0).transformPVCoordinates(pvTIRF),
                 8.59e-3, 4.65e-6);
+        checkP(pvCIRF.getPosition(),
+                tirf.getStaticTransformTo(cirf, t0).transformPosition(pvTIRF.getPosition()),
+                8.59e-3);
 
     }
 
@@ -137,6 +145,9 @@ public class TIRFProviderTest {
         checkPV(pvTIRF,
                 itrfA.getTransformTo(tirf, t0).transformPVCoordinates(pvITRF),
                 5.697e-5, 4.69e-7);
+        checkP(pvTIRF.getPosition(),
+                itrfA.getStaticTransformTo(tirf, t0).transformPosition(pvITRF.getPosition()),
+                5.697e-5);
 
         Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvCIRF =
@@ -145,6 +156,9 @@ public class TIRFProviderTest {
         checkPV(pvCIRF,
                 tirf.getTransformTo(cirf, t0).transformPVCoordinates(pvTIRF),
                 0.0505, 3.60e-6);
+        checkP(pvCIRF.getPosition(),
+                tirf.getStaticTransformTo(cirf, t0).transformPosition(pvTIRF.getPosition()),
+                0.0505);
 
     }
 
@@ -169,6 +183,12 @@ public class TIRFProviderTest {
             Assert.assertEquals("At " + d.toString(utc),
                     expected,
                     Rotation.distance(previous, actual),
+                    tol);
+            Assert.assertEquals("At " + d.toString(utc),
+                    expected,
+                    Rotation.distance(
+                            previous,
+                            cirf.getStaticTransformTo(tirf, d).getRotation()),
                     tol);
             previous = actual;
         }
@@ -304,6 +324,14 @@ public class TIRFProviderTest {
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
         Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
         Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+    }
+
+    private void checkP(Vector3D position,
+                        Vector3D transformPosition,
+                        double tol) {
+        MatcherAssert.assertThat(
+                transformPosition,
+                OrekitMatchers.vectorCloseTo(position, tol));
     }
 
 }
