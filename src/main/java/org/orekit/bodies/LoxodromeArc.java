@@ -123,7 +123,15 @@ public class LoxodromeArc extends Loxodrome {
      * @return the point along the arc
      */
     public GeodeticPoint calculatePointAlongArc(final double fraction) {
-        final double d = getDistance() * fraction;
-        return this.pointAtDistance(d);
+        if (fraction == 0.) {
+            return getPoint();
+        }
+        else if (fraction == 1.) {
+            return getFinalPoint();
+        }
+        else {
+            final double d = getDistance() * fraction;
+            return this.pointAtDistance(d);
+        }
     }
 }

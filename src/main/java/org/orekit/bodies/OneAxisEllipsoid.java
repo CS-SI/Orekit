@@ -717,8 +717,6 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double originIsoLat = geodeticToIsometricLatitude(origin.getLatitude());
         final double destIsoLat = geodeticToIsometricLatitude(destination.getLatitude());
 
-        final double dLat = destination.getLatitude() - origin.getLatitude();
-
         final double az = FastMath.atan2(dLon, destIsoLat - originIsoLat);
         if (az < 0.) {
             return az + MathUtils.TWO_PI;
