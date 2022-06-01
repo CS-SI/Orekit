@@ -45,8 +45,6 @@ import org.orekit.utils.IERSConventions;
  * way to use parsers is to either dedicate one parser for each message
  * and drop it afterwards, or to use a single-thread loop.
  * </p>
- * @param <T> type of the file
- * @param <P> type of the parser
  * @author Melina Vanel
  * @since 11.2
  */
