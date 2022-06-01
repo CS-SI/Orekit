@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="gc" type="fix" issue="889">
+        Fixed unexpected behavior of two tests in OrekitMessagesTest.
+      </action>
       <action dev="mvanel" type="add" issue="777">
         Added support for parsing and writing CDM files in both KVN and XML formats.
       </action>
