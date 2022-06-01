@@ -205,7 +205,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     public boolean finalizeMetadata() {
         metadata.validate(header.getFormatVersion());
         relativeMetadata.validate();
-        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 

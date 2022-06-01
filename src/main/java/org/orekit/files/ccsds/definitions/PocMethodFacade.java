@@ -16,11 +16,16 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import java.util.regex.Pattern;
+
 /** Facade in front of several probability of collision methods in CCSDS messages.
  * @author Bryan Cazabonne
  * @since 11.2
  */
 public class PocMethodFacade {
+
+    /** Pattern for POC method names. */
+    private static final Pattern PATTERN = Pattern.compile("-");
 
     /** Name of the method. */
     private final String name;
@@ -58,7 +63,7 @@ public class PocMethodFacade {
     public static PocMethodFacade parse(final String s) {
         PocMethodType type;
         try {
-            type = PocMethodType.valueOf(s.replaceAll("-", "_"));
+            type = PocMethodType.valueOf(PATTERN.matcher(s).replaceAll("_"));
         } catch (IllegalArgumentException iae) {
             type = null;
         }
