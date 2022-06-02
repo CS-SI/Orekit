@@ -504,7 +504,7 @@ public class EcksteinHechlerPropagatorTest {
     public void hyperbolic() {
         KeplerianOrbit hyperbolic =
             new KeplerianOrbit(-1.0e10, 2, 0, 0, 0, 0, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(hyperbolic, provider);
         propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
@@ -514,7 +514,7 @@ public class EcksteinHechlerPropagatorTest {
     public void wrongAttitude() {
         KeplerianOrbit orbit =
             new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         AttitudeProvider wrongLaw = new AttitudeProvider() {
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
@@ -614,7 +614,7 @@ public class EcksteinHechlerPropagatorTest {
     public void stopAtTargetDate() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         Frame itrf =  FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -644,7 +644,7 @@ public class EcksteinHechlerPropagatorTest {
     public void date() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         final AbsoluteDate stopDate = AbsoluteDate.J2000_EPOCH.shiftedBy(500.0);
@@ -658,7 +658,7 @@ public class EcksteinHechlerPropagatorTest {
     public void fixedStep() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         final double step = 100.0;
@@ -679,7 +679,7 @@ public class EcksteinHechlerPropagatorTest {
     public void setting() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         final OneAxisEllipsoid earthShape =
@@ -778,7 +778,7 @@ public class EcksteinHechlerPropagatorTest {
         final SpacecraftState initialState =  new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                                                        FramesFactory.getEME2000(),
                                                                                        initDate,
-                                                                                       3.986004415E14));
+                                                                                       provider.getMu()));
 
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
@@ -814,7 +814,7 @@ public class EcksteinHechlerPropagatorTest {
         final SpacecraftState initialState =  new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                                                        FramesFactory.getEME2000(),
                                                                                        initDate,
-                                                                                       3.986004415E14));
+                                                                                       provider.getMu()));
 
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
