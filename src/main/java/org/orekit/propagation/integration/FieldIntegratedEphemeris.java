@@ -151,7 +151,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @since 11.1
      * @deprecated as of 11.2, replaced by {@link #FieldIntegratedEphemeris(FieldAbsoluteDate,
      * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType,
-     * FieldDenseOutputModel, FieldArrayDictionary, List, String[], int[])
+     * FieldDenseOutputModel, FieldArrayDictionary, List, String[], int[])}
      */
     @Deprecated
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,

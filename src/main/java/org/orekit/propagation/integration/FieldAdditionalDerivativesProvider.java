@@ -109,7 +109,7 @@ public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldEleme
     /** Compute the derivatives related to the additional state (and optionally main state increments).
      * <p>
      * As of 11.2, there is a default implementation that calls the deprecated
-     * {@link #derivatives(FieldSpacecraftState) method. This has been done for
+     * {@link #derivatives(FieldSpacecraftState)} method. This has been done for
      * backward compatibility only and will be removed in 12.0.
      * </p>
      * @param s current state information: date, kinematics, attitude, and
