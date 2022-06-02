@@ -30,6 +30,9 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.stat.descriptive.StorelessUnivariateStatistic;
+import org.hipparchus.stat.descriptive.rank.Max;
+import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.After;
@@ -48,6 +51,7 @@ import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -82,6 +86,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -839,6 +844,44 @@ public class EcksteinHechlerPropagatorTest {
                             Vector3D.distance(initialState.getPVCoordinates().getVelocity(),
                                               finalState.getPVCoordinates().getVelocity()),
                             4.2e-2);
+    }
+
+    @Test
+    public void testMeanOrbit() {
+        final KeplerianOrbit initialOsculating =
+                        new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+                                           FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                           provider.getMu());
+        final UnnormalizedSphericalHarmonics ush = provider.onDate(initialOsculating.getDate());
+
+        // set up a reference numerical propagator starting for the specified start orbit
+        // using the same force models (i.e. the first few zonal terms)
+        double[][] tol = NumericalPropagator.tolerances(0.1, initialOsculating, OrbitType.CIRCULAR);
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
+        integrator.setInitialStepSize(60);
+        NumericalPropagator num = new NumericalPropagator(integrator);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(provider)));
+        num.setInitialState(new SpacecraftState(initialOsculating));
+        num.setOrbitType(OrbitType.CIRCULAR);
+        final StorelessUnivariateStatistic oscMin  = new Min();
+        final StorelessUnivariateStatistic oscMax  = new Max();
+        final StorelessUnivariateStatistic meanMin = new Min();
+        final StorelessUnivariateStatistic meanMax = new Max();
+        num.getMultiplexer().add(60, state -> {
+            final Orbit osc = state.getOrbit();
+            oscMin.increment(osc.getA());
+            oscMax.increment(osc.getA());
+            // compute mean orbit at current date (this is what we test)
+            final Orbit mean = EcksteinHechlerPropagator.computeMeanOrbit(state.getOrbit(), provider, ush);
+            meanMin.increment(mean.getA());
+            meanMax.increment(mean.getA());
+        });
+        num.propagate(initialOsculating.getDate().shiftedBy(Constants.JULIAN_DAY));
+
+        Assert.assertEquals(3190.029, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
+        Assert.assertEquals(  49.638, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
+
     }
 
     private static double tangLEmLv(double Lv, double ex, double ey) {
