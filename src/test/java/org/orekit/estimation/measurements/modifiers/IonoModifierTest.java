@@ -27,6 +27,7 @@ import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -49,6 +50,7 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
@@ -595,6 +597,17 @@ public class IonoModifierTest {
             Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
         }
 
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecated() {
+        // dummy test, just to ensure coverage for deprecated class
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        IonosphericGradientConverter igc =
+                        new IonosphericGradientConverter(new SpacecraftState(context.initialOrbit), 6,
+                                                         new InertialProvider(FramesFactory.getEME2000()));
+        Assert.assertEquals(6, igc.getFreeStateParameters());
     }
 
     private class MockIonosphericModel implements IonosphericModel {

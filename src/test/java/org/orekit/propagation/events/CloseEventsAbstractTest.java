@@ -33,6 +33,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.RecordAndContinue.Event;
@@ -2117,6 +2118,20 @@ public abstract class CloseEventsAbstractTest {
         }
     }
 
+    @Test
+    public void testResetChangesSign() {
+        Propagator propagator = getPropagator(2.5);
+        AbsoluteDate t0 = propagator.getInitialState().getDate();
+        final double small = 1.25e-11;
+        ResetChangesSignGenerator eventsGenerator = new ResetChangesSignGenerator(t0, 0.75, 1.125, -0.5 * small).
+                                                    withMaxCheck(1).
+                                                    withThreshold(small).
+                                                    withMaxIter(1000);
+        propagator.addEventDetector(eventsGenerator);
+        final SpacecraftState end = propagator.propagate(propagator.getInitialState().getDate().shiftedBy(12.5));
+        Assert.assertEquals(2,                 eventsGenerator.getCount());
+        Assert.assertEquals(1.125 + 0.5 * small, end.getDate().durationFrom(t0), 1.0e-12);
+    }
 
     /* utility classes and methods */
 
@@ -2373,6 +2388,59 @@ public abstract class CloseEventsAbstractTest {
         public void finish(SpacecraftState finalState) {
             this.finalState = finalState;
         }
+    }
+
+    private class ResetChangesSignGenerator extends AbstractDetector<ResetChangesSignGenerator> {
+
+        final AbsoluteDate t0;
+        final double y1;
+        final double y2;
+        final double change;
+        double delta;
+        int count;
+
+        public ResetChangesSignGenerator(final AbsoluteDate t0, final double y1, final double y2, final double change) {
+            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new ContinueOnEvent<>(), t0, y1, y2, change);
+        }
+
+        private ResetChangesSignGenerator(final double newMaxCheck, final double newThreshold, final int newMaxIter,
+                                          final EventHandler<? super ResetChangesSignGenerator> newHandler,
+                                          final AbsoluteDate t0, final double y1, final double y2, final double change ) {
+            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            this.t0     = t0;
+            this.y1     = y1;
+            this.y2     = y2;
+            this.change = change;
+            this.delta  = 0;
+            this.count  = 0;
+        }
+
+        protected ResetChangesSignGenerator create(final double newMaxCheck, final double newThreshold,
+                                                   final int newMaxIter,
+                                                   final EventHandler<? super ResetChangesSignGenerator> newHandler) {
+            return new ResetChangesSignGenerator(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                                 t0, y1, y2, change);
+        }
+
+        public double g(SpacecraftState s) {
+            double dt = s.getDate().durationFrom(t0) + delta;
+            return (dt - y1) * (dt - y2);
+        }
+
+        public Action eventOccurred(SpacecraftState s, boolean increasing) {
+            return ++count < 2 ? Action.RESET_STATE : Action.STOP;
+        }
+
+        public SpacecraftState resetState(SpacecraftState s) {
+            delta = change;
+            return s;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
     }
 
 }

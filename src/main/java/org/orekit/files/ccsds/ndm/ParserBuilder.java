@@ -20,6 +20,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmParser;
+import org.orekit.files.ccsds.ndm.cdm.CdmParser;
 import org.orekit.files.ccsds.ndm.odm.ocm.OcmParser;
 import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmParser;
@@ -285,6 +286,14 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public TdmParser buildTdmParser() {
         return new TdmParser(getConventions(), isSimpleEOP(), getDataContext(),
                              getParsedUnitsBehavior(), getRangeUnitsConverter());
+    }
+
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.cdm.Cdm Conjunction Data Messages}.
+     * @return a new parser
+     */
+    public CdmParser buildCdmParser() {
+        return new CdmParser(getConventions(), isSimpleEOP(), getDataContext(),
+                             getParsedUnitsBehavior());
     }
 
 }

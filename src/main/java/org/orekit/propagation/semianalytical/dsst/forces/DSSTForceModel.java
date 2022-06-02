@@ -32,6 +32,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParametersDriversProvider;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
  *  org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -59,7 +60,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Romain Di Constanzo
  * @author Pascal Parraud
  */
-public interface DSSTForceModel {
+public interface DSSTForceModel extends ParametersDriversProvider {
 
     /**
      * Initialize the force model at the start of propagation.
@@ -207,10 +208,5 @@ public interface DSSTForceModel {
      */
     @SuppressWarnings("unchecked")
     <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(T[] parameters, FieldSpacecraftState<T>... meanStates);
-
-    /** Get the drivers for force model parameters.
-     * @return drivers for force model parameters
-     */
-    List<ParameterDriver> getParametersDrivers();
 
 }

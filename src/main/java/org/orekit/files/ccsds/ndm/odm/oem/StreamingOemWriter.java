@@ -120,7 +120,7 @@ public class StreamingOemWriter implements AutoCloseable {
      *                         is used, {@link OemMetadata#getReferenceFrame()}.
      * @see #StreamingOemWriter(Generator, OemWriter, Header, OemMetadata,
      * boolean, boolean)
-     * @since 11.2
+     * @since 11.1.2
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
                               final Header header, final OemMetadata template,
@@ -143,7 +143,7 @@ public class StreamingOemWriter implements AutoCloseable {
      * @param includeAcceleration if {@code true} then acceleration is included
      *                            in the OEM file produced. Otherwise only
      *                            position and velocity is included.
-     * @since 11.2
+     * @since 11.1.2
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
                               final Header header, final OemMetadata template,

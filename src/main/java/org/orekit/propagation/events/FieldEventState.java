@@ -265,6 +265,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         final BracketedUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0, convergence.getReal(), 0, 5);
 
+        // prepare loop below
+        FieldAbsoluteDate<T> loopT = ta;
+        T loopG = ga;
+
         // event time, just at or before the actual root.
         FieldAbsoluteDate<T> beforeRootT = null;
         T beforeRootG = zero.add(Double.NaN);
@@ -294,16 +298,26 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
             final T newGa = g(interpolator.getInterpolatedState(ta));
             if (ga.getReal() > 0 != newGa.getReal() > 0) {
                 // both non-zero, step sign change at ta, possibly due to reset state
-                beforeRootT = ta;
-                beforeRootG = newGa;
-                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
-                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+                final FieldAbsoluteDate<T> nextT = minTime(shiftedBy(ta, convergence), tb);
+                final T                    nextG = g(interpolator.getInterpolatedState(nextT));
+                if (nextG.getReal() > 0.0 == g0Positive) {
+                    // the sign change between ga and newGa just moved the root less than one convergence
+                    // threshold later, we are still in a regular search for another root before tb,
+                    // we just need to fix the bracketing interval
+                    // (see issue https://github.com/Hipparchus-Math/hipparchus/issues/184)
+                    loopT = nextT;
+                    loopG = nextG;
+                } else {
+                    beforeRootT = ta;
+                    beforeRootG = newGa;
+                    afterRootT  = nextT;
+                    afterRootG  = nextG;
+                }
             }
         }
+
         // loop to skip through "fake" roots, i.e. where g(t) = g'(t) = 0.0
         // executed once if we didn't hit a special case above
-        FieldAbsoluteDate<T> loopT = ta;
-        T loopG = ga;
         while ((afterRootG.getReal() == 0.0 || afterRootG.getReal() > 0.0 == g0Positive) &&
                 strictlyAfter(afterRootT, tb)) {
             if (loopG.getReal() == 0.0) {

@@ -35,10 +35,12 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
+import org.orekit.files.ccsds.definitions.PocMethodFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
+import org.orekit.files.ccsds.ndm.cdm.CdmRelativeMetadata;
 import org.orekit.files.ccsds.ndm.odm.ocm.Covariance;
 import org.orekit.files.ccsds.ndm.odm.ocm.CovarianceHistory;
 import org.orekit.files.ccsds.ndm.odm.ocm.Maneuver;
@@ -106,13 +108,14 @@ public class NdmTestUtils {
                    original instanceof AemSatelliteEphemeris ||
                    original instanceof CovarianceHistory     ||
                    original instanceof ManeuverHistory       ||
-                   original instanceof TrajectoryState            ||
+                   original instanceof TrajectoryState       ||
                    original instanceof Covariance            ||
                    original instanceof Maneuver              ||
                    original instanceof Observation           ||
                    original instanceof SpacecraftBodyFrame   ||
                    original instanceof PVCoordinates         ||
-                   original instanceof AngularCoordinates) {
+                   original instanceof AngularCoordinates    ||
+                   original instanceof CdmRelativeMetadata) {
             checkContainer(original, rebuilt);
             return true;
         } else if (original instanceof FrameFacade) {
@@ -123,6 +126,9 @@ public class NdmTestUtils {
             return true;
         } else if (original instanceof OdMethodFacade) {
             checkOdMethodFacade((OdMethodFacade) original, (OdMethodFacade) rebuilt);
+            return true;
+        } else if (original instanceof PocMethodFacade) {
+            checkPocMethodFacade((PocMethodFacade) original, (PocMethodFacade) rebuilt);
             return true;
         } else if (original instanceof TrajectoryStateHistory) {
             checkOrbitStateHistory((TrajectoryStateHistory) original, (TrajectoryStateHistory) rebuilt);
@@ -255,6 +261,11 @@ public class NdmTestUtils {
         Assert.assertEquals(original.getName(), rebuilt.getName());
         Assert.assertEquals(original.getType(), rebuilt.getType());
         Assert.assertEquals(original.getTool(), rebuilt.getTool());
+    }
+
+    public static void checkPocMethodFacade(final PocMethodFacade original, final PocMethodFacade rebuilt) {
+        Assert.assertEquals(original.getName(), rebuilt.getName());
+        Assert.assertEquals(original.getType(), rebuilt.getType());
     }
 
     public static void checkOrbitStateHistory(final TrajectoryStateHistory original, final TrajectoryStateHistory rebuilt) {

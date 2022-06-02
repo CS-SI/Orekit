@@ -25,6 +25,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -44,6 +45,7 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
@@ -787,4 +789,16 @@ public class TropoModifierTest {
             Assert.assertEquals(0.0, diffEl, 1.0e-3);
         }
     }
+
+    @Deprecated
+    @Test
+    public void testDeprecated() {
+        // dummy test, just to ensure coverage for deprecated class
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        TroposphericGradientConverter tgc =
+                        new TroposphericGradientConverter(new SpacecraftState(context.initialOrbit), 6,
+                                                         new InertialProvider(FramesFactory.getEME2000()));
+        Assert.assertEquals(6, tgc.getFreeStateParameters());
+    }
+
 }

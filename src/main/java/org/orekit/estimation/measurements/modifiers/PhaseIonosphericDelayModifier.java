@@ -167,8 +167,8 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         final double[] oldValue = estimated.getEstimatedValue();
 
         // Compute ionospheric delay (the division by the wavelength is performed)
-        final IonosphericGradientConverter converter =
-                        new IonosphericGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+        final ModifierGradientConverter converter =
+                        new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(ionoModel);
         final Gradient[] gParameters = converter.getParameters(gState, ionoModel);
         final Gradient gDelay = phaseErrorIonosphericModel(station, gState, gParameters);
