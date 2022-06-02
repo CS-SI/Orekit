@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="925">
+        Don't loose additional derivatives when generating ephemeris.
+      </action>
       <action dev="gc" type="fix" issue="889">
         Fixed unexpected behavior of two tests in OrekitMessagesTest.
       </action>

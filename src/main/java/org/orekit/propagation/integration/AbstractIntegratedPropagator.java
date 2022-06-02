@@ -1051,7 +1051,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Generated ephemeris. */
         private BoundedPropagator ephemeris;
 
-        /** Variable used to store the last interpolator handled by the object.*/
+        /** Last interpolator handled by the object.*/
         private  ODEStateInterpolator lastInterpolator;
 
         /** Set the end date.
@@ -1107,6 +1107,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // Update the model's finalTime with the last interpolator.
             model.finish(lastInterpolator.getCurrentState());
+
             // set up the boundary dates
             final double tI = model.getInitialTime();
             final double tF = model.getFinalTime();
