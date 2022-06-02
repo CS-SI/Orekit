@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="markrutten" type="add" issue="922">
+        Added bistatic range measurement.
+      </action>
       <action dev="luc" type="add" issue="933">
         Added a way to compute mean parameters in Eckstein-Hechler model.
       </action>
