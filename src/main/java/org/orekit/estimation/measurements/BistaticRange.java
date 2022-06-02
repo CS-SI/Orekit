@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -28,13 +33,23 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Class modeling bistatic range measurements.
+ * Class modeling a bistatic range measurement using
+ * an emitter ground station and a receiver ground station.
+ * <p>
+ * The measurement is considered to be a signal:
+ * <ul>
+ * <li>Emitted from the emitter ground station</li>
+ * <li>Reflected on the spacecraft</li>
+ * <li>Received on the receiver ground station</li>
+ * </ul>
+ * The date of the measurement corresponds to the reception on ground of the reflected signal.
+ * <p>
+ * The motion of the stations and the spacecraft during the signal flight time are taken into account.
+ * </p>
+ *
+ * @author Mark Rutten
+ * @since 11.2
  */
 public class BistaticRange extends AbstractMeasurement<BistaticRange> {
 
@@ -180,15 +195,16 @@ public class BistaticRange extends AbstractMeasurement<BistaticRange> {
                         zero, zero, zero));
 
         // Prepare the evaluation
-        EstimatedMeasurement<BistaticRange> estimated = new EstimatedMeasurement<>(this,
+        final EstimatedMeasurement<BistaticRange> estimated = new EstimatedMeasurement<>(this,
                 iteration, evaluation,
-                new SpacecraftState[]{
-                        transitState
-                }, new TimeStampedPVCoordinates[]{
-                stationReceiver.toTimeStampedPVCoordinates(),
-                transitStateDS.toTimeStampedPVCoordinates(),
-                stationTransmitter.toTimeStampedPVCoordinates()
-        });
+                new SpacecraftState[] {
+                    transitState
+                },
+                new TimeStampedPVCoordinates[] {
+                    stationReceiver.toTimeStampedPVCoordinates(),
+                    transitStateDS.toTimeStampedPVCoordinates(),
+                    stationTransmitter.toTimeStampedPVCoordinates()
+                });
 
         // Range value
         final Gradient tau = tauD.add(tauU);
