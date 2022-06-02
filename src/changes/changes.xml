@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="928">
+        Fixed indexing error when estimating a subset of orbital parameters.
+      </action>
       <action dev="luc" type="add" issue="925">
         Don't loose additional derivatives when generating ephemeris.
       </action>
