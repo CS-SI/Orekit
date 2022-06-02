@@ -83,7 +83,7 @@ class OrbitDeterminationWriter extends AbstractWriter {
 
         // errors
         generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMAJ.name(),    od.getEpochEigenMaj(), Unit.METRE,        false);
-        generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMED.name(),    od.getEpochEigenMed(), Unit.METRE,        false);
+        generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGINT.name(),    od.getEpochEigenInt(), Unit.METRE,        false);
         generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMIN.name(),    od.getEpochEigenMin(), Unit.METRE,        false);
         generator.writeEntry(OrbitDeterminationKey.OD_MAX_PRED_EIGMAJ.name(), od.getMaxPredictedEigenMaj(), Unit.METRE, false);
         generator.writeEntry(OrbitDeterminationKey.OD_MIN_PRED_EIGMIN.name(), od.getMinPredictedEigenMin(), Unit.METRE, false);

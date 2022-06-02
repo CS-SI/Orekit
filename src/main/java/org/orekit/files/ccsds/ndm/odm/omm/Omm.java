@@ -53,7 +53,7 @@ public class Omm extends NdmConstituent<Header, Segment<OmmMetadata, OmmData>> i
      * @param dataContext used for creating frames, time scales, etc.
      */
     public Omm(final Header header, final List<Segment<OmmMetadata, OmmData>> segments,
-                   final IERSConventions conventions, final DataContext dataContext) {
+               final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }
 

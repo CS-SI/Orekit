@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="934">
+        Updated CCSDS ODM to latest draft version (pink book).
+      </action>
       <action dev="luc" type="add" issue="930">
         Prevents zero max check intervals in maneuvers triggers detectors.
       </action>
