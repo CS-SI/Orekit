@@ -171,7 +171,7 @@ public class StateTransitionMatrixGeneratorTest {
 
         // after completing the two-stage propagation, we get the same matrices
         Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 1.3e-13 * stm1.getNorm1());
-        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 3.0e-14 * jacobian1.getNorm1());
+        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-11 * jacobian1.getNorm1());
 
     }
 

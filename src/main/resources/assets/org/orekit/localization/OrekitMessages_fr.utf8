@@ -755,3 +755,6 @@ NO_STATION_ECCENTRICITY_FOR_EPOCH = pas d''excentricité station pour la date {0
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
 INCONSISTENT_SELECTION = sélection de paramètres incohérents entre les paires {0}/{1} et {2}/{3}
+
+# value is not strictly positive: {0}
+NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive

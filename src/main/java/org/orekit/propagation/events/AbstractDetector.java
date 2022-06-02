@@ -17,6 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.ode.events.Action;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -52,18 +54,31 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     private boolean forward;
 
     /** Build a new instance.
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval, must be strictly positive (s)
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
     protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter,
                                final EventHandler<? super T> handler) {
+        checkStrictlyPositive(maxCheck);
+        checkStrictlyPositive(threshold);
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
         this.maxIter   = maxIter;
         this.handler   = handler;
         this.forward   = true;
+    }
+
+    /** Check value is strictly positive.
+     * @param value value to check
+     * @exception OrekitException if value is not strictly positive
+     * @since 11.2
+     */
+    private void checkStrictlyPositive(final double value) throws OrekitException {
+        if (value <= 0.0) {
+            throw new OrekitException(OrekitMessages.NOT_STRICTLY_POSITIVE, value);
+        }
     }
 
     /**

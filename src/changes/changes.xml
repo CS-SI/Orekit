@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="930">
+        Prevents zero max check intervals in maneuvers triggers detectors.
+      </action>
+       <action dev="luc" type="update">
+        Added detection of non-positive max check interval and threshold.
+      </action>
       <action dev="luc" type="add" issue="929">
         Allow additional derivatives providers to update main state derivatives.
       </action>
