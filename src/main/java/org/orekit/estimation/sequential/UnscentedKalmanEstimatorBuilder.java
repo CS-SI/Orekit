@@ -47,7 +47,7 @@ public class UnscentedKalmanEstimatorBuilder {
 
     /** Process noise matrix provider for measurement parameters. */
     private CovarianceMatrixProvider measurementProcessNoiseMatrix;
-    
+
     /** Unscend transform provider. */
     private UnscentedTransformProvider utProvider;
 
@@ -94,15 +94,15 @@ public class UnscentedKalmanEstimatorBuilder {
 
         // Check if the number of the selected parameters for the estimation (Orbital + Propagation + Measurement)
         // is equal to the dimension of the state initialized in the unscented transform provider.
-        // If not, re-initialize the unscented transform with the appropriate dimension. 
-        if (columns != (utProvider.getWc().getDimension()-1)/2) {
+        // If not, re-initialize the unscented transform with the appropriate dimension.
+        if (columns != (utProvider.getWc().getDimension() - 1) / 2) {
             this.utProvider = new MerweUnscentedTransform(columns);
         }
 
 
         return new UnscentedKalmanEstimator(decomposer, propagatorBuilder, processNoiseMatrixProvider,
                                                  estimatedMeasurementsParameters, measurementProcessNoiseMatrix, utProvider);
-    
+
     }
 
     /** Configure the matrix decomposer.
@@ -113,16 +113,16 @@ public class UnscentedKalmanEstimatorBuilder {
         decomposer = matrixDecomposer;
         return this;
     }
-    
+
     /** Configure the unscented transform provider.
-     * @param utProvider unscented transform to use for the prediction phase
+     * @param transformProvider unscented transform to use for the prediction phase
      * @return this object.
      */
-    public UnscentedKalmanEstimatorBuilder unscentedTransformProvider(final UnscentedTransformProvider utProvider) {
-        this.utProvider = utProvider;
+    public UnscentedKalmanEstimatorBuilder unscentedTransformProvider(final UnscentedTransformProvider transformProvider) {
+        this.utProvider = transformProvider;
         return this;
     }
-    
+
 
     /** Add a propagation configuration.
      * <p>
@@ -137,7 +137,7 @@ public class UnscentedKalmanEstimatorBuilder {
                                                                             final CovarianceMatrixProvider provider) {
         propagatorBuilder          = builder;
         processNoiseMatrixProvider = provider;
-        return this;    
+        return this;
     }
 
     /** Configure the estimated measurement parameters.

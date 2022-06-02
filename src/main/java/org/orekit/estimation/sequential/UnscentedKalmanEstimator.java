@@ -91,13 +91,14 @@ public class UnscentedKalmanEstimator {
      * @param processNoiseMatricesProvider provider for process noise matrix
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @param utProvider provider for the unscented transform.
      */
 
     UnscentedKalmanEstimator(final MatrixDecomposer decomposer,
             final NumericalPropagatorBuilder propagatorBuilder,
             final CovarianceMatrixProvider processNoiseMatricesProvider,
             final ParameterDriversList estimatedMeasurementParameters,
-            final CovarianceMatrixProvider measurementProcessNoiseMatrix, 
+            final CovarianceMatrixProvider measurementProcessNoiseMatrix,
             final UnscentedTransformProvider utProvider) {
 
         this.propagatorBuilder = propagatorBuilder;
