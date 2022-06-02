@@ -180,9 +180,9 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 5.80e-2;
+        final double   posEps            = 1.6e-2;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.28e-2;
+        final double   velEps            = 8e-6;
         final double[] expectedsigmasPos = {0., 0., 0.};
         final double   sigmaPosEps       = 0.5;
         final double[] expectedSigmasVel = {0., 0., 0.};
@@ -407,10 +407,9 @@ public class UnscentedKalmanEstimatorTest {
     
     /**
      * Perfect azimuth/elevation measurements with a perfect start
-     * Circular formalism
      */
     @Test
-    public void testCircularAzimuthElevation() {
+    public void testCartesianAzimuthElevation() {
 
         // Create context
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");

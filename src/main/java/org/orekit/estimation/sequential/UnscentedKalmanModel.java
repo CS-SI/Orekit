@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -25,6 +27,7 @@ import java.util.Map;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedEvolution;
 import org.hipparchus.filtering.kalman.unscented.UnscentedProcess;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -99,7 +102,8 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
     /** Corrected measurement. */
     private EstimatedMeasurement<?> correctedMeasurement;
-
+    
+    private PrintWriter writer;
 
     /** Unscented Kalman process model constructor (package private).
      * @param propagatorBuilder propagators builders used to evaluate the orbits.
@@ -234,7 +238,17 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
                        propagatorBuilder.getPropagationParametersDrivers(),
                        estimatedMeasurementsParameters);
 
+        try {
 
+            String fileName = "../../python-workspace/estimatedMinusObserved.txt";
+            String encoding = "UTF-8";
+            writer = new PrintWriter(fileName, encoding); 
+
+        }
+        catch (IOException e){
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+          }
         // Initialize corrected estimate
         this.correctedEstimate = new ProcessEstimate(0.0, correctedState, noiseK);
 
@@ -365,6 +379,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         // Update the parameters with the estimated state
         // The min/max values of the parameters are handled by the ParameterDriver implementation
         correctedEstimate = estimate;
+        
         updateParameters();
         final NumericalPropagatorBuilder copy = getEstimatedBuilder(estimate.getState().toArray());
         // update the predicted spacecraft state with predictedNormalizedState
@@ -379,7 +394,17 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
                                                             currentMeasurementNumber,
                                                             new SpacecraftState[] {correctedSpacecraftState});
         // Update current date in the builder
+        final double[] observed = observedMeasurement.getObservedValue();
+        final double estimatedMinusObservedPosition = Vector3D.distance(correctedSpacecraftState.getPVCoordinates().getPosition(), new Vector3D(observed[0], observed[1], observed[2]));
+        final double estimatedMinusObservedVelocity = Vector3D.distance(correctedSpacecraftState.getPVCoordinates().getVelocity(), new Vector3D(observed[3], observed[4], observed[5]));
+        
+        writer.print(estimatedMinusObservedPosition);
+        writer.print(" ");
+        writer.println(estimatedMinusObservedVelocity);
         builder.resetOrbit(correctedSpacecraftState.getOrbit());
+        if (currentMeasurementNumber == 60) {
+            writer.close();
+        }
 
     }
 

@@ -18,9 +18,12 @@ package org.orekit.estimation.sequential;
 
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
+import org.hipparchus.util.MerweUnscentedTransform;
+import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for an Unscented Kalman filter estimator.
@@ -44,9 +47,14 @@ public class UnscentedKalmanEstimatorBuilder {
 
     /** Process noise matrix provider for measurement parameters. */
     private CovarianceMatrixProvider measurementProcessNoiseMatrix;
+    
+    /** Unscend transform provider. */
+    private UnscentedTransformProvider utProvider;
 
     /** Default constructor.
-     *  Set an extended Kalman filter, with linearized covariance prediction.
+     *  Set an Unscented Kalman filter.
+     *  By default, a {@link MerweUnscentedTransform} provider is used. It considers that only the orbital parameters are estimated.
+     *  It is possible to override the default configuration by using {@link #unscentedTransformProvider(UnscentedTransformProvider)}.
      */
     public UnscentedKalmanEstimatorBuilder() {
         this.decomposer                      = new QRDecomposer(1.0e-15);
@@ -54,6 +62,7 @@ public class UnscentedKalmanEstimatorBuilder {
         this.estimatedMeasurementsParameters = new ParameterDriversList();
         this.processNoiseMatrixProvider      = null;
         this.measurementProcessNoiseMatrix   = null;
+        this.utProvider                      = new MerweUnscentedTransform(6);
     }
 
     /** Construct a {@link UnscentedKalmanEstimator} from the data in this builder.
@@ -68,8 +77,32 @@ public class UnscentedKalmanEstimatorBuilder {
         if (propagatorBuilder == null) {
             throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);
         }
+        // Number of estimated parameters
+        int columns = 0;
+        for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+            if (driver.isSelected()) {
+                columns++;
+            }
+        }
+        for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
+            if (driver.isSelected()) {
+                columns++;
+            }
+        }
+
+        columns = columns + estimatedMeasurementsParameters.getNbParams();
+
+        // Check if the number of the selected parameters for the estimation (Orbital + Propagation + Measurement)
+        // is equal to the dimension of the state initialized in the unscented transform provider.
+        // If not, re-initialize the unscented transform with the appropriate dimension. 
+        if (columns != (utProvider.getWc().getDimension()-1)/2) {
+            this.utProvider = new MerweUnscentedTransform(columns);
+        }
+
+
         return new UnscentedKalmanEstimator(decomposer, propagatorBuilder, processNoiseMatrixProvider,
-                                                 estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+                                                 estimatedMeasurementsParameters, measurementProcessNoiseMatrix, utProvider);
+    
     }
 
     /** Configure the matrix decomposer.
@@ -80,6 +113,16 @@ public class UnscentedKalmanEstimatorBuilder {
         decomposer = matrixDecomposer;
         return this;
     }
+    
+    /** Configure the unscented transform provider.
+     * @param utProvider unscented transform to use for the prediction phase
+     * @return this object.
+     */
+    public UnscentedKalmanEstimatorBuilder unscentedTransformProvider(final UnscentedTransformProvider utProvider) {
+        this.utProvider = utProvider;
+        return this;
+    }
+    
 
     /** Add a propagation configuration.
      * <p>
@@ -92,9 +135,9 @@ public class UnscentedKalmanEstimatorBuilder {
      */
     public UnscentedKalmanEstimatorBuilder addPropagationConfiguration(final NumericalPropagatorBuilder builder,
                                                                             final CovarianceMatrixProvider provider) {
-        propagatorBuilder      = builder;
+        propagatorBuilder          = builder;
         processNoiseMatrixProvider = provider;
-        return this;
+        return this;    
     }
 
     /** Configure the estimated measurement parameters.

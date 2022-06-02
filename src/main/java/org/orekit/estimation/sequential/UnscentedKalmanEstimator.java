@@ -23,6 +23,7 @@ import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
@@ -96,14 +97,15 @@ public class UnscentedKalmanEstimator {
             final NumericalPropagatorBuilder propagatorBuilder,
             final CovarianceMatrixProvider processNoiseMatricesProvider,
             final ParameterDriversList estimatedMeasurementParameters,
-            final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+            final CovarianceMatrixProvider measurementProcessNoiseMatrix, 
+            final UnscentedTransformProvider utProvider) {
 
         this.propagatorBuilder = propagatorBuilder;
         this.referenceDate     = propagatorBuilder.getInitialOrbitDate();
         this.observer          = null;
         this.processModel      = new UnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
                                                           estimatedMeasurementParameters, measurementProcessNoiseMatrix);
-        this.filter = new UnscentedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
+        this.filter = new UnscentedKalmanFilter<>(decomposer, processModel, processModel.getEstimate(), utProvider);
 
 
     }
