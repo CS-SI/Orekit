@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="932">
+        Added a way to compute mean parameters in Brouwer-Lyddane model.
+      </action>
       <action dev="markrutten" type="add" issue="922">
         Added bistatic range measurement.
       </action>
