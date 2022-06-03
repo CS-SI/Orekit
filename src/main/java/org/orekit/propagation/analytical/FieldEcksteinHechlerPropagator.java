@@ -549,7 +549,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         final T epsilon         = one.multiply(1.0e-13);
         final T thresholdA      = epsilon.multiply(current.mean.getA().abs().add(1.0));
         final T thresholdE      = epsilon.multiply(current.mean.getE().add(1.0));
-        final T thresholdAngles = epsilon.multiply(one.getPi());
+        final T thresholdAngles = epsilon.multiply(one.getPi().multiply(2));
 
 
         int i = 0;

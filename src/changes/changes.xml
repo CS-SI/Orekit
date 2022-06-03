@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="936">
+        Raised a too stringent convergence threshold in Eackstein-Hechler model.
+      </action>
       <action dev="bryan" type="add" issue="932">
         Added a way to compute mean parameters in Brouwer-Lyddane model.
       </action>
