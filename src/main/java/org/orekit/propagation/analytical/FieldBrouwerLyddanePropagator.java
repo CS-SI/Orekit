@@ -25,7 +25,6 @@ import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
-import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
@@ -549,15 +548,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         while (i++ < 200) {
 
             // recompute the osculating parameters from the current mean parameters
-            final FieldUnivariateDerivative2<T>[] parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField()));
+            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField()));
 
             // adapted parameters residuals
-            final T deltaA     = osculating.getA()  .subtract(parameters[0].getValue());
-            final T deltaE     = osculating.getE()  .subtract(parameters[1].getValue());
-            final T deltaI     = osculating.getI()  .subtract(parameters[2].getValue());
-            final T deltaOmega = MathUtils.normalizeAngle(osculating.getPerigeeArgument().subtract(parameters[3].getValue()), zero);
-            final T deltaRAAN  = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode().subtract(parameters[4].getValue()), zero);
-            final T deltaAnom  = MathUtils.normalizeAngle(osculating.getMeanAnomaly().subtract(parameters[5].getValue()), zero);
+            final T deltaA     = osculating.getA()  .subtract(parameters.getA());
+            final T deltaE     = osculating.getE()  .subtract(parameters.getE());
+            final T deltaI     = osculating.getI()  .subtract(parameters.getI());
+            final T deltaOmega = MathUtils.normalizeAngle(osculating.getPerigeeArgument().subtract(parameters.getPerigeeArgument()), zero);
+            final T deltaRAAN  = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode().subtract(parameters.getRightAscensionOfAscendingNode()), zero);
+            final T deltaAnom  = MathUtils.normalizeAngle(osculating.getMeanAnomaly().subtract(parameters.getMeanAnomaly()), zero);
 
 
             // update mean parameters
@@ -588,13 +587,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     /** {@inheritDoc} */
     public FieldKeplerianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // compute Cartesian parameters, taking derivatives into account
-        // to make sure velocity and acceleration are consistent
         final FieldBLModel<T> current = models.get(date);
-        final FieldUnivariateDerivative2<T>[] propOrb_parameters = current.propagateParameters(date, parameters);
-        return new FieldKeplerianOrbit<T>(propOrb_parameters[0].getValue(), propOrb_parameters[1].getValue(),
-                                          propOrb_parameters[2].getValue(), propOrb_parameters[3].getValue(),
-                                          propOrb_parameters[4].getValue(), propOrb_parameters[5].getValue(),
-                                          PositionAngle.MEAN, current.mean.getFrame(), date, mu);
+        return current.propagateParameters(date, parameters);
     }
 
     /**
@@ -613,6 +607,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
         /** Constant mass. */
         private final T mass;
+
+        /** Central attraction coefficient. */
+        private final T mu;
 
         // CHECKSTYLE: stop JavadocVariable check
 
@@ -712,6 +709,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
             this.mean = mean;
             this.mass = mass;
+            this.mu   = mu;
             final T one  = mass.getField().getOne();
 
             final T app = mean.getA();
@@ -1036,7 +1034,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
          * @param parameters model parameters
          * @return propagated parameters
          */
-        public FieldUnivariateDerivative2<T>[] propagateParameters(final FieldAbsoluteDate<T> date, final T[] parameters) {
+        public FieldKeplerianOrbit<T> propagateParameters(final FieldAbsoluteDate<T> date, final T[] parameters) {
 
             // Field
             final Field<T> field = date.getField();
@@ -1199,14 +1197,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             // Argument of perigee
             final FieldUnivariateDerivative2<T> g = g_p_l.subtract(l);
 
-            final FieldUnivariateDerivative2<T>[] FTD = MathArrays.buildArray(g.getField(), 6);
-            FTD[0] = a;
-            FTD[1] = e;
-            FTD[2] = i;
-            FTD[3] = g;
-            FTD[4] = h;
-            FTD[5] = l;
-            return FTD;
+            // Return a keplerian orbit
+            return new FieldKeplerianOrbit<>(a.getValue(), e.getValue(), i.getValue(),
+                                             g.getValue(), h.getValue(), l.getValue(),
+                                             a.getFirstDerivative(), e.getFirstDerivative(), i.getFirstDerivative(),
+                                             g.getFirstDerivative(), h.getFirstDerivative(), l.getFirstDerivative(),
+                                             PositionAngle.MEAN, mean.getFrame(), date, this.mu);
+
         }
     }
 

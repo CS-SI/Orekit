@@ -550,21 +550,21 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
         while (i++ < 200) {
 
             // recompute the osculating parameters from the current mean parameters
-            final UnivariateDerivative2[] parameters = current.propagateParameters(current.mean.getDate());
+            final KeplerianOrbit parameters = current.propagateParameters(current.mean.getDate());
 
             // adapted parameters residuals
-            final double deltaA     = osculating.getA() - parameters[0].getValue();
-            final double deltaE     = osculating.getE() - parameters[1].getValue();
-            final double deltaI     = osculating.getI() - parameters[2].getValue();
+            final double deltaA     = osculating.getA() - parameters.getA();
+            final double deltaE     = osculating.getE() - parameters.getE();
+            final double deltaI     = osculating.getI() - parameters.getI();
             final double deltaOmega = MathUtils.normalizeAngle(osculating.getPerigeeArgument() -
-                                      parameters[3].getValue(),
-                                      0.0);
+                                                               parameters.getPerigeeArgument(),
+                                                               0.0);
             final double deltaRAAN  = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode() -
-                                      parameters[4].getValue(),
-                                      0.0);
+                                                               parameters.getRightAscensionOfAscendingNode(),
+                                                               0.0);
             final double deltaAnom = MathUtils.normalizeAngle(osculating.getMeanAnomaly() -
-                                     parameters[5].getValue(),
-                                     0.0);
+                                                              parameters.getMeanAnomaly(),
+                                                              0.0);
 
 
             // update mean parameters
@@ -594,14 +594,9 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     public KeplerianOrbit propagateOrbit(final AbsoluteDate date) {
-        // compute Cartesian parameters, taking derivatives into account
-        // to make sure velocity and acceleration are consistent
+        // compute keplerian parameters, taking derivatives into account
         final BLModel current = models.get(date);
-        final UnivariateDerivative2[] propOrb_parameters = current.propagateParameters(date);
-        return new KeplerianOrbit(propOrb_parameters[0].getValue(), propOrb_parameters[1].getValue(),
-                                  propOrb_parameters[2].getValue(), propOrb_parameters[3].getValue(),
-                                  propOrb_parameters[4].getValue(), propOrb_parameters[5].getValue(),
-                                  PositionAngle.MEAN, current.mean.getFrame(), date, mu);
+        return current.propagateParameters(date);
     }
 
     /**
@@ -1082,7 +1077,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
          * @param date target date for the orbit
          * @return propagated parameters
          */
-        public UnivariateDerivative2[] propagateParameters(final AbsoluteDate date) {
+        public KeplerianOrbit propagateParameters(final AbsoluteDate date) {
 
             // Empirical drag coefficient M2
             final double m2 = M2Driver.getValue();
@@ -1240,7 +1235,12 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
             // Argument of perigee
             final UnivariateDerivative2 g = g_p_l.subtract(l);
 
-            return new UnivariateDerivative2[] { a, e, i, g, h, l };
+            // Return a Keplerian orbit
+            return new KeplerianOrbit(a.getValue(), e.getValue(), i.getValue(),
+                                      g.getValue(), h.getValue(), l.getValue(),
+                                      a.getFirstDerivative(), e.getFirstDerivative(), i.getFirstDerivative(),
+                                      g.getFirstDerivative(), h.getFirstDerivative(), l.getFirstDerivative(),
+                                      PositionAngle.MEAN, mean.getFrame(), date, mu);
 
         }
 

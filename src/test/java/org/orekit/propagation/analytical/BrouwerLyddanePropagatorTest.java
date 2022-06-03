@@ -73,12 +73,12 @@ public class BrouwerLyddanePropagatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()),
-                            1.0e-8);
+                            3.6e-9);
 
         Assert.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
-                            1.0e-11);
+                            3.8e-12);
         Assert.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
 
 	}
@@ -102,12 +102,12 @@ public class BrouwerLyddanePropagatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()),
-                            1.0e-8);
+                            7.0e-9);
 
         Assert.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
-                            1.0e-11);
+                            7.0e-12);
         Assert.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
 	}
 
@@ -242,15 +242,15 @@ public class BrouwerLyddanePropagatorTest {
         SpacecraftState BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
 	    final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit());
 
-	    Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.072);
+	    Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.070);
 	    Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
-	    Assert.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000004);
+	    Assert.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000000053);
 	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.119);
+	    		MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0021);
 	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.000072);
+	    		MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0000013);
 	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.12);
+	    		MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.0021);
 	}
 
 	@Test
