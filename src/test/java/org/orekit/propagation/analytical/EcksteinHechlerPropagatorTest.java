@@ -578,7 +578,7 @@ public class EcksteinHechlerPropagatorTest {
         // it was in fact reconstructed from Cartesian coordinates
         double computationErrorV   = Vector3D.distance(referenceV, computedV);
         double nonKeplerianEffectV = Vector3D.distance(referenceV, keplerianV);
-        Assert.assertEquals(nonKeplerianEffectV, computationErrorV, 9.0e-13);
+        Assert.assertEquals(nonKeplerianEffectV, computationErrorV, 2.0e-12);
         Assert.assertEquals(2.2e-4, computationErrorV, 3.0e-6);
 
         // perturbed orbit acceleration should be different from Keplerian orbit because
@@ -586,7 +586,7 @@ public class EcksteinHechlerPropagatorTest {
         // perturbed orbit acceleration should be consistent with position evolution
         double computationErrorA   = Vector3D.distance(referenceA, computedA);
         double nonKeplerianEffectA = Vector3D.distance(referenceA, keplerianA);
-        Assert.assertEquals(1.0e-7,  computationErrorA, 6.0e-9);
+        Assert.assertEquals(8.0e-8,  computationErrorA, 2.0e-9);
         Assert.assertEquals(6.37e-3, nonKeplerianEffectA, 7.0e-6);
         Assert.assertTrue(computationErrorA < nonKeplerianEffectA / 60000);
 

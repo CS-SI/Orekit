@@ -562,7 +562,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         EHModel current = new EHModel(osculating, mass, referenceRadius, mu, ck0);
 
         // threshold for each parameter
-        final double epsilon         = 1.0e-13;
+        final double epsilon         = 1.0e-11;
         final double thresholdA      = epsilon * (1 + FastMath.abs(current.mean.getA()));
         final double thresholdE      = epsilon * (1 + current.mean.getE());
         final double thresholdAngles = epsilon * MathUtils.TWO_PI;
