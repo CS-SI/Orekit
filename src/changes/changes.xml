@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="895">
+        Allowed parsing of SP3 files without EOF key.
+      </action>
       <action dev="gc" type="add" issue="790">
         Added writing of velocity record in CPF file writers.
       </action>

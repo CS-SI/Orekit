@@ -198,7 +198,14 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 }
             }
 
-            // we never reached the EOF marker
+            // Sometimes, the "EOF" key is not available in the file
+            // If the expected number of entries has been read
+            // we can suppose that the file has been read properly
+            if (pi.nbEpochs == pi.file.getNumberOfEpochs()) {
+                return pi.file;
+            }
+
+            // we never reached the EOF marker or number of epochs doesn't correspond to the expected number
             throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber);
 
         } catch (IOException ioe) {
