@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="gc" type="add" issue="790">
+        Added writing of velocity record in CPF file writers.
+      </action>
       <action dev="bryan" type="update" issue="804">
         Added support for loading EOP from Sinex files.
       </action>
