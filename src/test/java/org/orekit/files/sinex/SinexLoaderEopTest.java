@@ -17,7 +17,6 @@
 
 package org.orekit.files.sinex;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
@@ -68,10 +67,12 @@ public class SinexLoaderEopTest {
         loader.fillHistory(converter, history);
 
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(0);
+        AbsoluteDate date1 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (350));
+        AbsoluteDate date2 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352));
 
         // Check size of set
         Assert.assertEquals(4, history.size());
+        Assert.assertEquals(4, loader.getParsedEop().size());
 
         // Test if the values are correctly extracted
         EOPEntry firstEntry = history.first();
@@ -81,19 +82,30 @@ public class SinexLoaderEopTest {
 
         // Test if a valid EOPHistory object can be built
         EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, history, true, DataContext.getDefault().getTimeScales());
-        Assert.assertEquals(-0.172046001405041E+03, eopHistory.getUT1MinusUTC(date)*1000, 1e-15);
-        Assert.assertEquals(unitConvRad.convert(0.994323310003336E+02), eopHistory.getPoleCorrection(date).getXp(), 1e-15);
-        Assert.assertEquals(unitConvRad.convert(0.275001985187467E+03), eopHistory.getPoleCorrection(date).getYp(), 1e-15);
-        Assert.assertEquals(0, eopHistory.getEquinoxNutationCorrection(date)[0], 1e-15);
-        Assert.assertEquals(0, eopHistory.getEquinoxNutationCorrection(date)[1], 1e-15);
-        Assert.assertEquals(0, eopHistory.getNonRotatinOriginNutationCorrection(date)[0], 1e-15);
-        Assert.assertEquals(0, eopHistory.getNonRotatinOriginNutationCorrection(date)[1], 1e-15);
+        Assert.assertEquals(-0.172046001405041, eopHistory.getUT1MinusUTC(date1), 1e-15);
+        Assert.assertEquals(unitConvRad.convert(0.994323310003336E+02), eopHistory.getPoleCorrection(date1).getXp(), 1e-15);
+        Assert.assertEquals(unitConvRad.convert(0.275001985187467E+03), eopHistory.getPoleCorrection(date1).getYp(), 1e-15);
+        Assert.assertEquals(0, eopHistory.getEquinoxNutationCorrection(date1)[0], 1e-15);
+        Assert.assertEquals(0, eopHistory.getEquinoxNutationCorrection(date1)[1], 1e-15);
+        Assert.assertEquals(0, eopHistory.getNonRotatinOriginNutationCorrection(date1)[0], 1e-15);
+        Assert.assertEquals(0, eopHistory.getNonRotatinOriginNutationCorrection(date1)[1], 1e-15);
+
+        Assert.assertEquals(-.172731650844468, eopHistory.getUT1MinusUTC(date2), 1e-15);
+        Assert.assertEquals(unitConvRad.convert(0.958035125590580E+02), eopHistory.getPoleCorrection(date2).getXp(), 1e-15);
+        Assert.assertEquals(unitConvRad.convert(0.275653571617736E+03), eopHistory.getPoleCorrection(date2).getYp(), 1e-15);
+        Assert.assertEquals(0, eopHistory.getEquinoxNutationCorrection(date2)[0], 1e-15);
+        Assert.assertEquals(0, eopHistory.getEquinoxNutationCorrection(date2)[1], 1e-15);
+        Assert.assertEquals(0, eopHistory.getNonRotatinOriginNutationCorrection(date2)[0], 1e-15);
+        Assert.assertEquals(0, eopHistory.getNonRotatinOriginNutationCorrection(date2)[1], 1e-15);
 
         // Checking start and end dates
-        AbsoluteDate firstDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (350 - 1)).shiftedBy(0);
+        // 19:350:00000
+        AbsoluteDate firstDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (349));
         Assert.assertEquals(firstDate, eopHistory.getStartDate());
-        AbsoluteDate endDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353 - 1)).shiftedBy(0);
+        // 19:353:00000
+        AbsoluteDate endDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352));
         Assert.assertEquals(endDate, eopHistory.getEndDate());
+
     }
 
 
@@ -116,19 +128,23 @@ public class SinexLoaderEopTest {
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
 
         // Setting up the date, and generating elements not present at first for check
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(43185);
-        double[] equinox = converter.toEquinox(date, unitConvRad.convert(-1.10122731910265E+03), unitConvRad.convert(-4.00387630903350E+03));
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 43185.0);
 
         // Test if the values are correctly extracted
         EOPEntry firstEntry = history.first();
-        Assert.assertEquals(unitConvRad.convert(7.68783442726072E+01), firstEntry.getX(), 1e-15);
-        Assert.assertEquals(unitConvRad.convert(3.47286203337827E+02), firstEntry.getY(), 1e-15);
+        double xPo = unitConvRad.convert(7.68783442726072E+01);
+        double yPo = unitConvRad.convert(3.47286203337827E+02);
+        double nutX = unitConvRad.convert(-1.10122731910265E+03);
+        double nutY = unitConvRad.convert(-4.00387630903350E+03);
+        double[] equinox = converter.toEquinox(date, nutX, nutY);
+        Assert.assertEquals(xPo, firstEntry.getX(), 1e-15);
+        Assert.assertEquals(yPo, firstEntry.getY(), 1e-15);
         Assert.assertEquals(-3.17284190690589E+04, firstEntry.getUT1MinusUTC() * 1000, 1e-15);
         Assert.assertEquals(1.32354538674901E+00, firstEntry.getLOD() * 1000, 1e-15);
-        Assert.assertEquals(unitConvRad.convert(-1.10122731910265E+03), firstEntry.getDx(), 1e-15);
-        Assert.assertEquals(unitConvRad.convert(-4.00387630903350E+03), firstEntry.getDy(), 1e-15);
-        Assert.assertEquals(equinox[0], firstEntry.getDdPsi(), 1e-15);
-        Assert.assertEquals(equinox[1], firstEntry.getDdEps(), 1e-15);
+        Assert.assertEquals(nutX, firstEntry.getDx(), 1e-15);
+        Assert.assertEquals(nutY, firstEntry.getDy(), 1e-15);
+        Assert.assertEquals(equinox[0], firstEntry.getDdPsi(), 4.5e-11);
+        Assert.assertEquals(equinox[1], firstEntry.getDdEps(), 4.8e-12);
 
         // Test if a valid EOPHistory object can be built
         EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, history, true, DataContext.getDefault().getTimeScales());
@@ -139,8 +155,8 @@ public class SinexLoaderEopTest {
         Assert.assertEquals( 1.32354538674901E+00, eopHistory.getLOD(date.shiftedBy(10))* 1000, 1e-15);
         Assert.assertEquals(unitConvRad.convert(-1.10122731910265E+03), eopHistory.getNonRotatinOriginNutationCorrection(date.shiftedBy(10))[0], 1e-15);
         Assert.assertEquals(unitConvRad.convert(-4.00387630903350E+03), eopHistory.getNonRotatinOriginNutationCorrection(date.shiftedBy(10))[1], 1e-15);
-        Assert.assertEquals(equinox[0], eopHistory.getEquinoxNutationCorrection(date.shiftedBy(10))[0], 1e-15);
-        Assert.assertEquals(equinox[1], eopHistory.getEquinoxNutationCorrection(date.shiftedBy(10))[1], 1e-15);
+        Assert.assertEquals(equinox[0], eopHistory.getEquinoxNutationCorrection(date.shiftedBy(10))[0], 4.5e-11);
+        Assert.assertEquals(equinox[1], eopHistory.getEquinoxNutationCorrection(date.shiftedBy(10))[1], 4.8e-12);
     }
 
     @Test
@@ -209,43 +225,14 @@ public class SinexLoaderEopTest {
         Assert.assertEquals(1.32354538674901E+00, firstEntry.getLOD() * 1000, 1e-15);
         Assert.assertEquals(unitConvRad.convert(-1.10122731910265E+03), firstEntry.getDdPsi(), 1e-15);
         Assert.assertEquals(unitConvRad.convert(-4.00387630903350E+03), firstEntry.getDdEps(), 1e-15);
-        Assert.assertEquals(nro[0], firstEntry.getDx(), 1e-15);
-        Assert.assertEquals(nro[1], firstEntry.getDy(), 1e-15);
+        Assert.assertEquals(nro[0], firstEntry.getDx(), 1.8e-11);
+        Assert.assertEquals(nro[1], firstEntry.getDy(), 2.0e-12);
 
     }
 
     @Test
-    // Case NUT_X, NUT_Y == null, NUT_LN, NUT_OB != null
-    public void testSmallSinexEopSynth4File() {
-        
-        // Setting up the Sinex loader
-        SinexLoader loader = new SinexLoader("cod20842-small-synthEOP4.snx");
-        loader.setITRFVersion(2014);
-        Assert.assertEquals(ITRFVersion.ITRF_2014, loader.getITRFVersion());
-
-        IERSConventions.NutationCorrectionConverter converter =
-                IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        loader.fillHistory(converter, history);
-
-        final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
-        EOPEntry firstEntry = history.first();
-
-        Assert.assertEquals(unitConvRad.convert(7.68783442726072E+01), firstEntry.getX(), 1e-15);
-        Assert.assertEquals(unitConvRad.convert(3.47286203337827E+02), firstEntry.getY(), 1e-15);
-        Assert.assertEquals(-3.17284190690589E+04, firstEntry.getUT1MinusUTC() * 1000, 1e-15);
-        Assert.assertEquals(1.32354538674901E+00, firstEntry.getLOD() * 1000, 1e-15);
-        Assert.assertEquals(unitConvRad.convert(-1.10122731910265E+03), firstEntry.getDx(), 1e-15);
-        Assert.assertEquals(unitConvRad.convert(0), firstEntry.getDy(), 1e-15);
-        Assert.assertEquals(unitConvRad.convert(0), firstEntry.getDdPsi(), 1e-15);
-        Assert.assertEquals(unitConvRad.convert(-4.00387630903350E+03), firstEntry.getDdEps(), 1e-15);
-
-    }
-
-    @Test
-    // Test to check if the closest date if condition is respected for the definition of the interpolated points,
-    // in the case of a single eop entry parsed from the Sinex file.
-    public void testSmallSinexEopClosestEnd() {
+    // Test the number of EOP entries and epochs
+    public void testEpochsInFile() {
         // Setting up the Sinex loader
         SinexLoader loader = new SinexLoader("cod_ifCloseEnd.snx");
         loader.setITRFVersion(2014);
@@ -256,18 +243,18 @@ public class SinexLoaderEopTest {
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         loader.fillHistory(converter, history);
 
-        AbsoluteDate dateStart = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(0);
-        AbsoluteDate dateInFile = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(45000);
-        AbsoluteDate dateInterp = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(41400);
-        AbsoluteDate dateEnd = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352 - 1)).shiftedBy(0);
+        AbsoluteDate dateStart = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350);
+        AbsoluteDate dateInFile = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 45000.0);
+        AbsoluteDate dateEnd = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 351);
 
-        List<AbsoluteDate> listDates = Arrays.asList(dateStart, dateInterp, dateInFile, dateEnd);
+        List<AbsoluteDate> listDates = Arrays.asList(dateStart, dateInFile, dateEnd);
 
         int cpt = 0;
         for (EOPEntry entry : history) {
             Assert.assertEquals(listDates.get(cpt), entry.getDate());
             cpt = cpt+1;
         }
+
     }
 
     @Test
@@ -326,22 +313,18 @@ public class SinexLoaderEopTest {
         EOPHistory eopHistory  = DataContext.getDefault().getFrames().getEOPHistory(IERSConventions.IERS_2010, true);
 
         // Setting up dates for further checks
-        AbsoluteDate startDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(0);
-        AbsoluteDate endDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (354 - 1)).shiftedBy(0);
+        AbsoluteDate startDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (350));
+        AbsoluteDate endDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353));
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(43185);
-        AbsoluteDate dateInterp = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(43215);
-        AbsoluteDate date2 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352 - 1)).shiftedBy(43185);
-        AbsoluteDate dateInterp2 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352 - 1)).shiftedBy(43215);
-        AbsoluteDate date3 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353 - 1)).shiftedBy(43185);
-        AbsoluteDate dateInterp3 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353 - 1)).shiftedBy(43215);
-
+        AbsoluteDate date  = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 43185.0);
+        AbsoluteDate date2 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 351 + 43185.0);
+        AbsoluteDate date3 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 352 + 43185.0);
 
         // Intermediate shared date between two files 
         AbsoluteDate dateI12 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352 - 1)).shiftedBy(0);
         AbsoluteDate dateI23 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353 - 1)).shiftedBy(0);
 
-        List<AbsoluteDate> listDates = Arrays.asList(startDate, date, dateInterp, dateI12, date2, dateInterp2, dateI23, date3, dateInterp3, endDate);
+        List<AbsoluteDate> listDates = Arrays.asList(startDate, date, dateI12, date2, dateI23, date3, endDate);
         // Simplify checks to stay in the units of Orekit.
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
 
@@ -403,10 +386,11 @@ public class SinexLoaderEopTest {
         // Last entry
         Assert.assertEquals(unitConvRad.convert(5.68783442726072E+01), eopHistory.getPoleCorrection(endDate).getXp(), 1e-15);
         Assert.assertEquals(unitConvRad.convert(1.47286203337827E+02), eopHistory.getPoleCorrection(endDate).getYp(), 1e-15);
-        Assert.assertEquals(-5.17284190690589E+04, eopHistory.getUT1MinusUTC(endDate) * 1000, 1e-15);
+        Assert.assertEquals(-5.17284190690589E+01, eopHistory.getUT1MinusUTC(endDate), 1e-14);
         Assert.assertEquals( 3.32354538674901E+00, eopHistory.getLOD(endDate)* 1000, 1e-15);
         Assert.assertEquals(unitConvRad.convert(-3.10122731910265E+03), eopHistory.getNonRotatinOriginNutationCorrection(endDate)[0], 1e-15);
         Assert.assertEquals(unitConvRad.convert(-6.00387630903350E+03), eopHistory.getNonRotatinOriginNutationCorrection(endDate)[1], 1e-15);
 
     }
+
 }
