@@ -442,6 +442,74 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
     }
 
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param osculating osculating orbit to convert
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(osculating.getDate())}
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static CircularOrbit computeMeanOrbit(final Orbit osculating,
+                                                 final UnnormalizedSphericalHarmonicsProvider provider,
+                                                 final UnnormalizedSphericalHarmonics harmonics) {
+        return computeMeanOrbit(osculating,
+                                provider.getAe(), provider.getMu(),
+                                harmonics.getUnnormalizedCnm(2, 0),
+                                harmonics.getUnnormalizedCnm(3, 0),
+                                harmonics.getUnnormalizedCnm(4, 0),
+                                harmonics.getUnnormalizedCnm(5, 0),
+                                harmonics.getUnnormalizedCnm(6, 0));
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param osculating osculating orbit to convert
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static CircularOrbit computeMeanOrbit(final Orbit osculating,
+                                                 final double referenceRadius, final double mu,
+                                                 final double c20, final double c30, final double c40,
+                                                 final double c50, final double c60) {
+        final EcksteinHechlerPropagator propagator =
+                        new EcksteinHechlerPropagator(osculating,
+                                                      InertialProvider.of(osculating.getFrame()),
+                                                      DEFAULT_MASS,
+                                                      referenceRadius, mu, c20, c30, c40, c50, c60,
+                                                      PropagationType.OSCULATING);
+        return propagator.initialModel.mean;
+    }
+
     /** {@inheritDoc}
      * <p>The new initial state to consider
      * must be defined with an osculating orbit.</p>
@@ -487,17 +555,17 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         // sanity check
         if (osculating.getA() < referenceRadius) {
             throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE,
-                                           osculating.getA());
+                                      osculating.getA());
         }
 
         // rough initialization of the mean parameters
         EHModel current = new EHModel(osculating, mass, referenceRadius, mu, ck0);
 
         // threshold for each parameter
-        final double epsilon         = 1.0e-13;
+        final double epsilon         = 1.0e-11;
         final double thresholdA      = epsilon * (1 + FastMath.abs(current.mean.getA()));
         final double thresholdE      = epsilon * (1 + current.mean.getE());
-        final double thresholdAngles = epsilon * FastMath.PI;
+        final double thresholdAngles = epsilon * MathUtils.TWO_PI;
 
         int i = 0;
         while (i++ < 100) {

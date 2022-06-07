@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,11 +43,22 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.general.OrekitEphemerisFile;
+import org.orekit.files.general.OrekitEphemerisFile.OrekitSatelliteEphemeris;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 public class CPFWriterTest {
 
@@ -287,6 +299,106 @@ public class CPFWriterTest {
         assertEquals(0.0, Vector3D.PLUS_J.distance(coordinatesInFile.get(1).getPosition()), 1.0e-10);
         assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
 
+    }
+    
+    /** Test for issue #790 (https://gitlab.orekit.org/orekit/orekit/-/issues/790). 
+     * @throws URISyntaxException */
+    @Test
+    public void testIssue790() throws IOException, URISyntaxException {
+
+    	 final TimeScale utc = TimeScalesFactory.getUTC();
+         final AbsoluteDate date = new AbsoluteDate(2022, 05, 10, 00, 00, 00.000, utc);
+
+         // General orbit
+         double a = 24396159;                     // semi major axis in meters
+         double e = 0.72831215;                   // eccentricity
+         double i = FastMath.toRadians(7);        // inclination
+         double omega = FastMath.toRadians(180);  // perigee argument
+         double raan = FastMath.toRadians(261);   // right ascension of ascending node
+         double lM = 0;                           // mean anomaly
+
+         Orbit orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
+         									   FramesFactory.getEME2000(), date, 
+         									   Constants.WGS84_EARTH_MU);
+         
+         // First, configure a propagation with the default event handler (expected to stop on event)
+         Propagator propagator = new KeplerianPropagator(orbit);
+         
+         final double propagationDurationSeconds = 86400.0;
+         final double stepSizeSeconds = 60.0;
+         List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+
+         for (double dt = 0.0; dt < propagationDurationSeconds; dt += stepSizeSeconds) {
+             states.add(propagator.propagate(date.shiftedBy(dt)));
+         }
+
+         OrekitEphemerisFile ephemerisFile = new OrekitEphemerisFile();
+         OrekitSatelliteEphemeris satellite = ephemerisFile.addSatellite("070595");
+         satellite.addNewSegment(states);
+
+        // Create header
+        final CPFHeader header = new CPFHeader();
+        header.setSource("orekit");
+        header.setStep(300);
+        header.setStartEpoch(date);
+        header.setEndEpoch(date.shiftedBy(86400.0));
+        header.setIlrsSatelliteId("070595");
+        header.setName("tag");
+        header.setNoradId("0705");
+        header.setProductionEpoch(date.getComponents(utc).getDate());
+        header.setProductionHour(12);
+        header.setSequenceNumber(0705);
+        header.setSic("0705");
+        final CPFHeader headerV1 = header;
+        headerV1.setVersion(1);
+
+        // First launch the test with velocity flag enabled
+        boolean velocityFlag = true;
+        
+        // Write the CPF file from the generated ephemeris
+        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        CPFWriter writer = new CPFWriter(headerV1, TimeScalesFactory.getUTC(), velocityFlag);
+        writer.write(tempCPFFilePath, ephemerisFile);
+        
+        // Parse the generated CPF file
+        final CPF generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
+        
+        
+        // Extract the coordinates from the generated CPF file
+        final CPFEphemeris ephemeris    = generatedCpfFile.getSatellites().get("070595");
+        final List<CPFCoordinate> coord = ephemeris.getCoordinates();
+
+        // Verify first coordinate and that it includes the velocity components
+        final AbsoluteDate firstEpoch = AbsoluteDate.createMJDDate(59709, 0.0, generatedCpfFile.getTimeScale());
+        final Vector3D firstPos = new Vector3D(1036869.533, 6546536.585, 0.000);
+        final Vector3D firstVel = new Vector3D(-9994.355199, 1582.950355, -1242.449125);
+        Assert.assertEquals(0, coord.get(0).getLeap());
+        Assert.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
+        Assert.assertEquals(0.0, firstVel.distance(coord.get(0).getVelocity()), 1.0e-15);
+        Assert.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
+        
+        
+        // Repeat without velocity components for regression testing
+        
+        // Write the CPF file from the generated ephemeris
+        String tempCPFFilePathReg = tempFolder.newFile("TestWriteCPFReg.cpf").toString();
+        CPFWriter writerReg = new CPFWriter(headerV1, TimeScalesFactory.getUTC());
+        writerReg.write(tempCPFFilePathReg, ephemerisFile);
+        
+        // Parse the generated CPF file
+        final CPF generatedCpfFileReg = new CPFParser().parse(new DataSource(tempCPFFilePathReg));
+        
+        
+        // Extract the coordinates from the generated CPF file
+        final CPFEphemeris ephemerisReg    = generatedCpfFileReg.getSatellites().get("070595");
+        final List<CPFCoordinate> coordReg = ephemerisReg.getCoordinates();
+
+        // Verify first coordinate and that the velocity components are zero
+        Assert.assertEquals(0, coordReg.get(0).getLeap());
+        Assert.assertEquals(0.0, firstPos.distance(coordReg.get(0).getPosition()), 1.0e-15);
+        Assert.assertEquals(0.0, coordReg.get(0).getVelocity().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, firstEpoch.durationFrom(coordReg.get(0).getDate()), 1.0e-15);
+        
     }
 
     @Test

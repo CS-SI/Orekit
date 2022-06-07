@@ -16,40 +16,17 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
-import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AbstractGradientConverter;
-import org.orekit.utils.FieldAngularCoordinates;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /**
  * Converter for states and parameters arrays.
  * @author Bryan Cazabonne
  * @since 10.2
+ * @deprecated as of 11.2, replaced by {@link ModifierGradientConverter}
  */
-public class TroposphericGradientConverter extends AbstractGradientConverter {
-
-    /** Dimension of the state. */
-    private final int freeStateParameters;
-
-    /** States with various number of additional parameters for tropospheric models. */
-    private final List<FieldSpacecraftState<Gradient>> gStates;
+@Deprecated
+public class TroposphericGradientConverter extends ModifierGradientConverter {
 
     /** Simple constructor.
      * @param state regular state
@@ -58,142 +35,7 @@ public class TroposphericGradientConverter extends AbstractGradientConverter {
      */
     public TroposphericGradientConverter(final SpacecraftState state, final int freeStateParameters,
                                          final AttitudeProvider provider) {
-
-        super(freeStateParameters);
-        this.freeStateParameters = freeStateParameters;
-
-        // Derivative field
-        final Field<Gradient> field =  GradientField.getField(freeStateParameters);
-
-        // position always has derivatives
-        final Vector3D pos = state.getPVCoordinates().getPosition();
-        final FieldVector3D<Gradient> posG = new FieldVector3D<>(Gradient.variable(freeStateParameters, 0, pos.getX()),
-                                                                 Gradient.variable(freeStateParameters, 1, pos.getY()),
-                                                                 Gradient.variable(freeStateParameters, 2, pos.getZ()));
-
-        // velocity may have derivatives or not
-        final Vector3D vel = state.getPVCoordinates().getVelocity();
-        final FieldVector3D<Gradient> velG;
-        if (freeStateParameters > 3) {
-            velG = new FieldVector3D<>(Gradient.variable(freeStateParameters, 3, vel.getX()),
-                                       Gradient.variable(freeStateParameters, 4, vel.getY()),
-                                       Gradient.variable(freeStateParameters, 5, vel.getZ()));
-        } else {
-            velG = new FieldVector3D<>(Gradient.constant(freeStateParameters, vel.getX()),
-                                       Gradient.constant(freeStateParameters, vel.getY()),
-                                       Gradient.constant(freeStateParameters, vel.getZ()));
-        }
-
-        // acceleration never has derivatives
-        final Vector3D acc = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<Gradient> accG = new FieldVector3D<>(Gradient.constant(freeStateParameters, acc.getX()),
-                                                                 Gradient.constant(freeStateParameters, acc.getY()),
-                                                                 Gradient.constant(freeStateParameters, acc.getZ()));
-
-        // mass never has derivatives
-        final Gradient dsM = Gradient.constant(freeStateParameters, state.getMass());
-
-        final FieldOrbit<Gradient> gOrbit =
-                        new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posG, velG, accG),
-                                                  state.getFrame(),
-                                                  field.getZero().add(state.getMu()));
-
-        final FieldAttitude<Gradient> gAttitude;
-        if (freeStateParameters > 3) {
-            // compute attitude partial derivatives with respect to position/velocity
-            gAttitude = provider.getAttitude(gOrbit, gOrbit.getDate(), gOrbit.getFrame());
-        } else {
-            // force model does not depend on attitude, don't bother recomputing it
-            gAttitude = new FieldAttitude<>(field, state.getAttitude());
-        }
-
-        // initialize the list with the state having 0 force model parameters
-        gStates = new ArrayList<>();
-        gStates.add(new FieldSpacecraftState<>(gOrbit, gAttitude, dsM));
-
-    }
-
-    /**
-     * Get the number of free state parameters.
-     * @return number of free state parameters
-     */
-    public int getFreeStateParameters() {
-        return freeStateParameters;
-    }
-
-    /**
-     * Get the state with the number of parameters consistent with tropospheric model.
-     * @param tropoModel tropospheric model
-     * @return state with the number of parameters consistent with tropospheric model
-     */
-    public FieldSpacecraftState<Gradient> getState(final DiscreteTroposphericModel tropoModel) {
-
-        // count the required number of parameters
-        int nbParams = 0;
-        for (final ParameterDriver driver : tropoModel.getParametersDrivers()) {
-            if (driver.isSelected()) {
-                ++nbParams;
-            }
-        }
-
-        // fill in intermediate slots
-        while (gStates.size() < nbParams + 1) {
-            gStates.add(null);
-        }
-
-        if (gStates.get(nbParams) == null) {
-            // it is the first time we need this number of parameters
-            // we need to create the state
-            final int freeParameters = freeStateParameters + nbParams;
-            final FieldSpacecraftState<Gradient> s0 = gStates.get(0);
-
-            // orbit
-            final FieldPVCoordinates<Gradient> pv0 = s0.getPVCoordinates();
-            final FieldOrbit<Gradient> gOrbit =
-                            new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(s0.getDate().toAbsoluteDate(),
-                                                                                          extend(pv0.getPosition(),     freeParameters),
-                                                                                          extend(pv0.getVelocity(),     freeParameters),
-                                                                                          extend(pv0.getAcceleration(), freeParameters)),
-                                                      s0.getFrame(), extend(s0.getMu(), freeParameters));
-
-            // attitude
-            final FieldAngularCoordinates<Gradient> ac0 = s0.getAttitude().getOrientation();
-            final FieldAttitude<Gradient> gAttitude =
-                            new FieldAttitude<>(s0.getAttitude().getReferenceFrame(),
-                                                new TimeStampedFieldAngularCoordinates<>(gOrbit.getDate(),
-                                                                                         extend(ac0.getRotation(), freeParameters),
-                                                                                         extend(ac0.getRotationRate(), freeParameters),
-                                                                                         extend(ac0.getRotationAcceleration(), freeParameters)));
-
-            // mass
-            final Gradient gM = extend(s0.getMass(), freeParameters);
-
-            gStates.set(nbParams, new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
-
-        }
-
-        return gStates.get(nbParams);
-
-    }
-
-    /**
-     * Get the tropospheric model parameters.
-     * @param state state as returned by {@link #getState(DiscreteTroposphericModel)}
-     * @param tropoModel tropospheric model associated with the parameters
-     * @return tropospheric model parameters
-     */
-    public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state,
-                                    final DiscreteTroposphericModel tropoModel) {
-        final int freeParameters = state.getMass().getFreeParameters();
-        final List<ParameterDriver> drivers = tropoModel.getParametersDrivers();
-        final Gradient[] parameters = new Gradient[drivers.size()];
-        int index = freeStateParameters;
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).isSelected() ?
-                            Gradient.variable(freeParameters, index++, drivers.get(i).getValue()) :
-                            Gradient.constant(freeParameters, drivers.get(i).getValue());
-        }
-        return parameters;
+        super(state, freeStateParameters, provider);
     }
 
 }

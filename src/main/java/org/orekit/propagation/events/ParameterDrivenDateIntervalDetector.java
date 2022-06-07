@@ -58,6 +58,9 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     /** Default suffix for duration driver. */
     public static final String DURATION_SUFFIX = "_DURATION";
 
+    /** Detection threshold. */
+    private static final double THRESHOLD = 1.0e-10;
+
     /** Reference interval start driver. */
     private DateDriver start;
 
@@ -89,7 +92,8 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      */
     public ParameterDrivenDateIntervalDetector(final String prefix,
                                                final AbsoluteDate refStart, final AbsoluteDate refStop) {
-        this(0.5 * refStop.durationFrom(refStart), 1.0e-10, DEFAULT_MAX_ITER,
+        this(FastMath.max(0.5 * refStop.durationFrom(refStart), THRESHOLD),
+             THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnDecreasing<ParameterDrivenDateIntervalDetector>(),
              new DateDriver(refStart, prefix + START_SUFFIX, true),
              new DateDriver(refStop, prefix + STOP_SUFFIX, false),

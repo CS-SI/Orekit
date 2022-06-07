@@ -16,11 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -29,12 +25,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldAngularCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /** Converter for states and parameters arrays.
  * @author Luc Maisonobe
@@ -45,9 +37,6 @@ class DSSTGradientConverter extends AbstractGradientConverter {
 
     /** Fixed dimension of the state. */
     private static final int FREE_STATE_PARAMETERS = 6;
-
-    /** States with various number of additional parameters for force models. */
-    private final List<FieldSpacecraftState<Gradient>> gStates;
 
     /** Simple constructor.
      * @param state regular state
@@ -86,88 +75,8 @@ class DSSTGradientConverter extends AbstractGradientConverter {
         gAttitude = provider.getAttitude(gOrbit, gOrbit.getDate(), gOrbit.getFrame());
 
         // initialize the list with the state having 0 force model parameters
-        gStates = new ArrayList<>();
-        gStates.add(new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
+        initStates(new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
 
-    }
-
-    /** Get the state with the number of parameters consistent with force model.
-     * @param forceModel force model
-     * @return state with the number of parameters consistent with force model
-     */
-    public FieldSpacecraftState<Gradient> getState(final DSSTForceModel forceModel) {
-
-        // count the required number of parameters
-        int nbParams = 0;
-        for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-            if (driver.isSelected()) {
-                ++nbParams;
-            }
-        }
-
-        // fill in intermediate slots
-        while (gStates.size() < nbParams + 1) {
-            gStates.add(null);
-        }
-
-        if (gStates.get(nbParams) == null) {
-            // it is the first time we need this number of parameters
-            // we need to create the state
-            final int freeParameters = FREE_STATE_PARAMETERS + nbParams;
-            final FieldSpacecraftState<Gradient> s0 = gStates.get(0);
-
-            final FieldAbsoluteDate<Gradient> date = new FieldAbsoluteDate<>(GradientField.getField(freeParameters),
-                                                                             s0.getDate().toAbsoluteDate());
-            // orbit
-            final FieldOrbit<Gradient> gOrbit =
-                            new FieldEquinoctialOrbit<>(extend(s0.getA(),             freeParameters),
-                                                        extend(s0.getEquinoctialEx(), freeParameters),
-                                                        extend(s0.getEquinoctialEy(), freeParameters),
-                                                        extend(s0.getHx(),            freeParameters),
-                                                        extend(s0.getHy(),            freeParameters),
-                                                        extend(s0.getLM(),            freeParameters),
-                                                        PositionAngle.MEAN,
-                                                        s0.getFrame(), date,
-                                                        extend(s0.getMu(),            freeParameters));
-
-            // attitude
-            final FieldAngularCoordinates<Gradient> ac0 = s0.getAttitude().getOrientation();
-            final FieldAttitude<Gradient> gAttitude =
-                            new FieldAttitude<>(s0.getAttitude().getReferenceFrame(),
-                                                new TimeStampedFieldAngularCoordinates<>(gOrbit.getDate(),
-                                                                                         extend(ac0.getRotation(),             freeParameters),
-                                                                                         extend(ac0.getRotationRate(),         freeParameters),
-                                                                                         extend(ac0.getRotationAcceleration(), freeParameters)));
-
-            // mass
-            final Gradient gM = extend(s0.getMass(), freeParameters);
-
-            gStates.set(nbParams, new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
-
-        }
-
-        return gStates.get(nbParams);
-
-    }
-
-    /** Get the force model parameters.
-     * @param state state as returned by {@link #getState(DSSTForceModel)}
-     * @param forceModel force model associated with the parameters
-     * @return force model parameters
-     */
-    public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state,
-                                    final DSSTForceModel forceModel) {
-        final int freeParameters = state.getA().getFreeParameters();
-        final List<ParameterDriver> drivers = forceModel.getParametersDrivers();
-        final Gradient[] parameters = new Gradient[drivers.size()];
-        int index = FREE_STATE_PARAMETERS;
-        int i = 0;
-        for (ParameterDriver driver : drivers) {
-            parameters[i++] = driver.isSelected() ?
-                              Gradient.variable(freeParameters, index++, driver.getValue()) :
-                              Gradient.constant(freeParameters, driver.getValue());
-        }
-        return parameters;
     }
 
 }

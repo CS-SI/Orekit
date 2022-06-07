@@ -17,11 +17,16 @@
 package org.orekit.frames;
 
 
+import java.util.stream.Stream;
+
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -51,6 +56,9 @@ public class HelmertTransformationTest {
                                                        pos2005, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
         Assert.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
+        MatcherAssert.assertThat(
+                itrf2005.getStaticTransformTo(itrf2008, date).transformPosition(pos2005),
+                OrekitMatchers.vectorCloseTo(pos2008, 0));
 
         date = date.shiftedBy(Constants.JULIAN_YEAR);
         pos2008 = itrf2005.getTransformTo(itrf2008, date).transformPosition(pos2005);
@@ -60,6 +68,9 @@ public class HelmertTransformationTest {
                                               pos2005, 1.0);
         error         = generalOffset.subtract(linearOffset);
         Assert.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
+        MatcherAssert.assertThat(
+                itrf2005.getStaticTransformTo(itrf2008, date).transformPosition(pos2005),
+                OrekitMatchers.vectorCloseTo(pos2008, 0));
 
     }
 
@@ -157,21 +168,39 @@ public class HelmertTransformationTest {
     }
 
     @Test
+    public void test2020PivotVs2014Pivot() {
+        doTestPivot(2020, 2014);
+    }
+
+    @Test
+    public void test2020PivotVs2008Pivot() {
+        doTestPivot(2020, 2008);
+    }
+
+    @Test
     public void test2014PivotVs2008Pivot() {
+        doTestPivot(2014, 2008);
+    }
 
-        // for this test, we arbitrarily assume FramesFactory provides an ITRF 2014
-        Frame itrf2014 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        Frame itrf2008 = HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_2008.createTransformedITRF(itrf2014, "2008");
+    private void doTestPivot(final int year1, final int year2) {
 
-        for (final HelmertTransformation.Predefined p2008 : HelmertTransformation.Predefined.values()) {
-            if (p2008.toString().startsWith("ITRF_2008_TO")) {
-                HelmertTransformation.Predefined p2014 =
-                                HelmertTransformation.Predefined.valueOf(p2008.toString().replaceAll("2008", "2014"));
-                Frame itrfXFrom2008 = p2008.createTransformedITRF(itrf2008, "x-from-2008");
-                Frame itrfXFrom2014 = p2014.createTransformedITRF(itrf2014, "x-from-2014");
+        // for this test, we arbitrarily assume FramesFactory provides an ITRF year 1
+        Frame itrfPivot1 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame itrfPivot2 = HelmertTransformation.Predefined.selectPredefined(year1, year2).
+                           createTransformedITRF(itrfPivot1, Integer.toString(year2));
+
+        Stream.
+        of(HelmertTransformation.Predefined.values()).
+        filter(p -> p.getOrigin().getYear() == year1 && p.getDestination().getYear() != year2).
+        forEach(p1 -> {
+            HelmertTransformation.Predefined p2 =
+                            HelmertTransformation.Predefined.selectPredefined(year2, p1.getDestination().getYear());
+            if (p2 != null) {
+                Frame itrfXFrom1 = p1.createTransformedITRF(itrfPivot1, "x-from-1");
+                Frame itrfXFrom2 = p2.createTransformedITRF(itrfPivot2, "x-from-2");
                 for (int year = 2000; year < 2007; ++year) {
                     AbsoluteDate date = new AbsoluteDate(year, 4, 17, 12, 0, 0, TimeScalesFactory.getTT());
-                    Transform t = itrfXFrom2014.getTransformTo(itrfXFrom2008, date);
+                    Transform t = itrfXFrom2.getTransformTo(itrfXFrom1, date);
                     // the errors are not strictly zero (but they are very small) because
                     // Helmert transformations are a translation plus a rotation. If we do
                     // t1 -> r1 -> t2 -> r2, it is not the same as t1 -> t2 -> r1 -> r2
@@ -182,9 +211,14 @@ public class HelmertTransformationTest {
                     Assert.assertEquals(0, t.getVelocity().getNorm(),     2.0e-22);
                     Assert.assertEquals(0, t.getRotation().getAngle(),    2.0e-12);
                     Assert.assertEquals(0, t.getRotationRate().getNorm(), 2.0e-32);
+                    final StaticTransform st = itrfXFrom2.getStaticTransformTo(itrfXFrom1, date);
+                    MatcherAssert.assertThat(st.getTranslation(),
+                                             OrekitMatchers.vectorCloseTo(t.getTranslation(), 0));
+                    MatcherAssert.assertThat(Rotation.distance(st.getRotation(), t.getRotation()),
+                                             OrekitMatchers.closeTo(0, 0));
                 }
             }
-        }
+        });
     }
 
     private Vector3D computeOffsetLinearly(final double t1,    final double t2,    final double t3,

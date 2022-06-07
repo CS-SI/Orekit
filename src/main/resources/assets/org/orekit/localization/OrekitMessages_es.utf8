@@ -755,3 +755,6 @@ NO_STATION_ECCENTRICITY_FOR_EPOCH = ningún valor de excentricidad de la estaci�
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
 INCONSISTENT_SELECTION = selección de parámetros inconsistente entre los pares {0}/{1} y {2}/{3}
+
+# value is not strictly positive: {0}
+NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>

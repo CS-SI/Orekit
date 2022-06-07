@@ -32,7 +32,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.models.earth.tessellation.DivertedSingularityAiming;
 import org.orekit.models.earth.tessellation.EllipsoidTessellator;
@@ -272,9 +272,10 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         }
 
         // the spacecraft may be visible from some points in the zone, check them all
-        final Transform bodyToSc = new Transform(s.getDate(),
-                                                 body.getBodyFrame().getTransformTo(s.getFrame(), s.getDate()),
-                                                 s.toTransform());
+        final StaticTransform bodyToSc = StaticTransform.compose(
+                s.getDate(),
+                body.getBodyFrame().getStaticTransformTo(s.getFrame(), s.getDate()),
+                s.toTransform());
         for (final SamplingPoint point : sampledZone) {
             final Vector3D lineOfSightBody = point.getPosition().subtract(scBody);
             if (Vector3D.dotProduct(lineOfSightBody, point.getZenith()) <= 0) {

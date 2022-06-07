@@ -263,7 +263,9 @@ public class KalmanModelTest {
         final RealMatrix dMdY = MatrixUtils.createRealMatrix(rangeEstimated.getStateDerivatives(0));
         expH.setSubMatrix(dMdY.getData(), 0, 0);
         // SRP part
-        final RealMatrix dMdCr = dMdY.multiply(MatrixUtils.createRealMatrix(dYdPp));
+        final SpacecraftState scTransition = scPred.shiftedBy(-rangeEstimated.getTimeOffset());
+        final double[][] dYdPpTransition = harvester.getParametersJacobian(scTransition).getData();
+        final RealMatrix dMdCr = dMdY.multiply(MatrixUtils.createRealMatrix(dYdPpTransition));
         expH.setEntry(0, 6, dMdCr.getEntry(0, 0));
         // Sat range bias part
         expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver)[0]);
@@ -379,7 +381,7 @@ public class KalmanModelTest {
         final RealMatrix H = model.getPhysicalMeasurementJacobian();
         final double[][] dH = H.subtract(expH).getData();
         for (int i = 0; i < N; i++) {
-            Assert.assertArrayEquals("Failed on line " + i,new double[M], dH[i], tol);
+            Assert.assertArrayEquals("Failed on line " + i, new double[M], dH[i], tol);
         }
         
         // Measurement covariance matrix 

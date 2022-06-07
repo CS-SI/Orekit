@@ -16,11 +16,19 @@
  */
 package org.orekit.propagation.integration;
 
+import java.util.Collections;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.ode.DenseOutputModel;
+import org.hipparchus.ode.ExpandableODE;
+import org.hipparchus.ode.ODEState;
+import org.hipparchus.ode.OrdinaryDifferentialEquation;
+import org.hipparchus.ode.SecondaryODE;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.nonstiff.EulerIntegrator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,15 +36,18 @@ import org.orekit.Utils;
 import org.orekit.attitudes.CelestialBodyPointed;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.MatricesHarvester;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -155,6 +166,97 @@ public class IntegratedEphemerisTest {
 
     }
 
+    @Deprecated
+    @Test
+    public void testDeprecated() {
+
+        EulerIntegrator integ = new EulerIntegrator(1.0);
+        DenseOutputModel dom = new DenseOutputModel();
+        integ.addStepHandler(dom);
+        ExpandableODE eode = new ExpandableODE(new OrdinaryDifferentialEquation() {
+            public int getDimension() { return 1; }
+            public double[] computeDerivatives(double t, double[] y) { return y; }
+        });
+        eode.addSecondaryEquations(new SecondaryODE() {
+            public int getDimension() { return 1; }
+            public double[] computeDerivatives(double t, double[] primary,
+                                               double[] primaryDot, double[] secondary) { return secondary; }
+        });
+        integ.integrate(eode, new ODEState(0.0, new double[1], new double[1][1]), 1.0);
+
+        StateMapper mapper = new StateMapper(AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU,
+                                             OrbitType.CARTESIAN, PositionAngle.TRUE,
+                                             new InertialProvider(FramesFactory.getEME2000()),
+                                             FramesFactory.getEME2000()) {
+            public void mapStateToArray(SpacecraftState state, double[] y, double[] yDot) {}
+            public SpacecraftState mapArrayToState(AbsoluteDate date, double[] y, double[] yDot, PropagationType type) {
+                return null;
+            }
+        };
+
+        try {
+            new IntegratedEphemeris(AbsoluteDate.ARBITRARY_EPOCH,
+                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                    mapper, PropagationType.OSCULATING,
+                                    dom, Collections.emptyMap(), Collections.emptyList(),
+                                    new String[] { "equation-1", "equation-2" });
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oie) {
+            // expected as only one equation could be handled properly by this deprecated constructor
+        }
+
+        IntegratedEphemeris ie = new IntegratedEphemeris(AbsoluteDate.ARBITRARY_EPOCH,
+                                                         AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                         mapper, PropagationType.OSCULATING,
+                                                         dom, Collections.emptyMap(), Collections.emptyList(),
+                                                         new String[] { "equation-1" });
+        Assert.assertNotNull(ie);
+
+    }
+
+    @Test
+    public void testAdditionalDerivatives() {
+
+        AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(10.0);
+        double[][] tolerances = NumericalPropagator.tolerances(1.0e-3, initialOrbit, OrbitType.CARTESIAN);
+        DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-6, 10.0, tolerances[0], tolerances[1]);
+        integrator.setInitialStepSize(1.0e-3);
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
+        final DerivativesProvider provider1 = new DerivativesProvider("provider-1", 3);
+        propagator.addAdditionalDerivativesProvider(provider1);
+        final DerivativesProvider provider2 = new DerivativesProvider("provider-2", 1);
+        propagator.addAdditionalDerivativesProvider(provider2);
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        propagator.setInitialState(new SpacecraftState(initialOrbit).
+                                   addAdditionalState(provider1.getName(), new double[provider1.getDimension()]).
+                                   addAdditionalState(provider2.getName(), new double[provider2.getDimension()]));
+        propagator.propagate(finalDate);
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+
+        for (double dt = 0; dt < ephemeris.getMaxDate().durationFrom(ephemeris.getMinDate()); dt += 0.1) {
+            SpacecraftState state = ephemeris.propagate(ephemeris.getMinDate().shiftedBy(dt));
+            checkState(dt, state, provider1);
+            checkState(dt, state, provider2);
+        }
+
+    }
+
+    private void checkState(final double dt, final SpacecraftState state, final DerivativesProvider provider) {
+
+        Assert.assertTrue(state.hasAdditionalState(provider.getName()));
+        Assert.assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
+        for (int i = 0; i < provider.getDimension(); ++i) {
+            Assert.assertEquals(i * dt, state.getAdditionalState(provider.getName())[i], 4.0e-15 * i * dt);
+        }
+
+        Assert.assertTrue(state.hasAdditionalStateDerivative(provider.getName()));
+        Assert.assertEquals(provider.getDimension(), state.getAdditionalStateDerivative(provider.getName()).length);
+        for (int i = 0; i < provider.getDimension(); ++i) {
+            Assert.assertEquals(i, state.getAdditionalStateDerivative(provider.getName())[i], 2.0e-14 * i);
+        }
+
+    }
+
     @Before
     public void setUp() {
 
@@ -187,5 +289,26 @@ public class IntegratedEphemerisTest {
 
     private Orbit initialOrbit;
     private NumericalPropagator numericalPropagator;
+
+    private static class DerivativesProvider implements AdditionalDerivativesProvider {
+        private final String name;
+        private final double[] derivatives;
+        DerivativesProvider(final String name, final int dimension) {
+            this.name        = name;
+            this.derivatives = new double[dimension];
+            for (int i = 0; i < dimension; ++i) {
+                derivatives[i] = i;
+            }
+        }
+        public String getName() {
+            return name;
+        }
+        public int getDimension() {
+            return derivatives.length;
+        }
+        public double[] derivatives(final SpacecraftState s) {
+            return derivatives;
+        }
+    }
 
 }

@@ -142,6 +142,26 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
     }
 
     /**
+     * Add the velocity to the last CPF coordinate entry.
+     * @param id satellite ILRS identifier
+     * @param velocity the velocity vector of the satellite
+     * @since 11.2
+     */
+    public void addSatelliteVelocityToCPFCoordinate(final String id, final Vector3D velocity) {
+        // Get the last coordinate entry, which contains the position vector
+        final CPFCoordinate lastCoordinate = ephemeris.get(id).coordinates.get(ephemeris.get(id).coordinates.size() - 1);
+
+        // Create a new CPFCoordinate object with both position and velocity information
+        final CPFCoordinate CPFCoordUpdated = new CPFCoordinate(lastCoordinate.getDate(),
+                lastCoordinate.getPosition(),
+                velocity,
+                lastCoordinate.getLeap());
+
+        // Patch the last record
+        ephemeris.get(id).coordinates.set(ephemeris.get(id).coordinates.size() - 1, CPFCoordUpdated);
+    }
+
+    /**
      * Set the interpolation sample.
      * @param interpolationSample interpolation sample
      */

@@ -164,9 +164,9 @@ public enum PhysicalPropertiesKey {
     VM_APPARENT_MAX((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
                                                                          container::setVmApparentMax)),
 
-    /** Typical (50th percentile) coefficient of reflectivity. */
-    REFLECTIVITY((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                      container::setReflectivity)),
+    /** Typical (50th percentile) coefficient of reflectance. */
+    REFLECTANCE((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                     container::setReflectance)),
 
     /** Attitude control mode. */
     ATT_CONTROL_MODE((token, context, container) -> token.processAsNormalizedString(container::setAttitudeControlMode)),

@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
@@ -239,6 +240,33 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
                                                     new Vector3D(ypNegDot, 0.0, 0.0)));
 
         return new Transform(date, meridianShift, poleShift);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+
+        // take parametric prime meridian shift into account
+        final double theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
+        final StaticTransform meridianShift = StaticTransform.of(
+                date,
+                new Rotation(Vector3D.PLUS_K, theta, RotationConvention.FRAME_TRANSFORM)
+        );
+
+        // take parametric pole shift into account
+        final double xpNeg     = -linearModel(date, polarOffsetXDriver, polarDriftXDriver);
+        final double ypNeg     = -linearModel(date, polarOffsetYDriver, polarDriftYDriver);
+        final StaticTransform poleShift = StaticTransform.compose(
+                date,
+                StaticTransform.of(
+                        date,
+                        new Rotation(Vector3D.PLUS_J, xpNeg, RotationConvention.FRAME_TRANSFORM)),
+                StaticTransform.of(
+                        date,
+                        new Rotation(Vector3D.PLUS_I, ypNeg, RotationConvention.FRAME_TRANSFORM)));
+
+        return StaticTransform.compose(date, meridianShift, poleShift);
 
     }
 

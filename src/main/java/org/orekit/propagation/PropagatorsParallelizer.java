@@ -193,6 +193,16 @@ public class PropagatorsParallelizer {
             } else {
                 // this was the last step
                 isLast = true;
+                /* For NumericalPropagators :
+                 * After reaching the finalState with the selected monitor,
+                 * we need to do the step with all remaining monitors to reach the target time.
+                 * This also triggers the StoringStepHandler, producing ephemeris.
+                 */
+                for (PropagatorMonitoring monitor : monitors) {
+                    if (monitor != selected) {
+                        monitor.retrieveNextParameters();
+                    }
+                }
             }
 
             previousDate = selectedStepEnd;
@@ -407,6 +417,12 @@ public class PropagatorsParallelizer {
                 ParametersContainer params = null;
                 while (params == null && !future.isDone()) {
                     params = queue.poll(MAX_WAIT, TimeUnit.MILLISECONDS);
+                    // Check to avoid loop on future not done, in the case of reached finalState.
+                    if (parameters != null) {
+                        if (parameters.finalState != null) {
+                            break;
+                        }
+                    }
                 }
                 if (params == null) {
                     // call Future.get just for the side effect of retrieving the exception

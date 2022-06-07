@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -35,6 +36,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
@@ -94,6 +96,14 @@ public class GTODProviderTest {
         Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
                 getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
         checkPV(fix.transformPVCoordinates(pvPEF), t.transformPVCoordinates(pvTOD), 0.00942, 3.12e-5);
+        StaticTransform st = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
+                getStaticTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
+        MatcherAssert.assertThat(
+                st.getTranslation(),
+                OrekitMatchers.vectorCloseTo(t.getTranslation(), 0));
+        MatcherAssert.assertThat(
+                Rotation.distance(st.getRotation(), t.getRotation()),
+                OrekitMatchers.closeTo(0, 0));
 
         // if we forget to apply nutation corrections, results are much worse, which is expected
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);

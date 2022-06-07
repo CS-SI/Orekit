@@ -71,7 +71,7 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = nessun Parametro d''Orientamento della 
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametri d''Orientamento della Terra mancanti tra {0} e {1}
 
 # missing Earth Orientation Parameters between {0} and {1}, gap is {2,number,0.0##############E0} s
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = <MISSING TRANSLATION>
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = Parametri d''Orientamento della Terra mancanti tra {0} e {1}, interruzione di {2,number,0.0##############E0} s
 
 # missing Earth Orientation Parameters
 NO_EARTH_ORIENTATION_PARAMETERS = Parametri d''Orientamento della Terra mancanti
@@ -155,10 +155,10 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grado troppo elevato (n = {0}, il grado mas
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordine troppo elevato (m = {0}, l''ordine massimo per il potenziale è {1})
 
 # no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
-WRONG_DEGREE_OR_ORDER = <MISSING TRANSLATION>
+WRONG_DEGREE_OR_ORDER = nessun termine ({0}, {1}) nella decomposizione armonica sferica {2}x{3}
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = sono state trovate varie date di riferimento ({0} e {1} differenti di {3,number,0.0##############E0} s) nel file del campo gravitazionale {2}
 
 # no TLE data available for object {0}
 NO_TLE_FOR_OBJECT = dati TLE non disponibili per l''oggetto {0}
@@ -242,7 +242,7 @@ FRAMES_MISMATCH = il sistema di riferimento ({0}) non corrisponde al sistema di 
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = stato iniziale non specificato per la propagazione dell''orbita
 
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
-EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION>
+EVENT_DATE_TOO_CLOSE = la data obiettivo dell'evento deve essere prima del {1} di {3,number,0.0##############E0} secondi o dopo il {2} di {3,number,0.0##############E0} secondi, ma la data obiettivo dell'evento {0} è {4,number,0.0##############E0} secondi prima del {1} e {5,number,0.0##############E0} secondi dopo il {2} quindi non può essere aggiunta
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = impossibile leggere l''intestazione del file di effemeridi del JPL {0}
@@ -272,10 +272,10 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = data fuori dell''intervallo di validità pe
 OUT_OF_RANGE_EPHEMERIDES_DATE = data fuori dell''intervallo di validità per le effemeridi: {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = <MISSING TRANSLATION>
+OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = data fuori dall''intervallo di validità delle effemeridi: {0} è {3,number,0.0##############E0} s prima del [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = <MISSING TRANSLATION>
+OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = data fuori dall''intervallo di validità delle effemeridi: {0} è {3,number,0.0##############E0} s dopo del [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
 UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = due valori di elevazione inattesi: {0} e {1}, per un solo azimut: {2}
@@ -329,7 +329,7 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = epoca di riferimento specifica dell''agenzia m
 CCSDS_MISSING_KEYWORD = chiave {0} mancante nel file CCSDS {1}
 
 # key {0} is not allowed in format version {1}
-CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = <MISSING TRANSLATION>
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = la parola chiave {0} non è consentita nella versione {1} del formato
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = parola-chiave inattesa alla linea {0} del file CCSDS {1}:\n{2}
@@ -353,7 +353,7 @@ CCSDS_INCONSISTENT_TIME_SYSTEMS = sistemi temporali incoerenti: {0} ≠ {1}
 CCSDS_TDM_KEYWORD_NOT_FOUND = nessuna parola chiave CCSDS TDM trovata alla linea {0} del file {1}:\n{2}
 
 # no Range Units converter configured for parsing Tracking Data Message
-CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
+CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = non è stato configurato un convertitore di unità di pseudo-distanza per la lettura dei Tracking Data Message
 
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = Nel file {1}, il sistema temporale deve essere impostato prima della linea {0} 
@@ -410,16 +410,16 @@ NOT_ENOUGH_CACHED_NEIGHBORS = numero di vicini in cache troppo piccolo: {0} (dev
 NO_CACHED_ENTRIES = nessun dato nella cache
 
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = le voci generate non sono ordinate cronologicamente: {0} > {1} di {2,number,0.0##############E0} s
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = nessun dato generato intorno alla data: {0}
 
 # unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossibile generare nuovi dati prima del {0}, dati richiesti per il {1} che è {2,number,0.0##############E0} s prima
 
 # unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
+UNABLE_TO_GENERATE_NEW_DATA_AFTER =impossibile generare dati dopo il {0}, dati richiesti per il {1} che è {2,number,0.0##############E0} s dopo
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossibile calcolare l''anomalia eccentrica iperbolica a partire dall''anomalia media dopo {0} iterazioni
@@ -482,16 +482,16 @@ CCSDS_INVALID_ROTATION_SEQUENCE = la sequenza di rotazione {0} presente alla lin
 CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = il tipo di settaggio {0} ({1}) non è ancora supportato in Orekit
 
 # retrograde factor not supported in element set {0}
-CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = fattore retrogrado non supportato per il tipo di elementi {0}
 
 # element set type {0} ({1}) expects {2} elements
 CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = il tipo di settaggio {0} ({1}) presuppone {2} elementi
 
 # wrong number of units for maneuver {0}
-CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = errato numero di unità per la manovra {0}
 
 # missing time field for maneuver {0}
-CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
+CCSDS_MANEUVER_MISSING_TIME = campo temporale manacante per la manovra {0}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = la creazione di un propagatore combinato richiede almeno un propagatore, ma non ne è stato fornito alcuno
@@ -637,13 +637,13 @@ INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = impossibile realizza
 INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = impossibile combinare le frequenze {0} e {1} per ottenere {2}
 
 # observations are not in chronological order: {0} is {2,number,0.0##############E0} s after {1}
-NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = le osservazioni non sono in ordine cronologico: {0} è {2,number,0.0##############E0} s dopo {1}
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = rilevato utilizzo di ExceptionalDataContext. Si utilizza solitamente per rilevare errori di programmazione
 
 # Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
-NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = Le osservazioni devono avere date differenti: {0}, {1} ({3,number,0.0##############E0} s dalla prima osservazione), e {2} ({4,number,0.0##############E0} s dalla prima osservazione, {5,number,0.0##############E0} s dalla seconda osservazione)
 
 # observations are not in the same plane
 NON_COPLANAR_POINTS = le osservazioni non sono sullo stesso piano
@@ -742,16 +742,19 @@ INCOMPATIBLE_UNITS = le unità {0} e {1} non sono compatibili
 MISSING_VELOCITY = informazioni mancanti su velocità
 
 # attempt to generate file {0} with a formatting error
-ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
+ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentativo di generare il file {0} con un errore di formattazione
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
-FIND_ROOT = <MISSING TRANSLATION>
+FIND_ROOT = {0} non ha trovato una soluzione tra {1} (g={2,number,0.0##############E0}) e {3} (g={4,number,0.0##############E0})\nUltima iterazione a {5} (g={6,number,0.0##############E0})
 
 # backward propagation not allowed here
-BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
+BACKWARD_PROPAGATION_NOT_ALLOWED = la propagazione all'indietro non è consentita qui
 
 # no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
-NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
+NO_STATION_ECCENTRICITY_FOR_EPOCH = nessun valore di eccentricità stazione per la data inserita {0}, intervallo di validità tra {1} e {2}
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
-INCONSISTENT_SELECTION = <MISSING TRANSLATION>
+INCONSISTENT_SELECTION = scelta di parametri discordante per le coppie {0}/{1} e {2}/{3}
+
+# value is not strictly positive: {0}
+NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>

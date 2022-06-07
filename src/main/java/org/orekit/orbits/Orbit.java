@@ -163,23 +163,26 @@ public abstract class Orbit
      */
     protected static boolean hasNonKeplerianAcceleration(final PVCoordinates pva, final double mu) {
 
-        final Vector3D a = pva.getAcceleration();
-        if (a == null) {
-            return false;
-        }
-
         final Vector3D p = pva.getPosition();
         final double r2 = p.getNormSq();
         final double r  = FastMath.sqrt(r2);
         final Vector3D keplerianAcceleration = new Vector3D(-mu / (r * r2), p);
-        if (a.getNorm() > 1.0e-9 * keplerianAcceleration.getNorm()) {
+
+        // Check if acceleration is null or relatively close to 0 compared to the keplerain acceleration
+        final Vector3D a = pva.getAcceleration();
+        if (a == null || a.getNorm() < 1e-9 * keplerianAcceleration.getNorm()) {
+            return false;
+        }
+
+        final Vector3D nonKeplerianAcceleration = a.subtract(keplerianAcceleration);
+
+        if ( nonKeplerianAcceleration.getNorm() > 1e-9 * keplerianAcceleration.getNorm()) {
             // we have a relevant acceleration, we can compute derivatives
             return true;
         } else {
             // the provided acceleration is either too small to be reliable (probably even 0), or NaN
             return false;
         }
-
     }
 
     /** Get the orbit type.

@@ -74,6 +74,11 @@ public class FieldAdditionalDerivativesProvidersTest {
         doTestYield(Decimal64Field.getInstance());
     }
 
+    @Test
+    public void testCoupling() {
+        doTestCoupling(Decimal64Field.getInstance());
+    }
+
     private <T extends CalculusFieldElement<T>> void doTestInitNumerical(Field<T> field) {
         // setup
         final double reference = 1.25;
@@ -184,6 +189,34 @@ public class FieldAdditionalDerivativesProvidersTest {
 
     }
 
+    private <T extends CalculusFieldElement<T>> void doTestCoupling(Field<T> field) {
+
+        // setup
+        final T           dt      = field.getZero().newInstance(600.0);
+        final Coupling<T> coupling = new Coupling<>("coupling", 3.5, -2.0, 1.0);
+
+        // action
+        AdaptiveStepsizeFieldIntegrator<T> integrator =
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
+                                                              tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(60);
+        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
+        propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
+                                            addAdditionalState(coupling.getName(),
+                                                               field.getZero().newInstance(coupling.secondaryInit)));
+        propagatorNumerical.addAdditionalDerivativesProvider(coupling);
+        FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
+
+        // verify
+        Assert.assertEquals(coupling.secondaryInit + dt.getReal() * coupling.secondaryRate,
+                            finalState.getAdditionalState(coupling.getName())[0].getReal(),
+                            1.0e-10);
+        Assert.assertEquals(initialState.getA() + dt.getReal() * coupling.smaRate,
+                            finalState.getA().getReal(),
+                            1.0e-10);
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
@@ -226,10 +259,16 @@ public class FieldAdditionalDerivativesProvidersTest {
         }
 
         @Override
-        public T[] derivatives(FieldSpacecraftState<T> s) {
+        @Deprecated
+        public T[] derivatives(final FieldSpacecraftState<T> state) {
+            return combinedDerivatives(state).getAdditionalDerivatives();
+        }
+
+        @Override
+        public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
             final T[] pDot = MathArrays.buildArray(s.getDate().getField(), 1);
             pDot[0] = s.getDate().getField().getZero().newInstance(rate);
-            return pDot;
+            return new FieldCombinedDerivatives<>(pDot, null);
         }
 
         @Override
@@ -261,7 +300,13 @@ public class FieldAdditionalDerivativesProvidersTest {
         }
 
         @Override
-        public T[] derivatives(final FieldSpacecraftState<T> s) {
+        @Deprecated
+        public T[] derivatives(final FieldSpacecraftState<T> state) {
+            return combinedDerivatives(state).getAdditionalDerivatives();
+        }
+
+        @Override
+        public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
             final T[] pDot;
             if (dependency == null) {
                 pDot = MathArrays.buildArray(s.getDate().getField(), 1);
@@ -269,12 +314,61 @@ public class FieldAdditionalDerivativesProvidersTest {
             } else {
                 pDot = s.getAdditionalStateDerivative(dependency);
             }
-            return pDot;
+            return new FieldCombinedDerivatives<>(pDot, null);
         }
 
         @Override
         public boolean yield(final FieldSpacecraftState<T> state) {
             return dependency != null && !state.hasAdditionalStateDerivative(dependency);
+        }
+
+        @Override
+        public int getDimension() {
+            return 1;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+    }
+
+    private static class Coupling<T extends CalculusFieldElement<T>> implements FieldAdditionalDerivativesProvider<T> {
+
+        private final String  name;
+        private final double  secondaryInit;
+        private final double  secondaryRate;
+        private final double  smaRate;
+
+        public Coupling(final String name,
+                        final double secondaryInit, final double secondaryRate,
+                        final double smaRate) {
+            this.name          = name;
+            this.secondaryInit = secondaryInit;
+            this.secondaryRate = secondaryRate;
+            this.smaRate       = smaRate;
+        }
+
+        @Override
+        @Deprecated
+        public T[] derivatives(final FieldSpacecraftState<T> state) {
+            return combinedDerivatives(state).getAdditionalDerivatives();
+        }
+
+        @Override
+        public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
+            final Field<T> field = s.getDate().getField();
+            T[] pDot          = MathArrays.buildArray(field, 1);
+            T[] mainIncrement = MathArrays.buildArray(field, 6);
+            mainIncrement[0] = field.getZero().newInstance(smaRate);
+            mainIncrement[1] = field.getZero();
+            mainIncrement[2] = field.getZero();
+            mainIncrement[3] = field.getZero();
+            mainIncrement[4] = field.getZero();
+            mainIncrement[5] = field.getZero();
+            pDot[0] = field.getZero().newInstance(secondaryRate);
+            return new FieldCombinedDerivatives<>(pDot, mainIncrement);
         }
 
         @Override

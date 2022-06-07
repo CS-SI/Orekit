@@ -34,6 +34,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -59,7 +60,10 @@ public class DateDetectorTest {
         propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String   getName()                      { return "dummy"; }
             public int      getDimension()                 { return 1; }
-            public double[] derivatives(SpacecraftState s) { return new double[1]; }
+            public double[] derivatives(final SpacecraftState state) { return null; }
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[1], null);
+            }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("dummy", new double[1]));
         propagator.getMultiplexer().add(interpolator -> {

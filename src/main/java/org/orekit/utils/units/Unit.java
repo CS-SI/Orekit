@@ -133,6 +133,9 @@ public class Unit implements Serializable {
     /** Total Electron Content Unit. */
     public static final Unit TOTAL_ELECTRON_CONTENT_UNIT = METRE.power(null, new Fraction(-2)).scale("TECU", 1.0e+16);
 
+    /** Earth Radii used as Bstar unit in CCSDS OMM. */
+    public static final Unit EARTH_RADII = new Unit("ER", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20210402L;
 
@@ -411,18 +414,20 @@ public class Unit implements Serializable {
      * <dl>
      *   <dt>year</dt>
      *   <dd>the accepted non-SI unit for Julian year is "a" but we also accept "yr"</dd>
+     *   <dt>day</dt>
+     *   <dd>the accepted non-SI unit for day is "d" but we also accept "day"</dd>
      *   <dt>dimensionless</dt>
      *   <dd>both "1" and "#" (U+0023, NUMBER SIGN) are accepted</dd>
      *   <dt>mass</dt>
-     *   <dd>"g" is the standard symbol, despite the unit is "kg" (its the only
+     *   <dd>"g" is the standard symbol, despite the unit is "kg" (it is the only
      *       unit that has a prefix in its name, so all multiples must be based on "g")</dd>
      *   <dt>degrees</dt>
      *   <dd>the base symbol for degrees is "°" (U+00B0, DEGREE SIGN), but we also accept
      *       "◦" (U+25E6, WHITE BULLET) and "deg"</dd>
      *   <dt>arcminute</dt>
-     *   <dd>The base symbol for  is "′" (U+2032, PRIME) but we also accept "'" (U+0027, APOSTROPHE)</dd>
+     *   <dd>The base symbol for arcminute is "′" (U+2032, PRIME) but we also accept "'" (U+0027, APOSTROPHE)</dd>
      *   <dt>arcsecond</dt>
-     *   <dd>The base symbol for  is "″" (U+2033, DOUBLE PRIME) but we also accept
+     *   <dd>The base symbol for arcsecond is "″" (U+2033, DOUBLE PRIME) but we also accept
      *   "''" (two occurrences of U+0027, APOSTROPHE), "\"" (U+0022, QUOTATION MARK) and "as"</dd>
      * </dl>
      * <p>
@@ -463,7 +468,7 @@ public class Unit implements Serializable {
      *   as in "Pa^(11/12)"</li>
      * </ul>
      * For integer exponents, the digits must be ASCII digits from the Basic Latin block from
-     * unicode if explicit exponent maker "**" or "^" was used, or using unicode superscript
+     * unicode if explicit exponent marker "**" or "^" is used, or using unicode superscript
      * digits if implicit exponentiation (i.e. no markers at all) is used. Unicode superscripts
      * are not allowed for fractional exponents because unicode does not provide a superscript solidus.
      * Negative exponents can be used too.

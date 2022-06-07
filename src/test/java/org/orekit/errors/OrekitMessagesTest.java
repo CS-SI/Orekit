@@ -30,7 +30,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assert.assertEquals(252, OrekitMessages.values().length);
+        Assert.assertEquals(253, OrekitMessages.values().length);
     }
 
     @Test
@@ -71,17 +71,25 @@ public class OrekitMessagesTest {
 
     @Test
     public void testNoMissingFrenchTranslation() {
+
         for (OrekitMessages message : OrekitMessages.values()) {
             String translated = message.getLocalizedString(Locale.FRENCH);
-            Assert.assertFalse(message.name(), translated.toLowerCase().contains("missing translation"));
-        }
+            // To detect a missing translation, check if the returned string is the original text in English.
+            Assert.assertNotEquals(message.name(), translated, message.getSourceString());
+         }
     }
-
+    
     @Test
     public void testNoOpEnglishTranslation() {
         for (OrekitMessages message : OrekitMessages.values()) {
             String translated = message.getLocalizedString(Locale.ENGLISH);
-            Assert.assertEquals(message.getSourceString(), translated);
+            
+            // Check that the original message is not empty.
+            Assert.assertFalse(message.name(), message.getSourceString().length() == 0);  
+            
+            // Check that both texts are the same
+            Assert.assertEquals(message.name(), message.getSourceString(), translated);                 
+
         }
     }
 

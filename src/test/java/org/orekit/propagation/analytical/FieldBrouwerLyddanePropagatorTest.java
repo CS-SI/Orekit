@@ -1,10 +1,17 @@
 package org.orekit.propagation.analytical;
 
+import java.io.IOException;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.stat.descriptive.StorelessUnivariateStatistic;
+import org.hipparchus.stat.descriptive.rank.Max;
+import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -27,6 +34,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.DTM2000;
@@ -41,6 +49,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -82,12 +91,12 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assert.assertEquals(0.0,
         		FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                        finalOrbit.getPVCoordinates().getPosition()).getReal(),
-                            1.0e-8);
+                            5.3e-9);
 
         Assert.assertEquals(0.0,
         		FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                        finalOrbit.getPVCoordinates().getVelocity()).getReal(),
-                            1.0e-11);
+                            4.6e-12);
         Assert.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
 
 	}
@@ -117,12 +126,12 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assert.assertEquals(0.0,
         		FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()).getReal(),
-                            1.1e-8);
+                            3.5e-9);
 
         Assert.assertEquals(0.0,
         		FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()).getReal(),
-                            1.4e-11);
+                            5.1e-12);
         Assert.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
 	}
 
@@ -270,15 +279,15 @@ public class FieldBrouwerLyddanePropagatorTest {
         final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit().toOrbit());
 
 
-	    Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.072);
+	    Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.070);
 	    Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
-	    Assert.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000004);
+	    Assert.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000000053);
 	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.119);
+	    		MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0021);
 	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.000072);
+	    		MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0000013);
 	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.12);
+	    		MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.0021);
 	}
 
     @Test
@@ -844,6 +853,53 @@ public class FieldBrouwerLyddanePropagatorTest {
 	    Assert.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getPosition().distance(finalOrbit.getPVCoordinates().getPosition()), Double.MIN_VALUE);
 	    Assert.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
 	}
+
+    @Test
+    public void testMeanOrbit() throws IOException {
+        doTestMeanOrbit(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestMeanOrbit(Field<T> field) {
+        T zero = field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+        final UnnormalizedSphericalHarmonicsProvider ushp = GravityFieldFactory.getUnnormalizedProvider(provider);
+        final FieldKeplerianOrbit<T> initialOsculating =
+            new FieldKeplerianOrbit<>(zero.newInstance(7.8e6), zero.newInstance(0.032), zero.newInstance(0.4),
+                                      zero.newInstance(0.1), zero.newInstance(0.2), zero.newInstance(0.3),
+                                      PositionAngle.TRUE,
+                                      FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
+        final UnnormalizedSphericalHarmonics ush = ushp.onDate(initialOsculating.getDate().toAbsoluteDate());
+
+        // set up a reference numerical propagator starting for the specified start orbit
+        // using the same force models (i.e. the first few zonal terms)
+        double[][] tol = FieldNumericalPropagator.tolerances(zero.newInstance(0.1), initialOsculating, OrbitType.KEPLERIAN);
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
+        integrator.setInitialStepSize(60);
+        FieldNumericalPropagator<T> num = new FieldNumericalPropagator<>(field, integrator);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, provider));
+        num.setInitialState(new FieldSpacecraftState<>(initialOsculating));
+        num.setOrbitType(OrbitType.KEPLERIAN);
+        final StorelessUnivariateStatistic oscMin  = new Min();
+        final StorelessUnivariateStatistic oscMax  = new Max();
+        final StorelessUnivariateStatistic meanMin = new Min();
+        final StorelessUnivariateStatistic meanMax = new Max();
+        num.getMultiplexer().add(zero.newInstance(60), state -> {
+            final FieldOrbit<T> osc = state.getOrbit();
+            oscMin.increment(osc.getA().getReal());
+            oscMax.increment(osc.getA().getReal());
+            // compute mean orbit at current date (this is what we test)
+            final FieldOrbit<T> mean = FieldBrouwerLyddanePropagator.computeMeanOrbit(state.getOrbit(), ushp, ush, BrouwerLyddanePropagator.M2);
+            meanMin.increment(mean.getA().getReal());
+            meanMax.increment(mean.getA().getReal());
+        });
+        num.propagate(initialOsculating.getDate().shiftedBy(Constants.JULIAN_DAY));
+
+        Assert.assertEquals(3188.347, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
+        Assert.assertEquals(  55.540, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
+
+    }
+
 
     @Before
     public void setUp() {

@@ -28,6 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
@@ -68,6 +69,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
@@ -791,6 +793,52 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                             maneuver.acceleration(middleState.shiftedBy(3 * duration), maneuver.getParameters()).getNorm(),
                             1.0e-9);
         
+
+    }
+
+    @Test
+    public void testNullDuration() {
+
+        // Defining initial state
+        final Frame                    eme2000      = FramesFactory.getEME2000();
+        final AbsoluteDate             initialDate  = new AbsoluteDate();
+        final TimeStampedPVCoordinates initialPV    = new TimeStampedPVCoordinates(initialDate,
+                                                                                   new Vector3D(6378e3 + 400e3, 0, 0),
+                                                                                   new Vector3D(0, 7669, 0));
+        final double         initialMass    = 1000;
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(initialPV, eme2000, Constants.EIGEN5C_EARTH_MU);
+
+        // Defining ConstantThrustManeuver with null duration
+        final AbsoluteDate     startManeuverDate = initialDate.shiftedBy(30);
+        final double           duration          = 0;                                  // in s
+        final double           thrust            = 100;                                // default value
+        final double           isp               = 300;                                // default value
+        final Vector3D         direction         = new Vector3D(1, 0, 0);
+        final AttitudeProvider attitudeProvider  = new LofOffset(eme2000, LOFType.TNW);
+
+        final ConstantThrustManeuver nullDurationManeuver = new ConstantThrustManeuver(startManeuverDate, duration,
+                thrust, isp, attitudeProvider, direction);
+
+        // Defining propagator
+        // Default Values
+        final double dP      = 0.001;
+        final double minStep = 0.1;
+        final double maxStep = 3600;
+
+        // Defining integrator
+        final double[][]          tolerances = NumericalPropagator.tolerances(dP, cartesianOrbit, OrbitType.CARTESIAN);
+        final ODEIntegrator       integrator = new DormandPrince853Integrator(minStep, maxStep, tolerances[0],
+                tolerances[1]);
+        final NumericalPropagator numProp = new NumericalPropagator(integrator);
+
+        // Configuring propagator
+        numProp.setOrbitType(OrbitType.CARTESIAN);
+        numProp.setInitialState(new SpacecraftState(cartesianOrbit, initialMass));
+        numProp.addForceModel(nullDurationManeuver);
+
+        // Propagation
+        final SpacecraftState finalState = numProp.propagate(initialDate.shiftedBy(60));
+        Assert.assertEquals(cartesianOrbit.getA(), finalState.getA(), 1.0e-15);
 
     }
 

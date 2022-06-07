@@ -36,6 +36,7 @@ import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.models.earth.displacement.StationDisplacement;
@@ -411,7 +412,8 @@ public class GroundStation {
         final double    y          = northOffsetDriver.getValue();
         final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), date);
+        final StaticTransform baseToBody =
+                baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
 
         if (date != null) {
@@ -450,7 +452,8 @@ public class GroundStation {
         final double    y          = northOffsetDriver.getValue();
         final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), offsetCompensatedDate);
+        final StaticTransform baseToBody = baseFrame
+                .getStaticTransformTo(baseShape.getBodyFrame(), offsetCompensatedDate);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
         origin = origin.add(computeDisplacement(offsetCompensatedDate, origin));
 
@@ -531,7 +534,8 @@ public class GroundStation {
         final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices);
         final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices);
         final BodyShape            baseShape  = baseFrame.getParentShape();
-        final Transform            baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
+        final StaticTransform      baseToBody = baseFrame
+                .getStaticTransformTo(baseShape.getBodyFrame(), null);
 
         FieldVector3D<Gradient> origin = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
         origin = origin.add(computeDisplacement(offsetCompensatedDate.toAbsoluteDate(), origin.toVector3D()));

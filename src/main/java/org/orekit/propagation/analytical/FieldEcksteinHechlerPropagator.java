@@ -86,7 +86,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-             initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
+             initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
@@ -106,7 +106,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                           final T mass,
                                           final UnnormalizedSphericalHarmonicsProvider provider,
                                           final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics) {
-        this(initialOrbit, attitude,  mass, provider.getAe(), initialOrbit.getA().getField().getZero().add(provider.getMu()),
+        this(initialOrbit, attitude,  mass, provider.getAe(), initialOrbit.getMu().newInstance(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
@@ -145,7 +145,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-             initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
+             initialOrbit.getMu().newInstance(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -210,7 +210,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, attitudeProv, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+        this(initialOrbit, attitudeProv, initialOrbit.getMu().newInstance(DEFAULT_MASS), provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
     /** Build a propagator from FieldOrbit, attitude provider and potential.
@@ -242,7 +242,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, attitudeProv, initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
+        this(initialOrbit, attitudeProv, initialOrbit.getMu().newInstance(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -312,7 +312,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                           final UnnormalizedSphericalHarmonicsProvider provider,
                                           final PropagationType initialType) {
         this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-             initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
+             initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType);
     }
 
@@ -352,7 +352,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                           final UnnormalizedSphericalHarmonicsProvider provider,
                                           final UnnormalizedSphericalHarmonics harmonics,
                                           final PropagationType initialType) {
-        this(initialOrbit, attitude, mass, provider.getAe(), initialOrbit.getA().getField().getZero().add(provider.getMu()),
+        this(initialOrbit, attitude, mass, provider.getAe(), initialOrbit.getMu().newInstance(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
@@ -420,6 +420,77 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         }
     }
 
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param <T> type of the filed elements
+     * @param osculating osculating orbit to convert
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(osculating.getDate())}
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
+                                                                                             final UnnormalizedSphericalHarmonicsProvider provider,
+                                                                                             final UnnormalizedSphericalHarmonics harmonics) {
+        return computeMeanOrbit(osculating,
+                                provider.getAe(), provider.getMu(),
+                                harmonics.getUnnormalizedCnm(2, 0),
+                                harmonics.getUnnormalizedCnm(3, 0),
+                                harmonics.getUnnormalizedCnm(4, 0),
+                                harmonics.getUnnormalizedCnm(5, 0),
+                                harmonics.getUnnormalizedCnm(6, 0));
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param <T> type of the filed elements
+     * @param osculating osculating orbit to convert
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
+                                                                                             final double referenceRadius, final double mu,
+                                                                                             final double c20, final double c30, final double c40,
+                                                                                             final double c50, final double c60) {
+        final FieldEcksteinHechlerPropagator<T> propagator =
+                        new FieldEcksteinHechlerPropagator<>(osculating,
+                                                            InertialProvider.of(osculating.getFrame()),
+                                                            osculating.getMu().newInstance(DEFAULT_MASS),
+                                                            referenceRadius, osculating.getMu().newInstance(mu),
+                                                            c20, c30, c40, c50, c60,
+                                                            PropagationType.OSCULATING);
+        return propagator.initialModel.mean;
+    }
+
     /** {@inheritDoc}
      * <p>The new initial state to consider
      * must be defined with an osculating orbit.</p>
@@ -478,7 +549,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         final T epsilon         = one.multiply(1.0e-13);
         final T thresholdA      = epsilon.multiply(current.mean.getA().abs().add(1.0));
         final T thresholdE      = epsilon.multiply(current.mean.getE().add(1.0));
-        final T thresholdAngles = epsilon.multiply(one.getPi());
+        final T thresholdAngles = epsilon.multiply(one.getPi().multiply(2));
 
 
         int i = 0;

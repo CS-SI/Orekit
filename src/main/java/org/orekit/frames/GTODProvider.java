@@ -125,6 +125,20 @@ public class GTODProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+
+        // compute Greenwich apparent sidereal time, in radians
+        final double gast = gastFunction.value(date);
+
+        // set up the transform from parent TOD
+        return StaticTransform.of(
+                date,
+                new Rotation(Vector3D.PLUS_K, gast, RotationConvention.FRAME_TRANSFORM));
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute Greenwich apparent sidereal time, in radians

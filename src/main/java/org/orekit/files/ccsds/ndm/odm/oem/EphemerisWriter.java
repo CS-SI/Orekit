@@ -173,6 +173,9 @@ public class EphemerisWriter implements EphemerisFileWriter {
         metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
         writer.writeMetadata(generator, metadata);
 
+        // we enter data section
+        writer.startData(generator);
+
         if (segment instanceof OemSegment) {
             // write data comments
             generator.writeComments(((OemSegment) segment).getData().getComments());
@@ -192,6 +195,9 @@ public class EphemerisWriter implements EphemerisFileWriter {
             // output covariance data
             writer.writeCovariances(generator, metadata, ((OemSegment) segment).getCovarianceMatrices());
         }
+
+        // we exit data section
+        writer.endData(generator);
 
     }
 

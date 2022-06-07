@@ -65,8 +65,8 @@ public class Ocm extends NdmConstituent<Header, Segment<OcmMetadata, OcmData>>
      * @param mu Gravitational coefficient to use for building Cartesian/Keplerian orbits.
      */
     public Ocm(final Header header, final List<Segment<OcmMetadata, OcmData>> segments,
-                   final IERSConventions conventions, final DataContext dataContext,
-                   final double mu) {
+               final IERSConventions conventions, final DataContext dataContext,
+               final double mu) {
         super(header, segments, conventions, dataContext);
         this.mu = mu;
     }
@@ -112,7 +112,7 @@ public class Ocm extends NdmConstituent<Header, Segment<OcmMetadata, OcmData>>
             name = UNKNOWN_OBJECT;
         }
         final List<TrajectoryStateHistory> histories = getSegments().get(0).getData().getOTrajectoryBlocks();
-        final OcmSatelliteEphemeris   ose       = new OcmSatelliteEphemeris(name, mu, histories);
+        final OcmSatelliteEphemeris        ose       = new OcmSatelliteEphemeris(name, mu, histories);
         return Collections.singletonMap(name, ose);
     }
 
