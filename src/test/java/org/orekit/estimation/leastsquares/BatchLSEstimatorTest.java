@@ -18,6 +18,7 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -1087,6 +1088,71 @@ public class BatchLSEstimatorTest {
         Assert.assertNotNull(estimatedParameters.findByName(driverName));
         Assert.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
         Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
+    }
+
+    @Test
+    public void testEstimateOnlyOneOrbitalParameter() {
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ true,  false, false, false, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false,  true, false, false, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false,  true, false, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false, false,  true, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false, false, false,  true, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false, false, false, false,  true });
+    }
+
+    @Test
+    public void testEstimateOnlyFewOrbitalParameters() {
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false,  true, false, true, false, false });
+    }
+
+    private void doTestEstimateOnlySomeOrbitalParameters(boolean[] orbitalParametersEstimated) {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                      1.0e-6, 60.0, 1.0e-3);
+
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                EstimationTestUtils.createMeasurements(propagator,
+                                                       new PVMeasurementCreator(),
+                                                       0.0, 1.0, 300.0);
+
+        List<ParameterDriversList.DelegatingDriver> orbitalElementsDrivers = propagatorBuilder.getOrbitalParametersDrivers().getDrivers();
+        IntStream.range(0, orbitalParametersEstimated.length).forEach(i -> {
+            final ParameterDriver driver = orbitalElementsDrivers.get(i);
+            if (orbitalParametersEstimated[i]) {
+                driver.setSelected(true);
+                driver.setValue(1.0001 * driver.getReferenceValue());
+            } else {
+                driver.setSelected(false);                
+            }
+        });
+
+        // create the estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+        // perform estimation
+        estimator.estimate();
+
+        // check the selected parameters have been estimated properly
+        IntStream.range(0, orbitalParametersEstimated.length).forEach(i -> {
+            if (orbitalParametersEstimated[i]) {
+                final ParameterDriver driver = orbitalElementsDrivers.get(i);
+                Assert.assertEquals(driver.getReferenceValue(), driver.getValue(), driver.getReferenceValue() * 1.0e-3);
+            }
+        });
+
     }
 
     /** Multiplex measurements.

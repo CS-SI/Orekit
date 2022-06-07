@@ -98,7 +98,7 @@ public class EcksteinHechlerStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assert.assertEquals(0, error, 6.01e-14);
+                    Assert.assertEquals(0, error, 6.9e-14);
                 }
             }
         }

@@ -20,6 +20,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmWriter;
+import org.orekit.files.ccsds.ndm.cdm.CdmWriter;
 import org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter;
 import org.orekit.files.ccsds.ndm.odm.oem.OemWriter;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmWriter;
@@ -146,6 +147,13 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      */
     public TdmWriter buildTdmWriter() {
         return new TdmWriter(getConventions(), getDataContext(), getRangeUnitsConverter());
+    }
+
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.cdm.Cdm Conjunction Data Messages}.
+     * @return a new writer
+     */
+    public CdmWriter buildCdmWriter() {
+        return new CdmWriter(getConventions(), getDataContext());
     }
 
 }

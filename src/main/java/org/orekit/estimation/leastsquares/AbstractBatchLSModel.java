@@ -82,6 +82,11 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
     /** End columns for each estimated orbit. */
     private final int[] orbitsEndColumns;
 
+    /** Indirection array in measurements jacobians.
+     * @since 11.2
+     */
+    private final int[] orbitsJacobianColumns;
+
     /** Map for propagation parameters columns. */
     private final Map<String, Integer> propagationParameterColumns;
 
@@ -167,13 +172,18 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             rows += measurement.getDimension();
         }
 
-        this.orbitsStartColumns = new int[builders.length];
-        this.orbitsEndColumns   = new int[builders.length];
+        this.orbitsStartColumns    = new int[builders.length];
+        this.orbitsEndColumns      = new int[builders.length];
+        this.orbitsJacobianColumns = new int[builders.length * 6];
+        Arrays.fill(orbitsJacobianColumns, -1);
         int columns = 0;
         for (int i = 0; i < builders.length; ++i) {
             this.orbitsStartColumns[i] = columns;
-            for (final ParameterDriver driver : builders[i].getOrbitalParametersDrivers().getDrivers()) {
-                if (driver.isSelected()) {
+            final List<ParameterDriversList.DelegatingDriver> orbitalParametersDrivers =
+                            builders[i].getOrbitalParametersDrivers().getDrivers();
+            for (int j = 0; j < orbitalParametersDrivers.size(); ++j) {
+                if (orbitalParametersDrivers.get(j).isSelected()) {
+                    orbitsJacobianColumns[columns] = j;
                     ++columns;
                 }
             }
@@ -193,6 +203,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
                 }
             }
         }
+
         // Populate the map of propagation drivers' columns and update the total number of columns
         propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
         for (final String driverName : estimatedPropagationParametersNames) {
@@ -457,11 +468,12 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
                 final RealMatrix dYdY0 = harvesters[p].getStateTransitionMatrix(evaluationStates[k]);
                 final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
                 for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
-                    int jOrb = orbitsStartColumns[p];
-                    for (int j = 0; j < dMdY0.getColumnDimension(); ++j) {
-                        final ParameterDriver driver = selectedOrbitalDrivers.getDrivers().get(j);
-                        jacobian.setEntry(index + i, jOrb++,
-                                          weight[i] * dMdY0.getEntry(i, j) / sigma[i] * driver.getScale());
+                    for (int j = orbitsStartColumns[p]; j < orbitsEndColumns[p]; ++j) {
+                        final ParameterDriver driver =
+                                        selectedOrbitalDrivers.getDrivers().get(j - orbitsStartColumns[p]);
+                        final double partial = dMdY0.getEntry(i, orbitsJacobianColumns[j]);
+                        jacobian.setEntry(index + i, j,
+                                          weight[i] * partial / sigma[i] * driver.getScale());
                     }
                 }
             }

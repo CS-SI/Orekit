@@ -52,6 +52,11 @@ public enum OcmMetadataKey {
     /** Phone number of Programmatic Point Of Contact at originator. */
     ORIGINATOR_PHONE((token, context, container) -> token.processAsNormalizedString(container::setOriginatorPhone)),
 
+    /** Email address of Programmatic Point Of Contact at originator.
+     * @since 11.2
+     */
+    ORIGINATOR_EMAIL((token, context, container) -> token.processAsNormalizedString(container::setOriginatorEmail)),
+
     /** Address of Programmatic Point Of Contact at originator. */
     ORIGINATOR_ADDRESS((token, context, container) -> token.processAsNormalizedString(container::setOriginatorAddress)),
 
@@ -67,6 +72,11 @@ public enum OcmMetadataKey {
     /** Phone number of Technical Point Of Contact at originator. */
     TECH_PHONE((token, context, container) -> token.processAsNormalizedString(container::setTechPhone)),
 
+    /** Email address of Technical Point Of Contact at originator.
+     * @since 11.2
+     */
+    TECH_EMAIL((token, context, container) -> token.processAsNormalizedString(container::setTechEmail)),
+
     /** Address of Technical Point Of Contact at originator. */
     TECH_ADDRESS((token, context, container) -> token.processAsNormalizedString(container::setTechAddress)),
 
@@ -77,19 +87,19 @@ public enum OcmMetadataKey {
     NEXT_MESSAGE_ID((token, context, container) -> token.processAsNormalizedString(container::setNextMessageID)),
 
     /** Unique identifier of Attitude Data Message linked to this Orbit Data Message. */
-    ADM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setAdmMessageLink)),
+    ADM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setAdmMessageLink)),
 
     /** Unique identifier of Conjunction Data Message linked to this Orbit Data Message. */
-    CDM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setCdmMessageLink)),
+    CDM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setCdmMessageLink)),
 
     /** Unique identifier of Pointing Request Message linked to this Orbit Data Message. */
-    PRM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setPrmMessageLink)),
+    PRM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setPrmMessageLink)),
 
     /** Unique identifier of Reentry Data Message linked to this Orbit Data Message. */
-    RDM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setRdmMessageLink)),
+    RDM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setRdmMessageLink)),
 
     /** Unique identifier of Tracking Data Message linked to this Orbit Data Message. */
-    TDM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setTdmMessageLink)),
+    TDM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setTdmMessageLink)),
 
     /** Operator of the space object. */
     OPERATOR((token, context, container) -> token.processAsNormalizedString(container::setOperator)),
@@ -153,6 +163,17 @@ public enum OcmMetadataKey {
     /** Difference (TAI – UTC) in seconds at epoch {@link #EPOCH_TZERO}. */
     TAIMUTC_AT_TZERO((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
                                                                           container::setTaimutcT0)),
+
+    /** Epoch of next leap second.
+     * @since 11.2
+     */
+    NEXT_LEAP_EPOCH((token, context, container) -> token.processAsDate(container::setNextLeapEpoch, context)),
+
+    /** Difference (TAI – UTC) in seconds incorporated at {@link #NEXT_LEAP_EPOCH}.
+     * @since 11.2
+     */
+    NEXT_LEAP_TAIMUTC((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                           container::setNextLeapTaimutc)),
 
     /** Difference (UT1 – UTC) in seconds at epoch {@link #EPOCH_TZERO}. */
     UT1MUTC_AT_TZERO((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),

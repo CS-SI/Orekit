@@ -20,6 +20,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.io.IOException;
 import java.util.List;
 
+import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
@@ -68,7 +69,9 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         // interpolation
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION.name(),        metadata.getInterpolationMethod(), false);
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION_DEGREE.name(), metadata.getInterpolationDegree(), false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name(),        metadata.getOrbAveraging(), null,  false);
+
+        // propagation
+        generator.writeEntry(TrajectoryStateHistoryMetadataKey.PROPAGATOR.name(),       metadata.getPropagator(), null, false);
 
         // references
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.CENTER_NAME.name(),      metadata.getCenter().getName(),              null, false);
@@ -84,7 +87,12 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name(), metadata.getOrbRevNumBasis(), false);
 
         // elements
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_TYPE.name(),   metadata.getTrajType(),                                     true);
+        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_TYPE.name(),        metadata.getTrajType(),     true);
+        if (metadata.getTrajType() != ElementsType.CARTP   &&
+            metadata.getTrajType() != ElementsType.CARTPV  &&
+            metadata.getTrajType() != ElementsType.CARTPVA) {
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name(), metadata.getOrbAveraging(), null,  true);
+        }
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_UNITS.name(), generator.unitsListToString(metadata.getTrajUnits()), null, false);
 
         // data

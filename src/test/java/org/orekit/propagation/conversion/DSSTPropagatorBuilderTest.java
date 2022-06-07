@@ -40,6 +40,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -229,9 +230,17 @@ public class DSSTPropagatorBuilderTest {
                 return 1;
             }
 
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+            /** {@inheritDoc} */
+            @Override
+            @Deprecated
+            public double[] derivatives(final SpacecraftState state) {
+                return combinedDerivatives(state).getAdditionalDerivatives();
             }
+
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
+            }
+
         });
 
         builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
@@ -244,9 +253,17 @@ public class DSSTPropagatorBuilderTest {
     	        return 1;
     	    }
 
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+    	    /** {@inheritDoc} */
+    	    @Override
+    	    @Deprecated
+    	    public double[] derivatives(final SpacecraftState state) {
+    	        return combinedDerivatives(state).getAdditionalDerivatives();
+    	    }
+
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
+
         });
 
         try {

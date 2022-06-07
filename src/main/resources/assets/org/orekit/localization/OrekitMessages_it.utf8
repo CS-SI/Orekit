@@ -755,3 +755,6 @@ NO_STATION_ECCENTRICITY_FOR_EPOCH = nessun valore di eccentricità stazione per 
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
 INCONSISTENT_SELECTION = scelta di parametri discordante per le coppie {0}/{1} e {2}/{3}
+
+# value is not strictly positive: {0}
+NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>

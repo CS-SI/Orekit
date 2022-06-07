@@ -54,7 +54,7 @@ public class Aem extends NdmConstituent<Header, AemSegment>
      * @param dataContext used for creating frames, time scales, etc.
      */
     public Aem(final Header header, final List<AemSegment> segments,
-                   final IERSConventions conventions, final DataContext dataContext) {
+               final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }
 
