@@ -145,6 +145,7 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      * Add the velocity to the last CPF coordinate entry.
      * @param id satellite ILRS identifier
      * @param velocity the velocity vector of the satellite
+     * @since 11.2
      */
     public void addSatelliteVelocityToCPFCoordinate(final String id, final Vector3D velocity) {
         // Get the last coordinate entry, which contains the position vector

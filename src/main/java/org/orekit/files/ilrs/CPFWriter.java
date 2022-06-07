@@ -56,8 +56,12 @@ public class CPFWriter implements EphemerisFileWriter {
 
     /**
      * Constructor.
+     * <p>
+     * Using this constructor, velocity data are not written.
+     * </p>
      * @param header container for header data
      * @param timescale time scale for dates
+     * @see #CPFWriter(CPFHeader, TimeScale, boolean)
      */
     public CPFWriter(final CPFHeader header, final TimeScale timescale) {
         this(header, timescale, false);
@@ -67,13 +71,13 @@ public class CPFWriter implements EphemerisFileWriter {
      * Constructor.
      * @param header container for header data
      * @param timescale time scale for dates
-     * @param velocityFlag the flag for the optional velocity record
+     * @param velocityFlag true if velocity must be written
+     * @since 11.2
      */
     public CPFWriter(final CPFHeader header, final TimeScale timescale, final boolean velocityFlag) {
         this.header    = header;
         this.timescale = timescale;
         this.velocityFlag = velocityFlag;
-
     }
 
     /** {@inheritDoc} */
@@ -98,7 +102,7 @@ public class CPFWriter implements EphemerisFileWriter {
 
         // Writer
         final StreamingCpfWriter cpfWriter =
-                        new StreamingCpfWriter(writer, timescale, header);
+                        new StreamingCpfWriter(writer, timescale, header, velocityFlag);
         // Write header
         cpfWriter.writeHeader();
 
@@ -107,7 +111,7 @@ public class CPFWriter implements EphemerisFileWriter {
             final Segment segmentWriter = cpfWriter.newSegment(header.getRefFrame());
             // Loop on coordinates
             for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
-                segmentWriter.writeEphemerisLine(coordinates, velocityFlag);
+                segmentWriter.writeEphemerisLine(coordinates);
             }
         }
 

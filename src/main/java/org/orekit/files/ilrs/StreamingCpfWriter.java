@@ -118,20 +118,42 @@ public class StreamingCpfWriter {
     /** Container for header data. */
     private final CPFHeader header;
 
+    /** Flag for optional velocity record. */
+    private final boolean velocityFlag;
+
     /**
      * Create a CPF writer than streams data to the given output stream.
-     *
+     * <p>
+     * Using this constructor, velocity data are not written.
+     * </p>
      * @param writer     the output stream for the CPF file.
      * @param timeScale  for all times in the CPF
      * @param header     container for header data
+     * @see #StreamingCpfWriter(Appendable, TimeScale, CPFHeader, boolean)
      */
     public StreamingCpfWriter(final Appendable writer,
                               final TimeScale timeScale,
                               final CPFHeader header) {
+        this(writer, timeScale, header, false);
+    }
 
-        this.writer     = writer;
-        this.timeScale  = timeScale;
-        this.header     = header;
+    /**
+     * Create a CPF writer than streams data to the given output stream.
+     *
+     * @param writer       the output stream for the CPF file.
+     * @param timeScale    for all times in the CPF
+     * @param header       container for header data
+     * @param velocityFlag true if velocity must be written
+     * @since 11.2
+     */
+    public StreamingCpfWriter(final Appendable writer,
+                              final TimeScale timeScale,
+                              final CPFHeader header,
+                              final boolean velocityFlag) {
+        this.writer       = writer;
+        this.timeScale    = timeScale;
+        this.header       = header;
+        this.velocityFlag = velocityFlag;
     }
 
     /**
@@ -281,25 +303,16 @@ public class StreamingCpfWriter {
         }
 
         /**
-         * Write a single ephemeris line with position record. This method does not
-         * write the velocity terms.
-         *
+         * Write ephemeris lines.
+         * <p>
+         * If <code>velocityFlag</code> is equals to true, both
+         * position and velocity records are written. Otherwise,
+         * only the position data are used.
+         * </p>
          * @param pv the time, position, and velocity to write.
          * @throws IOException if the output stream throws one while writing.
          */
         public void writeEphemerisLine(final TimeStampedPVCoordinates pv)
-            throws IOException {
-            writeEphemerisLine(pv, false);
-        }
-
-        /**
-         * Write two ephemeris lines with position and velocity records.
-         *
-         * @param pv the time, position, and velocity to write.
-         * @param velocityFlag flag for the optional velocity record.
-         * @throws IOException if the output stream throws one while writing.
-         */
-        public void writeEphemerisLine(final TimeStampedPVCoordinates pv, final boolean velocityFlag)
             throws IOException {
 
             // Record type and direction flag
@@ -339,6 +352,7 @@ public class StreamingCpfWriter {
 
                 // New line
                 writer.append(NEW_LINE);
+
             }
 
         }
