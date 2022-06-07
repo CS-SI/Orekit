@@ -43,6 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.Constants;
 import org.orekit.utils.units.Unit;
 import org.orekit.utils.units.UnitsConverter;
 
@@ -196,6 +197,9 @@ public class CRDParser {
         /** End Of File reached indicator. */
         private boolean done;
 
+        /** Last parsed range measurement. */
+        private RangeMeasurement lastRange;
+
         /**
          * Constructor.
          */
@@ -205,6 +209,7 @@ public class CRDParser {
             this.done       = false;
             this.version    = 1;
             this.startEpoch = DateComponents.J2000_EPOCH;
+            this.lastRange  = null;
 
             // Initialise empty object
             this.file                 = new CRD();
@@ -734,11 +739,19 @@ public class CRDParser {
                 // Check secOfDay for rollover
                 dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
                 // Initialise a new Range measurement
-                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale).shiftedBy(dayShift * 86400);
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                if (pi.lastRange != null) {
+                    final double duration = epoch.durationFrom(pi.lastRange.getDate());
+                    if (duration < 0) {
+                        epoch = epoch.shiftedBy(Constants.JULIAN_DAY);
+                    }
+                }
                 final RangeMeasurement range = new RangeMeasurement(epoch, timeOfFlight, epochEvent);
                 pi.dataBlock.addRangeData(range);
 
                 lastSecOfDay = secOfDay;
+                pi.lastRange = range;
+
             }
 
             /** {@inheritDoc} */
@@ -774,9 +787,18 @@ public class CRDParser {
                 // Check secOfDay for rollover
                 dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
                 // Initialise a new Range measurement
-                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale).shiftedBy(dayShift * 86400);
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                if (pi.lastRange != null) {
+                    final double duration = epoch.durationFrom(pi.lastRange.getDate());
+                    if (duration < 0) {
+                        epoch = epoch.shiftedBy(Constants.JULIAN_DAY);
+                    }
+                }
                 final RangeMeasurement range = new RangeMeasurement(epoch, timeOfFlight, epochEvent, snr);
                 pi.dataBlock.addRangeData(range);
+
+                lastSecOfDay = secOfDay;
+                pi.lastRange = range;
 
             }
 
@@ -1042,6 +1064,7 @@ public class CRDParser {
                 pi.header               = new CRDHeader();
                 pi.configurationRecords = new CRDConfiguration();
                 pi.dataBlock            = new CRDDataBlock();
+                pi.lastRange            = null;
 
             }
 
