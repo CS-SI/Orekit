@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="804">
+        Added support for loading EOP from Sinex files.
+      </action>
       <action dev="luc" type="fix" issue="936">
         Raised a too stringent convergence threshold in Eackstein-Hechler model.
       </action>
