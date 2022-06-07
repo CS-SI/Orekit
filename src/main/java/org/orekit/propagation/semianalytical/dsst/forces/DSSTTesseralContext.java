@@ -20,7 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
 /**
@@ -131,7 +131,9 @@ public class DSSTTesseralContext extends ForceModelContext {
         e2 = auxiliaryElements.getEcc() * auxiliaryElements.getEcc();
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
-        final Transform t = centralBodyFrame.getTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
+        final StaticTransform t = centralBodyFrame.getStaticTransformTo(
+                auxiliaryElements.getFrame(),
+                auxiliaryElements.getDate());
         final Vector3D xB = t.transformVector(Vector3D.PLUS_I);
         final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
         theta = FastMath.atan2(-auxiliaryElements.getVectorF().dotProduct(yB) + I * auxiliaryElements.getVectorG().dotProduct(xB),

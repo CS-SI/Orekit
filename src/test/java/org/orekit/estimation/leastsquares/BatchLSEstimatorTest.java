@@ -18,6 +18,7 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -32,6 +33,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
@@ -229,10 +231,10 @@ public class BatchLSEstimatorTest {
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 1.1e-6,
+                                     0.0, 1.2e-6,
                                      0.0, 2.8e-6,
-                                     0.0, 4.0e-7,
-                                     0.0, 2.2e-10);
+                                     0.0, 5.0e-7,
+                                     0.0, 2.3e-10);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -491,7 +493,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            2.8e-6);
+                            6.2e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),
@@ -511,7 +513,7 @@ public class BatchLSEstimatorTest {
 
     }
 
-    /** A modified version of the previous test with a selection of propagation drivers to estimate
+    /** A modified version of the previous test with a selection of propagation drivers to estimate and more measurements
      *  One common (µ)
      *  Some specifics for each satellite (Cr and Ca)
      * 
@@ -521,7 +523,7 @@ public class BatchLSEstimatorTest {
 
         // Test: Set the propagator drivers to estimate for each satellite
         final boolean muEstimated  = true;
-        final boolean crEstimated1 = true;
+        final boolean crEstimated1 = false;
         final boolean caEstimated1 = true;
         final boolean crEstimated2 = true;
         final boolean caEstimated2 = false;
@@ -588,7 +590,7 @@ public class BatchLSEstimatorTest {
         final List<ObservedMeasurement<?>> r12 =
                         EstimationTestUtils.createMeasurements(propagator1,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris, 0., 0.),
-                                                               1.0, 3.0, 300.0);
+                                                               1.0, 3.0, 120.0);
 
         // create perfect range measurements for first satellite
         propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -596,7 +598,15 @@ public class BatchLSEstimatorTest {
         final List<ObservedMeasurement<?>> r1 =
                         EstimationTestUtils.createMeasurements(propagator1,
                                                                new RangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
+                                                               1.0, 3.0, 120.0);
+
+        // create perfect angular measurements for first satellite
+        propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                           propagatorBuilder1);
+        final List<ObservedMeasurement<?>> a1 =
+                        EstimationTestUtils.createMeasurements(propagator1,
+                                                               new AngularAzElMeasurementCreator(context),
+                                                               1.0, 3.0, 120.0);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -607,6 +617,9 @@ public class BatchLSEstimatorTest {
         }
         for (final ObservedMeasurement<?> range : r1) {
             estimator.addMeasurement(range);
+        }
+        for (final ObservedMeasurement<?> angular : a1) {
+            estimator.addMeasurement(angular);
         }
         estimator.setParametersConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(10);
@@ -668,11 +681,11 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 5,
-                                     0.0, 7.0e-06,
-                                     0.0, 2.2e-05,
-                                     0.0, 6.8e-07,
-                                     0.0, 2.7e-10);
+        EstimationTestUtils.checkFit(context, estimator, 4, 6,
+                                     0.0, 4.7e-06,
+                                     0.0, 1.4e-05,
+                                     0.0, 4.7e-07,
+                                     0.0, 2.0e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -687,11 +700,11 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            5.4e-6);
+                            1.3e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),
-                            4.1e-9);
+                            1.2e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -1075,6 +1088,71 @@ public class BatchLSEstimatorTest {
         Assert.assertNotNull(estimatedParameters.findByName(driverName));
         Assert.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
         Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
+    }
+
+    @Test
+    public void testEstimateOnlyOneOrbitalParameter() {
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ true,  false, false, false, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false,  true, false, false, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false,  true, false, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false, false,  true, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false, false, false,  true, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false, false, false, false,  true });
+    }
+
+    @Test
+    public void testEstimateOnlyFewOrbitalParameters() {
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false,  true, false, true, false, false });
+    }
+
+    private void doTestEstimateOnlySomeOrbitalParameters(boolean[] orbitalParametersEstimated) {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                      1.0e-6, 60.0, 1.0e-3);
+
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                EstimationTestUtils.createMeasurements(propagator,
+                                                       new PVMeasurementCreator(),
+                                                       0.0, 1.0, 300.0);
+
+        List<ParameterDriversList.DelegatingDriver> orbitalElementsDrivers = propagatorBuilder.getOrbitalParametersDrivers().getDrivers();
+        IntStream.range(0, orbitalParametersEstimated.length).forEach(i -> {
+            final ParameterDriver driver = orbitalElementsDrivers.get(i);
+            if (orbitalParametersEstimated[i]) {
+                driver.setSelected(true);
+                driver.setValue(1.0001 * driver.getReferenceValue());
+            } else {
+                driver.setSelected(false);                
+            }
+        });
+
+        // create the estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+        // perform estimation
+        estimator.estimate();
+
+        // check the selected parameters have been estimated properly
+        IntStream.range(0, orbitalParametersEstimated.length).forEach(i -> {
+            if (orbitalParametersEstimated[i]) {
+                final ParameterDriver driver = orbitalElementsDrivers.get(i);
+                Assert.assertEquals(driver.getReferenceValue(), driver.getValue(), driver.getReferenceValue() * 1.0e-3);
+            }
+        });
+
     }
 
     /** Multiplex measurements.

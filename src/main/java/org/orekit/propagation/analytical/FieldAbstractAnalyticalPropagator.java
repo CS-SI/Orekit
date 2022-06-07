@@ -131,6 +131,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
             lastPropagationStart = start;
 
+            // Initialize additional states
+            initializeAdditionalStates(target);
+
             final boolean           isForward = target.compareTo(start) >= 0;
             FieldSpacecraftState<T> state   = updateAdditionalStates(basicPropagate(start));
 

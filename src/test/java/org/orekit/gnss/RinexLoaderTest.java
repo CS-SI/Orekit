@@ -523,8 +523,150 @@ public class RinexLoaderTest {
             Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
         }
     }
-    
-    
+
+    @Test
+    public void testRinex3NoMarkerName() {
+        try {
+            //Test with RinexV3 Missing MARKER NAME Label inside Header
+            load("rinex/no-markerNameV3.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex2NoMarkerName() {
+        try {
+            //Test with RinexV2 Missing MARKER NAME Label inside Header
+            load("rinex/no-markerNameV2.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex2NoObserverAgency() {
+        try {
+            //Test with RinexV2 Missing OBSERVER / AGENCY Label inside Header
+            load("rinex/no-observer-agencyV2.16o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex3NoRecType() {
+        try {
+            //Test with Rinex3 Missing REC # / TYPE / VERS Label inside Header
+            load("rinex/no-rec-typeV3.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex2NoRecType() {
+        try {
+            //Test with Rinex2 Missing REC # / TYPE / VERS Label inside Header
+            load("rinex/no-rec-typeV2.16o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex3NoAntType() {
+        try {
+            //Test with Rinex3 Missing ANT # / TYPE Label inside Header
+            load("rinex/no-ant-typeV3.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex2NoAntType() {
+        try {
+            //Test with Rinex2 Missing ANT # / TYPE Label inside Header
+            load("rinex/no-ant-typeV2.16o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex3ObserverAgency() {
+        try {
+            //Test with Rinex3 Missing OBSERVER / AGENCY Label inside Header
+            load("rinex/no-rec-typeV3.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex2NoApproxPosition() {
+        try {
+            //Test with Rinex2 Missing APPROX POSITION XYZ Label inside Header
+            load("rinex/no-approx-positionV2.16o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex2NoAntennaDelta() {
+        try {
+            //Test with Rinex2 Missing ANTENNA: DELTA H/E/N Label inside Header
+            load("rinex/no-antenna-deltaV2.16o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex3NoAntennaDelta() {
+        try {
+            //Test with Rinex3 Missing ANTENNA: DELTA H/E/N Label inside Header
+            load("rinex/no-antenna-deltaV3.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex2NoTimeFirstObs() {
+        try {
+            //Test with Rinex2 Missing TIME OF FIRST OBS Label inside Header
+            load("rinex/no-first-obsV2.16o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex3NoTimeFirstObs() {
+        try {
+            //Test with Rinex3 Missing TIME OF FIRST OBS Label inside Header
+            load("rinex/no-first-obsV3.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
     @Test
     public void testUnknownSatelliteSystemHeader() {
         try {
@@ -727,6 +869,22 @@ public class RinexLoaderTest {
         Assert.assertEquals(-885349.430,             ods.get(3).getObservationData().get(1).getValue(), 1.0e-15);
         Assert.assertEquals(22397545.647,            ods.get(3).getObservationData().get(3).getValue(), 1.0e-15);
         Assert.assertEquals(37.594,                  ods.get(3).getObservationData().get(4).getValue(), 1.0e-15);
+    }
+
+    @Test
+    public void testIssue698() {
+        // Test missing Beidou observation type for Rinex 3.04
+        RinexObservationLoader  loader = load("rinex/abcd083.06o");
+        AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(2, ods.size());
+
+        // Test Beidou
+        Assert.assertEquals(SatelliteSystem.BEIDOU, ods.get(1).getSatelliteSystem());
+        Assert.assertEquals(6,                      ods.get(1).getPrnNumber());
+        Assert.assertEquals(0.0,                    ods.get(1).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(41,                     ods.get(1).getObservationData().size());
+
     }
 
     private void checkObservation(final ObservationDataSet obser,

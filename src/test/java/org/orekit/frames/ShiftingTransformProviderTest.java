@@ -66,6 +66,12 @@ public class ShiftingTransformProviderTest {
             Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         1.2e-16);
             Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 7.1e-30);
 
+            StaticTransform staticError = StaticTransform.compose(
+                    reference.getDate(),
+                    reference,
+                    shiftingProvider.getStaticTransform(t0.shiftedBy(dt)).getInverse());
+            Assert.assertEquals(0.0, staticError.getTranslation().getNorm(), 1.1e-5);
+            Assert.assertEquals(0.0, staticError.getRotation().getAngle(),   4.2e-16);
         }
         Assert.assertEquals(8,   rawProvider.getCount());
         Assert.assertEquals(200, referenceProvider.getCount());
@@ -98,6 +104,12 @@ public class ShiftingTransformProviderTest {
             Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         2.3e-16);
             Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 7.1e-30);
 
+            StaticTransform staticError = StaticTransform.compose(
+                    reference.getDate(),
+                    reference,
+                    shiftingProvider.getStaticTransform(t0.shiftedBy(dt)).getInverse());
+            Assert.assertEquals(0.0, staticError.getTranslation().getNorm(), 1.1e-5);
+            Assert.assertEquals(0.0, staticError.getRotation().getAngle(),   4.2e-16);
         }
         Assert.assertEquals(10,   rawProvider.getCount());
         Assert.assertEquals(200, referenceProvider.getCount());

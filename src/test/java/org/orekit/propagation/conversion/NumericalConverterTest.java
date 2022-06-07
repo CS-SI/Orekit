@@ -49,6 +49,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -233,8 +234,12 @@ public class NumericalConverterTest {
                 return 1;
             }
 
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+            public double[] derivatives(final SpacecraftState state) {
+                return null;
+            }
+
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
 
         });
@@ -249,8 +254,12 @@ public class NumericalConverterTest {
                 return 1;
             }
 
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+            public double[] derivatives(final SpacecraftState state) {
+                return null;
+            }
+
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
 
         });

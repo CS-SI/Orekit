@@ -18,14 +18,15 @@ package org.orekit.models.earth.troposphere;
 
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParametersDriversProvider;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -42,7 +43,7 @@ import org.orekit.utils.ParameterDriver;
  * </ul>
  * @author Bryan Cazabonne
  */
-public interface DiscreteTroposphericModel {
+public interface DiscreteTroposphericModel extends ParametersDriversProvider {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
@@ -66,11 +67,6 @@ public interface DiscreteTroposphericModel {
      * @return the path delay due to the troposphere in m
      */
     <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
-
-    /** Get the drivers for tropospheric model parameters.
-     * @return drivers for tropospheric model parameters
-     */
-    List<ParameterDriver> getParametersDrivers();
 
     /** Get tropospheric model parameters.
      * @return tropospheric model parameters

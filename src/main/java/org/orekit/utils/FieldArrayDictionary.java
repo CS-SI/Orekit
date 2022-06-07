@@ -317,6 +317,40 @@ public class FieldArrayDictionary<T extends CalculusFieldElement<T>> {
             }
         }
 
+        /** Increment the value with another scaled entry.
+         * <p>
+         * Each component {@code value[i]} will be replaced by {@code value[i] + factor * raw.value[i]}.
+         * </p>
+         * <p>
+         * For the sake of performance, no checks are done on arguments.
+         * </p>
+         * @param factor multiplicative factor for increment
+         * @param raw raw increment to be multiplied by {@code factor} and then added
+         * @since 11.1.1
+         */
+        public void scaledIncrement(final T factor, final Entry raw) {
+            for (int i = 0; i < raw.value.length; ++i) {
+                value[i] = value[i].add(raw.value[i].multiply(factor));
+            }
+        }
+
+        /** Increment the value with another scaled entry.
+         * <p>
+         * Each component {@code value[i]} will be replaced by {@code value[i] + factor * raw.value[i]}.
+         * </p>
+         * <p>
+         * For the sake of performance, no checks are done on arguments.
+         * </p>
+         * @param factor multiplicative factor for increment
+         * @param raw raw increment to be multiplied by {@code factor} and then added
+         * @since 11.1.1
+         */
+        public void scaledIncrement(final double factor, final Entry raw) {
+            for (int i = 0; i < raw.value.length; ++i) {
+                value[i] = value[i].add(raw.value[i].multiply(factor));
+            }
+        }
+
         /** Reset the value to zero.
          */
         public void zero() {

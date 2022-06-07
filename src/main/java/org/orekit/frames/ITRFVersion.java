@@ -36,6 +36,9 @@ import org.orekit.time.TimeScale;
  */
 public enum ITRFVersion {
 
+    /** Constant for ITRF 2020. */
+    ITRF_2020(2020),
+
     /** Constant for ITRF 2014. */
     ITRF_2014(2014),
 
@@ -147,6 +150,20 @@ public enum ITRFVersion {
 
     }
 
+    /** Get last supported ITRF version.
+     * @return last supported ITRF version
+     * @since 11.2
+     */
+    public static ITRFVersion getLast() {
+        ITRFVersion last = ITRFVersion.ITRF_1988;
+        for (final ITRFVersion iv : ITRFVersion.values()) {
+            if (iv.getYear() > last.getYear()) {
+                last = iv;
+            }
+        }
+        return last;
+    }
+
     /** Find a converter between specified ITRF frames.
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
@@ -186,9 +203,10 @@ public enum ITRFVersion {
         }
 
         if (provider == null) {
-            // no direct provider found, use ITRF 2014 as a pivot frame
-            provider = TransformProviderUtils.getCombinedProvider(getDirectTransformProvider(origin, ITRF_2014, tt),
-                                                                  getDirectTransformProvider(ITRF_2014, destination, tt));
+            // no direct provider found, use last supported ITRF as a pivot frame
+            final ITRFVersion last = getLast();
+            provider = TransformProviderUtils.getCombinedProvider(getDirectTransformProvider(origin, last, tt),
+                                                                  getDirectTransformProvider(last, destination, tt));
         }
 
         // build the converter, to keep the origin and destination information
@@ -267,6 +285,11 @@ public enum ITRFVersion {
         @Override
         public Transform getTransform(final AbsoluteDate date) {
             return provider.getTransform(date);
+        }
+
+        @Override
+        public StaticTransform getStaticTransform(final AbsoluteDate date) {
+            return provider.getStaticTransform(date);
         }
 
         /** {@inheritDoc} */

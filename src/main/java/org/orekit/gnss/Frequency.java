@@ -87,6 +87,19 @@ public enum Frequency {
     /** Beidou B3 (1268.52 MHz). */
     B03(SatelliteSystem.BEIDOU,  "B3", 124),
 
+    /** Beidou B1 (1575.42 MHz).
+     * FIXME the name must be updated in 12.0.
+     * It has been set to B04 as a workaround to handle the incompatibility between Rinex 3.02 and Rinex 3.04 for C2X
+     * In 3.02 the frequency of C2X is equal to 1561.098 MHz whereas in 3.04 it is equal to 1575.42 MHz
+     */
+    B04(SatelliteSystem.BEIDOU,  "B1", 154),
+
+    /** Beidou B2a (1176.45 MHz). */
+    B05(SatelliteSystem.BEIDOU, "B2a", 115),
+
+    /** Beidou B2 (B2a + B2b) (1191.795MHz). */
+    B08(SatelliteSystem.BEIDOU, "B2 (B2a+B2b)", 116.5),
+
     /** QZSS L1 (1575.42 MHz). */
     J01(SatelliteSystem.QZSS,    "L1", 154),
 

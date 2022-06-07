@@ -1661,6 +1661,29 @@ public class KeplerianOrbitTest {
         Assert.assertEquals(0.0, normalized2.getTrueAnomalyDot()                   - withDerivatives.getTrueAnomalyDot(),                   1.0e-10);
 
     }
+    
+    @Test
+    public void testKeplerianToPvToKeplerian() {
+        // setup
+        Frame eci = FramesFactory.getGCRF();
+        AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        double mu = Constants.EGM96_EARTH_MU;
+        KeplerianOrbit orbit = new KeplerianOrbit(6878e3, 0, 0, 0, 0, 0,
+                PositionAngle.TRUE, eci, date, mu);
+
+        // action
+        KeplerianOrbit pvOrbit = new KeplerianOrbit(orbit.getPVCoordinates(), eci, mu);
+
+        // verify
+        Assert.assertEquals(orbit.shiftedBy(1).getA(), pvOrbit.shiftedBy(1).getA(), 1e-6);
+        Assert.assertEquals(orbit.shiftedBy(1).getE(), pvOrbit.shiftedBy(1).getE(), 1e-14);
+        Assert.assertEquals(orbit.shiftedBy(1).getI(), pvOrbit.shiftedBy(1).getI(), 1e-10);
+        Assert.assertEquals(orbit.shiftedBy(1).getPerigeeArgument(), pvOrbit.shiftedBy(1).getPerigeeArgument(), 1e-10);
+        Assert.assertEquals(orbit.shiftedBy(1).getRightAscensionOfAscendingNode(), pvOrbit.shiftedBy(1).getRightAscensionOfAscendingNode(), 1e-10);
+        Assert.assertEquals(orbit.shiftedBy(1).getTrueAnomaly(), pvOrbit.shiftedBy(1).getTrueAnomaly(), 1e-10);
+
+    }
+
 
     @Before
     public void setUp() {

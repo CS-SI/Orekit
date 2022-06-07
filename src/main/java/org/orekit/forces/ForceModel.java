@@ -33,6 +33,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParametersDriversProvider;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -63,7 +64,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface ForceModel {
+public interface ForceModel extends ParametersDriversProvider {
 
     /**
      * Initialize the force model at the start of propagation. This method will be called
@@ -182,12 +183,6 @@ public interface ForceModel {
      * @return stream of events detectors
      */
     <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
-
-    /** Get the drivers for force model parameters.
-     * @return drivers for force model parameters
-     * @since 8.0
-     */
-    List<ParameterDriver> getParametersDrivers();
 
     /** Get parameter value from its name.
      * @param name parameter name

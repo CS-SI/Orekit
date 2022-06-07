@@ -51,7 +51,7 @@ public class Tdm extends NdmConstituent<Header, Segment<TdmMetadata, Observation
      * @param dataContext used for creating frames, time scales, etc.
      */
     public Tdm(final Header header, final List<Segment<TdmMetadata, ObservationsBlock>> segments,
-                   final IERSConventions conventions, final DataContext dataContext) {
+               final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }
 

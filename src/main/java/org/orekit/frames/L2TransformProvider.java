@@ -91,6 +91,19 @@ class L2TransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        final PVCoordinates pv21        = secondaryBody.getPVCoordinates(date, frame);
+        final Vector3D      translation = getL2(pv21.getPosition()).negate();
+        final Rotation      rotation    = new Rotation(pv21.getPosition(), pv21.getVelocity(),
+                Vector3D.PLUS_I, Vector3D.PLUS_J);
+        return StaticTransform.compose(
+                date,
+                StaticTransform.of(date, translation),
+                StaticTransform.of(date, rotation));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
         final FieldVector3D<T>      translation = getL2(pv21.getPosition()).negate();

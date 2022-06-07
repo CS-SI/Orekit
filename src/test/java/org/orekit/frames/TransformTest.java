@@ -20,6 +20,7 @@ package org.orekit.frames;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -35,6 +36,7 @@ import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -853,6 +855,14 @@ public class TransformTest {
             checkVector(expectedApparentMotion.getVelocity(),     referenceVelocity,     1.0e-14);
             checkVector(expectedApparentMotion.getAcceleration(), referenceAcceleration, 1.0e-14);
 
+            MatcherAssert.assertThat("At dt=" + dt,
+                    t.staticShiftedBy(dt).transformPosition(Vector3D.ZERO),
+                    OrekitMatchers.vectorCloseTo(expectedApparentMotion.getPosition(), 1e-16));
+            MatcherAssert.assertThat("At dt=" + dt,
+                    t.staticShiftedBy(dt).transformPosition(Vector3D.ZERO),
+                    OrekitMatchers.vectorCloseTo(
+                            referencePosition,
+                            1e-14 * (1 + referencePosition.getNorm())));
         }
 
     }
