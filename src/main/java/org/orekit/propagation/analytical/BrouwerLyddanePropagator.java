@@ -643,7 +643,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
 
             // update mean parameters
             current = new BLModel(new KeplerianOrbit(current.mean.getA() + deltaA,
-                                                     current.mean.getE() + deltaE,
+                                                     FastMath.max(current.mean.getE() + deltaE, 0.0),
                                                      current.mean.getI() + deltaI,
                                                      current.mean.getPerigeeArgument() + deltaOmega,
                                                      current.mean.getRightAscensionOfAscendingNode() + deltaRAAN,

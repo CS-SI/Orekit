@@ -637,7 +637,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
             // update mean parameters
             current = new FieldBLModel<T>(new FieldKeplerianOrbit<T>(current.mean.getA()            .add(deltaA),
-                                                     current.mean.getE()                            .add(deltaE),
+                                                     FastMath.max(current.mean.getE().add(deltaE), zero),
                                                      current.mean.getI()                            .add(deltaI),
                                                      current.mean.getPerigeeArgument()              .add(deltaOmega),
                                                      current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
