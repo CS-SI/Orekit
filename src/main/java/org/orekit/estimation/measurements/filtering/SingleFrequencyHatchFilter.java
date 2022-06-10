@@ -30,10 +30,10 @@ import org.orekit.gnss.ObservationData;
  * pseudo-range measurement using either a Doppler measurement
  * or a carrier phase measurement.
  * </p>
- * @see "Subirana, J. S., Hernandez-Pajares, M., & José Miguel Juan Zornoza. (2013).
+ * @see "Subirana, J. S., Hernandez-Pajares, M., and José Miguel Juan Zornoza. (2013).
  *       GNSS Data Processing: Fundamentals and Algorithms. European Space Agency."
  *
- * @see "Zhou, Z., & Li, B. (2017). Optimal Doppler-aided smoothing strategy for GNSS navigation.
+ * @see "Zhou, Z., and Li, B. (2017). Optimal Doppler-aided smoothing strategy for GNSS navigation.
  *       GPS solutions, 21(1), 197-210."
  *
  * @author Louis Aucouturier

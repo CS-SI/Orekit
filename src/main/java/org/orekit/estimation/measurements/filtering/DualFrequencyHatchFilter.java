@@ -31,7 +31,7 @@ import org.orekit.utils.Constants;
  * temporally varying ionospheric delays. Still, the spatial variation of the ionospheric delays
  * are not compensated by this phase combination.
  * </p>
- * @see "Subirana, J. S., Hernandez-Pajares, M., & José Miguel Juan Zornoza. (2013).
+ * @see "Subirana, J. S., Hernandez-Pajares, M., and José Miguel Juan Zornoza. (2013).
  *       GNSS Data Processing: Fundamentals and Algorithms. European Space Agency.
  *       Section 4.2.3.1.1"
  *
