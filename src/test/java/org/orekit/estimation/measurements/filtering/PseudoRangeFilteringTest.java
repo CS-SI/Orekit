@@ -21,6 +21,7 @@ import org.orekit.Utils;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataSource;
 import org.orekit.gnss.HatanakaCompressFilter;
+import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
@@ -36,7 +37,6 @@ public class PseudoRangeFilteringTest {
         Utils.setDataRoot("gnss/filtering");
     }
 
-    
     @Test
     public void testHatchDoppler() throws IOException {
         
@@ -80,23 +80,22 @@ public class PseudoRangeFilteringTest {
         copiedListObsDataSet.add(obsDataSetNullRange);
         copiedListObsDataSet.add(obsDataSetNullDoppler);
         
-        PseudoRangeDopplerSmoother prs = new PseudoRangeDopplerSmoother(1.0,50);
+        SingleFrequencySmoother prs = new SingleFrequencySmoother(MeasurementType.DOPPLER, 100.0, 1, 50.0);
         prs.filterDataSet(copiedListObsDataSet, system, prnNumber, ObservationType.D1C);
 
-        List<ObservationDataSetUpdate> listObsDataSetUpdate = prs.getFilteredDataMap().get(rangeType);
+        List<SmoothedObservationDataSet> listObsDataSetUpdate = prs.getFilteredDataMap().get(rangeType);
         
-        double lastUpdatedValue = listObsDataSetUpdate.get(listObsDataSetUpdate.size() - 1).getNewObsData().getValue();
-        Assert.assertEquals(2.0650728907598175E7, lastUpdatedValue, 1E-6);
+        double lastUpdatedValue = listObsDataSetUpdate.get(listObsDataSetUpdate.size() - 1).getSmoothedData().getValue();
+        Assert.assertEquals(2.0650729099E7, lastUpdatedValue, 1E-6);
         
         // Tests for ObservationDataSetUpdate
         List<ObservationDataSet> listRinexObsDataSet = loader.getObservationDataSets();
-        ObservationDataSet newObsDataSet = listObsDataSetUpdate.get(0).getObsDataSet();
+        ObservationDataSet newObsDataSet = listObsDataSetUpdate.get(0).getDataSet();
         ObservationDataSet rinexObsDataSet = listRinexObsDataSet.get(0);
         
         Assert.assertEquals(newObsDataSet, rinexObsDataSet);
     }
-    
-    
+
     @Test
     public void testHatchCarrierPhaseValues() throws IOException {
         /* The data used for the validation was generated following the gLAB tutorial available at :
@@ -162,21 +161,21 @@ public class PseudoRangeFilteringTest {
         copiedListObsDataSet.add(obsDataSetRangeSNR);
         
         //
-        PseudoRangeDualFrequencySmoother prs = new PseudoRangeDualFrequencySmoother(60);
+        DualFrequencySmoother prs = new DualFrequencySmoother(100.0, 60);
         prs.filterDataSet(copiedListObsDataSet, system, prnNumber, phaseTypeF1, phaseTypeF2);
-        PseudoRangeSingleFrequencySmoother prsSF = new PseudoRangeSingleFrequencySmoother(60);
+        SingleFrequencySmoother prsSF = new SingleFrequencySmoother(MeasurementType.CARRIER_PHASE, 100.0, 60, 50.0);
         prsSF.filterDataSet(copiedListObsDataSet, system, prnNumber, phaseTypeF1);
         
-        CarrierPhaseHatchFilterDualFrequency filter = prs.getMapFilters().get(rangeType);
-        CarrierPhaseHatchFilterSingleFrequency filterSF = prsSF.getMapFilters().get(rangeType);
+        DualFrequencyHatchFilter filter = prs.getMapFilters().get(rangeType);
+        SingleFrequencyHatchFilter filterSF = prsSF.getMapFilters().get(rangeType);
         
         ArrayList<Double> filteredSF = filterSF.getSmoothedCodeHistory();
         ArrayList<Double> filteredDF = filter.getSmoothedCodeHistory();
         ArrayList<Double> gLAB_SF = readFile(baseName + fileName_gLAB_SF);
         ArrayList<Double> gLAB_DF = readFile(baseName + fileName_gLAB_DF);
 
-        ArrayList<Double> phaseArrayF1 = filter.getPhase1History();
-        ArrayList<Double> phaseArrayF2 = filter.getPhase2History();
+        ArrayList<Double> phaseArrayF1 = filter.getFirstFrequencyPhaseHistory();
+        ArrayList<Double> phaseArrayF2 = filter.getSecondFrequencyPhaseHistory();
         
         ArrayList<Double> differencesSF = new ArrayList<Double>();
         ArrayList<Double> differencesDF = new ArrayList<Double>();
@@ -194,13 +193,13 @@ public class PseudoRangeFilteringTest {
         double rmsSF = dSF.getQuadraticMean();
         double rmsDF = dDF.getQuadraticMean();
         
-        // Regression test : The value is above one due to a constant bias between the 2.
+        // Non-Regression test : The value is above one due to a constant bias between the 2.
         // The reason of the bias is to be explored, but might be related the pre alignement process
         // performed by gLAB.
         Assert.assertTrue(rmsSF < 1.0063);
         Assert.assertTrue(rmsDF < 1.0060);
     }
-    
+
     @Test
     public void testHatchCarrierPhase2() throws IOException {
         ObservationType rangeType = ObservationType.C1;
@@ -217,10 +216,10 @@ public class PseudoRangeFilteringTest {
         DataSource nd = new DataSource(file);
         final RinexObservationLoader loader = new RinexObservationLoader(nd);
         
-        PseudoRangeDualFrequencySmoother prs = new PseudoRangeDualFrequencySmoother(60);
+        DualFrequencySmoother prs = new DualFrequencySmoother(100.0, 60);
         prs.filterDataSet(loader.getObservationDataSets(), system, prnNumber, phaseTypeF1, phaseTypeF2);
         
-        CarrierPhaseHatchFilterDualFrequency filterDF = prs.getMapFilters().get(rangeType);
+        DualFrequencyHatchFilter filterDF = prs.getMapFilters().get(rangeType);
         ArrayList<Double> codeDFArray = filterDF.getCodeHistory();
         ArrayList<Double> smoothedDFArray = filterDF.getSmoothedCodeHistory();
         
@@ -231,18 +230,12 @@ public class PseudoRangeFilteringTest {
         Assert.assertEquals(2.4715822416833777E7, lastValueSmoothed, 1e-6);
         Assert.assertEquals(2.4715823158E7, lastValueCode, 1e-4);
         
-        // Test getObservationType
-        ObservationType obsType1 = filterDF.getObsTypePhaseF1();
-        ObservationType obsType2 = filterDF.getObsTypePhaseF2();
-        Assert.assertEquals(phaseTypeF1, obsType1);
-        Assert.assertEquals(phaseTypeF2, obsType2);
-        
         ///// Test CarrierHatchFilterSingleFrequency
         
-        PseudoRangeSingleFrequencySmoother prsSF = new PseudoRangeSingleFrequencySmoother(60);
+        SingleFrequencySmoother prsSF = new SingleFrequencySmoother(MeasurementType.CARRIER_PHASE, 100.0, 60, 50.0);
         prsSF.filterDataSet(loader.getObservationDataSets(), system, prnNumber, phaseTypeF1);
         
-        CarrierPhaseHatchFilterSingleFrequency filterSF = prsSF.getMapFilters().get(rangeType);
+        SingleFrequencyHatchFilter filterSF = prsSF.getMapFilters().get(rangeType);
 
         ArrayList<Double> codeSFArray = filterSF.getCodeHistory();
         ArrayList<Double> smoothedSFArray = filterSF.getSmoothedCodeHistory();
@@ -255,29 +248,18 @@ public class PseudoRangeFilteringTest {
         Assert.assertEquals(2.4715823158E7, lastValueCode, 1e-4);
         
         // Threshold test
-        filterDF.setThreshold(1);
-        Assert.assertEquals(1, filterDF.getThreshold(), 1e-12);
+        Assert.assertEquals(100.0, filterDF.getThreshold(), 1e-12);
      
         // Test getFilteredDataMap
-        List<ObservationDataSetUpdate> listObsDataSetUpdateDF = prs.getFilteredDataMap().get(rangeType);
-        List<ObservationDataSetUpdate> listObsDataSetUpdateSF = prsSF.getFilteredDataMap().get(rangeType);
+        List<SmoothedObservationDataSet> listObsDataSetUpdateDF = prs.getFilteredDataMap().get(rangeType);
+        List<SmoothedObservationDataSet> listObsDataSetUpdateSF = prsSF.getFilteredDataMap().get(rangeType);
         
-        double lastUpdatedValueDF = listObsDataSetUpdateDF.get(listObsDataSetUpdateDF.size() - 1).getNewObsData().getValue();
+        double lastUpdatedValueDF = listObsDataSetUpdateDF.get(listObsDataSetUpdateDF.size() - 1).getSmoothedData().getValue();
         Assert.assertEquals(2.4715822416833777E7, lastUpdatedValueDF, 1E-6);
         
-        double lastUpdatedValueSF = listObsDataSetUpdateSF.get(listObsDataSetUpdateSF.size() - 1).getNewObsData().getValue();
+        double lastUpdatedValueSF = listObsDataSetUpdateSF.get(listObsDataSetUpdateSF.size() - 1).getSmoothedData().getValue();
         Assert.assertEquals(2.4715820677129257E7, lastUpdatedValueSF, 1E-6);
-        
-        // Test ObservationDataSetUpdate
-        ObservationDataSet obsDataSet = loader.getObservationDataSets().get(0);
-        ObservationData obsData = obsDataSet.getObservationData().get(0);
-        ObservationDataSetUpdate obsDataSetUpdate = new ObservationDataSetUpdate(obsData, obsDataSet);
-        obsDataSet = loader.getObservationDataSets().get(1);
-        obsData = obsDataSet.getObservationData().get(1);
-        obsDataSetUpdate.setNewObsData(obsData);
-        obsDataSetUpdate.setObsDataSet(obsDataSet);
-        Assert.assertEquals(obsData, obsDataSetUpdate.getNewObsData());
-        Assert.assertEquals(obsDataSet, obsDataSetUpdate.getObsDataSet());
+
     }
     
     public ArrayList<Double> readFile(final String fileName) throws IOException {
@@ -299,51 +281,5 @@ public class PseudoRangeFilteringTest {
         }
         return valueArray;
     }
-    
-    
-    
-    // Garbage 
-    
-//  for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
-//  if (observationDataSet.getSatelliteSystem() == system) {
-//      gpsSet.add(observationDataSet.getPrnNumber());
-//  }
-//  for (final ObservationData obsData : observationDataSet.getObservationData()) {
-//      if (obsData.getObservationType() == dopplerType 
-//              && observationDataSet.getSatelliteSystem() == system
-//              && observationDataSet.getPrnNumber() == prnNumber) {
-//          listDoppler.add(obsData.getValue());
-//      }
-//      if (obsData.getObservationType() == rangeType 
-//              && observationDataSet.getSatelliteSystem() == system
-//              && observationDataSet.getPrnNumber() == prnNumber) {
-//          listRange.add(obsData.getValue());
-//      }
-//      if (obsData.getObservationType() == phaseTypeF1 
-//              && observationDataSet.getSatelliteSystem() == system
-//              && observationDataSet.getPrnNumber() == prnNumber) {
-//          listPhaseF1.add(obsData.getValue());
-//      }
-//      if (obsData.getObservationType() == phaseTypeF2 
-//              && observationDataSet.getSatelliteSystem() == system
-//              && observationDataSet.getPrnNumber() == prnNumber) {
-//          listPhaseF2.add(obsData.getValue());
-//      }
-//      if (obsData.getObservationType().getMeasurementType() == MeasurementType.CARRIER_PHASE
-//              && observationDataSet.getSatelliteSystem() == system
-//              && observationDataSet.getPrnNumber() == prnNumber
-//              && !(Double.isNaN(obsData.getValue()))) {
-//          phaseSet.add(obsData.getObservationType().toString());
-//      }
-//  }
-//}
-//String baseName = "src/test/resources/gnss/filtering/hatch_test/";
-//writeListToFile(listDoppler, baseName+"Doppler.txt");
-//writeListToFile(listRange, baseName+"Range.txt");
-//writeListToFile(listPhaseF1, baseName+"phaseF1.txt");
-//writeListToFile(listPhaseF2, baseName+"phaseF2.txt");
-//  System.out.println(gpsSet);
-//  System.out.println(phaseSet);
-//  System.out.println(phaseTypeF1.getFrequency(system).getWavelength());
-//  System.out.println(phaseTypeF2.getFrequency(system).getWavelength());
+
 }

@@ -28,123 +28,114 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.ChronologicalComparator;
 
-/**Handler to perform pseudo-range smoothing using Divergence-Free phase combinations.
- *
- * Processes a list of ObservationDataSet, to produce smoothed pseudo-range measurements,
- * stored in a list of ObservationDataSetUpdate.
+/**
+ * Handler to perform pseudo-range smoothing using Divergence-Free phase combinations.
  *
  * @author Louis Aucouturier
- *
+ * @since 11.2
  */
-public class PseudoRangeDualFrequencySmoother {
+public class DualFrequencySmoother {
 
     /** Window size for the hatch filter. */
     private int N;
 
-    /**Maximum difference value between original and smoothed code value, above which
-     * the filter is reset. */
+    /** Threshold for the difference between smoothed and measured values. */
     private double threshold;
 
-    /** Map storing the filters for each observation type. Observation types should not overlap
-     * for a single RINEX file.*/
-    private HashMap<ObservationType, CarrierPhaseHatchFilterDualFrequency> mapFilters;
+    /**
+     * Map storing the filters for each observation type.
+     * Observation types should not overlap for a single RINEX file.
+     */
+    private HashMap<ObservationType, DualFrequencyHatchFilter> mapFilters;
 
 
-    /** Map storing the filtered data for each observation type of pseudo range.
+    /**
+     * Map storing the filtered data for each observation type of pseudo range.
      * The data is stored in the form of a list of ObservationDataSetUpdate, which itself
      * stores a pseudo-range ObservationData object with the filtered value, and the initial ObservationDataSet,
-     * needed for further processing. */
-    private HashMap<ObservationType, List<ObservationDataSetUpdate>> mapFilteredData;
-
+     * needed for further processing.
+     */
+    private HashMap<ObservationType, List<SmoothedObservationDataSet>> mapFilteredData;
 
     /**
      * Simple constructor.
-     * @param N : Window size for the hatch filter as an integer.
+     * @param threshold threshold for loss of lock detection
+     *                  (represents the maximum difference between smoothed
+     *                  and measured values for loss of lock detection)
+     * @param N         window size of the Hatch Filter
      */
-    public PseudoRangeDualFrequencySmoother(final int N) {
-        this(N, 100);
+    public DualFrequencySmoother(final double threshold, final int N) {
+        this.mapFilteredData = new HashMap<>();
+        this.mapFilters      = new HashMap<>();
+        this.N               = N;
+        this.threshold       = threshold;
     }
 
     /**
-     * Simple constructor.
-     * @param N : Window size for the hatch filter as an integer.
-     * @param threshold
-     */
-    public PseudoRangeDualFrequencySmoother(final int N, final double threshold) {
-        this.mapFilteredData = new HashMap<ObservationType, List<ObservationDataSetUpdate>>();
-        this.mapFilters = new HashMap<ObservationType, CarrierPhaseHatchFilterDualFrequency>();
-        this.N = N;
-        this.threshold = threshold;
-    }
-
-    /**
-     * Method used to create a Hatch filter given initial data.
+     * Creates an Hatch filter given initial data.
      *
-     * @param codeData : pseudo-range ObservationData object to initialize the filter.
-     * @param phaseDataF1 : phase ObservationData object for the first selected frequency
-     * @param phaseDataF2 : phase ObservationData object for the second selected frequency
-     * @param satSystem : SatelliteSystem object.
-     * @param N_input : Window size for the Hatch filter as an integer.
-     * @return Corresponding CarrierPhaseHatchFilterDualFrequency object.
+     * @param codeData    input code observation data
+     * @param phaseDataF1 input phase observation data for the first frequency
+     * @param phaseDataF2 input phase observation data for the second frequency
+     * @param satSystem   satellite system corresponding to the observations
+     * @return an Hatch filter for the input data
      */
-    public CarrierPhaseHatchFilterDualFrequency initiateCarrierPhaseSmoother(final ObservationData codeData,
-            final ObservationData phaseDataF1,
-            final ObservationData phaseDataF2,
-            final SatelliteSystem satSystem,
-            final int N_input) {
-        return new CarrierPhaseHatchFilterDualFrequency(codeData, phaseDataF1, phaseDataF2, satSystem, N_input, threshold);
+    public DualFrequencyHatchFilter createFilter(final ObservationData codeData,
+                                                 final ObservationData phaseDataF1,
+                                                 final ObservationData phaseDataF2,
+                                                 final SatelliteSystem satSystem) {
+        // Wavelengths in meters
+        final double wavelengthF1 = phaseDataF1.getObservationType().getFrequency(satSystem).getWavelength();
+        final double wavelengthF2 = phaseDataF2.getObservationType().getFrequency(satSystem).getWavelength();
+        // Return a Dual Frequency Hatch Filter
+        return new DualFrequencyHatchFilter(codeData, phaseDataF1, phaseDataF2, wavelengthF1, wavelengthF2, threshold, N);
     }
 
-
     /**
-     * Getter to obtain map of the filtered data.
-     * @return HashMap of List of ObservationDataSetUpdate, with ObservationType as key.
+     * Get the map of the filtered data.
+     * @return a map containing the filtered data.
      */
-    public HashMap<ObservationType, List<ObservationDataSetUpdate>> getFilteredDataMap() {
+    public HashMap<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
         return mapFilteredData;
     }
 
     /**
-     * @return the mapFilters
+     * Get the map storing the filters for each observation type.
+     * @return the map storing the filters for each observation type
      */
-    public final HashMap<ObservationType, CarrierPhaseHatchFilterDualFrequency> getMapFilters() {
+    public final HashMap<ObservationType, DualFrequencyHatchFilter> getMapFilters() {
         return mapFilters;
     }
 
-
     /**
-     * Method to copy an object, as a shallow copy.
-     *
-     * @param obsData
-     * @return Copy of obsData.
+     * Copy an ObservationData object.
+     * @param obsData observation data to copy
+     * @return a copy of the input observation data
      */
     public ObservationData copyObservationData(final ObservationData obsData) {
-        return new ObservationData(obsData.getObservationType(),
-                obsData.getValue(),
-                obsData.getLossOfLockIndicator(),
-                obsData.getSignalStrength());
+        return new ObservationData(obsData.getObservationType(), obsData.getValue(),
+                                   obsData.getLossOfLockIndicator(), obsData.getSignalStrength());
     }
 
     /**
-     * Method used to apply a Divergence-Free Hatch filter to a list of ObservationDataSet.
+     * Applies a Dual Frequency Hatch filter to a list of {@link ObservationDataSet}.
      *
-     * @param listODS : List of ObservationDataSet
-     * @param satSystem : Satellite System from which to filter the pseudo-range values.
-     * @param prnNumber : PRN identifier to identify the satellite from which to filter the pseudo-range values.
-     * @param obsTypeF1 : Phase ObservationType to be used as the first frequency for filtering.
-     * @param obsTypeF2 : Phase ObservationType to be used as the second frequency for filtering.
+     * @param listODS input observation data sets
+     * @param satSystem satellite System from which to filter the pseudo-range values
+     * @param prnNumber PRN identifier to identify the satellite from which to filter the pseudo-range values
+     * @param obsTypeF1 observation type to be used as the first frequency for filtering
+     * @param obsTypeF2 observation type to be used as the second frequency for filtering
      */
     public void filterDataSet(final List<ObservationDataSet> listODS, final SatelliteSystem satSystem, final int prnNumber,
-            final ObservationType obsTypeF1, final ObservationType obsTypeF2) {
+                              final ObservationType obsTypeF1, final ObservationType obsTypeF2) {
 
         // Sort the list in chronological way to ensure the filter work on time ordered data.
         final List<ObservationDataSet> sortedListODS = new ArrayList<>(listODS);
         sortedListODS.sort(new ChronologicalComparator());
 
         // For each data set, work on those corresping to the PRN and Satellite system.
-        for (ObservationDataSet obsSet : sortedListODS) {
-            if (obsSet.getSatelliteSystem() == satSystem    &&
-                    obsSet.getPrnNumber() == prnNumber) {
+        for (final ObservationDataSet obsSet : sortedListODS) {
+            if (obsSet.getSatelliteSystem() == satSystem && obsSet.getPrnNumber() == prnNumber) {
                 // Get all observation data
                 final List<ObservationData> listObsData = obsSet.getObservationData();
                 // For each ObservationData check if usable (SNR and !(isNaN))
@@ -175,15 +166,15 @@ public class PseudoRangeDualFrequencySmoother {
                             }
 
                             // Check if the filter exist in the filter map
-                            CarrierPhaseHatchFilterDualFrequency filterObject = mapFilters.get(obsTypeRange);
+                            DualFrequencyHatchFilter filterObject = mapFilters.get(obsTypeRange);
 
                             // If the filter does not exist and the phase object are not null, initialize a new filter and
                             // store it in the map, initialize a new list of observationDataSetUpdate, and store it in the map.
                             if (filterObject == null && obsDataPhaseF1 != null && obsDataPhaseF2 != null) {
-                                filterObject = initiateCarrierPhaseSmoother(obsData, obsDataPhaseF1, obsDataPhaseF2, satSystem, N);
+                                filterObject = createFilter(obsData, obsDataPhaseF1, obsDataPhaseF2, satSystem);
                                 mapFilters.put(obsTypeRange, filterObject);
-                                final List<ObservationDataSetUpdate> odList = new ArrayList<ObservationDataSetUpdate>();
-                                odList.add(new ObservationDataSetUpdate(obsData, obsSet));
+                                final List<SmoothedObservationDataSet> odList = new ArrayList<SmoothedObservationDataSet>();
+                                odList.add(new SmoothedObservationDataSet(obsData, obsSet));
                                 mapFilteredData.put(obsTypeRange, odList);
                             // If filter exist, check if a phase object is null, then reset the filter at the next step,
                             // else, filter the data.
@@ -192,7 +183,7 @@ public class PseudoRangeDualFrequencySmoother {
                                     filterObject.resetFilterNext(obsData.getValue());
                                 } else {
                                     final ObservationData filteredRange = filterObject.filterData(obsData, obsDataPhaseF1, obsDataPhaseF2);
-                                    mapFilteredData.get(obsTypeRange).add(new ObservationDataSetUpdate(filteredRange, obsSet));
+                                    mapFilteredData.get(obsTypeRange).add(new SmoothedObservationDataSet(filteredRange, obsSet));
                                 }
                             } else {
                                 // IF the filter does not exist and one of the phase is equal to NaN or absent
