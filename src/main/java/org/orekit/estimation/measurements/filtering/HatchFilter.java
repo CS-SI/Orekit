@@ -175,7 +175,7 @@ abstract class HatchFilter {
      * Computes the smoothed code value.
      * <p>
      * This method corresponds to Eq. (4.23) of
-     * "Subirana, J. S., Hernandez-Pajares, M., & José Miguel Juan Zornoza.
+     * "Subirana, J. S., Hernandez-Pajares, M., and José Miguel Juan Zornoza.
      *  GNSS Data Processing: Fundamentals and Algorithms.
      *  European Space Agency."
      * </p>
