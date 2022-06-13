@@ -187,7 +187,7 @@ interfaces. As these interfaces do not provide access to header and metadata inf
 that CCSDS writers need, these informations must be provided beforehand to the
 writers. This is done by providing directly the header and a metadata template in
 the constructor of the writer. Of course, writers for non-CCSDS message formats would use
-different strategies to get their specific metadata. In the CCCSDS case, the metadata
+different strategies to get their specific metadata. In the CCSDS case, the metadata
 provided is only a template that is incomplete: the frame, start time and stop time will
 be filled later on when the data to be written is available, as they will change for each
 segment. The argument used as the template is not modified when building a writer, its
