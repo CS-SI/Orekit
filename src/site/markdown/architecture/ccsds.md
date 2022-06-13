@@ -73,7 +73,7 @@ Orekit-compatible objects as shown in the following code snippet:
     Vector3D        dV           = opm.getManeuver(0).getdV();
     SpacecraftState state        = opm.generateSpacecraftState();
     // getting orbit date the hard way:
-    AbsoluteDate    orbitDate    = opm.getSegments().get(0).get(Data).getStateVectorBlock().getEpoch();
+    AbsoluteDate    orbitDate    = opm.getSegments().get(0).getData().getStateVectorBlock().getEpoch();
 
 Messages can be obtained by parsing an existing message or by using
 the setters to create them from scratch, bottom up starting from the
