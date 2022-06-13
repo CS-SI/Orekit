@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update">
+        Added possibility to custom analytical mean parameters conversion.
+      </action>
       <action dev="louis" type="add" issue="666">
         Added Hatch filters for smoothing of GNSS measurements.
       </action>
