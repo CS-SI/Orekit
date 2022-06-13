@@ -175,7 +175,7 @@ abstract class HatchFilter {
      * Computes the smoothed code value.
      * <p>
      * This method corresponds to Eq. (4.23) of
-     * "Subirana, J. S., Hernandez-Pajares, M., & José Miguel Juan Zornoza.
+     * "Subirana, J. S., Hernandez-Pajares, M., and José Miguel Juan Zornoza.
      *  GNSS Data Processing: Fundamentals and Algorithms.
      *  European Space Agency."
      * </p>
@@ -190,7 +190,7 @@ abstract class HatchFilter {
     }
 
     /**
-     * Checks if need to reset the filter or if cycle slip occured.
+     * Checks if need to reset the filter or if cycle slip occurred.
      * <p>
      * If yes, the smoothed value is reinitialized to the last code value.
      * If no, the smoothed value value is not changed and the filter counter is updated.
@@ -198,7 +198,7 @@ abstract class HatchFilter {
      * @param codeValue value of the input code measurement (non-smoothed)
      * @param smoothedValue the smoothed code value
      * @param cycleSlip true if cycle slip is detected
-     * @return the smoothed or non-smoothed value depending if the filter must be resetted
+     * @return the smoothed or non-smoothed value depending if the filter must be reseted
      */
     protected double checkValidData(final double codeValue, final double smoothedValue, final boolean cycleSlip) {
 
