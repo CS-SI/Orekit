@@ -21,10 +21,12 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.CartesianDerivativesFilter;
 
 /**
  * Additional state provider for state covariance matrix.
@@ -43,7 +45,7 @@ import org.orekit.time.AbsoluteDate;
  * be specified.
  * <p>
  * In order to add this additional state provider to an orbit
- * propagtor, user must use the
+ * propagator, user must use the
  * {@link Propagator#addAdditionalStateProvider(AdditionalStateProvider)}
  * method.
  * <p>
@@ -53,16 +55,17 @@ import org.orekit.time.AbsoluteDate;
  * <p>
  * It is possible to change the covariance frame by using the
  * {@link #changeCovarianceFrame(AbsoluteDate, Frame, Frame, RealMatrix)}
- * method. This method is based on Equation (16) of <i>Covariance
+ * method. This method is based on Equation (18) of <i>Covariance
  * Transformations for Satellite Flight Dynamics Operations</i>
- * by David A. Vallado.
+ * by David A. Vallado. It is important to highlight that the frames
+ * must be inertial frames.
  * <p>
  * Finally, covariance orbit type can be changed using the
  * {@link #changeCovarianceType(SpacecraftState, OrbitType, PositionAngle, OrbitType, PositionAngle, RealMatrix)}
  * method.
  * </p>
  * @author Bryan Cazabonne
- * @since 11.2
+ * @since 11.3
  */
 public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
 
@@ -97,7 +100,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * Constructor.
      * @param additionalName name of the additional state
      * @param stmName name of the state for State Transition Matrix
-     * @param harvester matrix harvester has returned by {@code propagator.setupMatricesComputation(stmName, null, null)}
+     * @param harvester matrix harvester as returned by {@code propagator.setupMatricesComputation(stmName, null, null)}
      * @param stmOrbitType orbit type used for the State Transition Matrix computation
      * @param stmAngleType position angle used for State Transition Matrix computation
      *        (not used if stmOrbitType equals {@code CARTESIAN})
@@ -139,7 +142,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
     @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
         // Convert the initial covariance matrix in the same orbit type as the STM
-        covInit = changeCovarianceType(initialState,
+        covInit = changeCovarianceType(initialState.getOrbit(),
                                        covOrbitType, covAngleType,
                                        stmOrbitType, stmAngleType,
                                        covInit);
@@ -165,7 +168,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         // Compute the propagated covariance matrix
         RealMatrix propCov = dYdY0.multiply(covInit.multiplyTransposed(dYdY0));
         // Update to the user defined type
-        propCov = changeCovarianceType(state,
+        propCov = changeCovarianceType(state.getOrbit(),
                                        stmOrbitType, stmAngleType,
                                        covOrbitType, covAngleType,
                                        propCov);
@@ -201,42 +204,99 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
 
     }
 
+    /** Get the state covariance matrix (6x6 dimension) expressed in a given frame.
+     * <p>
+     * The output covariance matrix is expressed in the
+     * same orbit type as {@link #getCovarianceOrbitType()}.
+     * <p>
+     * It is also possible to change the covariance orbit type by
+     * using the {@link #changeCovarianceType(SpacecraftState, OrbitType, PositionAngle,
+     *                                        OrbitType, PositionAngle, RealMatrix)}
+     * method.
+     * @param state spacecraft state to which the covariance matrix should correspond
+     * @param frame output frame for which the output covariance matrix must be expressed
+     *        (must be inertial)
+     * @return the state covariance matrix expressed in <code>frame</code>
+     */
+    public RealMatrix getStateCovariance(final SpacecraftState state, final Frame frame) {
+
+        // Get the current propagated covariance
+        final RealMatrix covariance = toRealMatrix(state.getAdditionalState(additionalName));
+
+        // Return the converted covariance
+        return changeCovarianceFrame(state.getOrbit(), state.getFrame(), frame, covariance, covOrbitType, covAngleType);
+
+    }
+
+    /** Get the state covariance matrix (6x6 dimension) expressed in a given orbit type.
+     * @param state spacecraft state to which the covariance matrix should correspond
+     * @param orbitType output orbit type
+     * @param angleType output position angle
+     *        (not used if orbitType equals {@code CARTESIAN})
+     * @return the state covariance matrix in <code>orbitType</code> and <code>angleType</code>
+     */
+    public RealMatrix getStateCovariance(final SpacecraftState state, final OrbitType orbitType, final PositionAngle angleType) {
+
+        // Get the current propagated covariance
+        final RealMatrix covariance = toRealMatrix(state.getAdditionalState(additionalName));
+
+        // Return the converted covariance
+        return changeCovarianceType(state.getOrbit(), covOrbitType, covAngleType, orbitType, angleType, covariance);
+
+    }
+
     /** Get the covariance matrix in another frame.
      * <p>
-     * The transformation is based on Equation (16) of
+     * The transformation is based on Equation (18) of
      * "Covariance Transformations for Satellite Flight Dynamics Operations"
-     * by David A. Vallado.
-     * </p>
-     * @param date covariance epoch
-     * @param frameIn the frame in which the input covariance matrix is expressed
-     * @param frameOut the target frame
+     * by David A. Vallado".
+     * <p>
+     * As the frame transformation must be performed with the covariance
+     * expressed in Cartesian elements, both the orbit and position angle
+     * types of the input covariance must be provided.
+     * @param orbit orbit to which the covariance matrix should correspond
+     * @param frameIn the frame in which the input covariance matrix is expressed (must be inertial)
+     * @param frameOut the target frame (must be inertial)
      * @param inputCov input covariance
+     * @param covOrbitType orbit type of the covariance matrix
+     * @param covAngleType position angle type of the covariance matrix
+     *        (not used if covOrbitType equals {@code CARTESIAN})
      * @return the covariance matrix expressed in the target frame
      */
-    public static RealMatrix changeCovarianceFrame(final AbsoluteDate date,
+    public static RealMatrix changeCovarianceFrame(final Orbit orbit,
                                                    final Frame frameIn, final Frame frameOut,
-                                                   final RealMatrix inputCov) {
+                                                   final RealMatrix inputCov,
+                                                   final OrbitType covOrbitType, final PositionAngle covAngleType) {
+
+        // Convert input matrix to Cartesian parameters in input frame
+        final RealMatrix cartesianCovarianceIn = changeCovarianceType(orbit, covOrbitType, covAngleType,
+                                                                      OrbitType.CARTESIAN, PositionAngle.MEAN,
+                                                                      inputCov);
 
         // Get the transform from the covariance frame to the output frame
-        final Transform inToOut = frameIn.getTransformTo(frameOut, date);
+        final Transform inToOut = frameIn.getTransformTo(frameOut, orbit.getDate());
 
-        // Get the rotation from the transform
-        final double[][] rotation = inToOut.getRotation().getMatrix();
+        // Get the Jacobian of the transform
+        final double[][] jacobian = new double[STATE_DIMENSION][STATE_DIMENSION];
+        inToOut.getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
 
         // Matrix to perform the covariance transformation
-        final RealMatrix j = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
+        final RealMatrix j = new Array2DRowRealMatrix(jacobian, false);
 
-        // Fill transformation matrix
-        j.setSubMatrix(rotation, 0, 0);
-        j.setSubMatrix(rotation, 3, 3);
+        // Get the Cartesian covariance matrix converted to frameOut
+        final RealMatrix cartesianCovarianceOut = j.multiply(cartesianCovarianceIn.multiplyTransposed(j));
 
-        // Returns the covariance matrix converted to frameOut
-        return j.multiply(inputCov.multiplyTransposed(j));
+        // Convert orbit frame to output frame
+        final Orbit outOrbit = new CartesianOrbit(orbit.getPVCoordinates(frameOut), frameOut, orbit.getMu());
+
+        // Convert output Cartesian matrix to initial orbit type and position angle
+        return changeCovarianceType(outOrbit, OrbitType.CARTESIAN, PositionAngle.MEAN,
+                                    covOrbitType, covAngleType, cartesianCovarianceOut);
 
     }
 
     /** Get the covariance matrix in another orbit type.
-     * @param state spacecraft state to which the covariance matrix should correspond
+     * @param orbit orbit to which the covariance matrix should correspond
      * @param inOrbitType initial orbit type of the state covariance matrix
      * @param inAngleType initial position angle type of the state covariance matrix
      * @param outOrbitType target orbit type of the state covariance matrix
@@ -245,7 +305,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * @return the covariance expressed in the target orbit type with the
      *         target position angle
      */
-    public static RealMatrix changeCovarianceType(final SpacecraftState state,
+    public static RealMatrix changeCovarianceType(final Orbit orbit,
                                                   final OrbitType inOrbitType, final PositionAngle inAngleType,
                                                   final OrbitType outOrbitType, final PositionAngle outAngleType,
                                                   final RealMatrix inputCov) {
@@ -257,13 +317,13 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
 
         // Compute dOutputdCartesian
         final double[][] aOC = new double[STATE_DIMENSION][STATE_DIMENSION];
-        final Orbit orbitInOutputType = outOrbitType.convertType(state.getOrbit());
+        final Orbit orbitInOutputType = outOrbitType.convertType(orbit);
         orbitInOutputType.getJacobianWrtCartesian(outAngleType, aOC);
         final RealMatrix dOdC = new Array2DRowRealMatrix(aOC, false);
 
         // Compute dCartesiandInput
         final double[][] aCI = new double[STATE_DIMENSION][STATE_DIMENSION];
-        final Orbit orbitInInputType = inOrbitType.convertType(state.getOrbit());
+        final Orbit orbitInInputType = inOrbitType.convertType(orbit);
         orbitInInputType.getJacobianWrtParameters(inAngleType, aCI);
         final RealMatrix dCdI = new Array2DRowRealMatrix(aCI, false);
 
