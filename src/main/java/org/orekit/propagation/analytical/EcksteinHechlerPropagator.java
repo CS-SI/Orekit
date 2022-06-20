@@ -757,7 +757,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     @Override
     protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
                                                         final DoubleArrayDictionary initialJacobianColumns) {
-        return new EcksteinHechlerHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Create the harvester
+        final EcksteinHechlerHarvester harvester = new EcksteinHechlerHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Update the list of additional state provider
+        addAdditionalStateProvider(harvester);
+        // Return the configured harvester
+        return harvester;
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
